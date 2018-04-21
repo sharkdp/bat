@@ -35,8 +35,8 @@ type LineChanges = HashMap<u32, LineChange>;
 
 fn print_file<P: AsRef<Path>>(filename: P, line_changes: Option<LineChanges>) -> io::Result<()> {
     let ss = SyntaxSet::load_defaults_nonewlines();
-    let ts = ThemeSet::load_from_folder("/home/shark/Informatik/rust/bat/themes").unwrap();
-    let theme = &ts.themes["Monokai"];
+    let ts = ThemeSet::load_defaults();
+    let theme = &ts.themes["base16-eighties.dark"];
 
     let mut highlighter = HighlightFile::new(filename, &ss, theme)?;
 
