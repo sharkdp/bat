@@ -12,7 +12,7 @@ use std::io::{self, BufRead, Result};
 use std::path::Path;
 use std::process;
 
-use ansi_term::Colour::{Fixed, Green, Red, Yellow};
+use ansi_term::Colour::{Fixed, Green, Red, Yellow, White};
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgMatches};
 use console::Term;
@@ -38,12 +38,22 @@ fn print_file<P: AsRef<Path>>(filename: P, line_changes: Option<LineChanges>) ->
     let ts = ThemeSet::load_defaults();
     let theme = &ts.themes["base16-eighties.dark"];
 
-    let mut highlighter = HighlightFile::new(filename, &ss, theme)?;
+    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), &ss, theme)?;
 
     let term = Term::stdout();
     let (_height, width) = term.size();
 
     let prefix = "───────┬";
+    let line = "─".repeat(width as usize - prefix.len());
+    println!("{}{}", Fixed(238).paint(prefix), Fixed(238).paint(line));
+
+    println!(
+        "       {} {}",
+        Fixed(238).paint("│"),
+        White.bold().paint(filename.as_ref().to_string_lossy())
+    );
+
+    let prefix = "───────┼";
     let line = "─".repeat(width as usize - prefix.len());
     println!("{}{}", Fixed(238).paint(prefix), Fixed(238).paint(line));
 
