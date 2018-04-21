@@ -1,0 +1,20 @@
+[package]
+authors = ["David Peter <mail@david-peter.de>"]
+categories = ["command-line-utilities"]
+homepage = "https://github.com/sharkdp/bat"
+license = "MIT/Apache-2.0"
+name = "bat"
+readme = "README.md"
+repository = "https://github.com/sharkdp/bat"
+version = "0.1.0"
+
+[dependencies]
+atty = "0.2.2"
+syntect = "2"
+ansi_term = "0.9"
+console = "0.6"
+
+[dependencies.clap]
+version = "2"
+default-features = false
+features = ["suggestions", "color", "wrap_help"]
