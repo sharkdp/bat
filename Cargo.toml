@@ -13,6 +13,7 @@ atty = "0.2.2"
 syntect = "2"
 ansi_term = "0.9"
 console = "0.6"
+git2 = "0.6"
 
 [dependencies.clap]
 version = "2"
