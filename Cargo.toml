@@ -1,6 +1,7 @@
 [package]
 authors = ["David Peter <mail@david-peter.de>"]
 categories = ["command-line-utilities"]
+description="A cat(1) clone with wings."
 homepage = "https://github.com/sharkdp/bat"
 license = "MIT/Apache-2.0"
 name = "bat"

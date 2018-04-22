@@ -149,7 +149,7 @@ fn run(matches: &ArgMatches) -> Result<()> {
     let theme_set = ThemeSet::load_from_folder("/home/shark/Informatik/rust/bat/themes").unwrap();
     let theme = &theme_set.themes["Monokai"];
 
-    if let Some(files) = matches.values_of("file") {
+    if let Some(files) = matches.values_of("FILE") {
         for file in files {
             let line_changes = get_line_changes(file.to_string());
             print_file(theme, file, line_changes)?;
@@ -166,17 +166,18 @@ fn main() {
         AppSettings::ColorNever
     };
 
-    let matches = App::new("bat")
+    let matches = App::new(crate_name!())
         .version(crate_version!())
         .setting(clap_color_setting)
         .setting(AppSettings::DeriveDisplayOrder)
         .setting(AppSettings::UnifiedHelpMessage)
         .setting(AppSettings::NextLineHelp)
+        .setting(AppSettings::DisableVersion)
         .max_term_width(90)
-        .about("A cat(1) clone with wings.")
+        .about(crate_description!())
         .arg(
-            Arg::with_name("file")
-                .help("Files to print")
+            Arg::with_name("FILE")
+                .help("File(s) to print")
                 .multiple(true)
                 .empty_values(false),
         )
