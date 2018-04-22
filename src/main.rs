@@ -13,6 +13,7 @@ use std::path::Path;
 use std::process;
 
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
+use ansi_term::Style;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgMatches};
 use console::Term;
@@ -33,22 +34,23 @@ enum LineChange {
 
 type LineChanges = HashMap<u32, LineChange>;
 
-const GRID_COLOR : u8 = 238;
+const PANEL_WIDTH: usize = 7;
+const GRID_COLOR: u8 = 238;
 
 fn print_horizontal_line(grid_char: char, term_width: usize) {
-    let prefix = format!("{}{}", "─".repeat(7), grid_char);
-    let line = "─".repeat(term_width - prefix.len());
-    println!("{}{}", Fixed(GRID_COLOR).paint(prefix), Fixed(GRID_COLOR).paint(line));
+    let bar = "─".repeat(term_width - (PANEL_WIDTH + 1));
+    let line = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, bar);
+
+    println!("{}", Fixed(GRID_COLOR).paint(line));
 }
 
 fn print_file<P: AsRef<Path>>(
     theme: &Theme,
+    syntax_set: &SyntaxSet,
     filename: P,
     line_changes: Option<LineChanges>,
 ) -> io::Result<()> {
-    let ss = SyntaxSet::load_defaults_nonewlines();
-
-    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), &ss, &theme)?;
+    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), syntax_set, theme)?;
 
     let term = Term::stdout();
     let (_, term_width) = term.size();
@@ -57,7 +59,8 @@ fn print_file<P: AsRef<Path>>(
     print_horizontal_line('┬', term_width);
 
     println!(
-        "       {} {}",
+        "{}{} {}",
+        " ".repeat(PANEL_WIDTH),
         Fixed(GRID_COLOR).paint("│"),
         White.bold().paint(filename.as_ref().to_string_lossy())
     );
@@ -75,10 +78,10 @@ fn print_file<P: AsRef<Path>>(
                 Some(&LineChange::RemovedAbove) => Red.paint("‾"),
                 Some(&LineChange::RemovedBelow) => Red.paint("_"),
                 Some(&LineChange::Modified) => Yellow.paint("~"),
-                _ => Fixed(1).paint(" "), // TODO
+                _ => Style::default().paint(" "),
             }
         } else {
-            Fixed(1).paint(" ") // TODO
+            Style::default().paint(" ")
         };
 
         println!(
@@ -152,10 +155,12 @@ fn run(matches: &ArgMatches) -> Result<()> {
     let theme_set = ThemeSet::load_from_folder("/home/shark/Informatik/rust/bat/themes").unwrap();
     let theme = &theme_set.themes["Monokai"];
 
+    let syntax_set = SyntaxSet::load_defaults_nonewlines();
+
     if let Some(files) = matches.values_of("FILE") {
         for file in files {
             let line_changes = get_line_changes(file.to_string());
-            print_file(theme, file, line_changes)?;
+            print_file(theme, &syntax_set, file, line_changes)?;
         }
     }
 
