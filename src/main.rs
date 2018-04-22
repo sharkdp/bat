@@ -8,7 +8,7 @@ extern crate syntect;
 extern crate clap;
 
 use std::collections::HashMap;
-use std::io::{self, BufRead, Result};
+use std::io::{self, BufRead, Result, Write, ErrorKind, StdoutLock};
 use std::path::Path;
 use std::process;
 
@@ -37,11 +37,13 @@ type LineChanges = HashMap<u32, LineChange>;
 const PANEL_WIDTH: usize = 7;
 const GRID_COLOR: u8 = 238;
 
-fn print_horizontal_line(grid_char: char, term_width: usize) {
+fn print_horizontal_line(handle: &mut StdoutLock, grid_char: char, term_width: usize) -> io::Result<()> {
     let bar = "─".repeat(term_width - (PANEL_WIDTH + 1));
     let line = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, bar);
 
-    println!("{}", Fixed(GRID_COLOR).paint(line));
+    write!(handle, "{}\n", Fixed(GRID_COLOR).paint(line))?;
+
+    Ok(())
 }
 
 fn print_file<P: AsRef<Path>>(
@@ -52,20 +54,24 @@ fn print_file<P: AsRef<Path>>(
 ) -> io::Result<()> {
     let mut highlighter = HighlightFile::new(filename.as_ref().clone(), syntax_set, theme)?;
 
+    let stdout = io::stdout();
+    let mut handle = stdout.lock();
+
     let term = Term::stdout();
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
-    print_horizontal_line('┬', term_width);
+    print_horizontal_line(&mut handle, '┬', term_width)?;
 
-    println!(
-        "{}{} {}",
+    write!(
+        handle,
+        "{}{} {}\n",
         " ".repeat(PANEL_WIDTH),
         Fixed(GRID_COLOR).paint("│"),
         White.bold().paint(filename.as_ref().to_string_lossy())
-    );
+    )?;
 
-    print_horizontal_line('┼', term_width);
+    print_horizontal_line(&mut handle, '┼', term_width)?;
 
     for (idx, maybe_line) in highlighter.reader.lines().enumerate() {
         let line_nr = idx + 1;
@@ -84,16 +90,17 @@ fn print_file<P: AsRef<Path>>(
             Style::default().paint(" ")
         };
 
-        println!(
-            "{} {} {} {}",
+        write!(
+            handle,
+            "{} {} {} {}\n",
             Fixed(244).paint(format!("{:4}", line_nr)),
             line_change,
             Fixed(GRID_COLOR).paint("│"),
             as_24_bit_terminal_escaped(&regions, false)
-        );
+        )?;
     }
 
-    print_horizontal_line('┴', term_width);
+    print_horizontal_line(&mut handle, '┴', term_width)?;
 
     Ok(())
 }
@@ -196,7 +203,9 @@ fn main() {
     let result = run(&matches);
 
     if let Err(e) = result {
-        eprintln!("{}: {}", Red.paint("[bat error]"), e);
-        process::exit(1);
+        if e.kind() != ErrorKind::BrokenPipe {
+            eprintln!("{}: {}", Red.paint("[bat error]"), e);
+            process::exit(1);
+        }
     }
 }
