@@ -8,7 +8,8 @@ extern crate syntect;
 extern crate clap;
 
 use std::collections::HashMap;
-use std::io::{self, BufRead, Result, Write, ErrorKind, StdoutLock};
+use std::env;
+use std::io::{self, BufRead, ErrorKind, Result, StdoutLock, Write};
 use std::path::Path;
 use std::process;
 
@@ -37,7 +38,11 @@ type LineChanges = HashMap<u32, LineChange>;
 const PANEL_WIDTH: usize = 7;
 const GRID_COLOR: u8 = 238;
 
-fn print_horizontal_line(handle: &mut StdoutLock, grid_char: char, term_width: usize) -> io::Result<()> {
+fn print_horizontal_line(
+    handle: &mut StdoutLock,
+    grid_char: char,
+    term_width: usize,
+) -> io::Result<()> {
     let bar = "─".repeat(term_width - (PANEL_WIDTH + 1));
     let line = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, bar);
 
@@ -159,7 +164,14 @@ fn get_git_diff(filename: String) -> Option<LineChanges> {
 }
 
 fn run(matches: &ArgMatches) -> Result<()> {
-    let theme_set = ThemeSet::load_from_folder("/home/shark/Informatik/rust/bat/themes").unwrap();
+    let home_dir = env::home_dir().ok_or(io::Error::new(
+        ErrorKind::Other,
+        "Could not get home directory",
+    ))?;
+
+    let theme_dir = home_dir.join(".config").join("bat").join("themes");
+    let theme_set = ThemeSet::load_from_folder(theme_dir)
+        .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
     let theme = &theme_set.themes["Monokai"];
 
     let syntax_set = SyntaxSet::load_defaults_nonewlines();
