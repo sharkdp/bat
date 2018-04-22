@@ -16,3 +16,13 @@
 ### Git integration
 
 ![bat src/index.html](https://i.imgur.com/yBQ31jm.png)
+
+## Installation
+
+```
+cargo install bat
+
+mkdir -p ~/.config/bat/themes
+cd ~/.config/bat/themes
+wget https://raw.githubusercontent.com/cj/sublime/master/Color%20Scheme%20-%20Default/Monokai.tmTheme
+```
