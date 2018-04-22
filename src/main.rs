@@ -105,7 +105,7 @@ fn print_file<P: AsRef<Path>>(
     Ok(())
 }
 
-fn get_line_changes(filename: String) -> Option<LineChanges> {
+fn get_git_diff(filename: String) -> Option<LineChanges> {
     let repo = Repository::open_from_env().ok()?;
 
     let mut diff_options = DiffOptions::new();
@@ -166,7 +166,7 @@ fn run(matches: &ArgMatches) -> Result<()> {
 
     if let Some(files) = matches.values_of("FILE") {
         for file in files {
-            let line_changes = get_line_changes(file.to_string());
+            let line_changes = get_git_diff(file.to_string());
             print_file(theme, &syntax_set, file, line_changes)?;
         }
     }
