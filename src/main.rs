@@ -12,14 +12,14 @@ use std::io::{self, BufRead, Result};
 use std::path::Path;
 use std::process;
 
-use ansi_term::Colour::{Fixed, Green, Red, Yellow, White};
+use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgMatches};
 use console::Term;
 use git2::{DiffOptions, IntoCString, Repository};
 
 use syntect::easy::HighlightFile;
-use syntect::highlighting::ThemeSet;
+use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 use syntect::util::as_24_bit_terminal_escaped;
 
@@ -33,12 +33,14 @@ enum LineChange {
 
 type LineChanges = HashMap<u32, LineChange>;
 
-fn print_file<P: AsRef<Path>>(filename: P, line_changes: Option<LineChanges>) -> io::Result<()> {
+fn print_file<P: AsRef<Path>>(
+    theme: &Theme,
+    filename: P,
+    line_changes: Option<LineChanges>,
+) -> io::Result<()> {
     let ss = SyntaxSet::load_defaults_nonewlines();
-    let ts = ThemeSet::load_defaults();
-    let theme = &ts.themes["base16-eighties.dark"];
 
-    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), &ss, theme)?;
+    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), &ss, &theme)?;
 
     let term = Term::stdout();
     let (_height, width) = term.size();
@@ -94,11 +96,11 @@ fn get_line_changes(filename: String) -> Option<LineChanges> {
     let repo = Repository::open_from_env().ok()?;
 
     let mut diff_options = DiffOptions::new();
-    diff_options.pathspec(filename.into_c_string().unwrap());
+    diff_options.pathspec(filename.into_c_string().ok()?);
     diff_options.context_lines(0);
 
     let diff = repo.diff_index_to_workdir(None, Some(&mut diff_options))
-        .unwrap();
+        .ok()?;
 
     let mut line_changes: LineChanges = HashMap::new();
 
@@ -144,10 +146,13 @@ fn get_line_changes(filename: String) -> Option<LineChanges> {
 }
 
 fn run(matches: &ArgMatches) -> Result<()> {
+    let theme_set = ThemeSet::load_from_folder("/home/shark/Informatik/rust/bat/themes").unwrap();
+    let theme = &theme_set.themes["Monokai"];
+
     if let Some(files) = matches.values_of("file") {
         for file in files {
             let line_changes = get_line_changes(file.to_string());
-            print_file(file, line_changes)?;
+            print_file(theme, file, line_changes)?;
         }
     }
 
@@ -182,7 +187,7 @@ fn main() {
     let result = run(&matches);
 
     if let Err(e) = result {
-        eprintln!("{}: {}", Red.paint("bat error"), e);
+        eprintln!("{}: {}", Red.paint("[bat error]"), e);
         process::exit(1);
     }
 }
