@@ -33,6 +33,14 @@ enum LineChange {
 
 type LineChanges = HashMap<u32, LineChange>;
 
+const GRID_COLOR : u8 = 238;
+
+fn print_horizontal_line(grid_char: char, term_width: usize) {
+    let prefix = format!("{}{}", "─".repeat(7), grid_char);
+    let line = "─".repeat(term_width - prefix.len());
+    println!("{}{}", Fixed(GRID_COLOR).paint(prefix), Fixed(GRID_COLOR).paint(line));
+}
+
 fn print_file<P: AsRef<Path>>(
     theme: &Theme,
     filename: P,
@@ -43,21 +51,18 @@ fn print_file<P: AsRef<Path>>(
     let mut highlighter = HighlightFile::new(filename.as_ref().clone(), &ss, &theme)?;
 
     let term = Term::stdout();
-    let (_height, width) = term.size();
+    let (_, term_width) = term.size();
+    let term_width = term_width as usize;
 
-    let prefix = "───────┬";
-    let line = "─".repeat(width as usize - prefix.len());
-    println!("{}{}", Fixed(238).paint(prefix), Fixed(238).paint(line));
+    print_horizontal_line('┬', term_width);
 
     println!(
         "       {} {}",
-        Fixed(238).paint("│"),
+        Fixed(GRID_COLOR).paint("│"),
         White.bold().paint(filename.as_ref().to_string_lossy())
     );
 
-    let prefix = "───────┼";
-    let line = "─".repeat(width as usize - prefix.len());
-    println!("{}{}", Fixed(238).paint(prefix), Fixed(238).paint(line));
+    print_horizontal_line('┼', term_width);
 
     for (idx, maybe_line) in highlighter.reader.lines().enumerate() {
         let line_nr = idx + 1;
@@ -80,14 +85,12 @@ fn print_file<P: AsRef<Path>>(
             "{} {} {} {}",
             Fixed(244).paint(format!("{:4}", line_nr)),
             line_change,
-            Fixed(238).paint("│"),
+            Fixed(GRID_COLOR).paint("│"),
             as_24_bit_terminal_escaped(&regions, false)
         );
     }
 
-    let prefix = "───────┴";
-    let line = "─".repeat(width as usize - prefix.len());
-    println!("{}{}", Fixed(238).paint(prefix), Fixed(238).paint(line));
+    print_horizontal_line('┴', term_width);
 
     Ok(())
 }
