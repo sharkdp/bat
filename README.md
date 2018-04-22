@@ -1,5 +1,5 @@
 # bat
-*A `cat(1)` clone with wings.*
+*A cat(1) clone with wings.*
 
 ## Features
 
