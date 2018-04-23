@@ -19,10 +19,17 @@
 
 ## Installation
 
-```
+``` bash
 cargo install bat
 
 mkdir -p ~/.config/bat/themes
 cd ~/.config/bat/themes
-wget https://raw.githubusercontent.com/cj/sublime/master/Color%20Scheme%20-%20Default/Monokai.tmTheme
+git clone https://github.com/jonschlinkert/sublime-monokai-extended
+ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
+
+mkdir -p ~/.config/bat/syntax
+cd ~/.config/bat/syntax
+git clone https://github.com/sublimehq/Packages/
+rm -rf Packages/Markdown
+git clone https://github.com/jonschlinkert/sublime-markdown-extended
 ```

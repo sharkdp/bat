@@ -186,9 +186,14 @@ fn run(matches: &ArgMatches) -> Result<()> {
     let theme_dir = home_dir.join(".config").join("bat").join("themes");
     let theme_set = ThemeSet::load_from_folder(theme_dir)
         .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
-    let theme = &theme_set.themes["Monokai"];
+    let theme = &theme_set.themes["Default"];
 
-    let syntax_set = SyntaxSet::load_defaults_nonewlines();
+    // TODO: let mut syntax_set = SyntaxSet::load_defaults_nonewlines();
+    let mut syntax_set = SyntaxSet::new();
+    let syntax_dir = home_dir.join(".config").join("bat").join("syntax");
+    let _ = syntax_set.load_syntaxes(syntax_dir, false);
+    syntax_set.load_plain_text_syntax();
+    syntax_set.link_syntaxes();
 
     if let Some(files) = matches.values_of("FILE") {
         for file in files {
