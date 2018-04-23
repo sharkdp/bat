@@ -7,6 +7,8 @@ extern crate syntect;
 #[macro_use]
 extern crate clap;
 
+mod terminal;
+
 use std::collections::HashMap;
 use std::env;
 use std::io::{self, BufRead, ErrorKind, Result, StdoutLock, Write};
@@ -23,7 +25,12 @@ use git2::{DiffOptions, IntoCString, Repository};
 use syntect::easy::HighlightFile;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
-use syntect::util::as_24_bit_terminal_escaped;
+
+use terminal::as_terminal_escaped;
+
+struct Options {
+    true_color: bool,
+}
 
 #[derive(Copy, Clone, Debug)]
 enum LineChange {
@@ -52,6 +59,7 @@ fn print_horizontal_line(
 }
 
 fn print_file<P: AsRef<Path>>(
+    options: &Options,
     theme: &Theme,
     syntax_set: &SyntaxSet,
     filename: P,
@@ -101,7 +109,7 @@ fn print_file<P: AsRef<Path>>(
             Fixed(244).paint(format!("{:4}", line_nr)),
             line_change,
             Fixed(GRID_COLOR).paint("│"),
-            as_24_bit_terminal_escaped(&regions, false)
+            as_terminal_escaped(&regions, options.true_color)
         )?;
     }
 
@@ -169,6 +177,12 @@ fn run(matches: &ArgMatches) -> Result<()> {
         "Could not get home directory",
     ))?;
 
+    let colorterm = env::var("COLORTERM").unwrap_or("".into());
+
+    let options = Options {
+        true_color: colorterm == "truecolor" || colorterm == "24bit",
+    };
+
     let theme_dir = home_dir.join(".config").join("bat").join("themes");
     let theme_set = ThemeSet::load_from_folder(theme_dir)
         .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
@@ -179,7 +193,7 @@ fn run(matches: &ArgMatches) -> Result<()> {
     if let Some(files) = matches.values_of("FILE") {
         for file in files {
             let line_changes = get_git_diff(file.to_string());
-            print_file(theme, &syntax_set, file, line_changes)?;
+            print_file(&options, theme, &syntax_set, file, line_changes)?;
         }
     }
 
