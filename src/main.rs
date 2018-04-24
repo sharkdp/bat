@@ -120,9 +120,13 @@ fn print_file<P: AsRef<Path>>(
 
 fn get_git_diff(filename: String) -> Option<LineChanges> {
     let repo = Repository::open_from_env().ok()?;
+    let workdir = repo.workdir()?;
+    let current_dir = env::current_dir().ok()?;
+    let filepath = current_dir.join(Path::new(&filename));
 
     let mut diff_options = DiffOptions::new();
-    diff_options.pathspec(filename.into_c_string().ok()?);
+    let pathspec = format!("*{}", filename).into_c_string().ok()?;
+    diff_options.pathspec(pathspec);
     diff_options.context_lines(0);
 
     let diff = repo.diff_index_to_workdir(None, Some(&mut diff_options))
@@ -140,7 +144,13 @@ fn get_git_diff(filename: String) -> Option<LineChanges> {
     let _ = diff.foreach(
         &mut |_, _| true,
         None,
-        Some(&mut |_, hunk| {
+        Some(&mut |delta, hunk| {
+            let path = delta.new_file().path().unwrap_or(Path::new(""));
+
+            if filepath != workdir.join(path) {
+                return false;
+            }
+
             let old_lines = hunk.old_lines();
             let new_start = hunk.new_start();
             let new_lines = hunk.new_lines();
