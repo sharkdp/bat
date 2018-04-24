@@ -78,7 +78,7 @@ fn print_file<P: AsRef<Path>>(
 
     write!(
         handle,
-        "{}{} {}\n",
+        "{}{} File {}\n",
         " ".repeat(PANEL_WIDTH),
         Fixed(GRID_COLOR).paint("│"),
         White.bold().paint(filename.as_ref().to_string_lossy())
