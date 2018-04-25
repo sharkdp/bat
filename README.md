@@ -15,7 +15,7 @@
 
 ### Git integration
 
-Additions, modifications and deletions are shown (a la `git diff`):
+`bat` communicates with `git` to show modifications with respect to the index (see left side bar):
 
 ![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
