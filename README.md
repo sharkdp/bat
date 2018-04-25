@@ -17,7 +17,7 @@ A large number of languages are supported (via Sublime Text definition files):
 
 Additions, modifications and deletions are shown (a la `git diff`):
 
-![Git integration example](https://imgur.com/2lSW4RE)
+![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
 ## Installation
 
