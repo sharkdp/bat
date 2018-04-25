@@ -9,21 +9,30 @@
 
 ### Syntax highlighting
 
-![bat src/main.rs](https://i.imgur.com/bcnFRSl.png)
+A large number of languages are supported (via Sublime Text definition files):
 
-![bat src/example.js](https://i.imgur.com/uyBewNX.png)
+![Syntax highlighting example](https://imgur.com/rGsdnDe.png)
 
 ### Git integration
 
-![bat src/index.html](https://i.imgur.com/yBQ31jm.png)
+Additions, modifications and deletions are shown (a la `git diff`):
+
+![Git integration example](https://imgur.com/2lSW4RE)
 
 ## Installation
 
-To compile `bat` from source, you need Rust 1.22 or higher.
+Check out the [Release page](https://github.com/sharkdp/bat/releases) for binary builds and Debian packages.
+
+If you want to build to compile `bat` from source, you need Rust 1.22 or higher.
+You can then use `cargo` to build everything:
 
 ``` bash
 cargo install bat
+```
 
+### Get themes and syntax highlighting definitions
+
+``` bash
 mkdir -p ~/.config/bat/themes
 cd ~/.config/bat/themes
 git clone https://github.com/jonschlinkert/sublime-monokai-extended
