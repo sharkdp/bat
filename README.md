@@ -9,7 +9,7 @@
 
 ### Syntax highlighting
 
-A large number of languages are supported (via Sublime Text definition files):
+`bat` supports a large number of programming and markup languages (see below):
 
 ![Syntax highlighting example](https://imgur.com/rGsdnDe.png)
 
@@ -31,6 +31,10 @@ cargo install bat
 ```
 
 ### Get themes and syntax highlighting definitions
+
+`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` uses Sublime Text language definitions and themes.
+
+To get a big package of languages and a Monokai-variant as a theme, run:
 
 ``` bash
 mkdir -p ~/.config/bat/themes
