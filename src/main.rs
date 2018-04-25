@@ -196,7 +196,10 @@ fn run(matches: &ArgMatches) -> Result<()> {
     let theme_dir = home_dir.join(".config").join("bat").join("themes");
     let theme_set = ThemeSet::load_from_folder(theme_dir)
         .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
-    let theme = &theme_set.themes["Default"];
+    let theme = &theme_set.themes.get("Default").ok_or(io::Error::new(
+        ErrorKind::Other,
+        "Could not load default theme (~/.config/bat/themes/Default.tmTheme)",
+    ))?;
 
     // TODO: let mut syntax_set = SyntaxSet::load_defaults_nonewlines();
     let mut syntax_set = SyntaxSet::new();
