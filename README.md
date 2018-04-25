@@ -19,6 +19,8 @@
 
 ## Installation
 
+To compile `bat` from source, you need Rust 1.22 or higher.
+
 ``` bash
 cargo install bat
 
