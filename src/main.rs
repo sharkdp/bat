@@ -50,10 +50,10 @@ fn print_horizontal_line(
     grid_char: char,
     term_width: usize,
 ) -> io::Result<()> {
-    let bar = "─".repeat(term_width - (PANEL_WIDTH + 1));
-    let line = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, bar);
+    let hline = "─".repeat(term_width - (PANEL_WIDTH + 1));
+    let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
 
-    write!(handle, "{}\n", Fixed(GRID_COLOR).paint(line))?;
+    writeln!(handle, "{}", Fixed(GRID_COLOR).paint(hline))?;
 
     Ok(())
 }
@@ -63,9 +63,9 @@ fn print_file<P: AsRef<Path>>(
     theme: &Theme,
     syntax_set: &SyntaxSet,
     filename: P,
-    line_changes: Option<LineChanges>,
+    line_changes: &Option<LineChanges>,
 ) -> io::Result<()> {
-    let mut highlighter = HighlightFile::new(filename.as_ref().clone(), syntax_set, theme)?;
+    let mut highlighter = HighlightFile::new(filename.as_ref(), syntax_set, theme)?;
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
@@ -76,9 +76,9 @@ fn print_file<P: AsRef<Path>>(
 
     print_horizontal_line(&mut handle, '┬', term_width)?;
 
-    write!(
+    writeln!(
         handle,
-        "{}{} File {}\n",
+        "{}{} File {}",
         " ".repeat(PANEL_WIDTH),
         Fixed(GRID_COLOR).paint("│"),
         White.bold().paint(filename.as_ref().to_string_lossy())
@@ -88,10 +88,10 @@ fn print_file<P: AsRef<Path>>(
 
     for (idx, maybe_line) in highlighter.reader.lines().enumerate() {
         let line_nr = idx + 1;
-        let line = maybe_line.unwrap_or("<INVALID UTF-8>".into());
+        let line = maybe_line.unwrap_or_else(|_| "<INVALID UTF-8>".into());
         let regions = highlighter.highlight_lines.highlight(&line);
 
-        let line_change = if let Some(ref changes) = line_changes {
+        let line_change = if let Some(ref changes) = *line_changes {
             match changes.get(&(line_nr as u32)) {
                 Some(&LineChange::Added) => Green.paint("+"),
                 Some(&LineChange::RemovedAbove) => Red.paint("‾"),
@@ -103,9 +103,9 @@ fn print_file<P: AsRef<Path>>(
             Style::default().paint(" ")
         };
 
-        write!(
+        writeln!(
             handle,
-            "{} {} {} {}\n",
+            "{} {} {} {}",
             Fixed(244).paint(format!("{:4}", line_nr)),
             line_change,
             Fixed(GRID_COLOR).paint("│"),
@@ -118,7 +118,7 @@ fn print_file<P: AsRef<Path>>(
     Ok(())
 }
 
-fn get_git_diff(filename: String) -> Option<LineChanges> {
+fn get_git_diff(filename: &str) -> Option<LineChanges> {
     let repo = Repository::open_from_env().ok()?;
     let workdir = repo.workdir()?;
     let current_dir = env::current_dir().ok()?;
@@ -145,7 +145,7 @@ fn get_git_diff(filename: String) -> Option<LineChanges> {
         &mut |_, _| true,
         None,
         Some(&mut |delta, hunk| {
-            let path = delta.new_file().path().unwrap_or(Path::new(""));
+            let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
 
             if filepath != workdir.join(path) {
                 return false;
@@ -159,7 +159,7 @@ fn get_git_diff(filename: String) -> Option<LineChanges> {
             if old_lines == 0 && new_lines > 0 {
                 mark_section(&mut line_changes, new_start, new_end, LineChange::Added);
             } else if new_lines == 0 && old_lines > 0 {
-                if new_start <= 0 {
+                if new_start == 0 {
                     mark_section(&mut line_changes, 1, 1, LineChange::RemovedAbove);
                 } else {
                     mark_section(
@@ -182,12 +182,10 @@ fn get_git_diff(filename: String) -> Option<LineChanges> {
 }
 
 fn run(matches: &ArgMatches) -> Result<()> {
-    let home_dir = env::home_dir().ok_or(io::Error::new(
-        ErrorKind::Other,
-        "Could not get home directory",
-    ))?;
+    let home_dir = env::home_dir()
+        .ok_or_else(|| io::Error::new(ErrorKind::Other, "Could not get home directory"))?;
 
-    let colorterm = env::var("COLORTERM").unwrap_or("".into());
+    let colorterm = env::var("COLORTERM").unwrap_or_else(|_| "".into());
 
     let options = Options {
         true_color: colorterm == "truecolor" || colorterm == "24bit",
@@ -196,10 +194,12 @@ fn run(matches: &ArgMatches) -> Result<()> {
     let theme_dir = home_dir.join(".config").join("bat").join("themes");
     let theme_set = ThemeSet::load_from_folder(theme_dir)
         .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
-    let theme = &theme_set.themes.get("Default").ok_or(io::Error::new(
-        ErrorKind::Other,
-        "Could not load default theme (~/.config/bat/themes/Default.tmTheme)",
-    ))?;
+    let theme = &theme_set.themes.get("Default").ok_or_else(|| {
+        io::Error::new(
+            ErrorKind::Other,
+            "Could not load default theme (~/.config/bat/themes/Default.tmTheme)",
+        )
+    })?;
 
     // TODO: let mut syntax_set = SyntaxSet::load_defaults_nonewlines();
     let mut syntax_set = SyntaxSet::new();
@@ -210,8 +210,8 @@ fn run(matches: &ArgMatches) -> Result<()> {
 
     if let Some(files) = matches.values_of("FILE") {
         for file in files {
-            let line_changes = get_git_diff(file.to_string());
-            print_file(&options, theme, &syntax_set, file, line_changes)?;
+            let line_changes = get_git_diff(&file.to_string());
+            print_file(&options, theme, &syntax_set, file, &line_changes)?;
         }
     }
 

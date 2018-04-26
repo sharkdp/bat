@@ -14,13 +14,13 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
         } else if r > 248 {
             WHITE
         } else {
-            let fr = r as f32;
+            let fr = f32::from(r);
             (((fr - 8.) / 247.) * 24.) as u8 + 232
         }
     } else {
-        let fr = r as f32;
-        let fg = g as f32;
-        let fb = b as f32;
+        let fr = f32::from(r);
+        let fg = f32::from(g);
+        let fb = f32::from(b);
         16 + (36 * (fr / 255. * 5.) as u8) + (6 * (fg / 255. * 5.) as u8) + (fb / 255. * 5.) as u8
     }
 }
