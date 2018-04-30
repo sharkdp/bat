@@ -9,7 +9,7 @@
 
 ### Syntax highlighting
 
-`bat` supports a large number of programming and markup languages (see below):
+`bat` supports syntax highlighting for a large number of programming and markup languages:
 
 ![Syntax highlighting example](https://imgur.com/rGsdnDe.png)
 
