@@ -34,7 +34,7 @@ use console::Term;
 use directories::ProjectDirs;
 use git2::{DiffOptions, IntoCString, Repository};
 
-use syntect::dumps::{dump_to_file, from_reader};
+use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::easy::HighlightFile;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
@@ -315,6 +315,17 @@ impl HighlightingAssets {
             theme_set,
         })
     }
+
+    fn from_binary() -> Self {
+        let mut syntax_set: SyntaxSet = from_binary(include_bytes!("../assets/syntax_set"));
+        syntax_set.link_syntaxes();
+        let theme_set: ThemeSet = from_binary(include_bytes!("../assets/theme_set"));
+
+        HighlightingAssets {
+            syntax_set,
+            theme_set,
+        }
+    }
 }
 
 fn run() -> Result<()> {
@@ -357,7 +368,7 @@ fn run() -> Result<()> {
                 true_color: is_truecolor_terminal(),
             };
 
-            let assets = HighlightingAssets::from_cache()?;
+            let assets = HighlightingAssets::from_binary();
 
             let theme = assets.theme_set.themes.get("Default").ok_or_else(|| {
                 io::Error::new(
