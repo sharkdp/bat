@@ -11,11 +11,15 @@ version = "0.1.0"
 
 [dependencies]
 atty = "0.2.2"
-syntect = "2"
 ansi_term = "0.9"
 console = "0.6"
 git2 = "0.6"
 error-chain = "0.11"
+
+[dependencies.syntect]
+version = "2"
+default-features = false
+features = ["parsing", "yaml-load", "dump-load", "assets"]
 
 [dependencies.clap]
 version = "2"
