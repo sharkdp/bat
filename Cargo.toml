@@ -12,14 +12,17 @@ version = "0.1.0"
 [dependencies]
 atty = "0.2.2"
 ansi_term = "0.9"
+bincode = "1.0"
 console = "0.6"
 git2 = "0.6"
 error-chain = "0.11"
+directories = "0.9"
+lazy_static = "1.0"
 
 [dependencies.syntect]
 version = "2"
 default-features = false
-features = ["parsing", "yaml-load", "dump-load", "assets"]
+features = ["parsing", "yaml-load", "dump-load", "assets", "dump-create"]
 
 [dependencies.clap]
 version = "2"

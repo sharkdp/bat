@@ -7,9 +7,13 @@ extern crate error_chain;
 #[macro_use]
 extern crate clap;
 
+#[macro_use]
+extern crate lazy_static;
+
 extern crate ansi_term;
 extern crate atty;
 extern crate console;
+extern crate directories;
 extern crate git2;
 extern crate syntect;
 
@@ -17,6 +21,7 @@ mod terminal;
 
 use std::collections::HashMap;
 use std::env;
+use std::fs::{self, File};
 use std::io::{self, BufRead, StdoutLock, Write};
 use std::path::Path;
 use std::process;
@@ -24,15 +29,21 @@ use std::process;
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 use atty::Stream;
-use clap::{App, AppSettings, Arg, ArgMatches};
+use clap::{App, AppSettings, Arg, SubCommand};
 use console::Term;
+use directories::ProjectDirs;
 use git2::{DiffOptions, IntoCString, Repository};
 
+use syntect::dumps::{dump_to_file, from_reader};
 use syntect::easy::HighlightFile;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
 use terminal::as_terminal_escaped;
+
+lazy_static! {
+    static ref PROJECT_DIRS: ProjectDirs = ProjectDirs::from("", "", crate_name!());
+}
 
 mod errors {
     error_chain!{
@@ -197,54 +208,113 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
     Some(line_changes)
 }
 
-fn run(matches: &ArgMatches) -> Result<()> {
-    let home_dir = env::home_dir().chain_err(|| "Could not get home directory")?;
-
-    let colorterm = env::var("COLORTERM").unwrap_or_else(|_| "".into());
-
-    let options = Options {
-        true_color: colorterm == "truecolor" || colorterm == "24bit",
-    };
-
-    let theme_dir = home_dir.join(".config").join("bat").join("themes");
-    let theme_set = ThemeSet::load_from_folder(theme_dir).map_err(|_| {
-        io::Error::new(
-            io::ErrorKind::Other,
-            "Could not load themes from ~/.config/bat/themes",
-        )
-    })?;
-    let theme = &theme_set.themes.get("Default").ok_or_else(|| {
-        io::Error::new(
-            io::ErrorKind::Other,
-            "Could not load default theme (~/.config/bat/themes/Default.tmTheme)",
-        )
-    })?;
-
-    // TODO: let mut syntax_set = SyntaxSet::load_defaults_nonewlines();
-    let mut syntax_set = SyntaxSet::new();
-    let syntax_dir = home_dir.join(".config").join("bat").join("syntax");
-    let _ = syntax_set.load_syntaxes(syntax_dir, false);
-    syntax_set.load_plain_text_syntax();
-    syntax_set.link_syntaxes();
-
-    if let Some(files) = matches.values_of("FILE") {
-        for file in files {
-            let line_changes = get_git_diff(&file.to_string());
-            print_file(&options, theme, &syntax_set, file, &line_changes)?;
-        }
-    }
-
-    Ok(())
+fn is_truecolor_terminal() -> bool {
+    env::var("COLORTERM")
+        .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
+        .unwrap_or(false)
 }
 
-fn main() {
+struct HighlightingAssets {
+    pub syntax_set: SyntaxSet,
+    pub theme_set: ThemeSet,
+}
+
+impl HighlightingAssets {
+    fn from_files() -> Result<Self> {
+        let config_dir = PROJECT_DIRS.config_dir();
+
+        let theme_dir = config_dir.join("themes");
+
+        let theme_set = ThemeSet::load_from_folder(&theme_dir).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "Could not load themes from '{}'",
+                    theme_dir.to_string_lossy()
+                ),
+            )
+        })?;
+
+        let mut syntax_set = SyntaxSet::new();
+        let syntax_dir = config_dir.join("syntax");
+        let _ = syntax_set.load_syntaxes(syntax_dir, false);
+        syntax_set.load_plain_text_syntax();
+
+        Ok(HighlightingAssets {
+            syntax_set,
+            theme_set,
+        })
+    }
+
+    fn save(&self) -> Result<()> {
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let theme_set_path = cache_dir.join("theme_set");
+        let syntax_set_path = cache_dir.join("syntax_set");
+
+        let _ = fs::create_dir(cache_dir);
+
+        dump_to_file(&self.theme_set, &theme_set_path).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "Could not save theme set to {}",
+                    theme_set_path.to_string_lossy()
+                ),
+            )
+        })?;
+        println!("Wrote theme set to {}", theme_set_path.to_string_lossy());
+
+        dump_to_file(&self.syntax_set, &syntax_set_path).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!(
+                    "Could not save syntax set to {}",
+                    syntax_set_path.to_string_lossy()
+                ),
+            )
+        })?;
+        println!("Wrote syntax set to {}", syntax_set_path.to_string_lossy());
+
+        Ok(())
+    }
+
+    fn from_cache() -> Result<Self> {
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let theme_set_path = cache_dir.join("theme_set");
+        let syntax_set_path = cache_dir.join("syntax_set");
+
+        let syntax_set_file = File::open(syntax_set_path)?;
+        let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!("Could not load cached syntax set"),
+            )
+        })?;
+        syntax_set.link_syntaxes();
+
+        let theme_set_file = File::open(theme_set_path)?;
+        let theme_set: ThemeSet = from_reader(theme_set_file).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!("Could not load cached theme set"),
+            )
+        })?;
+
+        Ok(HighlightingAssets {
+            syntax_set,
+            theme_set,
+        })
+    }
+}
+
+fn run() -> Result<()> {
     let clap_color_setting = if atty::is(Stream::Stdout) {
         AppSettings::ColoredHelp
     } else {
         AppSettings::ColorNever
     };
 
-    let matches = App::new(crate_name!())
+    let app_matches = App::new(crate_name!())
         .version(crate_version!())
         .setting(clap_color_setting)
         .setting(AppSettings::DeriveDisplayOrder)
@@ -259,11 +329,47 @@ fn main() {
                 .multiple(true)
                 .empty_values(false),
         )
+        .subcommand(
+            SubCommand::with_name("init-cache")
+                .about("Load syntax definitions and themes into cache"),
+        )
         .help_message("Print this help message.")
         .version_message("Show version information.")
         .get_matches();
 
-    let result = run(&matches);
+    match app_matches.subcommand() {
+        ("init-cache", Some(_)) => {
+            let assets = HighlightingAssets::from_files()?;
+            assets.save()?;
+        }
+        _ => {
+            let options = Options {
+                true_color: is_truecolor_terminal(),
+            };
+
+            let assets = HighlightingAssets::from_cache()?;
+
+            let theme = assets.theme_set.themes.get("Default").ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("Could not find 'Default' theme"),
+                )
+            })?;
+
+            if let Some(files) = app_matches.values_of("FILE") {
+                for file in files {
+                    let line_changes = get_git_diff(&file.to_string());
+                    print_file(&options, theme, &assets.syntax_set, file, &line_changes)?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn main() {
+    let result = run();
 
     if let Err(error) = result {
         match error {
