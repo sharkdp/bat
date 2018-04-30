@@ -23,30 +23,12 @@
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for binary builds and Debian packages.
 
+### From source
+
 If you want to build to compile `bat` from source, you need Rust 1.22 or higher.
-You can then use `cargo` to build everything:
+Make sure that you have the devel-version of libopenssl installed (see instructions
+[here](https://github.com/sfackler/rust-openssl)). You can then use `cargo` to build everything:
 
 ``` bash
 cargo install bat
-```
-
-### Get themes and syntax highlighting definitions
-
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` uses Sublime Text language definitions and themes.
-
-To get a big package of languages and a Monokai-variant as a theme, run:
-
-``` bash
-mkdir -p ~/.config/bat/themes
-cd ~/.config/bat/themes
-git clone https://github.com/jonschlinkert/sublime-monokai-extended
-ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
-
-mkdir -p ~/.config/bat/syntax
-cd ~/.config/bat/syntax
-git clone https://github.com/sublimehq/Packages/
-rm -rf Packages/Markdown
-git clone https://github.com/jonschlinkert/sublime-markdown-extended
-
-bat init-cache
 ```
