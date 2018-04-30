@@ -47,4 +47,6 @@ cd ~/.config/bat/syntax
 git clone https://github.com/sublimehq/Packages/
 rm -rf Packages/Markdown
 git clone https://github.com/jonschlinkert/sublime-markdown-extended
+
+bat init-cache
 ```

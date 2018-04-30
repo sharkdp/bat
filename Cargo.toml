@@ -22,7 +22,7 @@ lazy_static = "1.0"
 [dependencies.syntect]
 version = "2"
 default-features = false
-features = ["parsing", "yaml-load", "dump-load", "assets", "dump-create"]
+features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
 [dependencies.clap]
 version = "2"

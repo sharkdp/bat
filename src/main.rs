@@ -283,20 +283,30 @@ impl HighlightingAssets {
         let theme_set_path = cache_dir.join("theme_set");
         let syntax_set_path = cache_dir.join("syntax_set");
 
-        let syntax_set_file = File::open(syntax_set_path)?;
+        let syntax_set_file = File::open(&syntax_set_path).chain_err(|| {
+            format!(
+                "Could not load cached syntax set '{}'",
+                syntax_set_path.to_string_lossy()
+            )
+        })?;
         let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("Could not load cached syntax set"),
+                format!("Could not parse cached syntax set"),
             )
         })?;
         syntax_set.link_syntaxes();
 
-        let theme_set_file = File::open(theme_set_path)?;
+        let theme_set_file = File::open(&theme_set_path).chain_err(|| {
+            format!(
+                "Could not load cached theme set '{}'",
+                theme_set_path.to_string_lossy()
+            )
+        })?;
         let theme_set: ThemeSet = from_reader(theme_set_file).map_err(|_| {
             io::Error::new(
                 io::ErrorKind::Other,
-                format!("Could not load cached theme set"),
+                format!("Could not parse cached theme set"),
             )
         })?;
 
