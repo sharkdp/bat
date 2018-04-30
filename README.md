@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/sharkdp/bat.svg?branch=master)](https://travis-ci.org/sharkdp/bat)
 [![Version info](https://img.shields.io/crates/v/bat.svg)](https://crates.io/crates/bat)
 
-*A cat(1) clone with syntax highlighting and Git integration.*
+A *cat(1)* clone with syntax highlighting and Git integration.
 
 ## Features
 
@@ -35,11 +35,11 @@ cargo install bat
 
 ## Customization
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` can read any Sublime Text language definitions and highlighting theme.
+`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` can read any Sublime Text language definition and theme.
 
-To build your own syntax-set and theme, follow these steps:
+To build your own language-set and theme, follow these steps:
 
-Create a folder with syntax highlighting theme:
+Create a folder with a syntax highlighting theme:
 ``` bash
 mkdir -p ~/.config/bat/themes
 cd ~/.config/bat/themes
