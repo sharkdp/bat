@@ -1,17 +1,23 @@
+// `error_chain!` can recurse deeply
+#![recursion_limit = "1024"]
+
+#[macro_use]
+extern crate error_chain;
+
+#[macro_use]
+extern crate clap;
+
 extern crate ansi_term;
 extern crate atty;
 extern crate console;
 extern crate git2;
 extern crate syntect;
 
-#[macro_use]
-extern crate clap;
-
 mod terminal;
 
 use std::collections::HashMap;
 use std::env;
-use std::io::{self, BufRead, ErrorKind, Result, StdoutLock, Write};
+use std::io::{self, BufRead, StdoutLock, Write};
 use std::path::Path;
 use std::process;
 
@@ -27,6 +33,16 @@ use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
 use terminal::as_terminal_escaped;
+
+mod errors {
+    error_chain!{
+        foreign_links {
+            Io(::std::io::Error);
+        }
+    }
+}
+
+use errors::*;
 
 struct Options {
     true_color: bool,
@@ -49,7 +65,7 @@ fn print_horizontal_line(
     handle: &mut StdoutLock,
     grid_char: char,
     term_width: usize,
-) -> io::Result<()> {
+) -> Result<()> {
     let hline = "─".repeat(term_width - (PANEL_WIDTH + 1));
     let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
 
@@ -64,7 +80,7 @@ fn print_file<P: AsRef<Path>>(
     syntax_set: &SyntaxSet,
     filename: P,
     line_changes: &Option<LineChanges>,
-) -> io::Result<()> {
+) -> Result<()> {
     let mut highlighter = HighlightFile::new(filename.as_ref(), syntax_set, theme)?;
 
     let stdout = io::stdout();
@@ -182,8 +198,7 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
 }
 
 fn run(matches: &ArgMatches) -> Result<()> {
-    let home_dir = env::home_dir()
-        .ok_or_else(|| io::Error::new(ErrorKind::Other, "Could not get home directory"))?;
+    let home_dir = env::home_dir().chain_err(|| "Could not get home directory")?;
 
     let colorterm = env::var("COLORTERM").unwrap_or_else(|_| "".into());
 
@@ -192,11 +207,15 @@ fn run(matches: &ArgMatches) -> Result<()> {
     };
 
     let theme_dir = home_dir.join(".config").join("bat").join("themes");
-    let theme_set = ThemeSet::load_from_folder(theme_dir)
-        .map_err(|_| io::Error::new(ErrorKind::Other, "Could not load themes"))?;
+    let theme_set = ThemeSet::load_from_folder(theme_dir).map_err(|_| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            "Could not load themes from ~/.config/bat/themes",
+        )
+    })?;
     let theme = &theme_set.themes.get("Default").ok_or_else(|| {
         io::Error::new(
-            ErrorKind::Other,
+            io::ErrorKind::Other,
             "Could not load default theme (~/.config/bat/themes/Default.tmTheme)",
         )
     })?;
@@ -246,10 +265,15 @@ fn main() {
 
     let result = run(&matches);
 
-    if let Err(e) = result {
-        if e.kind() != ErrorKind::BrokenPipe {
-            eprintln!("{}: {}", Red.paint("[bat error]"), e);
-            process::exit(1);
-        }
+    if let Err(error) = result {
+        match error {
+            Error(ErrorKind::Io(ref io_error), _)
+                if io_error.kind() == io::ErrorKind::BrokenPipe => {}
+            _ => {
+                eprintln!("{}: {}", Red.paint("[bat error]"), error);
+
+                process::exit(1);
+            }
+        };
     }
 }

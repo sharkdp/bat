@@ -15,6 +15,7 @@ syntect = "2"
 ansi_term = "0.9"
 console = "0.6"
 git2 = "0.6"
+error-chain = "0.11"
 
 [dependencies.clap]
 version = "2"
