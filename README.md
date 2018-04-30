@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/sharkdp/bat.svg?branch=master)](https://travis-ci.org/sharkdp/bat)
 [![Version info](https://img.shields.io/crates/v/bat.svg)](https://crates.io/crates/bat)
 
-*A cat(1) clone with wings.*
+*A cat(1) clone with syntax highlighting and Git integration.*
 
 ## Features
 
