@@ -12,7 +12,6 @@ version = "0.2.0"
 [dependencies]
 atty = "0.2.2"
 ansi_term = "0.9"
-bincode = "1.0"
 console = "0.6"
 git2 = "0.6"
 error-chain = "0.11"
