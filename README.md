@@ -32,3 +32,38 @@ Make sure that you have the devel-version of libopenssl installed (see instructi
 ``` bash
 cargo install bat
 ```
+
+## Customization
+
+`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` can read any Sublime Text language definitions and highlighting theme.
+
+To build your own syntax-set and theme, follow these steps:
+
+Create a folder with syntax highlighting theme:
+``` bash
+mkdir -p ~/.config/bat/themes
+cd ~/.config/bat/themes
+
+# Download a theme, for example:
+git clone https://github.com/jonschlinkert/sublime-monokai-extended
+
+# Create a 'Default.tmTheme' link
+ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
+```
+
+Create a folder with language definition files:
+``` bash
+mkdir -p ~/.config/bat/syntax
+cd ~/.config/bat/syntax
+
+# Download some language definition files, for example:
+git clone https://github.com/sublimehq/Packages/
+rm -rf Packages/Markdown
+git clone https://github.com/jonschlinkert/sublime-markdown-extended
+```
+
+Finally, use the following command to parse all these files into a binary
+cache:
+``` bash
+bat init-cache
+```

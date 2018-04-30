@@ -368,7 +368,8 @@ fn run() -> Result<()> {
                 true_color: is_truecolor_terminal(),
             };
 
-            let assets = HighlightingAssets::from_binary();
+            let assets =
+                HighlightingAssets::from_cache().unwrap_or(HighlightingAssets::from_binary());
 
             let theme = assets.theme_set.themes.get("Default").ok_or_else(|| {
                 io::Error::new(
