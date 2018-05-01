@@ -25,6 +25,8 @@ addons:
       - gcc-multilib
       # needed to build deb packages
       - fakeroot
+      # use openssl-variant of libcurl
+      - libcurl4-openssl-dev
 
 env:
   global:
