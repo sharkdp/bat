@@ -44,6 +44,9 @@ script:
   # Incorporate TARGET env var to the build and test process
   - cargo build --target $TARGET --verbose
   - cargo test --target $TARGET --verbose
+  # Run 'bat' on its own source code and the README
+  - cargo run --target $TARGET -- src/main.rs
+  - cargo run --target $TARGET -- README.md
 
 before_deploy:
   - bash ci/before_deploy.bash
