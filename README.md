@@ -35,7 +35,7 @@ makepkg -si
 
 ### From source
 
-If you want to build to compile `bat` from source, you need Rust 1.22 or higher.
+If you want to build to compile `bat` from source, you need Rust 1.24 or higher.
 Make sure that you have the devel-version of libopenssl installed (see instructions
 [here](https://github.com/sfackler/rust-openssl)). You can then use `cargo` to build everything:
 
