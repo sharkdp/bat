@@ -46,7 +46,7 @@ cargo install bat
 
 ## Customization
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` can read any [Sublime Text `.sublime-syntax` files](https://www.sublimetext.com/docs/3/syntax.html) and themes.
+`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/) library for syntax highlighting. `syntect` can read any [Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html) and theme.
 
 To build your own language-set and theme, follow these steps:
 
