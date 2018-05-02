@@ -51,6 +51,7 @@ cargo install bat
 To build your own language-set and theme, follow these steps:
 
 Create a folder with a syntax highlighting theme:
+
 ``` bash
 mkdir -p ~/.config/bat/themes
 cd ~/.config/bat/themes
@@ -63,6 +64,7 @@ ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
 ```
 
 Create a folder with language definition files:
+
 ``` bash
 mkdir -p ~/.config/bat/syntax
 cd ~/.config/bat/syntax
@@ -75,6 +77,7 @@ git clone https://github.com/jonschlinkert/sublime-markdown-extended
 
 Finally, use the following command to parse all these files into a binary
 cache:
+
 ``` bash
 bat init-cache
 ```
