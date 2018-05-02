@@ -379,9 +379,17 @@ fn run() -> Result<()> {
             })?;
 
             if let Some(files) = app_matches.values_of("FILE") {
+                let mut exit = false;
                 for file in files {
                     let line_changes = get_git_diff(&file.to_string());
-                    print_file(&options, theme, &assets.syntax_set, file, &line_changes)?;
+                    print_file(&options, theme, &assets.syntax_set, file, &line_changes)
+                        .unwrap_or_else(|e| {
+                            exit = true;
+                            eprintln!("{}: {}: {}", Red.paint("[bat error]"), file, e);
+                        });
+                }
+                if exit {
+                    process::exit(1);
                 }
             }
         }
