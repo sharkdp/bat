@@ -46,7 +46,7 @@ lazy_static! {
 }
 
 mod errors {
-    error_chain!{
+    error_chain! {
         foreign_links {
             Io(::std::io::Error);
         }
@@ -57,6 +57,9 @@ use errors::*;
 
 struct Options {
     true_color: bool,
+    file_name: bool,
+    line_number: bool,
+    git_modification_marker: bool,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -101,15 +104,17 @@ fn print_file<P: AsRef<Path>>(
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
-    print_horizontal_line(&mut handle, '┬', term_width)?;
+    if options.file_name {
+        print_horizontal_line(&mut handle, '┬', term_width)?;
 
-    writeln!(
-        handle,
-        "{}{} File {}",
-        " ".repeat(PANEL_WIDTH),
-        Fixed(GRID_COLOR).paint("│"),
-        White.bold().paint(filename.as_ref().to_string_lossy())
-    )?;
+        writeln!(
+            handle,
+            "{}{} File {}",
+            " ".repeat(PANEL_WIDTH),
+            Fixed(GRID_COLOR).paint("│"),
+            White.bold().paint(filename.as_ref().to_string_lossy())
+        )?;
+    }
 
     print_horizontal_line(&mut handle, '┼', term_width)?;
 
@@ -133,8 +138,16 @@ fn print_file<P: AsRef<Path>>(
         writeln!(
             handle,
             "{} {} {} {}",
-            Fixed(244).paint(format!("{:4}", line_nr)),
-            line_change,
+            Fixed(244).paint(if options.line_number {
+                format!("{:4}", line_nr)
+            } else {
+                "    ".to_owned()
+            }),
+            if options.git_modification_marker {
+                line_change
+            } else {
+                Style::default().paint(" ")
+            },
             Fixed(GRID_COLOR).paint("│"),
             as_terminal_escaped(&regions, options.true_color)
         )?;
@@ -350,6 +363,24 @@ fn run() -> Result<()> {
                 .multiple(true)
                 .empty_values(false),
         )
+        .arg(
+            Arg::with_name("disable-file-name")
+                .short("f")
+                .long("disable-file-name")
+                .help("Disable file name"),
+        )
+        .arg(
+            Arg::with_name("disable-line-number")
+                .short("n")
+                .long("disable-line-number")
+                .help("Disable line number"),
+        )
+        .arg(
+            Arg::with_name("disable-git-modfication-marker")
+                .short("g")
+                .long("disable-git-modfication-marker")
+                .help("Disable git modfication marker"),
+        )
         .subcommand(
             SubCommand::with_name("init-cache")
                 .about("Load syntax definitions and themes into cache"),
@@ -366,6 +397,9 @@ fn run() -> Result<()> {
         _ => {
             let options = Options {
                 true_color: is_truecolor_terminal(),
+                file_name: !app_matches.is_present("disable-file-name"),
+                line_number: !app_matches.is_present("disable-line-number"),
+                git_modification_marker: !app_matches.is_present("disable-git-modfication-marker"),
             };
 
             let assets =
