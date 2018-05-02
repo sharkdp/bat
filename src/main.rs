@@ -22,7 +22,7 @@ mod terminal;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
-use std::io::{self, BufRead, StdoutLock, Write};
+use std::io::{self, BufRead, BufReader, StdoutLock, Write};
 use std::path::Path;
 use std::process;
 
@@ -35,7 +35,7 @@ use directories::ProjectDirs;
 use git2::{DiffOptions, IntoCString, Repository};
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
-use syntect::easy::HighlightFile;
+use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
@@ -55,8 +55,9 @@ mod errors {
 
 use errors::*;
 
-struct Options {
+struct Options<'a> {
     true_color: bool,
+    language: Option<&'a str>,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -92,7 +93,14 @@ fn print_file<P: AsRef<Path>>(
     filename: P,
     line_changes: &Option<LineChanges>,
 ) -> Result<()> {
-    let mut highlighter = HighlightFile::new(filename.as_ref(), syntax_set, theme)?;
+    let reader = BufReader::new(File::open(filename.as_ref())?);
+    let syntax = match options.language {
+        Some(language) => syntax_set.syntaxes().iter()
+            .find(|syntax| syntax.name.eq_ignore_ascii_case(language)),
+        None => syntax_set.find_syntax_for_file(filename.as_ref())?,
+    };
+    let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
+    let mut highlighter = HighlightLines::new(syntax, theme);
 
     let stdout = io::stdout();
     let mut handle = stdout.lock();
@@ -113,10 +121,10 @@ fn print_file<P: AsRef<Path>>(
 
     print_horizontal_line(&mut handle, '┼', term_width)?;
 
-    for (idx, maybe_line) in highlighter.reader.lines().enumerate() {
+    for (idx, maybe_line) in reader.lines().enumerate() {
         let line_nr = idx + 1;
         let line = maybe_line.unwrap_or_else(|_| "<INVALID UTF-8>".into());
-        let regions = highlighter.highlight_lines.highlight(&line);
+        let regions = highlighter.highlight(&line);
 
         let line_change = if let Some(ref changes) = *line_changes {
             match changes.get(&(line_nr as u32)) {
@@ -344,6 +352,12 @@ fn run() -> Result<()> {
         .setting(AppSettings::DisableVersion)
         .max_term_width(90)
         .about(crate_description!())
+        .arg(Arg::with_name("language")
+            .short("l")
+            .long("language")
+            .help("Language of the file(s)")
+            .takes_value(true)
+        )
         .arg(
             Arg::with_name("FILE")
                 .help("File(s) to print")
@@ -366,6 +380,7 @@ fn run() -> Result<()> {
         _ => {
             let options = Options {
                 true_color: is_truecolor_terminal(),
+                language: app_matches.value_of("language"),
             };
 
             let assets =
