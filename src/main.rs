@@ -118,17 +118,24 @@ fn print_file<P: AsRef<Path>>(
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
-    print_horizontal_line(&mut handle, '┬', term_width)?;
+    // Show file name and bars for all but plain style
+    match options.style {
+        OptionsStyle::LineNumbers | OptionsStyle::Full => {
+            print_horizontal_line(&mut handle, '┬', term_width)?;
 
-    writeln!(
-        handle,
-        "{}{} File {}",
-        " ".repeat(PANEL_WIDTH),
-        Fixed(GRID_COLOR).paint("│"),
-        White.bold().paint(filename.as_ref().to_string_lossy())
-    )?;
+            writeln!(
+                handle,
+                "{}{} File {}",
+                " ".repeat(PANEL_WIDTH),
+                Fixed(GRID_COLOR).paint("│"),
+                White.bold().paint(filename.as_ref().to_string_lossy())
+            )?;
 
-    print_horizontal_line(&mut handle, '┼', term_width)?;
+            print_horizontal_line(&mut handle, '┼', term_width)?;
+        }
+        OptionsStyle::Plain => {}
+    };
+
 
     for (idx, maybe_line) in reader.lines().enumerate() {
         let line_nr = idx + 1;
@@ -147,23 +154,34 @@ fn print_file<P: AsRef<Path>>(
             Style::default().paint(" ")
         };
 
-        writeln!(
-            handle,
-            "{} {} {} {}",
-            Fixed(244).paint(match options.style {
-                OptionsStyle::Plain => "    ".to_owned(),
-                _ => format!("{:4}", line_nr),
-            }),
-            match options.style {
-                OptionsStyle::Full => line_change,
-                _ => Style::default().paint(" "),
-            },
-            Fixed(GRID_COLOR).paint("│"),
-            as_terminal_escaped(&regions, options.true_color)
-        )?;
+
+        match options.style {
+            // Show only content for plain style
+            OptionsStyle::Plain => writeln!(
+                handle,
+                "{}", as_terminal_escaped(&regions, options.true_color))?,
+            _ =>
+                writeln!(
+                    handle,
+                    "{} {} {} {}",
+                    Fixed(244).paint(format!("{:4}", line_nr)),
+                    // Show git modificiation markers only for full style
+                    match options.style {
+                        OptionsStyle::Full => line_change,
+                        _ => Style::default().paint(" "),
+                    },
+                    Fixed(GRID_COLOR).paint("│"),
+                    as_terminal_escaped(&regions, options.true_color)
+                )?
+        }
     }
 
-    print_horizontal_line(&mut handle, '┴', term_width)?;
+    // Show bars for all but plain style
+    match options.style {
+        OptionsStyle::LineNumbers | OptionsStyle::Full =>
+            print_horizontal_line(&mut handle, '┴', term_width)?,
+        OptionsStyle::Plain => {}
+    };
 
     Ok(())
 }
