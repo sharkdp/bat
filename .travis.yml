@@ -55,8 +55,9 @@ script:
   - cargo build --target $TARGET --verbose
   - cargo test --target $TARGET --verbose
   # Run 'bat' on its own source code and the README
-  - cargo run --target $TARGET -- src/main.rs
-  - cargo run --target $TARGET -- README.md
+  # Piping to 'cat' forces the tty check to fail so that a pager is not used
+  - cargo run --target $TARGET -- src/main.rs | cat
+  - cargo run --target $TARGET -- README.md | cat
 
 before_deploy:
   - bash ci/before_deploy.bash
