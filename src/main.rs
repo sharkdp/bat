@@ -46,7 +46,7 @@ lazy_static! {
 }
 
 mod errors {
-    error_chain!{
+    error_chain! {
         foreign_links {
             Io(::std::io::Error);
         }
@@ -55,8 +55,15 @@ mod errors {
 
 use errors::*;
 
+enum OptionsStyle {
+    Plain,
+    LineNumbers,
+    Full,
+}
+
 struct Options<'a> {
     true_color: bool,
+    style: OptionsStyle,
     language: Option<&'a str>,
 }
 
@@ -95,7 +102,9 @@ fn print_file<P: AsRef<Path>>(
 ) -> Result<()> {
     let reader = BufReader::new(File::open(filename.as_ref())?);
     let syntax = match options.language {
-        Some(language) => syntax_set.syntaxes().iter()
+        Some(language) => syntax_set
+            .syntaxes()
+            .iter()
             .find(|syntax| syntax.name.eq_ignore_ascii_case(language)),
         None => syntax_set.find_syntax_for_file(filename.as_ref())?,
     };
@@ -141,8 +150,14 @@ fn print_file<P: AsRef<Path>>(
         writeln!(
             handle,
             "{} {} {} {}",
-            Fixed(244).paint(format!("{:4}", line_nr)),
-            line_change,
+            Fixed(244).paint(match options.style {
+                OptionsStyle::Plain => "    ".to_owned(),
+                _ => format!("{:4}", line_nr),
+            }),
+            match options.style {
+                OptionsStyle::Full => line_change,
+                _ => Style::default().paint(" "),
+            },
             Fixed(GRID_COLOR).paint("│"),
             as_terminal_escaped(&regions, options.true_color)
         )?;
@@ -352,17 +367,26 @@ fn run() -> Result<()> {
         .setting(AppSettings::DisableVersion)
         .max_term_width(90)
         .about(crate_description!())
-        .arg(Arg::with_name("language")
-            .short("l")
-            .long("language")
-            .help("Language of the file(s)")
-            .takes_value(true)
+        .arg(
+            Arg::with_name("language")
+                .short("l")
+                .long("language")
+                .help("Language of the file(s)")
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("FILE")
                 .help("File(s) to print")
                 .multiple(true)
                 .empty_values(false),
+        )
+        .arg(
+            Arg::with_name("style")
+                .short("s")
+                .long("style")
+                .possible_values(&["plain", "line-numbers", "full"])
+                .default_value("full")
+                .help("Additional info to display alongwith content"),
         )
         .subcommand(
             SubCommand::with_name("init-cache")
@@ -380,6 +404,11 @@ fn run() -> Result<()> {
         _ => {
             let options = Options {
                 true_color: is_truecolor_terminal(),
+                style: match app_matches.value_of("style").unwrap() {
+                    "plain" => OptionsStyle::Plain,
+                    "line-numbers" => OptionsStyle::LineNumbers,
+                    _ => OptionsStyle::Full,
+                },
                 language: app_matches.value_of("language"),
             };
 
@@ -411,7 +440,7 @@ fn main() {
     if let Err(error) = result {
         match error {
             Error(ErrorKind::Io(ref io_error), _)
-                if io_error.kind() == io::ErrorKind::BrokenPipe => {}
+            if io_error.kind() == io::ErrorKind::BrokenPipe => {}
             _ => {
                 eprintln!("{}: {}", Red.paint("[bat error]"), error);
 
