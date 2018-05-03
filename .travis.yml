@@ -6,6 +6,11 @@ matrix:
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+    - os: linux
+      rust: stable
+      env:
+        - TARGET=x86_64-unknown-linux-musl
+        - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
     - os: osx
       rust: stable
       env: TARGET=x86_64-apple-darwin
@@ -14,6 +19,11 @@ matrix:
     - os: linux
       rust: 1.24.0
       env: TARGET=x86_64-unknown-linux-gnu
+    - os: linux
+      rust: 1.24.0
+      env:
+        - TARGET=x86_64-unknown-linux-musl
+        - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
     - os: osx
       rust: 1.24.0
       env: TARGET=x86_64-apple-darwin
@@ -23,6 +33,8 @@ addons:
     packages:
       # needed for i686-unknown-linux-gnu target
       - gcc-multilib
+      # needed for musl targets
+      - musl-tools
       # needed to build deb packages
       - fakeroot
 
