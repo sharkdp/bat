@@ -7,16 +7,20 @@ license = "MIT/Apache-2.0"
 name = "bat"
 readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
-version = "0.2.1"
+version = "0.2.2"
 
 [dependencies]
 atty = "0.2.2"
 ansi_term = "0.9"
 console = "0.6"
-git2 = "0.6"
 error-chain = "0.11"
 directories = "0.9"
 lazy_static = "1.0"
+
+[dependencies.git2]
+version = "0.6"
+default-features = false
+features = []
 
 [dependencies.syntect]
 version = "2"
