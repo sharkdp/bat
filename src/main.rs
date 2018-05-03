@@ -22,9 +22,9 @@ mod terminal;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
-use std::io::{self, BufRead, BufReader, StdoutLock, Write};
+use std::io::{self, BufRead, BufReader, Stdout, StdoutLock, Write};
 use std::path::Path;
-use std::process;
+use std::process::{self, Command, Child, Stdio};
 
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
@@ -65,6 +65,42 @@ struct Options<'a> {
     true_color: bool,
     style: OptionsStyle,
     language: Option<&'a str>,
+    interactive_terminal: bool,
+}
+
+enum OutputType<'a> {
+    Pager(Child),
+    Stdout(StdoutLock<'a>),
+}
+
+impl<'a> OutputType<'a> {
+    fn new_pager() -> Result<Self> {
+        Ok(OutputType::Pager(Command::new("less")
+            .args(&["--quit-if-one-screen", "--RAW-CONTROL-CHARS", "--no-init"])
+            .stdin(Stdio::piped())
+            .spawn()
+            .chain_err(|| "Could not spawn pager")?
+        ))
+    }
+
+    fn new_stdout(stdout: &'a Stdout) -> Self {
+        OutputType::Stdout(stdout.lock())
+    }
+
+    fn stdout(&mut self) -> Result<&mut Write> {
+        Ok(match *self {
+            OutputType::Pager(ref mut command) => command.stdin.as_mut().chain_err(|| "Could not open stdin for pager")?,
+            OutputType::Stdout(ref mut handle) => handle,
+        })
+    }
+}
+
+impl<'a> Drop for OutputType<'a> {
+    fn drop(&mut self) {
+        if let OutputType::Pager(ref mut command) = *self {
+            let _ = command.wait();
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -81,7 +117,7 @@ const PANEL_WIDTH: usize = 7;
 const GRID_COLOR: u8 = 238;
 
 fn print_horizontal_line(
-    handle: &mut StdoutLock,
+    handle: &mut Write,
     grid_char: char,
     term_width: usize,
 ) -> Result<()> {
@@ -112,7 +148,15 @@ fn print_file<P: AsRef<Path>>(
     let mut highlighter = HighlightLines::new(syntax, theme);
 
     let stdout = io::stdout();
-    let mut handle = stdout.lock();
+    let mut output_type= if options.interactive_terminal {
+        match OutputType::new_pager() {
+            Ok(pager) => pager,
+            Err(_) => OutputType::new_stdout(&stdout),
+        }
+    } else {
+        OutputType::new_stdout(&stdout)
+    };
+    let mut handle = output_type.stdout()?;
 
     let term = Term::stdout();
     let (_, term_width) = term.size();
@@ -131,7 +175,7 @@ fn print_file<P: AsRef<Path>>(
                 White.bold().paint(filename.as_ref().to_string_lossy())
             )?;
 
-            print_horizontal_line(&mut handle, '┼', term_width)?;
+            print_horizontal_line(handle, '┼', term_width)?;
         }
         OptionsStyle::Plain => {}
     };
@@ -179,7 +223,7 @@ fn print_file<P: AsRef<Path>>(
     // Show bars for all but plain style
     match options.style {
         OptionsStyle::LineNumbers | OptionsStyle::Full =>
-            print_horizontal_line(&mut handle, '┴', term_width)?,
+            print_horizontal_line(handle, '┴', term_width)?,
         OptionsStyle::Plain => {}
     };
 
@@ -370,7 +414,9 @@ impl HighlightingAssets {
 }
 
 fn run() -> Result<()> {
-    let clap_color_setting = if atty::is(Stream::Stdout) {
+    let interactive_terminal = atty::is(Stream::Stdout);
+
+    let clap_color_setting = if interactive_terminal {
         AppSettings::ColoredHelp
     } else {
         AppSettings::ColorNever
@@ -428,6 +474,7 @@ fn run() -> Result<()> {
                     _ => OptionsStyle::Full,
                 },
                 language: app_matches.value_of("language"),
+                interactive_terminal,
             };
 
             let assets =
