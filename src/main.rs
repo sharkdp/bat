@@ -55,11 +55,15 @@ mod errors {
 
 use errors::*;
 
+enum OptionsStyle {
+    Plain,
+    LineNumbers,
+    Full,
+}
+
 struct Options {
     true_color: bool,
-    file_name: bool,
-    line_number: bool,
-    git_modification_marker: bool,
+    style: OptionsStyle,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -104,17 +108,15 @@ fn print_file<P: AsRef<Path>>(
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
-    if options.file_name {
-        print_horizontal_line(&mut handle, '┬', term_width)?;
+    print_horizontal_line(&mut handle, '┬', term_width)?;
 
-        writeln!(
-            handle,
-            "{}{} File {}",
-            " ".repeat(PANEL_WIDTH),
-            Fixed(GRID_COLOR).paint("│"),
-            White.bold().paint(filename.as_ref().to_string_lossy())
-        )?;
-    }
+    writeln!(
+        handle,
+        "{}{} File {}",
+        " ".repeat(PANEL_WIDTH),
+        Fixed(GRID_COLOR).paint("│"),
+        White.bold().paint(filename.as_ref().to_string_lossy())
+    )?;
 
     print_horizontal_line(&mut handle, '┼', term_width)?;
 
@@ -138,15 +140,13 @@ fn print_file<P: AsRef<Path>>(
         writeln!(
             handle,
             "{} {} {} {}",
-            Fixed(244).paint(if options.line_number {
-                format!("{:4}", line_nr)
-            } else {
-                "    ".to_owned()
+            Fixed(244).paint(match options.style {
+                OptionsStyle::Plain => "    ".to_owned(),
+                _ => format!("{:4}", line_nr),
             }),
-            if options.git_modification_marker {
-                line_change
-            } else {
-                Style::default().paint(" ")
+            match options.style {
+                OptionsStyle::Full => line_change,
+                _ => Style::default().paint(" "),
             },
             Fixed(GRID_COLOR).paint("│"),
             as_terminal_escaped(&regions, options.true_color)
@@ -364,23 +364,12 @@ fn run() -> Result<()> {
                 .empty_values(false),
         )
         .arg(
-            Arg::with_name("disable-file-name")
-                .short("f")
-                .long("disable-file-name")
-                .help("Disable file name"),
-        )
-        .arg(
-            Arg::with_name("disable-line-number")
-                .short("n")
-                .long("disable-line-number")
-                .help("Disable line number"),
-        )
-        .arg(
-            Arg::with_name("disable-git-modfication-marker")
-                .short("g")
-                .long("disable-git-modfication-marker")
-                .help("Disable git modfication marker"),
-        )
+            Arg::with_name("style")
+                .short("s")
+                .long("style")
+                .possible_values(&["plain", "line-numbers", "full"])
+                .default_value("full")
+                .help("Additional info to display alongwith content"))
         .subcommand(
             SubCommand::with_name("init-cache")
                 .about("Load syntax definitions and themes into cache"),
@@ -397,9 +386,11 @@ fn run() -> Result<()> {
         _ => {
             let options = Options {
                 true_color: is_truecolor_terminal(),
-                file_name: !app_matches.is_present("disable-file-name"),
-                line_number: !app_matches.is_present("disable-line-number"),
-                git_modification_marker: !app_matches.is_present("disable-git-modfication-marker"),
+                style: match app_matches.value_of("style").unwrap() {
+                    "plain" => OptionsStyle::Plain,
+                    "line-numbers" => OptionsStyle::LineNumbers,
+                    _ => OptionsStyle::Full
+                },
             };
 
             let assets =
@@ -430,7 +421,7 @@ fn main() {
     if let Err(error) = result {
         match error {
             Error(ErrorKind::Io(ref io_error), _)
-                if io_error.kind() == io::ErrorKind::BrokenPipe => {}
+            if io_error.kind() == io::ErrorKind::BrokenPipe => {}
             _ => {
                 eprintln!("{}: {}", Red.paint("[bat error]"), error);
 
