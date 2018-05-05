@@ -1,5 +1,6 @@
 use std::fmt::Write;
 
+use ansi_term::Style;
 use ansi_term::Colour::{Fixed, RGB};
 use syntect::highlighting;
 
@@ -25,14 +26,16 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
     }
 }
 
-pub fn as_terminal_escaped(v: &[(highlighting::Style, &str)], true_color: bool) -> String {
+pub fn as_terminal_escaped(v: &[(highlighting::Style, &str)], true_color: bool, colored: bool) -> String {
     let mut s: String = String::new();
     for &(ref style, text) in v.iter() {
-        let style = if true_color {
-            RGB(style.foreground.r, style.foreground.g, style.foreground.b)
+        let style = if !colored {
+            Style::default()
+        } else if true_color {
+            RGB(style.foreground.r, style.foreground.g, style.foreground.b).normal()
         } else {
             let ansi = rgb2ansi(style.foreground.r, style.foreground.g, style.foreground.b);
-            Fixed(ansi)
+            Fixed(ansi).normal()
         };
 
         write!(s, "{}", style.paint(text)).unwrap();
