@@ -57,6 +57,7 @@ use errors::*;
 
 enum OptionsStyle {
     Plain,
+    LineChanges,
     LineNumbers,
     Full,
 }
@@ -162,7 +163,7 @@ fn print_file<P: AsRef<Path>>(
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
-    // Show file name and bars for all but plain style
+    // Show file name and bars for line-numbers and full styles
     match options.style {
         OptionsStyle::LineNumbers | OptionsStyle::Full => {
             print_horizontal_line(&mut handle, '┬', term_width)?;
@@ -177,7 +178,7 @@ fn print_file<P: AsRef<Path>>(
 
             print_horizontal_line(handle, '┼', term_width)?;
         }
-        OptionsStyle::Plain => {}
+        OptionsStyle::LineChanges | OptionsStyle::Plain => {}
     };
 
 
@@ -204,6 +205,13 @@ fn print_file<P: AsRef<Path>>(
             OptionsStyle::Plain => writeln!(
                 handle,
                 "{}", as_terminal_escaped(&regions, options.true_color))?,
+            // Show content and git diff for line-changes style
+            OptionsStyle::LineChanges => writeln!(
+                handle,
+                "{} {}",
+                line_change,
+                as_terminal_escaped(&regions, options.true_color)
+            )?,
             _ =>
                 writeln!(
                     handle,
@@ -224,7 +232,7 @@ fn print_file<P: AsRef<Path>>(
     match options.style {
         OptionsStyle::LineNumbers | OptionsStyle::Full =>
             print_horizontal_line(handle, '┴', term_width)?,
-        OptionsStyle::Plain => {}
+        OptionsStyle::LineChanges | OptionsStyle::Plain => {}
     };
 
     Ok(())
@@ -448,7 +456,7 @@ fn run() -> Result<()> {
             Arg::with_name("style")
                 .short("s")
                 .long("style")
-                .possible_values(&["plain", "line-numbers", "full"])
+                .possible_values(&["plain", "line-changes", "line-numbers", "full"])
                 .default_value("full")
                 .help("Additional info to display alongwith content"),
         )
@@ -470,6 +478,7 @@ fn run() -> Result<()> {
                 true_color: is_truecolor_terminal(),
                 style: match app_matches.value_of("style").unwrap() {
                     "plain" => OptionsStyle::Plain,
+                    "line-changes" => OptionsStyle::LineChanges,
                     "line-numbers" => OptionsStyle::LineNumbers,
                     _ => OptionsStyle::Full,
                 },
