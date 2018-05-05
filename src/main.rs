@@ -198,7 +198,6 @@ fn print_file<P: AsRef<Path>>(
             Style::default().paint(" ")
         };
 
-
         match options.style {
             // Show only content for plain style
             OptionsStyle::Plain => writeln!(
@@ -231,13 +230,16 @@ fn print_file<P: AsRef<Path>>(
 }
 
 fn get_git_diff(filename: &str) -> Option<LineChanges> {
-    let repo = Repository::open_from_env().ok()?;
+    let repo = Repository::discover(Path::new(&filename)).ok()?;
     let workdir = repo.workdir()?;
-    let current_dir = env::current_dir().ok()?;
-    let filepath = current_dir.join(Path::new(&filename));
+    let absolute_file_path = workdir.join(Path::new(&filename));
+    let relative_file_path = absolute_file_path.strip_prefix(workdir).ok()?;
 
     let mut diff_options = DiffOptions::new();
-    let pathspec = format!("*{}", filename).into_c_string().ok()?;
+    let pathspec = format!("*{}", relative_file_path.display())
+        .into_c_string()
+        .ok()?;
+    // GIT pathspec uses relative path
     diff_options.pathspec(pathspec);
     diff_options.context_lines(0);
 
@@ -259,7 +261,7 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
         Some(&mut |delta, hunk| {
             let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
 
-            if filepath != workdir.join(path) {
+            if relative_file_path != path {
                 return false;
             }
 
