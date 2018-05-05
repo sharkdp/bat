@@ -66,6 +66,7 @@ struct Options<'a> {
     style: OptionsStyle,
     language: Option<&'a str>,
     interactive_terminal: bool,
+    colored_output: bool,
 }
 
 enum OutputType<'a> {
@@ -115,16 +116,45 @@ type LineChanges = HashMap<u32, LineChange>;
 
 const PANEL_WIDTH: usize = 7;
 const GRID_COLOR: u8 = 238;
+const LINE_NUMBER_COLOR: u8 = 244;
+
+#[derive(Default)]
+struct Colors {
+    grid: Style,
+    filename: Style,
+    git_added: Style,
+    git_removed: Style,
+    git_modified: Style,
+    line_number: Style,
+}
+
+impl Colors {
+    fn plain() -> Self {
+        Colors::default()
+    }
+
+    fn colored() -> Self {
+        Colors {
+            grid: Fixed(GRID_COLOR).normal(),
+            filename: White.bold(),
+            git_added: Green.normal(),
+            git_removed: Red.normal(),
+            git_modified: Yellow.normal(),
+            line_number: Fixed(LINE_NUMBER_COLOR).normal(),
+        }
+    }
+}
 
 fn print_horizontal_line(
     handle: &mut Write,
+    grid_color: &Style,
     grid_char: char,
     term_width: usize,
 ) -> Result<()> {
     let hline = "─".repeat(term_width - (PANEL_WIDTH + 1));
     let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
 
-    writeln!(handle, "{}", Fixed(GRID_COLOR).paint(hline))?;
+    writeln!(handle, "{}", grid_color.paint(hline))?;
 
     Ok(())
 }
@@ -144,6 +174,7 @@ fn print_file<P: AsRef<Path>>(
             .find(|syntax| syntax.name.eq_ignore_ascii_case(language)),
         None => syntax_set.find_syntax_for_file(filename.as_ref())?,
     };
+
     let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
     let mut highlighter = HighlightLines::new(syntax, theme);
 
@@ -156,26 +187,32 @@ fn print_file<P: AsRef<Path>>(
     } else {
         OutputType::new_stdout(&stdout)
     };
-    let mut handle = output_type.stdout()?;
+    let handle = output_type.stdout()?;
 
     let term = Term::stdout();
     let (_, term_width) = term.size();
     let term_width = term_width as usize;
 
+    let colors = if options.colored_output {
+        Colors::colored()
+    } else {
+        Colors::plain()
+    };
+
     // Show file name and bars for all but plain style
     match options.style {
         OptionsStyle::LineNumbers | OptionsStyle::Full => {
-            print_horizontal_line(&mut handle, '┬', term_width)?;
+            print_horizontal_line(handle, &colors.grid, '┬', term_width)?;
 
             writeln!(
                 handle,
                 "{}{} File {}",
                 " ".repeat(PANEL_WIDTH),
-                Fixed(GRID_COLOR).paint("│"),
-                White.bold().paint(filename.as_ref().to_string_lossy())
+                colors.grid.paint("│"),
+                colors.filename.paint(filename.as_ref().to_string_lossy())
             )?;
 
-            print_horizontal_line(handle, '┼', term_width)?;
+            print_horizontal_line(handle, &colors.grid, '┼', term_width)?;
         }
         OptionsStyle::Plain => {}
     };
@@ -188,10 +225,10 @@ fn print_file<P: AsRef<Path>>(
 
         let line_change = if let Some(ref changes) = *line_changes {
             match changes.get(&(line_nr as u32)) {
-                Some(&LineChange::Added) => Green.paint("+"),
-                Some(&LineChange::RemovedAbove) => Red.paint("‾"),
-                Some(&LineChange::RemovedBelow) => Red.paint("_"),
-                Some(&LineChange::Modified) => Yellow.paint("~"),
+                Some(&LineChange::Added) => colors.git_added.paint("+"),
+                Some(&LineChange::RemovedAbove) => colors.git_removed.paint("‾"),
+                Some(&LineChange::RemovedBelow) => colors.git_removed.paint("_"),
+                Some(&LineChange::Modified) => colors.git_modified.paint("~"),
                 _ => Style::default().paint(" "),
             }
         } else {
@@ -202,19 +239,19 @@ fn print_file<P: AsRef<Path>>(
             // Show only content for plain style
             OptionsStyle::Plain => writeln!(
                 handle,
-                "{}", as_terminal_escaped(&regions, options.true_color))?,
+                "{}", as_terminal_escaped(&regions, options.true_color, options.colored_output))?,
             _ =>
                 writeln!(
                     handle,
                     "{} {} {} {}",
-                    Fixed(244).paint(format!("{:4}", line_nr)),
-                    // Show git modificiation markers only for full style
+                    colors.line_number.paint(format!("{:4}", line_nr)),
+                    // Show git modification markers only for full style
                     match options.style {
                         OptionsStyle::Full => line_change,
                         _ => Style::default().paint(" "),
                     },
-                    Fixed(GRID_COLOR).paint("│"),
-                    as_terminal_escaped(&regions, options.true_color)
+                    colors.grid.paint("│"),
+                    as_terminal_escaped(&regions, options.true_color, options.colored_output)
                 )?
         }
     }
@@ -222,7 +259,7 @@ fn print_file<P: AsRef<Path>>(
     // Show bars for all but plain style
     match options.style {
         OptionsStyle::LineNumbers | OptionsStyle::Full =>
-            print_horizontal_line(handle, '┴', term_width)?,
+            print_horizontal_line(handle, &colors.grid, '┴', term_width)?,
         OptionsStyle::Plain => {}
     };
 
@@ -448,7 +485,16 @@ fn run() -> Result<()> {
                 .long("style")
                 .possible_values(&["plain", "line-numbers", "full"])
                 .default_value("full")
-                .help("Additional info to display alongwith content"),
+                .help("Additional info to display along with content"),
+        )
+        .arg(
+            Arg::with_name("color")
+                .short("c")
+                .long("color")
+                .takes_value(true)
+                .possible_values(&["auto", "never", "always"])
+                .default_value("auto")
+                .help("When to use colors")
         )
         .subcommand(
             SubCommand::with_name("init-cache")
@@ -473,6 +519,11 @@ fn run() -> Result<()> {
                 },
                 language: app_matches.value_of("language"),
                 interactive_terminal,
+                colored_output: match app_matches.value_of("color") {
+                    Some("always") => true,
+                    Some("never") => false,
+                    _ => interactive_terminal,
+                },
             };
 
             let assets =
