@@ -470,7 +470,7 @@ fn run() -> Result<()> {
             Arg::with_name("language")
                 .short("l")
                 .long("language")
-                .help("Language of the file(s)")
+                .help("Set the language for highlighting")
                 .takes_value(true),
         )
         .arg(
@@ -481,7 +481,6 @@ fn run() -> Result<()> {
         )
         .arg(
             Arg::with_name("style")
-                .short("s")
                 .long("style")
                 .possible_values(&["auto", "plain", "line-numbers", "full"])
                 .default_value("auto")
@@ -489,7 +488,6 @@ fn run() -> Result<()> {
         )
         .arg(
             Arg::with_name("color")
-                .short("c")
                 .long("color")
                 .takes_value(true)
                 .possible_values(&["auto", "never", "always"])
