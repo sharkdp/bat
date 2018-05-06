@@ -170,10 +170,7 @@ fn print_file<P: AsRef<Path>>(
 ) -> Result<()> {
     let reader = BufReader::new(File::open(filename.as_ref())?);
     let syntax = match options.language {
-        Some(language) => syntax_set
-            .syntaxes()
-            .iter()
-            .find(|syntax| syntax.name.eq_ignore_ascii_case(language)),
+        Some(language) => syntax_set.find_syntax_by_token(language),
         None => syntax_set.find_syntax_for_file(filename.as_ref())?,
     };
 
