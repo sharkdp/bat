@@ -19,6 +19,7 @@ if [ ! -e "$SYNTAX_FOLDER" ]; then
         git clone https://github.com/sublimehq/Packages/
         rm -rf Packages/Markdown
         git clone https://github.com/jonschlinkert/sublime-markdown-extended
+        git clone https://github.com/princemaple/elixir-sublime-syntax/
     )
 fi
 
