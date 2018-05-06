@@ -75,7 +75,7 @@ enum OutputType<'a> {
 }
 
 impl<'a> OutputType<'a> {
-    fn new_pager() -> Result<Self> {
+    fn pager() -> Result<Self> {
         Ok(OutputType::Pager(Command::new("less")
             .args(&["--quit-if-one-screen", "--RAW-CONTROL-CHARS", "--no-init"])
             .stdin(Stdio::piped())
@@ -83,11 +83,11 @@ impl<'a> OutputType<'a> {
             .chain_err(|| "Could not spawn pager")?))
     }
 
-    fn new_stdout(stdout: &'a Stdout) -> Self {
+    fn stdout(stdout: &'a Stdout) -> Self {
         OutputType::Stdout(stdout.lock())
     }
 
-    fn stdout(&mut self) -> Result<&mut Write> {
+    fn handle(&mut self) -> Result<&mut Write> {
         Ok(match *self {
             OutputType::Pager(ref mut command) => command
                 .stdin
@@ -165,6 +165,7 @@ fn print_file<P: AsRef<Path>>(
     options: &Options,
     theme: &Theme,
     syntax_set: &SyntaxSet,
+    handle: &mut Write,
     filename: P,
     line_changes: &Option<LineChanges>,
 ) -> Result<()> {
@@ -176,17 +177,6 @@ fn print_file<P: AsRef<Path>>(
 
     let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
     let mut highlighter = HighlightLines::new(syntax, theme);
-
-    let stdout = io::stdout();
-    let mut output_type = if options.interactive_terminal {
-        match OutputType::new_pager() {
-            Ok(pager) => pager,
-            Err(_) => OutputType::new_stdout(&stdout),
-        }
-    } else {
-        OutputType::new_stdout(&stdout)
-    };
-    let handle = output_type.stdout()?;
 
     let term = Term::stdout();
     let (_, term_width) = term.size();
@@ -326,6 +316,17 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
     );
 
     Some(line_changes)
+}
+
+fn get_output_type(stdout: &Stdout, interactive_terminal: bool) -> OutputType {
+    if interactive_terminal {
+        match OutputType::pager() {
+            Ok(pager) => pager,
+            Err(_) => OutputType::stdout(&stdout),
+        }
+    } else {
+        OutputType::stdout(&stdout)
+    }
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -540,9 +541,19 @@ fn run() -> Result<()> {
             })?;
 
             if let Some(files) = app_matches.values_of("FILE") {
+                let stdout = io::stdout();
+                let mut output_type = get_output_type(&stdout, options.interactive_terminal);
+                let handle = output_type.handle()?;
                 for file in files {
                     let line_changes = get_git_diff(&file.to_string());
-                    print_file(&options, theme, &assets.syntax_set, file, &line_changes)?;
+                    print_file(
+                        &options,
+                        theme,
+                        &assets.syntax_set,
+                        handle,
+                        file,
+                        &line_changes,
+                    )?;
                 }
             }
         }
