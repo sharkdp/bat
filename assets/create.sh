@@ -17,9 +17,17 @@ if [ ! -e "$SYNTAX_FOLDER" ]; then
     (
         cd "$SYNTAX_FOLDER"
         git clone https://github.com/sublimehq/Packages/
+
+        # Patch JavaScript syntax
+        sed -i -e 's/{{identifier_break}}+/{{identifier_break}}/' Packages/JavaScript/JavaScript.sublime-syntax
+
+        # Use extended Markdown syntax
         rm -rf Packages/Markdown
         git clone https://github.com/jonschlinkert/sublime-markdown-extended
+
+        # Add additional sxntax definitions
         git clone https://github.com/princemaple/elixir-sublime-syntax/
+        git clone https://github.com/sharkdp/sublime_toml_highlighting
     )
 fi
 
