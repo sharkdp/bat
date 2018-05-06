@@ -24,7 +24,7 @@ use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Stdout, StdoutLock, Write};
 use std::path::Path;
-use std::process::{self, Command, Child, Stdio};
+use std::process::{self, Child, Command, Stdio};
 
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
@@ -80,8 +80,7 @@ impl<'a> OutputType<'a> {
             .args(&["--quit-if-one-screen", "--RAW-CONTROL-CHARS", "--no-init"])
             .stdin(Stdio::piped())
             .spawn()
-            .chain_err(|| "Could not spawn pager")?
-        ))
+            .chain_err(|| "Could not spawn pager")?))
     }
 
     fn new_stdout(stdout: &'a Stdout) -> Self {
@@ -90,7 +89,10 @@ impl<'a> OutputType<'a> {
 
     fn stdout(&mut self) -> Result<&mut Write> {
         Ok(match *self {
-            OutputType::Pager(ref mut command) => command.stdin.as_mut().chain_err(|| "Could not open stdin for pager")?,
+            OutputType::Pager(ref mut command) => command
+                .stdin
+                .as_mut()
+                .chain_err(|| "Could not open stdin for pager")?,
             OutputType::Stdout(ref mut handle) => handle,
         })
     }
@@ -179,7 +181,7 @@ fn print_file<P: AsRef<Path>>(
     let mut highlighter = HighlightLines::new(syntax, theme);
 
     let stdout = io::stdout();
-    let mut output_type= if options.interactive_terminal {
+    let mut output_type = if options.interactive_terminal {
         match OutputType::new_pager() {
             Ok(pager) => pager,
             Err(_) => OutputType::new_stdout(&stdout),
@@ -217,7 +219,6 @@ fn print_file<P: AsRef<Path>>(
         OptionsStyle::Plain => {}
     };
 
-
     for (idx, maybe_line) in reader.lines().enumerate() {
         let line_nr = idx + 1;
         let line = maybe_line.unwrap_or_else(|_| "<INVALID UTF-8>".into());
@@ -239,27 +240,29 @@ fn print_file<P: AsRef<Path>>(
             // Show only content for plain style
             OptionsStyle::Plain => writeln!(
                 handle,
-                "{}", as_terminal_escaped(&regions, options.true_color, options.colored_output))?,
-            _ =>
-                writeln!(
-                    handle,
-                    "{} {} {} {}",
-                    colors.line_number.paint(format!("{:4}", line_nr)),
-                    // Show git modification markers only for full style
-                    match options.style {
-                        OptionsStyle::Full => line_change,
-                        _ => Style::default().paint(" "),
-                    },
-                    colors.grid.paint("│"),
-                    as_terminal_escaped(&regions, options.true_color, options.colored_output)
-                )?
+                "{}",
+                as_terminal_escaped(&regions, options.true_color, options.colored_output)
+            )?,
+            _ => writeln!(
+                handle,
+                "{} {} {} {}",
+                colors.line_number.paint(format!("{:4}", line_nr)),
+                // Show git modification markers only for full style
+                match options.style {
+                    OptionsStyle::Full => line_change,
+                    _ => Style::default().paint(" "),
+                },
+                colors.grid.paint("│"),
+                as_terminal_escaped(&regions, options.true_color, options.colored_output)
+            )?,
         }
     }
 
     // Show bars for all but plain style
     match options.style {
-        OptionsStyle::LineNumbers | OptionsStyle::Full =>
-            print_horizontal_line(handle, &colors.grid, '┴', term_width)?,
+        OptionsStyle::LineNumbers | OptionsStyle::Full => {
+            print_horizontal_line(handle, &colors.grid, '┴', term_width)?
+        }
         OptionsStyle::Plain => {}
     };
 
@@ -494,7 +497,7 @@ fn run() -> Result<()> {
                 .takes_value(true)
                 .possible_values(&["auto", "never", "always"])
                 .default_value("auto")
-                .help("When to use colors")
+                .help("When to use colors"),
         )
         .subcommand(
             SubCommand::with_name("init-cache")
@@ -554,7 +557,7 @@ fn main() {
     if let Err(error) = result {
         match error {
             Error(ErrorKind::Io(ref io_error), _)
-            if io_error.kind() == io::ErrorKind::BrokenPipe => {}
+                if io_error.kind() == io::ErrorKind::BrokenPipe => {}
             _ => {
                 eprintln!("{}: {}", Red.paint("[bat error]"), error);
 

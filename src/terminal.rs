@@ -1,7 +1,7 @@
 use std::fmt::Write;
 
-use ansi_term::Style;
 use ansi_term::Colour::{Fixed, RGB};
+use ansi_term::Style;
 use syntect::highlighting;
 
 /// Approximate a 24 bit color value by a 8 bit ANSI code
@@ -26,7 +26,11 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
     }
 }
 
-pub fn as_terminal_escaped(v: &[(highlighting::Style, &str)], true_color: bool, colored: bool) -> String {
+pub fn as_terminal_escaped(
+    v: &[(highlighting::Style, &str)],
+    true_color: bool,
+    colored: bool,
+) -> String {
     let mut s: String = String::new();
     for &(ref style, text) in v.iter() {
         let style = if !colored {
