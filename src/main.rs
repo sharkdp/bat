@@ -14,6 +14,7 @@ extern crate ansi_term;
 extern crate atty;
 extern crate console;
 extern crate directories;
+extern crate either;
 extern crate git2;
 extern crate syntect;
 
@@ -26,6 +27,7 @@ use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{self, Child, Command, Stdio};
+use std::str::FromStr;
 
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
@@ -35,6 +37,7 @@ use ansi_term::Style;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgGroup, SubCommand};
 use directories::ProjectDirs;
+use either::Either;
 use git2::{DiffOptions, IntoCString, Repository};
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
@@ -53,20 +56,79 @@ mod errors {
         foreign_links {
             Io(::std::io::Error);
         }
+
+        errors {
+            NoCorrectStylesSpecified {
+                description("no correct styles specified")
+            }
+
+            UnknownStyleName(name: String) {
+                description("unknown style name")
+                display("unknown style name: '{}'", name)
+            }
+        }
     }
 }
 
 use errors::*;
 
-pub enum OptionsStyle {
-    Plain,
-    LineNumbers,
+#[derive(Debug, Eq, PartialEq)]
+pub enum OutputComponent {
+    Changes,
+    Grid,
+    Header,
+    Numbers,
+}
+
+impl FromStr for OutputComponent {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "changes" => Ok(OutputComponent::Changes),
+            "grid" => Ok(OutputComponent::Grid),
+            "header" => Ok(OutputComponent::Header),
+            "numbers" => Ok(OutputComponent::Numbers),
+            _ => Err(ErrorKind::UnknownStyleName(s.to_owned()).into()),
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq)]
+enum PredefinedStyle {
     Full,
+    Plain,
+}
+
+impl PredefinedStyle {
+    fn components(&self) -> &'static [OutputComponent] {
+        match *self {
+            PredefinedStyle::Full => &[
+                OutputComponent::Changes,
+                OutputComponent::Grid,
+                OutputComponent::Header,
+                OutputComponent::Numbers,
+            ],
+            PredefinedStyle::Plain => &[],
+        }
+    }
+}
+
+impl FromStr for PredefinedStyle {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "full" => Ok(PredefinedStyle::Full),
+            "plain" => Ok(PredefinedStyle::Plain),
+            _ => Err(ErrorKind::UnknownStyleName(s.to_owned()).into()),
+        }
+    }
 }
 
 pub struct Options<'a> {
     pub true_color: bool,
-    pub style: OptionsStyle,
+    pub output_components: &'a [OutputComponent],
     pub language: Option<&'a str>,
     pub colored_output: bool,
     pub paging: bool,
@@ -456,8 +518,10 @@ fn run() -> Result<()> {
         .arg(
             Arg::with_name("style")
                 .long("style")
-                .possible_values(&["auto", "plain", "line-numbers", "full"])
-                .default_value("auto")
+                .use_delimiter(true)
+                .takes_value(true)
+                .possible_values(&["full", "plain", "changes", "header", "grid", "numbers"])
+                .default_value("full")
                 .help("Additional info to display along with content"),
         )
         .arg(
@@ -545,18 +609,63 @@ fn run() -> Result<()> {
                 })
                 .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
 
+            // Split the user-supplied parameter on commas (','), then go over each part and map it
+            // to either a predefined style or a simple output style. Once this mapping is done,
+            // split it up into two lists: one for the matched predefined styles and one for the
+            // simple output styles.
+            let (_predefined_styles, _output_components): (Vec<_>, Vec<_>) = app_matches
+                .values_of("style")
+                .unwrap()
+                .map(|s| {
+                    let predefined_style = PredefinedStyle::from_str(s);
+                    if let Ok(style) = predefined_style {
+                        Some(Either::Left(style))
+                    } else {
+                        match OutputComponent::from_str(s) {
+                            Ok(style) => Some(Either::Right(style)),
+                            Err(error) => {
+                                eprintln!("{}: {}", Red.paint("[bat error]"), error);
+                                None
+                            }
+                        }
+                    }
+                })
+                .filter_map(|s| s)
+                .partition(|style| match *style {
+                    Either::Left(_) => true,
+                    Either::Right(_) => false,
+                });
+
+            // Once we have the two lists of predefined styles and simple output styles, we take the
+            // first matched predefined style and use that as our style, discarding every other
+            // predefined or simple output style. If we have no predefined styles though, we take
+            // all matched simple output styles and pass those to the `Options` struct.
+            let output_components: Vec<OutputComponent>;
+            let output_components = if let Some(predefined_style) = _predefined_styles
+                .into_iter()
+                .map(|e| e.left().unwrap())
+                .next()
+            {
+                predefined_style.components()
+            } else {
+                output_components = _output_components
+                    .into_iter()
+                    .map(|e| e.right().unwrap())
+                    .collect::<Vec<_>>();
+
+                // If we are in this else-block, `output_components` is empty and the requested style
+                // wasn't the empty string, the user supplied only wrong style arguments. In this
+                // case we inform them about this.
+                if output_components.is_empty() && app_matches.value_of("style").unwrap() != "" {
+                    return Err(ErrorKind::NoCorrectStylesSpecified.into());
+                }
+
+                &output_components
+            };
+
             let options = Options {
                 true_color: is_truecolor_terminal(),
-                style: match app_matches.value_of("style") {
-                    Some("plain") => OptionsStyle::Plain,
-                    Some("line-numbers") => OptionsStyle::LineNumbers,
-                    Some("full") => OptionsStyle::Full,
-                    Some("auto") | _ => if interactive_terminal {
-                        OptionsStyle::Full
-                    } else {
-                        OptionsStyle::Plain
-                    },
-                },
+                output_components,
                 language: app_matches.value_of("language"),
                 colored_output: match app_matches.value_of("color") {
                     Some("always") => true,

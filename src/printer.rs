@@ -1,9 +1,10 @@
 use ansi_term::Style;
 use errors::*;
+use std::borrow::Cow;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use {Colors, LineChange, LineChanges, Options, OptionsStyle};
+use {Colors, LineChange, LineChanges, Options, OutputComponent};
 
 const PANEL_WIDTH: usize = 7;
 
@@ -31,32 +32,48 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
-        match self.options.style {
-            OptionsStyle::Full => {}
-            _ => return Ok(()),
+        if !self.options
+            .output_components
+            .contains(&OutputComponent::Header)
+        {
+            return Ok(());
         }
 
-        self.print_horizontal_line('┬')?;
+        if self.options
+            .output_components
+            .contains(&OutputComponent::Grid)
+        {
+            self.print_horizontal_line('┬')?;
 
-        write!(
-            self.handle,
-            "{}{} ",
-            " ".repeat(PANEL_WIDTH),
-            self.colors.grid.paint("│"),
-        )?;
+            write!(
+                self.handle,
+                "{}{} ",
+                " ".repeat(PANEL_WIDTH),
+                self.colors.grid.paint("│"),
+            )?;
 
-        writeln!(
-            self.handle,
-            "{}{}",
-            filename.map_or("", |_| "File: "),
-            self.colors.filename.paint(filename.unwrap_or("STDIN"))
-        )?;
+            writeln!(
+                self.handle,
+                "{}{}",
+                filename.map_or("", |_| "File: "),
+                self.colors.filename.paint(filename.unwrap_or("STDIN"))
+            )?;
 
-        self.print_horizontal_line('┼')
+            self.print_horizontal_line('┼')
+        } else {
+            writeln!(
+                self.handle,
+                "File {}",
+                self.colors.filename.paint(filename.unwrap_or("STDIN"))
+            ).map_err(Into::into)
+        }
     }
 
     pub fn print_footer(&mut self) -> Result<()> {
-        if let OptionsStyle::Full = self.options.style {
+        if self.options
+            .output_components
+            .contains(&OutputComponent::Grid)
+        {
             self.print_horizontal_line('┴')
         } else {
             Ok(())
@@ -72,19 +89,28 @@ impl<'a> Printer<'a> {
             self.print_line_number(line_number),
             self.print_git_marker(line_number),
             self.print_line_border(),
-            Some(as_terminal_escaped(
-                &regions,
-                self.options.true_color,
-                self.options.colored_output,
-            )),
+            Some(
+                as_terminal_escaped(
+                    &regions,
+                    self.options.true_color,
+                    self.options.colored_output,
+                ).into(),
+            ),
         ];
 
+        let grid_requested = self.options
+            .output_components
+            .contains(&OutputComponent::Grid);
         write!(
             self.handle,
             "{}",
             decorations
                 .into_iter()
-                .filter_map(|dec| dec)
+                .filter_map(|dec| if grid_requested {
+                    Some(dec.unwrap_or(" ".into()))
+                } else {
+                    dec
+                })
                 .collect::<Vec<_>>()
                 .join(" ")
         )?;
@@ -92,46 +118,66 @@ impl<'a> Printer<'a> {
         Ok(())
     }
 
-    fn print_line_number(&self, line_number: usize) -> Option<String> {
-        if let OptionsStyle::Plain = self.options.style {
-            return None;
-        }
-
-        Some(
-            self.colors
-                .line_number
-                .paint(format!("{:4}", line_number))
-                .to_string(),
-        )
-    }
-
-    fn print_git_marker(&self, line_number: usize) -> Option<String> {
-        match self.options.style {
-            OptionsStyle::Full => {}
-            _ => return None,
-        }
-
-        let marker = if let Some(ref changes) = self.line_changes {
-            match changes.get(&(line_number as u32)) {
-                Some(&LineChange::Added) => self.colors.git_added.paint("+"),
-                Some(&LineChange::RemovedAbove) => self.colors.git_removed.paint("‾"),
-                Some(&LineChange::RemovedBelow) => self.colors.git_removed.paint("_"),
-                Some(&LineChange::Modified) => self.colors.git_modified.paint("~"),
-                _ => Style::default().paint(" "),
-            }
+    fn print_line_number<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
+        if self.options
+            .output_components
+            .contains(&OutputComponent::Numbers)
+        {
+            Some(
+                self.colors
+                    .line_number
+                    .paint(format!("{:4}", line_number))
+                    .to_string()
+                    .into(),
+            )
+        } else if self.options
+            .output_components
+            .contains(&OutputComponent::Grid)
+        {
+            Some("    ".into())
         } else {
-            Style::default().paint(" ")
-        };
-
-        Some(marker.to_string())
+            None
+        }
     }
 
-    fn print_line_border(&self) -> Option<String> {
-        if let OptionsStyle::Plain = self.options.style {
-            return None;
+    fn print_git_marker<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
+        if self.options
+            .output_components
+            .contains(&OutputComponent::Changes)
+        {
+            Some(
+                if let Some(ref changes) = self.line_changes {
+                    match changes.get(&(line_number as u32)) {
+                        Some(&LineChange::Added) => self.colors.git_added.paint("+"),
+                        Some(&LineChange::RemovedAbove) => self.colors.git_removed.paint("‾"),
+                        Some(&LineChange::RemovedBelow) => self.colors.git_removed.paint("_"),
+                        Some(&LineChange::Modified) => self.colors.git_modified.paint("~"),
+                        _ => Style::default().paint(" "),
+                    }
+                } else {
+                    Style::default().paint(" ")
+                }.to_string()
+                    .into(),
+            )
+        } else if self.options
+            .output_components
+            .contains(&OutputComponent::Grid)
+        {
+            Some(" ".into())
+        } else {
+            None
         }
+    }
 
-        Some(self.colors.grid.paint("│").to_string())
+    fn print_line_border<'s>(&self) -> Option<Cow<'s, str>> {
+        if self.options
+            .output_components
+            .contains(&OutputComponent::Grid)
+        {
+            Some(self.colors.grid.paint("│").to_string().into())
+        } else {
+            None
+        }
     }
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
