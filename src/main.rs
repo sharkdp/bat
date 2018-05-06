@@ -17,6 +17,7 @@ extern crate directories;
 extern crate git2;
 extern crate syntect;
 
+mod printer;
 mod terminal;
 
 use std::collections::HashMap;
@@ -30,7 +31,6 @@ use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, SubCommand};
-use console::Term;
 use directories::ProjectDirs;
 use git2::{DiffOptions, IntoCString, Repository};
 
@@ -39,7 +39,7 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
-use terminal::as_terminal_escaped;
+use printer::Printer;
 
 lazy_static! {
     static ref PROJECT_DIRS: ProjectDirs = ProjectDirs::from("", "", crate_name!());
@@ -55,18 +55,18 @@ mod errors {
 
 use errors::*;
 
-enum OptionsStyle {
+pub enum OptionsStyle {
     Plain,
     LineNumbers,
     Full,
 }
 
-struct Options<'a> {
-    true_color: bool,
-    style: OptionsStyle,
-    language: Option<&'a str>,
-    colored_output: bool,
-    paging: bool,
+pub struct Options<'a> {
+    pub true_color: bool,
+    pub style: OptionsStyle,
+    pub language: Option<&'a str>,
+    pub colored_output: bool,
+    pub paging: bool,
 }
 
 enum OutputType<'a> {
@@ -107,27 +107,26 @@ impl<'a> Drop for OutputType<'a> {
 }
 
 #[derive(Copy, Clone, Debug)]
-enum LineChange {
+pub enum LineChange {
     Added,
     RemovedAbove,
     RemovedBelow,
     Modified,
 }
 
-type LineChanges = HashMap<u32, LineChange>;
+pub type LineChanges = HashMap<u32, LineChange>;
 
-const PANEL_WIDTH: usize = 7;
 const GRID_COLOR: u8 = 238;
 const LINE_NUMBER_COLOR: u8 = 244;
 
 #[derive(Default)]
-struct Colors {
-    grid: Style,
-    filename: Style,
-    git_added: Style,
-    git_removed: Style,
-    git_modified: Style,
-    line_number: Style,
+pub struct Colors {
+    pub grid: Style,
+    pub filename: Style,
+    pub git_added: Style,
+    pub git_removed: Style,
+    pub git_modified: Style,
+    pub line_number: Style,
 }
 
 impl Colors {
@@ -147,27 +146,12 @@ impl Colors {
     }
 }
 
-fn print_horizontal_line(
-    handle: &mut Write,
-    grid_color: &Style,
-    grid_char: char,
-    term_width: usize,
-) -> Result<()> {
-    let hline = "─".repeat(term_width - (PANEL_WIDTH + 1));
-    let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
-
-    writeln!(handle, "{}", grid_color.paint(hline))?;
-
-    Ok(())
-}
-
 fn print_file<P: AsRef<Path>>(
     options: &Options,
     theme: &Theme,
     syntax_set: &SyntaxSet,
-    handle: &mut Write,
+    printer: &mut Printer,
     filename: P,
-    line_changes: &Option<LineChanges>,
 ) -> Result<()> {
     let mut reader = BufReader::new(File::open(filename.as_ref())?);
     let syntax = match options.language {
@@ -178,33 +162,7 @@ fn print_file<P: AsRef<Path>>(
     let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
     let mut highlighter = HighlightLines::new(syntax, theme);
 
-    let term = Term::stdout();
-    let (_, term_width) = term.size();
-    let term_width = term_width as usize;
-
-    let colors = if options.colored_output {
-        Colors::colored()
-    } else {
-        Colors::plain()
-    };
-
-    // Show file name and bars for all but plain style
-    match options.style {
-        OptionsStyle::LineNumbers | OptionsStyle::Full => {
-            print_horizontal_line(handle, &colors.grid, '┬', term_width)?;
-
-            writeln!(
-                handle,
-                "{}{} File {}",
-                " ".repeat(PANEL_WIDTH),
-                colors.grid.paint("│"),
-                colors.filename.paint(filename.as_ref().to_string_lossy())
-            )?;
-
-            print_horizontal_line(handle, &colors.grid, '┼', term_width)?;
-        }
-        OptionsStyle::Plain => {}
-    };
+    printer.print_header(filename.as_ref().to_string_lossy().as_ref())?;
 
     let mut line_nr = 1;
     let mut line_buffer = String::new();
@@ -222,49 +180,12 @@ fn print_file<P: AsRef<Path>>(
 
         let regions = highlighter.highlight(line);
 
-        let line_change = if let Some(ref changes) = *line_changes {
-            match changes.get(&(line_nr as u32)) {
-                Some(&LineChange::Added) => colors.git_added.paint("+"),
-                Some(&LineChange::RemovedAbove) => colors.git_removed.paint("‾"),
-                Some(&LineChange::RemovedBelow) => colors.git_removed.paint("_"),
-                Some(&LineChange::Modified) => colors.git_modified.paint("~"),
-                _ => Style::default().paint(" "),
-            }
-        } else {
-            Style::default().paint(" ")
-        };
-
-        match options.style {
-            // Show only content for plain style
-            OptionsStyle::Plain => write!(
-                handle,
-                "{}",
-                as_terminal_escaped(&regions, options.true_color, options.colored_output)
-            )?,
-            _ => write!(
-                handle,
-                "{} {} {} {}",
-                colors.line_number.paint(format!("{:4}", line_nr)),
-                // Show git modification markers only for full style
-                match options.style {
-                    OptionsStyle::Full => line_change,
-                    _ => Style::default().paint(" "),
-                },
-                colors.grid.paint("│"),
-                as_terminal_escaped(&regions, options.true_color, options.colored_output)
-            )?,
-        }
+        printer.print_line(line_nr, &regions)?;
 
         line_nr += 1;
     }
 
-    // Show bars for all but plain style
-    match options.style {
-        OptionsStyle::LineNumbers | OptionsStyle::Full => {
-            print_horizontal_line(handle, &colors.grid, '┴', term_width)?
-        }
-        OptionsStyle::Plain => {}
-    };
+    printer.print_footer()?;
 
     Ok(())
 }
@@ -514,7 +435,7 @@ fn run() -> Result<()> {
                 .takes_value(true)
                 .possible_values(&["auto", "never", "always"])
                 .default_value("auto")
-                .help("When to use the pager")
+                .help("When to use the pager"),
         )
         .subcommand(
             SubCommand::with_name("init-cache")
@@ -552,7 +473,7 @@ fn run() -> Result<()> {
                     Some("always") => true,
                     Some("never") => false,
                     Some("auto") | _ => interactive_terminal,
-                }
+                },
             };
 
             let assets =
@@ -569,16 +490,11 @@ fn run() -> Result<()> {
                 let stdout = io::stdout();
                 let mut output_type = get_output_type(&stdout, options.paging);
                 let handle = output_type.handle()?;
+                let mut printer = Printer::new(handle, &options);
                 for file in files {
                     let line_changes = get_git_diff(&file.to_string());
-                    print_file(
-                        &options,
-                        theme,
-                        &assets.syntax_set,
-                        handle,
-                        file,
-                        &line_changes,
-                    )?;
+                    printer.line_changes = line_changes;
+                    print_file(&options, theme, &assets.syntax_set, &mut printer, file)?;
                 }
             }
         }
