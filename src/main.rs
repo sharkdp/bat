@@ -65,8 +65,8 @@ struct Options<'a> {
     true_color: bool,
     style: OptionsStyle,
     language: Option<&'a str>,
-    interactive_terminal: bool,
     colored_output: bool,
+    paging: bool,
 }
 
 enum OutputType<'a> {
@@ -318,8 +318,8 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
     Some(line_changes)
 }
 
-fn get_output_type(stdout: &Stdout, interactive_terminal: bool) -> OutputType {
-    if interactive_terminal {
+fn get_output_type(stdout: &Stdout, paging: bool) -> OutputType {
+    if paging {
         match OutputType::pager() {
             Ok(pager) => pager,
             Err(_) => OutputType::stdout(&stdout),
@@ -495,6 +495,14 @@ fn run() -> Result<()> {
                 .default_value("auto")
                 .help("When to use colors"),
         )
+        .arg(
+            Arg::with_name("paging")
+                .long("paging")
+                .takes_value(true)
+                .possible_values(&["auto", "never", "always"])
+                .default_value("auto")
+                .help("When to use the pager")
+        )
         .subcommand(
             SubCommand::with_name("init-cache")
                 .about("Load syntax definitions and themes into cache"),
@@ -522,12 +530,16 @@ fn run() -> Result<()> {
                     },
                 },
                 language: app_matches.value_of("language"),
-                interactive_terminal,
                 colored_output: match app_matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
                     _ => interactive_terminal,
                 },
+                paging: match app_matches.value_of("paging") {
+                    Some("always") => true,
+                    Some("never") => false,
+                    Some("auto") | _ => interactive_terminal,
+                }
             };
 
             let assets =
@@ -542,7 +554,7 @@ fn run() -> Result<()> {
 
             if let Some(files) = app_matches.values_of("FILE") {
                 let stdout = io::stdout();
-                let mut output_type = get_output_type(&stdout, options.interactive_terminal);
+                let mut output_type = get_output_type(&stdout, options.paging);
                 let handle = output_type.handle()?;
                 for file in files {
                     let line_changes = get_git_diff(&file.to_string());
