@@ -169,7 +169,7 @@ fn print_file<P: AsRef<Path>>(
     filename: P,
     line_changes: &Option<LineChanges>,
 ) -> Result<()> {
-    let reader = BufReader::new(File::open(filename.as_ref())?);
+    let mut reader = BufReader::new(File::open(filename.as_ref())?);
     let syntax = match options.language {
         Some(language) => syntax_set.find_syntax_by_token(language),
         None => syntax_set.find_syntax_for_file(filename.as_ref())?,
@@ -206,10 +206,21 @@ fn print_file<P: AsRef<Path>>(
         OptionsStyle::Plain => {}
     };
 
-    for (idx, maybe_line) in reader.lines().enumerate() {
-        let line_nr = idx + 1;
-        let line = maybe_line.unwrap_or_else(|_| "<INVALID UTF-8>".into());
-        let regions = highlighter.highlight(&line);
+    let mut line_nr = 1;
+    let mut line_buffer = String::new();
+    loop {
+        line_buffer.clear();
+        let num_bytes = reader.read_line(&mut line_buffer);
+
+        let line = match num_bytes {
+            Ok(0) => {
+                break;
+            }
+            Ok(_) => &line_buffer,
+            Err(_) => "<bat: INVALID UTF-8>\n",
+        };
+
+        let regions = highlighter.highlight(line);
 
         let line_change = if let Some(ref changes) = *line_changes {
             match changes.get(&(line_nr as u32)) {
@@ -225,12 +236,12 @@ fn print_file<P: AsRef<Path>>(
 
         match options.style {
             // Show only content for plain style
-            OptionsStyle::Plain => writeln!(
+            OptionsStyle::Plain => write!(
                 handle,
                 "{}",
                 as_terminal_escaped(&regions, options.true_color, options.colored_output)
             )?,
-            _ => writeln!(
+            _ => write!(
                 handle,
                 "{} {} {} {}",
                 colors.line_number.paint(format!("{:4}", line_nr)),
@@ -243,6 +254,8 @@ fn print_file<P: AsRef<Path>>(
                 as_terminal_escaped(&regions, options.true_color, options.colored_output)
             )?,
         }
+
+        line_nr += 1;
     }
 
     // Show bars for all but plain style
@@ -358,7 +371,7 @@ impl HighlightingAssets {
 
         let mut syntax_set = SyntaxSet::new();
         let syntax_dir = config_dir.join("syntax");
-        let _ = syntax_set.load_syntaxes(syntax_dir, false);
+        let _ = syntax_set.load_syntaxes(syntax_dir, true);
         syntax_set.load_plain_text_syntax();
 
         Ok(HighlightingAssets {
