@@ -540,9 +540,29 @@ fn run() -> Result<()> {
             })?;
 
             if let Some(files) = app_matches.values_of("FILE") {
+                let mut exit = false;
                 for file in files {
                     let line_changes = get_git_diff(&file.to_string());
-                    print_file(&options, theme, &assets.syntax_set, file, &line_changes)?;
+                    let res = print_file(&options, theme, &assets.syntax_set, file, &line_changes);
+                    if let Err(error) = res {
+                        if match error {
+                            Error(ErrorKind::Io(ref io_error), _)
+                                if io_error.kind() == io::ErrorKind::BrokenPipe =>
+                            {
+                                true
+                            }
+                            _ => {
+                                exit = true;
+                                eprintln!("{}: {}: {}", Red.paint("[bat error]"), file, error);
+                                false
+                            }
+                        } {
+                            return Err(error);
+                        }
+                    }
+                }
+                if exit {
+                    process::exit(1);
                 }
             }
         }
