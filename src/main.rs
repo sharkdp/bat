@@ -230,16 +230,12 @@ fn print_file<P: AsRef<Path>>(
 }
 
 fn get_git_diff(filename: &str) -> Option<LineChanges> {
-    let repo = Repository::discover(Path::new(&filename)).ok()?;
-    let workdir = repo.workdir()?;
-    let absolute_file_path = workdir.join(Path::new(&filename));
-    let relative_file_path = absolute_file_path.strip_prefix(workdir).ok()?;
+    let repo = Repository::discover(&filename).ok()?;
+    let path_absolute = fs::canonicalize(&filename).ok()?;
+    let path_relative_to_repo = path_absolute.strip_prefix(repo.workdir()?).ok()?;
 
     let mut diff_options = DiffOptions::new();
-    let pathspec = format!("*{}", relative_file_path.display())
-        .into_c_string()
-        .ok()?;
-    // GIT pathspec uses relative path
+    let pathspec = path_relative_to_repo.into_c_string().ok()?;
     diff_options.pathspec(pathspec);
     diff_options.context_lines(0);
 
@@ -261,7 +257,7 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
         Some(&mut |delta, hunk| {
             let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
 
-            if relative_file_path != path {
+            if path_relative_to_repo != path {
                 return false;
             }
 
