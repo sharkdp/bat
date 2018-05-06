@@ -486,8 +486,8 @@ fn run() -> Result<()> {
             Arg::with_name("style")
                 .short("s")
                 .long("style")
-                .possible_values(&["plain", "line-numbers", "full"])
-                .default_value("full")
+                .possible_values(&["auto", "plain", "line-numbers", "full"])
+                .default_value("auto")
                 .help("Additional info to display along with content"),
         )
         .arg(
@@ -515,10 +515,15 @@ fn run() -> Result<()> {
         _ => {
             let options = Options {
                 true_color: is_truecolor_terminal(),
-                style: match app_matches.value_of("style").unwrap() {
-                    "plain" => OptionsStyle::Plain,
-                    "line-numbers" => OptionsStyle::LineNumbers,
-                    _ => OptionsStyle::Full,
+                style: match app_matches.value_of("style") {
+                    Some("plain") => OptionsStyle::Plain,
+                    Some("line-numbers") => OptionsStyle::LineNumbers,
+                    Some("full") => OptionsStyle::Full,
+                    Some("auto") | _ => if interactive_terminal {
+                        OptionsStyle::Full
+                    } else {
+                        OptionsStyle::Plain
+                    },
                 },
                 language: app_matches.value_of("language"),
                 interactive_terminal,
