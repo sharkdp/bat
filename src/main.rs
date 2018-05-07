@@ -568,18 +568,23 @@ fn run() -> Result<()> {
             if let Some(_) = app_matches.values_of("list languages") {
                 let languages = assets.syntax_set.syntaxes();
 
-                for lang in languages {
-                    print!("{}\t", lang.name);
+                let longest = match languages.iter()
+                    .map(|s| s.name.len())
+                    .max() {
+                    Some(longlang) => longlang,
+                    None => 32,
+                };
 
+                for lang in languages {
+                    print!("{:width$} | ", lang.name, width = longest);
                     for i in 0..lang.file_extensions.len() {
                         print!("{}", lang.file_extensions[i]);
 
                         if i < lang.file_extensions.len() - 1 {
                             print!(", ");
-                        } else {
-                            println!();
                         }
                     }
+                    println!();
                 }
 
                 return Ok(());
