@@ -571,8 +571,8 @@ fn run() -> Result<()> {
                 let longest = match languages.iter()
                     .map(|s| s.name.len())
                     .max() {
-                    Some(longlang) => longlang,
-                    None => 32,
+                    Some(length) => length,
+                    None => 32, // Fallback width if they have no language definitions.
                 };
 
                 for lang in languages {
