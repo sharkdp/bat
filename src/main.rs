@@ -146,23 +146,30 @@ impl Colors {
     }
 }
 
-fn print_file<P: AsRef<Path>>(
+fn print_file(
     options: &Options,
     theme: &Theme,
     syntax_set: &SyntaxSet,
     printer: &mut Printer,
-    filename: P,
+    filename: Option<&str>,
 ) -> Result<()> {
-    let mut reader = BufReader::new(File::open(filename.as_ref())?);
-    let syntax = match options.language {
-        Some(language) => syntax_set.find_syntax_by_token(language),
-        None => syntax_set.find_syntax_for_file(filename.as_ref())?,
+    let stdin = io::stdin(); // TODO: this is not always needed
+
+    let mut reader: Box<BufRead> = match filename {
+        None => Box::new(stdin.lock()),
+        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
+    };
+
+    let syntax = match (options.language, filename) {
+        (Some(language), _) => syntax_set.find_syntax_by_token(language),
+        (None, Some(filename)) => syntax_set.find_syntax_for_file(filename)?,
+        (None, None) => None,
     };
 
     let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
     let mut highlighter = HighlightLines::new(syntax, theme);
 
-    printer.print_header(filename.as_ref().to_string_lossy().as_ref())?;
+    printer.print_header(filename)?;
 
     let mut line_nr = 1;
     let mut line_buffer = String::new();
@@ -486,16 +493,30 @@ fn run() -> Result<()> {
                 )
             })?;
 
-            if let Some(files) = app_matches.values_of("FILE") {
-                let stdout = io::stdout();
-                let mut output_type = get_output_type(&stdout, options.paging);
-                let handle = output_type.handle()?;
-                let mut printer = Printer::new(handle, &options);
-                for file in files {
-                    let line_changes = get_git_diff(&file.to_string());
-                    printer.line_changes = line_changes;
-                    print_file(&options, theme, &assets.syntax_set, &mut printer, file)?;
-                }
+            let files: Vec<Option<&str>> = app_matches
+                .values_of("FILE")
+                .map(|values| {
+                    values
+                        .map(|filename| {
+                            if filename == "-" {
+                                None
+                            } else {
+                                Some(filename)
+                            }
+                        })
+                        .collect()
+                })
+                .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
+
+            let stdout = io::stdout();
+            let mut output_type = get_output_type(&stdout, options.paging);
+            let handle = output_type.handle()?;
+            let mut printer = Printer::new(handle, &options);
+
+            for file in files {
+                printer.line_changes = file.and_then(|filename| get_git_diff(filename));
+
+                print_file(&options, theme, &assets.syntax_set, &mut printer, file)?;
             }
         }
     }
