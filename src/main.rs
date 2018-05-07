@@ -453,6 +453,12 @@ fn run() -> Result<()> {
                 .default_value("auto")
                 .help("When to use the pager"),
         )
+        .arg(
+            Arg::with_name("list languages")
+                .long("list-languages")
+                .takes_value(false)
+                .help("Displays supported languages")
+        )
         .subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
