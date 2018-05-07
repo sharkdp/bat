@@ -36,7 +36,7 @@ impl<'a> Printer<'a> {
         }
     }
 
-    pub fn print_header(&mut self, filename: &str) -> Result<()> {
+    pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
         match self.options.style {
             OptionsStyle::Full => {}
             _ => return Ok(()),
@@ -44,13 +44,21 @@ impl<'a> Printer<'a> {
 
         self.print_horizontal_line('┬')?;
 
-        writeln!(
+        write!(
             self.handle,
-            "{}{} File {}",
+            "{}{} ",
             " ".repeat(PANEL_WIDTH),
             self.colors.grid.paint("│"),
-            self.colors.filename.paint(filename)
         )?;
+
+        match filename {
+            None => {
+                writeln!(self.handle, "STDIN",)?;
+            }
+            Some(filename) => {
+                writeln!(self.handle, "File {}", self.colors.filename.paint(filename))?;
+            }
+        }
 
         self.print_horizontal_line('┼')
     }
@@ -88,6 +96,8 @@ impl<'a> Printer<'a> {
                 .collect::<Vec<_>>()
                 .join(" ")
         )?;
+
+        self.handle.flush()?;
 
         Ok(())
     }
