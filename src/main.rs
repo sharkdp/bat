@@ -23,7 +23,7 @@ mod terminal;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
-use std::io::{self, BufRead, BufReader, Stdout, StdoutLock, Write};
+use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{self, Child, Command, Stdio};
 
@@ -69,12 +69,12 @@ pub struct Options<'a> {
     pub paging: bool,
 }
 
-enum OutputType<'a> {
+enum OutputType {
     Pager(Child),
-    Stdout(StdoutLock<'a>),
+    Stdout(io::Stdout),
 }
 
-impl<'a> OutputType<'a> {
+impl OutputType {
     fn pager() -> Result<Self> {
         Ok(OutputType::Pager(Command::new("less")
             .args(&["--quit-if-one-screen", "--RAW-CONTROL-CHARS", "--no-init"])
@@ -83,8 +83,8 @@ impl<'a> OutputType<'a> {
             .chain_err(|| "Could not spawn pager")?))
     }
 
-    fn stdout(stdout: &'a Stdout) -> Self {
-        OutputType::Stdout(stdout.lock())
+    fn stdout() -> Self {
+        OutputType::Stdout(io::stdout())
     }
 
     fn handle(&mut self) -> Result<&mut Write> {
@@ -98,7 +98,7 @@ impl<'a> OutputType<'a> {
     }
 }
 
-impl<'a> Drop for OutputType<'a> {
+impl Drop for OutputType {
     fn drop(&mut self) {
         if let OutputType::Pager(ref mut command) = *self {
             let _ = command.wait();
@@ -259,14 +259,11 @@ fn get_git_diff(filename: &str) -> Option<LineChanges> {
     Some(line_changes)
 }
 
-fn get_output_type(stdout: &Stdout, paging: bool) -> OutputType {
+fn get_output_type(paging: bool) -> OutputType {
     if paging {
-        match OutputType::pager() {
-            Ok(pager) => pager,
-            Err(_) => OutputType::stdout(&stdout),
-        }
+        OutputType::pager().unwrap_or_else(|_| OutputType::stdout())
     } else {
-        OutputType::stdout(&stdout)
+        OutputType::stdout()
     }
 }
 
@@ -508,8 +505,7 @@ fn run() -> Result<()> {
                 })
                 .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
 
-            let stdout = io::stdout();
-            let mut output_type = get_output_type(&stdout, options.paging);
+            let mut output_type = get_output_type(options.paging);
             let handle = output_type.handle()?;
             let mut printer = Printer::new(handle, &options);
 

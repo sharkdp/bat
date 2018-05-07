@@ -95,8 +95,6 @@ impl<'a> Printer<'a> {
                 .join(" ")
         )?;
 
-        self.handle.flush()?;
-
         Ok(())
     }
 
