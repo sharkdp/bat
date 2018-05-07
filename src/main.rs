@@ -565,6 +565,26 @@ fn run() -> Result<()> {
                 )
             })?;
 
+            if let Some(_) = app_matches.values_of("list languages") {
+                let languages = assets.syntax_set.syntaxes();
+
+                for lang in languages {
+                    print!("{}\t", lang.name);
+
+                    for i in 0..lang.file_extensions.len() {
+                        print!("{}", lang.file_extensions[i]);
+
+                        if i < lang.file_extensions.len() - 1 {
+                            print!(", ");
+                        } else {
+                            println!();
+                        }
+                    }
+                }
+
+                return Ok(());
+            }
+
             let mut output_type = get_output_type(options.paging);
             let handle = output_type.handle()?;
             let mut printer = Printer::new(handle, &options);
