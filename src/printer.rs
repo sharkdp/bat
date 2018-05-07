@@ -51,14 +51,12 @@ impl<'a> Printer<'a> {
             self.colors.grid.paint("│"),
         )?;
 
-        match filename {
-            None => {
-                writeln!(self.handle, "STDIN",)?;
-            }
-            Some(filename) => {
-                writeln!(self.handle, "File {}", self.colors.filename.paint(filename))?;
-            }
-        }
+        writeln!(
+            self.handle,
+            "{}{}",
+            filename.map_or("", |_| "File: "),
+            self.colors.filename.paint(filename.unwrap_or("STDIN"))
+        )?;
 
         self.print_horizontal_line('┼')
     }
