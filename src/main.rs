@@ -454,9 +454,8 @@ fn run() -> Result<()> {
                 .help("When to use the pager"),
         )
         .arg(
-            Arg::with_name("list languages")
+            Arg::with_name("list-languages")
                 .long("list-languages")
-                .takes_value(false)
                 .help("Displays supported languages")
         )
         .subcommand(
@@ -565,26 +564,17 @@ fn run() -> Result<()> {
                 )
             })?;
 
-            if let Some(_) = app_matches.values_of("list languages") {
+            if app_matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
 
-                let longest = match languages.iter()
+                let longest = languages.iter()
                     .map(|s| s.name.len())
-                    .max() {
-                    Some(length) => length,
-                    None => 32, // Fallback width if they have no language definitions.
-                };
+                    .max()
+                    .unwrap_or(32); // Fallback width if they have no language definitions.
 
                 for lang in languages {
                     print!("{:width$} | ", lang.name, width = longest);
-                    for i in 0..lang.file_extensions.len() {
-                        print!("{}", lang.file_extensions[i]);
-
-                        if i < lang.file_extensions.len() - 1 {
-                            print!(", ");
-                        }
-                    }
-                    println!();
+                    println!("{}", lang.file_extensions.join(", "));
                 }
 
                 return Ok(());
