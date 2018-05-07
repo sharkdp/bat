@@ -25,7 +25,7 @@ A *cat(1)* clone with syntax highlighting and Git integration.
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for binary builds and Debian packages.
 
-### Arch Linux
+#### Arch Linux
 
 On Arch Linux, you can install [the AUR package](https://aur.archlinux.org/packages/bat/) via yaourt, or manually:
 
@@ -43,6 +43,9 @@ You can then use `cargo` to build everything:
 ``` bash
 cargo install bat
 ```
+
+On macOS, you might have to install `cmake` (`brew install cmake`) in order for
+some dependencies to be built.
 
 ## Customization
 
