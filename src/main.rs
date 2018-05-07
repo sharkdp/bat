@@ -455,6 +455,21 @@ fn run() -> Result<()> {
             assets.save()?;
         }
         _ => {
+            let files: Vec<Option<&str>> = app_matches
+                .values_of("FILE")
+                .map(|values| {
+                    values
+                        .map(|filename| {
+                            if filename == "-" {
+                                None
+                            } else {
+                                Some(filename)
+                            }
+                        })
+                        .collect()
+                })
+                .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
+
             let options = Options {
                 true_color: is_truecolor_terminal(),
                 style: match app_matches.value_of("style") {
@@ -476,7 +491,14 @@ fn run() -> Result<()> {
                 paging: match app_matches.value_of("paging") {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") | _ => interactive_terminal,
+                    Some("auto") | _ => if files.contains(&None) {
+                        // If we are reading from stdin, only enable paging if we write to an
+                        // interactive terminal and if we do not *read* from an interactive
+                        // terminal.
+                        interactive_terminal && !atty::is(Stream::Stdin)
+                    } else {
+                        interactive_terminal
+                    },
                 },
             };
 
@@ -489,21 +511,6 @@ fn run() -> Result<()> {
                     format!("Could not find 'Default' theme"),
                 )
             })?;
-
-            let files: Vec<Option<&str>> = app_matches
-                .values_of("FILE")
-                .map(|values| {
-                    values
-                        .map(|filename| {
-                            if filename == "-" {
-                                None
-                            } else {
-                                Some(filename)
-                            }
-                        })
-                        .collect()
-                })
-                .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
 
             let mut output_type = get_output_type(options.paging);
             let handle = output_type.handle()?;
