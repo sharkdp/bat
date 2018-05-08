@@ -67,6 +67,7 @@ pub struct Options<'a> {
     pub language: Option<&'a str>,
     pub colored_output: bool,
     pub paging: bool,
+    pub term_width: usize,
 }
 
 enum OutputType {
@@ -552,6 +553,7 @@ fn run() -> Result<()> {
                         interactive_terminal
                     },
                 },
+                term_width: console::Term::stdout().size().1 as usize,
             };
 
             let assets =
@@ -580,7 +582,7 @@ fn run() -> Result<()> {
                     print!("{:width$}{}", lang.name, separator, width = longest);
 
                     // Line-wrapping for the possible file extension overflow.
-                    let desired_width = 90 - longest; 
+                    let desired_width = options.term_width - longest;
                     // Number of characters on this line so far, wrap before `desired_width`
                     let mut num_chars = 0;
 
