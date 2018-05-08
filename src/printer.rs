@@ -1,5 +1,4 @@
 use ansi_term::Style;
-use console::Term;
 use errors::*;
 use std::io::Write;
 use syntect::highlighting;
@@ -18,8 +17,7 @@ pub struct Printer<'a> {
 
 impl<'a> Printer<'a> {
     pub fn new(handle: &'a mut Write, options: &'a Options) -> Self {
-        let (_, term_width) = Term::stdout().size();
-        let term_width = term_width as usize;
+        let term_width = options.term_width;
 
         let colors = if options.colored_output {
             Colors::colored()
