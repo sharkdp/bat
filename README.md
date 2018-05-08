@@ -21,6 +21,16 @@ languages:
 
 ![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
+### Automatic paging
+
+`bat` can pipe its own output to `less` if the output is too large for one screen.
+
+### File concatenation
+
+Oh.. you can also use it to concatenate files :wink:. Whenever
+`bat` detects a non-interactive terminal, it will fall back to printing
+the plain file contents.
+
 ## Installation
 
 ### From binaries
