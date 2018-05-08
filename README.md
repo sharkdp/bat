@@ -64,8 +64,10 @@ To build your own language-set and theme, follow these steps:
 Create a folder with a syntax highlighting theme:
 
 ``` bash
-mkdir -p ~/.config/bat/themes
-cd ~/.config/bat/themes
+BAT_CONFIG_DIR="$(bat cache --config-dir)"
+
+mkdir -p "$BAT_CONFIG_DIR/themes"
+cd "$BAT_CONFIG_DIR/themes"
 
 # Download a theme, for example:
 git clone https://github.com/jonschlinkert/sublime-monokai-extended
@@ -77,8 +79,8 @@ ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
 Create a folder with language definition files:
 
 ``` bash
-mkdir -p ~/.config/bat/syntax
-cd ~/.config/bat/syntax
+mkdir -p "$BAT_CONFIG_DIR/syntax"
+cd "$BAT_CONFIG_DIR/syntax"
 
 # Download some language definition files, for example:
 git clone https://github.com/sublimehq/Packages/
@@ -90,5 +92,11 @@ Finally, use the following command to parse all these files into a binary
 cache:
 
 ``` bash
-bat init-cache
+bat cache --init
+```
+
+If you ever want to go back to the default settings, call:
+
+``` bash
+bat cache --clear
 ```
