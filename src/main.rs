@@ -27,6 +27,9 @@ use std::io::{self, BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{self, Child, Command, Stdio};
 
+#[cfg(unix)]
+use std::os::unix::fs::FileTypeExt;
+
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 use atty::Stream;
@@ -163,7 +166,21 @@ fn print_file(
 
     let syntax = match (options.language, filename) {
         (Some(language), _) => syntax_set.find_syntax_by_token(language),
-        (None, Some(filename)) => syntax_set.find_syntax_for_file(filename)?,
+        (None, Some(filename)) => {
+            #[cfg(not(unix))]
+            let may_read_from_file = true;
+
+            // Do not peek at the file (to determine the syntax) if it is a FIFO because they can
+            // only be read once.
+            #[cfg(unix)]
+            let may_read_from_file = !fs::metadata(filename)?.file_type().is_fifo();
+
+            if may_read_from_file {
+                syntax_set.find_syntax_for_file(filename)?
+            } else {
+                None
+            }
+        }
         (None, None) => None,
     };
 
