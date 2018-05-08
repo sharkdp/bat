@@ -574,6 +574,9 @@ fn run() -> Result<()> {
 
                 let separator = " | ";
                 for lang in languages {
+                    if lang.hidden {
+                        continue;
+                    }
                     print!("{:width$}{}", lang.name, separator, width = longest);
 
                     // Line-wrapping for the possible file extension overflow.
