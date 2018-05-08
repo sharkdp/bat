@@ -457,7 +457,7 @@ fn run() -> Result<()> {
         .arg(
             Arg::with_name("list-languages")
                 .long("list-languages")
-                .help("Displays supported languages")
+                .help("Displays supported languages"),
         )
         .subcommand(
             SubCommand::with_name("cache")
@@ -576,7 +576,7 @@ fn run() -> Result<()> {
                     .max()
                     .unwrap_or(32); // Fallback width if they have no language definitions.
 
-                let separator = " | ";
+                let separator = " ";
                 for lang in languages {
                     if lang.hidden {
                         continue;
@@ -599,7 +599,7 @@ fn run() -> Result<()> {
                         }
 
                         num_chars += new_chars;
-                        print!("{}", word);
+                        print!("{}", Green.paint(word as &str));
                         if extension.peek().is_some() {
                             print!("{}", comma_separator);
                         }
