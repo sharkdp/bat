@@ -590,12 +590,12 @@ fn run() -> Result<()> {
                     let mut extension = lang.file_extensions.iter().peekable();
                     while let Some(word) = extension.next() {
                         // If we can't fit this word in, then create a line break and align it in.
-                        if word.len() + num_chars + comma_separator.len() >= desired_width {
+                        if num_chars + word.len() + comma_separator.len() >= desired_width {
                             num_chars = 0;
                             print!("\n{:width$}{}", "", separator, width = longest);
                         }
 
-                        num_chars += word.len();
+                        num_chars += word.len() + comma_separator.len();
                         print!("{}", word);
                         if extension.peek().is_some() {
                             print!("{}", comma_separator);
