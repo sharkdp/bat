@@ -17,8 +17,6 @@ pub struct Printer<'a> {
 
 impl<'a> Printer<'a> {
     pub fn new(handle: &'a mut Write, options: &'a Options) -> Self {
-        let term_width = options.term_width;
-
         let colors = if options.colored_output {
             Colors::colored()
         } else {
@@ -28,7 +26,7 @@ impl<'a> Printer<'a> {
         Printer {
             handle,
             colors,
-            term_width,
+            term_width: options.term_width,
             options,
             line_changes: None,
         }
