@@ -582,14 +582,15 @@ fn run() -> Result<()> {
                     print!("{:width$}{}", lang.name, separator, width = longest);
 
                     // Line-wrapping for the possible file extension overflow.
-                    let desired_width = options.term_width - longest;
+                    let desired_width = options.term_width - longest - separator.len();
                     // Number of characters on this line so far, wrap before `desired_width`
                     let mut num_chars = 0;
 
+                    let comma_separator = ", ";
                     let mut extension = lang.file_extensions.iter().peekable();
                     while let Some(word) = extension.next() {
                         // If we can't fit this word in, then create a line break and align it in.
-                        if word.len() + num_chars >= desired_width {
+                        if word.len() + num_chars + comma_separator.len() >= desired_width {
                             num_chars = 0;
                             print!("\n{:width$}{}", "", separator, width = longest);
                         }
@@ -597,7 +598,7 @@ fn run() -> Result<()> {
                         num_chars += word.len();
                         print!("{}", word);
                         if extension.peek().is_some() {
-                            print!(", ");
+                            print!("{}", comma_separator);
                         }
                     }
                     println!();
