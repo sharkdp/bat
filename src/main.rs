@@ -24,13 +24,13 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{self, Child, Command, Stdio};
 
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 use atty::Stream;
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, ArgGroup, SubCommand};
 use directories::ProjectDirs;
 use git2::{DiffOptions, IntoCString, Repository};
 
@@ -279,6 +279,14 @@ struct HighlightingAssets {
 }
 
 impl HighlightingAssets {
+    fn theme_set_path() -> PathBuf {
+        PROJECT_DIRS.cache_dir().join("theme_set")
+    }
+
+    fn syntax_set_path() -> PathBuf {
+        PROJECT_DIRS.cache_dir().join("syntax_set")
+    }
+
     fn from_files() -> Result<Self> {
         let config_dir = PROJECT_DIRS.config_dir();
 
@@ -307,45 +315,46 @@ impl HighlightingAssets {
 
     fn save(&self) -> Result<()> {
         let cache_dir = PROJECT_DIRS.cache_dir();
-        let theme_set_path = cache_dir.join("theme_set");
-        let syntax_set_path = cache_dir.join("syntax_set");
-
         let _ = fs::create_dir(cache_dir);
 
-        dump_to_file(&self.theme_set, &theme_set_path).map_err(|_| {
+        print!(
+            "Writing theme set to {} ... ",
+            Self::theme_set_path().to_string_lossy()
+        );
+        dump_to_file(&self.theme_set, &Self::theme_set_path()).map_err(|_| {
             io::Error::new(
                 io::ErrorKind::Other,
                 format!(
                     "Could not save theme set to {}",
-                    theme_set_path.to_string_lossy()
+                    Self::theme_set_path().to_string_lossy()
                 ),
             )
         })?;
-        println!("Wrote theme set to {}", theme_set_path.to_string_lossy());
+        println!("okay");
 
-        dump_to_file(&self.syntax_set, &syntax_set_path).map_err(|_| {
+        print!(
+            "Writing syntax set to {} ... ",
+            Self::syntax_set_path().to_string_lossy()
+        );
+        dump_to_file(&self.syntax_set, &Self::syntax_set_path()).map_err(|_| {
             io::Error::new(
                 io::ErrorKind::Other,
                 format!(
                     "Could not save syntax set to {}",
-                    syntax_set_path.to_string_lossy()
+                    Self::syntax_set_path().to_string_lossy()
                 ),
             )
         })?;
-        println!("Wrote syntax set to {}", syntax_set_path.to_string_lossy());
+        println!("okay");
 
         Ok(())
     }
 
     fn from_cache() -> Result<Self> {
-        let cache_dir = PROJECT_DIRS.cache_dir();
-        let theme_set_path = cache_dir.join("theme_set");
-        let syntax_set_path = cache_dir.join("syntax_set");
-
-        let syntax_set_file = File::open(&syntax_set_path).chain_err(|| {
+        let syntax_set_file = File::open(&Self::syntax_set_path()).chain_err(|| {
             format!(
                 "Could not load cached syntax set '{}'",
-                syntax_set_path.to_string_lossy()
+                Self::syntax_set_path().to_string_lossy()
             )
         })?;
         let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
@@ -356,10 +365,10 @@ impl HighlightingAssets {
         })?;
         syntax_set.link_syntaxes();
 
-        let theme_set_file = File::open(&theme_set_path).chain_err(|| {
+        let theme_set_file = File::open(&Self::theme_set_path()).chain_err(|| {
             format!(
                 "Could not load cached theme set '{}'",
-                theme_set_path.to_string_lossy()
+                Self::theme_set_path().to_string_lossy()
             )
         })?;
         let theme_set: ThemeSet = from_reader(theme_set_file).map_err(|_| {
@@ -398,11 +407,14 @@ fn run() -> Result<()> {
 
     let app_matches = App::new(crate_name!())
         .version(crate_version!())
-        .setting(clap_color_setting)
-        .setting(AppSettings::DeriveDisplayOrder)
-        .setting(AppSettings::UnifiedHelpMessage)
-        .setting(AppSettings::NextLineHelp)
-        .setting(AppSettings::DisableVersion)
+        .global_setting(clap_color_setting)
+        .global_setting(AppSettings::DeriveDisplayOrder)
+        .global_setting(AppSettings::UnifiedHelpMessage)
+        .global_setting(AppSettings::NextLineHelp)
+        .setting(AppSettings::InferSubcommands)
+        .setting(AppSettings::ArgsNegateSubcommands)
+        .setting(AppSettings::DisableHelpSubcommand)
+        .setting(AppSettings::VersionlessSubcommands)
         .max_term_width(90)
         .about(crate_description!())
         .arg(
@@ -442,17 +454,52 @@ fn run() -> Result<()> {
                 .help("When to use the pager"),
         )
         .subcommand(
-            SubCommand::with_name("init-cache")
-                .about("Load syntax definitions and themes into cache"),
+            SubCommand::with_name("cache")
+                .about("Modify the syntax-definition and theme cache")
+                .arg(
+                    Arg::with_name("init")
+                        .long("init")
+                        .short("i")
+                        .help("Initialize the cache by loading from the config dir"),
+                )
+                .arg(
+                    Arg::with_name("clear")
+                        .long("clear")
+                        .short("c")
+                        .help("Reset the cache"),
+                )
+                .arg(
+                    Arg::with_name("config-dir")
+                        .long("config-dir")
+                        .short("d")
+                        .help("Show the configuration directory"),
+                )
+                .group(
+                    ArgGroup::with_name("cache-actions")
+                        .args(&["init", "clear", "config-dir"])
+                        .required(true),
+                ),
         )
         .help_message("Print this help message.")
         .version_message("Show version information.")
         .get_matches();
 
     match app_matches.subcommand() {
-        ("init-cache", Some(_)) => {
-            let assets = HighlightingAssets::from_files()?;
-            assets.save()?;
+        ("cache", Some(cache_matches)) => {
+            if cache_matches.is_present("init") {
+                let assets = HighlightingAssets::from_files()?;
+                assets.save()?;
+            } else if cache_matches.is_present("clear") {
+                print!("Clearing theme set cache ... ");
+                fs::remove_file(HighlightingAssets::theme_set_path())?;
+                println!("okay");
+
+                print!("Clearing syntax set cache ... ");
+                fs::remove_file(HighlightingAssets::syntax_set_path())?;
+                println!("okay");
+            } else if cache_matches.is_present("config-dir") {
+                println!("{}", PROJECT_DIRS.config_dir().to_string_lossy());
+            }
         }
         _ => {
             let files: Vec<Option<&str>> = app_matches
