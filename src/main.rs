@@ -569,7 +569,9 @@ fn run() -> Result<()> {
             if app_matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
 
-                let longest = languages.iter()
+                let longest = languages
+                    .iter()
+                    .filter(|s| !s.hidden)
                     .map(|s| s.name.len())
                     .max()
                     .unwrap_or(32); // Fallback width if they have no language definitions.
@@ -590,12 +592,13 @@ fn run() -> Result<()> {
                     let mut extension = lang.file_extensions.iter().peekable();
                     while let Some(word) = extension.next() {
                         // If we can't fit this word in, then create a line break and align it in.
-                        if num_chars + word.len() + comma_separator.len() >= desired_width {
+                        let new_chars = word.len() + comma_separator.len();
+                        if num_chars + new_chars >= desired_width {
                             num_chars = 0;
                             print!("\n{:width$}{}", "", separator, width = longest);
                         }
 
-                        num_chars += word.len() + comma_separator.len();
+                        num_chars += new_chars;
                         print!("{}", word);
                         if extension.peek().is_some() {
                             print!("{}", comma_separator);
