@@ -199,7 +199,12 @@ fn print_file(
             Ok(0) => {
                 break;
             }
-            Ok(_) => &line_buffer,
+            Ok(_) => {
+                if !line_buffer.ends_with("\n") {
+                    line_buffer.push('\n');
+                }
+                &line_buffer
+            }
             Err(_) => "<bat: INVALID UTF-8>\n",
         };
 
