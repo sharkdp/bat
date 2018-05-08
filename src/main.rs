@@ -571,14 +571,14 @@ fn run() -> Result<()> {
 
                 let longest = languages
                     .iter()
-                    .filter(|s| !s.hidden)
+                    .filter(|s| !s.hidden && s.file_extensions.len() > 0)
                     .map(|s| s.name.len())
                     .max()
                     .unwrap_or(32); // Fallback width if they have no language definitions.
 
                 let separator = " ";
                 for lang in languages {
-                    if lang.hidden {
+                    if lang.hidden || lang.file_extensions.len() == 0 {
                         continue;
                     }
                     print!("{:width$}{}", lang.name, separator, width = longest);
