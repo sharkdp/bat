@@ -31,6 +31,31 @@ Oh.. you can also use it to concatenate files :wink:. Whenever
 `bat` detects a non-interactive terminal, it will fall back to printing
 the plain file contents.
 
+## Usage
+
+Display a single file on the terminal
+
+``` bash
+> bat README.md
+```
+
+Display multiple files at once
+
+``` bash
+> bat src/*.rs
+```
+
+Explicitly specify the language
+
+``` bash
+> yaml2json .travis.yml | json_pp | bat -l json
+```
+
+``` bash
+> curl -s https://raw.githubusercontent.com/sharkdp/bat/master/src/main.rs | bat -l rs
+```
+
+
 ## Installation
 
 ### From binaries
