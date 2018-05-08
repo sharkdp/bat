@@ -10,7 +10,6 @@ const PANEL_WIDTH: usize = 7;
 pub struct Printer<'a> {
     handle: &'a mut Write,
     colors: Colors,
-    term_width: usize,
     options: &'a Options<'a>,
     pub line_changes: Option<LineChanges>,
 }
@@ -26,7 +25,6 @@ impl<'a> Printer<'a> {
         Printer {
             handle,
             colors,
-            term_width: options.term_width,
             options,
             line_changes: None,
         }
@@ -137,7 +135,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
-        let hline = "─".repeat(self.term_width - (PANEL_WIDTH + 1));
+        let hline = "─".repeat(self.options.term_width - (PANEL_WIDTH + 1));
         let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
 
         writeln!(self.handle, "{}", self.colors.grid.paint(hline))?;
