@@ -577,7 +577,7 @@ fn run() -> Result<()> {
                     print!("{:width$}{}", lang.name, separator, width = longest);
 
                     // Line-wrapping for the possible file extension overflow.
-                    let desired_width = 48;
+                    let desired_width = 90 - longest; 
                     // Number of characters on this line so far, wrap before `desired_width`
                     let mut num_chars = 0;
 
