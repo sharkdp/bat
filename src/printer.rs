@@ -1,6 +1,5 @@
 use ansi_term::Style;
 use errors::*;
-use std::borrow::Cow;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
@@ -80,13 +79,11 @@ impl<'a> Printer<'a> {
             self.print_line_number(line_number),
             self.print_git_marker(line_number),
             self.print_line_border(),
-            Some(
-                as_terminal_escaped(
-                    &regions,
-                    self.options.true_color,
-                    self.options.colored_output,
-                ).into(),
-            ),
+            Some(as_terminal_escaped(
+                &regions,
+                self.options.true_color,
+                self.options.colored_output,
+            )),
         ];
 
         let grid_requested = self.options.output_components.grid();
@@ -96,7 +93,7 @@ impl<'a> Printer<'a> {
             decorations
                 .into_iter()
                 .filter_map(|dec| if grid_requested {
-                    Some(dec.unwrap_or(" ".into()))
+                    Some(dec.unwrap_or(" ".to_owned()))
                 } else {
                     dec
                 })
@@ -107,23 +104,22 @@ impl<'a> Printer<'a> {
         Ok(())
     }
 
-    fn print_line_number<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
+    fn print_line_number<'s>(&self, line_number: usize) -> Option<String> {
         if self.options.output_components.numbers() {
             Some(
                 self.colors
                     .line_number
                     .paint(format!("{:4}", line_number))
-                    .to_string()
-                    .into(),
+                    .to_string(),
             )
         } else if self.options.output_components.grid() {
-            Some("    ".into())
+            Some("    ".to_owned())
         } else {
             None
         }
     }
 
-    fn print_git_marker<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
+    fn print_git_marker<'s>(&self, line_number: usize) -> Option<String> {
         if self.options.output_components.changes() {
             Some(
                 if let Some(ref changes) = self.line_changes {
@@ -136,19 +132,18 @@ impl<'a> Printer<'a> {
                     }
                 } else {
                     Style::default().paint(" ")
-                }.to_string()
-                    .into(),
+                }.to_string(),
             )
         } else if self.options.output_components.grid() {
-            Some(" ".into())
+            Some(" ".to_owned())
         } else {
             None
         }
     }
 
-    fn print_line_border<'s>(&self) -> Option<Cow<'s, str>> {
+    fn print_line_border<'s>(&self) -> Option<String> {
         if self.options.output_components.grid() {
-            Some(self.colors.grid.paint("│").to_string().into())
+            Some(self.colors.grid.paint("│").to_string())
         } else {
             None
         }
