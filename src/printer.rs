@@ -44,22 +44,20 @@ impl<'a> Printer<'a> {
                 " ".repeat(PANEL_WIDTH),
                 self.colors.grid.paint("│"),
             )?;
-
-            writeln!(
-                self.handle,
-                "{}{}",
-                filename.map_or("", |_| "File: "),
-                self.colors.filename.paint(filename.unwrap_or("STDIN"))
-            )?;
-
-            self.print_horizontal_line('┼')
-        } else {
-            writeln!(
-                self.handle,
-                "File {}",
-                self.colors.filename.paint(filename.unwrap_or("STDIN"))
-            ).map_err(Into::into)
         }
+
+        writeln!(
+            self.handle,
+            "{}{}",
+            filename.map_or("", |_| "File: "),
+            self.colors.filename.paint(filename.unwrap_or("STDIN"))
+        )?;
+
+        if self.options.output_components.grid() {
+            self.print_horizontal_line('┼')?;
+        }
+
+        Ok(())
     }
 
     pub fn print_footer(&mut self) -> Result<()> {
