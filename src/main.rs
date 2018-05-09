@@ -17,14 +17,14 @@ extern crate directories;
 extern crate git2;
 extern crate syntect;
 
+mod diff;
 mod printer;
 mod terminal;
 
-use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::{self, Child, Command, Stdio};
 
 #[cfg(unix)]
@@ -35,13 +35,13 @@ use ansi_term::Style;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgGroup, SubCommand};
 use directories::ProjectDirs;
-use git2::{DiffOptions, IntoCString, Repository};
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::easy::HighlightLines;
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::SyntaxSet;
 
+use diff::get_git_diff;
 use printer::Printer;
 
 lazy_static! {
@@ -109,16 +109,6 @@ impl Drop for OutputType {
         }
     }
 }
-
-#[derive(Copy, Clone, Debug)]
-pub enum LineChange {
-    Added,
-    RemovedAbove,
-    RemovedBelow,
-    Modified,
-}
-
-pub type LineChanges = HashMap<u32, LineChange>;
 
 const GRID_COLOR: u8 = 238;
 const LINE_NUMBER_COLOR: u8 = 244;
@@ -218,68 +208,6 @@ fn print_file(
     printer.print_footer()?;
 
     Ok(())
-}
-
-fn get_git_diff(filename: &str) -> Option<LineChanges> {
-    let repo = Repository::discover(&filename).ok()?;
-    let path_absolute = fs::canonicalize(&filename).ok()?;
-    let path_relative_to_repo = path_absolute.strip_prefix(repo.workdir()?).ok()?;
-
-    let mut diff_options = DiffOptions::new();
-    let pathspec = path_relative_to_repo.into_c_string().ok()?;
-    diff_options.pathspec(pathspec);
-    diff_options.context_lines(0);
-
-    let diff = repo.diff_index_to_workdir(None, Some(&mut diff_options))
-        .ok()?;
-
-    let mut line_changes: LineChanges = HashMap::new();
-
-    let mark_section =
-        |line_changes: &mut LineChanges, start: u32, end: i32, change: LineChange| {
-            for line in start..(end + 1) as u32 {
-                line_changes.insert(line, change);
-            }
-        };
-
-    let _ = diff.foreach(
-        &mut |_, _| true,
-        None,
-        Some(&mut |delta, hunk| {
-            let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
-
-            if path_relative_to_repo != path {
-                return false;
-            }
-
-            let old_lines = hunk.old_lines();
-            let new_start = hunk.new_start();
-            let new_lines = hunk.new_lines();
-            let new_end = (new_start + new_lines) as i32 - 1;
-
-            if old_lines == 0 && new_lines > 0 {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Added);
-            } else if new_lines == 0 && old_lines > 0 {
-                if new_start == 0 {
-                    mark_section(&mut line_changes, 1, 1, LineChange::RemovedAbove);
-                } else {
-                    mark_section(
-                        &mut line_changes,
-                        new_start,
-                        new_start as i32,
-                        LineChange::RemovedBelow,
-                    );
-                }
-            } else {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Modified);
-            }
-
-            true
-        }),
-        None,
-    );
-
-    Some(line_changes)
 }
 
 fn get_output_type(paging: bool) -> OutputType {

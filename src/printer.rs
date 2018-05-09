@@ -1,9 +1,10 @@
 use ansi_term::Style;
+use diff::{LineChange, LineChanges};
 use errors::*;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use {Colors, LineChange, LineChanges, Options, OptionsStyle};
+use {Colors, Options, OptionsStyle};
 
 const PANEL_WIDTH: usize = 7;
 
