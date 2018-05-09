@@ -20,7 +20,7 @@ extern crate syntect;
 mod printer;
 mod terminal;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
@@ -71,7 +71,7 @@ mod errors {
 
 use errors::*;
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum OutputComponent {
     Changes,
     Grid,
@@ -115,9 +115,29 @@ impl FromStr for OutputComponent {
     }
 }
 
+pub struct OutputComponents(HashSet<OutputComponent>);
+
+impl OutputComponents {
+    fn changes(&self) -> bool {
+        self.0.contains(&OutputComponent::Changes)
+    }
+
+    fn grid(&self) -> bool {
+        self.0.contains(&OutputComponent::Grid)
+    }
+
+    fn header(&self) -> bool {
+        self.0.contains(&OutputComponent::Header)
+    }
+
+    fn numbers(&self) -> bool {
+        self.0.contains(&OutputComponent::Numbers)
+    }
+}
+
 pub struct Options<'a> {
     pub true_color: bool,
-    pub output_components: &'a [OutputComponent],
+    pub output_components: OutputComponents,
     pub language: Option<&'a str>,
     pub colored_output: bool,
     pub paging: bool,
@@ -601,14 +621,14 @@ fn run() -> Result<()> {
             let output_components = values_t!(app_matches.values_of("style"), OutputComponent)?
                 .into_iter()
                 .map(|style| style.components())
-                .fold(vec![], |mut acc, x| {
-                    acc.extend_from_slice(x);
+                .fold(HashSet::new(), |mut acc, components| {
+                    acc.extend(components.iter().cloned());
                     acc
                 });
 
             let options = Options {
                 true_color: is_truecolor_terminal(),
-                output_components: &output_components,
+                output_components: OutputComponents(output_components),
                 language: app_matches.value_of("language"),
                 colored_output: match app_matches.value_of("color") {
                     Some("always") => true,

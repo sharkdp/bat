@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use {Colors, LineChange, LineChanges, Options, OutputComponent};
+use {Colors, LineChange, LineChanges, Options};
 
 const PANEL_WIDTH: usize = 7;
 
@@ -32,17 +32,11 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
-        if !self.options
-            .output_components
-            .contains(&OutputComponent::Header)
-        {
+        if !self.options.output_components.header() {
             return Ok(());
         }
 
-        if self.options
-            .output_components
-            .contains(&OutputComponent::Grid)
-        {
+        if self.options.output_components.grid() {
             self.print_horizontal_line('┬')?;
 
             write!(
@@ -70,10 +64,7 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_footer(&mut self) -> Result<()> {
-        if self.options
-            .output_components
-            .contains(&OutputComponent::Grid)
-        {
+        if self.options.output_components.grid() {
             self.print_horizontal_line('┴')
         } else {
             Ok(())
@@ -98,9 +89,7 @@ impl<'a> Printer<'a> {
             ),
         ];
 
-        let grid_requested = self.options
-            .output_components
-            .contains(&OutputComponent::Grid);
+        let grid_requested = self.options.output_components.grid();
         write!(
             self.handle,
             "{}",
@@ -119,10 +108,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_line_number<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
-        if self.options
-            .output_components
-            .contains(&OutputComponent::Numbers)
-        {
+        if self.options.output_components.numbers() {
             Some(
                 self.colors
                     .line_number
@@ -130,10 +116,7 @@ impl<'a> Printer<'a> {
                     .to_string()
                     .into(),
             )
-        } else if self.options
-            .output_components
-            .contains(&OutputComponent::Grid)
-        {
+        } else if self.options.output_components.grid() {
             Some("    ".into())
         } else {
             None
@@ -141,10 +124,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_git_marker<'s>(&self, line_number: usize) -> Option<Cow<'s, str>> {
-        if self.options
-            .output_components
-            .contains(&OutputComponent::Changes)
-        {
+        if self.options.output_components.changes() {
             Some(
                 if let Some(ref changes) = self.line_changes {
                     match changes.get(&(line_number as u32)) {
@@ -159,10 +139,7 @@ impl<'a> Printer<'a> {
                 }.to_string()
                     .into(),
             )
-        } else if self.options
-            .output_components
-            .contains(&OutputComponent::Grid)
-        {
+        } else if self.options.output_components.grid() {
             Some(" ".into())
         } else {
             None
@@ -170,10 +147,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_line_border<'s>(&self) -> Option<Cow<'s, str>> {
-        if self.options
-            .output_components
-            .contains(&OutputComponent::Grid)
-        {
+        if self.options.output_components.grid() {
             Some(self.colors.grid.paint("│").to_string().into())
         } else {
             None
