@@ -63,16 +63,23 @@ Explicitly specify the language
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
 binary builds and Debian packages.
 
-#### Arch Linux
+#### On Arch Linux
 
-On Arch Linux, you can install
-[the AUR package](https://aur.archlinux.org/packages/bat/) via yaourt, or
-manually:
+You can install [the AUR package](https://aur.archlinux.org/packages/bat/)
+via yaourt, or manually:
 
 ```bash
 git clone https://aur.archlinux.org/bat.git
 cd bat
 makepkg -si
+```
+
+#### On macOS
+
+You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
+
+``` bash
+brew install bat
 ```
 
 ### From source
