@@ -102,7 +102,7 @@ impl<'a> Printer<'a> {
         Ok(())
     }
 
-    fn print_line_number<'s>(&self, line_number: usize) -> Option<String> {
+    fn print_line_number(&self, line_number: usize) -> Option<String> {
         if self.options.output_components.numbers() {
             Some(
                 self.colors
@@ -117,7 +117,7 @@ impl<'a> Printer<'a> {
         }
     }
 
-    fn print_git_marker<'s>(&self, line_number: usize) -> Option<String> {
+    fn print_git_marker(&self, line_number: usize) -> Option<String> {
         if self.options.output_components.changes() {
             Some(
                 if let Some(ref changes) = self.line_changes {
@@ -139,7 +139,7 @@ impl<'a> Printer<'a> {
         }
     }
 
-    fn print_line_border<'s>(&self) -> Option<String> {
+    fn print_line_border(&self) -> Option<String> {
         if self.options.output_components.grid() {
             Some(self.colors.grid.paint("│").to_string())
         } else {
