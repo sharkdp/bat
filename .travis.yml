@@ -51,6 +51,8 @@ addons:
       - gcc-multilib
       # needed for musl targets
       - musl-tools
+      # needed for i686 targets
+      - musl-tools:i386
       # needed to build deb packages
       - fakeroot
 
