@@ -17,6 +17,8 @@ extern crate directories;
 extern crate git2;
 extern crate syntect;
 
+mod assets;
+mod diff;
 mod printer;
 mod terminal;
 
@@ -24,7 +26,6 @@ use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
-use std::path::{Path, PathBuf};
 use std::process::{self, Child, Command, Stdio};
 use std::str::FromStr;
 
@@ -35,19 +36,14 @@ use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 use atty::Stream;
 use clap::{App, AppSettings, Arg, ArgGroup, SubCommand};
-use directories::ProjectDirs;
-use git2::{DiffOptions, IntoCString, Repository};
 
-use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::easy::HighlightLines;
-use syntect::highlighting::{Theme, ThemeSet};
+use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
+use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
+use diff::get_git_diff;
 use printer::Printer;
-
-lazy_static! {
-    static ref PROJECT_DIRS: ProjectDirs = ProjectDirs::from("", "", crate_name!());
-}
 
 mod errors {
     error_chain! {
@@ -181,16 +177,6 @@ impl Drop for OutputType {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub enum LineChange {
-    Added,
-    RemovedAbove,
-    RemovedBelow,
-    Modified,
-}
-
-pub type LineChanges = HashMap<u32, LineChange>;
-
 const GRID_COLOR: u8 = 238;
 const LINE_NUMBER_COLOR: u8 = 244;
 
@@ -291,68 +277,6 @@ fn print_file(
     Ok(())
 }
 
-fn get_git_diff(filename: &str) -> Option<LineChanges> {
-    let repo = Repository::discover(&filename).ok()?;
-    let path_absolute = fs::canonicalize(&filename).ok()?;
-    let path_relative_to_repo = path_absolute.strip_prefix(repo.workdir()?).ok()?;
-
-    let mut diff_options = DiffOptions::new();
-    let pathspec = path_relative_to_repo.into_c_string().ok()?;
-    diff_options.pathspec(pathspec);
-    diff_options.context_lines(0);
-
-    let diff = repo.diff_index_to_workdir(None, Some(&mut diff_options))
-        .ok()?;
-
-    let mut line_changes: LineChanges = HashMap::new();
-
-    let mark_section =
-        |line_changes: &mut LineChanges, start: u32, end: i32, change: LineChange| {
-            for line in start..(end + 1) as u32 {
-                line_changes.insert(line, change);
-            }
-        };
-
-    let _ = diff.foreach(
-        &mut |_, _| true,
-        None,
-        Some(&mut |delta, hunk| {
-            let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
-
-            if path_relative_to_repo != path {
-                return false;
-            }
-
-            let old_lines = hunk.old_lines();
-            let new_start = hunk.new_start();
-            let new_lines = hunk.new_lines();
-            let new_end = (new_start + new_lines) as i32 - 1;
-
-            if old_lines == 0 && new_lines > 0 {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Added);
-            } else if new_lines == 0 && old_lines > 0 {
-                if new_start == 0 {
-                    mark_section(&mut line_changes, 1, 1, LineChange::RemovedAbove);
-                } else {
-                    mark_section(
-                        &mut line_changes,
-                        new_start,
-                        new_start as i32,
-                        LineChange::RemovedBelow,
-                    );
-                }
-            } else {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Modified);
-            }
-
-            true
-        }),
-        None,
-    );
-
-    Some(line_changes)
-}
-
 fn get_output_type(paging: bool) -> OutputType {
     if paging {
         OutputType::pager().unwrap_or_else(|_| OutputType::stdout())
@@ -365,129 +289,6 @@ fn is_truecolor_terminal() -> bool {
     env::var("COLORTERM")
         .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
         .unwrap_or(false)
-}
-
-struct HighlightingAssets {
-    pub syntax_set: SyntaxSet,
-    pub theme_set: ThemeSet,
-}
-
-impl HighlightingAssets {
-    fn theme_set_path() -> PathBuf {
-        PROJECT_DIRS.cache_dir().join("theme_set")
-    }
-
-    fn syntax_set_path() -> PathBuf {
-        PROJECT_DIRS.cache_dir().join("syntax_set")
-    }
-
-    fn from_files() -> Result<Self> {
-        let config_dir = PROJECT_DIRS.config_dir();
-
-        let theme_dir = config_dir.join("themes");
-
-        let theme_set = ThemeSet::load_from_folder(&theme_dir).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not load themes from '{}'",
-                    theme_dir.to_string_lossy()
-                ),
-            )
-        })?;
-
-        let mut syntax_set = SyntaxSet::new();
-        let syntax_dir = config_dir.join("syntax");
-        let _ = syntax_set.load_syntaxes(syntax_dir, true);
-        syntax_set.load_plain_text_syntax();
-
-        Ok(HighlightingAssets {
-            syntax_set,
-            theme_set,
-        })
-    }
-
-    fn save(&self) -> Result<()> {
-        let cache_dir = PROJECT_DIRS.cache_dir();
-        let _ = fs::create_dir(cache_dir);
-
-        print!(
-            "Writing theme set to {} ... ",
-            Self::theme_set_path().to_string_lossy()
-        );
-        dump_to_file(&self.theme_set, &Self::theme_set_path()).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not save theme set to {}",
-                    Self::theme_set_path().to_string_lossy()
-                ),
-            )
-        })?;
-        println!("okay");
-
-        print!(
-            "Writing syntax set to {} ... ",
-            Self::syntax_set_path().to_string_lossy()
-        );
-        dump_to_file(&self.syntax_set, &Self::syntax_set_path()).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not save syntax set to {}",
-                    Self::syntax_set_path().to_string_lossy()
-                ),
-            )
-        })?;
-        println!("okay");
-
-        Ok(())
-    }
-
-    fn from_cache() -> Result<Self> {
-        let syntax_set_file = File::open(&Self::syntax_set_path()).chain_err(|| {
-            format!(
-                "Could not load cached syntax set '{}'",
-                Self::syntax_set_path().to_string_lossy()
-            )
-        })?;
-        let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not parse cached syntax set"),
-            )
-        })?;
-        syntax_set.link_syntaxes();
-
-        let theme_set_file = File::open(&Self::theme_set_path()).chain_err(|| {
-            format!(
-                "Could not load cached theme set '{}'",
-                Self::theme_set_path().to_string_lossy()
-            )
-        })?;
-        let theme_set: ThemeSet = from_reader(theme_set_file).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not parse cached theme set"),
-            )
-        })?;
-
-        Ok(HighlightingAssets {
-            syntax_set,
-            theme_set,
-        })
-    }
-
-    fn from_binary() -> Self {
-        let mut syntax_set: SyntaxSet = from_binary(include_bytes!("../assets/syntax_set"));
-        syntax_set.link_syntaxes();
-        let theme_set: ThemeSet = from_binary(include_bytes!("../assets/theme_set"));
-
-        HighlightingAssets {
-            syntax_set,
-            theme_set,
-        }
-    }
 }
 
 fn run() -> Result<()> {
@@ -592,14 +393,14 @@ fn run() -> Result<()> {
                 assets.save()?;
             } else if cache_matches.is_present("clear") {
                 print!("Clearing theme set cache ... ");
-                fs::remove_file(HighlightingAssets::theme_set_path())?;
+                fs::remove_file(theme_set_path())?;
                 println!("okay");
 
                 print!("Clearing syntax set cache ... ");
-                fs::remove_file(HighlightingAssets::syntax_set_path())?;
+                fs::remove_file(syntax_set_path())?;
                 println!("okay");
             } else if cache_matches.is_present("config-dir") {
-                println!("{}", PROJECT_DIRS.config_dir().to_string_lossy());
+                println!("{}", config_dir());
             }
         }
         _ => {
@@ -650,15 +451,8 @@ fn run() -> Result<()> {
                 term_width: console::Term::stdout().size().1 as usize,
             };
 
-            let assets =
-                HighlightingAssets::from_cache().unwrap_or(HighlightingAssets::from_binary());
-
-            let theme = assets.theme_set.themes.get("Default").ok_or_else(|| {
-                io::Error::new(
-                    io::ErrorKind::Other,
-                    format!("Could not find 'Default' theme"),
-                )
-            })?;
+            let assets = HighlightingAssets::new();
+            let theme = assets.default_theme()?;
 
             if app_matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
