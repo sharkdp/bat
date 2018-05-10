@@ -1,23 +1,24 @@
 use ansi_term::Style;
+use app::Config;
 use diff::{LineChange, LineChanges};
 use errors::*;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use {Colors, Options};
+use Colors;
 
 const PANEL_WIDTH: usize = 7;
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
     colors: Colors,
-    options: &'a Options<'a>,
+    config: &'a Config<'a>,
     pub line_changes: Option<LineChanges>,
 }
 
 impl<'a> Printer<'a> {
-    pub fn new(handle: &'a mut Write, options: &'a Options) -> Self {
-        let colors = if options.colored_output {
+    pub fn new(handle: &'a mut Write, config: &'a Config) -> Self {
+        let colors = if config.colored_output {
             Colors::colored()
         } else {
             Colors::plain()
@@ -26,17 +27,17 @@ impl<'a> Printer<'a> {
         Printer {
             handle,
             colors,
-            options,
+            config,
             line_changes: None,
         }
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
-        if !self.options.output_components.header() {
+        if !self.config.output_components.header() {
             return Ok(());
         }
 
-        if self.options.output_components.grid() {
+        if self.config.output_components.grid() {
             self.print_horizontal_line('┬')?;
 
             write!(
@@ -54,7 +55,7 @@ impl<'a> Printer<'a> {
             self.colors.filename.paint(filename.unwrap_or("STDIN"))
         )?;
 
-        if self.options.output_components.grid() {
+        if self.config.output_components.grid() {
             self.print_horizontal_line('┼')?;
         }
 
@@ -62,7 +63,7 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_footer(&mut self) -> Result<()> {
-        if self.options.output_components.grid() {
+        if self.config.output_components.grid() {
             self.print_horizontal_line('┴')
         } else {
             Ok(())
@@ -80,12 +81,12 @@ impl<'a> Printer<'a> {
             self.print_line_border(),
             Some(as_terminal_escaped(
                 &regions,
-                self.options.true_color,
-                self.options.colored_output,
+                self.config.true_color,
+                self.config.colored_output,
             )),
         ];
 
-        let grid_requested = self.options.output_components.grid();
+        let grid_requested = self.config.output_components.grid();
         write!(
             self.handle,
             "{}",
@@ -104,14 +105,14 @@ impl<'a> Printer<'a> {
     }
 
     fn print_line_number(&self, line_number: usize) -> Option<String> {
-        if self.options.output_components.numbers() {
+        if self.config.output_components.numbers() {
             Some(
                 self.colors
                     .line_number
                     .paint(format!("{:4}", line_number))
                     .to_string(),
             )
-        } else if self.options.output_components.grid() {
+        } else if self.config.output_components.grid() {
             Some("    ".to_owned())
         } else {
             None
@@ -119,7 +120,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_git_marker(&self, line_number: usize) -> Option<String> {
-        if self.options.output_components.changes() {
+        if self.config.output_components.changes() {
             Some(
                 if let Some(ref changes) = self.line_changes {
                     match changes.get(&(line_number as u32)) {
@@ -133,7 +134,7 @@ impl<'a> Printer<'a> {
                     Style::default().paint(" ")
                 }.to_string(),
             )
-        } else if self.options.output_components.grid() {
+        } else if self.config.output_components.grid() {
             Some(" ".to_owned())
         } else {
             None
@@ -141,7 +142,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_line_border(&self) -> Option<String> {
-        if self.options.output_components.grid() {
+        if self.config.output_components.grid() {
             Some(self.colors.grid.paint("│").to_string())
         } else {
             None
@@ -149,7 +150,7 @@ impl<'a> Printer<'a> {
     }
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
-        let hline = "─".repeat(self.options.term_width - (PANEL_WIDTH + 1));
+        let hline = "─".repeat(self.config.term_width - (PANEL_WIDTH + 1));
         let hline = format!("{}{}{}", "─".repeat(PANEL_WIDTH), grid_char, hline);
 
         writeln!(self.handle, "{}", self.colors.grid.paint(hline))?;

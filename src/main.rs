@@ -17,13 +17,13 @@ extern crate directories;
 extern crate git2;
 extern crate syntect;
 
+mod app;
 mod assets;
 mod diff;
 mod printer;
 mod terminal;
 
 use std::collections::HashSet;
-use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::{self, Child, Command, Stdio};
@@ -34,13 +34,12 @@ use std::os::unix::fs::FileTypeExt;
 
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
-use atty::Stream;
-use clap::{App, AppSettings, Arg, ArgGroup, SubCommand};
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
+use app::{App, Config};
 use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
 use diff::get_git_diff;
 use printer::Printer;
@@ -215,7 +214,7 @@ impl Colors {
 }
 
 fn print_file(
-    options: &Options,
+    config: &Config,
     theme: &Theme,
     syntax_set: &SyntaxSet,
     printer: &mut Printer,
@@ -228,7 +227,7 @@ fn print_file(
         Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
     };
 
-    let syntax = match (options.language, filename) {
+    let syntax = match (config.language, filename) {
         (Some(language), _) => syntax_set.find_syntax_by_token(language),
         (None, Some(filename)) => {
             #[cfg(not(unix))]
@@ -292,110 +291,10 @@ fn get_output_type(paging: bool) -> OutputType {
     }
 }
 
-fn is_truecolor_terminal() -> bool {
-    env::var("COLORTERM")
-        .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
-        .unwrap_or(false)
-}
-
 fn run() -> Result<()> {
-    let interactive_terminal = atty::is(Stream::Stdout);
+    let app = App::new();
 
-    let clap_color_setting = if interactive_terminal {
-        AppSettings::ColoredHelp
-    } else {
-        AppSettings::ColorNever
-    };
-
-    let app_matches = App::new(crate_name!())
-        .version(crate_version!())
-        .global_setting(clap_color_setting)
-        .global_setting(AppSettings::DeriveDisplayOrder)
-        .global_setting(AppSettings::UnifiedHelpMessage)
-        .global_setting(AppSettings::NextLineHelp)
-        .setting(AppSettings::InferSubcommands)
-        .setting(AppSettings::ArgsNegateSubcommands)
-        .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::VersionlessSubcommands)
-        .max_term_width(90)
-        .about(crate_description!())
-        .arg(
-            Arg::with_name("language")
-                .short("l")
-                .long("language")
-                .help("Set the language for highlighting")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("FILE")
-                .help("File(s) to print")
-                .multiple(true)
-                .empty_values(false),
-        )
-        .arg(
-            Arg::with_name("style")
-                .long("style")
-                .use_delimiter(true)
-                .takes_value(true)
-                .possible_values(&[
-                    "auto", "full", "plain", "changes", "header", "grid", "numbers",
-                ])
-                .default_value("auto")
-                .help("Additional info to display along with content"),
-        )
-        .arg(
-            Arg::with_name("color")
-                .long("color")
-                .takes_value(true)
-                .possible_values(&["auto", "never", "always"])
-                .default_value("auto")
-                .help("When to use colors"),
-        )
-        .arg(
-            Arg::with_name("paging")
-                .long("paging")
-                .takes_value(true)
-                .possible_values(&["auto", "never", "always"])
-                .default_value("auto")
-                .help("When to use the pager"),
-        )
-        .arg(
-            Arg::with_name("list-languages")
-                .long("list-languages")
-                .help("Displays supported languages"),
-        )
-        .subcommand(
-            SubCommand::with_name("cache")
-                .about("Modify the syntax-definition and theme cache")
-                .arg(
-                    Arg::with_name("init")
-                        .long("init")
-                        .short("i")
-                        .help("Initialize the cache by loading from the config dir"),
-                )
-                .arg(
-                    Arg::with_name("clear")
-                        .long("clear")
-                        .short("c")
-                        .help("Reset the cache"),
-                )
-                .arg(
-                    Arg::with_name("config-dir")
-                        .long("config-dir")
-                        .short("d")
-                        .help("Show the configuration directory"),
-                )
-                .group(
-                    ArgGroup::with_name("cache-actions")
-                        .args(&["init", "clear", "config-dir"])
-                        .required(true),
-                ),
-        )
-        .help_message("Print this help message.")
-        .version_message("Show version information.")
-        .get_matches();
-
-    match app_matches.subcommand() {
+    match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
             if cache_matches.is_present("init") {
                 let assets = HighlightingAssets::from_files()?;
@@ -413,57 +312,12 @@ fn run() -> Result<()> {
             }
         }
         _ => {
-            let files: Vec<Option<&str>> = app_matches
-                .values_of("FILE")
-                .map(|values| {
-                    values
-                        .map(|filename| {
-                            if filename == "-" {
-                                None
-                            } else {
-                                Some(filename)
-                            }
-                        })
-                        .collect()
-                })
-                .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
-
-            let output_components = values_t!(app_matches.values_of("style"), OutputComponent)?
-                .into_iter()
-                .map(|style| style.components(interactive_terminal))
-                .fold(HashSet::new(), |mut acc, components| {
-                    acc.extend(components.iter().cloned());
-                    acc
-                });
-
-            let options = Options {
-                true_color: is_truecolor_terminal(),
-                output_components: OutputComponents(output_components),
-                language: app_matches.value_of("language"),
-                colored_output: match app_matches.value_of("color") {
-                    Some("always") => true,
-                    Some("never") => false,
-                    _ => interactive_terminal,
-                },
-                paging: match app_matches.value_of("paging") {
-                    Some("always") => true,
-                    Some("never") => false,
-                    Some("auto") | _ => if files.contains(&None) {
-                        // If we are reading from stdin, only enable paging if we write to an
-                        // interactive terminal and if we do not *read* from an interactive
-                        // terminal.
-                        interactive_terminal && !atty::is(Stream::Stdin)
-                    } else {
-                        interactive_terminal
-                    },
-                },
-                term_width: console::Term::stdout().size().1 as usize,
-            };
+            let config = app.config()?;
 
             let assets = HighlightingAssets::new();
             let theme = assets.default_theme()?;
 
-            if app_matches.is_present("list-languages") {
+            if app.matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
 
                 let longest = languages
@@ -481,7 +335,7 @@ fn run() -> Result<()> {
                     print!("{:width$}{}", lang.name, separator, width = longest);
 
                     // Line-wrapping for the possible file extension overflow.
-                    let desired_width = options.term_width - longest - separator.len();
+                    let desired_width = config.term_width - longest - separator.len();
                     // Number of characters on this line so far, wrap before `desired_width`
                     let mut num_chars = 0;
 
@@ -507,14 +361,14 @@ fn run() -> Result<()> {
                 return Ok(());
             }
 
-            let mut output_type = get_output_type(options.paging);
+            let mut output_type = get_output_type(config.paging);
             let handle = output_type.handle()?;
-            let mut printer = Printer::new(handle, &options);
+            let mut printer = Printer::new(handle, &config);
 
-            for file in files {
+            for file in &config.files {
                 printer.line_changes = file.and_then(|filename| get_git_diff(filename));
 
-                print_file(&options, theme, &assets.syntax_set, &mut printer, file)?;
+                print_file(&config, theme, &assets.syntax_set, &mut printer, *file)?;
             }
         }
     }
