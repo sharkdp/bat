@@ -57,10 +57,7 @@ impl HighlightingAssets {
             )
         })?;
         let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not parse cached syntax set"),
-            )
+            io::Error::new(io::ErrorKind::Other, "Could not parse cached syntax set")
         })?;
         syntax_set.link_syntaxes();
 
@@ -70,12 +67,8 @@ impl HighlightingAssets {
                 theme_set_path.to_string_lossy()
             )
         })?;
-        let theme_set: ThemeSet = from_reader(theme_set_file).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not parse cached theme set"),
-            )
-        })?;
+        let theme_set: ThemeSet = from_reader(theme_set_file)
+            .map_err(|_| io::Error::new(io::ErrorKind::Other, "Could not parse cached theme set"))?;
 
         Ok(HighlightingAssets {
             syntax_set,
@@ -134,12 +127,10 @@ impl HighlightingAssets {
     }
 
     pub fn default_theme(&self) -> Result<&Theme> {
-        Ok(self.theme_set.themes.get("Default").ok_or_else(|| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not find 'Default' theme"),
-            )
-        })?)
+        Ok(self.theme_set
+            .themes
+            .get("Default")
+            .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "Could not find 'Default' theme"))?)
     }
 }
 

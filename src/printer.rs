@@ -92,7 +92,7 @@ impl<'a> Printer<'a> {
             decorations
                 .into_iter()
                 .filter_map(|dec| if grid_requested {
-                    Some(dec.unwrap_or(" ".to_owned()))
+                    Some(dec.unwrap_or_else(|| " ".to_owned()))
                 } else {
                     dec
                 })
