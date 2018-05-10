@@ -69,6 +69,7 @@ use errors::*;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum OutputComponent {
+    Auto,
     Changes,
     Grid,
     Header,
@@ -78,8 +79,13 @@ pub enum OutputComponent {
 }
 
 impl OutputComponent {
-    fn components(&self) -> &'static [OutputComponent] {
+    fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
         match *self {
+            OutputComponent::Auto => if interactive_terminal {
+                OutputComponent::Full.components(interactive_terminal)
+            } else {
+                OutputComponent::Plain.components(interactive_terminal)
+            },
             OutputComponent::Changes => &[OutputComponent::Changes],
             OutputComponent::Grid => &[OutputComponent::Grid],
             OutputComponent::Header => &[OutputComponent::Header],
@@ -100,6 +106,7 @@ impl FromStr for OutputComponent {
 
     fn from_str(s: &str) -> Result<Self> {
         match s {
+            "auto" => Ok(OutputComponent::Auto),
             "changes" => Ok(OutputComponent::Changes),
             "grid" => Ok(OutputComponent::Grid),
             "header" => Ok(OutputComponent::Header),
@@ -330,8 +337,10 @@ fn run() -> Result<()> {
                 .long("style")
                 .use_delimiter(true)
                 .takes_value(true)
-                .possible_values(&["full", "plain", "changes", "header", "grid", "numbers"])
-                .default_value("full")
+                .possible_values(&[
+                    "auto", "full", "plain", "changes", "header", "grid", "numbers",
+                ])
+                .default_value("auto")
                 .help("Additional info to display along with content"),
         )
         .arg(
@@ -421,7 +430,7 @@ fn run() -> Result<()> {
 
             let output_components = values_t!(app_matches.values_of("style"), OutputComponent)?
                 .into_iter()
-                .map(|style| style.components())
+                .map(|style| style.components(interactive_terminal))
                 .fold(HashSet::new(), |mut acc, components| {
                     acc.extend(components.iter().cloned());
                     acc
