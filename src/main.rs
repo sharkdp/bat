@@ -22,10 +22,12 @@ mod diff;
 mod printer;
 mod terminal;
 
+use std::collections::{HashMap, HashSet};
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::{self, Child, Command, Stdio};
+use std::str::FromStr;
 
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
@@ -46,22 +48,92 @@ use printer::Printer;
 mod errors {
     error_chain! {
         foreign_links {
+            Clap(::clap::Error);
             Io(::std::io::Error);
+        }
+
+        errors {
+            NoCorrectStylesSpecified {
+                description("no correct styles specified")
+            }
+
+            UnknownStyleName(name: String) {
+                description("unknown style name")
+                display("unknown style name: '{}'", name)
+            }
         }
     }
 }
 
 use errors::*;
 
-pub enum OptionsStyle {
-    Plain,
-    LineNumbers,
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
+pub enum OutputComponent {
+    Changes,
+    Grid,
+    Header,
+    Numbers,
     Full,
+    Plain,
+}
+
+impl OutputComponent {
+    fn components(&self) -> &'static [OutputComponent] {
+        match *self {
+            OutputComponent::Changes => &[OutputComponent::Changes],
+            OutputComponent::Grid => &[OutputComponent::Grid],
+            OutputComponent::Header => &[OutputComponent::Header],
+            OutputComponent::Numbers => &[OutputComponent::Numbers],
+            OutputComponent::Full => &[
+                OutputComponent::Changes,
+                OutputComponent::Grid,
+                OutputComponent::Header,
+                OutputComponent::Numbers,
+            ],
+            OutputComponent::Plain => &[],
+        }
+    }
+}
+
+impl FromStr for OutputComponent {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "changes" => Ok(OutputComponent::Changes),
+            "grid" => Ok(OutputComponent::Grid),
+            "header" => Ok(OutputComponent::Header),
+            "numbers" => Ok(OutputComponent::Numbers),
+            "full" => Ok(OutputComponent::Full),
+            "plain" => Ok(OutputComponent::Plain),
+            _ => Err(ErrorKind::UnknownStyleName(s.to_owned()).into()),
+        }
+    }
+}
+
+pub struct OutputComponents(HashSet<OutputComponent>);
+
+impl OutputComponents {
+    fn changes(&self) -> bool {
+        self.0.contains(&OutputComponent::Changes)
+    }
+
+    fn grid(&self) -> bool {
+        self.0.contains(&OutputComponent::Grid)
+    }
+
+    fn header(&self) -> bool {
+        self.0.contains(&OutputComponent::Header)
+    }
+
+    fn numbers(&self) -> bool {
+        self.0.contains(&OutputComponent::Numbers)
+    }
 }
 
 pub struct Options<'a> {
     pub true_color: bool,
-    pub style: OptionsStyle,
+    pub output_components: OutputComponents,
     pub language: Option<&'a str>,
     pub colored_output: bool,
     pub paging: bool,
@@ -256,8 +328,10 @@ fn run() -> Result<()> {
         .arg(
             Arg::with_name("style")
                 .long("style")
-                .possible_values(&["auto", "plain", "line-numbers", "full"])
-                .default_value("auto")
+                .use_delimiter(true)
+                .takes_value(true)
+                .possible_values(&["full", "plain", "changes", "header", "grid", "numbers"])
+                .default_value("full")
                 .help("Additional info to display along with content"),
         )
         .arg(
@@ -345,18 +419,17 @@ fn run() -> Result<()> {
                 })
                 .unwrap_or_else(|| vec![None]); // read from stdin (None) if no args are given
 
+            let output_components = values_t!(app_matches.values_of("style"), OutputComponent)?
+                .into_iter()
+                .map(|style| style.components())
+                .fold(HashSet::new(), |mut acc, components| {
+                    acc.extend(components.iter().cloned());
+                    acc
+                });
+
             let options = Options {
                 true_color: is_truecolor_terminal(),
-                style: match app_matches.value_of("style") {
-                    Some("plain") => OptionsStyle::Plain,
-                    Some("line-numbers") => OptionsStyle::LineNumbers,
-                    Some("full") => OptionsStyle::Full,
-                    Some("auto") | _ => if interactive_terminal {
-                        OptionsStyle::Full
-                    } else {
-                        OptionsStyle::Plain
-                    },
-                },
+                output_components: OutputComponents(output_components),
                 language: app_matches.value_of("language"),
                 colored_output: match app_matches.value_of("color") {
                     Some("always") => true,

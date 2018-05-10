@@ -4,7 +4,7 @@ use errors::*;
 use std::io::Write;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use {Colors, Options, OptionsStyle};
+use {Colors, Options};
 
 const PANEL_WIDTH: usize = 7;
 
@@ -32,19 +32,20 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
-        match self.options.style {
-            OptionsStyle::Full => {}
-            _ => return Ok(()),
+        if !self.options.output_components.header() {
+            return Ok(());
         }
 
-        self.print_horizontal_line('┬')?;
+        if self.options.output_components.grid() {
+            self.print_horizontal_line('┬')?;
 
-        write!(
-            self.handle,
-            "{}{} ",
-            " ".repeat(PANEL_WIDTH),
-            self.colors.grid.paint("│"),
-        )?;
+            write!(
+                self.handle,
+                "{}{} ",
+                " ".repeat(PANEL_WIDTH),
+                self.colors.grid.paint("│"),
+            )?;
+        }
 
         writeln!(
             self.handle,
@@ -53,11 +54,15 @@ impl<'a> Printer<'a> {
             self.colors.filename.paint(filename.unwrap_or("STDIN"))
         )?;
 
-        self.print_horizontal_line('┼')
+        if self.options.output_components.grid() {
+            self.print_horizontal_line('┼')?;
+        }
+
+        Ok(())
     }
 
     pub fn print_footer(&mut self) -> Result<()> {
-        if let OptionsStyle::Full = self.options.style {
+        if self.options.output_components.grid() {
             self.print_horizontal_line('┴')
         } else {
             Ok(())
@@ -80,12 +85,17 @@ impl<'a> Printer<'a> {
             )),
         ];
 
+        let grid_requested = self.options.output_components.grid();
         write!(
             self.handle,
             "{}",
             decorations
                 .into_iter()
-                .filter_map(|dec| dec)
+                .filter_map(|dec| if grid_requested {
+                    Some(dec.unwrap_or(" ".to_owned()))
+                } else {
+                    dec
+                })
                 .collect::<Vec<_>>()
                 .join(" ")
         )?;
@@ -94,45 +104,48 @@ impl<'a> Printer<'a> {
     }
 
     fn print_line_number(&self, line_number: usize) -> Option<String> {
-        if let OptionsStyle::Plain = self.options.style {
-            return None;
+        if self.options.output_components.numbers() {
+            Some(
+                self.colors
+                    .line_number
+                    .paint(format!("{:4}", line_number))
+                    .to_string(),
+            )
+        } else if self.options.output_components.grid() {
+            Some("    ".to_owned())
+        } else {
+            None
         }
-
-        Some(
-            self.colors
-                .line_number
-                .paint(format!("{:4}", line_number))
-                .to_string(),
-        )
     }
 
     fn print_git_marker(&self, line_number: usize) -> Option<String> {
-        match self.options.style {
-            OptionsStyle::Full => {}
-            _ => return None,
-        }
-
-        let marker = if let Some(ref changes) = self.line_changes {
-            match changes.get(&(line_number as u32)) {
-                Some(&LineChange::Added) => self.colors.git_added.paint("+"),
-                Some(&LineChange::RemovedAbove) => self.colors.git_removed.paint("‾"),
-                Some(&LineChange::RemovedBelow) => self.colors.git_removed.paint("_"),
-                Some(&LineChange::Modified) => self.colors.git_modified.paint("~"),
-                _ => Style::default().paint(" "),
-            }
+        if self.options.output_components.changes() {
+            Some(
+                if let Some(ref changes) = self.line_changes {
+                    match changes.get(&(line_number as u32)) {
+                        Some(&LineChange::Added) => self.colors.git_added.paint("+"),
+                        Some(&LineChange::RemovedAbove) => self.colors.git_removed.paint("‾"),
+                        Some(&LineChange::RemovedBelow) => self.colors.git_removed.paint("_"),
+                        Some(&LineChange::Modified) => self.colors.git_modified.paint("~"),
+                        _ => Style::default().paint(" "),
+                    }
+                } else {
+                    Style::default().paint(" ")
+                }.to_string(),
+            )
+        } else if self.options.output_components.grid() {
+            Some(" ".to_owned())
         } else {
-            Style::default().paint(" ")
-        };
-
-        Some(marker.to_string())
+            None
+        }
     }
 
     fn print_line_border(&self) -> Option<String> {
-        if let OptionsStyle::Plain = self.options.style {
-            return None;
+        if self.options.output_components.grid() {
+            Some(self.colors.grid.paint("│").to_string())
+        } else {
+            None
         }
-
-        Some(self.colors.grid.paint("│").to_string())
     }
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
