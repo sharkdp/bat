@@ -11,6 +11,14 @@ matrix:
       env:
         - TARGET=x86_64-unknown-linux-musl
         - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
+    - os: linux
+      rust: stable
+      env: TARGET=i686-unknown-linux-gnu
+    - os: linux
+      rust: stable
+      env:
+        - TARGET=i686-unknown-linux-musl
+        - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
     - os: osx
       rust: stable
       env: TARGET=x86_64-apple-darwin
@@ -63,9 +71,7 @@ script:
   - cargo build --target $TARGET --verbose
   - cargo test --target $TARGET --verbose
   # Run 'bat' on its own source code and the README
-  # Piping to 'cat' forces the tty check to fail so that a pager is not used
-  - cargo run --target $TARGET -- src/main.rs | cat
-  - cargo run --target $TARGET -- README.md | cat
+  - cargo run --target $TARGET -- src/main.rs README.md --paging=never
 
 before_deploy:
   - bash ci/before_deploy.bash
