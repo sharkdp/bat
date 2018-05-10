@@ -22,7 +22,7 @@ mod diff;
 mod printer;
 mod terminal;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
@@ -257,7 +257,7 @@ fn print_file(
                 break;
             }
             Ok(_) => {
-                if !line_buffer.ends_with("\n") {
+                if !line_buffer.ends_with('\n') {
                     line_buffer.push('\n');
                 }
                 &line_buffer
@@ -459,14 +459,14 @@ fn run() -> Result<()> {
 
                 let longest = languages
                     .iter()
-                    .filter(|s| !s.hidden && s.file_extensions.len() > 0)
+                    .filter(|s| !s.hidden && !s.file_extensions.is_empty())
                     .map(|s| s.name.len())
                     .max()
                     .unwrap_or(32); // Fallback width if they have no language definitions.
 
                 let separator = " ";
                 for lang in languages {
-                    if lang.hidden || lang.file_extensions.len() == 0 {
+                    if lang.hidden || lang.file_extensions.is_empty() {
                         continue;
                     }
                     print!("{:width$}{}", lang.name, separator, width = longest);
