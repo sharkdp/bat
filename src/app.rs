@@ -4,7 +4,7 @@ use console::Term;
 use errors::*;
 use std::collections::HashSet;
 use std::env;
-use {OutputComponent, OutputComponents};
+use style::{OutputComponent, OutputComponents};
 
 pub struct App {
     pub matches: ArgMatches<'static>,
