@@ -85,6 +85,17 @@ impl App {
                     .long("list-languages")
                     .help("Displays supported languages"),
             )
+            .arg(
+                Arg::with_name("theme")
+                    .long("theme")
+                    .takes_value(true)
+                    .help("Set the theme for highlighting"),
+            )
+            .arg(
+                Arg::with_name("list-themes")
+                    .long("list-themes")
+                    .help("Displays supported themes"),
+            )
             .subcommand(
                 SubCommand::with_name("cache")
                     .about("Modify the syntax-definition and theme cache")
@@ -143,6 +154,7 @@ impl App {
             },
             term_width: Term::stdout().size().1 as usize,
             files,
+            theme: self.matches.value_of("theme"),
         })
     }
 
@@ -185,6 +197,7 @@ pub struct Config<'a> {
     pub paging: bool,
     pub term_width: usize,
     pub files: Vec<Option<&'a str>>,
+    pub theme: Option<&'a str>,
 }
 
 fn is_truecolor_terminal() -> bool {

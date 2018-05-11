@@ -223,7 +223,10 @@ fn run() -> Result<()> {
             let config = app.config()?;
 
             let assets = HighlightingAssets::new();
-            let theme = assets.default_theme()?;
+            let theme = match config.theme {
+                Some(t) => assets.get_theme(t)?,
+                None => assets.get_theme("Default")?
+            };
 
             if app.matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
@@ -266,6 +269,14 @@ fn run() -> Result<()> {
                     println!();
                 }
 
+                return Ok(());
+            }
+
+            if app.matches.is_present("list-themes") {
+                let themes = &assets.theme_set.themes;
+                for (theme, _) in themes.iter() {
+                    println!("{}", theme);
+                }
                 return Ok(());
             }
 
