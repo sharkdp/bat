@@ -127,11 +127,12 @@ impl HighlightingAssets {
     }
 
     pub fn get_theme(&self, theme: &str) -> Result<&Theme> {
-        let err = format!("Could not find '{}' theme", theme);
-        Ok(self.theme_set
-            .themes
-            .get(theme)
-            .ok_or_else(|| io::Error::new(io::ErrorKind::Other, err))?)
+        Ok(self.theme_set.themes.get(theme).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::Other,
+                format!("Could not find '{}' theme", theme),
+            )
+        })?)
     }
 }
 

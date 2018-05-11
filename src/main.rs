@@ -223,10 +223,7 @@ fn run() -> Result<()> {
             let config = app.config()?;
 
             let assets = HighlightingAssets::new();
-            let theme = match config.theme {
-                Some(t) => assets.get_theme(t)?,
-                None => assets.get_theme("Default")?
-            };
+            let theme = assets.get_theme(config.theme.unwrap_or("Default"))?;
 
             if app.matches.is_present("list-languages") {
                 let languages = assets.syntax_set.syntaxes();
