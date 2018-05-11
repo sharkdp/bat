@@ -21,13 +21,12 @@ mod app;
 mod assets;
 mod diff;
 mod printer;
+mod style;
 mod terminal;
 
-use std::collections::HashSet;
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::process::{self, Child, Command, Stdio};
-use std::str::FromStr;
 
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
@@ -50,101 +49,10 @@ mod errors {
             Clap(::clap::Error);
             Io(::std::io::Error);
         }
-
-        errors {
-            NoCorrectStylesSpecified {
-                description("no correct styles specified")
-            }
-
-            UnknownStyleName(name: String) {
-                description("unknown style name")
-                display("unknown style name: '{}'", name)
-            }
-        }
     }
 }
 
 use errors::*;
-
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-pub enum OutputComponent {
-    Auto,
-    Changes,
-    Grid,
-    Header,
-    Numbers,
-    Full,
-    Plain,
-}
-
-impl OutputComponent {
-    fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
-        match *self {
-            OutputComponent::Auto => if interactive_terminal {
-                OutputComponent::Full.components(interactive_terminal)
-            } else {
-                OutputComponent::Plain.components(interactive_terminal)
-            },
-            OutputComponent::Changes => &[OutputComponent::Changes],
-            OutputComponent::Grid => &[OutputComponent::Grid],
-            OutputComponent::Header => &[OutputComponent::Header],
-            OutputComponent::Numbers => &[OutputComponent::Numbers],
-            OutputComponent::Full => &[
-                OutputComponent::Changes,
-                OutputComponent::Grid,
-                OutputComponent::Header,
-                OutputComponent::Numbers,
-            ],
-            OutputComponent::Plain => &[],
-        }
-    }
-}
-
-impl FromStr for OutputComponent {
-    type Err = Error;
-
-    fn from_str(s: &str) -> Result<Self> {
-        match s {
-            "auto" => Ok(OutputComponent::Auto),
-            "changes" => Ok(OutputComponent::Changes),
-            "grid" => Ok(OutputComponent::Grid),
-            "header" => Ok(OutputComponent::Header),
-            "numbers" => Ok(OutputComponent::Numbers),
-            "full" => Ok(OutputComponent::Full),
-            "plain" => Ok(OutputComponent::Plain),
-            _ => Err(ErrorKind::UnknownStyleName(s.to_owned()).into()),
-        }
-    }
-}
-
-pub struct OutputComponents(HashSet<OutputComponent>);
-
-impl OutputComponents {
-    fn changes(&self) -> bool {
-        self.0.contains(&OutputComponent::Changes)
-    }
-
-    fn grid(&self) -> bool {
-        self.0.contains(&OutputComponent::Grid)
-    }
-
-    fn header(&self) -> bool {
-        self.0.contains(&OutputComponent::Header)
-    }
-
-    fn numbers(&self) -> bool {
-        self.0.contains(&OutputComponent::Numbers)
-    }
-}
-
-pub struct Options<'a> {
-    pub true_color: bool,
-    pub output_components: OutputComponents,
-    pub language: Option<&'a str>,
-    pub colored_output: bool,
-    pub paging: bool,
-    pub term_width: usize,
-}
 
 enum OutputType {
     Pager(Child),
