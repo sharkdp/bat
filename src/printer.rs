@@ -250,7 +250,7 @@ impl<'a> Printer<'a> {
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
-            writeln!(self.handle, "{}", "─".repeat(self.config.term_width))?;
+            writeln!(self.handle, "{}", self.colors.grid.paint("─".repeat(self.config.term_width)))?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
