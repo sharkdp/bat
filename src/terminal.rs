@@ -2,7 +2,7 @@ use std::fmt::Write;
 
 use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::Style;
-use syntect::highlighting;
+use syntect::highlighting::{self, FontStyle};
 
 /// Approximate a 24 bit color value by a 8 bit ANSI code
 fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
@@ -27,18 +27,31 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
 }
 
 pub fn as_terminal_escaped(
-    color: highlighting::Style,
+    style: highlighting::Style,
     text: &str,
     true_color: bool,
     colored: bool,
 ) -> String {
+
     let style = if !colored {
         Style::default()
-    } else if true_color {
-        RGB(color.foreground.r, color.foreground.g, color.foreground.b).normal()
     } else {
-        let ansi = rgb2ansi(color.foreground.r, color.foreground.g, color.foreground.b);
-        Fixed(ansi).normal()
+        let color = if true_color {
+            RGB(style.foreground.r, style.foreground.g, style.foreground.b)
+        } else {
+            let ansi = rgb2ansi(style.foreground.r, style.foreground.g, style.foreground.b);
+            Fixed(ansi)
+        };
+
+        if style.font_style.contains(FontStyle::BOLD) {
+            color.bold()
+        } else if style.font_style.contains(FontStyle::UNDERLINE) {
+            color.underline()
+        } else if style.font_style.contains(FontStyle::ITALIC) {
+            color.italic()
+        } else {
+            color.normal()
+        }
     };
 
     let mut s: String = String::new();
