@@ -94,7 +94,7 @@ impl<'a> Printer<'a> {
         regions: &[(highlighting::Style, &str)],
     ) -> Result<()> {
         let mut cursor: usize = 0;
-        let mut cursor_max: usize = self.config.term_width - 2;
+        let mut cursor_max: usize = self.config.term_width;
 
         // Line decoration.
         let decorations = self.gen_decorations(line_number);
@@ -117,6 +117,27 @@ impl<'a> Printer<'a> {
         let border = if gutter_width > 0 && self.config.output_components.grid() {
             self.gen_border()
         } else {
+            PrintSegment {
+                size: 0,
+                text: "".to_owned(),
+            }
+        };
+
+        cursor_max -= border.size;
+        write!(self.handle, "{}", border.text)?;
+
+        // Line contents.
+        if self.config.output_wrap == OutputWrap::None {
+            let true_color = self.config.true_color;
+            let colored_output = self.config.colored_output;
+
+            write!(self.handle, "{}",
+                   regions.iter()
+                       .map(|&(style, text)| as_terminal_escaped(style, text, true_color, colored_output))
+                       .collect::<Vec<_>>()
+                       .join(" ")
+            )?;
+        } else {
             for &(style, text) in regions.iter() {
                 let mut chars = text.chars().filter(|c| *c != '\n');
                 let mut remaining = text.chars().filter(|c| *c != '\n').count();
@@ -136,7 +157,7 @@ impl<'a> Printer<'a> {
                                 style,
                                 &*text,
                                 self.config.true_color,
-                                self.config.colored_output
+                                self.config.colored_output,
                             )
                         )?;
                         break;
@@ -155,7 +176,7 @@ impl<'a> Printer<'a> {
                                 style,
                                 &*text,
                                 self.config.true_color,
-                                self.config.colored_output
+                                self.config.colored_output,
                             ),
                             " ".repeat(gutter_width),
                             border.text.to_owned()
