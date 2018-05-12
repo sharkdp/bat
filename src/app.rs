@@ -59,7 +59,7 @@ impl App {
                     .use_delimiter(true)
                     .takes_value(true)
                     .possible_values(&[
-                        "auto", "full", "plain", "changes", "header", "grid", "numbers",
+                        "auto", "full", "plain", "changes", "header", "grid", "numbers"
                     ])
                     .default_value("auto")
                     .help("Additional info to display along with content"),

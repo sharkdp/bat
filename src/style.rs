@@ -15,7 +15,7 @@ pub enum OutputComponent {
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum OutputWrap {
-    Character
+    Character,
 }
 
 impl OutputComponent {
