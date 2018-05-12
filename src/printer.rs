@@ -231,7 +231,7 @@ impl<'a> Printer<'a> {
     fn gen_border(&self) -> PrintSegment {
         return PrintSegment {
             text: self.colors.grid.paint("│").to_string(),
-            size: 2,
+            size: 1,
         };
     }
 
