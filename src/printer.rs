@@ -117,67 +117,59 @@ impl<'a> Printer<'a> {
         let border = if gutter_width > 0 && self.config.output_components.grid() {
             self.gen_border()
         } else {
-            PrintSegment {
-                size: 0,
-                text: "".to_owned(),
-            }
-        };
+            for &(style, text) in regions.iter() {
+                let mut chars = text.chars().filter(|c| *c != '\n');
+                let mut remaining = text.chars().filter(|c| *c != '\n').count();
 
-        cursor_max -= border.size;
-        write!(self.handle, "{} ", border.text)?;
+                while remaining > 0 {
+                    let available = cursor_max - cursor;
 
-        // Line contents.
-        for &(style, text) in regions.iter() {
-            let mut chars = text.chars().filter(|c| *c != '\n');
-            let mut remaining = text.chars().filter(|c| *c != '\n').count();
+                    // It fits.
+                    if remaining <= available {
+                        let text = chars.by_ref().take(remaining).collect::<String>();
+                        cursor += remaining;
 
-            while remaining > 0 {
-                let available = cursor_max - cursor;
+                        write!(
+                            self.handle,
+                            "{}",
+                            as_terminal_escaped(
+                                style,
+                                &*text,
+                                self.config.true_color,
+                                self.config.colored_output
+                            )
+                        )?;
+                        break;
+                    }
 
-                // It fits.
-                if remaining <= available {
-                    let text = chars.by_ref().take(remaining).collect::<String>();
-                    cursor += remaining;
+                    // It wraps.
+                    if self.config.output_wrap == OutputWrap::Character {
+                        let text = chars.by_ref().take(available).collect::<String>();
+                        cursor = 0;
+                        remaining -= available;
 
-                    write!(
-                        self.handle,
-                        "{}",
-                        as_terminal_escaped(
-                            style,
-                            &*text,
-                            self.config.true_color,
-                            self.config.colored_output
-                        )
-                    )?;
-                    break;
-                }
+                        write!(
+                            self.handle,
+                            "{}\n{}{}",
+                            as_terminal_escaped(
+                                style,
+                                &*text,
+                                self.config.true_color,
+                                self.config.colored_output
+                            ),
+                            " ".repeat(gutter_width),
+                            border.text.to_owned()
+                        )?;
 
-                // It wraps.
-                if self.config.output_wrap == OutputWrap::Character {
-                    let text = chars.by_ref().take(available).collect::<String>();
-                    cursor = 0;
-                    remaining -= available;
-
-                    write!(
-                        self.handle,
-                        "{}\n{}{} ",
-                        as_terminal_escaped(
-                            style,
-                            &*text,
-                            self.config.true_color,
-                            self.config.colored_output
-                        ),
-                        " ".repeat(gutter_width),
-                        border.text.to_owned()
-                    )?;
-
-                    continue;
+                        continue;
+                    }
                 }
             }
+
+            write!(self.handle, "\n")?;
         }
 
         // Finished.
-        write!(self.handle, "\n")?;
         Ok(())
     }
 
@@ -230,8 +222,8 @@ impl<'a> Printer<'a> {
     /// Generates the vertical grid border.
     fn gen_border(&self) -> PrintSegment {
         return PrintSegment {
-            text: self.colors.grid.paint("│").to_string(),
-            size: 1,
+            text: self.colors.grid.paint("│ ").to_string(),
+            size: 2,
         };
     }
 
