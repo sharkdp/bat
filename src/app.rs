@@ -4,7 +4,7 @@ use console::Term;
 use errors::*;
 use std::collections::HashSet;
 use std::env;
-use style::{OutputComponent, OutputComponents};
+use style::{OutputComponent, OutputComponents, OutputWrap};
 
 pub struct App {
     pub matches: ArgMatches<'static>,
@@ -135,6 +135,7 @@ impl App {
             true_color: is_truecolor_terminal(),
             output_components: self.output_components()?,
             language: self.matches.value_of("language"),
+            output_wrap: OutputWrap::Character,
             colored_output: match self.matches.value_of("color") {
                 Some("always") => true,
                 Some("never") => false,
@@ -191,6 +192,7 @@ impl App {
 
 pub struct Config<'a> {
     pub true_color: bool,
+    pub output_wrap: OutputWrap,
     pub output_components: OutputComponents,
     pub language: Option<&'a str>,
     pub colored_output: bool,
