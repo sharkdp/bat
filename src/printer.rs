@@ -135,7 +135,7 @@ impl<'a> Printer<'a> {
                    regions.iter()
                        .map(|&(style, text)| as_terminal_escaped(style, text, true_color, colored_output))
                        .collect::<Vec<_>>()
-                       .join(" ")
+                       .join("")
             )?;
         } else {
             for &(style, text) in regions.iter() {
