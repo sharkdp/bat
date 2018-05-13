@@ -6,6 +6,9 @@ use std::collections::HashSet;
 use std::env;
 use style::{OutputComponent, OutputComponents};
 
+#[cfg(windows)]
+use ansi_term;
+
 pub struct App {
     pub matches: ArgMatches<'static>,
     interactive_output: bool,
