@@ -32,6 +32,6 @@ if [ ! -e "$SYNTAX_FOLDER" ]; then
     )
 fi
 
-bat init-cache
+bat cache --init
 
 cp "$HOME/.cache/bat"/* .
