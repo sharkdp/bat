@@ -15,6 +15,9 @@ impl App {
     pub fn new() -> Self {
         let interactive_output = atty::is(Stream::Stdout);
 
+        #[cfg(windows)]
+        let interactive_output = interactive_output && ansi_term::enable_ansi_support().is_ok();
+
         App {
             matches: Self::matches(interactive_output),
             interactive_output,
