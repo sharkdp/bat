@@ -41,7 +41,7 @@ impl<'a> Printer<'a> {
         };
 
         // Generate the panel (gutter) width.
-        let decorations = instance.gen_decorations(0);
+        let decorations = instance.line_decorations(0);
         instance.panel_width = decorations.len() + decorations.iter().fold(0, |a, x| a + x.size);
 
         // Return the instance.
@@ -97,7 +97,7 @@ impl<'a> Printer<'a> {
         let mut cursor_max: usize = self.config.term_width;
 
         // Line decoration.
-        let decorations = self.gen_decorations(line_number);
+        let decorations = self.line_decorations(line_number);
         let gutter_width = decorations.len() + decorations.iter().fold(0, |a, x| a + x.size);
 
         if gutter_width > 0 {
@@ -115,7 +115,7 @@ impl<'a> Printer<'a> {
 
         // Grid border.
         let border = if gutter_width > 0 && self.config.output_components.grid() {
-            self.gen_border()
+            self.line_border()
         } else {
             PrintSegment {
                 size: 0,
@@ -131,11 +131,19 @@ impl<'a> Printer<'a> {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
 
-            write!(self.handle, "{}",
-                   regions.iter()
-                       .map(|&(style, text)| as_terminal_escaped(style, text, true_color, colored_output))
-                       .collect::<Vec<_>>()
-                       .join("")
+            write!(
+                self.handle,
+                "{}",
+                regions
+                    .iter()
+                    .map(|&(style, text)| as_terminal_escaped(
+                        style,
+                        text,
+                        true_color,
+                        colored_output
+                    ))
+                    .collect::<Vec<_>>()
+                    .join("")
             )?;
         } else {
             for &(style, text) in regions.iter() {
@@ -164,26 +172,24 @@ impl<'a> Printer<'a> {
                     }
 
                     // It wraps.
-                    if self.config.output_wrap == OutputWrap::Character {
-                        let text = chars.by_ref().take(available).collect::<String>();
-                        cursor = 0;
-                        remaining -= available;
+                    let text = chars.by_ref().take(available).collect::<String>();
+                    cursor = 0;
+                    remaining -= available;
 
-                        write!(
-                            self.handle,
-                            "{}\n{}{}",
-                            as_terminal_escaped(
-                                style,
-                                &*text,
-                                self.config.true_color,
-                                self.config.colored_output,
-                            ),
-                            " ".repeat(gutter_width),
-                            border.text.to_owned()
-                        )?;
+                    write!(
+                        self.handle,
+                        "{}\n{}{}",
+                        as_terminal_escaped(
+                            style,
+                            &*text,
+                            self.config.true_color,
+                            self.config.colored_output,
+                        ),
+                        " ".repeat(gutter_width),
+                        border.text.to_owned()
+                    )?;
 
-                        continue;
-                    }
+                    continue;
                 }
             }
 
@@ -194,25 +200,23 @@ impl<'a> Printer<'a> {
         Ok(())
     }
 
-    /// Generates all the line decorations.
-    fn gen_decorations(&self, line_number: usize) -> Vec<PrintSegment> {
+    fn line_decorations(&self, line_number: usize) -> Vec<PrintSegment> {
         let mut decorations = Vec::new();
 
         if self.config.output_components.numbers() {
-            decorations.push(self.gen_deco_line_number(line_number));
+            decorations.push(self.line_number(line_number));
         }
 
         if self.config.output_components.changes() {
-            decorations.push(self.gen_deco_line_changes(line_number));
+            decorations.push(self.line_changes(line_number));
         }
 
         return decorations;
     }
 
-    /// Generates the decoration for displaying the line number.
-    fn gen_deco_line_number(&self, line_number: usize) -> PrintSegment {
+    fn line_number(&self, line_number: usize) -> PrintSegment {
         let plain: String = format!("{:width$}", line_number, width = LINE_NUMBER_WIDTH);
-        let color = self.colors.line_number.paint(plain.to_owned());
+        let color = self.colors.line_number.paint(plain.clone());
 
         return PrintSegment {
             text: color.to_string(),
@@ -220,8 +224,7 @@ impl<'a> Printer<'a> {
         };
     }
 
-    /// Generates the decoration for displaying the git changes.
-    fn gen_deco_line_changes(&self, line_number: usize) -> PrintSegment {
+    fn line_changes(&self, line_number: usize) -> PrintSegment {
         let color = if let Some(ref changes) = self.line_changes {
             match changes.get(&(line_number as u32)) {
                 Some(&LineChange::Added) => self.colors.git_added.paint("+"),
@@ -240,8 +243,7 @@ impl<'a> Printer<'a> {
         };
     }
 
-    /// Generates the vertical grid border.
-    fn gen_border(&self) -> PrintSegment {
+    fn line_border(&self) -> PrintSegment {
         return PrintSegment {
             text: self.colors.grid.paint("│ ").to_string(),
             size: 2,

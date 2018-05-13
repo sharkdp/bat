@@ -1,5 +1,3 @@
-use std::fmt::Write;
-
 use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::Style;
 use syntect::highlighting::{self, FontStyle};
@@ -32,7 +30,6 @@ pub fn as_terminal_escaped(
     true_color: bool,
     colored: bool,
 ) -> String {
-
     let style = if !colored {
         Style::default()
     } else {
@@ -54,9 +51,7 @@ pub fn as_terminal_escaped(
         }
     };
 
-    let mut s: String = String::new();
-    write!(s, "{}", style.paint(text)).unwrap();
-    return s;
+    style.paint(text).to_string()
 }
 
 #[test]
