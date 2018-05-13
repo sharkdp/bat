@@ -28,6 +28,7 @@ if [ ! -e "$SYNTAX_FOLDER" ]; then
         # Add additional sxntax definitions
         git clone https://github.com/princemaple/elixir-sublime-syntax/
         git clone https://github.com/sharkdp/sublime_toml_highlighting
+        git clone https://github.com/JuliaEditorSupport/Julia-sublime
     )
 fi
 
