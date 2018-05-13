@@ -188,15 +188,12 @@ impl<'a> Printer<'a> {
                         " ".repeat(gutter_width),
                         border.text.to_owned()
                     )?;
-
-                    continue;
                 }
             }
 
             write!(self.handle, "\n")?;
         }
 
-        // Finished.
         Ok(())
     }
 
