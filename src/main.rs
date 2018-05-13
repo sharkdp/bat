@@ -209,11 +209,11 @@ fn run() -> Result<()> {
                 assets.save()?;
             } else if cache_matches.is_present("clear") {
                 print!("Clearing theme set cache ... ");
-                fs::remove_file(theme_set_path())?;
+                fs::remove_file(theme_set_path()).ok();
                 println!("okay");
 
                 print!("Clearing syntax set cache ... ");
-                fs::remove_file(syntax_set_path())?;
+                fs::remove_file(syntax_set_path()).ok();
                 println!("okay");
             } else if cache_matches.is_present("config-dir") {
                 println!("{}", config_dir());
