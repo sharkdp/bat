@@ -226,7 +226,8 @@ fn run() -> Result<()> {
             let theme = assets.get_theme(config.theme.unwrap_or("Default"))?;
 
             if app.matches.is_present("list-languages") {
-                let languages = assets.syntax_set.syntaxes();
+                let mut languages = assets.syntax_set.syntaxes().to_owned();
+                languages.sort_by(|a, b| a.name.to_uppercase().cmp(&b.name.to_uppercase()));
 
                 let longest = languages
                     .iter()
