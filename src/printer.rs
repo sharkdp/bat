@@ -142,8 +142,9 @@ impl<'a> Printer<'a> {
             )?;
         } else {
             for &(style, text) in regions.iter() {
-                let mut chars = text.chars().filter(|c| *c != '\n');
-                let mut remaining = text.chars().filter(|c| *c != '\n').count();
+                let text = text.trim_right_matches(|c| c == '\r' || c == '\n');
+                let mut chars = text.chars();
+                let mut remaining = text.chars().count();
 
                 while remaining > 0 {
                     let available = cursor_max - cursor;
