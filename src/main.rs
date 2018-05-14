@@ -227,7 +227,7 @@ fn run() -> Result<()> {
 
             if app.matches.is_present("list-languages") {
                 let mut languages = assets.syntax_set.syntaxes().to_owned();
-                languages.sort_by(|a, b| a.name.to_uppercase().cmp(&b.name.to_uppercase()));
+                languages.sort_by_key(|lang| lang.name.to_uppercase());
 
                 let longest = languages
                     .iter()
