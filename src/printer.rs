@@ -1,24 +1,20 @@
-use ansi_term::Style;
 use app::Config;
-use diff::{LineChange, LineChanges};
+use diff::LineChanges;
 use errors::*;
 use std::io::Write;
+use std::vec::Vec;
+use std::boxed::Box;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
 use style::OutputWrap;
+use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use Colors;
-
-const LINE_NUMBER_WIDTH: usize = 4;
-
-struct PrintSegment {
-    size: usize,
-    text: String,
-}
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
     colors: Colors,
     config: &'a Config<'a>,
+    decorations: Vec<Box<Decoration>>,
     panel_width: usize,
     pub line_changes: Option<LineChanges>,
 }
@@ -31,21 +27,36 @@ impl<'a> Printer<'a> {
             Colors::plain()
         };
 
-        // Create the instance.
-        let mut instance = Printer {
+        // Create decorations.
+        let mut decorations: Vec<Box<Decoration>> = Vec::new();
+
+        if config.output_components.numbers() {
+            decorations.push(Box::new(LineNumberDecoration::new(&colors)));
+        }
+
+        if config.output_components.changes() {
+            decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+        }
+
+        let panel_width: usize =
+            decorations.len() + decorations.iter().fold(0, |a, x| a + x.width());
+
+        // The grid border decoration isn't added until after the panel_width calculation, since the
+        // print_horizontal_line, print_header, and print_footer functions all assume the panel
+        // width is without the grid border.
+        if config.output_components.grid() && decorations.len() > 0 {
+            decorations.push(Box::new(GridBorderDecoration::new(&colors)));
+        }
+
+        // Create printer.
+        Printer {
+            panel_width,
             handle,
             colors,
             config,
-            panel_width: 0,
+            decorations,
             line_changes: None,
-        };
-
-        // Generate the panel (gutter) width.
-        let decorations = instance.line_decorations(0);
-        instance.panel_width = decorations.len() + decorations.iter().fold(0, |a, x| a + x.size);
-
-        // Return the instance.
-        return instance;
+        }
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
@@ -95,36 +106,20 @@ impl<'a> Printer<'a> {
     ) -> Result<()> {
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
+        let mut panel_wrap: Option<String> = None;
 
-        // Line decoration.
-        let decorations = self.line_decorations(line_number);
-        let gutter_width = decorations.len() + decorations.iter().fold(0, |a, x| a + x.size);
+        // Line decorations.
+        if self.panel_width > 0 {
+            let decorations = self.decorations
+                .iter()
+                .map(|ref d| d.for_line(line_number, self))
+                .collect::<Vec<_>>();
 
-        if gutter_width > 0 {
-            cursor_max -= gutter_width;
-            write!(
-                self.handle,
-                "{} ",
-                decorations
-                    .iter()
-                    .map(|seg| seg.text.to_owned())
-                    .collect::<Vec<String>>()
-                    .join(" ")
-            )?;
-        }
-
-        // Grid border.
-        let border = if gutter_width > 0 && self.config.output_components.grid() {
-            self.line_border()
-        } else {
-            PrintSegment {
-                size: 0,
-                text: "".to_owned(),
+            for deco in decorations {
+                write!(self.handle, "{} ", deco.text)?;
+                cursor_max -= deco.width + 1;
             }
-        };
-
-        cursor_max -= border.size;
-        write!(self.handle, "{}", border.text)?;
+        }
 
         // Line contents.
         if self.config.output_wrap == OutputWrap::None {
@@ -140,7 +135,7 @@ impl<'a> Printer<'a> {
                         style,
                         text,
                         true_color,
-                        colored_output
+                        colored_output,
                     ))
                     .collect::<Vec<_>>()
                     .join("")
@@ -171,6 +166,22 @@ impl<'a> Printer<'a> {
                         break;
                     }
 
+                    // Generate wrap padding if not already generated.
+                    if panel_wrap.is_none() {
+                        panel_wrap = if self.panel_width > 0 {
+                            Some(format!(
+                                "{} ",
+                                self.decorations
+                                    .iter()
+                                    .map(|ref d| d.for_wrap(line_number, self).text)
+                                    .collect::<Vec<String>>()
+                                    .join(" ")
+                            ))
+                        } else {
+                            Some("".to_string())
+                        }
+                    }
+
                     // It wraps.
                     let text = chars.by_ref().take(available).collect::<String>();
                     cursor = 0;
@@ -178,15 +189,14 @@ impl<'a> Printer<'a> {
 
                     write!(
                         self.handle,
-                        "{}\n{}{}",
+                        "{}\n{}",
                         as_terminal_escaped(
                             style,
                             &*text,
                             self.config.true_color,
                             self.config.colored_output,
                         ),
-                        " ".repeat(gutter_width),
-                        border.text.to_owned()
+                        panel_wrap.clone().unwrap()
                     )?;
                 }
             }
@@ -195,56 +205,6 @@ impl<'a> Printer<'a> {
         }
 
         Ok(())
-    }
-
-    fn line_decorations(&self, line_number: usize) -> Vec<PrintSegment> {
-        let mut decorations = Vec::new();
-
-        if self.config.output_components.numbers() {
-            decorations.push(self.line_number(line_number));
-        }
-
-        if self.config.output_components.changes() {
-            decorations.push(self.line_changes(line_number));
-        }
-
-        return decorations;
-    }
-
-    fn line_number(&self, line_number: usize) -> PrintSegment {
-        let plain: String = format!("{:width$}", line_number, width = LINE_NUMBER_WIDTH);
-        let color = self.colors.line_number.paint(plain.clone());
-
-        return PrintSegment {
-            text: color.to_string(),
-            size: plain.len(),
-        };
-    }
-
-    fn line_changes(&self, line_number: usize) -> PrintSegment {
-        let color = if let Some(ref changes) = self.line_changes {
-            match changes.get(&(line_number as u32)) {
-                Some(&LineChange::Added) => self.colors.git_added.paint("+"),
-                Some(&LineChange::RemovedAbove) => self.colors.git_removed.paint("‾"),
-                Some(&LineChange::RemovedBelow) => self.colors.git_removed.paint("_"),
-                Some(&LineChange::Modified) => self.colors.git_modified.paint("~"),
-                _ => Style::default().paint(" "),
-            }
-        } else {
-            Style::default().paint(" ")
-        };
-
-        return PrintSegment {
-            text: color.to_string(),
-            size: 1,
-        };
-    }
-
-    fn line_border(&self) -> PrintSegment {
-        return PrintSegment {
-            text: self.colors.grid.paint("│ ").to_string(),
-            size: 2,
-        };
     }
 
     fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {

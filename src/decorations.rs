@@ -1,0 +1,146 @@
+use ansi_term::Style;
+use diff::LineChange;
+use printer::Printer;
+use Colors;
+
+#[derive(Clone)]
+pub struct DecorationText {
+    pub width: usize,
+    pub text: String,
+}
+
+pub trait Decoration {
+    fn for_line(&self, line_number: usize, printer: &Printer) -> DecorationText;
+    fn for_wrap(&self, line_number: usize, printer: &Printer) -> DecorationText;
+    fn width(&self) -> usize;
+}
+
+// Line number decoration.
+pub struct LineNumberDecoration {
+    color: Style,
+    cached_wrap: DecorationText,
+    cached_wrap_invalid_at: usize,
+}
+
+impl LineNumberDecoration {
+    pub fn new(colors: &Colors) -> Self {
+        LineNumberDecoration {
+            color: colors.line_number,
+            cached_wrap_invalid_at: 10000,
+            cached_wrap: DecorationText {
+                text: colors.line_number.paint(" ".repeat(4)).to_string(),
+                width: 4,
+            },
+        }
+    }
+}
+
+impl Decoration for LineNumberDecoration {
+    fn for_line(&self, line_number: usize, _printer: &Printer) -> DecorationText {
+        let plain: String = format!("{:4}", line_number);
+        DecorationText {
+            width: plain.len(),
+            text: self.color.paint(plain).to_string(),
+        }
+    }
+
+    fn for_wrap(&self, line_number: usize, _printer: &Printer) -> DecorationText {
+        if line_number > self.cached_wrap_invalid_at {
+            let new_width = self.cached_wrap.width + 1;
+            return DecorationText {
+                text: self.color.paint(" ".repeat(new_width)).to_string(),
+                width: new_width,
+            };
+        }
+
+        self.cached_wrap.clone()
+    }
+
+    fn width(&self) -> usize {
+        4
+    }
+}
+
+// Line changes decoration.
+pub struct LineChangesDecoration {
+    cached_none: DecorationText,
+    cached_added: DecorationText,
+    cached_removed_above: DecorationText,
+    cached_removed_below: DecorationText,
+    cached_modified: DecorationText,
+}
+
+impl LineChangesDecoration {
+    #[inline]
+    fn generate_cached(style: Style, text: &str) -> DecorationText {
+        DecorationText {
+            text: style.paint(text).to_string(),
+            width: text.chars().count(),
+        }
+    }
+
+    pub fn new(colors: &Colors) -> Self {
+        LineChangesDecoration {
+            cached_none: Self::generate_cached(Style::default(), " "),
+            cached_added: Self::generate_cached(colors.git_added, "+"),
+            cached_removed_above: Self::generate_cached(colors.git_removed, "‾"),
+            cached_removed_below: Self::generate_cached(colors.git_removed, "_"),
+            cached_modified: Self::generate_cached(colors.git_modified, "~"),
+        }
+    }
+}
+
+impl Decoration for LineChangesDecoration {
+    fn for_line(&self, line_number: usize, printer: &Printer) -> DecorationText {
+        if let Some(ref changes) = printer.line_changes {
+            match changes.get(&(line_number as u32)) {
+                Some(&LineChange::Added) => self.cached_added.clone(),
+                Some(&LineChange::RemovedAbove) => self.cached_removed_above.clone(),
+                Some(&LineChange::RemovedBelow) => self.cached_removed_below.clone(),
+                Some(&LineChange::Modified) => self.cached_modified.clone(),
+                _ => self.cached_none.clone(),
+            }
+        } else {
+            self.cached_none.clone()
+        }
+        //        let status = printer.line_changes.and_then(|ref changes| changes.get(&(line_number as u32)));
+    }
+
+    fn for_wrap(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
+        self.cached_none.clone()
+    }
+
+    fn width(&self) -> usize {
+        self.cached_none.width
+    }
+}
+
+// Grid border decoration.
+pub struct GridBorderDecoration {
+    cached: DecorationText,
+}
+
+impl GridBorderDecoration {
+    pub fn new(colors: &Colors) -> Self {
+        GridBorderDecoration {
+            cached: DecorationText {
+                text: colors.grid.paint("│").to_string(),
+                width: 1,
+            },
+        }
+    }
+}
+
+impl Decoration for GridBorderDecoration {
+    fn for_line(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
+        self.cached.clone()
+    }
+
+    fn for_wrap(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
+        self.cached.clone()
+    }
+
+    fn width(&self) -> usize {
+        self.cached.width
+    }
+}
