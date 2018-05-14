@@ -37,7 +37,7 @@ matrix:
       # skip the global install step
       install:
         - cargo install --debug --force rustfmt-nightly
-      script: cargo fmt -- --write-mode=diff
+      script: cargo fmt -- --check
 
 addons:
   apt:
