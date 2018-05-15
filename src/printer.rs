@@ -38,7 +38,7 @@ impl<'a> Printer<'a> {
             decorations.push(Box::new(LineChangesDecoration::new(&colors)));
         }
 
-        let panel_width: usize =
+        let mut panel_width: usize =
             decorations.len() + decorations.iter().fold(0, |a, x| a + x.width());
 
         // The grid border decoration isn't added until after the panel_width calculation, since the
@@ -46,6 +46,13 @@ impl<'a> Printer<'a> {
         // width is without the grid border.
         if config.output_components.grid() && decorations.len() > 0 {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
+        }
+
+        // Disable the panel if the terminal is too small (i.e. can't fit 5 characters with the
+        // panel showing).
+        if config.term_width < (decorations.len() + decorations.iter().fold(0, |a, x| a + x.width())) + 5 {
+            decorations.clear();
+            panel_width = 0;
         }
 
         // Create printer.
