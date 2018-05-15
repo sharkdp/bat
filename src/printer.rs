@@ -112,7 +112,7 @@ impl<'a> Printer<'a> {
         if self.panel_width > 0 {
             let decorations = self.decorations
                 .iter()
-                .map(|ref d| d.for_line(line_number, self))
+                .map(|ref d| d.generate(line_number, false, self))
                 .collect::<Vec<_>>();
 
             for deco in decorations {
@@ -174,7 +174,7 @@ impl<'a> Printer<'a> {
                                 "{} ",
                                 self.decorations
                                     .iter()
-                                    .map(|ref d| d.for_wrap(line_number, self).text)
+                                    .map(|ref d| d.generate(line_number, true, self).text)
                                     .collect::<Vec<String>>()
                                     .join(" ")
                             ))

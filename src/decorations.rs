@@ -10,8 +10,8 @@ pub struct DecorationText {
 }
 
 pub trait Decoration {
-    fn for_line(&self, line_number: usize, printer: &Printer) -> DecorationText;
-    fn for_wrap(&self, line_number: usize, printer: &Printer) -> DecorationText;
+    fn generate(&self, line_number: usize, continuation: bool, printer: &Printer)
+        -> DecorationText;
     fn width(&self) -> usize;
 }
 
@@ -36,24 +36,29 @@ impl LineNumberDecoration {
 }
 
 impl Decoration for LineNumberDecoration {
-    fn for_line(&self, line_number: usize, _printer: &Printer) -> DecorationText {
-        let plain: String = format!("{:4}", line_number);
-        DecorationText {
-            width: plain.len(),
-            text: self.color.paint(plain).to_string(),
-        }
-    }
+    fn generate(
+        &self,
+        line_number: usize,
+        continuation: bool,
+        _printer: &Printer,
+    ) -> DecorationText {
+        if continuation {
+            if line_number > self.cached_wrap_invalid_at {
+                let new_width = self.cached_wrap.width + 1;
+                return DecorationText {
+                    text: self.color.paint(" ".repeat(new_width)).to_string(),
+                    width: new_width,
+                };
+            }
 
-    fn for_wrap(&self, line_number: usize, _printer: &Printer) -> DecorationText {
-        if line_number > self.cached_wrap_invalid_at {
-            let new_width = self.cached_wrap.width + 1;
-            return DecorationText {
-                text: self.color.paint(" ".repeat(new_width)).to_string(),
-                width: new_width,
-            };
+            self.cached_wrap.clone()
+        } else {
+            let plain: String = format!("{:4}", line_number);
+            DecorationText {
+                width: plain.len(),
+                text: self.color.paint(plain).to_string(),
+            }
         }
-
-        self.cached_wrap.clone()
     }
 
     fn width(&self) -> usize {
@@ -91,22 +96,24 @@ impl LineChangesDecoration {
 }
 
 impl Decoration for LineChangesDecoration {
-    fn for_line(&self, line_number: usize, printer: &Printer) -> DecorationText {
-        if let Some(ref changes) = printer.line_changes {
-            match changes.get(&(line_number as u32)) {
-                Some(&LineChange::Added) => self.cached_added.clone(),
-                Some(&LineChange::RemovedAbove) => self.cached_removed_above.clone(),
-                Some(&LineChange::RemovedBelow) => self.cached_removed_below.clone(),
-                Some(&LineChange::Modified) => self.cached_modified.clone(),
-                _ => self.cached_none.clone(),
+    fn generate(
+        &self,
+        line_number: usize,
+        continuation: bool,
+        printer: &Printer,
+    ) -> DecorationText {
+        if !continuation {
+            if let Some(ref changes) = printer.line_changes {
+                return match changes.get(&(line_number as u32)) {
+                    Some(&LineChange::Added) => self.cached_added.clone(),
+                    Some(&LineChange::RemovedAbove) => self.cached_removed_above.clone(),
+                    Some(&LineChange::RemovedBelow) => self.cached_removed_below.clone(),
+                    Some(&LineChange::Modified) => self.cached_modified.clone(),
+                    _ => self.cached_none.clone(),
+                };
             }
-        } else {
-            self.cached_none.clone()
         }
-        //        let status = printer.line_changes.and_then(|ref changes| changes.get(&(line_number as u32)));
-    }
 
-    fn for_wrap(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
         self.cached_none.clone()
     }
 
@@ -132,11 +139,12 @@ impl GridBorderDecoration {
 }
 
 impl Decoration for GridBorderDecoration {
-    fn for_line(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
-        self.cached.clone()
-    }
-
-    fn for_wrap(&self, _line_number: usize, _printer: &Printer) -> DecorationText {
+    fn generate(
+        &self,
+        _line_number: usize,
+        _continuation: bool,
+        _printer: &Printer,
+    ) -> DecorationText {
         self.cached.clone()
     }
 
