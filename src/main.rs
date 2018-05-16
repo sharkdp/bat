@@ -27,6 +27,7 @@ mod terminal;
 
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
+use std::path::Path;
 use std::process::{self, Child, Command, Stdio};
 
 #[cfg(unix)]
@@ -206,8 +207,11 @@ fn run() -> Result<()> {
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
             if cache_matches.is_present("init") {
-                let assets = HighlightingAssets::from_files()?;
-                assets.save()?;
+                let source_dir = cache_matches.value_of("source").map(Path::new);
+                let target_dir = cache_matches.value_of("target").map(Path::new);
+
+                let assets = HighlightingAssets::from_files(source_dir)?;
+                assets.save(target_dir)?;
             } else if cache_matches.is_present("clear") {
                 print!("Clearing theme set cache ... ");
                 fs::remove_file(theme_set_path()).ok();
