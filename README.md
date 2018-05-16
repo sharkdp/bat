@@ -74,6 +74,21 @@ cd bat
 makepkg -si
 ```
 
+#### On FreeBSD
+
+You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
+
+```sh
+pkg install bat
+```
+
+or build it on your own from the FreeBSD ports:
+
+```sh
+cd /usr/ports/textproc/bat
+make install
+```
+
 #### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
