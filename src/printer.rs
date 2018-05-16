@@ -1,4 +1,6 @@
+use Colors;
 use app::Config;
+use console::AnsiCodeIterator;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::LineChanges;
 use errors::*;
@@ -8,7 +10,6 @@ use std::vec::Vec;
 use style::OutputWrap;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use Colors;
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
@@ -118,8 +119,7 @@ impl<'a> Printer<'a> {
 
         // Line decorations.
         if self.panel_width > 0 {
-            let decorations = self
-                .decorations
+            let decorations = self.decorations
                 .iter()
                 .map(|ref d| d.generate(self.line_number, false, self))
                 .collect::<Vec<_>>();
@@ -150,64 +150,79 @@ impl<'a> Printer<'a> {
                     .join("")
             )?;
         } else {
-            for &(style, text) in regions.iter() {
-                let text = text.trim_right_matches(|c| c == '\r' || c == '\n');
-                let mut chars = text.chars();
-                let mut remaining = text.chars().count();
+            for &(style, region) in regions.iter() {
+                let mut ansi_iterator = AnsiCodeIterator::new(region);
+                let mut ansi_prefix = "";
+                while let Some(chunk) = ansi_iterator.next() {
+                    match chunk {
+                        // ANSI escape passthrough.
+                        (text, true) => {
+                            ansi_prefix = text;
+                        }
 
-                while remaining > 0 {
-                    let available = cursor_max - cursor;
+                        // Regular text.
+                        (text, false) => {
+                            let text = text.trim_right_matches(|c| c == '\r' || c == '\n');
+                            let mut chars = text.chars();
+                            let mut remaining = text.chars().count();
 
-                    // It fits.
-                    if remaining <= available {
-                        let text = chars.by_ref().take(remaining).collect::<String>();
-                        cursor += remaining;
+                            while remaining > 0 {
+                                let available = cursor_max - cursor;
 
-                        write!(
-                            self.handle,
-                            "{}",
-                            as_terminal_escaped(
-                                style,
-                                &*text,
-                                self.config.true_color,
-                                self.config.colored_output,
-                            )
-                        )?;
-                        break;
-                    }
+                                // It fits.
+                                if remaining <= available {
+                                    let text = chars.by_ref().take(remaining).collect::<String>();
+                                    cursor += remaining;
 
-                    // Generate wrap padding if not already generated.
-                    if panel_wrap.is_none() {
-                        panel_wrap = if self.panel_width > 0 {
-                            Some(format!(
-                                "{} ",
-                                self.decorations
-                                    .iter()
-                                    .map(|ref d| d.generate(self.line_number, true, self).text)
-                                    .collect::<Vec<String>>()
-                                    .join(" ")
-                            ))
-                        } else {
-                            Some("".to_string())
+                                    write!(
+                                        self.handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            style,
+                                            &*format!("{}{}", ansi_prefix, text),
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                        )
+                                    )?;
+                                    break;
+                                }
+
+                                // Generate wrap padding if not already generated.
+                                if panel_wrap.is_none() {
+                                    panel_wrap = if self.panel_width > 0 {
+                                        Some(format!(
+                                            "{} ",
+                                            self.decorations
+                                                .iter()
+                                                .map(|ref d| d.generate(self.line_number, true, self)
+                                                    .text)
+                                                .collect::<Vec<String>>()
+                                                .join(" ")
+                                        ))
+                                    } else {
+                                        Some("".to_string())
+                                    }
+                                }
+
+                                // It wraps.
+                                let text = chars.by_ref().take(available).collect::<String>();
+                                cursor = 0;
+                                remaining -= available;
+
+                                write!(
+                                    self.handle,
+                                    "{}\n{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &*format!("{}{}", ansi_prefix, text),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                    ),
+                                    panel_wrap.clone().unwrap()
+                                )?;
+                            }
                         }
                     }
-
-                    // It wraps.
-                    let text = chars.by_ref().take(available).collect::<String>();
-                    cursor = 0;
-                    remaining -= available;
-
-                    write!(
-                        self.handle,
-                        "{}\n{}",
-                        as_terminal_escaped(
-                            style,
-                            &*text,
-                            self.config.true_color,
-                            self.config.colored_output,
-                        ),
-                        panel_wrap.clone().unwrap()
-                    )?;
                 }
             }
 
