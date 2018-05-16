@@ -29,10 +29,7 @@ impl BatTester {
 
     pub fn test_snapshot(&self, style: &str) {
         let output = Command::new(&self.exe)
-            .args(&[
-                "tests/snapshots/sample.rs",
-                &format!("--style={}", style),
-            ])
+            .args(&["tests/snapshots/sample.rs", &format!("--style={}", style)])
             .output()
             .expect("bat failed");
         // have to do the replace because the filename in the header changes based on the current working directory

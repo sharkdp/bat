@@ -1,13 +1,13 @@
 use app::Config;
+use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::LineChanges;
 use errors::*;
+use std::boxed::Box;
 use std::io::Write;
 use std::vec::Vec;
-use std::boxed::Box;
+use style::OutputWrap;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use style::OutputWrap;
-use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use Colors;
 
 pub struct Printer<'a> {
@@ -50,7 +50,9 @@ impl<'a> Printer<'a> {
 
         // Disable the panel if the terminal is too small (i.e. can't fit 5 characters with the
         // panel showing).
-        if config.term_width < (decorations.len() + decorations.iter().fold(0, |a, x| a + x.width())) + 5 {
+        if config.term_width
+            < (decorations.len() + decorations.iter().fold(0, |a, x| a + x.width())) + 5
+        {
             decorations.clear();
             panel_width = 0;
         }
@@ -117,7 +119,8 @@ impl<'a> Printer<'a> {
 
         // Line decorations.
         if self.panel_width > 0 {
-            let decorations = self.decorations
+            let decorations = self
+                .decorations
                 .iter()
                 .map(|ref d| d.generate(line_number, false, self))
                 .collect::<Vec<_>>();

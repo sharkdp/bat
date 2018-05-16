@@ -19,11 +19,11 @@ extern crate syntect;
 
 mod app;
 mod assets;
+mod decorations;
 mod diff;
 mod printer;
 mod style;
 mod terminal;
-mod decorations;
 
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
