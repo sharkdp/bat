@@ -117,7 +117,8 @@ impl App {
                         Arg::with_name("init")
                             .long("init")
                             .short("i")
-                            .help("Initialize the cache by loading from the config dir"),
+                            .help("Initialize the syntax/theme cache")
+                            .long_help("Initialize the syntax/theme cache by loading from the source directory (default: the configuration directory)"),
                     )
                     .arg(
                         Arg::with_name("clear")
@@ -135,7 +136,23 @@ impl App {
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
                             .required(true),
-                    ),
+                    )
+                    .arg(
+                        Arg::with_name("source")
+                            .long("source")
+                            .requires("init")
+                            .takes_value(true)
+                            .value_name("dir")
+                            .help("Use a different source for loading syntaxes and themes from"),
+                    )
+                    .arg(
+                        Arg::with_name("target")
+                            .long("target")
+                            .requires("init")
+                            .takes_value(true)
+                            .value_name("dir")
+                            .help("Use a different source to store the cached syntax and theme set"),
+                    )
             )
             .help_message("Print this help message.")
             .version_message("Show version information.")

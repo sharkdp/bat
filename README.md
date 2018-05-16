@@ -136,8 +136,8 @@ ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
 Create a folder with language definition files:
 
 ``` bash
-mkdir -p "$BAT_CONFIG_DIR/syntax"
-cd "$BAT_CONFIG_DIR/syntax"
+mkdir -p "$BAT_CONFIG_DIR/syntaxes"
+cd "$BAT_CONFIG_DIR/syntaxes"
 
 # Download some language definition files, for example:
 git clone https://github.com/sublimehq/Packages/

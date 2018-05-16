@@ -1,37 +1,11 @@
-set -e
+#!/bin/bash
 
-THEME_FOLDER="$HOME/.config/bat/themes"
-SYNTAX_FOLDER="$HOME/.config/bat/syntax"
+ASSET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ ! -e "$THEME_FOLDER" ]; then
-    mkdir -p "$THEME_FOLDER"
-    (
-        cd "$THEME_FOLDER"
-        git clone https://github.com/jonschlinkert/sublime-monokai-extended
-        ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
-    )
-fi
+DEFAULT_MARKDOWN_SYNTAX="$ASSET_DIR/syntaxes/Packages/Markdown"
 
-if [ ! -e "$SYNTAX_FOLDER" ]; then
-    mkdir -p "$SYNTAX_FOLDER"
-    (
-        cd "$SYNTAX_FOLDER"
-        git clone https://github.com/sublimehq/Packages/
+rm -rf "$DEFAULT_MARKDOWN_SYNTAX"
 
-        # Patch JavaScript syntax
-        sed -i -e 's/{{identifier_break}}+/{{identifier_break}}/' Packages/JavaScript/JavaScript.sublime-syntax
+bat cache --init --source="$ASSET_DIR" --target="$ASSET_DIR"
 
-        # Use extended Markdown syntax
-        rm -rf Packages/Markdown
-        git clone https://github.com/jonschlinkert/sublime-markdown-extended
-
-        # Add additional sxntax definitions
-        git clone https://github.com/princemaple/elixir-sublime-syntax/
-        git clone https://github.com/sharkdp/sublime_toml_highlighting
-        git clone https://github.com/JuliaEditorSupport/Julia-sublime
-    )
-fi
-
-bat cache --init
-
-cp "$HOME/.cache/bat"/* .
+git -C "$ASSET_DIR/syntaxes/Packages" checkout "$DEFAULT_MARKDOWN_SYNTAX"

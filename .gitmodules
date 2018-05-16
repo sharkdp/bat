@@ -1,0 +1,18 @@
+[submodule "assets/syntaxes/Elixir"]
+	path = assets/syntaxes/Elixir
+	url = https://github.com/princemaple/elixir-sublime-syntax/
+[submodule "assets/syntaxes/Packages"]
+	path = assets/syntaxes/Packages
+	url = https://github.com/sublimehq/Packages/
+[submodule "assets/syntaxes/TOML"]
+	path = assets/syntaxes/TOML
+	url = https://github.com/sharkdp/sublime_toml_highlighting
+[submodule "assets/syntaxes/Julia"]
+	path = assets/syntaxes/Julia
+	url = https://github.com/JuliaEditorSupport/Julia-sublime
+[submodule "assets/themes/sublime-monokai-extended"]
+	path = assets/themes/sublime-monokai-extended
+	url = https://github.com/jonschlinkert/sublime-monokai-extended
+[submodule "assets/syntaxes/Markdown-Extended"]
+	path = assets/syntaxes/Markdown-Extended
+	url = https://github.com/jonschlinkert/sublime-markdown-extended
