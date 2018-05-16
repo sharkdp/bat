@@ -16,3 +16,6 @@
 [submodule "assets/syntaxes/Markdown-Extended"]
 	path = assets/syntaxes/Markdown-Extended
 	url = https://github.com/jonschlinkert/sublime-markdown-extended
+[submodule "assets/syntaxes/Docker"]
+	path = assets/syntaxes/Docker
+	url = https://github.com/asbjornenge/Docker.tmbundle
