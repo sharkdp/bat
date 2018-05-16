@@ -26,16 +26,8 @@ impl HighlightingAssets {
         let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
 
         let theme_dir = source_dir.join("themes");
-        let theme_set = ThemeSet::load_from_folder(&theme_dir).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not load themes from '{}'",
-                    theme_dir.to_string_lossy()
-                ),
-            )
-        })?;
-
+        let theme_set =
+            ThemeSet::load_from_folder(&theme_dir).chain_err(|| "Could not load themes from '{}'")?;
         let mut syntax_set = SyntaxSet::new();
         let syntax_dir = source_dir.join("syntaxes");
         if !syntax_dir.exists() {
@@ -61,9 +53,8 @@ impl HighlightingAssets {
                 syntax_set_path().to_string_lossy()
             )
         })?;
-        let mut syntax_set: SyntaxSet = from_reader(syntax_set_file).map_err(|_| {
-            io::Error::new(io::ErrorKind::Other, "Could not parse cached syntax set")
-        })?;
+        let mut syntax_set: SyntaxSet =
+            from_reader(syntax_set_file).chain_err(|| "Could not parse cached syntax set")?;
         syntax_set.link_syntaxes();
 
         let theme_set_file = File::open(&theme_set_path).chain_err(|| {
@@ -72,8 +63,8 @@ impl HighlightingAssets {
                 theme_set_path.to_string_lossy()
             )
         })?;
-        let theme_set: ThemeSet = from_reader(theme_set_file)
-            .map_err(|_| io::Error::new(io::ErrorKind::Other, "Could not parse cached theme set"))?;
+        let theme_set: ThemeSet =
+            from_reader(theme_set_file).chain_err(|| "Could not parse cached theme set")?;
 
         Ok(HighlightingAssets {
             syntax_set,
@@ -102,13 +93,10 @@ impl HighlightingAssets {
             "Writing theme set to {} ... ",
             theme_set_path.to_string_lossy()
         );
-        dump_to_file(&self.theme_set, &theme_set_path).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not save theme set to {}",
-                    theme_set_path.to_string_lossy()
-                ),
+        dump_to_file(&self.theme_set, &theme_set_path).chain_err(|| {
+            format!(
+                "Could not save theme set to {}",
+                theme_set_path.to_string_lossy()
             )
         })?;
         println!("okay");
@@ -117,13 +105,10 @@ impl HighlightingAssets {
             "Writing syntax set to {} ... ",
             syntax_set_path.to_string_lossy()
         );
-        dump_to_file(&self.syntax_set, &syntax_set_path).map_err(|_| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!(
-                    "Could not save syntax set to {}",
-                    syntax_set_path.to_string_lossy()
-                ),
+        dump_to_file(&self.syntax_set, &syntax_set_path).chain_err(|| {
+            format!(
+                "Could not save syntax set to {}",
+                syntax_set_path.to_string_lossy()
             )
         })?;
         println!("okay");
