@@ -1,5 +1,3 @@
-use std::fmt::Write;
-
 use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::Style;
 use syntect::highlighting::{self, FontStyle};
@@ -27,37 +25,33 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
 }
 
 pub fn as_terminal_escaped(
-    v: &[(highlighting::Style, &str)],
+    style: highlighting::Style,
+    text: &str,
     true_color: bool,
     colored: bool,
 ) -> String {
-    let mut s: String = String::new();
-    for &(ref style, text) in v.iter() {
-        let style = if !colored {
-            Style::default()
+    let style = if !colored {
+        Style::default()
+    } else {
+        let color = if true_color {
+            RGB(style.foreground.r, style.foreground.g, style.foreground.b)
         } else {
-            let color = if true_color {
-                RGB(style.foreground.r, style.foreground.g, style.foreground.b)
-            } else {
-                let ansi = rgb2ansi(style.foreground.r, style.foreground.g, style.foreground.b);
-                Fixed(ansi)
-            };
-
-            if style.font_style.contains(FontStyle::BOLD) {
-                color.bold()
-            } else if style.font_style.contains(FontStyle::UNDERLINE) {
-                color.underline()
-            } else if style.font_style.contains(FontStyle::ITALIC) {
-                color.italic()
-            } else {
-                color.normal()
-            }
+            let ansi = rgb2ansi(style.foreground.r, style.foreground.g, style.foreground.b);
+            Fixed(ansi)
         };
 
-        write!(s, "{}", style.paint(text)).unwrap();
-    }
+        if style.font_style.contains(FontStyle::BOLD) {
+            color.bold()
+        } else if style.font_style.contains(FontStyle::UNDERLINE) {
+            color.underline()
+        } else if style.font_style.contains(FontStyle::ITALIC) {
+            color.italic()
+        } else {
+            color.normal()
+        }
+    };
 
-    s
+    style.paint(text).to_string()
 }
 
 #[test]

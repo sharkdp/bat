@@ -19,6 +19,7 @@ extern crate syntect;
 
 mod app;
 mod assets;
+mod decorations;
 mod diff;
 mod printer;
 mod style;

@@ -13,6 +13,12 @@ pub enum OutputComponent {
     Plain,
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
+pub enum OutputWrap {
+    Character,
+    None,
+}
+
 impl OutputComponent {
     pub fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
         match *self {
