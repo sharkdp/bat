@@ -30,17 +30,14 @@ use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{self, Child, Command, Stdio};
 
-#[cfg(unix)]
-use std::os::unix::fs::FileTypeExt;
-
 use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
 use ansi_term::Style;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::SyntaxDefinition;
 
-use app::{App, Config};
+use app::App;
 use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
 use diff::get_git_diff;
 use printer::Printer;
@@ -124,9 +121,8 @@ impl Colors {
 }
 
 fn print_file(
-    config: &Config,
     theme: &Theme,
-    syntax_set: &SyntaxSet,
+    syntax: &SyntaxDefinition,
     printer: &mut Printer,
     filename: Option<&str>,
 ) -> Result<()> {
@@ -137,27 +133,6 @@ fn print_file(
         Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
     };
 
-    let syntax = match (config.language, filename) {
-        (Some(language), _) => syntax_set.find_syntax_by_token(language),
-        (None, Some(filename)) => {
-            #[cfg(not(unix))]
-            let may_read_from_file = true;
-
-            // Do not peek at the file (to determine the syntax) if it is a FIFO because they can
-            // only be read once.
-            #[cfg(unix)]
-            let may_read_from_file = !fs::metadata(filename)?.file_type().is_fifo();
-
-            if may_read_from_file {
-                syntax_set.find_syntax_for_file(filename)?
-            } else {
-                None
-            }
-        }
-        (None, None) => None,
-    };
-
-    let syntax = syntax.unwrap_or_else(|| syntax_set.find_syntax_plain_text());
     let mut highlighter = HighlightLines::new(syntax, theme);
 
     printer.print_header(filename)?;
@@ -274,8 +249,9 @@ fn run() -> Result<()> {
 
             for file in &config.files {
                 printer.line_changes = file.and_then(|filename| get_git_diff(filename));
+                let syntax = assets.get_syntax(config.language, *file)?;
 
-                print_file(&config, theme, &assets.syntax_set, &mut printer, *file)?;
+                print_file(theme, &syntax, &mut printer, *file)?;
             }
         }
     }
