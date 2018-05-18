@@ -10,12 +10,13 @@
   10 ~         "The perimeter of the rectangle is {} pixels.",
   11 ~         perimeter(&rect1)
   12       );
-  13   }
-  14   
-  15   fn area(rectangle: &Rectangle) -> u32 {
-  16       rectangle.width * rectangle.height
-  17   }
-  18 + 
-  19 + fn perimeter(rectangle: &Rectangle) -> u32 {
-  20 +     (rectangle.width + rectangle.height) * 2
-  21 + }
+  13 + <bat: INVALID UTF-8>
+  14   }
+  15   
+  16   fn area(rectangle: &Rectangle) -> u32 {
+  17       rectangle.width * rectangle.height
+  18   }
+  19 + 
+  20 + fn perimeter(rectangle: &Rectangle) -> u32 {
+  21 +     (rectangle.width + rectangle.height) * 2
+  22 + }

@@ -10,6 +10,7 @@ _ │ fn main() {
 ~ │         "The perimeter of the rectangle is {} pixels.",
 ~ │         perimeter(&rect1)
   │     );
++ │ <bat: INVALID UTF-8>
   │ }
   │ 
   │ fn area(rectangle: &Rectangle) -> u32 {

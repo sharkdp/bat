@@ -10,6 +10,7 @@ fn main() {
         "The perimeter of the rectangle is {} pixels.",
         perimeter(&rect1)
     );
+    println!(r#"This line contains invalid utf8:  "øˆ€€€"#;
 }
 
 fn area(rectangle: &Rectangle) -> u32 {
