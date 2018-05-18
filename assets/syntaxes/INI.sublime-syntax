@@ -1,0 +1,43 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: INI
+file_extensions:
+  - ini
+  - INI
+  - inf
+  - INF
+  - reg
+  - REG
+  - lng
+  - cfg
+  - CFG
+  - url
+  - URL
+  - .editorconfig
+scope: source.ini
+contexts:
+  main:
+    - match: ^\s*(;|#).*$\n?
+      scope: comment.line.semicolon.ini
+      captures:
+        1: punctuation.definition.comment.ini
+    - match: '^\s*(\[)(.*?)(\])'
+      scope: meta.tag.section.ini
+      captures:
+        1: punctuation.definition.section.ini
+        2: entity.section.ini
+        3: punctuation.definition.section.ini
+    - match: '^(\s*(["'']?)(.+?)(\2)\s*(=))?\s*((["'']?)(.*?)(\7))\s*(;.*)?$\n?'
+      scope: meta.declaration.ini
+      captures:
+        1: meta.property.ini
+        2: punctuation.definition.quote.ini
+        3: keyword.name.ini
+        4: punctuation.definition.quote.ini
+        5: punctuation.definition.equals.ini
+        6: meta.value.ini
+        7: punctuation.definition.quote.ini
+        8: string.name.value.ini
+        9: punctuation.definition.quote.ini
+        10: comment.declarationline.semicolon.ini

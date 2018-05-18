@@ -1,0 +1,91 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: VimL
+file_extensions:
+  - vim
+  - .vimrc
+scope: source.viml
+contexts:
+  main:
+    - include: comment
+    - include: string_quoted_double
+    - include: string_quoted_single
+    - include: string_regex
+    - include: inline_comment
+    - include: number_int
+    - include: number_hex
+    - include: keyword
+    - include: support_function
+    - include: support_variable
+    - include: support_type
+    - include: function_params
+    - include: function_definition
+    - include: function_call
+    - include: function
+    - include: variable
+    - include: expr
+  comment:
+    - match: ^\s*".*$
+      scope: comment.line.quotes.viml
+      captures:
+        1: punctuation.definition.comment.vim
+  expr:
+    - match: (\|\||&&|==(\?|#)?|(!|>|<)=(#|\?)?|(=|!)~(#|\?)?|(>|<)(#|\?)is|isnot|\.|\*|\\|%)
+      scope: storage.function.viml
+  function:
+    - match: \b(fu(n|nction)?|end(f|fu|fun|function)?)\b
+      scope: storage.function.viml
+  function_call:
+    - match: '(([sgbwtl]|)?:?[0-9a-zA-Z_#]+)(?=\()'
+      scope: support.function.any-method
+  function_definition:
+    - match: '^\s*(function)\s*!?\s+(?=(s:)?[0-9a-zA-Z_#]+\s*\()'
+      captures:
+        1: storage.function.viml
+      push:
+        - meta_scope: meta.function.viml
+        - match: (\()
+          captures:
+            1: punctuation.definition.parameters.begin.viml
+          pop: true
+        - match: "(s:)?[0-9a-zA-Z_#]+"
+          scope: entity.name.function.viml
+  function_params:
+    - match: '-\w+='
+      scope: support.type.viml
+  inline_comment:
+    - match: '(?!\$)(")(?!\{).*$\n?'
+      scope: comment.line.quotes.viml
+      captures:
+        1: punctuation.definition.comment.vim
+  keyword:
+    - match: \b(if|while|for|try|return|throw|end(if|for|while|try)?|au(g|group)|else(if|)?|do|in|catch|finally|:)\b
+      scope: keyword.control.viml
+  number_hex:
+    - match: "#[0-9a-f]{6}"
+      scope: constant.numeric.hex
+  number_int:
+    - match: '-?\d+'
+      scope: constant.numeric.integer
+  string_quoted_double:
+    - match: '"(\\\\|\\"|\n[^\S\n]*\\|[^\n"])*"'
+      scope: string.quoted.double.viml
+  string_quoted_single:
+    - match: '''(''''|\n[^\S\n]*\\|[^\n''])*'''
+      scope: string.quoted.single.viml
+  string_regex:
+    - match: '/(\\\\|\\/|\n[^\S\n]*\\|[^\n/])*/'
+      scope: string.regexp.viml
+  support_function:
+    - match: \b(set(local|global)?|let|command|filetype|colorscheme|\w*map|\w*a(b|brev)?|syn|exe(c|cute)?|ec(ho|)?|au(tocmd|)?)\b
+      scope: support.function.viml
+  support_type:
+    - match: <.*?>
+      scope: support.type.viml
+  support_variable:
+    - match: '\b(am(enu|)?|(hl|inc)?search|[Bb]uf([Nn]ew[Ff]ile|[Rr]ead)?|[Ff]ile[Tt]ype)\b'
+      scope: support.variable.viml
+  variable:
+    - match: '([sSgGbBwWlLaAvV]:|@|$|&(?!&))\w*'
+      scope: variable.other.viml
