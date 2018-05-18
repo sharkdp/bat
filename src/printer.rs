@@ -16,6 +16,7 @@ pub struct Printer<'a> {
     config: &'a Config<'a>,
     decorations: Vec<Box<Decoration>>,
     panel_width: usize,
+    line_number: usize,
     pub line_changes: Option<LineChanges>,
 }
 
@@ -64,6 +65,7 @@ impl<'a> Printer<'a> {
             colors,
             config,
             decorations,
+            line_number: 0,
             line_changes: None,
         }
     }
@@ -108,11 +110,8 @@ impl<'a> Printer<'a> {
         }
     }
 
-    pub fn print_line(
-        &mut self,
-        line_number: usize,
-        regions: &[(highlighting::Style, &str)],
-    ) -> Result<()> {
+    pub fn print_line(&mut self, regions: &[(highlighting::Style, &str)]) -> Result<()> {
+        self.line_number += 1;
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
         let mut panel_wrap: Option<String> = None;
@@ -122,7 +121,7 @@ impl<'a> Printer<'a> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|ref d| d.generate(line_number, false, self))
+                .map(|ref d| d.generate(self.line_number, false, self))
                 .collect::<Vec<_>>();
 
             for deco in decorations {
@@ -184,7 +183,7 @@ impl<'a> Printer<'a> {
                                 "{} ",
                                 self.decorations
                                     .iter()
-                                    .map(|ref d| d.generate(line_number, true, self).text)
+                                    .map(|ref d| d.generate(self.line_number, true, self).text)
                                     .collect::<Vec<String>>()
                                     .join(" ")
                             ))
