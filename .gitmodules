@@ -19,3 +19,15 @@
 [submodule "assets/syntaxes/Docker"]
 	path = assets/syntaxes/Docker
 	url = https://github.com/asbjornenge/Docker.tmbundle
+[submodule "assets/syntaxes/VimL"]
+	path = assets/syntaxes/VimL
+	url = https://github.com/SalGnt/Sublime-VimL
+[submodule "assets/syntaxes/INI"]
+	path = assets/syntaxes/INI
+	url = https://github.com/clintberry/sublime-text-2-ini
+[submodule "assets/syntaxes/CMake"]
+	path = assets/syntaxes/CMake
+	url = https://github.com/zyxar/Sublime-CMakeLists
+[submodule "assets/syntaxes/LESS"]
+	path = assets/syntaxes/LESS
+	url = https://github.com/danro/LESS-sublime
