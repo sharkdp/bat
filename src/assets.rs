@@ -6,7 +6,10 @@ use std::io;
 use std::path::{Path, PathBuf};
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::{SyntaxDefinition, SyntaxSet};
+
+#[cfg(unix)]
+use std::os::unix::fs::FileTypeExt;
 
 lazy_static! {
     static ref PROJECT_DIRS: ProjectDirs = ProjectDirs::from("", "", crate_name!());
@@ -123,6 +126,34 @@ impl HighlightingAssets {
                 format!("Could not find '{}' theme", theme),
             )
         })?)
+    }
+
+    pub fn get_syntax(
+        &self,
+        language: Option<&str>,
+        filename: Option<&str>,
+    ) -> Result<&SyntaxDefinition> {
+        let syntax = match (language, filename) {
+            (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
+            (None, Some(filename)) => {
+                #[cfg(not(unix))]
+                let may_read_from_file = true;
+
+                // Do not peek at the file (to determine the syntax) if it is a FIFO because they can
+                // only be read once.
+                #[cfg(unix)]
+                let may_read_from_file = !fs::metadata(filename)?.file_type().is_fifo();
+
+                if may_read_from_file {
+                    self.syntax_set.find_syntax_for_file(filename)?
+                } else {
+                    None
+                }
+            }
+            (None, None) => None,
+        };
+
+        Ok(syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text()))
     }
 }
 
