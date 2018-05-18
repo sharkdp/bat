@@ -1,4 +1,3 @@
-use Colors;
 use app::Config;
 use console::AnsiCodeIterator;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
@@ -10,6 +9,7 @@ use std::vec::Vec;
 use style::OutputWrap;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
+use Colors;
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
@@ -119,7 +119,8 @@ impl<'a> Printer<'a> {
 
         // Line decorations.
         if self.panel_width > 0 {
-            let decorations = self.decorations
+            let decorations = self
+                .decorations
                 .iter()
                 .map(|ref d| d.generate(self.line_number, false, self))
                 .collect::<Vec<_>>();
@@ -194,7 +195,8 @@ impl<'a> Printer<'a> {
                                             "{} ",
                                             self.decorations
                                                 .iter()
-                                                .map(|ref d| d.generate(self.line_number, true, self)
+                                                .map(|ref d| d
+                                                    .generate(self.line_number, true, self)
                                                     .text)
                                                 .collect::<Vec<String>>()
                                                 .join(" ")
