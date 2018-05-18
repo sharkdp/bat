@@ -162,30 +162,15 @@ fn print_file(
 
     printer.print_header(filename)?;
 
-    let mut line_nr = 1;
-    let mut line_buffer = String::new();
-    loop {
-        line_buffer.clear();
-        let num_bytes = reader.read_line(&mut line_buffer);
+    let mut buffer = Vec::new();
+    while reader.read_until(b'\n', &mut buffer)? > 0 {
+        {
+            let line = String::from_utf8_lossy(&buffer);
+            let regions = highlighter.highlight(line.as_ref());
 
-        let line = match num_bytes {
-            Ok(0) => {
-                break;
-            }
-            Ok(_) => {
-                if !line_buffer.ends_with('\n') {
-                    line_buffer.push('\n');
-                }
-                &line_buffer
-            }
-            Err(_) => "<bat: INVALID UTF-8>\n",
-        };
-
-        let regions = highlighter.highlight(line);
-
-        printer.print_line(line_nr, &regions)?;
-
-        line_nr += 1;
+            printer.print_line(&regions)?;
+        }
+        buffer.clear();
     }
 
     printer.print_footer()?;
