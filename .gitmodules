@@ -31,3 +31,15 @@
 [submodule "assets/syntaxes/LESS"]
 	path = assets/syntaxes/LESS
 	url = https://github.com/danro/LESS-sublime
+[submodule "assets/themes/DarkNeon"]
+	path = assets/themes/DarkNeon
+	url = https://github.com/RainyDayMedia/DarkNeon
+[submodule "assets/themes/github-sublime-theme"]
+	path = assets/themes/github-sublime-theme
+	url = https://github.com/AlexanderEkdahl/github-sublime-theme
+[submodule "assets/themes/1337-Scheme"]
+	path = assets/themes/1337-Scheme
+	url = https://github.com/MarkMichos/1337-Scheme
+[submodule "assets/themes/TwoDark"]
+	path = assets/themes/TwoDark
+	url = https://github.com/erremauro/TwoDark
