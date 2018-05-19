@@ -110,6 +110,18 @@ impl App {
                     .long("list-themes")
                     .help("Displays supported themes"),
             )
+            .arg(
+                Arg::with_name("number")
+                    .long("number")
+                    .short("n")
+                    .conflicts_with("style")
+                    .help("Alias for '--style=numbers'"),
+            )
+            .arg(
+                Arg::with_name("unbuffered")
+                    .short("u")
+                    .help("(ignored)"),
+            )
             .subcommand(
                 SubCommand::with_name("cache")
                     .about("Modify the syntax-definition and theme cache")
@@ -226,15 +238,17 @@ impl App {
 
     fn output_components(&self) -> Result<OutputComponents> {
         let matches = &self.matches;
-        Ok(OutputComponents(
+        Ok(OutputComponents(if matches.is_present("number") {
+            [OutputComponent::Numbers].iter().cloned().collect()
+        } else {
             values_t!(matches.values_of("style"), OutputComponent)?
                 .into_iter()
                 .map(|style| style.components(self.interactive_output))
                 .fold(HashSet::new(), |mut acc, components| {
                     acc.extend(components.iter().cloned());
                     acc
-                }),
-        ))
+                })
+        }))
     }
 }
 
