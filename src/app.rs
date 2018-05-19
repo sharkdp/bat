@@ -181,16 +181,24 @@ impl App {
                 Some("never") => false,
                 Some("auto") | _ => self.interactive_output,
             },
-            paging: match self.matches.value_of("paging") {
-                Some("always") => true,
-                Some("never") => false,
+            paging_mode: match self.matches.value_of("paging") {
+                Some("always") => PagingMode::Always,
+                Some("never") => PagingMode::Never,
                 Some("auto") | _ => if files.contains(&None) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
-                    self.interactive_output && !atty::is(Stream::Stdin)
+                    if self.interactive_output && !atty::is(Stream::Stdin) {
+                        PagingMode::QuitIfOneScreen
+                    } else {
+                        PagingMode::Never
+                    }
                 } else {
-                    self.interactive_output
+                    if self.interactive_output {
+                        PagingMode::QuitIfOneScreen
+                    } else {
+                        PagingMode::Never
+                    }
                 },
             },
             term_width: Term::stdout().size().1 as usize,
@@ -230,13 +238,20 @@ impl App {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum PagingMode {
+    Always,
+    QuitIfOneScreen,
+    Never,
+}
+
 pub struct Config<'a> {
     pub true_color: bool,
     pub output_wrap: OutputWrap,
     pub output_components: OutputComponents,
     pub language: Option<&'a str>,
     pub colored_output: bool,
-    pub paging: bool,
+    pub paging_mode: PagingMode,
     pub term_width: usize,
     pub files: Vec<Option<&'a str>>,
     pub theme: Option<&'a str>,
