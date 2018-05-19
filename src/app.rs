@@ -45,35 +45,58 @@ impl App {
             .setting(AppSettings::DisableHelpSubcommand)
             .setting(AppSettings::VersionlessSubcommands)
             .max_term_width(90)
-            .about(crate_description!())
+            .about(
+                "A cat(1) clone with wings.\n\n\
+                 Use '--help' instead of '-h' to see a more detailed version of the help text.",
+            )
+            .long_about("A cat(1) clone with syntax highlighting and Git integration.")
             .arg(
                 Arg::with_name("language")
                     .short("l")
                     .long("language")
                     .help("Set the language for highlighting")
+                    .long_help(
+                        "Set the language for syntax highlighting. The language can be \
+                         specified as a name (like 'C++' or 'LaTeX') or possible file \
+                         extension (like 'cpp', 'hpp' or 'md'). Use '--list-languages' \
+                         to show all supported language names and file extensions",
+                    )
                     .takes_value(true),
             )
             .arg(
                 Arg::with_name("FILE")
-                    .help("File(s) to print")
+                    .help("File(s) to print / concatenate. Use '-' for standard input.")
+                    .long_help(
+                        "File(s) to print. Use no argument or '-' to read from standard \
+                         input",
+                    )
                     .multiple(true)
                     .empty_values(false),
             )
             .arg(
                 Arg::with_name("style")
                     .long("style")
+                    .value_name("style-components")
                     .use_delimiter(true)
                     .takes_value(true)
                     .possible_values(&[
                         "auto", "full", "plain", "changes", "header", "grid", "numbers",
                     ])
                     .default_value("auto")
-                    .help("Additional info to display along with content"),
+                    .help("Comma-separated list of style elements to display")
+                    .long_help(
+                        "Configure which elements (line numbers, file headers, grid \
+                         borders, Git modifications, ..) to display in addition to the \
+                         file contents. The argument is a comma-separated list of \
+                         components to display (e.g. 'numbers,changes,grid') or a \
+                         pre-defined style ('full')",
+                    ),
             )
             .arg(
                 Arg::with_name("color")
                     .long("color")
                     .takes_value(true)
+                    .value_name("when")
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
                     .help("When to use colors"),
@@ -82,14 +105,17 @@ impl App {
                 Arg::with_name("paging")
                     .long("paging")
                     .takes_value(true)
+                    .value_name("when")
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
-                    .help("When to use the pager"),
+                    .help("When to use the pager")
+                    .long_help("Specify when to use the pager (less)"),
             )
             .arg(
                 Arg::with_name("wrap")
                     .long("wrap")
                     .takes_value(true)
+                    .value_name("mode")
                     .possible_values(&["character", "never"])
                     .default_value("character")
                     .help("When to wrap text"),
@@ -97,30 +123,46 @@ impl App {
             .arg(
                 Arg::with_name("list-languages")
                     .long("list-languages")
-                    .help("Displays supported languages"),
+                    .help("Displays supported languages")
+                    .long_help("Display a list of supported languages"),
             )
             .arg(
                 Arg::with_name("theme")
                     .long("theme")
                     .takes_value(true)
-                    .help("Set the theme for highlighting"),
+                    .help("Set the theme for highlighting")
+                    .long_help(
+                        "Set the theme for syntax highlighting. Use '--list-themes' to \
+                         see all available themes",
+                    ),
             )
             .arg(
                 Arg::with_name("list-themes")
                     .long("list-themes")
-                    .help("Displays supported themes"),
+                    .help("Displays supported themes")
+                    .help("Display a list of supported themes for syntax highlighting"),
             )
             .arg(
                 Arg::with_name("number")
                     .long("number")
                     .short("n")
                     .conflicts_with("style")
-                    .help("Alias for '--style=numbers'"),
+                    .help("Show line numbers (alias for '--style=numbers')")
+                    .long_help(
+                        "Show line numbers (no other decorations). This is an alias for \
+                         '--style=numbers'",
+                    ),
             )
             .arg(
                 Arg::with_name("unbuffered")
                     .short("u")
-                    .help("(ignored)"),
+                    .help("(ignored)")
+                    // TODO: use '.hidden_short_help(true)' when the next clap version is released
+                    .long_help(
+                        "This option exists for POSIX-compliance reasons ('u' is for \
+                         'unbuffered'). The output is always unbuffered - this option \
+                         it simply ignored.",
+                    ),
             )
             .subcommand(
                 SubCommand::with_name("cache")
@@ -130,7 +172,10 @@ impl App {
                             .long("init")
                             .short("i")
                             .help("Initialize the syntax/theme cache")
-                            .long_help("Initialize the syntax/theme cache by loading from the source directory (default: the configuration directory)"),
+                            .long_help(
+                                "Initialize the syntax/theme cache by loading from the \
+                                 source directory (default: the configuration directory)",
+                            ),
                     )
                     .arg(
                         Arg::with_name("clear")
@@ -163,8 +208,10 @@ impl App {
                             .requires("init")
                             .takes_value(true)
                             .value_name("dir")
-                            .help("Use a different source to store the cached syntax and theme set"),
-                    )
+                            .help(
+                                "Use a different source to store the cached syntax and theme set",
+                            ),
+                    ),
             )
             .help_message("Print this help message.")
             .version_message("Show version information.")
