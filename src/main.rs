@@ -37,7 +37,7 @@ use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxDefinition;
 
-use app::App;
+use app::{App, PagingMode};
 use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
 use diff::get_git_diff;
 use printer::Printer;
@@ -59,12 +59,27 @@ enum OutputType {
 }
 
 impl OutputType {
-    fn pager() -> Result<Self> {
-        Ok(OutputType::Pager(Command::new("less")
-            .args(&["--quit-if-one-screen", "--RAW-CONTROL-CHARS", "--no-init"])
+    fn from_mode(mode: PagingMode) -> Self {
+        use PagingMode::*;
+        match mode {
+            Always => OutputType::try_pager(false),
+            QuitIfOneScreen => OutputType::try_pager(true),
+            _ => OutputType::stdout(),
+        }
+    }
+
+    /// Try to launch the pager. Fall back to stdout in case of errors.
+    fn try_pager(quit_if_one_screen: bool) -> Self {
+        let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
+        if quit_if_one_screen {
+            args.push("--quit-if-one-screen");
+        }
+        Command::new("less")
+            .args(&args)
             .stdin(Stdio::piped())
             .spawn()
-            .chain_err(|| "Could not spawn pager")?))
+            .map(OutputType::Pager)
+            .unwrap_or_else(|_| OutputType::stdout())
     }
 
     fn stdout() -> Self {
@@ -153,14 +168,6 @@ fn print_file(
     Ok(())
 }
 
-fn get_output_type(paging: bool) -> OutputType {
-    if paging {
-        OutputType::pager().unwrap_or_else(|_| OutputType::stdout())
-    } else {
-        OutputType::stdout()
-    }
-}
-
 fn run() -> Result<()> {
     let app = App::new();
 
@@ -243,7 +250,7 @@ fn run() -> Result<()> {
                 return Ok(());
             }
 
-            let mut output_type = get_output_type(config.paging);
+            let mut output_type = OutputType::from_mode(config.paging_mode);
             let handle = output_type.handle()?;
             let mut printer = Printer::new(handle, &config);
 
