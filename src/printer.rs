@@ -72,6 +72,8 @@ impl<'a> Printer<'a> {
     }
 
     pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
+        self.line_number = 0;
+
         if !self.config.output_components.header() {
             return Ok(());
         }
