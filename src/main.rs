@@ -168,7 +168,9 @@ fn print_file(
     Ok(())
 }
 
-fn run() -> Result<()> {
+/// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
+/// `Some(false)` if any intermediate errors occured (were printed).
+fn run() -> Result<bool> {
     let app = App::new();
 
     match app.matches.subcommand() {
@@ -190,6 +192,8 @@ fn run() -> Result<()> {
             } else if cache_matches.is_present("config-dir") {
                 println!("{}", config_dir());
             }
+
+            return Ok(true);
         }
         _ => {
             let config = app.config()?;
@@ -239,7 +243,7 @@ fn run() -> Result<()> {
                     println!();
                 }
 
-                return Ok(());
+                return Ok(true);
             }
 
             if app.matches.is_present("list-themes") {
@@ -247,37 +251,55 @@ fn run() -> Result<()> {
                 for (theme, _) in themes.iter() {
                     println!("{}", theme);
                 }
-                return Ok(());
+                return Ok(true);
             }
 
             let mut output_type = OutputType::from_mode(config.paging_mode);
             let handle = output_type.handle()?;
             let mut printer = Printer::new(handle, &config);
+            let mut no_errors: bool = true;
 
             for file in &config.files {
                 printer.line_changes = file.and_then(|filename| get_git_diff(filename));
-                let syntax = assets.get_syntax(config.language, *file)?;
+                let syntax = assets.get_syntax(config.language, *file);
 
-                print_file(theme, &syntax, &mut printer, *file)?;
+                let result = print_file(theme, &syntax, &mut printer, *file);
+
+                if let Err(error) = result {
+                    handle_error(&error);
+                    no_errors = false;
+                }
             }
+
+            Ok(no_errors)
         }
     }
+}
 
-    Ok(())
+fn handle_error(error: &Error) {
+    match error {
+        &Error(ErrorKind::Io(ref io_error), _) if io_error.kind() == io::ErrorKind::BrokenPipe => {
+            process::exit(0);
+        }
+        _ => {
+            eprintln!("{}: {}", Red.paint("[bat error]"), error);
+        }
+    };
 }
 
 fn main() {
     let result = run();
 
-    if let Err(error) = result {
-        match error {
-            Error(ErrorKind::Io(ref io_error), _)
-                if io_error.kind() == io::ErrorKind::BrokenPipe => {}
-            _ => {
-                eprintln!("{}: {}", Red.paint("[bat error]"), error);
-
-                process::exit(1);
-            }
-        };
+    match result {
+        Err(error) => {
+            handle_error(&error);
+            process::exit(1);
+        }
+        Ok(false) => {
+            process::exit(1);
+        }
+        Ok(true) => {
+            process::exit(0);
+        }
     }
 }

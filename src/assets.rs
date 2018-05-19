@@ -128,11 +128,7 @@ impl HighlightingAssets {
         })?)
     }
 
-    pub fn get_syntax(
-        &self,
-        language: Option<&str>,
-        filename: Option<&str>,
-    ) -> Result<&SyntaxDefinition> {
+    pub fn get_syntax(&self, language: Option<&str>, filename: Option<&str>) -> &SyntaxDefinition {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, Some(filename)) => {
@@ -142,10 +138,14 @@ impl HighlightingAssets {
                 // Do not peek at the file (to determine the syntax) if it is a FIFO because they can
                 // only be read once.
                 #[cfg(unix)]
-                let may_read_from_file = !fs::metadata(filename)?.file_type().is_fifo();
+                let may_read_from_file = !fs::metadata(filename)
+                    .map(|m| m.file_type().is_fifo())
+                    .unwrap_or(false);
 
                 if may_read_from_file {
-                    self.syntax_set.find_syntax_for_file(filename)?
+                    self.syntax_set
+                        .find_syntax_for_file(filename)
+                        .unwrap_or(None)
                 } else {
                     None
                 }
@@ -153,7 +153,7 @@ impl HighlightingAssets {
             (None, None) => None,
         };
 
-        Ok(syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text()))
+        syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
     }
 }
 
