@@ -157,3 +157,15 @@ If you ever want to go back to the default settings, call:
 ``` bash
 bat cache --clear
 ```
+
+## Project goals and alternatives
+
+`bat` tries to achieve the following goals:
+
+- Provide beautiful, advanced syntax highlighting
+- Integrate with Git to show file modifications
+- Be a drop-in replacement for (POSIX) `cat`
+- Offer a user-friendly command-line interface
+
+There are a lot of alternatives, if you are looking for similar programs. See
+[this document](doc/alternatives.md) for a comparison.
