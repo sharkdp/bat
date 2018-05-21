@@ -1,3 +1,5 @@
+use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
+use ansi_term::Style;
 use app::Config;
 use console::AnsiCodeIterator;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
@@ -9,7 +11,6 @@ use std::vec::Vec;
 use style::OutputWrap;
 use syntect::highlighting;
 use terminal::as_terminal_escaped;
-use Colors;
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
@@ -250,5 +251,35 @@ impl<'a> Printer<'a> {
         }
 
         Ok(())
+    }
+}
+
+const GRID_COLOR: u8 = 238;
+const LINE_NUMBER_COLOR: u8 = 244;
+
+#[derive(Default)]
+pub struct Colors {
+    pub grid: Style,
+    pub filename: Style,
+    pub git_added: Style,
+    pub git_removed: Style,
+    pub git_modified: Style,
+    pub line_number: Style,
+}
+
+impl Colors {
+    fn plain() -> Self {
+        Colors::default()
+    }
+
+    fn colored() -> Self {
+        Colors {
+            grid: Fixed(GRID_COLOR).normal(),
+            filename: White.bold(),
+            git_added: Green.normal(),
+            git_removed: Red.normal(),
+            git_modified: Yellow.normal(),
+            line_number: Fixed(LINE_NUMBER_COLOR).normal(),
+        }
     }
 }
