@@ -21,25 +21,26 @@ mod app;
 mod assets;
 mod decorations;
 mod diff;
+mod output;
 mod printer;
 mod style;
 mod terminal;
 
 use std::fs::{self, File};
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, BufReader};
 use std::path::Path;
-use std::process::{self, Child, Command, Stdio};
+use std::process;
 
-use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
-use ansi_term::Style;
+use ansi_term::Colour::{Green, Red};
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxDefinition;
 
-use app::{App, PagingMode};
+use app::App;
 use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
 use diff::get_git_diff;
+use output::OutputType;
 use printer::Printer;
 
 mod errors {
@@ -52,88 +53,6 @@ mod errors {
 }
 
 use errors::*;
-
-enum OutputType {
-    Pager(Child),
-    Stdout(io::Stdout),
-}
-
-impl OutputType {
-    fn from_mode(mode: PagingMode) -> Self {
-        use PagingMode::*;
-        match mode {
-            Always => OutputType::try_pager(false),
-            QuitIfOneScreen => OutputType::try_pager(true),
-            _ => OutputType::stdout(),
-        }
-    }
-
-    /// Try to launch the pager. Fall back to stdout in case of errors.
-    fn try_pager(quit_if_one_screen: bool) -> Self {
-        let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
-        if quit_if_one_screen {
-            args.push("--quit-if-one-screen");
-        }
-        Command::new("less")
-            .args(&args)
-            .stdin(Stdio::piped())
-            .spawn()
-            .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout())
-    }
-
-    fn stdout() -> Self {
-        OutputType::Stdout(io::stdout())
-    }
-
-    fn handle(&mut self) -> Result<&mut Write> {
-        Ok(match *self {
-            OutputType::Pager(ref mut command) => command
-                .stdin
-                .as_mut()
-                .chain_err(|| "Could not open stdin for pager")?,
-            OutputType::Stdout(ref mut handle) => handle,
-        })
-    }
-}
-
-impl Drop for OutputType {
-    fn drop(&mut self) {
-        if let OutputType::Pager(ref mut command) = *self {
-            let _ = command.wait();
-        }
-    }
-}
-
-const GRID_COLOR: u8 = 238;
-const LINE_NUMBER_COLOR: u8 = 244;
-
-#[derive(Default)]
-pub struct Colors {
-    pub grid: Style,
-    pub filename: Style,
-    pub git_added: Style,
-    pub git_removed: Style,
-    pub git_modified: Style,
-    pub line_number: Style,
-}
-
-impl Colors {
-    fn plain() -> Self {
-        Colors::default()
-    }
-
-    fn colored() -> Self {
-        Colors {
-            grid: Fixed(GRID_COLOR).normal(),
-            filename: White.bold(),
-            git_added: Green.normal(),
-            git_removed: Red.normal(),
-            git_modified: Yellow.normal(),
-            line_number: Fixed(LINE_NUMBER_COLOR).normal(),
-        }
-    }
-}
 
 fn print_file(
     theme: &Theme,
