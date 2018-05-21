@@ -27,13 +27,12 @@ mod printer;
 mod style;
 mod terminal;
 
-use std::fs;
 use std::io;
 use std::path::Path;
 use std::process;
 
 use app::App;
-use assets::{config_dir, syntax_set_path, theme_set_path, HighlightingAssets};
+use assets::{clear_assets, config_dir, HighlightingAssets};
 use features::{list_languages, print_files};
 
 mod errors {
@@ -75,13 +74,7 @@ fn run() -> Result<bool> {
                 let assets = HighlightingAssets::from_files(source_dir)?;
                 assets.save(target_dir)?;
             } else if cache_matches.is_present("clear") {
-                print!("Clearing theme set cache ... ");
-                fs::remove_file(theme_set_path()).ok();
-                println!("okay");
-
-                print!("Clearing syntax set cache ... ");
-                fs::remove_file(syntax_set_path()).ok();
-                println!("okay");
+                clear_assets();
             } else if cache_matches.is_present("config-dir") {
                 println!("{}", config_dir());
             }
