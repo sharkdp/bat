@@ -1,7 +1,6 @@
 use ansi_term::Style;
 use diff::LineChange;
-use printer::Printer;
-use Colors;
+use printer::{Colors, Printer};
 
 #[derive(Clone)]
 pub struct DecorationText {
