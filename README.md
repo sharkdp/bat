@@ -1,3 +1,4 @@
+![alt text](https://raw.githubusercontent.com/jraulhernandezi/bat/master/BAT%20PR.jpg)
 # bat
 
 [![Build Status](https://travis-ci.org/sharkdp/bat.svg?branch=master)](https://travis-ci.org/sharkdp/bat)
