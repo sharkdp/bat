@@ -26,6 +26,7 @@ impl OutputType {
         }
         Command::new("less")
             .args(&args)
+            .env("LESSCHARSET", "UTF-8")
             .stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
