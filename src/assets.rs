@@ -29,8 +29,12 @@ impl HighlightingAssets {
         let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
 
         let theme_dir = source_dir.join("themes");
-        let theme_set =
-            ThemeSet::load_from_folder(&theme_dir).chain_err(|| "Could not load themes from '{}'")?;
+        let theme_set = ThemeSet::load_from_folder(&theme_dir).chain_err(|| {
+            format!(
+                "Could not load themes from '{}'",
+                theme_dir.to_string_lossy()
+            )
+        })?;
         let mut syntax_set = SyntaxSet::new();
         let syntax_dir = source_dir.join("syntaxes");
         if !syntax_dir.exists() {
