@@ -90,6 +90,8 @@ impl<'a> Printer<'a> {
                     .grid
                     .paint(if self.panel_width > 0 { "│" } else { "" }),
             )?;
+        } else {
+            write!(self.handle, "{}", " ".repeat(self.panel_width))?;
         }
 
         writeln!(
