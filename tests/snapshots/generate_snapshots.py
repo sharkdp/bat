@@ -22,6 +22,10 @@ def generate_snapshot(option):
     print("generating snapshot for {}".format(option))
     subprocess.call(command, shell=True)
 
+def build_bat():
+    print("building bat")
+    subprocess.call("cargo build", cwd="../..", shell=True)
+
 def prepare_output_dir():
     shutil.rmtree("output", ignore_errors=True)
     pathlib.Path("output").mkdir()
@@ -34,6 +38,7 @@ def undo_sample_file_modification():
     print("undoing sample.rs modifications")
     subprocess.call("git checkout -- sample.rs", shell=True)
 
+build_bat()
 prepare_output_dir()
 modify_sample_file()
 generate_snapshots()
