@@ -40,7 +40,6 @@ impl App {
             .global_setting(AppSettings::DeriveDisplayOrder)
             .global_setting(AppSettings::UnifiedHelpMessage)
             .global_setting(AppSettings::NextLineHelp)
-            .global_setting(AppSettings::AllArgsOverrideSelf)
             .setting(AppSettings::InferSubcommands)
             .setting(AppSettings::ArgsNegateSubcommands)
             .setting(AppSettings::DisableHelpSubcommand)
@@ -55,6 +54,7 @@ impl App {
                 Arg::with_name("language")
                     .short("l")
                     .long("language")
+                    .overrides_with("language")
                     .help("Set the language for highlighting")
                     .long_help(
                         "Set the language for syntax highlighting. The language can be \
@@ -96,6 +96,7 @@ impl App {
             .arg(
                 Arg::with_name("color")
                     .long("color")
+                    .overrides_with("color")
                     .takes_value(true)
                     .value_name("when")
                     .possible_values(&["auto", "never", "always"])
@@ -105,6 +106,7 @@ impl App {
             .arg(
                 Arg::with_name("paging")
                     .long("paging")
+                    .overrides_with("paging")
                     .takes_value(true)
                     .value_name("when")
                     .possible_values(&["auto", "never", "always"])
@@ -115,6 +117,7 @@ impl App {
             .arg(
                 Arg::with_name("wrap")
                     .long("wrap")
+                    .overrides_with("wrap")
                     .takes_value(true)
                     .value_name("mode")
                     .possible_values(&["character", "never"])
@@ -130,6 +133,7 @@ impl App {
             .arg(
                 Arg::with_name("theme")
                     .long("theme")
+                    .overrides_with("theme")
                     .takes_value(true)
                     .help("Set the theme for highlighting")
                     .long_help(
@@ -146,6 +150,7 @@ impl App {
             .arg(
                 Arg::with_name("number")
                     .long("number")
+                    .overrides_with("number")
                     .short("n")
                     .conflicts_with("style")
                     .help("Show line numbers (alias for '--style=numbers')")
