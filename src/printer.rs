@@ -84,11 +84,11 @@ impl<'a> Printer<'a> {
 
             write!(
                 self.handle,
-                "{}{} ",
+                "{}{}",
                 " ".repeat(self.panel_width),
                 self.colors
                     .grid
-                    .paint(if self.panel_width > 0 { "│" } else { "" }),
+                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )?;
         } else {
             write!(self.handle, "{}", " ".repeat(self.panel_width))?;
