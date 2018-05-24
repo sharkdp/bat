@@ -40,6 +40,7 @@ impl App {
             .global_setting(AppSettings::DeriveDisplayOrder)
             .global_setting(AppSettings::UnifiedHelpMessage)
             .global_setting(AppSettings::NextLineHelp)
+            .global_setting(AppSettings::AllArgsOverrideSelf)
             .setting(AppSettings::InferSubcommands)
             .setting(AppSettings::ArgsNegateSubcommands)
             .setting(AppSettings::DisableHelpSubcommand)
