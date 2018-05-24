@@ -47,7 +47,7 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
             }
 
             num_chars += new_chars;
-            print!("{}", Green.paint(word.as_ref()));
+            print!("{}", Green.paint(&word[..]));
             if extension.peek().is_some() {
                 print!("{}", comma_separator);
             }
