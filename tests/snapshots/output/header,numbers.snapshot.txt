@@ -1,4 +1,4 @@
-File: sample.rs
+     File: sample.rs
    1 struct Rectangle {
    2     width: u32,
    3     height: u32,
