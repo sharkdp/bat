@@ -40,6 +40,7 @@ mod errors {
         foreign_links {
             Clap(::clap::Error);
             Io(::std::io::Error);
+            SyntectError(::syntect::LoadingError);
         }
     }
 
