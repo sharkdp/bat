@@ -43,7 +43,7 @@ impl HighlightingAssets {
                 syntax_dir.to_string_lossy()
             ).into());
         }
-        let _ = syntax_set.load_syntaxes(syntax_dir, true);
+        syntax_set.load_syntaxes(syntax_dir, true)?;
         syntax_set.load_plain_text_syntax();
 
         Ok(HighlightingAssets {
