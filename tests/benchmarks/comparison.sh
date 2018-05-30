@@ -16,6 +16,7 @@ cmd_ccat="ccat --color=always '$SRC'"
 cmd_source_highlight="source-highlight --failsafe --infer-lang -f esc -i '$SRC'"
 cmd_hicat="hicat '$SRC'"
 cmd_coderay="coderay '$SRC'"
+cmd_rouge="rougify '$SRC'"
 
 hyperfine --warmup 3 \
     "$cmd_bat" \
@@ -25,3 +26,4 @@ hyperfine --warmup 3 \
     "$cmd_source_highlight" \
     "$cmd_hicat" \
     "$cmd_coderay" \
+    "$cmd_rouge" \
