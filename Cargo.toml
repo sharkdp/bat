@@ -23,7 +23,7 @@ features = []
 
 [dependencies.syntect]
 git = "https://github.com/trishume/syntect"
-rev = "6ad8132b60cbf0637d92241de752f015ced01450"
+rev = "c025dad49564e96322df4468fd268b65b91b2eae"
 # version = "2"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
