@@ -1,6 +1,7 @@
 <p align="center">
   <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="Version info"><img src="https://travis-ci.org/sharkdp/bat.svg?branch=master" alt="Build Status"></a>
+  <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg" alt="Version info"></a><br>
   A <i>cat(1)</i> clone with syntax highlighting and Git integration.
 </p>
