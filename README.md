@@ -6,7 +6,13 @@
   A <i>cat(1)</i> clone with syntax highlighting and Git integration.
 </p>
 
-## Features
+<p align="center">
+  <a href="#syntax-highlighting">Key Features</a> •
+  <a href="#how-to-use">How To Use</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#customization">Customization</a> •
+  <a href="#project-goals-and-alternatives">Project goals, alternatives</a>
+</p>
 
 ### Syntax highlighting
 
@@ -32,7 +38,7 @@ Oh.. you can also use it to concatenate files :wink:. Whenever
 `bat` detects a non-interactive terminal, it will fall back to printing
 the plain file contents.
 
-## Usage
+## How to use
 
 Display a single file on the terminal
 
