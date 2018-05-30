@@ -24,7 +24,7 @@
 	url = https://github.com/clintberry/sublime-text-2-ini
 [submodule "assets/syntaxes/CMake"]
 	path = assets/syntaxes/CMake
-	url = https://github.com/zyxar/Sublime-CMakeLists
+	url = https://github.com/sharkdp/Sublime-CMakeLists
 [submodule "assets/syntaxes/LESS"]
 	path = assets/syntaxes/LESS
 	url = https://github.com/danro/LESS-sublime
