@@ -35,23 +35,23 @@ the plain file contents.
 
 Display a single file on the terminal
 
-``` bash
+```bash
 > bat README.md
 ```
 
 Display multiple files at once
 
-``` bash
+```bash
 > bat src/*.rs
 ```
 
 Explicitly specify the language
 
-``` bash
+```bash
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
-``` bash
+```bash
 > curl -s https://raw.githubusercontent.com/sharkdp/bat/master/src/main.rs | bat -l rs
 ```
 
@@ -78,13 +78,13 @@ makepkg -si
 
 You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
 
-```sh
+```bash
 pkg install bat
 ```
 
 or build it on your own from the FreeBSD ports:
 
-```sh
+```bash
 cd /usr/ports/textproc/bat
 make install
 ```
@@ -93,7 +93,7 @@ make install
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
 
-``` bash
+```bash
 brew install bat
 ```
 
@@ -102,7 +102,7 @@ brew install bat
 If you want to build to compile `bat` from source, you need Rust 1.24 or
 higher. You can then use `cargo` to build everything:
 
-``` bash
+```bash
 cargo install bat
 ```
 
@@ -120,41 +120,43 @@ To build your own language-set and theme, follow these steps:
 
 Create a folder with a syntax highlighting theme:
 
-``` bash
+```bash
 BAT_CONFIG_DIR="$(bat cache --config-dir)"
 
 mkdir -p "$BAT_CONFIG_DIR/themes"
 cd "$BAT_CONFIG_DIR/themes"
 
 # Download a theme, for example:
-git clone https://github.com/jonschlinkert/sublime-monokai-extended
+git clone https://github.com/greggb/sublime-snazzy
 
-# Create a 'Default.tmTheme' link
-ln -s "sublime-monokai-extended/Monokai Extended.tmTheme" Default.tmTheme
+# Create a link for the default theme
+ln -sf "sublime-snazzy/Sublime Snazzy.tmTheme" Default.tmTheme
 ```
 
 Create a folder with language definition files:
 
-``` bash
+```bash
 mkdir -p "$BAT_CONFIG_DIR/syntaxes"
 cd "$BAT_CONFIG_DIR/syntaxes"
 
 # Download some language definition files, for example:
-git clone https://github.com/sublimehq/Packages/
-rm -rf Packages/Markdown
-git clone https://github.com/jonschlinkert/sublime-markdown-extended
+git clone https://github.com/sublimehq/Packages
+git clone https://github.com/danro/LESS-sublime
 ```
 
 Finally, use the following command to parse all these files into a binary
 cache:
 
-``` bash
+```bash
 bat cache --init
 ```
 
+Use `bat --list-languages` and `bat --list-themes` to check if all languages and themes are
+available.
+
 If you ever want to go back to the default settings, call:
 
-``` bash
+```bash
 bat cache --clear
 ```
 
