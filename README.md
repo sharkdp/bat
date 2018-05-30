@@ -52,7 +52,7 @@ Display multiple files at once
 > bat src/*.rs
 ```
 
-Explicitly specify the language
+Read from stdin, explicitly specify the language
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
@@ -117,6 +117,21 @@ On macOS, you might have to install `cmake` (`brew install cmake`) in order for
 some dependencies to be built.
 
 ## Customization
+
+### Highlighting theme
+
+Use `bat --list-themes` to get a list of all available themes for syntax
+highlighting. To select the `TwoDark` theme, for example, call `bat` with
+the `--theme=TwoDark` option. Use `alias bat="bat --theme=TwoDark"` in your
+shells startup file to make the change permanent.
+
+### Output style
+
+You can use the `--style` option to control the appearance of `bat`s output.
+You can use `--style=numbers,changes`, for example, to show only Git changes
+and line numbers but no grid and no file header.
+
+### Add new syntaxes and highlighting themes
 
 `bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
 library for syntax highlighting. `syntect` can read any
