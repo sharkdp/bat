@@ -1,5 +1,6 @@
 mod tester;
 
+use std::process::{Command, Stdio};
 use tester::BatTester;
 
 static STYLES: &'static [&'static str] = &[
@@ -24,6 +25,17 @@ static STYLES: &'static [&'static str] = &[
 
 #[test]
 fn test_snapshots() {
+    let status = Command::new("git")
+        .arg("rev-parse")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+
+    if !status.map(|s| s.success()).unwrap_or(false) {
+        // Git not available or not a git repository. Skipping snapshot test.
+        return;
+    }
+
     let bat_tester = BatTester::new();
 
     for style in STYLES {

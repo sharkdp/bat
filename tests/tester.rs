@@ -11,7 +11,7 @@ pub struct BatTester {
 impl BatTester {
     pub fn new() -> Self {
         modify_sample_file();
-        // Lifted from fd :)
+
         let root = env::current_exe()
             .expect("tests executable")
             .parent()
