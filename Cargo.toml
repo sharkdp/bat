@@ -8,6 +8,10 @@ name = "bat"
 readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
 version = "0.4.0"
+exclude = [
+    "assets/syntaxes/*",
+    "assets/themes/*",
+]
 
 [dependencies]
 atty = "0.2.2"
