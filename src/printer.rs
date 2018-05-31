@@ -47,7 +47,7 @@ impl<'a> Printer<'a> {
         // The grid border decoration isn't added until after the panel_width calculation, since the
         // print_horizontal_line, print_header, and print_footer functions all assume the panel
         // width is without the grid border.
-        if config.output_components.grid() && decorations.len() > 0 {
+        if config.output_components.grid() && !decorations.is_empty() {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
         }
 
@@ -159,7 +159,7 @@ impl<'a> Printer<'a> {
             for &(style, region) in regions.iter() {
                 let mut ansi_iterator = AnsiCodeIterator::new(region);
                 let mut ansi_prefix = "";
-                while let Some(chunk) = ansi_iterator.next() {
+                for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
