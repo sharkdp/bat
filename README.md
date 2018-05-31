@@ -62,6 +62,17 @@ Read from stdin, explicitly specify the language
 > curl -s https://raw.githubusercontent.com/sharkdp/bat/master/src/main.rs | bat -l rs
 ```
 
+As a replacement for `cat`:
+
+```bash
+bat > note.md  # quickly create a new file
+
+bat header.md content.md footer.md > document.md
+
+bat -n main.rs  # show line numbers (only)
+
+cat f - g  # output 'f', then stdin, then 'g'.
+```
 
 ## Installation
 

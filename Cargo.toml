@@ -22,9 +22,7 @@ default-features = false
 features = []
 
 [dependencies.syntect]
-git = "https://github.com/trishume/syntect"
-rev = "c025dad49564e96322df4468fd268b65b91b2eae"
-# version = "2"
+version = "2.1"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 

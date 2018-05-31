@@ -50,7 +50,7 @@ dependencies = [
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "syntect 2.0.1 (git+https://github.com/trishume/syntect?rev=c025dad49564e96322df4468fd268b65b91b2eae)",
+ "syntect 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -580,8 +580,8 @@ dependencies = [
 
 [[package]]
 name = "syntect"
-version = "2.0.1"
-source = "git+https://github.com/trishume/syntect?rev=c025dad49564e96322df4468fd268b65b91b2eae#c025dad49564e96322df4468fd268b65b91b2eae"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bincode 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -841,7 +841,7 @@ dependencies = [
 "checksum stable_deref_trait 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "15132e0e364248108c5e2c02e3ab539be8d6f5d52a01ca9bbf27ed657316f02b"
 "checksum strsim 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bb4f380125926a99e52bc279241539c018323fab05ad6368b56f93d9369ff550"
 "checksum syn 0.13.7 (registry+https://github.com/rust-lang/crates.io-index)" = "61b8f1b737f929c6516ba46a3133fd6d5215ad8a62f66760f851f7048aebedfb"
-"checksum syntect 2.0.1 (git+https://github.com/trishume/syntect?rev=c025dad49564e96322df4468fd268b65b91b2eae)" = "<none>"
+"checksum syntect 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "dc8a6f0db88d4afc340522c20d260411e746b2225b257c6b238a75de9d7cec78"
 "checksum term_size 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "9e5b9a66db815dcfd2da92db471106457082577c3c278d4138ab3e3b4e189327"
 "checksum termion 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "689a3bdfaab439fd92bc87df5c4c78417d3cbe537487274e9b0b2dce76e92096"
 "checksum termios 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d5d9cf598a6d7ce700a4e6a9199da127e6819a61e64b68609683cc9a01b5683a"
