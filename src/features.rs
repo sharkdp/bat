@@ -96,12 +96,25 @@ fn print_file(
     printer.print_header(filename)?;
 
     let mut buffer = Vec::new();
+
     while reader.read_until(b'\n', &mut buffer)? > 0 {
         {
             let line = String::from_utf8_lossy(&buffer);
             let regions = highlighter.highlight(line.as_ref());
 
-            printer.print_line(&regions)?;
+            if printer.config.line_range.is_some() {
+                if printer.line_number + 1 < printer.config.line_range.unwrap().0 {
+                    // skip line
+                    printer.line_number += 1;
+                } else if printer.line_number >= printer.config.line_range.unwrap().1 {
+                    // no more lines in range
+                    break;
+                } else {
+                    printer.print_line(&regions)?;
+                }
+            } else {
+                printer.print_line(&regions)?;
+            }
         }
         buffer.clear();
     }
