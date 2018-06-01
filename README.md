@@ -71,7 +71,7 @@ bat header.md content.md footer.md > document.md
 
 bat -n main.rs  # show line numbers (only)
 
-cat f - g  # output 'f', then stdin, then 'g'.
+bat f - g  # output 'f', then stdin, then 'g'.
 ```
 
 ## Installation
