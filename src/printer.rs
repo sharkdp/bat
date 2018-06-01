@@ -15,10 +15,10 @@ use terminal::as_terminal_escaped;
 pub struct Printer<'a> {
     handle: &'a mut Write,
     colors: Colors,
-    config: &'a Config<'a>,
+    pub config: &'a Config<'a>,
     decorations: Vec<Box<Decoration>>,
     panel_width: usize,
-    line_number: usize,
+    pub line_number: usize,
     pub line_changes: Option<LineChanges>,
 }
 

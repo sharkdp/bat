@@ -142,6 +142,17 @@ impl App {
                     ),
             )
             .arg(
+                Arg::with_name("line-range")
+                    .long("line-range")
+                    .overrides_with("line-range")
+                    .takes_value(true)
+                    .help("Print range of lines")
+                    .long_help(
+                        "Print a specified range of lines from the files \
+                         --line-range 30-40 or --line-range 30-",
+                    ),
+            )
+            .arg(
                 Arg::with_name("list-themes")
                     .long("list-themes")
                     .help("Displays supported themes")
@@ -269,6 +280,7 @@ impl App {
             term_width: Term::stdout().size().1 as usize,
             files,
             theme: self.matches.value_of("theme"),
+            line_range: get_ranges(self.matches.value_of("line-range")),
         })
     }
 
@@ -322,10 +334,37 @@ pub struct Config<'a> {
     pub term_width: usize,
     pub files: Vec<Option<&'a str>>,
     pub theme: Option<&'a str>,
+    pub line_range: Option<(usize, usize)>,
 }
 
 fn is_truecolor_terminal() -> bool {
     env::var("COLORTERM")
         .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
         .unwrap_or(false)
+}
+
+fn get_ranges(value: Option<&str>) -> Option<(usize, usize)> {
+    match value {
+        None => None,
+        Some(str_range) => {
+            let mut new_range = (usize::min_value(), usize::max_value());
+            if str_range.bytes().nth(0).expect("Something should be here!") == b':' {
+                new_range.1 = str_range[1..].parse().expect("This should be a number!");
+                return Some(new_range);
+            } else if str_range.bytes().last().expect("There should be a last!") == b':' {
+                new_range.0 = str_range[..str_range.len() - 1]
+                    .parse()
+                    .expect("This should be a number!");
+                return Some(new_range);
+            }
+
+            let line_numbers: Vec<&str> = str_range.split(':').collect();
+            if line_numbers.len() == 2 {
+                new_range.0 = line_numbers[0].parse().expect("Should be a number!");
+                new_range.1 = line_numbers[1].parse().expect("Should be a number!");
+            }
+
+            Some(new_range)
+        }
+    }
 }
