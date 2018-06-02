@@ -1,16 +1,29 @@
 use std::env;
 use std::fs::{self, File};
-use std::io::Read;
-use std::path::PathBuf;
+use std::io::{self, Read};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
+extern crate tempdir;
+use self::tempdir::TempDir;
+
+extern crate git2;
+use self::git2::build::CheckoutBuilder;
+use self::git2::Error;
+use self::git2::Repository;
+use self::git2::Signature;
+
 pub struct BatTester {
+    /// Temporary working directory
+    temp_dir: TempDir,
+
+    /// Path to the *bat* executable
     exe: PathBuf,
 }
 
 impl BatTester {
     pub fn new() -> Self {
-        modify_sample_file();
+        let temp_dir = create_sample_directory().expect("sample directory");
 
         let root = env::current_exe()
             .expect("tests executable")
@@ -21,17 +34,18 @@ impl BatTester {
             .to_path_buf();
 
         let exe_name = if cfg!(windows) { "bat.exe" } else { "bat" };
+        let exe = root.join(exe_name);
 
-        BatTester {
-            exe: root.join(exe_name),
-        }
+        BatTester { temp_dir, exe }
     }
 
     pub fn test_snapshot(&self, style: &str) {
         let output = Command::new(&self.exe)
-            .args(&["tests/snapshots/sample.rs", &format!("--style={}", style)])
+            .current_dir(self.temp_dir.path())
+            .args(&["sample.rs", &format!("--style={}", style)])
             .output()
             .expect("bat failed");
+
         // have to do the replace because the filename in the header changes based on the current working directory
         let actual = String::from_utf8_lossy(&output.stdout)
             .as_ref()
@@ -47,26 +61,35 @@ impl BatTester {
     }
 }
 
-impl Drop for BatTester {
-    fn drop(&mut self) {
-        undo_sample_file_modification();
-    }
-}
+fn create_sample_directory() -> Result<TempDir, git2::Error> {
+    // Create temp directory and initialize repository
+    let temp_dir = TempDir::new("bat-tests").expect("Temp directory");
+    let repo = Repository::init(&temp_dir)?;
 
-fn modify_sample_file() {
-    fs::copy(
-        "tests/snapshots/sample.modified.rs",
-        "tests/snapshots/sample.rs",
-    ).expect("generating modified sample file failed");
-}
+    // Copy over `sample.rs`
+    let sample_path = temp_dir.path().join("sample.rs");
+    println!("{:?}", &sample_path);
+    fs::copy("tests/snapshots/sample.rs", &sample_path).expect("successful copy");
 
-fn undo_sample_file_modification() {
-    let output = Command::new("git")
-        .args(&["checkout", "--", "tests/snapshots/sample.rs"])
-        .output()
-        .expect("git checkout failed");
+    // Commit
+    let mut index = repo.index()?;
+    index.add_path(Path::new("sample.rs"))?;
 
-    if !output.status.success() {
-        panic!("undoing modified sample changes failed")
-    }
+    let oid = index.write_tree()?;
+    let signature = Signature::now("bat test runner", "bat@test.runner")?;
+    let tree = repo.find_tree(oid)?;
+    repo.commit(
+        Some("HEAD"), //  point HEAD to our new commit
+        &signature,   // author
+        &signature,   // committer
+        "initial commit",
+        &tree,
+        &[],
+    );
+    let mut opts = CheckoutBuilder::new();
+    repo.checkout_head(Some(opts.force()))?;
+
+    fs::copy("tests/snapshots/sample.modified.rs", &sample_path).expect("successful copy");
+
+    Ok(temp_dir)
 }

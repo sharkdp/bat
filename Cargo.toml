@@ -39,3 +39,6 @@ features = ["suggestions", "color", "wrap_help"]
 version = "0.11"
 default-features = false
 features = []
+
+[dev-dependencies]
+tempdir = "0.3"
