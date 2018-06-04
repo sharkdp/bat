@@ -282,7 +282,7 @@ impl App {
             term_width: Term::stdout().size().1 as usize,
             files,
             theme: self.matches.value_of("theme"),
-            line_range: LineRange::from(self.matches.value_of("line-range")),
+            line_range: self.matches.value_of("line-range").map(LineRange::from),
         })
     }
 
@@ -351,20 +351,19 @@ pub struct LineRange {
 }
 
 impl LineRange {
-    pub fn from(value: Option<&str>) -> Option<LineRange> {
-        match value {
-            None => None,
-            Some(range_raw) => {
-                return LineRange::parse_range(range_raw).ok();
-            }
+    pub fn from(range_raw: &str) -> LineRange {
+        LineRange::parse_range(range_raw).unwrap_or(LineRange::new())
+    }
+
+    pub fn new() -> LineRange {
+        LineRange{
+            lower: usize::min_value(),
+            upper: usize::max_value(),
         }
     }
 
     pub fn parse_range(range_raw: &str) -> Result<LineRange> {
-        let mut new_range = LineRange{
-            lower: usize::min_value(),
-            upper: usize::max_value(),
-        };
+        let mut new_range = LineRange::new();
 
         if range_raw.bytes().nth(0).ok_or("No first byte")? == b':' {
             new_range.upper = range_raw[1..].parse()?;
