@@ -148,8 +148,10 @@ impl App {
                     .takes_value(true)
                     .help("Print range of lines")
                     .long_help(
-                        "Print a specified range of lines from the files \
-                         --line-range 30-40 or --line-range 30-",
+                        "Print a specified range or ranges of lines from the files. \
+                         For example: '--line-range 30:40' will print lines 30 to 40 \n\
+                                      '--line-range :40' will print lines 1 to 40 \n\
+                                      '--line-range 40:' will print lines 40 to the end of the file",
                     ),
             )
             .arg(
@@ -280,7 +282,7 @@ impl App {
             term_width: Term::stdout().size().1 as usize,
             files,
             theme: self.matches.value_of("theme"),
-            line_range: get_ranges(self.matches.value_of("line-range")),
+            line_range: LineRange::from(self.matches.value_of("line-range")),
         })
     }
 
@@ -334,7 +336,7 @@ pub struct Config<'a> {
     pub term_width: usize,
     pub files: Vec<Option<&'a str>>,
     pub theme: Option<&'a str>,
-    pub line_range: Option<(usize, usize)>,
+    pub line_range: Option<LineRange>,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -343,28 +345,61 @@ fn is_truecolor_terminal() -> bool {
         .unwrap_or(false)
 }
 
-fn get_ranges(value: Option<&str>) -> Option<(usize, usize)> {
-    match value {
-        None => None,
-        Some(str_range) => {
-            let mut new_range = (usize::min_value(), usize::max_value());
-            if str_range.bytes().nth(0).expect("Something should be here!") == b':' {
-                new_range.1 = str_range[1..].parse().expect("This should be a number!");
-                return Some(new_range);
-            } else if str_range.bytes().last().expect("There should be a last!") == b':' {
-                new_range.0 = str_range[..str_range.len() - 1]
-                    .parse()
-                    .expect("This should be a number!");
-                return Some(new_range);
-            }
+pub struct LineRange {
+    pub lower: usize,
+    pub upper: usize,
+}
 
-            let line_numbers: Vec<&str> = str_range.split(':').collect();
-            if line_numbers.len() == 2 {
-                new_range.0 = line_numbers[0].parse().expect("Should be a number!");
-                new_range.1 = line_numbers[1].parse().expect("Should be a number!");
+impl LineRange {
+    pub fn from(value: Option<&str>) -> Option<LineRange> {
+        match value {
+            None => None,
+            Some(range_raw) => {
+                return LineRange::parse_range(range_raw).ok();
             }
-
-            Some(new_range)
         }
     }
+
+    pub fn parse_range(range_raw: &str) -> Result<LineRange> {
+        let mut new_range = LineRange{
+            lower: usize::min_value(),
+            upper: usize::max_value(),
+        };
+
+        if range_raw.bytes().nth(0).ok_or("No first byte")? == b':' {
+            new_range.upper = range_raw[1..].parse()?;
+            return Ok(new_range);
+        } else if range_raw.bytes().last().ok_or("No last byte")? == b':' {
+            new_range.lower = range_raw[..range_raw.len() - 1].parse()?;
+            return Ok(new_range);
+        }
+
+        let line_numbers: Vec<&str> = range_raw.split(':').collect();
+        if line_numbers.len() == 2 {
+            new_range.lower = line_numbers[0].parse()?;
+            new_range.upper = line_numbers[1].parse()?;
+        }
+        Ok(new_range)                
+    }
+}
+
+#[test]
+fn test_parse_line_range_full() {
+    let range = LineRange::from(Some("40:50")).expect("Shouldn't fail on test!");
+    assert_eq!(40, range.lower);
+    assert_eq!(50, range.upper);
+}
+
+#[test]
+fn test_parse_line_range_partial_min() {
+    let range = LineRange::from(Some(":50")).expect("Shouldn't fail on test!");
+    assert_eq!(usize::min_value(), range.lower);
+    assert_eq!(50, range.upper);
+}
+
+#[test]
+fn test_parse_line_range_partial_max() {
+    let range = LineRange::from(Some("40:")).expect("Shouldn't fail on test!");
+    assert_eq!(40, range.lower);
+    assert_eq!(usize::max_value(), range.upper);
 }

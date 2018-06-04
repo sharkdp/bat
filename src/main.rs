@@ -41,6 +41,7 @@ mod errors {
             Clap(::clap::Error);
             Io(::std::io::Error);
             SyntectError(::syntect::LoadingError);
+            ParseIntError(::std::num::ParseIntError);
         }
     }
 
