@@ -1,5 +1,5 @@
 use ansi_term::Colour::Green;
-use app::Config;
+use app::{Config,LineRange};
 use assets::HighlightingAssets;
 use diff::get_git_diff;
 use errors::*;
@@ -85,16 +85,35 @@ fn print_file(
     filename: Option<&str>,
 ) -> Result<()> {
     let stdin = io::stdin(); // TODO: this is not always needed
+    {
+        let reader: Box<BufRead> = match filename {
+            None => Box::new(stdin.lock()),
+            Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
+        };
 
-    let mut reader: Box<BufRead> = match filename {
-        None => Box::new(stdin.lock()),
-        Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
-    };
+        let highlighter = HighlightLines::new(syntax, theme);
 
-    let mut highlighter = HighlightLines::new(syntax, theme);
+        printer.print_header(filename)?;
 
-    printer.print_header(filename)?;
+        match printer.config.line_range.as_ref() {
+            Some(range) => {
+                print_file_ranges(printer, reader, highlighter, range)?;
+            },
+            None => {
+                print_file_no_ranges(printer, reader, highlighter)?;
+            }
+        }
+        printer.print_footer()?;
+    }
+    Ok(())
+}
 
+fn print_file_ranges<'a>(
+    printer: &mut Printer,
+    mut reader: Box<BufRead + 'a>,
+    mut highlighter: HighlightLines,
+    ranges: &LineRange
+) -> Result<()>{
     let mut buffer = Vec::new();
 
     while reader.read_until(b'\n', &mut buffer)? > 0 {
@@ -102,24 +121,36 @@ fn print_file(
             let line = String::from_utf8_lossy(&buffer);
             let regions = highlighter.highlight(line.as_ref());
 
-            if printer.config.line_range.is_some() {
-                if printer.line_number + 1 < printer.config.line_range.unwrap().0 {
-                    // skip line
-                    printer.line_number += 1;
-                } else if printer.line_number >= printer.config.line_range.unwrap().1 {
-                    // no more lines in range
-                    break;
-                } else {
-                    printer.print_line(&regions)?;
-                }
+            if printer.line_number + 1 < ranges.lower {
+                // skip line
+                printer.line_number += 1;
+            } else if printer.line_number >= ranges.upper {
+                // no more lines in range
+                break;
             } else {
                 printer.print_line(&regions)?;
             }
         }
         buffer.clear();
     }
+    Ok(())
+}
 
-    printer.print_footer()?;
+fn print_file_no_ranges<'a>(
+    printer: &mut Printer,
+    mut reader: Box<BufRead + 'a>,
+    mut highlighter: HighlightLines
+) -> Result<()>{
+    let mut buffer = Vec::new();
+
+    while reader.read_until(b'\n', &mut buffer)? > 0 {
+        {
+            let line = String::from_utf8_lossy(&buffer);
+            let regions = highlighter.highlight(line.as_ref());
+            printer.print_line(&regions)?;
+        }
+        buffer.clear();
+    }
 
     Ok(())
 }
