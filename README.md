@@ -83,13 +83,10 @@ binary builds and Debian packages.
 
 #### On Arch Linux
 
-You can install [the AUR package](https://aur.archlinux.org/packages/bat/)
-via yaourt, or manually:
+You can install via Pacman:
 
 ```bash
-git clone https://aur.archlinux.org/bat.git
-cd bat
-makepkg -si
+pacman -S bat
 ```
 
 #### On FreeBSD
