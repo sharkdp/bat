@@ -150,8 +150,8 @@ impl App {
                     .long_help(
                         "Print a specified range or ranges of lines from the files. \
                          For example: '--line-range 30:40' will print lines 30 to 40 \n\
-                                      '--line-range :40' will print lines 1 to 40 \n\
-                                      '--line-range 40:' will print lines 40 to the end of the file",
+                         '--line-range :40' will print lines 1 to 40 \n\
+                         '--line-range 40:' will print lines 40 to the end of the file",
                     ),
             )
             .arg(
