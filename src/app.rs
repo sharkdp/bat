@@ -146,7 +146,8 @@ impl App {
                     .long("line-range")
                     .overrides_with("line-range")
                     .takes_value(true)
-                    .help("Print range of lines")
+                    .value_name("n:m")
+                    .help("Only print the lines from n to m")
                     .long_help(
                         "Print a specified range or ranges of lines from the files. \
                          For example: '--line-range 30:40' will print lines 30 to 40 \n\
