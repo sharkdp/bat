@@ -40,3 +40,6 @@
 [submodule "assets/themes/TwoDark"]
 	path = assets/themes/TwoDark
 	url = https://github.com/erremauro/TwoDark
+[submodule "assets/syntaxes/AWK"]
+	path = assets/syntaxes/AWK
+	url = https://github.com/JohnNilsson/awk-sublime
