@@ -64,6 +64,7 @@ pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool>
     let mut no_errors: bool = true;
 
     for file in &config.files {
+        printer.ansi_prefix_sgr.clear();
         printer.line_changes = file.and_then(|filename| get_git_diff(filename));
         let syntax = assets.get_syntax(config.language, *file);
 
