@@ -18,6 +18,7 @@ pub struct Printer<'a> {
     pub config: &'a Config<'a>,
     decorations: Vec<Box<Decoration>>,
     panel_width: usize,
+    pub ansi_prefix_sgr: String,
     pub line_number: usize,
     pub line_changes: Option<LineChanges>,
 }
@@ -67,6 +68,7 @@ impl<'a> Printer<'a> {
             colors,
             config,
             decorations,
+            ansi_prefix_sgr: String::new(),
             line_number: 0,
             line_changes: None,
         }
@@ -124,8 +126,7 @@ impl<'a> Printer<'a> {
 
         // Line decorations.
         if self.panel_width > 0 {
-            let decorations = self
-                .decorations
+            let decorations = self.decorations
                 .iter()
                 .map(|ref d| d.generate(self.line_number, false, self))
                 .collect::<Vec<_>>();
@@ -158,12 +159,17 @@ impl<'a> Printer<'a> {
         } else {
             for &(style, region) in regions.iter() {
                 let mut ansi_iterator = AnsiCodeIterator::new(region);
-                let mut ansi_prefix = "";
+                let mut ansi_prefix: String = String::new();
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
-                            ansi_prefix = text;
+                            if text.chars().last().unwrap() == 'm' {
+                                self.ansi_prefix_sgr.push_str(text);
+                                ansi_prefix.push_str(text);
+                            } else {
+                                ansi_prefix.push_str(text);
+                            }
                         }
 
                         // Regular text.
@@ -185,7 +191,10 @@ impl<'a> Printer<'a> {
                                         "{}",
                                         as_terminal_escaped(
                                             style,
-                                            &*format!("{}{}", ansi_prefix, text),
+                                            &*format!(
+                                                "{}{}{}",
+                                                self.ansi_prefix_sgr, ansi_prefix, text
+                                            ),
                                             self.config.true_color,
                                             self.config.colored_output,
                                         )
@@ -200,9 +209,11 @@ impl<'a> Printer<'a> {
                                             "{} ",
                                             self.decorations
                                                 .iter()
-                                                .map(|ref d| d
-                                                    .generate(self.line_number, true, self)
-                                                    .text)
+                                                .map(|ref d| d.generate(
+                                                    self.line_number,
+                                                    true,
+                                                    self
+                                                ).text)
                                                 .collect::<Vec<String>>()
                                                 .join(" ")
                                         ))
@@ -221,13 +232,19 @@ impl<'a> Printer<'a> {
                                     "{}\n{}",
                                     as_terminal_escaped(
                                         style,
-                                        &*format!("{}{}", ansi_prefix, text),
+                                        &*format!(
+                                            "{}{}{}",
+                                            self.ansi_prefix_sgr, ansi_prefix, text
+                                        ),
                                         self.config.true_color,
                                         self.config.colored_output,
                                     ),
                                     panel_wrap.clone().unwrap()
                                 )?;
                             }
+
+                            // Clear the ANSI prefix buffer.
+                            ansi_prefix.clear();
                         }
                     }
                 }
