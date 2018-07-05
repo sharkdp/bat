@@ -164,9 +164,13 @@ impl<'a> Printer<'a> {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
-                            if text.chars().last().unwrap() == 'm' {
-                                self.ansi_prefix_sgr.push_str(text);
+                            if text.chars().last().map_or(false, |c| c == 'm') {
                                 ansi_prefix.push_str(text);
+                                if text == "\x1B[0m" {
+                                    self.ansi_prefix_sgr = "\x1B[0m".to_owned();
+                                } else {
+                                    self.ansi_prefix_sgr.push_str(text);
+                                }
                             } else {
                                 ansi_prefix.push_str(text);
                             }
