@@ -181,7 +181,7 @@ impl App {
                     .long_help(
                         "This option exists for POSIX-compliance reasons ('u' is for \
                          'unbuffered'). The output is always unbuffered - this option \
-                         it simply ignored.",
+                         is simply ignored.",
                     ),
             )
             .subcommand(
