@@ -5,6 +5,7 @@ use diff::get_git_diff;
 use errors::*;
 use output::OutputType;
 use printer::Printer;
+use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use syntect::easy::HighlightLines;
@@ -57,7 +58,24 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
 }
 
 pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool> {
-    let theme = assets.get_theme(config.theme.unwrap_or("Default"))?;
+    let theme = match config.theme {
+        Some(theme_name) => assets.get_theme(theme_name)?,
+        None => {
+            match env::var("BAT_THEME") {
+                Ok(theme_name) => {
+                    match assets.get_theme(&theme_name) {
+                        Ok(theme) => theme,
+                        Err(error) => {
+                            handle_error(&error);
+                            assets.get_theme("Default")?
+                        }
+                    }
+                }
+                Err(_) => assets.get_theme("Default")?
+            }
+        },
+    };
+
     let mut output_type = OutputType::from_mode(config.paging_mode);
     let handle = output_type.handle()?;
     let mut printer = Printer::new(handle, &config);
