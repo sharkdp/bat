@@ -43,3 +43,6 @@
 [submodule "assets/syntaxes/AWK"]
 	path = assets/syntaxes/AWK
 	url = https://github.com/JohnNilsson/awk-sublime
+[submodule "assets/syntaxes/Nix"]
+	path = assets/syntaxes/Nix
+	url = https://github.com/wmertens/sublime-nix
