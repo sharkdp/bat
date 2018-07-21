@@ -57,7 +57,11 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
 }
 
 pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool> {
-    let theme = assets.get_theme(config.theme.unwrap_or("Default"))?;
+    let theme = assets.get_theme(match config.theme {
+        Some(ref theme_name) => theme_name,
+        None => "Default",
+    })?;
+
     let mut output_type = OutputType::from_mode(config.paging_mode);
     let handle = output_type.handle()?;
     let mut printer = Printer::new(handle, &config);

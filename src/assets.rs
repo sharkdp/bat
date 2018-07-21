@@ -132,6 +132,10 @@ impl HighlightingAssets {
         })?)
     }
 
+    pub fn theme_exists(&self, theme: &str) -> bool {
+        self.theme_set.themes.contains_key(theme)
+    }
+
     pub fn get_syntax(&self, language: Option<&str>, filename: Option<&str>) -> &SyntaxDefinition {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
