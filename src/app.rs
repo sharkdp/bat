@@ -286,7 +286,7 @@ impl App {
             theme: self
                 .matches
                 .value_of("theme")
-                .and_then(|theme_name_arg| Some(String::from(theme_name_arg)))
+                .map(String::from)
                 .or_else(|| {
                     env::var("BAT_THEME").ok().and_then(|theme_name_env| {
                         if HighlightingAssets::new().theme_exists(&theme_name_env) {
