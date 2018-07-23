@@ -2,7 +2,6 @@ use directories::ProjectDirs;
 use errors::*;
 use std::borrow::Cow;
 use std::fs::{self, File};
-use std::io;
 use std::path::{Path, PathBuf};
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
@@ -123,17 +122,19 @@ impl HighlightingAssets {
         Ok(())
     }
 
-    pub fn get_theme(&self, theme: &str) -> Result<&Theme> {
-        Ok(self.theme_set.themes.get(theme).ok_or_else(|| {
-            io::Error::new(
-                io::ErrorKind::Other,
-                format!("Could not find '{}' theme", theme),
-            )
-        })?)
-    }
-
-    pub fn theme_exists(&self, theme: &str) -> bool {
-        self.theme_set.themes.contains_key(theme)
+    pub fn get_theme(&self, theme: &str) -> &Theme {
+        match self.theme_set.themes.get(theme) {
+            Some(theme) => theme,
+            None => {
+                use ansi_term::Colour::Yellow;
+                eprintln!(
+                    "{}: Unknown theme '{}', using default.",
+                    Yellow.paint("[bat warning]"),
+                    theme
+                );
+                &self.theme_set.themes["Default"]
+            }
+        }
     }
 
     pub fn get_syntax(&self, language: Option<&str>, filename: Option<&str>) -> &SyntaxDefinition {

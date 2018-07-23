@@ -1,4 +1,3 @@
-use assets::HighlightingAssets;
 use atty::{self, Stream};
 use clap::{App as ClapApp, AppSettings, Arg, ArgGroup, ArgMatches, SubCommand};
 use console::Term;
@@ -287,15 +286,8 @@ impl App {
                 .matches
                 .value_of("theme")
                 .map(String::from)
-                .or_else(|| {
-                    env::var("BAT_THEME").ok().and_then(|theme_name_env| {
-                        if HighlightingAssets::new().theme_exists(&theme_name_env) {
-                            Some(theme_name_env)
-                        } else {
-                            None
-                        }
-                    })
-                }),
+                .or_else(|| env::var("BAT_THEME").ok())
+                .unwrap_or(String::from("Default")),
             line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
         })
     }
@@ -349,7 +341,7 @@ pub struct Config<'a> {
     pub paging_mode: PagingMode,
     pub term_width: usize,
     pub files: Vec<Option<&'a str>>,
-    pub theme: Option<String>,
+    pub theme: String,
     pub line_range: Option<LineRange>,
 }
 
