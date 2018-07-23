@@ -283,7 +283,8 @@ impl App {
             },
             term_width: Term::stdout().size().1 as usize,
             files,
-            theme: self.matches
+            theme: self
+                .matches
                 .value_of("theme")
                 .and_then(|theme_name_arg| Some(String::from(theme_name_arg)))
                 .or_else(|| {
