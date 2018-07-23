@@ -36,7 +36,7 @@ default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dependencies.error-chain]
-version = "0.11"
+version = "0.12"
 default-features = false
 features = []
 
