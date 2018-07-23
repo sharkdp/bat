@@ -1,5 +1,6 @@
 use app::PagingMode;
 use errors::*;
+use std::env;
 use std::io::{self, Write};
 use std::process::{Child, Command, Stdio};
 
@@ -20,13 +21,24 @@ impl OutputType {
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
     fn try_pager(quit_if_one_screen: bool) -> Self {
-        let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
-        if quit_if_one_screen {
-            args.push("--quit-if-one-screen");
-        }
-        Command::new("less")
-            .args(&args)
-            .env("LESSCHARSET", "UTF-8")
+        let pager = env::var("BAT_PAGER")
+            .or_else(|_| env::var("PAGER"))
+            .unwrap_or(String::from("less"));
+
+        let mut process = if pager == "less" {
+            let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
+            if quit_if_one_screen {
+                args.push("--quit-if-one-screen");
+            }
+
+            let mut p = Command::new("less");
+            p.args(&args).env("LESSCHARSET", "UTF-8");
+            p
+        } else {
+            Command::new(pager)
+        };
+
+        process
             .stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
