@@ -129,9 +129,10 @@ some dependencies to be built.
 ### Highlighting theme
 
 Use `bat --list-themes` to get a list of all available themes for syntax
-highlighting. To select the `TwoDark` theme, for example, call `bat` with
-the `--theme=TwoDark` option. Use `alias bat="bat --theme=TwoDark"` in your
-shells startup file to make the change permanent.
+highlighting. To select the `TwoDark` theme, call `bat` with the
+`--theme=TwoDark` option or set the `BAT_THEME` environment variable to
+`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shells startup file to
+make the change permanent.
 
 ### Output style
 
