@@ -86,25 +86,26 @@ fn print_file(
     printer: &mut Printer,
     filename: Option<&str>,
 ) -> Result<()> {
-    let stdin = io::stdin(); // TODO: this is not always needed
-    {
-        let reader: Box<BufRead> = match filename {
-            None => Box::new(stdin.lock()),
-            Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
-        };
+    printer.print_header(filename)?;
 
-        let highlighter = HighlightLines::new(syntax, theme);
-
-        printer.print_header(filename)?;
-        print_file_ranges(printer, reader, highlighter, &printer.config.line_range)?;
-        printer.print_footer()?;
+    let highlighter = HighlightLines::new(syntax, theme);
+    match filename {
+        None => {
+            let stdin = io::stdin(); // TODO: this is not always needed
+            print_file_ranges(printer, stdin.lock(), highlighter, &printer.config.line_range)?;
+        },
+        Some(filename) => {
+            print_file_ranges(printer, BufReader::new(File::open(filename)?), highlighter, &printer.config.line_range)?
+        },
     }
+
+    printer.print_footer()?;
     Ok(())
 }
 
-fn print_file_ranges<'a>(
+fn print_file_ranges<T: BufRead>(
     printer: &mut Printer,
-    mut reader: Box<BufRead + 'a>,
+    mut reader: T,
     mut highlighter: HighlightLines,
     line_ranges: &Option<LineRange>,
 ) -> Result<()> {
