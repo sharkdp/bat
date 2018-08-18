@@ -1,6 +1,6 @@
 use std::env;
 use std::fs::{self, File};
-use std::io::{self, Read};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -9,7 +9,6 @@ use self::tempdir::TempDir;
 
 extern crate git2;
 use self::git2::build::CheckoutBuilder;
-use self::git2::Error;
 use self::git2::Repository;
 use self::git2::Signature;
 
@@ -78,7 +77,7 @@ fn create_sample_directory() -> Result<TempDir, git2::Error> {
     let oid = index.write_tree()?;
     let signature = Signature::now("bat test runner", "bat@test.runner")?;
     let tree = repo.find_tree(oid)?;
-    repo.commit(
+    let _ = repo.commit(
         Some("HEAD"), //  point HEAD to our new commit
         &signature,   // author
         &signature,   // committer
