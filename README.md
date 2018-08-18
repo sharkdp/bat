@@ -114,7 +114,7 @@ brew install bat
 
 ### From source
 
-If you want to build to compile `bat` from source, you need Rust 1.24 or
+If you want to build to compile `bat` from source, you need Rust 1.26 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
