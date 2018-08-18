@@ -15,20 +15,38 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
 /// ANSI palette.
 #[inline]
 fn rgb2ansi_grey(y: u8) -> u8 {
+    // In the 256-colour ANSI palette grey colours are included in the greyscale
+    // ramp as well as in the colour cube.  Because of this we’re trying to
+    // approximate grey in both and choose whichever gives better result.
+
     const BLACK: u8 = 16;
     const WHITE: u8 = 231;
 
     // The greyscale ramp starts at rgb(8, 8, 8) and steps every rgb(10, 10, 10)
-    // until rgb(238, 238, 238).  We’re adding 6 so that division rounds to
-    // nearest rather than truncating.  Due to asymmetry at the edges those need
-    // to be handled specially.
+    // until rgb(238, 238, 238).  Due to the asymmetry, edges need to be handled
+    // separately.
     if y < 4 {
-        BLACK
+        return BLACK;
     } else if y >= 247 {
-        WHITE
-    } else {
-        231 + if y >= 234 { 24 } else { ((y + 6) / 10) as u8 }
+        return WHITE;
+    } else if y >= 234 {
+        return 255;
     }
+
+    // We’re adding 6 so that division rounds to nearest rather than truncating.
+    let gi = (y + 6) / 10;
+
+    // There’s only a few values in which using colour cube for grey colours is
+    // better.
+    if y >= 92 && y <= 216 {
+        let grey = (gi * 10 - 2) as i32;
+        let yi = cube_index(y);
+        if (cube_value(yi) as i32 - y as i32).abs() < (grey - y as i32).abs() {
+            return 16 + (36 + 6 + 1) * yi;
+        }
+    }
+
+    gi + 231
 }
 
 /// Approximate a 24-bit colour as an index in 6×6×6 colour cube of the
@@ -67,7 +85,6 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
 
 /// Converts index on one dimension of the 6×6×6 ANSI colour cube into value in
 /// sRGB space.
-#[cfg(test)]
 fn cube_value(i: u8) -> u8 {
     if i == 0 {
         0
@@ -120,6 +137,15 @@ fn test_rgb2ansi_color() {
     assert_eq!(96, rgb2ansi(0x87, 0x5f, 0x87));
     assert_eq!(141, rgb2ansi(0xaf, 0x87, 0xff));
     assert_eq!(193, rgb2ansi(0xd7, 0xff, 0xaf));
+}
+
+#[test]
+fn test_rgb2ansi_grey_using_cube() {
+    // Even though those are grey colours they have a perfect match in the
+    // colour cube so use that rather than greyscale ramp.
+    assert_eq!(59, rgb2ansi(0x5f, 0x5f, 0x5f));
+    assert_eq!(102, rgb2ansi(0x87, 0x87, 0x87));
+    assert_eq!(145, rgb2ansi(0xaf, 0xaf, 0xaf));
 }
 
 #[test]
