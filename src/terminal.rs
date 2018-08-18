@@ -2,21 +2,57 @@ use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::{self, Style};
 use syntect::highlighting::{self, FontStyle};
 
-/// Approximate a 24 bit color value by a 8 bit ANSI code
+/// Approximate a 24-bit color value by a 8 bit ANSI code
 fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
+    if r == g && g == b {
+        rgb2ansi_grey(r)
+    } else {
+        rgb2ansi_cube(r, g, b)
+    }
+}
+
+/// Approximate a 24-bit colour as an index in greyscale ramp of the 256-colour
+/// ANSI palette.
+#[inline]
+fn rgb2ansi_grey(y: u8) -> u8 {
     const BLACK: u8 = 16;
     const WHITE: u8 = 231;
 
-    if r == g && g == b {
-        if r < 8 {
-            BLACK
-        } else if r > 248 {
-            WHITE
-        } else {
-            ((r - 8) as u16 * 24 / 247) as u8 + 232
-        }
+    // The greyscale ramp starts at rgb(8, 8, 8) and steps every rgb(10, 10, 10)
+    // until rgb(238, 238, 238).  We’re adding 6 so that division rounds to
+    // nearest rather than truncating.  Due to asymmetry at the edges those need
+    // to be handled specially.
+    if y < 4 {
+        BLACK
+    } else if y >= 247 {
+        WHITE
     } else {
-        36 * (r / 51) + 6 * (g / 51) + (b / 51) + 16
+        231 + if y >= 234 { 24 } else { ((y + 6) / 10) as u8 }
+    }
+}
+
+/// Approximate a 24-bit colour as an index in 6×6×6 colour cube of the
+/// 256-colour ANSI palette.
+#[inline]
+fn rgb2ansi_cube(r: u8, g: u8, b: u8) -> u8 {
+    let ri = cube_index(r);
+    let gi = cube_index(g);
+    let bi = cube_index(b);
+    16 + ri * 36 + gi * 6 + bi
+}
+
+/// Approximates single r, g or b value to an index within a single side of the
+/// 6×6×6 ANSI colour cube.
+fn cube_index(v: u8) -> u8 {
+    // Values within the cube are: 0, 95, 135, 175, 215 and 255.  Except for the
+    // first jump they are 40 units apart.  Because of this first jump we need
+    // a special case for the first two steps.
+    if v < 48 {
+        0
+    } else if v < 115 {
+        1
+    } else {
+        (v - 35) / 40
     }
 }
 
@@ -73,8 +109,10 @@ fn test_rgb2ansi_black_white() {
 
 #[test]
 fn test_rgb2ansi_gray() {
-    assert_eq!(241, rgb2ansi(0x6c, 0x6c, 0x6c));
-    assert_eq!(233, rgb2ansi(0x1c, 0x1c, 0x1c));
+    assert_eq!(232, rgb2ansi(0x08, 0x08, 0x08));
+    assert_eq!(234, rgb2ansi(0x1c, 0x1c, 0x1c));
+    assert_eq!(242, rgb2ansi(0x6c, 0x6c, 0x6c));
+    assert_eq!(255, rgb2ansi(0xee, 0xee, 0xee));
 }
 
 #[test]
@@ -87,6 +125,8 @@ fn test_rgb2ansi_color() {
 #[test]
 fn test_rgb2ansi_approx() {
     assert_eq!(231, rgb2ansi(0xfe, 0xfe, 0xfe));
+    // Approximate #070707 up to #080808 rather than down to #000000.
+    assert_eq!(232, rgb2ansi(0x07, 0x07, 0x07));
 }
 
 /// Calculates distance between two colours.  Tries to balance speed of
@@ -134,6 +174,6 @@ fn test_distance() {
     }
 
     let avg_distance = total_distance / 16777216.;
-    assert_eq!(49769, (max_distance * 1000.0).round() as u32);
-    assert_eq!(20027, (avg_distance * 1000.0).round() as u32);
+    assert_eq!(47000, (max_distance * 1000.0).round() as u32);
+    assert_eq!(17206, (avg_distance * 1000.0).round() as u32);
 }
