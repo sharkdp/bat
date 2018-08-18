@@ -48,8 +48,7 @@ impl App {
             .about(
                 "A cat(1) clone with wings.\n\n\
                  Use '--help' instead of '-h' to see a more detailed version of the help text.",
-            )
-            .long_about("A cat(1) clone with syntax highlighting and Git integration.")
+            ).long_about("A cat(1) clone with syntax highlighting and Git integration.")
             .arg(
                 Arg::with_name("language")
                     .short("l")
@@ -61,20 +60,16 @@ impl App {
                          specified as a name (like 'C++' or 'LaTeX') or possible file \
                          extension (like 'cpp', 'hpp' or 'md'). Use '--list-languages' \
                          to show all supported language names and file extensions",
-                    )
-                    .takes_value(true),
-            )
-            .arg(
+                    ).takes_value(true),
+            ).arg(
                 Arg::with_name("FILE")
                     .help("File(s) to print / concatenate. Use '-' for standard input.")
                     .long_help(
                         "File(s) to print. Use no argument or '-' to read from standard \
                          input",
-                    )
-                    .multiple(true)
+                    ).multiple(true)
                     .empty_values(false),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("style")
                     .long("style")
                     .value_name("style-components")
@@ -82,8 +77,7 @@ impl App {
                     .takes_value(true)
                     .possible_values(&[
                         "auto", "full", "plain", "changes", "header", "grid", "numbers",
-                    ])
-                    .default_value("auto")
+                    ]).default_value("auto")
                     .help("Comma-separated list of style elements to display")
                     .long_help(
                         "Configure which elements (line numbers, file headers, grid \
@@ -92,8 +86,7 @@ impl App {
                          components to display (e.g. 'numbers,changes,grid') or a \
                          pre-defined style ('full')",
                     ),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("color")
                     .long("color")
                     .overrides_with("color")
@@ -102,8 +95,7 @@ impl App {
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
                     .help("When to use colors"),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("paging")
                     .long("paging")
                     .overrides_with("paging")
@@ -113,8 +105,7 @@ impl App {
                     .default_value("auto")
                     .help("When to use the pager")
                     .long_help("Specify when to use the pager (less)"),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("wrap")
                     .long("wrap")
                     .overrides_with("wrap")
@@ -123,14 +114,12 @@ impl App {
                     .possible_values(&["character", "never"])
                     .default_value("character")
                     .help("When to wrap text"),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("list-languages")
                     .long("list-languages")
                     .help("Displays supported languages")
                     .long_help("Display a list of supported languages"),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("theme")
                     .long("theme")
                     .overrides_with("theme")
@@ -140,8 +129,7 @@ impl App {
                         "Set the theme for syntax highlighting. Use '--list-themes' to \
                          see all available themes",
                     ),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("line-range")
                     .long("line-range")
                     .overrides_with("line-range")
@@ -154,14 +142,12 @@ impl App {
                          '--line-range :40' will print lines 1 to 40 \n\
                          '--line-range 40:' will print lines 40 to the end of the file",
                     ),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("list-themes")
                     .long("list-themes")
                     .help("Displays supported themes")
                     .help("Display a list of supported themes for syntax highlighting"),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("number")
                     .long("number")
                     .overrides_with("number")
@@ -172,8 +158,7 @@ impl App {
                         "Show line numbers (no other decorations). This is an alias for \
                          '--style=numbers'",
                     ),
-            )
-            .arg(
+            ).arg(
                 Arg::with_name("unbuffered")
                     .short("u")
                     .help("(ignored)")
@@ -183,8 +168,7 @@ impl App {
                          'unbuffered'). The output is always unbuffered - this option \
                          is simply ignored.",
                     ),
-            )
-            .subcommand(
+            ).subcommand(
                 SubCommand::with_name("cache")
                     .about("Modify the syntax-definition and theme cache")
                     .arg(
@@ -196,33 +180,28 @@ impl App {
                                 "Initialize the syntax/theme cache by loading from the \
                                  source directory (default: the configuration directory)",
                             ),
-                    )
-                    .arg(
+                    ).arg(
                         Arg::with_name("clear")
                             .long("clear")
                             .short("c")
                             .help("Reset the cache"),
-                    )
-                    .arg(
+                    ).arg(
                         Arg::with_name("config-dir")
                             .long("config-dir")
                             .short("d")
                             .help("Show the configuration directory"),
-                    )
-                    .group(
+                    ).group(
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
                             .required(true),
-                    )
-                    .arg(
+                    ).arg(
                         Arg::with_name("source")
                             .long("source")
                             .requires("init")
                             .takes_value(true)
                             .value_name("dir")
                             .help("Use a different source for loading syntaxes and themes from"),
-                    )
-                    .arg(
+                    ).arg(
                         Arg::with_name("target")
                             .long("target")
                             .requires("init")
@@ -232,8 +211,7 @@ impl App {
                                 "Use a different source to store the cached syntax and theme set",
                             ),
                     ),
-            )
-            .help_message("Print this help message.")
+            ).help_message("Print this help message.")
             .version_message("Show version information.")
             .get_matches()
     }
@@ -303,10 +281,8 @@ impl App {
                         } else {
                             Some(filename)
                         }
-                    })
-                    .collect()
-            })
-            .unwrap_or_else(|| vec![None]) // read from stdin (None) if no args are given
+                    }).collect()
+            }).unwrap_or_else(|| vec![None]) // read from stdin (None) if no args are given
     }
 
     fn output_components(&self) -> Result<OutputComponents> {

@@ -153,8 +153,7 @@ impl<'a> Printer<'a> {
                         text,
                         true_color,
                         colored_output,
-                    ))
-                    .collect::<Vec<_>>()
+                    )).collect::<Vec<_>>()
                     .join("")
             )?;
         } else {
@@ -216,8 +215,7 @@ impl<'a> Printer<'a> {
                                                 .iter()
                                                 .map(|ref d| d
                                                     .generate(self.line_number, true, self)
-                                                    .text)
-                                                .collect::<Vec<String>>()
+                                                    .text).collect::<Vec<String>>()
                                                 .join(" ")
                                         ))
                                     } else {
