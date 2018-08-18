@@ -191,6 +191,20 @@ If you ever want to go back to the default settings, call:
 bat cache --clear
 ```
 
+### Using a different pager
+
+`bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
+set, `less` is used by default. If you want to use a different pager, you can either modify the
+`PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
+`PAGER`. If you want to pass command-line arguments to the pager, you need to create a small shell
+script as a wrapper, for example:
+
+```bash
+#!/bin/bash
+
+less --tabs 4 -RF "$@"
+```
+
 ## Project goals and alternatives
 
 `bat` tries to achieve the following goals:
