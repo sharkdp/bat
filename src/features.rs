@@ -92,11 +92,19 @@ fn print_file(
     match filename {
         None => {
             let stdin = io::stdin(); // TODO: this is not always needed
-            print_file_ranges(printer, stdin.lock(), highlighter, &printer.config.line_range)?;
-        },
-        Some(filename) => {
-            print_file_ranges(printer, BufReader::new(File::open(filename)?), highlighter, &printer.config.line_range)?
-        },
+            print_file_ranges(
+                printer,
+                stdin.lock(),
+                highlighter,
+                &printer.config.line_range,
+            )?;
+        }
+        Some(filename) => print_file_ranges(
+            printer,
+            BufReader::new(File::open(filename)?),
+            highlighter,
+            &printer.config.line_range,
+        )?,
     }
 
     printer.print_footer()?;
