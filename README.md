@@ -140,56 +140,65 @@ You can use the `--style` option to control the appearance of `bat`s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
 and line numbers but no grid and no file header.
 
-### Add new syntaxes and highlighting themes
+### Adding new syntaxes / language definitions
 
 `bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
 library for syntax highlighting. `syntect` can read any
 [Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
-and theme.
+and theme. To add new syntax definitions, do the following.
 
-To build your own language-set and theme, follow these steps:
-
-Create a folder with a syntax highlighting theme:
+Create a folder with syntax definition files:
 
 ```bash
 BAT_CONFIG_DIR="$(bat cache --config-dir)"
 
-mkdir -p "$BAT_CONFIG_DIR/themes"
-cd "$BAT_CONFIG_DIR/themes"
-
-# Download a theme, for example:
-git clone https://github.com/greggb/sublime-snazzy
-
-# Create a link for the default theme
-ln -sf "sublime-snazzy/Sublime Snazzy.tmTheme" Default.tmTheme
-```
-
-Create a folder with language definition files:
-
-```bash
 mkdir -p "$BAT_CONFIG_DIR/syntaxes"
 cd "$BAT_CONFIG_DIR/syntaxes"
 
-# Download some language definition files, for example:
-git clone https://github.com/sublimehq/Packages
-git clone https://github.com/danro/LESS-sublime
+# Put new '.sublime-syntax' language definition files
+# in this folder (or its subdirectories), for example:
+git clone https://github.com/tellnobody1/sublime-purescript-syntax
 ```
 
-Finally, use the following command to parse all these files into a binary
-cache:
+Now use the following command to parse these files into a binary cache:
 
 ```bash
 bat cache --init
 ```
 
-Use `bat --list-languages` and `bat --list-themes` to check if all languages and themes are
-available.
+Finally, use `bat --list-languages` to check if the new languages are available.
 
 If you ever want to go back to the default settings, call:
 
 ```bash
 bat cache --clear
 ```
+
+### Adding new themes
+
+This works very similar to how we add new syntax definitions.
+
+First, create a folder with the new syntax highlighting themes:
+```bash
+BAT_CONFIG_DIR="$(bat cache --config-dir)"
+
+mkdir -p "$BAT_CONFIG_DIR/themes"
+cd "$BAT_CONFIG_DIR/themes"
+
+# Download a theme in '.tmTheme' format, for example:
+git clone https://github.com/greggb/sublime-snazzy
+
+# Create a link to specify the new default theme
+ln -sf "sublime-snazzy/Sublime Snazzy.tmTheme" Default.tmTheme
+
+# Update the binary cache
+bat cache --init
+```
+
+Finally, use `bat --list-themes` to check if the new themes are available.
+
+**Note:** Unlike for syntax definitions, adding custom themes currently *removes all default
+themes*. If you want to go back to the default themes, call `bat cache --clear`.
 
 ### Using a different pager
 
