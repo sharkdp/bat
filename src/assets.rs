@@ -28,28 +28,32 @@ impl HighlightingAssets {
     pub fn from_files(dir: Option<&Path>) -> Result<Self> {
         let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
 
-        let theme_dir = source_dir.join("themes");
-        let theme_set = ThemeSet::load_from_folder(&theme_dir).chain_err(|| {
-            format!(
-                "Could not load themes from '{}'",
-                theme_dir.to_string_lossy()
-            )
-        })?;
-        let mut syntax_set = SyntaxSet::new();
-        let syntax_dir = source_dir.join("syntaxes");
-        if !syntax_dir.exists() {
-            return Err(format!(
-                "Could not load syntaxes from '{}'",
-                syntax_dir.to_string_lossy()
-            ).into());
-        }
-        syntax_set.load_syntaxes(syntax_dir, true)?;
-        syntax_set.load_plain_text_syntax();
+        let mut assets = Self::from_binary_unlinked();
 
-        Ok(HighlightingAssets {
-            syntax_set,
-            theme_set,
-        })
+        let theme_dir = source_dir.join("themes");
+
+        if let Ok(theme_set) = ThemeSet::load_from_folder(&theme_dir) {
+            // TODO: If syntect would support this, it would be great to
+            // load the new themes in addition to the ones in the binary.
+            assets.theme_set = theme_set;
+        } else {
+            println!(
+                "No themes were found in '{}', using the default set",
+                theme_dir.to_string_lossy()
+            );
+        }
+
+        let syntax_dir = source_dir.join("syntaxes");
+        if syntax_dir.exists() {
+            assets.syntax_set.load_syntaxes(syntax_dir, true)?;
+        } else {
+            println!(
+                "No syntaxes were found in '{}', using the default set.",
+                syntax_dir.to_string_lossy()
+            );
+        }
+
+        Ok(assets)
     }
 
     fn from_cache() -> Result<Self> {
@@ -79,15 +83,20 @@ impl HighlightingAssets {
         })
     }
 
-    fn from_binary() -> Self {
-        let mut syntax_set: SyntaxSet = from_binary(include_bytes!("../assets/syntaxes.bin"));
-        syntax_set.link_syntaxes();
+    fn from_binary_unlinked() -> Self {
+        let syntax_set: SyntaxSet = from_binary(include_bytes!("../assets/syntaxes.bin"));
         let theme_set: ThemeSet = from_binary(include_bytes!("../assets/themes.bin"));
 
         HighlightingAssets {
             syntax_set,
             theme_set,
         }
+    }
+
+    fn from_binary() -> Self {
+        let mut assets = Self::from_binary_unlinked();
+        assets.syntax_set.link_syntaxes();
+        assets
     }
 
     pub fn save(&self, dir: Option<&Path>) -> Result<()> {
