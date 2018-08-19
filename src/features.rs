@@ -61,7 +61,7 @@ pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool>
 
     let mut output_type = OutputType::from_mode(config.paging_mode);
     let handle = output_type.handle()?;
-    let mut printer = Printer::new(handle, &config);
+    let mut printer = Printer::new(handle, &config, &theme);
     let mut no_errors: bool = true;
 
     for file in &config.files {

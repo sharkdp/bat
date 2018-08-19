@@ -1,4 +1,4 @@
-use ansi_term::Colour::{Fixed, Green, Red, White, Yellow};
+use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
 use app::Config;
 use console::AnsiCodeIterator;
@@ -9,8 +9,8 @@ use std::boxed::Box;
 use std::io::Write;
 use std::vec::Vec;
 use style::OutputWrap;
-use syntect::highlighting;
-use terminal::as_terminal_escaped;
+use syntect::highlighting::{self, Theme};
+use terminal::{as_terminal_escaped, to_ansi_color};
 
 pub struct Printer<'a> {
     handle: &'a mut Write,
@@ -24,9 +24,9 @@ pub struct Printer<'a> {
 }
 
 impl<'a> Printer<'a> {
-    pub fn new(handle: &'a mut Write, config: &'a Config) -> Self {
+    pub fn new(handle: &'a mut Write, config: &'a Config, theme: &Theme) -> Self {
         let colors = if config.colored_output {
-            Colors::colored()
+            Colors::colored(theme, config.true_color)
         } else {
             Colors::plain()
         };
@@ -274,8 +274,7 @@ impl<'a> Printer<'a> {
     }
 }
 
-const GRID_COLOR: u8 = 238;
-const LINE_NUMBER_COLOR: u8 = 244;
+const DEFAULT_GUTTER_COLOR: u8 = 238;
 
 #[derive(Default)]
 pub struct Colors {
@@ -292,14 +291,20 @@ impl Colors {
         Colors::default()
     }
 
-    fn colored() -> Self {
+    fn colored(theme: &Theme, true_color: bool) -> Self {
+        let gutter_color = theme
+            .settings
+            .gutter_foreground
+            .map(|c| to_ansi_color(c, true_color))
+            .unwrap_or(Fixed(DEFAULT_GUTTER_COLOR));
+
         Colors {
-            grid: Fixed(GRID_COLOR).normal(),
-            filename: White.bold(),
+            grid: gutter_color.normal(),
+            filename: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
-            line_number: Fixed(LINE_NUMBER_COLOR).normal(),
+            line_number: gutter_color.normal(),
         }
     }
 }

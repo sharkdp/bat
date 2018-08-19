@@ -1,5 +1,5 @@
 use ansi_term::Colour::{Fixed, RGB};
-use ansi_term::Style;
+use ansi_term::{self, Style};
 use syntect::highlighting::{self, FontStyle};
 
 /// Approximate a 24 bit color value by a 8 bit ANSI code
@@ -20,6 +20,15 @@ fn rgb2ansi(r: u8, g: u8, b: u8) -> u8 {
     }
 }
 
+pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term::Colour {
+    if true_color {
+        RGB(color.r, color.g, color.b)
+    } else {
+        let ansi_code = rgb2ansi(color.r, color.g, color.b);
+        Fixed(ansi_code)
+    }
+}
+
 pub fn as_terminal_escaped(
     style: highlighting::Style,
     text: &str,
@@ -29,12 +38,7 @@ pub fn as_terminal_escaped(
     let style = if !colored {
         Style::default()
     } else {
-        let color = if true_color {
-            RGB(style.foreground.r, style.foreground.g, style.foreground.b)
-        } else {
-            let ansi = rgb2ansi(style.foreground.r, style.foreground.g, style.foreground.b);
-            Fixed(ansi)
-        };
+        let color = to_ansi_color(style.foreground, true_color);
 
         if style.font_style.contains(FontStyle::BOLD) {
             color.bold()
