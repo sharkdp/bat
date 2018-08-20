@@ -184,12 +184,12 @@ impl App {
                         Arg::with_name("clear")
                             .long("clear")
                             .short("c")
-                            .help("Reset the cache"),
+                            .help("Remove the cached syntax definitions and themes"),
                     ).arg(
                         Arg::with_name("config-dir")
                             .long("config-dir")
                             .short("d")
-                            .help("Show the configuration directory"),
+                            .help("Show bat's configuration directory"),
                     ).group(
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
@@ -200,7 +200,7 @@ impl App {
                             .requires("init")
                             .takes_value(true)
                             .value_name("dir")
-                            .help("Use a different source for loading syntaxes and themes from"),
+                            .help("Use a different directory to load syntaxes and themes from"),
                     ).arg(
                         Arg::with_name("target")
                             .long("target")
@@ -208,7 +208,7 @@ impl App {
                             .takes_value(true)
                             .value_name("dir")
                             .help(
-                                "Use a different source to store the cached syntax and theme set",
+                                "Use a different directory to store the cached syntax and theme set",
                             ),
                     ),
             ).help_message("Print this help message.")
