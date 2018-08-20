@@ -73,7 +73,9 @@ fn run() -> Result<bool> {
                 let source_dir = cache_matches.value_of("source").map(Path::new);
                 let target_dir = cache_matches.value_of("target").map(Path::new);
 
-                let assets = HighlightingAssets::from_files(source_dir)?;
+                let blank = cache_matches.is_present("blank");
+
+                let assets = HighlightingAssets::from_files(source_dir, blank)?;
                 assets.save(target_dir)?;
             } else if cache_matches.is_present("clear") {
                 clear_assets();

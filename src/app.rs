@@ -210,6 +210,12 @@ impl App {
                             .help(
                                 "Use a different directory to store the cached syntax and theme set",
                             ),
+                    ).arg(
+                        Arg::with_name("blank")
+                            .long("blank")
+                            .requires("init")
+                            .help("Create completely new syntax and theme sets \
+                                   (instead of appending to the default sets")
                     ),
             ).help_message("Print this help message.")
             .version_message("Show version information.")
