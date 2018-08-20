@@ -1,6 +1,7 @@
 use directories::ProjectDirs;
 use errors::*;
 use std::borrow::Cow;
+use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
@@ -25,10 +26,27 @@ impl HighlightingAssets {
         Self::from_cache().unwrap_or_else(|_| Self::from_binary())
     }
 
-    pub fn from_files(dir: Option<&Path>) -> Result<Self> {
+    fn empty() -> Self {
+        let mut syntax_set = SyntaxSet::new();
+        syntax_set.load_plain_text_syntax();
+
+        let theme_set = ThemeSet {
+            themes: BTreeMap::new(),
+        };
+        HighlightingAssets {
+            syntax_set,
+            theme_set,
+        }
+    }
+
+    pub fn from_files(dir: Option<&Path>, start_empty: bool) -> Result<Self> {
         let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
 
-        let mut assets = Self::from_binary_unlinked();
+        let mut assets = if start_empty {
+            Self::empty()
+        } else {
+            Self::from_binary_unlinked()
+        };
 
         let theme_dir = source_dir.join("themes");
 
