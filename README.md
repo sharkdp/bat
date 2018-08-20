@@ -188,17 +188,11 @@ cd "$BAT_CONFIG_DIR/themes"
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
 
-# Create a link to specify the new default theme
-ln -sf "sublime-snazzy/Sublime Snazzy.tmTheme" Default.tmTheme
-
 # Update the binary cache
 bat cache --init
 ```
 
 Finally, use `bat --list-themes` to check if the new themes are available.
-
-**Note:** Unlike for syntax definitions, adding custom themes currently *removes all default
-themes*. If you want to go back to the default themes, call `bat cache --clear`.
 
 ### Using a different pager
 

@@ -9,6 +9,8 @@ use style::{OutputComponent, OutputComponents, OutputWrap};
 #[cfg(windows)]
 use ansi_term;
 
+use assets::BAT_THEME_DEFAULT;
+
 pub struct App {
     pub matches: ArgMatches<'static>,
     interactive_output: bool,
@@ -271,7 +273,7 @@ impl App {
                 .value_of("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
-                .unwrap_or(String::from("Default")),
+                .unwrap_or(String::from(BAT_THEME_DEFAULT)),
             line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
         })
     }

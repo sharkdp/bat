@@ -16,6 +16,8 @@ lazy_static! {
         ProjectDirs::from("", "", crate_name!()).expect("Could not get home directory");
 }
 
+pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
+
 pub struct HighlightingAssets {
     pub syntax_set: SyntaxSet,
     pub theme_set: ThemeSet,
@@ -50,11 +52,8 @@ impl HighlightingAssets {
 
         let theme_dir = source_dir.join("themes");
 
-        if let Ok(theme_set) = ThemeSet::load_from_folder(&theme_dir) {
-            // TODO: If syntect would support this, it would be great to
-            // load the new themes in addition to the ones in the binary.
-            assets.theme_set = theme_set;
-        } else {
+        let res = extend_theme_set(&mut assets.theme_set, &theme_dir);
+        if !res.is_ok() {
             println!(
                 "No themes were found in '{}', using the default set",
                 theme_dir.to_string_lossy()
@@ -160,7 +159,7 @@ impl HighlightingAssets {
                     Yellow.paint("[bat warning]"),
                     theme
                 );
-                &self.theme_set.themes["Default"]
+                &self.theme_set.themes[BAT_THEME_DEFAULT]
             }
         }
     }
@@ -192,6 +191,21 @@ impl HighlightingAssets {
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
     }
+}
+
+// TODO: ideally, this function would be part of syntect's `ThemeSet`.
+fn extend_theme_set<P: AsRef<Path>>(theme_set: &mut ThemeSet, folder: P) -> Result<()> {
+    let paths = ThemeSet::discover_theme_paths(folder)?;
+    for p in &paths {
+        let theme = ThemeSet::get_theme(p)?;
+        let basename = p
+            .file_stem()
+            .and_then(|x| x.to_str())
+            .ok_or("Could not get theme basename")?;
+        theme_set.themes.insert(basename.to_owned(), theme);
+    }
+
+    Ok(())
 }
 
 fn theme_set_path() -> PathBuf {
