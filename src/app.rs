@@ -56,19 +56,19 @@ impl App {
                     .short("l")
                     .long("language")
                     .overrides_with("language")
-                    .help("Set the language for highlighting")
+                    .help("Set the language for syntax highlighting")
                     .long_help(
-                        "Set the language for syntax highlighting. The language can be \
-                         specified as a name (like 'C++' or 'LaTeX') or possible file \
-                         extension (like 'cpp', 'hpp' or 'md'). Use '--list-languages' \
-                         to show all supported language names and file extensions",
+                        "Explicitly set the language for syntax highlighting. The language can be \
+                        specified as a name (like 'C++' or 'LaTeX') or possible file extension \
+                        (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
+                        language names and file extensions."
                     ).takes_value(true),
             ).arg(
                 Arg::with_name("FILE")
                     .help("File(s) to print / concatenate. Use '-' for standard input.")
                     .long_help(
-                        "File(s) to print. Use no argument or '-' to read from standard \
-                         input",
+                        "File(s) to print / concatenate. Use a dash ('-') or no argument at all \
+                         to read from standard input.",
                     ).multiple(true)
                     .empty_values(false),
             ).arg(
@@ -96,7 +96,9 @@ impl App {
                     .value_name("when")
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
-                    .help("When to use colors"),
+                    .help("When to use colors")
+                    .long_help("Specify when to use colored output. The automatic mode \
+                                only enables colors if an interactive terminal is detected."),
             ).arg(
                 Arg::with_name("paging")
                     .long("paging")
@@ -106,7 +108,11 @@ impl App {
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
                     .help("When to use the pager")
-                    .long_help("Specify when to use the pager (less)"),
+                    .long_help("Specify when to use the pager. To control which pager \
+                                is used, set the PAGER or BAT_PAGER environment \
+                                variables (the latter takes precedence). The default \
+                                pager is 'less'. To disable the pager permanently, set \
+                                BAT_PAGER to an empty string."),
             ).arg(
                 Arg::with_name("wrap")
                     .long("wrap")
@@ -115,43 +121,45 @@ impl App {
                     .value_name("mode")
                     .possible_values(&["character", "never"])
                     .default_value("character")
-                    .help("When to wrap text"),
+                    .help("Specify the text-wrapping mode")
+                    .long_help("Specify the text-wrapping mode."),
             ).arg(
                 Arg::with_name("list-languages")
                     .long("list-languages")
-                    .help("Displays supported languages")
-                    .long_help("Display a list of supported languages"),
+                    .conflicts_with("list-themes")
+                    .help("Display all supported languages")
+                    .long_help("Display a list of supported languages for syntax highlighting."),
             ).arg(
                 Arg::with_name("theme")
                     .long("theme")
                     .overrides_with("theme")
                     .takes_value(true)
-                    .help("Set the theme for highlighting")
+                    .help("Set the color theme for syntax highlighting")
                     .long_help(
                         "Set the theme for syntax highlighting. Use '--list-themes' to \
-                         see all available themes. To set a default theme export the \
-                         BAT_THEME environment variable e.g. use export \
-                         BAT_THEME=\"TwoDark\" in your shells startup file to \
-                         permanently use the TwoDark theme.",
+                         see all available themes. To set a default theme, export the \
+                         BAT_THEME environment variable (e.g.: export \
+                         BAT_THEME=\"TwoDark\").",
                     ),
             ).arg(
                 Arg::with_name("line-range")
                     .long("line-range")
                     .overrides_with("line-range")
                     .takes_value(true)
-                    .value_name("n:m")
-                    .help("Only print the lines from n to m")
+                    .value_name("N:M")
+                    .help("Only print the lines from N to M")
                     .long_help(
-                        "Print a specified range or ranges of lines from the files. \
-                         For example: '--line-range 30:40' will print lines 30 to 40 \n\
-                         '--line-range :40' will print lines 1 to 40 \n\
-                         '--line-range 40:' will print lines 40 to the end of the file",
+                        "Only print the specified range of lines for each file. \
+                         For example:\n  \
+                         '--line-range 30:40' prints lines 30 to 40\n  \
+                         '--line-range :40' prints lines 1 to 40\n  \
+                         '--line-range 40:' prints lines 40 to the end of the file",
                     ),
             ).arg(
                 Arg::with_name("list-themes")
                     .long("list-themes")
                     .help("Displays supported themes")
-                    .help("Display a list of supported themes for syntax highlighting"),
+                    .help("Display a list of supported themes for syntax highlighting."),
             ).arg(
                 Arg::with_name("number")
                     .long("number")
@@ -160,14 +168,13 @@ impl App {
                     .conflicts_with("style")
                     .help("Show line numbers (alias for '--style=numbers')")
                     .long_help(
-                        "Show line numbers (no other decorations). This is an alias for \
+                        "Only show line numbers, no other decorations. This is an alias for \
                          '--style=numbers'",
                     ),
             ).arg(
                 Arg::with_name("unbuffered")
                     .short("u")
-                    .help("(ignored)")
-                    // TODO: use '.hidden_short_help(true)' when the next clap version is released
+                    .hidden_short_help(true)
                     .long_help(
                         "This option exists for POSIX-compliance reasons ('u' is for \
                          'unbuffered'). The output is always unbuffered - this option \

@@ -31,7 +31,7 @@ default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
 [dependencies.clap]
-version = "2"
+version = "2.32"
 default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
