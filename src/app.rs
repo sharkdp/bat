@@ -129,7 +129,10 @@ impl App {
                     .help("Set the theme for highlighting")
                     .long_help(
                         "Set the theme for syntax highlighting. Use '--list-themes' to \
-                         see all available themes",
+                         see all available themes. To set a default theme export the \
+                         BAT_THEME environment variable e.g. use export \
+                         BAT_THEME=\"TwoDark\" in your shells startup file to \
+                         permanently use the TwoDark theme.",
                     ),
             ).arg(
                 Arg::with_name("line-range")
