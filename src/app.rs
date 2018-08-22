@@ -23,16 +23,35 @@ pub enum PagingMode {
 }
 
 pub struct Config<'a> {
-    pub true_color: bool,
-    pub output_wrap: OutputWrap,
-    pub output_components: OutputComponents,
-    pub language: Option<&'a str>,
-    pub colored_output: bool,
-    pub paging_mode: PagingMode,
-    pub term_width: usize,
+    /// List of files to print
     pub files: Vec<Option<&'a str>>,
-    pub theme: String,
+
+    /// The explicitly configured language, if any
+    pub language: Option<&'a str>,
+
+    /// The character width of the terminal
+    pub term_width: usize,
+
+    /// Whether or not the output should be colorized
+    pub colored_output: bool,
+
+    /// Whether or not the output terminal supports true color
+    pub true_color: bool,
+
+    /// Style elements (grid, line numbers, ...)
+    pub output_components: OutputComponents,
+
+    /// Text wrapping mode
+    pub output_wrap: OutputWrap,
+
+    /// Pager or STDOUT
+    pub paging_mode: PagingMode,
+
+    /// The range lines that should be printed, if specified
     pub line_range: Option<LineRange>,
+
+    /// The syntax highlighting theme
+    pub theme: String,
 }
 
 fn is_truecolor_terminal() -> bool {
