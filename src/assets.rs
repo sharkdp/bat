@@ -193,7 +193,7 @@ impl HighlightingAssets {
     }
 }
 
-// TODO: ideally, this function would be part of syntect's `ThemeSet`.
+// TODO: this function will soon be part of syntect's `ThemeSet`.
 fn extend_theme_set<P: AsRef<Path>>(theme_set: &mut ThemeSet, folder: P) -> Result<()> {
     let paths = ThemeSet::discover_theme_paths(folder)?;
     for p in &paths {

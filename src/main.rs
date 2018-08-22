@@ -22,6 +22,7 @@ mod assets;
 mod decorations;
 mod diff;
 mod features;
+mod line_range;
 mod output;
 mod printer;
 mod style;
@@ -33,7 +34,7 @@ use std::process;
 
 use app::App;
 use assets::{clear_assets, config_dir, HighlightingAssets};
-use features::{list_languages, print_files};
+use features::{list_languages, list_themes, print_files};
 
 mod errors {
     error_chain! {
@@ -62,6 +63,24 @@ mod errors {
 
 use errors::*;
 
+fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
+    if matches.is_present("init") {
+        let source_dir = matches.value_of("source").map(Path::new);
+        let target_dir = matches.value_of("target").map(Path::new);
+
+        let blank = matches.is_present("blank");
+
+        let assets = HighlightingAssets::from_files(source_dir, blank)?;
+        assets.save(target_dir)?;
+    } else if matches.is_present("clear") {
+        clear_assets();
+    } else if matches.is_present("config-dir") {
+        println!("{}", config_dir());
+    }
+
+    Ok(())
+}
+
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
 /// `Some(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
@@ -69,21 +88,8 @@ fn run() -> Result<bool> {
 
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
-            if cache_matches.is_present("init") {
-                let source_dir = cache_matches.value_of("source").map(Path::new);
-                let target_dir = cache_matches.value_of("target").map(Path::new);
-
-                let blank = cache_matches.is_present("blank");
-
-                let assets = HighlightingAssets::from_files(source_dir, blank)?;
-                assets.save(target_dir)?;
-            } else if cache_matches.is_present("clear") {
-                clear_assets();
-            } else if cache_matches.is_present("config-dir") {
-                println!("{}", config_dir());
-            }
-
-            return Ok(true);
+            run_cache_subcommand(cache_matches)?;
+            Ok(true)
         }
         _ => {
             let config = app.config()?;
@@ -91,18 +97,15 @@ fn run() -> Result<bool> {
 
             if app.matches.is_present("list-languages") {
                 list_languages(&assets, config.term_width);
-                return Ok(true);
-            }
 
-            if app.matches.is_present("list-themes") {
-                let themes = &assets.theme_set.themes;
-                for (theme, _) in themes.iter() {
-                    println!("{}", theme);
-                }
-                return Ok(true);
-            }
+                Ok(true)
+            } else if app.matches.is_present("list-themes") {
+                list_themes(&assets);
 
-            print_files(&assets, &config)
+                Ok(true)
+            } else {
+                print_files(&assets, &config)
+            }
         }
     }
 }

@@ -1,15 +1,19 @@
-use ansi_term::Colour::{Fixed, Green, Red, Yellow};
-use ansi_term::Style;
-use app::Config;
-use console::AnsiCodeIterator;
-use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
-use diff::LineChanges;
-use errors::*;
 use std::boxed::Box;
 use std::io::Write;
 use std::vec::Vec;
-use style::OutputWrap;
+
+use ansi_term::Colour::{Fixed, Green, Red, Yellow};
+use ansi_term::Style;
+
+use console::AnsiCodeIterator;
+
 use syntect::highlighting::{self, Theme};
+
+use app::Config;
+use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
+use diff::LineChanges;
+use errors::*;
+use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
 pub struct Printer<'a> {

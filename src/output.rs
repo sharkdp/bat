@@ -1,8 +1,9 @@
-use app::PagingMode;
-use errors::*;
 use std::env;
 use std::io::{self, Write};
 use std::process::{Child, Command, Stdio};
+
+use app::PagingMode;
+use errors::*;
 
 pub enum OutputType {
     Pager(Child),

@@ -14,7 +14,6 @@ pub trait Decoration {
     fn width(&self) -> usize;
 }
 
-// Line number decoration.
 pub struct LineNumberDecoration {
     color: Style,
     cached_wrap: DecorationText,
@@ -65,7 +64,6 @@ impl Decoration for LineNumberDecoration {
     }
 }
 
-// Line changes decoration.
 pub struct LineChangesDecoration {
     cached_none: DecorationText,
     cached_added: DecorationText,
@@ -121,7 +119,6 @@ impl Decoration for LineChangesDecoration {
     }
 }
 
-// Grid border decoration.
 pub struct GridBorderDecoration {
     cached: DecorationText,
 }

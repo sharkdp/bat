@@ -1,15 +1,19 @@
-use ansi_term::Colour::Green;
-use app::{Config, LineRange};
-use assets::HighlightingAssets;
-use diff::get_git_diff;
-use errors::*;
-use output::OutputType;
-use printer::Printer;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
+
+use ansi_term::Colour::Green;
+
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxDefinition;
+
+use app::Config;
+use assets::HighlightingAssets;
+use diff::get_git_diff;
+use errors::*;
+use line_range::LineRange;
+use output::OutputType;
+use printer::Printer;
 
 pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     let mut languages = assets
@@ -56,6 +60,13 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     }
 }
 
+pub fn list_themes(assets: &HighlightingAssets) {
+    let themes = &assets.theme_set.themes;
+    for (theme, _) in themes.iter() {
+        println!("{}", theme);
+    }
+}
+
 pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool> {
     let theme = assets.get_theme(&config.theme);
 
@@ -86,7 +97,7 @@ fn print_file(
     printer: &mut Printer,
     filename: Option<&str>,
 ) -> Result<()> {
-    let stdin = io::stdin(); // TODO: this is not always needed
+    let stdin = io::stdin(); // TODO: this variable is not always needed
     {
         let reader: Box<BufRead> = match filename {
             None => Box::new(stdin.lock()),

@@ -1,5 +1,6 @@
 use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::{self, Style};
+
 use syntect::highlighting::{self, FontStyle};
 
 /// Approximate a 24 bit color value by a 8 bit ANSI code
