@@ -32,6 +32,9 @@ pub struct Config<'a> {
     /// The character width of the terminal
     pub term_width: usize,
 
+    /// Whether or not the terminal is interactive
+    pub interactive_output: bool,
+
     /// Whether or not the output should be colorized
     pub colored_output: bool,
 
