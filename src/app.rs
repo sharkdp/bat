@@ -52,18 +52,6 @@ impl App {
                  Use '--help' instead of '-h' to see a more detailed version of the help text.",
             ).long_about("A cat(1) clone with syntax highlighting and Git integration.")
             .arg(
-                Arg::with_name("language")
-                    .short("l")
-                    .long("language")
-                    .overrides_with("language")
-                    .help("Set the language for syntax highlighting")
-                    .long_help(
-                        "Explicitly set the language for syntax highlighting. The language can be \
-                        specified as a name (like 'C++' or 'LaTeX') or possible file extension \
-                        (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
-                        language names and file extensions."
-                    ).takes_value(true),
-            ).arg(
                 Arg::with_name("FILE")
                     .help("File(s) to print / concatenate. Use '-' for standard input.")
                     .long_help(
@@ -71,6 +59,42 @@ impl App {
                          to read from standard input.",
                     ).multiple(true)
                     .empty_values(false),
+                    )
+            .arg(
+                Arg::with_name("language")
+                    .short("l")
+                    .long("language")
+                    .overrides_with("language")
+                    .help("Set the language for syntax highlighting.")
+                    .long_help(
+                        "Explicitly set the language for syntax highlighting. The language can be \
+                        specified as a name (like 'C++' or 'LaTeX') or possible file extension \
+                        (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
+                        language names and file extensions."
+                    ).takes_value(true),
+            ).arg(
+                Arg::with_name("list-languages")
+                    .long("list-languages")
+                    .conflicts_with("list-themes")
+                    .help("Display all supported languages.")
+                    .long_help("Display a list of supported languages for syntax highlighting."),
+            ).arg(
+                Arg::with_name("theme")
+                    .long("theme")
+                    .overrides_with("theme")
+                    .takes_value(true)
+                    .help("Set the color theme for syntax highlighting.")
+                    .long_help(
+                        "Set the theme for syntax highlighting. Use '--list-themes' to \
+                         see all available themes. To set a default theme, export the \
+                         BAT_THEME environment variable (e.g.: export \
+                         BAT_THEME=\"TwoDark\").",
+                    ),
+            ).arg(
+                Arg::with_name("list-themes")
+                    .long("list-themes")
+                    .help("Display all supported highlighting themes.")
+                    .long_help("Display a list of supported themes for syntax highlighting."),
             ).arg(
                 Arg::with_name("style")
                     .long("style")
@@ -80,13 +104,38 @@ impl App {
                     .possible_values(&[
                         "auto", "full", "plain", "changes", "header", "grid", "numbers",
                     ]).default_value("auto")
-                    .help("Comma-separated list of style elements to display")
+                    .help("Comma-separated list of style elements to display.")
                     .long_help(
                         "Configure which elements (line numbers, file headers, grid \
                          borders, Git modifications, ..) to display in addition to the \
                          file contents. The argument is a comma-separated list of \
                          components to display (e.g. 'numbers,changes,grid') or a \
                          pre-defined style ('full')",
+                    ),
+            ).arg(
+                Arg::with_name("number")
+                    .long("number")
+                    .overrides_with("number")
+                    .short("n")
+                    .conflicts_with("style")
+                    .help("Show line numbers (alias for '--style=numbers').")
+                    .long_help(
+                        "Only show line numbers, no other decorations. This is an alias for \
+                         '--style=numbers'",
+                    ),
+            ).arg(
+                Arg::with_name("line-range")
+                    .long("line-range")
+                    .overrides_with("line-range")
+                    .takes_value(true)
+                    .value_name("N:M")
+                    .help("Only print the lines from N to M.")
+                    .long_help(
+                        "Only print the specified range of lines for each file. \
+                         For example:\n  \
+                         '--line-range 30:40' prints lines 30 to 40\n  \
+                         '--line-range :40' prints lines 1 to 40\n  \
+                         '--line-range 40:' prints lines 40 to the end of the file",
                     ),
             ).arg(
                 Arg::with_name("color")
@@ -96,7 +145,7 @@ impl App {
                     .value_name("when")
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
-                    .help("When to use colors")
+                    .help("When to use colors.")
                     .long_help("Specify when to use colored output. The automatic mode \
                                 only enables colors if an interactive terminal is detected."),
             ).arg(
@@ -107,7 +156,7 @@ impl App {
                     .value_name("when")
                     .possible_values(&["auto", "never", "always"])
                     .default_value("auto")
-                    .help("When to use the pager")
+                    .help("Specify when to use the pager.")
                     .long_help("Specify when to use the pager. To control which pager \
                                 is used, set the PAGER or BAT_PAGER environment \
                                 variables (the latter takes precedence). The default \
@@ -121,56 +170,8 @@ impl App {
                     .value_name("mode")
                     .possible_values(&["character", "never"])
                     .default_value("character")
-                    .help("Specify the text-wrapping mode")
+                    .help("Specify the text-wrapping mode.")
                     .long_help("Specify the text-wrapping mode."),
-            ).arg(
-                Arg::with_name("list-languages")
-                    .long("list-languages")
-                    .conflicts_with("list-themes")
-                    .help("Display all supported languages")
-                    .long_help("Display a list of supported languages for syntax highlighting."),
-            ).arg(
-                Arg::with_name("theme")
-                    .long("theme")
-                    .overrides_with("theme")
-                    .takes_value(true)
-                    .help("Set the color theme for syntax highlighting")
-                    .long_help(
-                        "Set the theme for syntax highlighting. Use '--list-themes' to \
-                         see all available themes. To set a default theme, export the \
-                         BAT_THEME environment variable (e.g.: export \
-                         BAT_THEME=\"TwoDark\").",
-                    ),
-            ).arg(
-                Arg::with_name("line-range")
-                    .long("line-range")
-                    .overrides_with("line-range")
-                    .takes_value(true)
-                    .value_name("N:M")
-                    .help("Only print the lines from N to M")
-                    .long_help(
-                        "Only print the specified range of lines for each file. \
-                         For example:\n  \
-                         '--line-range 30:40' prints lines 30 to 40\n  \
-                         '--line-range :40' prints lines 1 to 40\n  \
-                         '--line-range 40:' prints lines 40 to the end of the file",
-                    ),
-            ).arg(
-                Arg::with_name("list-themes")
-                    .long("list-themes")
-                    .help("Displays supported themes")
-                    .help("Display a list of supported themes for syntax highlighting."),
-            ).arg(
-                Arg::with_name("number")
-                    .long("number")
-                    .overrides_with("number")
-                    .short("n")
-                    .conflicts_with("style")
-                    .help("Show line numbers (alias for '--style=numbers')")
-                    .long_help(
-                        "Only show line numbers, no other decorations. This is an alias for \
-                         '--style=numbers'",
-                    ),
             ).arg(
                 Arg::with_name("unbuffered")
                     .short("u")
@@ -187,21 +188,21 @@ impl App {
                         Arg::with_name("init")
                             .long("init")
                             .short("i")
-                            .help("Initialize the syntax/theme cache")
+                            .help("Initialize the syntax/theme cache.")
                             .long_help(
                                 "Initialize the syntax/theme cache by loading from the \
-                                 source directory (default: the configuration directory)",
+                                 source directory (default: the configuration directory).",
                             ),
                     ).arg(
                         Arg::with_name("clear")
                             .long("clear")
                             .short("c")
-                            .help("Remove the cached syntax definitions and themes"),
+                            .help("Remove the cached syntax definitions and themes."),
                     ).arg(
                         Arg::with_name("config-dir")
                             .long("config-dir")
                             .short("d")
-                            .help("Show bat's configuration directory"),
+                            .help("Show bat's configuration directory."),
                     ).group(
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
@@ -212,7 +213,7 @@ impl App {
                             .requires("init")
                             .takes_value(true)
                             .value_name("dir")
-                            .help("Use a different directory to load syntaxes and themes from"),
+                            .help("Use a different directory to load syntaxes and themes from."),
                     ).arg(
                         Arg::with_name("target")
                             .long("target")
@@ -220,14 +221,14 @@ impl App {
                             .takes_value(true)
                             .value_name("dir")
                             .help(
-                                "Use a different directory to store the cached syntax and theme set",
+                                "Use a different directory to store the cached syntax and theme set.",
                             ),
                     ).arg(
                         Arg::with_name("blank")
                             .long("blank")
                             .requires("init")
                             .help("Create completely new syntax and theme sets \
-                                   (instead of appending to the default sets")
+                                   (instead of appending to the default sets).")
                     ),
             ).help_message("Print this help message.")
             .version_message("Show version information.")
