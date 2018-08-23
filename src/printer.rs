@@ -22,7 +22,40 @@ use terminal::{as_terminal_escaped, to_ansi_color};
 pub trait Printer {
     fn print_header(&mut self, handle: &mut Write, filename: Option<&str>) -> Result<()>;
     fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
-    fn print_line(&mut self, handle: &mut Write, line_number: usize, line: &str) -> Result<()>;
+    fn print_line(
+        &mut self,
+        handle: &mut Write,
+        line_number: usize,
+        line_buffer: &[u8],
+    ) -> Result<()>;
+}
+
+pub struct SimplePrinter;
+
+impl SimplePrinter {
+    pub fn new() -> Self {
+        SimplePrinter {}
+    }
+}
+
+impl Printer for SimplePrinter {
+    fn print_header(&mut self, _handle: &mut Write, _filename: Option<&str>) -> Result<()> {
+        Ok(())
+    }
+
+    fn print_footer(&mut self, _handle: &mut Write) -> Result<()> {
+        Ok(())
+    }
+
+    fn print_line(
+        &mut self,
+        handle: &mut Write,
+        _line_number: usize,
+        line_buffer: &[u8],
+    ) -> Result<()> {
+        handle.write(line_buffer)?;
+        Ok(())
+    }
 }
 
 pub struct InteractivePrinter<'a> {
@@ -153,7 +186,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
     }
 
-    fn print_line(&mut self, handle: &mut Write, line_number: usize, line: &str) -> Result<()> {
+    fn print_line(
+        &mut self,
+        handle: &mut Write,
+        line_number: usize,
+        line_buffer: &[u8],
+    ) -> Result<()> {
+        let line = String::from_utf8_lossy(&line_buffer);
         let regions = self.highlighter.highlight(line.as_ref());
 
         let mut cursor: usize = 0;

@@ -207,6 +207,18 @@ impl App {
                     .long_help("Specify when to use colored output. The automatic mode \
                                 only enables colors if an interactive terminal is detected."),
             ).arg(
+                Arg::with_name("decorations")
+                    .long("decorations")
+                    .overrides_with("decorations")
+                    .takes_value(true)
+                    .value_name("when")
+                    .possible_values(&["auto", "never", "always"])
+                    .default_value("auto")
+                    .help("When to show the decorations specified by '--style'.")
+                    .long_help("Specify when to use the decorations that have been specified \
+                                via '--style'. The automatic mode only enables decorations if \
+                                an interactive terminal is detected."),
+            ).arg(
                 Arg::with_name("paging")
                     .long("paging")
                     .overrides_with("paging")
@@ -336,8 +348,9 @@ impl App {
                 },
             },
             term_width: Term::stdout().size().1 as usize,
-            loop_through: self.interactive_output
-                && self.matches.value_of("color") != Some("always"),
+            loop_through: !(self.interactive_output
+                || self.matches.value_of("color") == Some("always")
+                || self.matches.value_of("decorations") == Some("always")),
             files,
             theme: self
                 .matches
@@ -366,16 +379,20 @@ impl App {
 
     fn output_components(&self) -> Result<OutputComponents> {
         let matches = &self.matches;
-        Ok(OutputComponents(if matches.is_present("number") {
-            [OutputComponent::Numbers].iter().cloned().collect()
-        } else {
-            values_t!(matches.values_of("style"), OutputComponent)?
-                .into_iter()
-                .map(|style| style.components(self.interactive_output))
-                .fold(HashSet::new(), |mut acc, components| {
-                    acc.extend(components.iter().cloned());
-                    acc
-                })
-        }))
+        Ok(OutputComponents(
+            if matches.value_of("decorations") == Some("never") {
+                HashSet::new()
+            } else if matches.is_present("number") {
+                [OutputComponent::Numbers].iter().cloned().collect()
+            } else {
+                values_t!(matches.values_of("style"), OutputComponent)?
+                    .into_iter()
+                    .map(|style| style.components(self.interactive_output))
+                    .fold(HashSet::new(), |mut acc, components| {
+                        acc.extend(components.iter().cloned());
+                        acc
+                    })
+            },
+        ))
     }
 }

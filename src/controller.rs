@@ -6,7 +6,7 @@ use assets::HighlightingAssets;
 use errors::*;
 use line_range::LineRange;
 use output::OutputType;
-use printer::{InteractivePrinter, Printer};
+use printer::{InteractivePrinter, Printer, SimplePrinter};
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -23,8 +23,14 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        for file in &self.config.files {
-            let result = self.print_file(writer, *file);
+        for filename in &self.config.files {
+            let result = if self.config.loop_through {
+                let mut printer = SimplePrinter::new();
+                self.print_file(&mut printer, writer, *filename)
+            } else {
+                let mut printer = InteractivePrinter::new(&self.config, &self.assets, *filename);
+                self.print_file(&mut printer, writer, *filename)
+            };
 
             if let Err(error) = result {
                 handle_error(&error);
@@ -35,9 +41,12 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_file(&self, writer: &mut Write, filename: Option<&str>) -> Result<()> {
-        let mut printer = InteractivePrinter::new(&self.config, &self.assets, filename);
-
+    fn print_file<P: Printer>(
+        &self,
+        printer: &mut P,
+        writer: &mut Write,
+        filename: Option<&str>,
+    ) -> Result<()> {
         let stdin = io::stdin();
         {
             let reader: Box<BufRead> = match filename {
@@ -46,7 +55,7 @@ impl<'b> Controller<'b> {
             };
 
             printer.print_header(writer, filename)?;
-            self.print_file_ranges(&mut printer, writer, reader, &self.config.line_range)?;
+            self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
             printer.print_footer(writer)?;
         }
         Ok(())
@@ -59,14 +68,12 @@ impl<'b> Controller<'b> {
         mut reader: Box<BufRead + 'a>,
         line_ranges: &Option<LineRange>,
     ) -> Result<()> {
-        let mut buffer = Vec::new();
+        let mut line_buffer = Vec::new();
 
         let mut line_number: usize = 1;
 
-        while reader.read_until(b'\n', &mut buffer)? > 0 {
+        while reader.read_until(b'\n', &mut line_buffer)? > 0 {
             {
-                let line = String::from_utf8_lossy(&buffer);
-
                 match line_ranges {
                     &Some(ref range) => {
                         if line_number < range.lower {
@@ -75,17 +82,17 @@ impl<'b> Controller<'b> {
                             // no more lines in range
                             break;
                         } else {
-                            printer.print_line(writer, line_number, &line)?;
+                            printer.print_line(writer, line_number, &line_buffer)?;
                         }
                     }
                     &None => {
-                        printer.print_line(writer, line_number, &line)?;
+                        printer.print_line(writer, line_number, &line_buffer)?;
                     }
                 }
 
                 line_number += 1;
             }
-            buffer.clear();
+            line_buffer.clear();
         }
         Ok(())
     }
