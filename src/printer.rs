@@ -24,6 +24,7 @@ pub trait Printer {
     fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
     fn print_line(
         &mut self,
+        out_of_range: bool,
         handle: &mut Write,
         line_number: usize,
         line_buffer: &[u8],
@@ -49,11 +50,14 @@ impl Printer for SimplePrinter {
 
     fn print_line(
         &mut self,
+        out_of_range: bool,
         handle: &mut Write,
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        handle.write(line_buffer)?;
+        if !out_of_range {
+            handle.write(line_buffer)?;
+        }
         Ok(())
     }
 }
@@ -188,12 +192,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
     fn print_line(
         &mut self,
+        out_of_range: bool,
         handle: &mut Write,
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = String::from_utf8_lossy(&line_buffer);
         let regions = self.highlighter.highlight(line.as_ref());
+
+        if out_of_range {
+            return Ok(());
+        }
 
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;

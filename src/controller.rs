@@ -77,16 +77,18 @@ impl<'b> Controller<'b> {
                 match line_ranges {
                     &Some(ref range) => {
                         if line_number < range.lower {
-                            // skip line
+                            // Call the printer in case we need to call the syntax highlighter
+                            // for this line. However, set `out_of_range` to `true`.
+                            printer.print_line(true, writer, line_number, &line_buffer)?;
                         } else if line_number > range.upper {
-                            // no more lines in range
+                            // no more lines in range, exit early
                             break;
                         } else {
-                            printer.print_line(writer, line_number, &line_buffer)?;
+                            printer.print_line(false, writer, line_number, &line_buffer)?;
                         }
                     }
                     &None => {
-                        printer.print_line(writer, line_number, &line_buffer)?;
+                        printer.print_line(false, writer, line_number, &line_buffer)?;
                     }
                 }
 
