@@ -7,37 +7,38 @@ use ansi_term::Style;
 
 use console::AnsiCodeIterator;
 
-use syntect::highlighting::{self, Theme};
+use syntect::easy::HighlightLines;
+use syntect::highlighting::Theme;
 
 use app::Config;
+use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
+use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
-    fn print_header(&mut self, filename: Option<&str>) -> Result<()>;
-    fn print_footer(&mut self) -> Result<()>;
-    fn print_line(
-        &mut self,
-        line_number: usize,
-        regions: &[(highlighting::Style, &str)],
-    ) -> Result<()>;
+    fn print_header(&mut self, handle: &mut Write, filename: Option<&str>) -> Result<()>;
+    fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
+    fn print_line(&mut self, handle: &mut Write, line_number: usize, line: &str) -> Result<()>;
 }
 
 pub struct InteractivePrinter<'a> {
-    handle: &'a mut Write,
     colors: Colors,
-    pub config: &'a Config<'a>,
+    config: &'a Config<'a>,
     decorations: Vec<Box<Decoration>>,
     panel_width: usize,
-    pub ansi_prefix_sgr: String,
+    ansi_prefix_sgr: String,
     pub line_changes: Option<LineChanges>,
+    highlighter: HighlightLines<'a>,
 }
 
 impl<'a> InteractivePrinter<'a> {
-    pub fn new(handle: &'a mut Write, config: &'a Config, theme: &Theme) -> Self {
+    pub fn new(config: &'a Config, assets: &'a HighlightingAssets, filename: Option<&str>) -> Self {
+        let theme = assets.get_theme(&config.theme);
+
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
         } else {
@@ -74,29 +75,35 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        // Create printer.
+        // Get the Git modifications
+        let line_changes = filename.and_then(|file| get_git_diff(file));
+
+        // Determine the type of syntax for highlighting
+        let syntax = assets.get_syntax(config.language, filename);
+        let highlighter = HighlightLines::new(syntax, theme);
+
         InteractivePrinter {
             panel_width,
-            handle,
             colors,
             config,
             decorations,
             ansi_prefix_sgr: String::new(),
-            line_changes: None,
+            line_changes,
+            highlighter,
         }
     }
 
-    fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
+    fn print_horizontal_line(&mut self, handle: &mut Write, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
             writeln!(
-                self.handle,
+                handle,
                 "{}",
                 self.colors.grid.paint("─".repeat(self.config.term_width))
             )?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
-            writeln!(self.handle, "{}", self.colors.grid.paint(hline))?;
+            writeln!(handle, "{}", self.colors.grid.paint(hline))?;
         }
 
         Ok(())
@@ -104,16 +111,16 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
+    fn print_header(&mut self, handle: &mut Write, filename: Option<&str>) -> Result<()> {
         if !self.config.output_components.header() {
             return Ok(());
         }
 
         if self.config.output_components.grid() {
-            self.print_horizontal_line('┬')?;
+            self.print_horizontal_line(handle, '┬')?;
 
             write!(
-                self.handle,
+                handle,
                 "{}{}",
                 " ".repeat(self.panel_width),
                 self.colors
@@ -121,36 +128,34 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )?;
         } else {
-            write!(self.handle, "{}", " ".repeat(self.panel_width))?;
+            write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
         writeln!(
-            self.handle,
+            handle,
             "{}{}",
             filename.map_or("", |_| "File: "),
             self.colors.filename.paint(filename.unwrap_or("STDIN"))
         )?;
 
         if self.config.output_components.grid() {
-            self.print_horizontal_line('┼')?;
+            self.print_horizontal_line(handle, '┼')?;
         }
 
         Ok(())
     }
 
-    fn print_footer(&mut self) -> Result<()> {
+    fn print_footer(&mut self, handle: &mut Write) -> Result<()> {
         if self.config.output_components.grid() {
-            self.print_horizontal_line('┴')
+            self.print_horizontal_line(handle, '┴')
         } else {
             Ok(())
         }
     }
 
-    fn print_line(
-        &mut self,
-        line_number: usize,
-        regions: &[(highlighting::Style, &str)],
-    ) -> Result<()> {
+    fn print_line(&mut self, handle: &mut Write, line_number: usize, line: &str) -> Result<()> {
+        let regions = self.highlighter.highlight(line.as_ref());
+
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
         let mut panel_wrap: Option<String> = None;
@@ -164,7 +169,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 .collect::<Vec<_>>();
 
             for deco in decorations {
-                write!(self.handle, "{} ", deco.text)?;
+                write!(handle, "{} ", deco.text)?;
                 cursor_max -= deco.width + 1;
             }
         }
@@ -175,7 +180,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let colored_output = self.config.colored_output;
 
             write!(
-                self.handle,
+                handle,
                 "{}",
                 regions
                     .iter()
@@ -222,7 +227,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     cursor += remaining;
 
                                     write!(
-                                        self.handle,
+                                        handle,
                                         "{}",
                                         as_terminal_escaped(
                                             style,
@@ -260,7 +265,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 remaining -= available;
 
                                 write!(
-                                    self.handle,
+                                    handle,
                                     "{}\n{}",
                                     as_terminal_escaped(
                                         style,
@@ -282,7 +287,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            write!(self.handle, "\n")?;
+            write!(handle, "\n")?;
         }
 
         Ok(())

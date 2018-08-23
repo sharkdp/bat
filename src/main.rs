@@ -19,9 +19,9 @@ extern crate syntect;
 
 mod app;
 mod assets;
+mod controller;
 mod decorations;
 mod diff;
-mod features;
 mod line_range;
 mod output;
 mod printer;
@@ -32,9 +32,11 @@ use std::io;
 use std::path::Path;
 use std::process;
 
+use ansi_term::Colour::Green;
+
 use app::App;
 use assets::{clear_assets, config_dir, HighlightingAssets};
-use features::{list_languages, list_themes, print_files};
+use controller::Controller;
 
 mod errors {
     error_chain! {
@@ -81,6 +83,58 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     Ok(())
 }
 
+pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
+    let mut languages = assets
+        .syntax_set
+        .syntaxes()
+        .iter()
+        .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
+        .collect::<Vec<_>>();
+    languages.sort_by_key(|lang| lang.name.to_uppercase());
+
+    let longest = languages
+        .iter()
+        .map(|syntax| syntax.name.len())
+        .max()
+        .unwrap_or(32); // Fallback width if they have no language definitions.
+
+    let comma_separator = ", ";
+    let separator = " ";
+    // Line-wrapping for the possible file extension overflow.
+    let desired_width = term_width - longest - separator.len();
+
+    for lang in languages {
+        print!("{:width$}{}", lang.name, separator, width = longest);
+
+        // Number of characters on this line so far, wrap before `desired_width`
+        let mut num_chars = 0;
+
+        let mut extension = lang.file_extensions.iter().peekable();
+        while let Some(word) = extension.next() {
+            // If we can't fit this word in, then create a line break and align it in.
+            let new_chars = word.len() + comma_separator.len();
+            if num_chars + new_chars >= desired_width {
+                num_chars = 0;
+                print!("\n{:width$}{}", "", separator, width = longest);
+            }
+
+            num_chars += new_chars;
+            print!("{}", Green.paint(&word[..]));
+            if extension.peek().is_some() {
+                print!("{}", comma_separator);
+            }
+        }
+        println!();
+    }
+}
+
+pub fn list_themes(assets: &HighlightingAssets) {
+    let themes = &assets.theme_set.themes;
+    for (theme, _) in themes.iter() {
+        println!("{}", theme);
+    }
+}
+
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
 /// `Some(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
@@ -104,12 +158,8 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else {
-                if config.loop_through {
-                    // TODO
-                    print_files(&assets, &config)
-                } else {
-                    print_files(&assets, &config)
-                }
+                let controller = Controller::new(&config, &assets);
+                controller.run()
             }
         }
     }
