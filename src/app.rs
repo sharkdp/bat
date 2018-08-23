@@ -32,8 +32,8 @@ pub struct Config<'a> {
     /// The character width of the terminal
     pub term_width: usize,
 
-    /// Whether or not the terminal is interactive
-    pub interactive_output: bool,
+    /// Whether or not to simply loop through all input (`cat` mode)
+    pub loop_through: bool,
 
     /// Whether or not the output should be colorized
     pub colored_output: bool,
@@ -336,6 +336,8 @@ impl App {
                 },
             },
             term_width: Term::stdout().size().1 as usize,
+            loop_through: self.interactive_output
+                && self.matches.value_of("color") != Some("always"),
             files,
             theme: self
                 .matches

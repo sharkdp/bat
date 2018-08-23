@@ -1,6 +1,6 @@
 use ansi_term::Style;
 use diff::LineChange;
-use printer::{Colors, Printer};
+use printer::{Colors, InteractivePrinter};
 
 #[derive(Clone)]
 pub struct DecorationText {
@@ -9,8 +9,12 @@ pub struct DecorationText {
 }
 
 pub trait Decoration {
-    fn generate(&self, line_number: usize, continuation: bool, printer: &Printer)
-        -> DecorationText;
+    fn generate(
+        &self,
+        line_number: usize,
+        continuation: bool,
+        printer: &InteractivePrinter,
+    ) -> DecorationText;
     fn width(&self) -> usize;
 }
 
@@ -38,7 +42,7 @@ impl Decoration for LineNumberDecoration {
         &self,
         line_number: usize,
         continuation: bool,
-        _printer: &Printer,
+        _printer: &InteractivePrinter,
     ) -> DecorationText {
         if continuation {
             if line_number > self.cached_wrap_invalid_at {
@@ -97,7 +101,7 @@ impl Decoration for LineChangesDecoration {
         &self,
         line_number: usize,
         continuation: bool,
-        printer: &Printer,
+        printer: &InteractivePrinter,
     ) -> DecorationText {
         if !continuation {
             if let Some(ref changes) = printer.line_changes {
@@ -139,7 +143,7 @@ impl Decoration for GridBorderDecoration {
         &self,
         _line_number: usize,
         _continuation: bool,
-        _printer: &Printer,
+        _printer: &InteractivePrinter,
     ) -> DecorationText {
         self.cached.clone()
     }

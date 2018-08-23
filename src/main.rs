@@ -104,7 +104,12 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else {
-                print_files(&assets, &config)
+                if config.loop_through {
+                    // TODO
+                    print_files(&assets, &config)
+                } else {
+                    print_files(&assets, &config)
+                }
             }
         }
     }

@@ -13,7 +13,7 @@ use diff::get_git_diff;
 use errors::*;
 use line_range::LineRange;
 use output::OutputType;
-use printer::Printer;
+use printer::{InteractivePrinter, Printer};
 
 pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     let mut languages = assets
@@ -72,7 +72,7 @@ pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool>
 
     let mut output_type = OutputType::from_mode(config.paging_mode);
     let handle = output_type.handle()?;
-    let mut printer = Printer::new(handle, &config, &theme);
+    let mut printer = InteractivePrinter::new(handle, &config, &theme);
     let mut no_errors: bool = true;
 
     for file in &config.files {
@@ -80,7 +80,7 @@ pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool>
         printer.line_changes = file.and_then(|filename| get_git_diff(filename));
         let syntax = assets.get_syntax(config.language, *file);
 
-        let result = print_file(theme, &syntax, &mut printer, *file);
+        let result = print_file(config, theme, &syntax, &mut printer, *file);
 
         if let Err(error) = result {
             handle_error(&error);
@@ -91,13 +91,14 @@ pub fn print_files(assets: &HighlightingAssets, config: &Config) -> Result<bool>
     Ok(no_errors)
 }
 
-fn print_file(
+fn print_file<P: Printer>(
+    config: &Config,
     theme: &Theme,
     syntax: &SyntaxDefinition,
-    printer: &mut Printer,
+    printer: &mut P,
     filename: Option<&str>,
 ) -> Result<()> {
-    let stdin = io::stdin(); // TODO: this variable is not always needed
+    let stdin = io::stdin();
     {
         let reader: Box<BufRead> = match filename {
             None => Box::new(stdin.lock()),
@@ -107,19 +108,21 @@ fn print_file(
         let highlighter = HighlightLines::new(syntax, theme);
 
         printer.print_header(filename)?;
-        print_file_ranges(printer, reader, highlighter, &printer.config.line_range)?;
+        print_file_ranges(printer, reader, highlighter, &config.line_range)?;
         printer.print_footer()?;
     }
     Ok(())
 }
 
-fn print_file_ranges<'a>(
-    printer: &mut Printer,
+fn print_file_ranges<'a, P: Printer>(
+    printer: &mut P,
     mut reader: Box<BufRead + 'a>,
     mut highlighter: HighlightLines,
     line_ranges: &Option<LineRange>,
 ) -> Result<()> {
     let mut buffer = Vec::new();
+
+    let mut line_number: usize = 1;
 
     while reader.read_until(b'\n', &mut buffer)? > 0 {
         {
@@ -128,20 +131,21 @@ fn print_file_ranges<'a>(
 
             match line_ranges {
                 &Some(ref range) => {
-                    if printer.line_number + 1 < range.lower {
+                    if line_number < range.lower {
                         // skip line
-                        printer.line_number += 1;
-                    } else if printer.line_number >= range.upper {
+                    } else if line_number > range.upper {
                         // no more lines in range
                         break;
                     } else {
-                        printer.print_line(&regions)?;
+                        printer.print_line(line_number, &regions)?;
                     }
                 }
                 &None => {
-                    printer.print_line(&regions)?;
+                    printer.print_line(line_number, &regions)?;
                 }
             }
+
+            line_number += 1;
         }
         buffer.clear();
     }

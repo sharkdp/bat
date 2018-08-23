@@ -16,18 +16,27 @@ use errors::*;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
-pub struct Printer<'a> {
+pub trait Printer {
+    fn print_header(&mut self, filename: Option<&str>) -> Result<()>;
+    fn print_footer(&mut self) -> Result<()>;
+    fn print_line(
+        &mut self,
+        line_number: usize,
+        regions: &[(highlighting::Style, &str)],
+    ) -> Result<()>;
+}
+
+pub struct InteractivePrinter<'a> {
     handle: &'a mut Write,
     colors: Colors,
     pub config: &'a Config<'a>,
     decorations: Vec<Box<Decoration>>,
     panel_width: usize,
     pub ansi_prefix_sgr: String,
-    pub line_number: usize,
     pub line_changes: Option<LineChanges>,
 }
 
-impl<'a> Printer<'a> {
+impl<'a> InteractivePrinter<'a> {
     pub fn new(handle: &'a mut Write, config: &'a Config, theme: &Theme) -> Self {
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -66,21 +75,36 @@ impl<'a> Printer<'a> {
         }
 
         // Create printer.
-        Printer {
+        InteractivePrinter {
             panel_width,
             handle,
             colors,
             config,
             decorations,
             ansi_prefix_sgr: String::new(),
-            line_number: 0,
             line_changes: None,
         }
     }
 
-    pub fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
-        self.line_number = 0;
+    fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
+        if self.panel_width == 0 {
+            writeln!(
+                self.handle,
+                "{}",
+                self.colors.grid.paint("─".repeat(self.config.term_width))
+            )?;
+        } else {
+            let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
+            let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
+            writeln!(self.handle, "{}", self.colors.grid.paint(hline))?;
+        }
 
+        Ok(())
+    }
+}
+
+impl<'a> Printer for InteractivePrinter<'a> {
+    fn print_header(&mut self, filename: Option<&str>) -> Result<()> {
         if !self.config.output_components.header() {
             return Ok(());
         }
@@ -114,7 +138,7 @@ impl<'a> Printer<'a> {
         Ok(())
     }
 
-    pub fn print_footer(&mut self) -> Result<()> {
+    fn print_footer(&mut self) -> Result<()> {
         if self.config.output_components.grid() {
             self.print_horizontal_line('┴')
         } else {
@@ -122,8 +146,11 @@ impl<'a> Printer<'a> {
         }
     }
 
-    pub fn print_line(&mut self, regions: &[(highlighting::Style, &str)]) -> Result<()> {
-        self.line_number += 1;
+    fn print_line(
+        &mut self,
+        line_number: usize,
+        regions: &[(highlighting::Style, &str)],
+    ) -> Result<()> {
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
         let mut panel_wrap: Option<String> = None;
@@ -133,7 +160,7 @@ impl<'a> Printer<'a> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|ref d| d.generate(self.line_number, false, self))
+                .map(|ref d| d.generate(line_number, false, self))
                 .collect::<Vec<_>>();
 
             for deco in decorations {
@@ -218,7 +245,7 @@ impl<'a> Printer<'a> {
                                             self.decorations
                                                 .iter()
                                                 .map(|ref d| d
-                                                    .generate(self.line_number, true, self)
+                                                    .generate(line_number, true, self)
                                                     .text).collect::<Vec<String>>()
                                                 .join(" ")
                                         ))
@@ -256,22 +283,6 @@ impl<'a> Printer<'a> {
             }
 
             write!(self.handle, "\n")?;
-        }
-
-        Ok(())
-    }
-
-    fn print_horizontal_line(&mut self, grid_char: char) -> Result<()> {
-        if self.panel_width == 0 {
-            writeln!(
-                self.handle,
-                "{}",
-                self.colors.grid.paint("─".repeat(self.config.term_width))
-            )?;
-        } else {
-            let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
-            let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
-            writeln!(self.handle, "{}", self.colors.grid.paint(hline))?;
         }
 
         Ok(())
