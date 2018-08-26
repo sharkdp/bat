@@ -34,7 +34,7 @@ use std::process;
 
 use ansi_term::Colour::Green;
 
-use app::App;
+use app::{App, Config};
 use assets::{clear_assets, config_dir, HighlightingAssets};
 use controller::Controller;
 
@@ -128,10 +128,14 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     }
 }
 
-pub fn list_themes(assets: &HighlightingAssets) {
+pub fn list_themes(assets: &HighlightingAssets, config: &mut Config) {
     let themes = &assets.theme_set.themes;
     for (theme, _) in themes.iter() {
         println!("{}", theme);
+        config.theme = theme.to_string();
+        config.files = vec![Some("assets/hello.rs")];
+        let controller = Controller::new(&config, &assets);
+        let _res = controller.run();
     }
 }
 
@@ -146,7 +150,7 @@ fn run() -> Result<bool> {
             Ok(true)
         }
         _ => {
-            let config = app.config()?;
+            let mut config = app.config()?;
             let assets = HighlightingAssets::new();
 
             if app.matches.is_present("list-languages") {
@@ -154,7 +158,7 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
-                list_themes(&assets);
+                list_themes(&assets, &mut config);
 
                 Ok(true)
             } else {
