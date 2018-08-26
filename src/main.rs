@@ -130,12 +130,11 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
 
 pub fn list_themes(assets: &HighlightingAssets, config: &mut Config) {
     let themes = &assets.theme_set.themes;
+    config.files = vec![Some("assets/hello.rs")];
     for (theme, _) in themes.iter() {
         println!("{}", theme);
         config.theme = theme.to_string();
-        config.files = vec![Some("assets/hello.rs")];
-        let controller = Controller::new(&config, &assets);
-        let _res = controller.run();
+        let _controller = Controller::new(&config, &assets).run();
     }
 }
 
