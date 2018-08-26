@@ -171,6 +171,16 @@ impl App {
                          pre-defined style ('full')",
                     ),
             ).arg(
+                Arg::with_name("plain")
+                    .overrides_with("plain")
+                    .short("p")
+                    .conflicts_with("style")
+                    .help("Show plain style (alias for '--style=plain').")
+                    .long_help(
+                        "Only show plain style, no decorations. This is an alias for \
+                         '--style=plain'",
+                    ),
+            ).arg(
                 Arg::with_name("number")
                     .long("number")
                     .overrides_with("number")
@@ -384,6 +394,8 @@ impl App {
                 HashSet::new()
             } else if matches.is_present("number") {
                 [OutputComponent::Numbers].iter().cloned().collect()
+            } else if matches.is_present("plain") {
+                [OutputComponent::Plain].iter().cloned().collect()
             } else {
                 values_t!(matches.values_of("style"), OutputComponent)?
                     .into_iter()
