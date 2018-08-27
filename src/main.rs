@@ -131,8 +131,9 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     }
 }
 
-pub fn list_themes(assets: &HighlightingAssets, config: &mut Config) {
+pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) {
     let themes = &assets.theme_set.themes;
+    let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(OutputComponent::Plain);
     config.files = vec![Some("assets/theme_preview.rs")];
@@ -164,7 +165,7 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
-                list_themes(&assets, &mut config.clone());
+                list_themes(&assets, &config);
 
                 Ok(true)
             } else {
