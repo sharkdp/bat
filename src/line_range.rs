@@ -1,5 +1,6 @@
 use errors::*;
 
+#[derive(Clone)]
 pub struct LineRange {
     pub lower: usize,
     pub upper: usize,
