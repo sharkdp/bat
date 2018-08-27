@@ -22,6 +22,7 @@ pub enum PagingMode {
     Never,
 }
 
+#[derive(Clone)]
 pub struct Config<'a> {
     /// List of files to print
     pub files: Vec<Option<&'a str>>,

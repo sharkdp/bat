@@ -149,7 +149,7 @@ fn run() -> Result<bool> {
             Ok(true)
         }
         _ => {
-            let mut config = app.config()?;
+            let config = app.config()?;
             let assets = HighlightingAssets::new();
 
             if app.matches.is_present("list-languages") {
@@ -157,7 +157,7 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
-                list_themes(&assets, &mut config);
+                list_themes(&assets, &mut config.clone());
 
                 Ok(true)
             } else {
