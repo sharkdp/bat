@@ -31,12 +31,14 @@ mod terminal;
 use std::io;
 use std::path::Path;
 use std::process;
+use std::collections::HashSet;
 
 use ansi_term::Colour::Green;
 
 use app::{App, Config};
 use assets::{clear_assets, config_dir, HighlightingAssets};
 use controller::Controller;
+use style::{OutputComponent, OutputComponents};
 
 mod errors {
     error_chain! {
@@ -130,7 +132,10 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
 
 pub fn list_themes(assets: &HighlightingAssets, config: &mut Config) {
     let themes = &assets.theme_set.themes;
+    let mut style = HashSet::new();
+    style.insert(OutputComponent::Plain);
     config.files = vec![Some("assets/hello.rs")];
+    config.output_components = OutputComponents(style);
     for (theme, _) in themes.iter() {
         println!("{}", theme);
         config.theme = theme.to_string();
