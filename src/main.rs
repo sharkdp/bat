@@ -134,12 +134,13 @@ pub fn list_themes(assets: &HighlightingAssets, config: &mut Config) {
     let themes = &assets.theme_set.themes;
     let mut style = HashSet::new();
     style.insert(OutputComponent::Plain);
-    config.files = vec![Some("assets/hello.rs")];
+    config.files = vec![Some("assets/theme_preview.rs")];
     config.output_components = OutputComponents(style);
     for (theme, _) in themes.iter() {
-        println!("{}", theme);
+        println!("{}\n", theme);
         config.theme = theme.to_string();
         let _controller = Controller::new(&config, &assets).run();
+        println!("--------------------------------\n");
     }
 }
 
