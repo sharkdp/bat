@@ -1,0 +1,109 @@
+.TH BAT "1"
+.SH NAME
+bat \- manual page for bat
+.SH DESCRIPTION
+bat - a cat(1) clone with syntax highlighting and Git integration.
+.SH "USAGE"
+.IP
+bat [OPTIONS] [FILE]...
+.IP
+bat <SUBCOMMAND>
+.SH "OPTIONS"
+.HP
+\fB\-l\fR, \fB\-\-language\fR <language>
+.IP
+Explicitly set the language for syntax highlighting. The language can be
+specified as a name (like 'C++' or 'LaTeX') or possible file extension (like
+\&'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported language
+names and file extensions.
+.HP
+\fB\-\-list\-languages\fR
+.IP
+Display a list of supported languages for syntax highlighting.
+.HP
+\fB\-\-theme\fR <theme>
+.IP
+Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
+available themes. To set a default theme, export the BAT_THEME environment
+variable (e.g.: export BAT_THEME="TwoDark").
+.HP
+\fB\-\-list\-themes\fR
+.IP
+Display a list of supported themes for syntax highlighting.
+.HP
+\fB\-\-style\fR <style\-components>
+.IP
+Configure which elements (line numbers, file headers, grid borders, Git
+modifications, ..) to display in addition to the file contents. The argument
+is a comma\-separated list of components to display (e.g.
+\&'numbers,changes,grid') or a pre\-defined style ('full') [default: auto]
+[possible values: auto, full, plain, changes, header, grid, numbers]
+.HP
+\fB\-p\fR
+.IP
+Only show plain style, no decorations. This is an alias for '\-\-style=plain'
+.HP
+\fB\-n\fR, \fB\-\-number\fR
+.IP
+Only show line numbers, no other decorations. This is an alias for
+\&'\-\-style=numbers'
+.HP
+\fB\-\-line\-range\fR <N:M>
+.IP
+Only print the specified range of lines for each file. For example:
+.RS
+.IP "\-\-line\-range 30:40"
+prints lines 30 to 40
+.IP "\-\-line\-range :40"
+prints lines 1 to 40
+.IP "\-\-line\-range 40:"
+prints lines 40 to the end of the file
+.RE
+.HP
+\fB\-\-color\fR <when>
+.IP
+Specify when to use colored output. The automatic mode only enables colors if
+an interactive terminal is detected. [default: auto]  [possible values: auto,
+never, always]
+.HP
+\fB\-\-decorations\fR <when>
+.IP
+Specify when to use the decorations that have been specified via '\-\-style'.
+The automatic mode only enables decorations if an interactive terminal is
+detected. [default: auto]  [possible values: auto, never, always]
+.HP
+\fB\-\-paging\fR <when>
+.IP
+Specify when to use the pager. To control which pager is used, set the PAGER
+or BAT_PAGER environment variables (the latter takes precedence). The default
+pager is 'less'. To disable the pager permanently, set BAT_PAGER to an empty
+string. [default: auto]  [possible values: auto, never, always]
+.HP
+\fB\-\-wrap\fR <mode>
+.IP
+Specify the text\-wrapping mode. [default: character]
+[possible values: character, never]
+.HP
+\fB\-u\fR
+.IP
+This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The
+output is always unbuffered \- this option is simply ignored.
+.HP
+\fB\-h\fR, \fB\-\-help\fR
+.IP
+Print this help message.
+.HP
+\fB\-V\fR, \fB\-\-version\fR
+.IP
+Show version information.
+.SH "ARGS"
+.IP
+<FILE>...
+.IP
+File(s) to print / concatenate. Use a dash ('\-') or no argument at all to read
+from standard input.
+.SH "SUBCOMMANDS"
+.IP
+cache
+.IP
+Modify the syntax\-definition and theme cache. See "bat cache --help" for more information
