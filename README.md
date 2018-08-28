@@ -225,6 +225,27 @@ script as a wrapper, for example:
 less --tabs 4 -RF "$@"
 ```
 
+## Development
+
+```bash
+# Recursive clone to retrieve all submodules
+git clone --recursive https://github.com/sharkdp/bat
+
+# Build (debug version)
+cd bat
+cargo build
+
+# Run unit tests and integration tests
+cargo test
+
+# Install (release version)
+cargo install
+
+# Build a bat binary with modified syntaxes and themes
+bash assets/create.sh
+cargo install -f
+```
+
 ## Project goals and alternatives
 
 `bat` tries to achieve the following goals:
