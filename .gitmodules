@@ -46,3 +46,6 @@
 [submodule "assets/syntaxes/Nix"]
 	path = assets/syntaxes/Nix
 	url = https://github.com/wmertens/sublime-nix
+[submodule "assets/themes/zenburn"]
+	path = assets/themes/zenburn
+	url = https://github.com/colinta/zenburn.git
