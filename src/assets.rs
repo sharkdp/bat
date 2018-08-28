@@ -11,6 +11,8 @@ use syntect::parsing::{SyntaxDefinition, SyntaxSet};
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
 
+use app::InputFile;
+
 lazy_static! {
     static ref PROJECT_DIRS: ProjectDirs =
         ProjectDirs::from("", "", crate_name!()).expect("Could not get home directory");
@@ -164,10 +166,10 @@ impl HighlightingAssets {
         }
     }
 
-    pub fn get_syntax(&self, language: Option<&str>, filename: Option<&str>) -> &SyntaxDefinition {
+    pub fn get_syntax(&self, language: Option<&str>, filename: InputFile) -> &SyntaxDefinition {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
-            (None, Some(filename)) => {
+            (None, InputFile::Ordinary(filename)) => {
                 #[cfg(not(unix))]
                 let may_read_from_file = true;
 
@@ -186,7 +188,8 @@ impl HighlightingAssets {
                     None
                 }
             }
-            (None, None) => None,
+            (None, InputFile::StdIn) => None,
+            (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())

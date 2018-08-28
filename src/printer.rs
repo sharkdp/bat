@@ -10,7 +10,7 @@ use console::AnsiCodeIterator;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 
-use app::Config;
+use app::{Config, InputFile};
 use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::get_git_diff;
@@ -20,7 +20,7 @@ use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut Write, filename: Option<&str>) -> Result<()>;
+    fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()>;
     fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
     fn print_line(
         &mut self,
@@ -40,7 +40,7 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut Write, _filename: Option<&str>) -> Result<()> {
+    fn print_header(&mut self, _handle: &mut Write, _file: InputFile) -> Result<()> {
         Ok(())
     }
 
@@ -73,7 +73,7 @@ pub struct InteractivePrinter<'a> {
 }
 
 impl<'a> InteractivePrinter<'a> {
-    pub fn new(config: &'a Config, assets: &'a HighlightingAssets, filename: Option<&str>) -> Self {
+    pub fn new(config: &'a Config, assets: &'a HighlightingAssets, file: InputFile) -> Self {
         let theme = assets.get_theme(&config.theme);
 
         let colors = if config.colored_output {
@@ -113,10 +113,13 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         // Get the Git modifications
-        let line_changes = filename.and_then(|file| get_git_diff(file));
+        let line_changes = match file {
+            InputFile::Ordinary(filename) => get_git_diff(filename),
+            _ => None,
+        };
 
         // Determine the type of syntax for highlighting
-        let syntax = assets.get_syntax(config.language, filename);
+        let syntax = assets.get_syntax(config.language, file);
         let highlighter = HighlightLines::new(syntax, theme);
 
         InteractivePrinter {
@@ -148,7 +151,7 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut Write, filename: Option<&str>) -> Result<()> {
+    fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
             return Ok(());
         }
@@ -168,12 +171,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
             write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
-        writeln!(
-            handle,
-            "{}{}",
-            filename.map_or("", |_| "File: "),
-            self.colors.filename.paint(filename.unwrap_or("STDIN"))
-        )?;
+        let (prefix, name) = match file {
+            InputFile::Ordinary(filename) => ("File: ", filename),
+            _ => ("", "STDIN"),
+        };
+
+        writeln!(handle, "{}{}", prefix, self.colors.filename.paint(name))?;
 
         if self.config.output_components.grid() {
             self.print_horizontal_line(handle, '┼')?;

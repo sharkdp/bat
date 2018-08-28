@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 
-use app::Config;
+use app::{Config, InputFile};
 use assets::HighlightingAssets;
 use errors::*;
 use line_range::LineRange;
@@ -41,17 +41,20 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_file<P: Printer>(
+    fn print_file<'a, P: Printer>(
         &self,
         printer: &mut P,
         writer: &mut Write,
-        filename: Option<&str>,
+        filename: InputFile<'a>,
     ) -> Result<()> {
         let stdin = io::stdin();
         {
+            let theme_preview_file = include_bytes!("../assets/theme_preview.rs");
+
             let reader: Box<BufRead> = match filename {
-                None => Box::new(stdin.lock()),
-                Some(filename) => Box::new(BufReader::new(File::open(filename)?)),
+                InputFile::StdIn => Box::new(stdin.lock()),
+                InputFile::Ordinary(filename) => Box::new(BufReader::new(File::open(filename)?)),
+                InputFile::ThemePreviewFile => Box::new(&theme_preview_file[..]),
             };
 
             printer.print_header(writer, filename)?;
