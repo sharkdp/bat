@@ -8,6 +8,8 @@ use line_range::LineRange;
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
 
+const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
+
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
@@ -49,12 +51,10 @@ impl<'b> Controller<'b> {
     ) -> Result<()> {
         let stdin = io::stdin();
         {
-            let theme_preview_file = include_bytes!("../assets/theme_preview.rs");
-
             let reader: Box<BufRead> = match filename {
                 InputFile::StdIn => Box::new(stdin.lock()),
                 InputFile::Ordinary(filename) => Box::new(BufReader::new(File::open(filename)?)),
-                InputFile::ThemePreviewFile => Box::new(&theme_preview_file[..]),
+                InputFile::ThemePreviewFile => Box::new(THEME_PREVIEW_FILE),
             };
 
             printer.print_header(writer, filename)?;
