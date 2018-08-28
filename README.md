@@ -225,6 +225,20 @@ script as a wrapper, for example:
 less --tabs 4 -RF "$@"
 ```
 
+## Troubleshooting
+
+### Terminals & colors
+
+`bat` handles terminals *with* and *without* truecolor support. However, the colors in the syntax
+highlighting themes are not optimized for 8-bit colors and it is therefore strongly recommended
+that you use a terminal with 24-bit truecolor support (`terminator`, `konsole`, `iTerm2`, ...).
+See [this article](https://gist.github.com/XVilka/8346728) for more details and a full list of
+terminals with truecolor support.
+
+Make sure that your truecolor terminal sets the `COLORTERM` variable to either `truecolor` or
+`24bit`. Otherwise, `bat` will not be able to determine whether or not 24-bit escape sequences
+are supported (and fall back to 8-bit colors).
+
 ## Development
 
 ```bash
