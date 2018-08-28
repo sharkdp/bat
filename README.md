@@ -76,17 +76,29 @@ bat f - g  # output 'f', then stdin, then 'g'.
 
 ## Installation
 
-### From binaries
+### On Ubuntu
+*... and other Debian-based Linux distributions.*
 
-Check out the [Release page](https://github.com/sharkdp/bat/releases) for
-binary builds and Debian packages.
+Download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
+and install it via:
+``` bash
+sudo dpkg -i bat_0.5.0_amd64.deb  # adapt version number and architecture
+```
 
 #### On Arch Linux
 
-You can install via Pacman:
+You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
+from the official sources:
 
 ```bash
 pacman -S bat
+```
+
+### On Void Linux
+
+You can install `bat` via xbps-install:
+```
+xbps-install -S bat
 ```
 
 #### On FreeBSD
@@ -112,9 +124,14 @@ You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
 brew install bat
 ```
 
+### From binaries
+
+Check out the [Release page](https://github.com/sharkdp/bat/releases) for
+prebuilt versions of `bat` for many different architectures.
+
 ### From source
 
-If you want to build to compile `bat` from source, you need Rust 1.26 or
+If you want to build `bat` from source, you need Rust 1.26 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
