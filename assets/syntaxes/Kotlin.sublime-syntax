@@ -1,0 +1,398 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Kotlin
+file_extensions:
+  - kt
+  - kts
+scope: source.Kotlin
+contexts:
+  main:
+    - include: comments
+    - match: '^\s*(package)\b(?:\s*([^ ;$]+)\s*)?'
+      captures:
+        1: keyword.other.kotlin
+        2: entity.name.package.kotlin
+    - include: imports
+    - include: statements
+  classes:
+    - match: (?<!::)(?=\b(?:companion|class|object|interface)\b)
+      push:
+        - match: '(?=$|\})'
+          pop: true
+        - include: comments
+        - match: \b(companion\s*)?(class|object|interface)\b
+          captures:
+            1: storage.modifier.kotlin
+            2: storage.modifier.kotlin
+          push:
+            - match: '(?=<|\{|\(|:|$)'
+              pop: true
+            - include: comments
+            - match: \w+
+              scope: entity.name.type.class.kotlin
+        - match: <
+          push:
+            - match: ">"
+              pop: true
+            - include: generics
+        - match: \(
+          push:
+            - match: \)
+              pop: true
+            - include: parameters
+        - match: (:)
+          captures:
+            1: keyword.operator.declaration.kotlin
+          push:
+            - match: "(?={|$)"
+              pop: true
+            - match: \w+
+              scope: entity.other.inherited-class.kotlin
+            - match: \(
+              push:
+                - match: \)
+                  pop: true
+                - include: expressions
+        - match: '\{'
+          push:
+            - match: '\}'
+              pop: true
+            - include: statements
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.kotlin
+      push:
+        - meta_scope: comment.block.kotlin
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.kotlin
+          pop: true
+    - match: \s*((//).*$\n?)
+      captures:
+        1: comment.line.double-slash.kotlin
+        2: punctuation.definition.comment.kotlin
+  constants:
+    - match: \b(true|false|null|this|super)\b
+      scope: constant.language.kotlin
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)([LlFf])?\b'
+      scope: constant.numeric.kotlin
+    - match: '\b([A-Z][A-Z0-9_]+)\b'
+      scope: constant.other.kotlin
+  expressions:
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: expressions
+    - include: types
+    - include: strings
+    - include: constants
+    - include: comments
+    - include: keywords
+  functions:
+    - match: (?=\s*\b(?:fun)\b)
+      push:
+        - match: '(?=$|\})'
+          pop: true
+        - match: \b(fun)\b
+          captures:
+            1: keyword.other.kotlin
+          push:
+            - match: (?=\()
+              pop: true
+            - match: <
+              push:
+                - match: ">"
+                  pop: true
+                - include: generics
+            - match: '([\.<\?>\w]+\.)?(\w+)'
+              captures:
+                2: entity.name.function.kotlin
+        - match: \(
+          push:
+            - match: \)
+              pop: true
+            - include: parameters
+        - match: (:)
+          captures:
+            1: keyword.operator.declaration.kotlin
+          push:
+            - match: "(?={|=|$)"
+              pop: true
+            - include: types
+        - match: '\{'
+          push:
+            - match: '(?=\})'
+              pop: true
+            - include: statements
+        - match: (=)
+          captures:
+            1: keyword.operator.assignment.kotlin
+          push:
+            - match: (?=$)
+              pop: true
+            - include: expressions
+  generics:
+    - match: (:)
+      captures:
+        1: keyword.operator.declaration.kotlin
+      push:
+        - match: (?=,|>)
+          pop: true
+        - include: types
+    - include: keywords
+    - match: \w+
+      scope: storage.type.generic.kotlin
+  getters-and-setters:
+    - match: \b(get)\b\s*\(\s*\)
+      captures:
+        1: entity.name.function.kotlin
+      push:
+        - match: '\}|(?=\bset\b)|$'
+          pop: true
+        - match: (=)
+          captures:
+            1: keyword.operator.assignment.kotlin
+          push:
+            - match: (?=$|\bset\b)
+              pop: true
+            - include: expressions
+        - match: '\{'
+          push:
+            - match: '\}'
+              pop: true
+            - include: expressions
+    - match: \b(set)\b\s*(?=\()
+      captures:
+        1: entity.name.function.kotlin
+      push:
+        - match: '\}|(?=\bget\b)|$'
+          pop: true
+        - match: \(
+          push:
+            - match: \)
+              pop: true
+            - include: parameters
+        - match: (=)
+          captures:
+            1: keyword.operator.assignment.kotlin
+          push:
+            - match: (?=$|\bset\b)
+              pop: true
+            - include: expressions
+        - match: '\{'
+          push:
+            - match: '\}'
+              pop: true
+            - include: expressions
+  imports:
+    - match: '^\s*(import)\s+[^ $]+\s+(as)?'
+      captures:
+        1: keyword.other.kotlin
+        2: keyword.other.kotlin
+  keywords:
+    - match: \b(var|val|public|private|protected|abstract|final|sealed|enum|open|attribute|annotation|override|inline|vararg|in|out|internal|data|tailrec|operator|infix|const|yield|typealias|typeof|reified|suspend)\b
+      scope: storage.modifier.kotlin
+    - match: \b(try|catch|finally|throw)\b
+      scope: keyword.control.catch-exception.kotlin
+    - match: \b(if|else|while|for|do|return|when|where|break|continue)\b
+      scope: keyword.control.kotlin
+    - match: \b(in|is|!in|!is|as|as\?|assert)\b
+      scope: keyword.operator.kotlin
+    - match: (==|!=|===|!==|<=|>=|<|>)
+      scope: keyword.operator.comparison.kotlin
+    - match: (=)
+      scope: keyword.operator.assignment.kotlin
+    - match: (::)
+      scope: keyword.operator.kotlin
+    - match: (:)
+      scope: keyword.operator.declaration.kotlin
+    - match: \b(by)\b
+      scope: keyword.other.by.kotlin
+    - match: (\?\.)
+      scope: keyword.operator.safenav.kotlin
+    - match: (\.)
+      scope: keyword.operator.dot.kotlin
+    - match: (\?:)
+      scope: keyword.operator.elvis.kotlin
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.kotlin
+    - match: (\+=|\-=|\*=|\/=)
+      scope: keyword.operator.arithmetic.assign.kotlin
+    - match: (\.\.)
+      scope: keyword.operator.range.kotlin
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.kotlin
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.kotlin
+    - match: (;)
+      scope: punctuation.terminator.kotlin
+  namespaces:
+    - match: \b(namespace)\b
+      scope: keyword.other.kotlin
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: statements
+  parameters:
+    - match: (:)
+      captures:
+        1: keyword.operator.declaration.kotlin
+      push:
+        - match: (?=,|\)|=)
+          pop: true
+        - include: types
+    - match: (=)
+      captures:
+        1: keyword.operator.declaration.kotlin
+      push:
+        - match: (?=,|\))
+          pop: true
+        - include: expressions
+    - include: keywords
+    - match: \w+
+      scope: variable.parameter.function.kotlin
+  statements:
+    - include: namespaces
+    - include: typedefs
+    - include: classes
+    - include: functions
+    - include: variables
+    - include: getters-and-setters
+    - include: expressions
+  strings:
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.kotlin
+      push:
+        - meta_scope: string.quoted.third.kotlin
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.kotlin
+          pop: true
+        - match: '(\$\w+|\$\{[^\}]+\})'
+          scope: variable.parameter.template.kotlin
+        - match: \\.
+          scope: constant.character.escape.kotlin
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.kotlin
+      push:
+        - meta_scope: string.quoted.double.kotlin
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.kotlin
+          pop: true
+        - match: '(\$\w+|\$\{[^\}]+\})'
+          scope: variable.parameter.template.kotlin
+        - match: \\.
+          scope: constant.character.escape.kotlin
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.kotlin
+      push:
+        - meta_scope: string.quoted.single.kotlin
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.kotlin
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.kotlin
+    - match: "`"
+      captures:
+        0: punctuation.definition.string.begin.kotlin
+      push:
+        - meta_scope: string.quoted.single.kotlin
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.end.kotlin
+          pop: true
+  typedefs:
+    - match: (?=\s*(?:type))
+      push:
+        - match: (?=$)
+          pop: true
+        - match: \b(type)\b
+          scope: keyword.other.kotlin
+        - match: <
+          push:
+            - match: ">"
+              pop: true
+            - include: generics
+        - include: expressions
+  types:
+    - match: \b(Nothing|Any|Unit|String|CharSequence|Int|Boolean|Char|Long|Double|Float|Short|Byte|dynamic)\b
+      scope: storage.type.buildin.kotlin
+    - match: \b(IntArray|BooleanArray|CharArray|LongArray|DoubleArray|FloatArray|ShortArray|ByteArray)\b
+      scope: storage.type.buildin.array.kotlin
+    - match: \b(Array|Collection|List|Map|Set|MutableList|MutableMap|MutableSet|Sequence)<\b
+      captures:
+        1: storage.type.buildin.collection.kotlin
+      push:
+        - match: ">"
+          pop: true
+        - include: types
+        - include: keywords
+    - match: \w+<
+      push:
+        - match: ">"
+          pop: true
+        - include: types
+        - include: keywords
+    - match: '\{'
+      push:
+        - match: '\}'
+          pop: true
+        - include: statements
+    - match: \(
+      push:
+        - match: \)
+          pop: true
+        - include: types
+    - match: (->)
+      scope: keyword.operator.declaration.kotlin
+  variables:
+    - match: (?=\s*\b(?:var|val)\b)
+      push:
+        - match: (?=:|=|(\b(by)\b)|$)
+          pop: true
+        - match: \b(var|val)\b
+          captures:
+            1: keyword.other.kotlin
+          push:
+            - match: (?=:|=|(\b(by)\b)|$)
+              pop: true
+            - match: <
+              push:
+                - match: ">"
+                  pop: true
+                - include: generics
+            - match: '([\.<\?>\w]+\.)?(\w+)'
+              captures:
+                2: entity.name.variable.kotlin
+        - match: (:)
+          captures:
+            1: keyword.operator.declaration.kotlin
+          push:
+            - match: (?==|$)
+              pop: true
+            - include: types
+            - include: getters-and-setters
+        - match: \b(by)\b
+          captures:
+            1: keyword.other.kotlin
+          push:
+            - match: (?=$)
+              pop: true
+            - include: expressions
+        - match: (=)
+          captures:
+            1: keyword.operator.assignment.kotlin
+          push:
+            - match: (?=$)
+              pop: true
+            - include: expressions
+            - include: getters-and-setters

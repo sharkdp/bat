@@ -49,3 +49,15 @@
 [submodule "assets/themes/zenburn"]
 	path = assets/themes/zenburn
 	url = https://github.com/colinta/zenburn.git
+[submodule "assets/syntaxes/Kotlin"]
+	path = assets/syntaxes/Kotlin
+	url = https://github.com/vkostyukov/kotlin-sublime-package
+[submodule "assets/syntaxes/Elm"]
+	path = assets/syntaxes/Elm
+	url = https://github.com/elm-community/SublimeElmLanguageSupport
+[submodule "assets/syntaxes/TypeScript"]
+	path = assets/syntaxes/TypeScript
+	url = https://github.com/Microsoft/TypeScript-Sublime-Plugin
+[submodule "assets/syntaxes/Puppet"]
+	path = assets/syntaxes/Puppet
+	url = https://github.com/russCloak/SublimePuppet
