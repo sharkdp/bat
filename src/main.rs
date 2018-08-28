@@ -28,10 +28,10 @@ mod printer;
 mod style;
 mod terminal;
 
+use std::collections::HashSet;
 use std::io;
 use std::path::Path;
 use std::process;
-use std::collections::HashSet;
 
 use ansi_term::Colour::Green;
 use ansi_term::Style;
