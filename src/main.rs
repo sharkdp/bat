@@ -139,10 +139,10 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) {
     config.files = vec![Some("assets/theme_preview.rs")];
     config.output_components = OutputComponents(style);
     for (theme, _) in themes.iter() {
-        println!("{}\n", Style::new().bold().paint(theme.to_string()));
+        println!("Theme: {}\n", Style::new().bold().paint(theme.to_string()));
         config.theme = theme.to_string();
         let _controller = Controller::new(&config, &assets).run();
-        println!("--------------------------------\n");
+        println!()
     }
 }
 
