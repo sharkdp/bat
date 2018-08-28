@@ -22,10 +22,17 @@ pub enum PagingMode {
     Never,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum InputFile<'a> {
+    StdIn,
+    Ordinary(&'a str),
+    ThemePreviewFile,
+}
+
 #[derive(Clone)]
 pub struct Config<'a> {
     /// List of files to print
-    pub files: Vec<Option<&'a str>>,
+    pub files: Vec<InputFile<'a>>,
 
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
@@ -341,7 +348,7 @@ impl App {
             paging_mode: match self.matches.value_of("paging") {
                 Some("always") => PagingMode::Always,
                 Some("never") => PagingMode::Never,
-                Some("auto") | _ => if files.contains(&None) {
+                Some("auto") | _ => if files.contains(&InputFile::StdIn) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
@@ -373,19 +380,19 @@ impl App {
         })
     }
 
-    fn files(&self) -> Vec<Option<&str>> {
+    fn files(&self) -> Vec<InputFile> {
         self.matches
             .values_of("FILE")
             .map(|values| {
                 values
                     .map(|filename| {
                         if filename == "-" {
-                            None
+                            InputFile::StdIn
                         } else {
-                            Some(filename)
+                            InputFile::Ordinary(filename)
                         }
                     }).collect()
-            }).unwrap_or_else(|| vec![None]) // read from stdin (None) if no args are given
+            }).unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
     fn output_components(&self) -> Result<OutputComponents> {

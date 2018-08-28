@@ -36,7 +36,7 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use app::{App, Config};
+use app::{App, Config, InputFile};
 use assets::{clear_assets, config_dir, HighlightingAssets};
 use controller::Controller;
 use style::{OutputComponent, OutputComponents};
@@ -136,7 +136,7 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) {
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(OutputComponent::Plain);
-    config.files = vec![Some("assets/theme_preview.rs")];
+    config.files = vec![InputFile::ThemePreviewFile];
     config.output_components = OutputComponents(style);
     for (theme, _) in themes.iter() {
         println!("Theme: {}\n", Style::new().bold().paint(theme.to_string()));
