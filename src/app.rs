@@ -182,7 +182,9 @@ impl App {
                 Arg::with_name("plain")
                     .overrides_with("plain")
                     .short("p")
+                    .long("plain")
                     .conflicts_with("style")
+                    .conflicts_with("number")
                     .help("Show plain style (alias for '--style=plain').")
                     .long_help(
                         "Only show plain style, no decorations. This is an alias for \
