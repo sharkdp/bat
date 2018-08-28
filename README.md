@@ -85,7 +85,7 @@ and install it via:
 sudo dpkg -i bat_0.5.0_amd64.deb  # adapt version number and architecture
 ```
 
-#### On Arch Linux
+### On Arch Linux
 
 You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
 from the official sources:
@@ -101,7 +101,7 @@ You can install `bat` via xbps-install:
 xbps-install -S bat
 ```
 
-#### On FreeBSD
+### On FreeBSD
 
 You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
 
@@ -116,7 +116,7 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
-#### On macOS
+### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
 
