@@ -1,0 +1,41 @@
+environment:
+  global:
+    TARGET: x86_64-pc-windows-msvc
+    RUST_VERSION: stable    
+    CRATE_NAME: bat
+    CARGO_HOME: "c:\\cargo"
+    RUSTUP_HOME: "c:\\rustup"
+
+install:
+  - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+  - rustup-init.exe -y --default-host %TARGET%
+  - set PATH=%PATH%;C:\cargo\bin
+  - rustc -Vv
+  - cargo -V
+  
+build: false
+
+before_deploy:
+  # Generate artifacts for release
+  - cargo build --release --verbose
+  - ps: ci\before_deploy.ps1
+
+deploy:
+  description: 'Automatically deployed release'
+  artifact: /.*\.zip/
+  auth_token: 
+    secure: rqjjigrWMvBgDaONpurfMQvZbFgR6pD8XQGMCfh/UfoDdwJdjEuMYu11tMRxelOR
+  provider: GitHub
+  on:
+    RUST_VERSION: stable
+    appveyor_repo_tag: true
+    
+cache:
+  - C:\Users\appveyor\.cargo\registry
+  - target
+
+notifications:
+  - provider: Email
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false 
