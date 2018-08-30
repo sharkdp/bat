@@ -26,6 +26,11 @@ before_deploy:
 deploy:
   description: 'Automatically deployed release'
   artifact: /.*\.zip/
+  # Here's how:
+  # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
+  # `public_repo` scope enabled
+  # - Then go to 'https://ci.appveyor.com/tools/encrypt' and enter the newly generated token.
+  # - Enter the "encrypted value" below
   auth_token: 
     secure: rqjjigrWMvBgDaONpurfMQvZbFgR6pD8XQGMCfh/UfoDdwJdjEuMYu11tMRxelOR
   provider: GitHub
