@@ -271,6 +271,13 @@ impl App {
                          'unbuffered'). The output is always unbuffered - this option \
                          is simply ignored.",
                     ),
+            ).arg(
+                Arg::with_name("terminal-width")
+                    .long("terminal-width")
+                    .takes_value(true)
+                    .value_name("width")
+                    .hidden(true)
+                    .help("Set the width of the terminal"),
             ).subcommand(
                 SubCommand::with_name("cache")
                     .about("Modify the syntax-definition and theme cache")
@@ -367,7 +374,11 @@ impl App {
                     }
                 },
             },
-            term_width: Term::stdout().size().1 as usize,
+            term_width: self
+                .matches
+                .value_of("terminal-width")
+                .and_then(|w| w.parse().ok())
+                .unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
