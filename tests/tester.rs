@@ -44,6 +44,7 @@ impl BatTester {
             .args(&[
                 "sample.rs",
                 "--decorations=always",
+                "--terminal-width=80",
                 &format!("--style={}", style),
             ]).output()
             .expect("bat failed");
