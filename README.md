@@ -83,7 +83,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 Download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
 ``` bash
-sudo dpkg -i bat_0.6.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.6.1_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Arch Linux
