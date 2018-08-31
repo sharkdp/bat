@@ -23,7 +23,6 @@ static STYLES: &'static [&'static str] = &[
 ];
 
 #[test]
-#[cfg(not(windows))]
 fn test_snapshots() {
     let bat_tester = BatTester::new();
 
