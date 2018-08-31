@@ -30,6 +30,8 @@ mod terminal;
 
 use std::collections::HashSet;
 use std::io;
+use std::io::stdout;
+use std::io::Write;
 use std::path::Path;
 use std::process;
 
@@ -80,13 +82,13 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     } else if matches.is_present("clear") {
         clear_assets();
     } else if matches.is_present("config-dir") {
-        println!("{}", config_dir());
+        writeln!(stdout(), "{}", config_dir())?;
     }
 
     Ok(())
 }
 
-pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
+pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<()> {
     let mut languages = assets
         .syntax_set
         .syntaxes()
@@ -107,7 +109,13 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
     let desired_width = term_width - longest - separator.len();
 
     for lang in languages {
-        print!("{:width$}{}", lang.name, separator, width = longest);
+        write!(
+            stdout(),
+            "{:width$}{}",
+            lang.name,
+            separator,
+            width = longest
+        )?;
 
         // Number of characters on this line so far, wrap before `desired_width`
         let mut num_chars = 0;
@@ -118,20 +126,22 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) {
             let new_chars = word.len() + comma_separator.len();
             if num_chars + new_chars >= desired_width {
                 num_chars = 0;
-                print!("\n{:width$}{}", "", separator, width = longest);
+                write!(stdout(), "\n{:width$}{}", "", separator, width = longest)?;
             }
 
             num_chars += new_chars;
-            print!("{}", Green.paint(&word[..]));
+            write!(stdout(), "{}", Green.paint(&word[..]))?;
             if extension.peek().is_some() {
-                print!("{}", comma_separator);
+                write!(stdout(), "{}", comma_separator)?;
             }
         }
-        println!();
+        writeln!(stdout())?;
     }
+
+    Ok(())
 }
 
-pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) {
+pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) -> Result<()> {
     let themes = &assets.theme_set.themes;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
@@ -139,11 +149,17 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) {
     config.files = vec![InputFile::ThemePreviewFile];
     config.output_components = OutputComponents(style);
     for (theme, _) in themes.iter() {
-        println!("Theme: {}\n", Style::new().bold().paint(theme.to_string()));
+        writeln!(
+            stdout(),
+            "Theme: {}\n",
+            Style::new().bold().paint(theme.to_string())
+        )?;
         config.theme = theme.to_string();
         let _controller = Controller::new(&config, &assets).run();
-        println!()
+        writeln!(stdout())?;
     }
+
+    Ok(())
 }
 
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
@@ -161,11 +177,11 @@ fn run() -> Result<bool> {
             let assets = HighlightingAssets::new();
 
             if app.matches.is_present("list-languages") {
-                list_languages(&assets, config.term_width);
+                list_languages(&assets, config.term_width)?;
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
-                list_themes(&assets, &config);
+                list_themes(&assets, &config)?;
 
                 Ok(true)
             } else {
