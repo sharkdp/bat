@@ -16,7 +16,9 @@ pub type LineChanges = HashMap<u32, LineChange>;
 pub fn get_git_diff(filename: &str) -> Option<LineChanges> {
     let repo = Repository::discover(&filename).ok()?;
     let path_absolute = fs::canonicalize(&filename).ok()?;
-    let path_relative_to_repo = path_absolute.strip_prefix(repo.workdir()?).ok()?;
+    let path_relative_to_repo = path_absolute
+        .strip_prefix(fs::canonicalize(repo.workdir()?).ok()?)
+        .ok()?;
 
     let mut diff_options = DiffOptions::new();
     let pathspec = path_relative_to_repo.into_c_string().ok()?;
