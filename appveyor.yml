@@ -1,7 +1,7 @@
 environment:
   global:
     TARGET: x86_64-pc-windows-msvc
-    RUST_VERSION: stable    
+    RUST_VERSION: stable
     CRATE_NAME: bat
     CARGO_HOME: "c:\\cargo"
     RUSTUP_HOME: "c:\\rustup"
@@ -12,7 +12,7 @@ install:
   - set PATH=%PATH%;C:\cargo\bin
   - rustc -Vv
   - cargo -V
-  
+
 build: false
 test_script:
   - cargo test --target %TARGET% --verbose
@@ -31,13 +31,13 @@ deploy:
   # `public_repo` scope enabled
   # - Then go to 'https://ci.appveyor.com/tools/encrypt' and enter the newly generated token.
   # - Enter the "encrypted value" below
-  auth_token: 
-    secure: rqjjigrWMvBgDaONpurfMQvZbFgR6pD8XQGMCfh/UfoDdwJdjEuMYu11tMRxelOR
+  auth_token:
+    secure: oO4/J+hcFXgXcEqEc8gzlQNqLG0IxU78s4EyH+uczGdsyWajb3yipxPR6nXUvmoj
   provider: GitHub
   on:
     RUST_VERSION: stable
     appveyor_repo_tag: true
-    
+
 cache:
   - C:\Users\appveyor\.cargo\registry
   - target
@@ -46,4 +46,4 @@ notifications:
   - provider: Email
     on_build_success: false
     on_build_failure: false
-    on_build_status_changed: false 
+    on_build_status_changed: false
