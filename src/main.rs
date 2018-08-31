@@ -30,7 +30,6 @@ mod terminal;
 
 use std::collections::HashSet;
 use std::io;
-use std::io::stdout;
 use std::io::Write;
 use std::path::Path;
 use std::process;
@@ -82,7 +81,7 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     } else if matches.is_present("clear") {
         clear_assets();
     } else if matches.is_present("config-dir") {
-        writeln!(stdout(), "{}", config_dir())?;
+        writeln!(io::stdout(), "{}", config_dir())?;
     }
 
     Ok(())
@@ -108,14 +107,11 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<
     // Line-wrapping for the possible file extension overflow.
     let desired_width = term_width - longest - separator.len();
 
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
+
     for lang in languages {
-        write!(
-            stdout(),
-            "{:width$}{}",
-            lang.name,
-            separator,
-            width = longest
-        )?;
+        write!(stdout, "{:width$}{}", lang.name, separator, width = longest)?;
 
         // Number of characters on this line so far, wrap before `desired_width`
         let mut num_chars = 0;
@@ -126,16 +122,16 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<
             let new_chars = word.len() + comma_separator.len();
             if num_chars + new_chars >= desired_width {
                 num_chars = 0;
-                write!(stdout(), "\n{:width$}{}", "", separator, width = longest)?;
+                write!(stdout, "\n{:width$}{}", "", separator, width = longest)?;
             }
 
             num_chars += new_chars;
-            write!(stdout(), "{}", Green.paint(&word[..]))?;
+            write!(stdout, "{}", Green.paint(&word[..]))?;
             if extension.peek().is_some() {
-                write!(stdout(), "{}", comma_separator)?;
+                write!(stdout, "{}", comma_separator)?;
             }
         }
-        writeln!(stdout())?;
+        writeln!(stdout)?;
     }
 
     Ok(())
@@ -148,15 +144,19 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) -> Result<()> {
     style.insert(OutputComponent::Plain);
     config.files = vec![InputFile::ThemePreviewFile];
     config.output_components = OutputComponents(style);
+
+    let stdout = io::stdout();
+    let mut stdout = stdout.lock();
+
     for (theme, _) in themes.iter() {
         writeln!(
-            stdout(),
+            stdout,
             "Theme: {}\n",
             Style::new().bold().paint(theme.to_string())
         )?;
         config.theme = theme.to_string();
         let _controller = Controller::new(&config, &assets).run();
-        writeln!(stdout())?;
+        writeln!(stdout)?;
     }
 
     Ok(())
