@@ -87,7 +87,7 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     Ok(())
 }
 
-pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<()> {
+pub fn list_languages(assets: &HighlightingAssets, config: &Config) -> Result<()> {
     let mut languages = assets
         .syntax_set
         .syntaxes()
@@ -105,10 +105,16 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<
     let comma_separator = ", ";
     let separator = " ";
     // Line-wrapping for the possible file extension overflow.
-    let desired_width = term_width - longest - separator.len();
+    let desired_width = config.term_width - longest - separator.len();
 
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
+
+    let style = if config.colored_output {
+        Green.normal()
+    } else {
+        Style::default()
+    };
 
     for lang in languages {
         write!(stdout, "{:width$}{}", lang.name, separator, width = longest)?;
@@ -126,7 +132,7 @@ pub fn list_languages(assets: &HighlightingAssets, term_width: usize) -> Result<
             }
 
             num_chars += new_chars;
-            write!(stdout, "{}", Green.paint(&word[..]))?;
+            write!(stdout, "{}", style.paint(&word[..]))?;
             if extension.peek().is_some() {
                 write!(stdout, "{}", comma_separator)?;
             }
@@ -148,15 +154,21 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) -> Result<()> {
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 
-    for (theme, _) in themes.iter() {
-        writeln!(
-            stdout,
-            "Theme: {}\n",
-            Style::new().bold().paint(theme.to_string())
-        )?;
-        config.theme = theme.to_string();
-        let _controller = Controller::new(&config, &assets).run();
-        writeln!(stdout)?;
+    if config.colored_output {
+        for (theme, _) in themes.iter() {
+            writeln!(
+                stdout,
+                "Theme: {}\n",
+                Style::new().bold().paint(theme.to_string())
+            )?;
+            config.theme = theme.to_string();
+            let _controller = Controller::new(&config, &assets).run();
+            writeln!(stdout)?;
+        }
+    } else {
+        for (theme, _) in themes.iter() {
+            writeln!(stdout, "{}", theme)?;
+        }
     }
 
     Ok(())
@@ -177,7 +189,7 @@ fn run() -> Result<bool> {
             let assets = HighlightingAssets::new();
 
             if app.matches.is_present("list-languages") {
-                list_languages(&assets, config.term_width)?;
+                list_languages(&assets, &config)?;
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
