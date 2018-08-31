@@ -125,6 +125,10 @@ You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
 brew install bat
 ```
 
+### On Windows
+
+You can download pre-built binaries from the [Release page](https://github.com/sharkdp/bat/releases).
+
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
