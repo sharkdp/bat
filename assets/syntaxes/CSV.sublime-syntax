@@ -1,0 +1,46 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Advanced CSV
+file_extensions:
+  - csv
+  - tsv
+scope: text.advanced_csv
+contexts:
+  main:
+    - match: (\")
+      captures:
+        1: string.quoted.double.advanced_csv
+      push:
+        - meta_scope: meta.quoted.advanced_csv
+        - match: (\")
+          captures:
+            1: string.quoted.double.advanced_csv
+          pop: true
+        - include: main
+    - match: '(\[([+-]?\d*)(\:)?([+-]?\d*)(\,)?([+-]?\d*)(\:)?([+-]?\d*)\])?\s*([<>v^])?\s*(=)'
+      captures:
+        1: keyword.operator.advanced_csv
+        2: constant.numeric.formula.advanced_csv
+        4: constant.numeric.formula.advanced_csv
+        6: constant.numeric.formula.advanced_csv
+        8: constant.numeric.formula.advanced_csv
+        9: keyword.operator.advanced_csv
+        10: keyword.operator.advanced_csv
+      push:
+        - meta_scope: meta.range.advanced_csv
+        - match: (?=(\")|$)
+          pop: true
+        - include: scope:source.python
+    - match: '(?<=^|,|\s|\")([0-9.eE+-]+)(?=$|,|\s|\")'
+      scope: meta.number.advanced_csv
+      captures:
+        1: constant.numeric.advanced_csv
+    - match: '(?<=^|,|\s|\")([^, \t\"]+)(?=$|,|\s|\")'
+      scope: meta.nonnumber.advanced_csv
+      captures:
+        1: storage.type.advanced_csv
+    - match: (\,)
+      scope: meta.delimiter.advanced_csv
+      captures:
+        1: keyword.operator.advanced_csv

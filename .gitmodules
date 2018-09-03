@@ -61,3 +61,6 @@
 [submodule "assets/syntaxes/Puppet"]
 	path = assets/syntaxes/Puppet
 	url = https://github.com/russCloak/SublimePuppet
+[submodule "assets/syntaxes/CSV"]
+	path = assets/syntaxes/CSV
+	url = https://github.com/wadetb/Sublime-Text-Advanced-CSV
