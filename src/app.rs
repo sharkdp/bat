@@ -84,10 +84,10 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let interactive_output = atty::is(Stream::Stdout);
-
         #[cfg(windows)]
-        let interactive_output = interactive_output && ansi_term::enable_ansi_support().is_ok();
+        let _ = ansi_term::enable_ansi_support();
+
+        let interactive_output = atty::is(Stream::Stdout);
 
         App {
             matches: Self::matches(interactive_output),
@@ -335,15 +335,6 @@ impl App {
     pub fn config(&self) -> Result<Config> {
         let files = self.files();
 
-        let colored_output = match self.matches.value_of("color") {
-            Some("always") => true,
-            Some("never") => false,
-            Some("auto") | _ => self.interactive_output,
-        };
-
-        #[cfg(windows)]
-        let colored_output = colored_output && ansi_term::enable_ansi_support().is_ok();
-
         Ok(Config {
             true_color: is_truecolor_terminal(),
             output_components: self.output_components()?,
@@ -358,7 +349,11 @@ impl App {
                     Some("never") | _ => OutputWrap::None,
                 }
             },
-            colored_output,
+            colored_output: match self.matches.value_of("color") {
+                Some("always") => true,
+                Some("never") => false,
+                Some("auto") | _ => self.interactive_output,
+            },
             paging_mode: match self.matches.value_of("paging") {
                 Some("always") => PagingMode::Always,
                 Some("never") => PagingMode::Never,
