@@ -244,6 +244,11 @@ Make sure that your truecolor terminal sets the `COLORTERM` variable to either `
 `24bit`. Otherwise, `bat` will not be able to determine whether or not 24-bit escape sequences
 are supported (and fall back to 8-bit colors).
 
+### Line numbers and grid are hardly visible
+
+Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
+`OneHalfLight` themes provide grid and line colors that are brighter.
+
 ## Development
 
 ```bash
