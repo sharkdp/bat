@@ -128,8 +128,8 @@ brew install bat
 ### On Windows
 
 You can download pre-built binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+or install it with [scoop](https://scoop.sh/):
 
-or download it through [scoop](https://scoop.sh/)
 ```bash
 scoop install bat
 ```
