@@ -181,8 +181,21 @@ fn run() -> Result<bool> {
 
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
-            run_cache_subcommand(cache_matches)?;
-            Ok(true)
+            // If there is a file named 'cache' in the current working directory,
+            // arguments for subcommand 'cache' are not mandatory.
+            // If there are non-zero arguments, execute the subcommand cache, else, open the file cache.
+            if !cache_matches.args.is_empty() {
+                run_cache_subcommand(cache_matches)?;
+                Ok(true)
+            } else {
+                let mut config = app.config()?;
+                let assets = HighlightingAssets::new();
+
+                config.files = vec![InputFile::Ordinary(&"cache")];
+                
+                let controller = Controller::new(&config, &assets);
+                controller.run()
+            }
         }
         _ => {
             let config = app.config()?;

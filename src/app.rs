@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::env;
+use std::path::Path;
 
 use atty::{self, Stream};
 
@@ -9,7 +10,6 @@ use console::Term;
 
 #[cfg(windows)]
 use ansi_term;
-
 use assets::BAT_THEME_DEFAULT;
 use errors::*;
 use line_range::LineRange;
@@ -102,6 +102,10 @@ impl App {
             AppSettings::ColorNever
         };
 
+        // Check if the current directory contains a file name cache, if it does
+        // do not make the arguements for subcommand 'cache' required.
+        let arg_group_required = !Path::new("./cache").exists();
+
         ClapApp::new(crate_name!())
             .version(crate_version!())
             .global_setting(clap_color_setting)
@@ -125,8 +129,7 @@ impl App {
                          to read from standard input.",
                     ).multiple(true)
                     .empty_values(false),
-                    )
-            .arg(
+            ).arg(
                 Arg::with_name("language")
                     .short("l")
                     .long("language")
@@ -303,7 +306,7 @@ impl App {
                     ).group(
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
-                            .required(true),
+                            .required(arg_group_required),
                     ).arg(
                         Arg::with_name("source")
                             .long("source")
