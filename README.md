@@ -235,6 +235,9 @@ script as a wrapper, for example:
 less --tabs 4 -RF "$@"
 ```
 
+Alternatively if you want to pass options to less, you can also use the enviromental variable 'LESS'.
+So if you wanted to do the item above, you would set set LESS equal to '--tabs 4 -RF "$@"'.
+
 ## Troubleshooting
 
 ### Terminals & colors
