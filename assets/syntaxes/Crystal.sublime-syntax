@@ -1,0 +1,1036 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Crystal
+comment: |
+  TODO: unresolved issues
+
+      text:
+      "p << end
+      print me!
+      end"
+      symptoms:
+      not recognized as a heredoc
+      solution:
+      there is no way to distinguish perfectly between the << operator and the start
+      of a heredoc. Currently, we require assignment to recognize a heredoc. More
+      refinement is possible.
+      • Heredocs with indented terminators (<<-) are always distinguishable, however.
+      • Nested heredocs are not really supportable at present
+
+      text:
+      print <<-'THERE'
+      This is single quoted.
+      The above used #{Time.now}
+      THERE
+      symtoms:
+      From Programming Ruby p306; should be a non-interpolated heredoc.
+
+      text:
+      "a\332a"
+      symptoms:
+      '\332' is not recognized as slash3.. which should be octal 332.
+      solution:
+      plain regexp.. should be easy.
+
+      text:
+      val?(a):p(b)
+      val?'a':'b'
+      symptoms:
+      ':p' is recognized as a symbol.. its 2 things ':' and 'p'.
+      :'b' has same problem.
+      solution:
+      ternary operator rule, precedence stuff, symbol rule.
+      but also consider 'a.b?(:c)' ??
+file_extensions:
+  - cr
+first_line_match: ^#!/.*\bcrystal
+scope: source.crystal
+contexts:
+  main:
+    - match: |-
+        (?x)
+          ^
+          \s*
+          (abstract)?
+          \s*
+          (class|struct|union)
+          \s+
+          (
+            (
+              [.A-Z_:\x{80}-\x{10FFFF}][.\w:\x{80}-\x{10FFFF}]*
+              (\(([,\s.a-zA-Z0-9_:\x{80}-\x{10FFFF}]+)\))?
+              (
+                \s*(<)\s*
+                [.:A-Z\x{80}-\x{10FFFF}][.:\w\x{80}-\x{10FFFF}]*
+                (\(([.a-zA-Z0-9_:]+\s,)\))?
+              )?
+            )|(
+              (<<)
+              \s*
+              [.A-Z0-9_:\x{80}-\x{10FFFF}]+
+            )
+          )
+      scope: meta.class.crystal
+      captures:
+        1: keyword.control.class.crystal
+        2: keyword.control.class.crystal
+        3: entity.name.type.class.crystal
+        5: punctuation.separator.crystal
+        6: support.class.other.type-param.crystal
+        7: entity.other.inherited-class.crystal
+        8: punctuation.separator.crystal
+        9: punctuation.separator.crystal
+        10: support.class.other.type-param.crystal
+        11: punctuation.definition.variable.crystal
+    - match: '^\s*(module)\s+(([A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(::))?([A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(::))?([A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(::))*[A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*)'
+      scope: meta.module.crystal
+      captures:
+        1: keyword.control.module.crystal
+        2: entity.name.type.module.crystal
+        3: entity.other.inherited-class.module.first.crystal
+        4: punctuation.separator.inheritance.crystal
+        5: entity.other.inherited-class.module.second.crystal
+        6: punctuation.separator.inheritance.crystal
+        7: entity.other.inherited-class.module.third.crystal
+        8: punctuation.separator.inheritance.crystal
+    - match: '^\s*(lib)\s+(([A-Z]\w*(::))?([A-Z]\w*(::))?([A-Z]\w*(::))*[A-Z]\w*)'
+      scope: meta.lib.crystal
+      captures:
+        1: keyword.control.lib.crystal
+        2: entity.name.type.lib.crystal
+        3: entity.other.inherited-class.lib.first.crystal
+        4: punctuation.separator.inheritance.crystal
+        5: entity.other.inherited-class.lib.second.crystal
+        6: punctuation.separator.inheritance.crystal
+        7: entity.other.inherited-class.lib.third.crystal
+        8: punctuation.separator.inheritance.crystal
+    - match: (?<!\.)\belse(\s)+if\b
+      comment: else if is a common mistake carried over from other languages. it works if you put in a second end, but it’s never what you want.
+      scope: invalid.deprecated.crystal
+    - match: '(?<!\.)\b(BEGIN|alias|as|begin|case|select|abstract|class|END|ensure|for|fun|if|ifdef|in|lib|module|of|out|private|protected|rescue|struct|with|union|enum|macro|then|type|unless|until|while)\b(?![?!])'
+      comment: everything being a reserved word, not a value and needing a 'end' is a..
+      scope: keyword.control.primary.crystal
+    - match: '(?<!\.)\b(when|else|elsif)\b(?![?!])'
+      comment: everything being a reserved word, not a value and needing a 'end' is a..
+      scope: keyword.control.secondary.crystal
+    - match: '(?<!\.)\b(end)\b(?![?!])'
+      comment: Give the end keyword an additional scope
+      scope: keyword.control.secondary.end.crystal
+    - match: (?<!\.)\bdo\b\s*
+      comment: contextual smart pair support for block parameters
+      scope: keyword.control.start-block.crystal
+    - match: '(?<=\{)(\s+)'
+      comment: contextual smart pair support
+      scope: meta.syntax.crystal.start-block
+    - match: (?<!\.)\b(and|not|or)\b
+      comment: as above, just doesn't need a 'end' and does a logic operation
+      scope: keyword.operator.logical.crystal
+    - match: '(?<!\.)\b(alias|alias_method|break|next|pointerof|typeof|sizeof|instance_sizeof|return|super|yield|uninitialized|forall)\b(?![?!])'
+      comment: just as above but being not a logical operation
+      scope: keyword.control.pseudo-method.crystal
+    - match: '\b(nil|true|false)\b(?![?!])'
+      scope: constant.language.crystal
+    - match: '\b(__(DIR|FILE|LINE)__|self)\b(?![?!])'
+      scope: variable.language.crystal
+    - match: '\b(initialize|new|loop|include|extend|raise|getter|setter|property|class_getter|class_setter|class_property|describe|it|with|delegate|def_hash|def_equals|def_equals_and_hash|forward_missing_to|record|assert_responds_to|spawn)\b[!?]?'
+      comment: everything being a method but having a special function is a..
+      scope: keyword.control.special-method.crystal
+    - match: \b(require)\b
+      captures:
+        1: keyword.control.special-method.crystal
+      push:
+        - meta_scope: meta.require.crystal
+        - match: $|(?=#)
+          captures:
+            1: keyword.control.special-method.crystal
+          pop: true
+        - include: main
+    - match: '(@)[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*[?!=]?'
+      scope: variable.other.readwrite.instance.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '(@@)[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*[?!=]?'
+      scope: variable.other.readwrite.class.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '(\$)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.global.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '(\$)(!|@|&|`|''|\+|\d+|~|=|/|\\|,|;|\.|<|>|_|\*|\$|\?|:|"|-[0adFiIlpv])'
+      scope: variable.other.readwrite.global.pre-defined.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '\b(ENV)\['
+      captures:
+        1: variable.other.constant.crystal
+      push:
+        - meta_scope: meta.environment-variable.crystal
+        - match: '\]'
+          pop: true
+        - include: main
+    - match: '\b[A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*'
+      scope: support.class.crystal
+    - match: '\b[A-Z\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*\b'
+      scope: variable.other.constant.crystal
+    - match: |-
+        (?x)
+         (?=def\b)                                                      # an optimization to help Oniguruma fail fast
+         (?<=^|\s)(def)\s+                                              # the def keyword
+         ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\x{80}-\x{10FFFF}\w]*(?>\.|::))?                                   # a method name prefix
+           (?>[a-zA-Z_\x{80}-\x{10FFFF}][\x{80}-\x{10FFFF}\w]*(?>[?!]|=(?!>))?                              # the method name
+           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) )  # …or an operator method
+         \s*(\()                                                        # the openning parenthesis for arguments
+      comment: the method pattern comes from the symbol pattern, see there for a explaination
+      captures:
+        1: keyword.control.def.crystal
+        2: entity.name.function.crystal
+        3: punctuation.definition.parameters.crystal
+      push:
+        - meta_scope: meta.function.method.with-arguments.crystal
+        - meta_content_scope: variable.parameter.function.crystal
+        - match: \)\s*$|\)\s*:|\)\s*;
+          captures:
+            0: punctuation.definition.parameters.crystal
+          pop: true
+        - include: main
+    - match: |-
+        (?x)
+         (?=def\b)                                                      # an optimization to help Oniguruma fail fast
+         (?<=^|\s)(def)\s+                                              # the def keyword
+         ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>\.|::))?                                   # a method name prefix
+           (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?!>))?                              # the method name
+           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) )  # …or an operator method
+         [ \t]                                                          # the space separating the arguments
+         (?=[ \t]*[^\s#;])                                              # make sure arguments and not a comment follow
+      comment: same as the previous rule, but without parentheses around the arguments
+      captures:
+        1: keyword.control.def.crystal
+        2: entity.name.function.crystal
+      push:
+        - meta_scope: meta.function.method.with-arguments.crystal
+        - meta_content_scope: variable.parameter.function.crystal
+        - match: $
+          pop: true
+        - include: main
+    - match: |-
+        (?x)
+         (?=def\b)                                                           # an optimization to help Oniguruma fail fast
+         (?<=^|\s)(def)\b                                                    # the def keyword
+         ( \s+                                                               # an optional group of whitespace followed by…
+           ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>\.|::))?                                      # a method name prefix
+             (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?!>))?                                 # the method name
+             |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) ) )?  # …or an operator method
+      comment: the optional name is just to catch the def also without a method-name
+      scope: meta.function.method.without-arguments.crystal
+      captures:
+        1: keyword.control.def.crystal
+        3: entity.name.function.crystal
+    - match: '\b(0[xX]\h(?>_?\h)*|\d(?>_?\d)*(\.(?![^[:space:][:digit:]])(?>_?\d)*)?([eE][-+]?\d(?>_?\d)*)?|0[bB][01]+|0o[0-7]+)(_?(u8|u16|u32|u64|i8|i16|i32|i64|f32|f64))?\b'
+      scope: constant.numeric.crystal
+    - match: ":'"
+      captures:
+        0: punctuation.definition.constant.crystal
+      push:
+        - meta_scope: constant.other.symbol.single-quoted.crystal
+        - match: "'"
+          captures:
+            0: punctuation.definition.constant.crystal
+          pop: true
+        - match: '\\[''\\]'
+          scope: constant.character.escape.crystal
+    - match: ':"'
+      captures:
+        0: punctuation.definition.constant.crystal
+      push:
+        - meta_scope: constant.other.symbol.double-quoted.crystal
+        - match: '"'
+          captures:
+            0: punctuation.definition.constant.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: /=
+      comment: Needs higher precidence than regular expressions.
+      scope: keyword.operator.assignment.augmented.crystal
+    - match: "'"
+      comment: single quoted string (does not allow interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.single.crystal
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: \\'|\\\\
+          scope: constant.character.escape.crystal
+    - match: '"'
+      comment: double quoted string (allows for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.double.crystal
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: "`"
+      comment: execute string (allows for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: "`"
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '%x\{'
+      comment: execute string (allow for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: '\}'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_curly_i
+    - match: '%x\['
+      comment: execute string (allow for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: '\]'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_brackets_i
+    - match: '%x\<'
+      comment: execute string (allow for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: \>
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_ltgt_i
+    - match: '%x\('
+      comment: execute string (allow for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: \)
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_parens_i
+    - match: '%x([^\w])'
+      comment: execute string (allow for interpolation)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.interpolated.crystal
+        - match: \1
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: |-
+        (?x)
+           (?:
+             ^                      # beginning of line
+           | (?<=                   # or look-behind on:
+               [=>~(?:\[,|&;]
+             | [\s;]if\s      # keywords
+             | [\s;]elsif\s
+             | [\s;]while\s
+             | [\s;]unless\s
+             | [\s;]when\s
+             | [\s;]assert_match\s
+             | [\s;]or\s      # boolean opperators
+             | [\s;]and\s
+             | [\s;]not\s
+             | [\s.]index\s     # methods
+             | [\s.]scan\s
+             | [\s.]sub\s
+             | [\s.]sub!\s
+             | [\s.]gsub\s
+             | [\s.]gsub!\s
+             | [\s.]match\s
+             )
+           | (?<=                  # or a look-behind with line anchor:
+                ^when\s            # duplication necessary due to limits of regex
+              | ^if\s
+              | ^elsif\s
+              | ^while\s
+              | ^unless\s
+              )
+           )
+           \s*((/))(?![*+{}?])
+      comment: |
+        regular expressions (normal)
+                    we only start a regexp if the character before it (excluding whitespace)
+                    is what we think is before a regexp
+      captures:
+        1: string.regexp.classic.crystal
+        2: punctuation.definition.string.crystal
+      push:
+        - meta_content_scope: string.regexp.classic.crystal
+        - match: "((/[eimnosux]*))"
+          captures:
+            1: string.regexp.classic.crystal
+            2: punctuation.definition.string.crystal
+          pop: true
+        - include: regex_sub
+    - match: '%r\{'
+      comment: regular expressions (literal)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.regexp.mod-r.crystal
+        - match: '\}[eimnosux]*'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_curly_r
+    - match: '%r\['
+      comment: regular expressions (literal)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.regexp.mod-r.crystal
+        - match: '\][eimnosux]*'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_brackets_r
+    - match: '%r\('
+      comment: regular expressions (literal)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.regexp.mod-r.crystal
+        - match: '\)[eimnosux]*'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_parens_r
+    - match: '%r\<'
+      comment: regular expressions (literal)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.regexp.mod-r.crystal
+        - match: '\>[eimnosux]*'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_ltgt_r
+    - match: '%r([^\w])'
+      comment: regular expressions (literal)
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.regexp.mod-r.crystal
+        - match: '\1[eimnosux]*'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: regex_sub
+    - match: '%[QWSR]?\('
+      comment: literal capable of interpolation ()
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.upper.crystal
+        - match: \)
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_parens_i
+    - match: '%[QWSR]?\['
+      comment: "literal capable of interpolation []"
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.upper.crystal
+        - match: '\]'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_brackets_i
+    - match: '%[QWSR]?\<'
+      comment: literal capable of interpolation <>
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.upper.crystal
+        - match: \>
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_ltgt_i
+    - match: '%[QWSR]?\{'
+      comment: "literal capable of interpolation -- {}"
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.double.crystal.mod
+        - match: '\}'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_curly_i
+    - match: '%[QWSR]([^\w])'
+      comment: literal capable of interpolation -- wildcard
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.upper.crystal
+        - match: \1
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '%[qws]\('
+      comment: literal incapable of interpolation -- ()
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.lower.crystal
+        - match: \)
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: \\\)|\\\\
+          scope: constant.character.escape.crystal
+        - include: nest_parens
+    - match: '%[qws]\<'
+      comment: literal incapable of interpolation -- <>
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.lower.crystal
+        - match: \>
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: \\\>|\\\\
+          scope: constant.character.escape.crystal
+        - include: nest_ltgt
+    - match: '%[qws]\['
+      comment: "literal incapable of interpolation -- []"
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.lower.crystal
+        - match: '\]'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: '\\\]|\\\\'
+          scope: constant.character.escape.crystal
+        - include: nest_brackets
+    - match: '%[qws]\{'
+      comment: "literal incapable of interpolation -- {}"
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.lower.crystal
+        - match: '\}'
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: '\\\}|\\\\'
+          scope: constant.character.escape.crystal
+        - include: nest_curly
+    - match: '%[qws]([^\w])'
+      comment: literal incapable of interpolation -- wildcard
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.quoted.other.literal.lower.crystal
+        - match: \1
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - match: \\.
+          comment: Cant be named because its not neccesarily an escape.
+    - match: '(?<!:)(:)(?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?![>=]))?|===?|>[>=]?|<[<=]?|<=>|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?|@@?[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*)'
+      comment: symbols
+      scope: constant.other.symbol.crystal
+      captures:
+        1: punctuation.definition.constant.crystal
+    - match: '(?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!])?)(:)(?!:)'
+      comment: symbols
+      scope: constant.other.symbol.crystal.19syntax
+      captures:
+        1: punctuation.definition.constant.crystal
+    - match: '(?:^[ \t]+)?(#).*$\n?'
+      scope: comment.line.number-sign.crystal
+      captures:
+        1: punctuation.definition.comment.crystal
+    - match: ^__END__\n
+      comment: __END__ marker
+      captures:
+        0: string.unquoted.program-block.crystal
+      push:
+        - meta_content_scope: text.plain
+        - match: (?=not)impossible
+          captures:
+            0: string.unquoted.program-block.crystal
+          pop: true
+        - match: (?=<?xml|<(?i:html\b)|!DOCTYPE (?i:html\b))
+          push:
+            - meta_scope: text.html.embedded.crystal
+            - match: (?=not)impossible
+              pop: true
+            - include: scope:text.html.basic
+    - match: '(?><<-("?)((?:[_\w]+_|)HTML)\b\1)'
+      comment: heredoc with embedded HTML and indented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.html.crystal
+        - meta_content_scope: text.html.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:text.html.basic
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)SQL)\b\1)'
+      comment: heredoc with embedded SQL and indented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.sql.crystal
+        - meta_content_scope: text.sql.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.sql
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)CSS)\b\1)'
+      comment: heredoc with embedded css and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.css.crystal
+        - meta_content_scope: text.css.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.css
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)CPP)\b\1)'
+      comment: heredoc with embedded c++ and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.cplusplus.crystal
+        - meta_content_scope: text.c++.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.c++
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)C)\b\1)'
+      comment: heredoc with embedded c++ and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.c.crystal
+        - meta_content_scope: text.c.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.c
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)(?:JS|JAVASCRIPT))\b\1)'
+      comment: heredoc with embedded javascript and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.js.crystal
+        - meta_content_scope: text.js.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.js
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)JQUERY)\b\1)'
+      comment: heredoc with embedded javascript and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.js.jquery.crystal
+        - meta_content_scope: text.js.jquery.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.js.jquery
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)(?:SH|SHELL))\b\1)'
+      comment: heredoc with embedded shell and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.shell.crystal
+        - meta_content_scope: text.shell.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.shell
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?><<-("?)((?:[_\w]+_|)RUBY)\b\1)'
+      comment: heredoc with embedded crystal and intented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.embedded.crystal.crystal
+        - meta_content_scope: text.crystal.embedded.crystal
+        - match: \s*\2$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: scope:source.crystal
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: (?>\=\s*<<(\w+))
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.heredoc.crystal
+        - match: ^\1$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: (?><<-(\w+))
+      comment: heredoc with indented terminator
+      captures:
+        0: punctuation.definition.string.begin.crystal
+      push:
+        - meta_scope: string.unquoted.heredoc.crystal
+        - match: \s*\1$
+          captures:
+            0: punctuation.definition.string.end.crystal
+          pop: true
+        - include: heredoc
+        - include: interpolated_crystal
+        - include: escaped_char
+    - match: '(?<=\{|do|\{\s|do\s)(\|)'
+      captures:
+        1: punctuation.separator.variable.crystal
+      push:
+        - match: (\|)
+          captures:
+            1: punctuation.separator.variable.crystal
+          pop: true
+        - match: "[_a-zA-Z][_a-zA-Z0-9]*"
+          scope: variable.other.block.crystal
+        - match: ","
+          scope: punctuation.separator.variable.crystal
+    - match: "=>"
+      scope: punctuation.separator.key-value
+    - match: '<<=|%=|&=|\*=|\*\*=|\+=|\-=|\^=|\|{1,2}=|<<'
+      scope: keyword.operator.assignment.augmented.crystal
+    - match: '<=>|<(?!<|=)|>(?!<|=|>)|<=|>=|===|==|=~|!=|!~|(?<=[ \t])\?'
+      scope: keyword.operator.comparison.crystal
+    - match: '(?<=[ \t])!+|\bnot\b|&&|\band\b|\|\||\bor\b|\^'
+      scope: keyword.operator.logical.crystal
+    - match: '(\{\%|\%\}|\{\{|\}\})'
+      scope: keyword.operator.macro.crystal
+    - match: (%|&|\*\*|\*|\+|\-|/)
+      scope: keyword.operator.arithmetic.crystal
+    - match: "="
+      scope: keyword.operator.assignment.crystal
+    - match: \||~|>>
+      scope: keyword.operator.other.crystal
+    - match: ":"
+      scope: punctuation.separator.other.crystal
+    - match: \;
+      scope: punctuation.separator.statement.crystal
+    - match: ","
+      scope: punctuation.separator.object.crystal
+    - match: '\.|::'
+      scope: punctuation.separator.method.crystal
+    - match: '\{|\}'
+      scope: punctuation.section.scope.crystal
+    - match: '\[|\]'
+      scope: punctuation.section.array.crystal
+    - match: \(|\)
+      scope: punctuation.section.function.crystal
+  escaped_char:
+    - match: '\\(?:[0-7]{1,3}|x[\da-fA-F]{1,2}|.)'
+      scope: constant.character.escape.crystal
+  heredoc:
+    - match: ^<<-?\w+
+      push:
+        - match: $
+          pop: true
+        - include: main
+  interpolated_crystal:
+    - match: '#\{(\})'
+      scope: source.crystal.embedded.source
+      captures:
+        0: punctuation.section.embedded.crystal
+        1: source.crystal.embedded.source.empty
+    - match: '#\{'
+      captures:
+        0: punctuation.section.embedded.crystal
+      push:
+        - meta_scope: source.crystal.embedded.source
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.crystal
+          pop: true
+        - include: nest_curly_and_self
+        - include: main
+    - match: '(#@)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.instance.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '(#@@)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.class.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+    - match: '(#\$)[a-zA-Z_]\w*'
+      scope: variable.other.readwrite.global.crystal
+      captures:
+        1: punctuation.definition.variable.crystal
+  nest_brackets:
+    - match: '\['
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: nest_brackets
+  nest_brackets_i:
+    - match: '\['
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_brackets_i
+  nest_brackets_r:
+    - match: '\['
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_brackets_r
+  nest_curly:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: nest_curly
+  nest_curly_and_self:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: nest_curly_and_self
+    - include: main
+  nest_curly_i:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_curly_i
+  nest_curly_r:
+    - match: '\{'
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_curly_r
+  nest_ltgt:
+    - match: \<
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \>
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: nest_ltgt
+  nest_ltgt_i:
+    - match: \<
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \>
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_ltgt_i
+  nest_ltgt_r:
+    - match: \<
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \>
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_ltgt_r
+  nest_parens:
+    - match: \(
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: nest_parens
+  nest_parens_i:
+    - match: \(
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: interpolated_crystal
+        - include: escaped_char
+        - include: nest_parens_i
+  nest_parens_r:
+    - match: \(
+      captures:
+        0: punctuation.section.scope.crystal
+      push:
+        - match: \)
+          captures:
+            0: punctuation.section.scope.crystal
+          pop: true
+        - include: regex_sub
+        - include: nest_parens_r
+  regex_sub:
+    - include: interpolated_crystal
+    - include: escaped_char
+    - match: '(\{)\d+(,\d+)?(\})'
+      scope: string.regexp.arbitrary-repitition.crystal
+      captures:
+        1: punctuation.definition.arbitrary-repitition.crystal
+        3: punctuation.definition.arbitrary-repitition.crystal
+    - match: '\[(?:\^?\])?'
+      captures:
+        0: punctuation.definition.character-class.crystal
+      push:
+        - meta_scope: string.regexp.character-class.crystal
+        - match: '\]'
+          captures:
+            0: punctuation.definition.character-class.crystal
+          pop: true
+        - include: escaped_char
+    - match: \(
+      captures:
+        0: punctuation.definition.group.crystal
+      push:
+        - meta_scope: string.regexp.group.crystal
+        - match: \)
+          captures:
+            0: punctuation.definition.group.crystal
+          pop: true
+        - include: regex_sub
+    - match: '(?<=^|\s)(#)\s[[a-zA-Z0-9,. \t?!-][^\x{00}-\x{7F}]]*$'
+      comment: We are restrictive in what we allow to go after the comment character to avoid false positives, since the availability of comments depend on regexp flags.
+      scope: comment.line.number-sign.crystal
+      captures:
+        1: punctuation.definition.comment.crystal

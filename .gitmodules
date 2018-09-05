@@ -85,3 +85,6 @@
 [submodule "assets/syntaxes/Swift"]
 	path = assets/syntaxes/Swift
 	url = https://github.com/quiqueg/Swift-Sublime-Package
+[submodule "assets/syntaxes/Crystal"]
+	path = assets/syntaxes/Crystal
+	url = https://github.com/crystal-lang-tools/sublime-crystal.git
