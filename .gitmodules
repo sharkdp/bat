@@ -67,3 +67,6 @@
 [submodule "assets/themes/onehalf"]
 	path = assets/themes/onehalf
 	url = https://github.com/sonph/onehalf
+[submodule "assets/syntaxes/JavaScript (Babel)"]
+	path = assets/syntaxes/JavaScript (Babel)
+	url = https://github.com/babel/babel-sublime
