@@ -192,6 +192,7 @@ fn run() -> Result<bool> {
                 config.files = vec![InputFile::Ordinary(&"cache")];
                 
                 let assets = HighlightingAssets::new();
+                
                 let controller = Controller::new(&config, &assets);                
                 controller.run()
             }
