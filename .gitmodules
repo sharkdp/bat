@@ -67,3 +67,6 @@
 [submodule "assets/themes/onehalf"]
 	path = assets/themes/onehalf
 	url = https://github.com/sonph/onehalf
+[submodule "assets/syntaxes/Cabal"]
+	path = assets/syntaxes/Cabal
+	url = https://github.com/SublimeHaskell/SublimeHaskell
