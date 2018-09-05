@@ -199,7 +199,14 @@ fn run() -> Result<bool> {
                 let mut config = app.config()?;
                 config.files = vec![InputFile::Ordinary(&"cache")];
 
+<<<<<<< HEAD
                 run_controller(&config)
+=======
+                let assets = HighlightingAssets::new();
+
+                let controller = Controller::new(&config, &assets);
+                controller.run()
+>>>>>>> 0e23ec4dff4ea7e1ecd5a8c6032e07f2a4c7e6f6
             }
         }
         _ => {

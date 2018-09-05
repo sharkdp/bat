@@ -10,6 +10,7 @@ use console::Term;
 
 #[cfg(windows)]
 use ansi_term;
+
 use assets::BAT_THEME_DEFAULT;
 use errors::*;
 use line_range::LineRange;
@@ -129,7 +130,8 @@ impl App {
                          to read from standard input.",
                     ).multiple(true)
                     .empty_values(false),
-            ).arg(
+                    )
+            .arg(
                 Arg::with_name("language")
                     .short("l")
                     .long("language")
