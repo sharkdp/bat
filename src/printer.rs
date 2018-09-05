@@ -302,8 +302,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                                 .iter()
                                                 .map(|ref d| d
                                                     .generate(line_number, true, self)
-                                                    .text)
-                                                .collect::<Vec<String>>()
+                                                    .text).collect::<Vec<String>>()
                                                 .join(" ")
                                         ))
                                     } else {
