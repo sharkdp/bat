@@ -42,3 +42,9 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[package.metadata.rpm.cargo]
+buildflags = ["--release"]
+
+[package.metadata.rpm.targets]
+bat = { path = "/usr/bin/bat" }
