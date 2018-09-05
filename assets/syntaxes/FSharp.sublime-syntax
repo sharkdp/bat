@@ -1,0 +1,234 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: "F#"
+file_extensions:
+  - fs
+  - fsi
+  - fsx
+scope: source.fsharp
+contexts:
+  main:
+    - include: comments
+    - include: constants
+    - include: structure
+    - include: attributes
+    - include: strings
+    - include: definition
+    - include: method_calls
+    - include: modules
+    - include: anonymous_functions
+    - include: keywords
+  anonymous_functions:
+    - match: \b(fun)\b
+      captures:
+        1: keyword.other.function-definition.fsharp
+      push:
+        - meta_scope: meta.function.anonymous
+        - match: (->)
+          captures:
+            1: keyword.other.fsharp
+          pop: true
+        - include: variables
+  attributes:
+    - match: '\[\<'
+      push:
+        - meta_scope: support.function.attribute.fsharp
+        - match: '\>\]'
+          pop: true
+        - include: main
+  characters:
+    - match: (')
+      captures:
+        1: punctuation.definition.string.begin.fsharp
+      push:
+        - meta_scope: string.quoted.single.fsharp
+        - match: (')
+          captures:
+            1: punctuation.definition.string.end.fsharp
+          pop: true
+        - match: '\\$[ \t]*'
+          scope: punctuation.separator.string.ignore-eol.fsharp
+        - match: '\\([\\""ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8})'
+          scope: constant.character.string.escape.fsharp
+        - match: '\\(?![\\''ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8}).'
+          scope: invalid.illeagal.character.string.fsharp
+  comments:
+    - match: \(\*\*?(\*)\)
+      scope: comment.block.fsharp
+      captures:
+        1: comment.block.empty.fsharp
+    - match: '\(\*[^\)]'
+      push:
+        - meta_scope: comment.block.fsharp
+        - match: \*\)
+          pop: true
+        - include: comments
+    - match: //.*$
+      scope: comment.line.double-slash.fsharp
+  constants:
+    - match: \(\)
+      scope: constant.language.unit.fsharp
+    - match: '\b-?[0-9][0-9_]*((\.([0-9][0-9_]*([eE][+-]??[0-9][0-9_]*)?)?)|([eE][+-]??[0-9][0-9_]*))'
+      scope: constant.numeric.floating-point.fsharp
+    - match: '\b(-?((0(x|X)[0-9a-fA-F][0-9a-fA-F_]*)|(0(o|O)[0-7][0-7_]*)|(0(b|B)[01][01_]*)|([0-9][0-9_]*)))'
+      scope: constant.numeric.integer.nativeint.fsharp
+  definition:
+    - match: '\b(val|val|let|and|member|override|use)\s?(rec|inline|mutable)?(\s+\(?([a-zA-Z.\|_][a-zA-Z0-9.|_]*)\)?\w*)\b'
+      captures:
+        1: keyword.other.binding.fsharp
+        2: keyword.other.function-recursive.fsharp
+        3: variable.other.binding.fsharp
+      push:
+        - meta_scope: meta.binding.fsharp
+        - match: "=|$"
+          captures:
+            1: punctuation.separator.function.type-constraint.fsharp
+          pop: true
+        - include: variables
+    - match: \b(let)\s+((\(\))|(_))\s+=
+      scope: meta.expression.fsharp
+      captures:
+        1: keyword.other.binding.fsharp
+        2: keyword.other.function-recursive.fsharp
+        4: constant.language.unit.fsharp
+        5: constant.language.ignored.fsharp
+  keywords:
+    - match: ^\s*#\s*(light|if|else|endif|r|I|load|time|help|quit)\b
+      push:
+        - meta_scope: meta.preprocessor.fsharp
+        - match: (\s|$)
+          pop: true
+    - match: \b(new|in|as|if|then|else|elif|for|begin|end|match|with|type|inherit|true|false|null|do)\b
+      scope: keyword.other.fsharp
+    - match: '(\|>|\|?>|\->|\<\-|:>|:|\[|\]|\;|\||_)'
+      scope: entity.name
+  method_calls:
+    - match: '(?<!\w)([a-z]\w*)(\.)'
+      push:
+        - meta_scope: meta.method-call.fsharp
+        - match: '[A-Z]\w*(\.)'
+          scope: meta.method.fsharp
+          captures:
+            1: punctuation.separator.method-call.fsharp
+        - match: (?=.)
+          pop: true
+  modules:
+    - match: '\b(namespace|module)\s+([a-zA-Z][a-zA-Z0-9''_.]*)'
+      captures:
+        1: keyword.other.fsharp
+        2: entity.name.section.fsharp
+      push:
+        - meta_scope: meta.module.namespace.fsharp
+        - match: (\s|$)
+          pop: true
+        - match: '(\.)([A-Z][a-zA-Z0-9''_]*)'
+          scope: support.other.module.fsharp
+          captures:
+            1: punctuation.separator.module-reference.fsharp
+            2: support.other.module.fsharp
+    - match: '\b(open)\s+([A-Z][a-zA-Z0-9''_]*)(?=(\.[A-Z][a-zA-Z0-9_]*)*)'
+      captures:
+        1: keyword.other.fsharp
+        2: support.other.module.fsharp
+      push:
+        - meta_scope: meta.module.open.fsharp
+        - match: (\s|$)
+          pop: true
+        - match: '(\.)([A-Z][a-zA-Z0-9''_]*)'
+          scope: support.other.module.fsharp
+          captures:
+            1: punctuation.separator.module-reference.fsharp
+            2: support.other.module.fsharp
+    - match: '^\s*(module)\s+([A-Z][a-zA-Z0-9''_]*)\s*(=)\s*([A-Z][a-zA-Z0-9''_]*)'
+      captures:
+        1: keyword.other.module-definition.fsharp
+        2: entity.name.type.module.fsharp
+        3: punctuation.separator.module-definition.fsharp
+        4: support.other.module.fsharp
+      push:
+        - meta_scope: meta.module.alias.fsharp
+        - match: (\s|$)
+          pop: true
+        - match: '(\.)([A-Z][a-zA-Z0-9''_]*)'
+          scope: support.other.module.fsharp
+          captures:
+            1: punctuation.separator.module-reference.fsharp
+            2: support.other.module.fsharp
+    - match: '(?<!\w)([A-Z][a-zA-Z0-9_]*)(\.)'
+      captures:
+        1: support.other.module.fsharp
+        2: punctuation.separator.module-reference.fsharp
+      push:
+        - meta_scope: meta.module.reference.fsharp
+        - match: '[A-Z][a-zA-Z0-9_]+(\.)'
+          scope: support.other.module.fsharp
+          captures:
+            1: punctuation.separator.module-reference.fsharp
+        - match: (?=.)
+          pop: true
+  strings:
+    - match: '(?=[^\\])(""")'
+      captures:
+        1: punctuation.definition.string.begin.fsharp
+      push:
+        - meta_scope: string.quoted.double.fsharp
+        - match: (""")
+          captures:
+            1: punctuation.definition.string.end.fsharp
+          pop: true
+        - match: '\\$[ \t]*'
+          scope: punctuation.separator.string.ignore-eol.fsharp
+    - match: '(?=[^\\])(@")'
+      captures:
+        1: punctuation.definition.string.begin.fsharp
+      push:
+        - meta_scope: string.quoted.double.fsharp
+        - match: (")
+          captures:
+            1: punctuation.definition.string.end.fsharp
+          pop: true
+        - match: '\\$[ \t]*'
+          scope: punctuation.separator.string.ignore-eol.fsharp
+    - match: '(?=[^\\])(")'
+      captures:
+        1: punctuation.definition.string.begin.fsharp
+      push:
+        - meta_scope: string.quoted.double.fsharp
+        - match: (")
+          captures:
+            1: punctuation.definition.string.end.fsharp
+          pop: true
+        - match: '\\$[ \t]*'
+          scope: punctuation.separator.string.ignore-eol.fsharp
+        - match: '\\([\\''ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8})'
+          scope: constant.character.string.escape.fsharp
+        - match: '\\(?![\\''ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8}).'
+          scope: invalid.illeagal.character.string.fsharp
+    - match: '(?=[^\\])('')'
+      captures:
+        1: punctuation.definition.string.begin.fsharp
+      push:
+        - meta_scope: string.quoted.double.fsharp
+        - match: (')
+          captures:
+            1: punctuation.definition.string.end.fsharp
+          pop: true
+        - match: '\\$[ \t]*'
+          scope: punctuation.separator.string.ignore-eol.fsharp
+        - match: '\\([\\"ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8})'
+          scope: constant.character.string.escape.fsharp
+        - match: '\\(?![\\"ntbr]|u[a-fA-F0-9]{4}|u[a-fA-F0-9]{8}).'
+          scope: invalid.illeagal.character.string.fsharp
+  structure:
+    - match: \(
+      push:
+        - meta_scope: meta.paren-group.fsharp
+        - match: \)
+          pop: true
+        - include: main
+  variables:
+    - match: \(\)
+      scope: variable.parameter.unit.fsharp
+    - match: '[a-zA-Z]\w*'
+      scope: variable.parameter.fsharp

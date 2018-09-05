@@ -76,3 +76,6 @@
 [submodule "assets/syntaxes/Dart"]
 	path = assets/syntaxes/Dart
 	url = https://github.com/guillermooo/dart-sublime-bundle
+[submodule "assets/syntaxes/FSharp"]
+	path = assets/syntaxes/FSharp
+	url = https://github.com/hoest/sublimetext-fsharp
