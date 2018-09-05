@@ -1,0 +1,369 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Dart
+file_extensions:
+  - dart
+scope: source.dart
+contexts:
+  main:
+    - match: ^(#!.*)$
+      scope: meta.preprocessor.script.dart
+    - match: ^\s*\b(library|import|export|part of|part)\b
+      captures:
+        0: keyword.other.import.dart
+      push:
+        - meta_scope: meta.declaration.dart
+        - match: ;
+          captures:
+            0: punctuation.terminator.dart
+          pop: true
+        - include: strings
+        - match: \b(as|show|hide|deferred)\b
+          scope: keyword.other.import.dart
+    - include: comments
+    - include: constants-and-special-vars
+    - include: annotations
+    - include: decl-typedef
+    - include: decl-class
+    - include: decl-enum
+    - include: decl-function
+    - include: keywords
+    - include: strings
+  annotations:
+    - match: '^(?:\s*)((@)([a-zA-Z0-9_]+))'
+      captures:
+        1: annotation.dart
+        2: entity.name.function.annotation.dart
+        3: support.type.dart
+  comments:
+    - match: /\*\*/
+      scope: comment.block.empty.dart
+      captures:
+        0: punctuation.definition.comment.dart
+    - include: comments-inline
+  comments-inline:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.dart
+        - match: \*/
+          pop: true
+        - include: scope:text.dart-doccomments
+    - match: (///)
+      captures:
+        1: marker.dart
+      push:
+        - meta_scope: comment.line.triple-slash.dart
+        - match: $
+          pop: true
+        - include: scope:text.dart-doccomments
+    - match: (//)
+      captures:
+        1: marker.dart
+      push:
+        - meta_scope: comment.line.double-slash.dart
+        - match: $
+          pop: true
+        - include: scope:text.dart-doccomments
+  constants-and-special-vars:
+    - match: \b(true|false|null)\b
+      scope: constant.language.dart
+    - match: \b(this|super)\b
+      scope: variable.language.dart
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b'
+      scope: constant.numeric.dart
+  decl-class:
+    - match: \bclass\b
+      captures:
+        0: keyword.control.new.dart
+      push:
+        - meta_scope: meta.declaration.class.dart
+        - match: "(?={)"
+          pop: true
+        - include: keywords
+        - match: "[A-Za-z_][A-Za-z0-9_]*"
+          scope: class.name.dart
+  decl-enum:
+    - match: \benum\b
+      captures:
+        0: keyword.declaration.dart
+      push:
+        - meta_scope: meta.declaration.enum.dart
+        - match: "(?={)"
+          pop: true
+        - include: keywords
+        - match: "[A-Za-z_][A-Za-z0-9_]*"
+          scope: enum.name.dart
+  decl-function:
+    - match: ^\s*(?:\b(void|bool|num|int|double|dynamic|var|String|List|Map)\b)\s+(get)\s+(\w+)\s+(?==>)
+      comment: A getter with a primitive return type.
+      scope: meta.declaration.function.dart
+      captures:
+        1: storage.type.primitive.dart
+        2: keyword.declaration.dart
+        3: function.name.dart
+    - match: ^\s*(?:\b(\w+)\b\s+)?(get)\s+(\w+)\s+(?==>)
+      comment: A getter with a user-defined return type or no return type.
+      scope: meta.declaration.function.dart
+      captures:
+        1: type.user-defined.dart
+        2: keyword.declaration.dart
+        3: function.name.dart
+    - match: ^\s*(set)\s+(\w+)(?=\()
+      comment: A setter.
+      captures:
+        1: keyword.declaration.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.declaration.function.dart
+        - match: \)
+          pop: true
+        - include: comments-inline
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: ^\s*(?:\b(void|bool|num|int|double|dynamic|var|String|List|Map)\b)\s+(\w+)(?=\()
+      comment: A function with a primitive return type.
+      captures:
+        1: storage.type.primitive.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.declaration.function.dart
+        - match: \)
+          pop: true
+        - include: comments-inline
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: ^\s*(?:\b(return)\b)\s+(\w+)(?=\()
+      comment: A function invocation after 'return'
+      captures:
+        1: keyword.control.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.invocation.function.dart
+        - match: \)
+          pop: true
+        - include: comments-inline
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: ^\s*\b(new)\b\s+(\w+)(?=\()
+      comment: A class instantiation after 'new'
+      captures:
+        1: keyword.declaration.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.invocation.function.dart
+        - match: \)
+          pop: true
+        - include: comments-inline
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+  decl-function-parameter:
+    - include: constants-and-special-vars
+    - match: (?:\b(void|bool|num|int|double|dynamic|var|String|List|Map)\b)\s+(\w+)(?=\()
+      comment: A function with a primitive return type.
+      captures:
+        1: storage.type.primitive.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.parameter.function.dart
+        - match: \)
+          pop: true
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: \b(new)\b\s+(\w+)(?=\()
+      comment: A class instantiation after 'new'
+      captures:
+        1: keyword.declaration.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.invocation.function.dart
+        - match: \)
+          pop: true
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: (?:\b(\w+)\b)\s+(\w+)(?=\()
+      comment: A function with a user-defined return type.
+      captures:
+        1: type.user-defined.dart
+        2: function.name.dart
+      push:
+        - meta_scope: meta.parameter.function.dart
+        - match: \)
+          pop: true
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+    - match: (\w+)(?=\()
+      comment: A function with no return type.
+      captures:
+        1: function.name.dart
+      push:
+        - meta_scope: meta.parameter.function.dart
+        - match: \)
+          pop: true
+        - include: decl-function-parameter
+        - include: strings
+        - include: keywords
+  decl-typedef:
+    - match: typedef
+      captures:
+        0: keyword.control.new.dart
+      push:
+        - meta_scope: meta.declaration.typedef.dart
+        - match: ;
+          captures:
+            0: punctuation.terminator.dart
+          pop: true
+        - match: '(?:\b(void|bool|num|int|double|dynamic|var|String|List|Map)\b|([a-zA-Z_][a-zA-Z0-9_]*))\s+([a-zA-Z_][a-zA-Z0-9_]+)'
+          captures:
+            1: storage.type.primitive.dart
+            2: typedef.return.dart
+            3: typedef.name.dart
+        - match: \(
+          push:
+            - meta_scope: typedef.params.dart
+            - match: \)
+              pop: true
+            - include: keywords
+  keywords:
+    - match: \bassert\b
+      scope: keyword.control.assert.dart
+    - match: \bas\b
+      scope: keyword.cast.dart
+    - match: \b(try|catch|finally|throw|on|rethrow)\b
+      scope: keyword.control.catch-exception.dart
+    - match: \s+\?\s+|\s+:\s+
+      scope: keyword.control.ternary.dart
+    - match: \b(break|case|continue|default|do|else|for|if|in|return|switch|while)\b
+      scope: keyword.control.dart
+    - match: \b(async\*|async|await\*|await|yield)\b
+      scope: keyword.control.async.dart
+    - match: \b(new)\b
+      scope: keyword.control.new.dart
+    - match: \b(abstract|extends|external|factory|implements|with|interface|get|native|operator|set|typedef)\b
+      scope: keyword.declaration.dart
+    - match: \b(is\!?)\b
+      scope: keyword.operator.dart
+    - match: (<<|>>>?|~|\^|\||&)
+      scope: keyword.operator.bitwise.dart
+    - match: ((&|\^|\||<<|>>>?)=)
+      scope: keyword.operator.assignment.bitwise.dart
+    - match: (===?|!==?|<=?|>=?)
+      scope: keyword.operator.comparison.dart
+    - match: '(([+*/%-]|\~)=)'
+      scope: keyword.operator.assignment.arithmetic.dart
+    - match: (=)
+      scope: keyword.operator.assignment.dart
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.dart
+    - match: (\-|\+|\*|\/|\~\/|%)
+      scope: keyword.operator.arithmetic.dart
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.dart
+    - match: ;
+      scope: punctuation.terminator.dart
+    - match: \b(static|final|const)\b
+      scope: storage.modifier.dart
+    - match: \b(?:void|bool|num|int|double|dynamic|var|String|List|Map)\b
+      scope: storage.type.primitive.dart
+  regexp:
+    - match: '\\[^''"]'
+      scope: constant.character.escaped.regex.dart
+    - match: \(
+      push:
+        - meta_content_scope: meta.capture.regex.dart
+        - match: \)
+          pop: true
+        - match: \?(:|=|!)
+          scope: ignore.capture.regex.dart
+    - match: \*|\+|\?|\.|\|
+      scope: keyword.other.regex.dart
+    - match: \^|\$
+      scope: keyword.other.regex.dart
+    - match: \.
+      scope: constant.other.regex.dart
+    - match: '\[(\^)?'
+      captures:
+        1: keyword.other.negation.regex.dart
+      push:
+        - meta_scope: constant.character.range.regex.dart
+        - match: '\]'
+          pop: true
+        - match: '\\[^"'']'
+          scope: constant.character.escaped.regex.dart
+    - match: '\{(?:\d+)?,(?:\d+)?\}'
+      scope: keyword.other.regex.dart
+  string-interp:
+    - match: '(\$)(\{)'
+      captures:
+        1: keyword.other.dart
+        2: keyword.other.dart
+      push:
+        - meta_scope: interpolation.dart
+        - meta_content_scope: source.dart
+        - match: '(\})'
+          captures:
+            1: keyword.other.dart
+          pop: true
+        - include: main
+    - match: (\$)(\w+)
+      captures:
+        1: keyword.other.dart
+        2: variable.parameter.dart
+    - match: \\.
+      scope: constant.character.escape.dart
+  strings:
+    - match: (?<!r)"""
+      push:
+        - meta_scope: string.interpolated.triple.double.dart
+        - match: '"""(?!")'
+          pop: true
+        - include: string-interp
+    - match: (?<!r)'''
+      push:
+        - meta_scope: string.interpolated.triple.single.dart
+        - match: "'''(?!')"
+          pop: true
+        - include: string-interp
+    - match: r"""
+      push:
+        - meta_scope: string.quoted.triple.double.dart
+        - match: '"""(?!")'
+          pop: true
+    - match: r'''
+      push:
+        - meta_scope: string.quoted.triple.single.dart
+        - match: "'''(?!')"
+          pop: true
+    - match: (?<!\\|r)"
+      push:
+        - meta_scope: string.interpolated.double.dart
+        - match: '"'
+          pop: true
+        - match: \n
+          scope: invalid.string.newline
+        - include: string-interp
+    - match: r"
+      push:
+        - meta_scope: string.quoted.double.dart
+        - match: '"'
+          pop: true
+        - include: regexp
+    - match: (?<!\|r)'
+      push:
+        - meta_scope: string.interpolated.single.dart
+        - match: "'"
+          pop: true
+        - include: string-interp
+    - match: r'
+      push:
+        - meta_scope: string.quoted.single.dart
+        - match: "'"
+          pop: true
+        - include: regexp
