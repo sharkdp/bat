@@ -26,7 +26,7 @@ impl OutputType {
             .or_else(|_| env::var("PAGER"))
             .unwrap_or(String::from("less"));
 
-        let mut process = if pager == "less" {
+        let mut process = if pager == "less" || pager.ends_with("/less") {
             let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
             if quit_if_one_screen {
                 args.push("--quit-if-one-screen");
