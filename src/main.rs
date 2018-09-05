@@ -189,10 +189,10 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else {
                 let mut config = app.config()?;
-                let assets = HighlightingAssets::new();
-
                 config.files = vec![InputFile::Ordinary(&"cache")];
                 
+                let assets = HighlightingAssets::new();
+                            
                 let controller = Controller::new(&config, &assets);
                 controller.run()
             }
