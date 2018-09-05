@@ -105,7 +105,7 @@ impl App {
 
         // Check if the current directory contains a file name cache, if it does
         // do not make the arguements for subcommand 'cache' required.
-        let arg_group_required = !Path::new("./cache").exists();
+        let arg_group_required = !Path::new("cache").exists();
 
         ClapApp::new(crate_name!())
             .version(crate_version!())
