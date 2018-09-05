@@ -18,3 +18,6 @@ if you are not looking for a program like `bat`, this comparison might not be fo
 
 If you think that some entries in this table are outdated or wrong, please open a ticket or pull
 request.
+
+Some other alternatives that are also related, but not yet included in the table:
+- [lesspipe](https://github.com/wofr06/lesspipe)
