@@ -130,7 +130,8 @@ impl App {
                          to read from standard input.",
                     ).multiple(true)
                     .empty_values(false),
-            ).arg(
+                    )
+            .arg(
                 Arg::with_name("language")
                     .short("l")
                     .long("language")
