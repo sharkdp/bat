@@ -87,7 +87,8 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     Ok(())
 }
 
-pub fn list_languages(assets: &HighlightingAssets, config: &Config) -> Result<()> {
+pub fn list_languages(config: &Config) -> Result<()> {
+    let assets = HighlightingAssets::new();
     let mut languages = assets
         .syntax_set
         .syntaxes()
@@ -143,7 +144,8 @@ pub fn list_languages(assets: &HighlightingAssets, config: &Config) -> Result<()
     Ok(())
 }
 
-pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) -> Result<()> {
+pub fn list_themes(cfg: &Config) -> Result<()> {
+    let assets = HighlightingAssets::new();
     let themes = &assets.theme_set.themes;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
@@ -174,6 +176,12 @@ pub fn list_themes(assets: &HighlightingAssets, cfg: &Config) -> Result<()> {
     Ok(())
 }
 
+fn run_controller(config: &Config) -> Result<bool> {
+    let assets = HighlightingAssets::new();
+    let controller = Controller::new(&config, &assets);
+    controller.run()
+}
+
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
 /// `Some(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
@@ -181,24 +189,32 @@ fn run() -> Result<bool> {
 
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
-            run_cache_subcommand(cache_matches)?;
-            Ok(true)
+            // If there is a file named 'cache' in the current working directory,
+            // arguments for subcommand 'cache' are not mandatory.
+            // If there are non-zero arguments, execute the subcommand cache, else, open the file cache.
+            if !cache_matches.args.is_empty() {
+                run_cache_subcommand(cache_matches)?;
+                Ok(true)
+            } else {
+                let mut config = app.config()?;
+                config.files = vec![InputFile::Ordinary(&"cache")];
+
+                run_controller(&config)
+            }
         }
         _ => {
             let config = app.config()?;
-            let assets = HighlightingAssets::new();
 
             if app.matches.is_present("list-languages") {
-                list_languages(&assets, &config)?;
+                list_languages(&config)?;
 
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
-                list_themes(&assets, &config)?;
+                list_themes(&config)?;
 
                 Ok(true)
             } else {
-                let controller = Controller::new(&config, &assets);
-                controller.run()
+                run_controller(&config)
             }
         }
     }

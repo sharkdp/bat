@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::env;
+use std::path::Path;
 
 use atty::{self, Stream};
 
@@ -101,6 +102,10 @@ impl App {
         } else {
             AppSettings::ColorNever
         };
+
+        // Check if the current directory contains a file name cache, if it does
+        // do not make the arguements for subcommand 'cache' required.
+        let arg_group_required = !Path::new("cache").exists();
 
         ClapApp::new(crate_name!())
             .version(crate_version!())
@@ -303,7 +308,7 @@ impl App {
                     ).group(
                         ArgGroup::with_name("cache-actions")
                             .args(&["init", "clear", "config-dir"])
-                            .required(true),
+                            .required(arg_group_required),
                     ).arg(
                         Arg::with_name("source")
                             .long("source")
