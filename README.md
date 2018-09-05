@@ -254,6 +254,10 @@ are supported (and fall back to 8-bit colors).
 Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
 `OneHalfLight` themes provide grid and line colors that are brighter.
 
+### Error when compiling: "cannot find -lz"
+
+Please install the `zlib-devel` package and try again.
+
 ## Development
 
 ```bash
