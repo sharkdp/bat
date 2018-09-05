@@ -70,6 +70,9 @@
 [submodule "assets/syntaxes/JavaScript (Babel)"]
 	path = assets/syntaxes/JavaScript (Babel)
 	url = https://github.com/babel/babel-sublime
+[submodule "assets/syntaxes/Cabal"]
+	path = assets/syntaxes/Cabal
+	url = https://github.com/SublimeHaskell/SublimeHaskell
 [submodule "assets/syntaxes/Dart"]
 	path = assets/syntaxes/Dart
 	url = https://github.com/guillermooo/dart-sublime-bundle
