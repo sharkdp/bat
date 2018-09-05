@@ -79,3 +79,6 @@
 [submodule "assets/syntaxes/FSharp"]
 	path = assets/syntaxes/FSharp
 	url = https://github.com/hoest/sublimetext-fsharp
+[submodule "assets/syntaxes/PureScript"]
+	path = assets/syntaxes/PureScript
+	url = https://github.com/tellnobody1/sublime-purescript-syntax
