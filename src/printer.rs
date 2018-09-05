@@ -240,8 +240,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         text,
                         true_color,
                         colored_output,
-                    ))
-                    .collect::<Vec<_>>()
+                    )).collect::<Vec<_>>()
                     .join("")
             )?;
         } else {
