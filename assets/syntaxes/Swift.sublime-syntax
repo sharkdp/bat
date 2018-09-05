@@ -1,0 +1,371 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Swift
+file_extensions:
+  - swift
+first_line_match: ^#!/.*\bswift
+scope: source.swift
+contexts:
+  main:
+    - include: shebang-line
+    - include: comment
+    - include: attribute
+    - include: literal
+    - include: operator
+    - include: declaration
+    - include: storage-type
+    - include: keyword
+    - include: type
+    - include: boolean
+  comment:
+    - include: documentation-comment
+    - include: block-comment
+    - include: in-line-comment
+  access-level-modifier:
+    - match: \b(open|public|internal|fileprivate|private)\b(?:\(set\))?
+      comment: access-level-modifier
+      scope: keyword.other.access-level-modifier.swift
+  arithmetic-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(\+|\-|\*|\/)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.arithmetic.swift
+  array-type:
+    - match: \b(Array)(<)
+      captures:
+        1: support.type.array.swift
+        2: punctuation.array.begin.swift
+      push:
+        - meta_scope: meta.array.swift
+        - match: (>)
+          captures:
+            1: punctuation.array.end.swift
+          pop: true
+        - include: main
+  assignment-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(\+|\-|\*|\/|%|<<|>>|&|\^|\||&&|\|\|)?=(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.assignment.swift
+  attribute:
+    - match: '((@)(\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B))(\()'
+      captures:
+        1: storage.modifier.attribute.swift
+        2: punctuation.definition.attribute.swift
+        3: punctuation.definition.attribute-arguments.begin.swift
+      push:
+        - meta_content_scope: meta.attribute.arguments.swift
+        - match: \)
+          captures:
+            0: punctuation.definition.attribute-arguments.end.swift
+          pop: true
+        - include: main
+    - match: '((@)(\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B))'
+      captures:
+        1: storage.modifier.attribute.swift
+        2: punctuation.definition.attribute.swift
+  bitwise-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(&|\||\^|<<|>>)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.bitwise.swift
+  block-comment:
+    - match: /\*
+      comment: Block comment
+      captures:
+        0: punctuation.definition.comment.block.begin.swift
+      push:
+        - meta_scope: comment.block.swift
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.block.end.swift
+          pop: true
+  boolean:
+    - match: \b(true|false)\b
+      scope: keyword.constant.boolean.swift
+  branch-statement-keyword:
+    - include: if-statement-keyword
+    - include: switch-statement-keyword
+  catch-statement-keyword:
+    - match: \b(catch|do)\b
+      comment: catch-statement
+      scope: kewyord.control.catch.swift
+  code-block:
+    - match: '(\{)'
+      comment: code-block
+      captures:
+        1: punctuation.definition.code-block.begin.swift
+      push:
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.code-block.end.swift
+          pop: true
+        - include: main
+  collection-type:
+    - include: array-type
+    - include: dictionary-type
+    - match: \b(Array|Dictionary)\b
+      scope: support.type.swift
+  comparative-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])((=|!)==?|(<|>)=?|~=)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.comparative.swift
+  control-transfer-statement-keyword:
+    - match: \b(continue|break|fallthrough|return)\b
+      comment: control-transfer-statement
+      scope: keyword.control.transfer.swift
+  custom-operator:
+    - match: '(?<=[\s(\[{,;:])([/=\-+!*%<>&|\^~.]++)(?![\s)\]},;:])'
+      scope: keyword.operator.custom.prefix.unary.swift
+    - match: '(?<![\s(\[{,;:])([/=\-+!*%<>&|\^~.]++)(?![\s)\]},;:\.])'
+      scope: keyword.operator.custom.postfix.unary.swift
+    - match: '(?<=[\s(\[{,;:])([/=\-+!*%<>&|\^~.]++)(?=[\s)\]},;:])'
+      scope: keyword.operator.custom.binary.swift
+  declaration:
+    - include: import-declaration
+    - include: function-declaration
+  declaration-modifier:
+    - match: \b(class|convenience|dynamic|final|lazy|(non)?mutating|optional|override|required|static|unowned((un)?safe)?|weak)\b
+      comment: declaration-modifier
+      scope: keyword.other.declaration-modifier.swift
+  dictionary-type:
+    - match: \b(Dictionary)(<)
+      captures:
+        1: support.type.dictionary.swift
+        2: punctuation.dictionary.begin.swift
+      push:
+        - meta_scope: meta.dictionary.swift
+        - match: (>)
+          captures:
+            1: punctuation.dictionary.end.swift
+          pop: true
+        - include: main
+  documentation-comment:
+    - match: /\*\*
+      comment: Documentation comment
+      captures:
+        0: punctuation.definition.comment.block.documentation.begin.swift
+      push:
+        - meta_scope: comment.block.documentation.swift
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.block.documentation.end.swift
+          pop: true
+  floating-point-literal:
+    - match: '\b([0-9][0-9_]*)(\.([0-9][0-9_]*))?([eE][+\-]?([0-9][0-9_]*))?\b'
+      comment: floating-point-literal -> (decimal-literal)(decimal-fraction)?(decimal-exponent)?
+    - match: '\b(0x\h[\h_]*)(\.(0x\h[\h_]*))?([pP][+\-]?(0x\h[\h_]*))\b'
+      comment: floating-point-literal -> (hexadecimal-literal)(hexadecimal-fraction)?(hexadecimal-exponent)
+  function-body:
+    - include: code-block
+  function-declaration:
+    - match: '\b(func)\s+(\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B|[/=\-+!*%<>&|\^~.]+)\s*(?=\(|<)'
+      comment: function-declaration
+      captures:
+        1: storage.type.function.swift
+        2: entity.type.function.swift
+      push:
+        - meta_scope: meta.function-declaration.swift
+        - match: '(?<=\})'
+          pop: true
+        - include: generic-parameter-clause
+        - include: parameter-clause
+        - include: function-result
+        - include: function-body
+  function-result:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(\->)(?![/=\-+!*%<>&|\^~.])\s*'
+      comment: function-result
+      captures:
+        1: keyword.operator.function-result.swift
+      push:
+        - meta_scope: meta.function-result.swift
+        - match: '\s*(?=\{)'
+          pop: true
+        - include: type
+  generic-parameter-clause:
+    - match: (<)
+      comment: generic-parameter-clause
+      captures:
+        1: punctuation.definition.generic-parameter-clause.begin.swift
+      push:
+        - meta_scope: meta.generic-parameter-clause.swift
+        - match: (>)
+          captures:
+            1: punctuation.definition.generic-parameter-clause.end.swift
+          pop: true
+        - include: main
+  identifier:
+    - match: '(\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B)'
+      comment: identifier
+      scope: meta.identifier.swift
+  if-statement-keyword:
+    - match: \b(if|else)\b
+      comment: if-statement
+      scope: keyword.control.if.swift
+  import-declaration:
+    - match: '\b(import)\s+(?:(typealias|struct|class|enum|protocol|var|func)\s+)?((?:\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B|[/=\-+!*%<>&|\^~.]+)(?:\.(?:\B\$[0-9]+|\b[\w^\d][\w\d]*\b|\B`[\w^\d][\w\d]*`\B|[/=\-+!*%<>&|\^~.]+))*)'
+      comment: import-declaration
+      scope: meta.import.swift
+      captures:
+        1: keyword.other.import.swift
+        2: storage.modifier.swift
+        3: support.type.module.import.swift
+  in-line-comment:
+    - match: (//).*
+      comment: In-line comment
+      scope: comment.line.double-slash.swift
+      captures:
+        1: punctuation.definition.comment.line.double-slash.swift
+  increment-decrement-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(\+\+|\-\-)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.increment-or-decrement.swift
+  integer-literal:
+    - match: '(\B\-|\b)(0b[01][01_]*)\b'
+      comment: binary-literal
+      scope: constant.numeric.integer.binary.swift
+    - match: '(\B\-|\b)(0o[0-7][0-7_]*)\b'
+      comment: octal-literal
+      scope: constant.numeric.integer.octal.swift
+    - match: '(\B\-|\b)([0-9][0-9_]*)\b'
+      comment: decimal-literal
+      scope: constant.numeric.integer.decimal.swift
+    - match: '(\B\-|\b)(0x\h[\h_]*)\b'
+      comment: hexadecimal-literal
+      scope: constant.numeric.integer.hexadecimal.swift
+  integer-type:
+    - match: \bU?Int(8|16|32|64)?\b
+      comment: Int types
+      scope: support.type.swift
+  keyword:
+    - include: branch-statement-keyword
+    - include: control-transfer-statement-keyword
+    - include: loop-statement-keyword
+    - include: catch-statement-keyword
+    - include: operator-declaration-modifier
+    - include: declaration-modifier
+    - include: access-level-modifier
+    - match: \b(class|deinit|enum|extension|func|import|init|let|protocol|static|struct|subscript|typealias|var|throws|rethrows)\b
+      comment: declaration keyword
+      scope: keyword.declaration.swift
+    - match: \b(break|case|continue|default|do|else|fallthrough|if|in|for|return|switch|where|while|repeat|catch|guard|defer|try|throw)\b
+      comment: statement keyword
+      scope: keyword.statement.swift
+    - match: \b(as|dynamicType|is|new|super|self|Self|Type)\b
+      comment: expression and type keyword
+      scope: keyword.other.statement.swift
+    - match: \b(associativity|didSet|get|infix|inout|left|mutating|none|nonmutating|operator|override|postfix|precedence|prefix|right|set|unowned((un)?safe)?|weak|willSet)\b
+      comment: other keyword
+      scope: keyword.other.swift
+  literal:
+    - include: integer-literal
+    - include: floating-point-literal
+    - include: nil-literal
+    - include: string-literal
+    - include: special-literal
+  logical-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])(!|&&|\|\|)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.logical.swift
+  loop-statement-keyword:
+    - match: \b(while|repeat|for|in)\b
+      comment: loop-statement
+      scope: keyword.control.loop.swift
+  nil-literal:
+    - match: \bnil\b
+      comment: nil-literal
+      scope: constant.nil.swift
+  operator:
+    - include: comparative-operator
+    - include: assignment-operator
+    - include: logical-operator
+    - include: remainder-operator
+    - include: increment-decrement-operator
+    - include: overflow-operator
+    - include: range-operator
+    - include: bitwise-operator
+    - include: arithmetic-operator
+    - include: ternary-operator
+    - include: type-casting-operator
+    - include: custom-operator
+  operator-declaration-modifier:
+    - match: \b(operator|prefix|infix|postfix)\b
+      comment: operator-declaration
+      scope: keyword.other.operator.swift
+  optional-type:
+    - match: \b(Optional)(<)
+      scope: meta.optional.swift
+  overflow-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])\&(\+|\-|\*|\/|%)(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.overflow.swift
+  parameter-clause:
+    - match: (\()
+      comment: parameter-clause
+      captures:
+        1: punctuation.definition.function-arguments.begin.swift
+      push:
+        - meta_scope: meta.parameter-clause.swift
+        - match: (\))
+          captures:
+            1: punctuation.definition.function-arguments.end.swift
+          pop: true
+        - include: main
+  primitive-type:
+    - match: \b(Int|Float|Double|String|Bool|Character|Void)\b
+      comment: Primitive types
+      scope: support.type.swift
+  protocol-composition-type:
+    - match: \b(protocol)(<)
+      scope: meta.protocol.swift
+  range-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])\.\.(?:\.)?(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.range.swift
+  remainder-operator:
+    - match: '(?<![/=\-+!*%<>&|\^~.])\%(?![/=\-+!*%<>&|\^~.])'
+      scope: keyword.operator.remainder.swift
+  shebang-line:
+    - match: ^(#!).*$
+      comment: Shebang line
+      scope: comment.line.shebang.swift
+      captures:
+        1: punctuation.definition.comment.line.shebang.swift
+  special-literal:
+    - match: \b__(FILE|LINE|COLUMN|FUNCTION)__\b
+      scope: keyword.other.literal.swift
+  storage-type:
+    - match: \b(var|func|let|class|enum|struct|protocol|extension|typealias)\b
+      scope: storage.type.swift
+  string-literal:
+    - match: \"
+      captures:
+        0: string.quoted.double.swift
+      push:
+        - meta_scope: meta.literal.string.swift
+        - match: \"
+          captures:
+            0: string.quoted.double.swift
+          pop: true
+        - match: '\\([0tnr\"\''\\]|x\h{2}|u\h{4}|U\h{8})'
+          scope: constant.character.escape.swift
+        - match: (\\\()
+          captures:
+            1: support.punctuation.expression.begin.swift
+          push:
+            - meta_content_scope: meta.expression.swift
+            - match: (\))
+              captures:
+                1: support.punctuation.expression.end.swift
+              pop: true
+            - include: scope:source.swift
+        - match: (\"|\\)
+          scope: invalid.illegal.swift
+        - match: (.)
+          scope: string.quoted.double.swift
+  switch-statement-keyword:
+    - match: \b(switch|case|default|where)\b
+      comment: switch-statement
+      scope: keyword.control.switch.swift
+  ternary-operator:
+    - match: '(?<=[\s(\[{,;:])(\?|:)(?=[\s)\]},;:])'
+      scope: keyword.operator.ternary.swift
+  type:
+    - include: primitive-type
+    - include: integer-type
+    - include: collection-type
+    - include: optional-type
+    - include: protocol-composition-type
+  type-casting-operator:
+    - match: \b(is\b|as(\?\B|\b))
+      scope: keyword.operator.type-casting.swift

@@ -82,3 +82,6 @@
 [submodule "assets/syntaxes/PureScript"]
 	path = assets/syntaxes/PureScript
 	url = https://github.com/tellnobody1/sublime-purescript-syntax
+[submodule "assets/syntaxes/Swift"]
+	path = assets/syntaxes/Swift
+	url = https://github.com/quiqueg/Swift-Sublime-Package
