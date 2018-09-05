@@ -46,8 +46,7 @@ impl BatTester {
                 "--decorations=always",
                 "--terminal-width=80",
                 &format!("--style={}", style),
-            ])
-            .output()
+            ]).output()
             .expect("bat failed");
 
         // have to do the replace because the filename in the header changes based on the current working directory
