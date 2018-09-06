@@ -1,5 +1,7 @@
 use std::env;
+use std::ffi::OsString;
 use std::io::{self, Write};
+use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
 use app::PagingMode;
@@ -26,13 +28,16 @@ impl OutputType {
             .or_else(|_| env::var("PAGER"))
             .unwrap_or(String::from("less"));
 
-        let mut process = if pager == "less" || pager.ends_with("/less") {
+        let less_path = PathBuf::from(&pager);
+        let is_less = less_path.file_stem() == Some(&OsString::from("less"));
+
+        let mut process = if is_less {
             let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
             if quit_if_one_screen {
                 args.push("--quit-if-one-screen");
             }
 
-            let mut p = Command::new("less");
+            let mut p = Command::new(&less_path);
             p.args(&args).env("LESSCHARSET", "UTF-8");
             p
         } else {
