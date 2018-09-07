@@ -190,11 +190,10 @@ impl App {
                     .long("plain")
                     .conflicts_with("style")
                     .conflicts_with("number")
-                    .conflicts_with("wrap")
-                    .help("Show plain style (alias for '--style=plain' and '--wrap=never').")
+                    .help("Show plain style (alias for '--style=plain'.")
                     .long_help(
-                        "Only show plain style, no decorations, no wrapping. This is an alias for \
-                         '--style=plain' and '--wrap=never'",
+                        "Only show plain style, no decorations. This is an alias for \
+                         '--style=plain'",
                     ),
             ).arg(
                 Arg::with_name("number")
@@ -264,8 +263,8 @@ impl App {
                     .overrides_with("wrap")
                     .takes_value(true)
                     .value_name("mode")
-                    .possible_values(&["character", "never"])
-                    .default_value("character")
+                    .possible_values(&["auto", "never", "character"])
+                    .default_value("auto")
                     .help("Specify the text-wrapping mode.")
                     .long_help("Specify the text-wrapping mode."),
             ).arg(
@@ -340,22 +339,24 @@ impl App {
 
     pub fn config(&self) -> Result<Config> {
         let files = self.files();
+        let output_components = self.output_components()?;
 
         Ok(Config {
             true_color: is_truecolor_terminal(),
-            output_components: self.output_components()?,
             language: self.matches.value_of("language"),
             output_wrap: if !self.interactive_output {
                 // We don't have the tty width when piping to another program.
                 // There's no point in wrapping when this is the case.
                 OutputWrap::None
-            } else if self.matches.is_present("plain") {
-                // No point in wrapping when it's plain.
-                OutputWrap::None
             } else {
                 match self.matches.value_of("wrap") {
                     Some("character") => OutputWrap::Character,
-                    Some("never") | _ => OutputWrap::None,
+                    Some("never") => OutputWrap::None,
+                    Some("auto") | _ => if output_components.plain() {
+                        OutputWrap::None
+                    } else {
+                        OutputWrap::Character
+                    },
                 }
             },
             colored_output: match self.matches.value_of("color") {
@@ -397,6 +398,7 @@ impl App {
                 .or_else(|| env::var("BAT_THEME").ok())
                 .unwrap_or(String::from(BAT_THEME_DEFAULT)),
             line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
+            output_components,
         })
     }
 
