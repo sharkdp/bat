@@ -78,4 +78,8 @@ impl OutputComponents {
     pub fn numbers(&self) -> bool {
         self.0.contains(&OutputComponent::Numbers)
     }
+
+    pub fn plain(&self) -> bool {
+        self.0.is_empty()
+    }
 }
