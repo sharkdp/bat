@@ -415,10 +415,8 @@ impl App {
                         } else {
                             InputFile::Ordinary(filename)
                         }
-                    })
-                    .collect()
-            })
-            .unwrap_or_else(|| vec![InputFile::StdIn])
+                    }).collect()
+            }).unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
     fn output_components(&self) -> Result<OutputComponents> {
