@@ -384,7 +384,8 @@ impl App {
                     }
                 },
             },
-            term_width: self.matches
+            term_width: self
+                .matches
                 .value_of("terminal-width")
                 .and_then(|w| w.parse().ok())
                 .unwrap_or(Term::stdout().size().1 as usize),
@@ -392,7 +393,8 @@ impl App {
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
             files,
-            theme: self.matches
+            theme: self
+                .matches
                 .value_of("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
