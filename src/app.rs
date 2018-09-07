@@ -190,10 +190,11 @@ impl App {
                     .long("plain")
                     .conflicts_with("style")
                     .conflicts_with("number")
-                    .help("Show plain style (alias for '--style=plain').")
+                    .conflicts_with("wrap")
+                    .help("Show plain style (alias for '--style=plain' and '--wrap=never').")
                     .long_help(
-                        "Only show plain style, no decorations. This is an alias for \
-                         '--style=plain'",
+                        "Only show plain style, no decorations, no wrapping. This is an alias for \
+                         '--style=plain' and '--wrap=never'",
                     ),
             ).arg(
                 Arg::with_name("number")
@@ -348,6 +349,9 @@ impl App {
                 // We don't have the tty width when piping to another program.
                 // There's no point in wrapping when this is the case.
                 OutputWrap::None
+            } else if self.matches.is_present("plain") {
+                // No point in wrapping when it's plain.
+                OutputWrap::None
             } else {
                 match self.matches.value_of("wrap") {
                     Some("character") => OutputWrap::Character,
@@ -379,8 +383,7 @@ impl App {
                     }
                 },
             },
-            term_width: self
-                .matches
+            term_width: self.matches
                 .value_of("terminal-width")
                 .and_then(|w| w.parse().ok())
                 .unwrap_or(Term::stdout().size().1 as usize),
@@ -388,8 +391,7 @@ impl App {
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
             files,
-            theme: self
-                .matches
+            theme: self.matches
                 .value_of("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
@@ -409,8 +411,10 @@ impl App {
                         } else {
                             InputFile::Ordinary(filename)
                         }
-                    }).collect()
-            }).unwrap_or_else(|| vec![InputFile::StdIn])
+                    })
+                    .collect()
+            })
+            .unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
     fn output_components(&self) -> Result<OutputComponents> {
