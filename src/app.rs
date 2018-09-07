@@ -190,7 +190,7 @@ impl App {
                     .long("plain")
                     .conflicts_with("style")
                     .conflicts_with("number")
-                    .help("Show plain style (alias for '--style=plain'.")
+                    .help("Show plain style (alias for '--style=plain').")
                     .long_help(
                         "Only show plain style, no decorations. This is an alias for \
                          '--style=plain'",
