@@ -19,6 +19,8 @@ use errors::*;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
+use std::fs;
+
 pub trait Printer {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()>;
     fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
@@ -154,6 +156,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
             return Ok(());
+        }
+
+        match file {
+            InputFile::Ordinary(filename) => if fs::metadata(filename).unwrap().is_dir() {
+                return Ok(());
+            },
+            _ => (),
         }
 
         if self.config.output_components.grid() {
