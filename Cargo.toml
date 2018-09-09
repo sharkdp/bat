@@ -19,7 +19,6 @@ ansi_term = "0.11"
 console = "0.6"
 directories = "1.0"
 lazy_static = "1.0"
-libz-sys = "1.0.20"
 
 [dependencies.git2]
 version = "0.7"
