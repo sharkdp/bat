@@ -243,6 +243,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     )).collect::<Vec<_>>()
                     .join("")
             )?;
+
+            if line.bytes().next_back() != Some(b'\n') {
+                write!(handle, "\n")?;
+            }
         } else {
             for &(style, region) in regions.iter() {
                 let mut ansi_iterator = AnsiCodeIterator::new(region);
