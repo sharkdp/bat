@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::env;
 use std::path::Path;
+use std::str::FromStr;
 
 use atty::{self, Stream};
 
@@ -11,7 +12,7 @@ use console::Term;
 #[cfg(windows)]
 use ansi_term;
 
-use assets::BAT_THEME_DEFAULT;
+use assets::{BAT_THEME_DEFAULT, BAT_STYLE_DEFAULT};
 use errors::*;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
@@ -174,7 +175,7 @@ impl App {
                     .takes_value(true)
                     .possible_values(&[
                         "auto", "full", "plain", "changes", "header", "grid", "numbers",
-                    ]).default_value("auto")
+                    ])
                     .help("Comma-separated list of style elements to display.")
                     .long_help(
                         "Configure which elements (line numbers, file headers, grid \
@@ -428,7 +429,7 @@ impl App {
                 [OutputComponent::Numbers].iter().cloned().collect()
             } else if matches.is_present("plain") {
                 [OutputComponent::Plain].iter().cloned().collect()
-            } else {
+            } else if matches.is_present("style") {
                 values_t!(matches.values_of("style"), OutputComponent)?
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
@@ -436,6 +437,17 @@ impl App {
                         acc.extend(components.iter().cloned());
                         acc
                     })
+            } else {
+                let style = env::var("BAT_STYLE").unwrap_or(String::from(BAT_STYLE_DEFAULT));
+                match OutputComponent::from_str(&style) {
+                    Ok(s) => [s].iter()
+                                .map(|style| style.components(self.interactive_output))
+                                .fold(HashSet::new(), |mut acc, components| {
+                                    acc.extend(components.iter().cloned());
+                                    acc
+                                }),
+                    Err(_) => HashSet::new(),
+                }
             },
         ))
     }

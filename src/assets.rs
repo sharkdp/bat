@@ -18,6 +18,7 @@ lazy_static! {
         ProjectDirs::from("", "", crate_name!()).expect("Could not get home directory");
 }
 
+pub const BAT_STYLE_DEFAULT: &str = "auto";
 pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
 pub struct HighlightingAssets {
