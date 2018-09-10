@@ -182,7 +182,8 @@ impl App {
                          borders, Git modifications, ..) to display in addition to the \
                          file contents. The argument is a comma-separated list of \
                          components to display (e.g. 'numbers,changes,grid') or a \
-                         pre-defined style ('full')",
+                         pre-defined style ('full'). To set a default theme, export the \
+                         BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"numbers\").",
                     ),
             ).arg(
                 Arg::with_name("plain")
