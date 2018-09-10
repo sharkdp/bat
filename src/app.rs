@@ -12,7 +12,7 @@ use console::Term;
 #[cfg(windows)]
 use ansi_term;
 
-use assets::{BAT_THEME_DEFAULT, BAT_STYLE_DEFAULT};
+use assets::{BAT_STYLE_DEFAULT, BAT_THEME_DEFAULT};
 use errors::*;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
@@ -441,12 +441,13 @@ impl App {
             } else {
                 let style = env::var("BAT_STYLE").unwrap_or(String::from(BAT_STYLE_DEFAULT));
                 match OutputComponent::from_str(&style) {
-                    Ok(s) => [s].iter()
-                                .map(|style| style.components(self.interactive_output))
-                                .fold(HashSet::new(), |mut acc, components| {
-                                    acc.extend(components.iter().cloned());
-                                    acc
-                                }),
+                    Ok(s) => [s]
+                        .iter()
+                        .map(|style| style.components(self.interactive_output))
+                        .fold(HashSet::new(), |mut acc, components| {
+                            acc.extend(components.iter().cloned());
+                            acc
+                        }),
                     Err(_) => HashSet::new(),
                 }
             },
