@@ -245,12 +245,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             for &(style, region) in regions.iter() {
                 let text = &*self.preprocess(region, &mut cursor_total);
-                write!(handle, "{}", as_terminal_escaped(
-                    style,
-                    &*text,
-                    true_color,
-                    colored_output,
-                ))?;
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(style, &*text, true_color, colored_output,)
+                )?;
             }
         } else {
             for &(style, region) in regions.iter() {
