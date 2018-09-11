@@ -150,7 +150,7 @@ impl<'a> InteractivePrinter<'a> {
         Ok(())
     }
 
-    fn preprocess(&self, text: &str, cursor: usize) -> String {
+    fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             expand(text, self.config.tab_width, cursor)
         } else {
@@ -243,19 +243,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
 
-            write!(
-                handle,
-                "{}",
-                regions
-                    .iter()
-                    .map(|&(style, text)| as_terminal_escaped(
-                        style,
-                        &*self.preprocess(text, 0),
-                        true_color,
-                        colored_output,
-                    )).collect::<Vec<_>>()
-                    .join("")
-            )?;
+            for &(style, region) in regions.iter() {
+                let text = &*self.preprocess(region, &mut cursor_total);
+                write!(handle, "{}", as_terminal_escaped(
+                    style,
+                    &*text,
+                    true_color,
+                    colored_output,
+                ))?;
+            }
         } else {
             for &(style, region) in regions.iter() {
                 let mut ansi_iterator = AnsiCodeIterator::new(region);
@@ -280,8 +276,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         (text, false) => {
                             let text = self.preprocess(
                                 text.trim_right_matches(|c| c == '\r' || c == '\n'),
-                                cursor_total,
+                                &mut cursor_total,
                             );
+
                             let mut chars = text.chars();
                             let mut remaining = text.chars().count();
 
@@ -292,7 +289,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 if remaining <= available {
                                     let text = chars.by_ref().take(remaining).collect::<String>();
                                     cursor += remaining;
-                                    cursor_total += remaining;
 
                                     write!(
                                         handle,
@@ -330,7 +326,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 // It wraps.
                                 let text = chars.by_ref().take(available).collect::<String>();
                                 cursor = 0;
-                                cursor_total += available;
                                 remaining -= available;
 
                                 write!(
