@@ -1,9 +1,8 @@
 use console::AnsiCodeIterator;
 
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand(line: &str, width: usize) -> String {
+pub fn expand(line: &str, width: usize, mut cursor: usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
-    let mut cursor = 0;
 
     for chunk in AnsiCodeIterator::new(line) {
         match chunk {

@@ -149,6 +149,14 @@ impl<'a> InteractivePrinter<'a> {
 
         Ok(())
     }
+
+    fn preprocess(&self, text: &str, cursor: usize) -> String {
+        if self.config.tab_width > 0 {
+            expand(text, self.config.tab_width, cursor)
+        } else {
+            text.to_string()
+        }
+    }
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
@@ -201,12 +209,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let mut line = String::from_utf8_lossy(&line_buffer).to_string();
-
-        // Preprocess.
-        if self.config.tab_width > 0 {
-            line = expand(&line, self.config.tab_width);
-        }
+        let line = String::from_utf8_lossy(&line_buffer).to_string();
 
         // Highlight.
         let regions = self.highlighter.highlight(line.as_ref());
@@ -218,6 +221,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
+        let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
         // Line decorations.
@@ -246,7 +250,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .iter()
                     .map(|&(style, text)| as_terminal_escaped(
                         style,
-                        text,
+                        &*self.preprocess(text, 0),
                         true_color,
                         colored_output,
                     )).collect::<Vec<_>>()
@@ -274,7 +278,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                         // Regular text.
                         (text, false) => {
-                            let text = text.trim_right_matches(|c| c == '\r' || c == '\n');
+                            let text = self.preprocess(
+                                text.trim_right_matches(|c| c == '\r' || c == '\n'),
+                                cursor_total,
+                            );
                             let mut chars = text.chars();
                             let mut remaining = text.chars().count();
 
@@ -285,6 +292,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 if remaining <= available {
                                     let text = chars.by_ref().take(remaining).collect::<String>();
                                     cursor += remaining;
+                                    cursor_total += remaining;
 
                                     write!(
                                         handle,
@@ -322,6 +330,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 // It wraps.
                                 let text = chars.by_ref().take(available).collect::<String>();
                                 cursor = 0;
+                                cursor_total += available;
                                 remaining -= available;
 
                                 write!(
