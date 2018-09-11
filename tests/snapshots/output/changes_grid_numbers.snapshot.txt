@@ -16,8 +16,22 @@
   16   │ fn area(rectangle: &Rectangle) -> u32 {
   17   │     rectangle.width * rectangle.height
   18   │ }
-  19 + │ 
+  19   │ 
   20 + │ fn perimeter(rectangle: &Rectangle) -> u32 {
   21 + │     (rectangle.width + rectangle.height) * 2
   22 + │ }
+  23 + │ 
+  24   │ // Tab alignment:
+  25   │ /*
+  26   │         Indent
+  27   │         1       2       3       4
+  28   │ 1       ?
+  29   │ 22      ?
+  30   │ 333     ?
+  31   │ 4444    ?
+  32   │ 55555   ?
+  33   │ 666666  ?
+  34   │ 7777777 ?
+  35   │ 88888888        ?
+  36 ~ │ */
 ───────┴────────────────────────────────────────────────────────────────────────
