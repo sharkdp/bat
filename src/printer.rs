@@ -113,9 +113,13 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         // Get the Git modifications
-        let line_changes = match file {
-            InputFile::Ordinary(filename) => get_git_diff(filename),
-            _ => None,
+        let line_changes = if config.output_components.changes() {
+            match file {
+                InputFile::Ordinary(filename) => get_git_diff(filename),
+                _ => None,
+            }
+        } else {
+            None
         };
 
         // Determine the type of syntax for highlighting
