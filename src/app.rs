@@ -439,17 +439,17 @@ impl App {
                         acc
                     })
             } else {
-                let style = env::var("BAT_STYLE").unwrap_or(String::from(BAT_STYLE_DEFAULT));
-                match OutputComponent::from_str(&style) {
-                    Ok(s) => [s]
-                        .iter()
-                        .map(|style| style.components(self.interactive_output))
-                        .fold(HashSet::new(), |mut acc, components| {
-                            acc.extend(components.iter().cloned());
-                            acc
-                        }),
-                    Err(_) => HashSet::new(),
-                }
+                let style_str = env::var("BAT_STYLE").unwrap_or(String::from(BAT_STYLE_DEFAULT));
+                style_str
+                    .split(",")
+                    .map(|x| OutputComponent::from_str(&x))
+                    .map(|s| match s {
+                        Ok(style) => style.components(self.interactive_output),
+                        Err(_) => &[],
+                    }).fold(HashSet::new(), |mut acc, components| {
+                        acc.extend(components.iter().cloned());
+                        acc
+                    })
             },
         ))
     }
