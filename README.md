@@ -134,6 +134,8 @@ or install it with [scoop](https://scoop.sh/):
 scoop install bat
 ```
 
+[See below](#using-bat-on-windows) for notes.
+
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
@@ -234,6 +236,28 @@ script as a wrapper, for example:
 
 less --tabs 4 -RF "$@"
 ```
+
+## Using `bat` on Windows
+
+`bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
+
+### Paging
+
+Windows only includes a very limited pager in the form of `more`. You can download a Windows binary
+for `less` [from its homepage](http://www.greenwoodsoftware.com/less/download.html) or [through
+Chocolatey](https://chocolatey.org/packages/Less). To use it, place the binary in a directory in
+your `PATH` or [define an environment variable](#using-a-different-pager).
+
+### Colours
+
+Windows 10 natively supports colours in both `conhost.exe` (Command Prompt) and PowerShell since
+[v1511](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)), as
+well as in newer versions of bash. On earlier versions of Windows, you can use
+[Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
+
+**Note:** The Git and MSYS versions of `less` do not correctly interpret colours on Windows. If you
+don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never`
+or by setting `BAT_PAGER` to an empty string.
 
 ## Troubleshooting
 
