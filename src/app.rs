@@ -41,6 +41,9 @@ pub struct Config<'a> {
     /// The character width of the terminal
     pub term_width: usize,
 
+    /// The width of tab characters.
+    pub tab_width: usize,
+
     /// Whether or not to simply loop through all input (`cat` mode)
     pub loop_through: bool,
 
@@ -277,6 +280,15 @@ impl App {
                          is simply ignored.",
                     ),
             ).arg(
+                Arg::with_name("tabs")
+                    .long("tabs")
+                    .short("t")
+                    .takes_value(true)
+                    .value_name("width")
+                    .help("Sets the tab width.")
+                    .long_help("Sets the tab width. Use a width of 0 to pass tabs through \
+                        directly"),
+            ).arg(
                 Arg::with_name("terminal-width")
                     .long("terminal-width")
                     .takes_value(true)
@@ -393,6 +405,12 @@ impl App {
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
             files,
+            tab_width: self
+                .matches
+                .value_of("tabs")
+                .and_then(|w| w.parse().ok())
+                .or_else(|| env::var("BAT_TABS").ok().and_then(|w| w.parse().ok()))
+                .unwrap_or(8),
             theme: self
                 .matches
                 .value_of("theme")

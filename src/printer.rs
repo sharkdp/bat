@@ -16,6 +16,7 @@ use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineN
 use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
+use preprocessor::expand;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
@@ -200,9 +201,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let line = String::from_utf8_lossy(&line_buffer);
+        let mut line = String::from_utf8_lossy(&line_buffer).to_string();
+
+        // Preprocess.
+        if self.config.tab_width > 0 {
+            line = expand(&line, self.config.tab_width);
+        }
+
+        // Highlight.
         let regions = self.highlighter.highlight(line.as_ref());
 
+        // Print.
         if out_of_range {
             return Ok(());
         }
