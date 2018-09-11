@@ -10,16 +10,24 @@ def generate_snapshots():
 
     for num in range(len(single_styles)):
         for grouped in itertools.combinations(single_styles, num + 1):
-            generate_snapshot(",".join(grouped))
+            generate_style_snapshot(",".join(grouped))
 
     for style in collective_styles:
-        generate_snapshot(style)
+        generate_style_snapshot(style)
 
-def generate_snapshot(option):
-    command = "../../target/debug/bat --style={0} sample.rs > output/{0}.snapshot.txt".format(
-        option
+    generate_snapshot("tabs_passthrough", "--tabs=0 --style=full")
+    generate_snapshot("tabs_4", "--tabs=4 --style=full")
+    generate_snapshot("tabs_8", "--tabs=8 --style=full")
+
+def generate_style_snapshot(style):
+    generate_snapshot(style.replace(",","_"), "--style={}".format(style))
+
+def generate_snapshot(name, arguments):
+    command = "../../target/debug/bat --decorations=always {1} sample.rs > output/{0}.snapshot.txt".format(
+        name,
+        arguments
     )
-    print("generating snapshot for {}".format(option))
+    print("generating snapshot for {}".format(name))
     subprocess.call(command, shell=True)
 
 def build_bat():

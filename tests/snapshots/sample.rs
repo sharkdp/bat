@@ -16,3 +16,17 @@ fn main() {
 fn area(rectangle: &Rectangle) -> u32 {
     rectangle.width * rectangle.height
 }
+
+// Tab alignment:
+/*
+	Indent
+	1	2	3	4
+1	?
+22	?
+333	?
+4444	?
+55555	?
+666666	?
+7777777	?
+88888888	?
+*/
