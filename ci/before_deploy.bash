@@ -19,6 +19,8 @@ pack() {
 
     if [[ $TARGET == "arm-unknown-linux-gnueabihf" ]]; then
         gcc_prefix="arm-linux-gnueabihf-"
+    elif [[ $TARGET == "aarch64-unknown-linux-gnu" ]]; then
+        gcc_prefix="aarch64-linux-gnu-"
     else
         gcc_prefix=""
     fi
@@ -49,13 +51,24 @@ make_deb() {
     local version
     local dpkgname
     local conflictname
+    local gcc_prefix
 
     case $TARGET in
         x86_64*)
             architecture=amd64
+            gcc_prefix=""
             ;;
         i686*)
             architecture=i386
+            gcc_prefix=""
+            ;;
+        aarch64*)
+            architecture=arm64
+            gcc_prefix="aarch64-linux-gnu-"
+            ;;
+        arm*hf) 
+            architecture=armhf  
+            gcc_prefix="arm-linux-gnueabihf-"   
             ;;
         *)
             echo "make_deb: skipping target '${TARGET}'" >&2
@@ -75,7 +88,7 @@ make_deb() {
 
     # copy the main binary
     install -Dm755 "target/$TARGET/release/$PROJECT_NAME" "$tempdir/usr/bin/$PROJECT_NAME"
-    strip "$tempdir/usr/bin/$PROJECT_NAME"
+    "${gcc_prefix}"strip "$tempdir/usr/bin/$PROJECT_NAME"
 
     # manpage
     install -Dm644 "doc/$PROJECT_NAME.1" "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"

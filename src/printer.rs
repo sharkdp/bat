@@ -114,9 +114,13 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         // Get the Git modifications
-        let line_changes = match file {
-            InputFile::Ordinary(filename) => get_git_diff(filename),
-            _ => None,
+        let line_changes = if config.output_components.changes() {
+            match file {
+                InputFile::Ordinary(filename) => get_git_diff(filename),
+                _ => None,
+            }
+        } else {
+            None
         };
 
         // Determine the type of syntax for highlighting
@@ -210,11 +214,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = String::from_utf8_lossy(&line_buffer).to_string();
-
-        // Highlight.
         let regions = self.highlighter.highlight(line.as_ref());
 
-        // Print.
         if out_of_range {
             return Ok(());
         }
@@ -250,6 +251,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     "{}",
                     as_terminal_escaped(style, &*text, true_color, colored_output,)
                 )?;
+            }
+
+            if line.bytes().next_back() != Some(b'\n') {
+                write!(handle, "\n")?;
             }
         } else {
             for &(style, region) in regions.iter() {

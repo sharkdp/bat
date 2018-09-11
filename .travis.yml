@@ -23,7 +23,13 @@ matrix:
         - TARGET=arm-unknown-linux-gnueabihf
         - CC_arm_unknown_linux_gnueabihf=/usr/bin/arm-linux-gnueabihf-gcc-4.8
         - CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc-4.8
-
+    - os: linux
+      rust: stable
+      env:
+        - TARGET=aarch64-unknown-linux-gnu
+        - CC_aarch64-unknown-linux-gnu=/usr/bin/aarch64-linux-gnu-gcc-4.8
+        - CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc-4.8
+        
     # Minimum Rust supported channel.
     - os: linux
       rust: 1.26.0
