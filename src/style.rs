@@ -54,7 +54,8 @@ impl FromStr for OutputComponent {
             "header" => Ok(OutputComponent::Header),
             "numbers" => Ok(OutputComponent::Numbers),
             "full" => Ok(OutputComponent::Full),
-            "plain" | _ => Ok(OutputComponent::Plain),
+            "plain" => Ok(OutputComponent::Plain),
+            _ => Err(format!("Unknown style '{}'", s).into()),
         }
     }
 }

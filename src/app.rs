@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::env;
 use std::path::Path;
+use std::str::FromStr;
 
 use atty::{self, Stream};
 
@@ -178,14 +179,15 @@ impl App {
                 .takes_value(true)
                 .possible_values(&[
                     "auto", "full", "plain", "changes", "header", "grid", "numbers",
-                ]).default_value("auto")
+                ])
                 .help("Comma-separated list of style elements to display.")
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
                          borders, Git modifications, ..) to display in addition to the \
                          file contents. The argument is a comma-separated list of \
                          components to display (e.g. 'numbers,changes,grid') or a \
-                         pre-defined style ('full')",
+                         pre-defined style ('full'). To set a default theme, export the \
+                         BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"numbers\").",
                 ),
         ).arg(
             Arg::with_name("plain")
@@ -462,7 +464,18 @@ impl App {
             } else if matches.is_present("plain") {
                 [OutputComponent::Plain].iter().cloned().collect()
             } else {
-                values_t!(matches.values_of("style"), OutputComponent)?
+                let env_style_components: Option<Vec<OutputComponent>> =
+                    transpose(env::var("BAT_STYLE").ok().map(|style_str| {
+                        style_str
+                            .split(",")
+                            .map(|x| OutputComponent::from_str(&x))
+                            .collect::<Result<Vec<OutputComponent>>>()
+                    }))?;
+
+                values_t!(matches.values_of("style"), OutputComponent)
+                    .ok()
+                    .or(env_style_components)
+                    .unwrap_or(vec![OutputComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {
