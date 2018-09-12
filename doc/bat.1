@@ -36,8 +36,10 @@ Display a list of supported themes for syntax highlighting.
 Configure which elements (line numbers, file headers, grid borders, Git
 modifications, ..) to display in addition to the file contents. The argument
 is a comma\-separated list of components to display (e.g.
-\&'numbers,changes,grid') or a pre\-defined style ('full') [default: auto]
-[possible values: auto, full, plain, changes, header, grid, numbers]
+\&'numbers,changes,grid') or a pre\-defined style ('full'). To set a default
+theme, export the BAT_STYLE environment variable (e.g.: export
+BAT_STYLE="numbers"). [possible values: auto, full, plain, changes, header,
+grid, numbers]
 .HP
 \fB\-p\fR
 .IP
@@ -80,14 +82,20 @@ pager is 'less'. To disable the pager permanently, set BAT_PAGER to an empty
 string. [default: auto]  [possible values: auto, never, always]
 .HP
 \fB\-\-wrap\fR <mode>
+.TP
+Specify the text\-wrapping mode. [default: auto]
+[possible values: auto,
 .IP
-Specify the text\-wrapping mode. [default: character]
-[possible values: character, never]
+never, character]
 .HP
 \fB\-u\fR
 .IP
 This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The
 output is always unbuffered \- this option is simply ignored.
+.HP
+\fB\-\-tabs\fR <tabs>
+.IP
+Sets the tab width. Use a width of 0 to pass tabs through directly
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
