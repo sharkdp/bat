@@ -42,6 +42,7 @@ pub struct Config<'a> {
     pub term_width: usize,
 
     /// The width of tab characters.
+    /// Currently, a value of 0 will cause tabs to be passed through without expanding them.
     pub tab_width: usize,
 
     /// Whether or not to simply loop through all input (`cat` mode)
@@ -282,9 +283,14 @@ impl App {
         ).arg(
             Arg::with_name("tabs")
                 .long("tabs")
-                .short("t")
                 .takes_value(true)
-                .value_name("width")
+                .value_name("tabs")
+                .validator(
+                    |t| t.parse::<u32>()
+                        .map_err(|_t| "must be a number")
+                        .map(|_t| ()) // Convert to Result<(), &str>
+                        .map_err(|e| e.to_string()) // Convert to Result<(), String>
+                )
                 .help("Sets the tab width.")
                 .long_help("Sets the tab width. Use a width of 0 to pass tabs through \
                         directly"),
@@ -410,8 +416,9 @@ impl App {
             tab_width: self
                 .matches
                 .value_of("tabs")
-                .and_then(|w| w.parse().ok())
-                .or_else(|| env::var("BAT_TABS").ok().and_then(|w| w.parse().ok()))
+                .map(String::from)
+                .or_else(|| env::var("BAT_TABS").ok())
+                .and_then(|t| t.parse().ok())
                 .unwrap_or(
                     if output_components.plain() && paging_mode == PagingMode::Never {
                         0
