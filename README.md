@@ -178,8 +178,8 @@ higher. You can then use `cargo` to build everything:
 cargo install bat
 ```
 
-On macOS, you might have to install `cmake` (`brew install cmake`) in order for
-some dependencies to be built.
+You may have to install `cmake` and the `libz` development package
+(`libz-dev` or `libz-devel`) in order for the build to succeed.
 
 ## Customization
 
@@ -306,10 +306,6 @@ are supported (and fall back to 8-bit colors).
 
 Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
 `OneHalfLight` themes provide grid and line colors that are brighter.
-
-### Error when compiling: "cannot find -lz"
-
-Please install the `zlib-devel` package and try again.
 
 ## Development
 
