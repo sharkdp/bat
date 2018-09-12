@@ -117,6 +117,34 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
+### Via Ansible
+
+You can install `bat` with [Ansible](https://www.ansible.com/):
+
+```bash
+# Install role on local machine
+ansible-galaxy install aeimer.install_bat
+```
+
+```yaml
+---
+# Playbook to install bat
+- host: all
+  roles:
+    - aeimer.install_bat
+```
+
+- [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
+- [Github](https://github.com/aeimer/ansible-install-bat)
+
+This should work with the following distributions:
+- Debian/Ubuntu
+- ARM (eg. Raspberry PI)
+- Arch Linux
+- Void Linux
+- FreeBSD
+- MacOS
+
 ### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
