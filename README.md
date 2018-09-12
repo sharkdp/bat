@@ -167,7 +167,8 @@ make the change permanent.
 
 You can use the `--style` option to control the appearance of `bat`s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
-and line numbers but no grid and no file header.
+and line numbers but no grid and no file header. Use the `BAT_STYLE` environment
+variable to make these changes permanent.
 
 ### Adding new syntaxes / language definitions
 
