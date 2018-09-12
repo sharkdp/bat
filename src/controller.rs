@@ -53,7 +53,15 @@ impl<'b> Controller<'b> {
         {
             let reader: Box<BufRead> = match filename {
                 InputFile::StdIn => Box::new(stdin.lock()),
-                InputFile::Ordinary(filename) => Box::new(BufReader::new(File::open(filename)?)),
+                InputFile::Ordinary(filename) => {
+                    let file = File::open(filename)?;
+
+                    if file.metadata()?.is_dir() {
+                        return Err(format!("'{}' is a directory.", filename).into());
+                    }
+
+                    Box::new(BufReader::new(file))
+                }
                 InputFile::ThemePreviewFile => Box::new(THEME_PREVIEW_FILE),
             };
 
