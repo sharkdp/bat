@@ -43,6 +43,8 @@ impl BatTester {
             .current_dir(self.temp_dir.path())
             .args(&[
                 "sample.rs",
+                "--paging=never",
+                "--color=never",
                 "--decorations=always",
                 "--terminal-width=80",
                 &format!("--wrap={}", if wrap { "character" } else { "never" }),
