@@ -12,7 +12,7 @@ use console::Term;
 #[cfg(windows)]
 use ansi_term;
 
-use assets::{BAT_STYLE_DEFAULT, BAT_THEME_DEFAULT};
+use assets::BAT_THEME_DEFAULT;
 use errors::*;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
@@ -430,23 +430,22 @@ impl App {
                 [OutputComponent::Numbers].iter().cloned().collect()
             } else if matches.is_present("plain") {
                 [OutputComponent::Plain].iter().cloned().collect()
-            } else if matches.is_present("style") {
-                values_t!(matches.values_of("style"), OutputComponent)?
+            } else {
+                let env_style_components: Option<Vec<OutputComponent>> =
+                    transpose(env::var("BAT_STYLE").ok().map(|style_str| {
+                        style_str
+                            .split(",")
+                            .map(|x| OutputComponent::from_str(&x))
+                            .collect::<Result<Vec<OutputComponent>>>()
+                    }))?;
+
+                values_t!(matches.values_of("style"), OutputComponent)
+                    .ok()
+                    .or(env_style_components)
+                    .unwrap_or(vec![OutputComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {
-                        acc.extend(components.iter().cloned());
-                        acc
-                    })
-            } else {
-                let style_str = env::var("BAT_STYLE").unwrap_or(String::from(BAT_STYLE_DEFAULT));
-                style_str
-                    .split(",")
-                    .map(|x| OutputComponent::from_str(&x))
-                    .map(|s| match s {
-                        Ok(style) => style.components(self.interactive_output),
-                        Err(_) => &[],
-                    }).fold(HashSet::new(), |mut acc, components| {
                         acc.extend(components.iter().cloned());
                         acc
                     })
