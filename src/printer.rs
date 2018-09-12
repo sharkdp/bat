@@ -16,6 +16,7 @@ use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineN
 use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
+use preprocessor::expand;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
@@ -113,9 +114,13 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         // Get the Git modifications
-        let line_changes = match file {
-            InputFile::Ordinary(filename) => get_git_diff(filename),
-            _ => None,
+        let line_changes = if config.output_components.changes() {
+            match file {
+                InputFile::Ordinary(filename) => get_git_diff(filename),
+                _ => None,
+            }
+        } else {
+            None
         };
 
         // Determine the type of syntax for highlighting
@@ -147,6 +152,14 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         Ok(())
+    }
+
+    fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
+        if self.config.tab_width > 0 {
+            expand(text, self.config.tab_width, cursor)
+        } else {
+            text.to_string()
+        }
     }
 }
 
@@ -200,7 +213,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let line = String::from_utf8_lossy(&line_buffer);
+        let line = String::from_utf8_lossy(&line_buffer).to_string();
         let regions = self.highlighter.highlight(line.as_ref());
 
         if out_of_range {
@@ -209,6 +222,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
+        let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
         // Line decorations.
@@ -230,19 +244,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
 
-            write!(
-                handle,
-                "{}",
-                regions
-                    .iter()
-                    .map(|&(style, text)| as_terminal_escaped(
-                        style,
-                        text,
-                        true_color,
-                        colored_output,
-                    )).collect::<Vec<_>>()
-                    .join("")
-            )?;
+            for &(style, region) in regions.iter() {
+                let text = &*self.preprocess(region, &mut cursor_total);
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(style, &*text, true_color, colored_output,)
+                )?;
+            }
+
+            if line.bytes().next_back() != Some(b'\n') {
+                write!(handle, "\n")?;
+            }
         } else {
             for &(style, region) in regions.iter() {
                 let mut ansi_iterator = AnsiCodeIterator::new(region);
@@ -265,7 +278,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                         // Regular text.
                         (text, false) => {
-                            let text = text.trim_right_matches(|c| c == '\r' || c == '\n');
+                            let text = self.preprocess(
+                                text.trim_right_matches(|c| c == '\r' || c == '\n'),
+                                &mut cursor_total,
+                            );
+
                             let mut chars = text.chars();
                             let mut remaining = text.chars().count();
 

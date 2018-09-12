@@ -88,3 +88,6 @@
 [submodule "assets/syntaxes/Crystal"]
 	path = assets/syntaxes/Crystal
 	url = https://github.com/crystal-lang-tools/sublime-crystal.git
+[submodule "assets/syntaxes/PowerShell"]
+	path = assets/syntaxes/PowerShell
+	url = https://github.com/PowerShell/EditorSyntax

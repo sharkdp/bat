@@ -27,3 +27,11 @@ if [[ $TARGET == arm-unknown-linux-gnueabihf ]]; then
         libc6-armhf-cross \
         libc6-dev-armhf-cross
 fi
+
+# needed for cross-compiling for arm64
+if [[ $TARGET == aarch64-unknown-linux-gnu ]]; then
+    sudo apt-get install -y \
+        gcc-4.8-aarch64-linux-gnu \
+        binutils-aarch64-linux-gnu \
+        gcc-aarch64-linux-gnu
+fi

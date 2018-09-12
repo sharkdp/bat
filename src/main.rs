@@ -24,6 +24,7 @@ mod decorations;
 mod diff;
 mod line_range;
 mod output;
+mod preprocessor;
 mod printer;
 mod style;
 mod terminal;
