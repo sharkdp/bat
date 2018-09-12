@@ -38,13 +38,17 @@ impl BatTester {
         BatTester { temp_dir, exe }
     }
 
-    pub fn test_snapshot(&self, style: &str) {
+    pub fn test_snapshot(&self, name: &str, style: &str, tab_width: u32, wrap: bool) {
         let output = Command::new(&self.exe)
             .current_dir(self.temp_dir.path())
             .args(&[
                 "sample.rs",
+                "--paging=never",
+                "--color=never",
                 "--decorations=always",
                 "--terminal-width=80",
+                &format!("--wrap={}", if wrap { "character" } else { "never" }),
+                &format!("--tabs={}", tab_width),
                 &format!("--style={}", style),
             ]).output()
             .expect("bat failed");
@@ -55,7 +59,7 @@ impl BatTester {
             .replace("tests/snapshots/", "");
 
         let mut expected = String::new();
-        let mut file = File::open(format!("tests/snapshots/output/{}.snapshot.txt", style))
+        let mut file = File::open(format!("tests/snapshots/output/{}.snapshot.txt", name))
             .expect("snapshot file missing");
         file.read_to_string(&mut expected)
             .expect("could not read snapshot file");
