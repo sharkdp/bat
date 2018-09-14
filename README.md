@@ -288,6 +288,26 @@ well as in newer versions of bash. On earlier versions of Windows, you can use
 don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never`
 or by setting `BAT_PAGER` to an empty string.
 
+### Cygwin
+
+`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)` 
+
+This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
+
+```shell
+bat() {
+    local index
+    local args=("$@")
+    for index in $(seq 0 ${#args[@]}) ; do
+        case "${args[index]}" in
+        -*) continue;;
+        *)  [ -e "${args[index]}" ] && args[index]="$(cygpath --windows "${args[index]}")";;
+        esac
+    done
+    command bat "${args[@]}"
+}
+```
+
 ## Troubleshooting
 
 ### Terminals & colors
