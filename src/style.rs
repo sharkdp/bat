@@ -81,6 +81,6 @@ impl OutputComponents {
     }
 
     pub fn plain(&self) -> bool {
-        self.0.is_empty()
+        self.0.iter().all(|c| c == &OutputComponent::Plain)
     }
 }
