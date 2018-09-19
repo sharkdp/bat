@@ -263,7 +263,7 @@ script as a wrapper, for example:
 ```bash
 #!/bin/bash
 
-less --tabs 4 -RF "$@"
+less --tabs 4 -RXF "$@"
 ```
 
 ## Using `bat` on Windows
