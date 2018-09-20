@@ -135,7 +135,7 @@ ansible-galaxy install aeimer.install_bat
 ```
 
 - [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
-- [Github](https://github.com/aeimer/ansible-install-bat)
+- [GitHub](https://github.com/aeimer/ansible-install-bat)
 
 This should work with the following distributions:
 - Debian/Ubuntu
@@ -155,7 +155,7 @@ brew install bat
 
 ### On Windows
 
-You can download pre-built binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
 or install it with [scoop](https://scoop.sh/):
 
 ```bash
@@ -188,7 +188,7 @@ You may have to install `cmake` and the `libz` development package
 Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
-`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shells startup file to
+`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent.
 
 ### Output style
