@@ -29,4 +29,5 @@ themes (`bat cache --clear`).
 The following files have been manually modified after converting from a `.tmLanguage` file:
 
 * `VimL.sublime-syntax` => added `.vimrc` file type.
-* `Dart.sublime-syntax` => removed `#regex.dart` include,
+* `Dart.sublime-syntax` => removed `#regex.dart` include.
+* `INI.sublime-syntax` => added `.hgrc` and `hgrc` file types.
