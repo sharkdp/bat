@@ -257,14 +257,18 @@ Finally, use `bat --list-themes` to check if the new themes are available.
 `bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
 set, `less` is used by default. If you want to use a different pager, you can either modify the
 `PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
-`PAGER`. If you want to pass command-line arguments to the pager, you need to create a small shell
-script as a wrapper, for example:
+`PAGER`.
+
+If you want to pass command-line arguments to the pager, you need to create a small shell
+script as a wrapper, for example
 
 ```bash
 #!/bin/bash
 
 less --tabs 4 -R "$@"
 ```
+(put this in a file `~/.bat-pager.sh`, make it executable `chmod +x ~/.bat-pager.sh` and use
+`export BAT_PAGER="$HOME/.bat-pager.sh"` in your shells `rc` file)
 
 **Note**: By default, if the pager is set to `less`, `bat` will pass the following command line
 options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
