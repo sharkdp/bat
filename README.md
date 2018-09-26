@@ -263,8 +263,21 @@ script as a wrapper, for example:
 ```bash
 #!/bin/bash
 
-less --tabs 4 -RF "$@"
+less --tabs 4 -R "$@"
 ```
+
+**Note**: By default, if the pager is set to `less`, `bat` will pass the following command line
+options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
+The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
+less to exit immediately if the output size is smaller than the vertical size of the terminal.
+This is convenient for small files because you do not have to press `q` to quit the pager. The
+third option (`-X`) is needed to fix a bug with the `--quit-if-one-screen` feature in old versions
+of `less`. Unfortunately, it also breaks mouse-wheel support in `less`. If you want to enable
+mouse-wheel scrolling, you can either pass just `-R` (as in the example above, this will disable
+the quit-if-one-screen feature), or you can use a recent version of `less` and pass `-RF` which
+will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
+
+If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
 
 ## Using `bat` on Windows
 
