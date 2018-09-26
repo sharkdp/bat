@@ -77,7 +77,7 @@ fn is_truecolor_terminal() -> bool {
         .unwrap_or(false)
 }
 
-/// Helper function that should might appear in Rust stable at some point
+/// Helper function that might appear in Rust stable at some point
 /// (https://doc.rust-lang.org/stable/std/option/enum.Option.html#method.transpose)
 fn transpose<T>(opt: Option<Result<T>>) -> Result<Option<T>> {
     opt.map_or(Ok(None), |res| res.map(Some))
