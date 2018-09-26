@@ -364,22 +364,24 @@ impl App {
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
-            Some("auto") | _ => if files.contains(&InputFile::StdIn) {
-                // If we are reading from stdin, only enable paging if we write to an
-                // interactive terminal and if we do not *read* from an interactive
-                // terminal.
-                if self.interactive_output && !atty::is(Stream::Stdin) {
-                    PagingMode::QuitIfOneScreen
+            Some("auto") | _ => {
+                if files.contains(&InputFile::StdIn) {
+                    // If we are reading from stdin, only enable paging if we write to an
+                    // interactive terminal and if we do not *read* from an interactive
+                    // terminal.
+                    if self.interactive_output && !atty::is(Stream::Stdin) {
+                        PagingMode::QuitIfOneScreen
+                    } else {
+                        PagingMode::Never
+                    }
                 } else {
-                    PagingMode::Never
+                    if self.interactive_output {
+                        PagingMode::QuitIfOneScreen
+                    } else {
+                        PagingMode::Never
+                    }
                 }
-            } else {
-                if self.interactive_output {
-                    PagingMode::QuitIfOneScreen
-                } else {
-                    PagingMode::Never
-                }
-            },
+            }
         };
 
         Ok(Config {
@@ -393,11 +395,13 @@ impl App {
                 match self.matches.value_of("wrap") {
                     Some("character") => OutputWrap::Character,
                     Some("never") => OutputWrap::None,
-                    Some("auto") | _ => if output_components.plain() {
-                        OutputWrap::None
-                    } else {
-                        OutputWrap::Character
-                    },
+                    Some("auto") | _ => {
+                        if output_components.plain() {
+                            OutputWrap::None
+                        } else {
+                            OutputWrap::Character
+                        }
+                    }
                 }
             },
             colored_output: match self.matches.value_of("color") {
@@ -450,8 +454,10 @@ impl App {
                         } else {
                             InputFile::Ordinary(filename)
                         }
-                    }).collect()
-            }).unwrap_or_else(|| vec![InputFile::StdIn])
+                    })
+                    .collect()
+            })
+            .unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
     fn output_components(&self) -> Result<OutputComponents> {
