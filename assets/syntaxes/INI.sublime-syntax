@@ -15,6 +15,7 @@ file_extensions:
   - url
   - URL
   - .editorconfig
+  - Pipfile
   - .hgrc
   - hgrc
 scope: source.ini
