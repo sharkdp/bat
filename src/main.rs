@@ -19,6 +19,7 @@ extern crate syntect;
 
 mod app;
 mod assets;
+mod clap_app;
 mod controller;
 mod decorations;
 mod diff;
