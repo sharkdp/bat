@@ -9,9 +9,7 @@ include!("src/clap_app.rs");
 const BIN_NAME: &str = "bat";
 
 fn main() {
-
-    let outdir = std::env::var_os("SHELL_COMPLETIONS_DIR")
-        .or(std::env::var_os("OUT_DIR"));
+    let outdir = std::env::var_os("SHELL_COMPLETIONS_DIR").or(std::env::var_os("OUT_DIR"));
 
     let outdir = match outdir {
         None => return,
