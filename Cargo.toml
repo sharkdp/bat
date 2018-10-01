@@ -46,4 +46,4 @@ features = []
 tempdir = "0.3"
 
 [build-dependencies]
-clap = "2.32.0"
+clap = "2.32"

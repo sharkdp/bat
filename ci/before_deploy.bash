@@ -38,6 +38,11 @@ pack() {
     cp LICENSE-MIT "$tempdir/$package_name"
     cp LICENSE-APACHE "$tempdir/$package_name"
 
+    # various autocomplete
+    cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/"$PROJECT_NAME".bash "$tempdir/$package_name/autocomplete/${PROJECT_NAME}.bash-completion"
+    cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/"$PROJECT_NAME".fish "$tempdir/$package_name/autocomplete"
+    cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/_"$PROJECT_NAME" "$tempdir/$package_name/autocomplete"
+
     # archiving
     pushd "$tempdir"
     tar czf "$out_dir/$package_name.tar.gz" "$package_name"/*
