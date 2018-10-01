@@ -27,6 +27,7 @@ pack() {
 
     # create a "staging" directory
     mkdir "$tempdir/$package_name"
+    mkdir "$tempdir/$package_name/autocomplete"
 
     # copying the main binary
     cp "target/$TARGET/release/$PROJECT_NAME" "$tempdir/$package_name/"
