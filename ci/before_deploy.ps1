@@ -11,6 +11,7 @@ Set-Location $STAGE
 $ZIP = "$SRC_DIR\$($Env:CRATE_NAME)-$($Env:APPVEYOR_REPO_TAG_NAME)-$($Env:TARGET).zip"
 
 Copy-Item "$SRC_DIR\target\release\bat.exe" '.\'
+Copy-Item "$SRC_DIR\target\release\build\bat-*\out\_bat.ps1" '.\'
 
 # readme and license
 Copy-Item $SRC_DIR\README.md '.\'
