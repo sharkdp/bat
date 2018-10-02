@@ -21,6 +21,7 @@ ansi_colours = "^1.0"
 console = "0.6"
 directories = "1.0"
 lazy_static = "1.0"
+wild = "2.0"
 
 [dependencies.git2]
 version = "0.7"
