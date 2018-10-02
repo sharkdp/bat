@@ -85,7 +85,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .use_delimiter(true)
                 .takes_value(true)
                 .possible_values(&[
-                    "auto", "full", "plain", "changes", "header", "grid", "numbers"
+                    "auto", "full", "plain", "changes", "header", "grid", "numbers",
                 ])
                 .help("Comma-separated list of style elements to display.")
                 .long_help(
@@ -212,9 +212,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(
                     |t| {
                         t.parse::<u32>()
-                    .map_err(|_t| "must be a number")
-                    .map(|_t| ()) // Convert to Result<(), &str>
-                    .map_err(|e| e.to_string())
+                            .map_err(|_t| "must be a number")
+                            .map(|_t| ()) // Convert to Result<(), &str>
+                            .map_err(|e| e.to_string())
                     }, // Convert to Result<(), String>
                 )
                 .help("Sets the tab width.")
