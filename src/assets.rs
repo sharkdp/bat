@@ -201,7 +201,8 @@ fn extend_theme_set<P: AsRef<Path>>(theme_set: &mut ThemeSet, folder: P) -> Resu
     let paths = ThemeSet::discover_theme_paths(folder)?;
     for p in &paths {
         let theme = ThemeSet::get_theme(p)?;
-        let basename = p.file_stem()
+        let basename = p
+            .file_stem()
             .and_then(|x| x.to_str())
             .ok_or("Could not get theme basename")?;
         theme_set.themes.insert(basename.to_owned(), theme);

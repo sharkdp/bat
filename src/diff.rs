@@ -26,7 +26,8 @@ pub fn get_git_diff(filename: &str) -> Option<LineChanges> {
     diff_options.pathspec(pathspec);
     diff_options.context_lines(0);
 
-    let diff = repo.diff_index_to_workdir(None, Some(&mut diff_options))
+    let diff = repo
+        .diff_index_to_workdir(None, Some(&mut diff_options))
         .ok()?;
 
     let mut line_changes: LineChanges = HashMap::new();
