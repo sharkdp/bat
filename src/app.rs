@@ -6,6 +6,7 @@ use atty::{self, Stream};
 
 use clap::ArgMatches;
 use clap_app;
+use wild;
 
 use console::Term;
 
@@ -102,7 +103,7 @@ impl App {
     }
 
     fn matches(interactive_output: bool) -> ArgMatches<'static> {
-        clap_app::build_app(interactive_output).get_matches()
+        clap_app::build_app(interactive_output).get_matches_from(wild::args())
     }
 
     pub fn config(&self) -> Result<Config> {
