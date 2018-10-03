@@ -12,6 +12,7 @@ exclude = [
     "assets/syntaxes/*",
     "assets/themes/*",
 ]
+build = "build.rs"
 
 [dependencies]
 atty = "0.2.2"
@@ -43,3 +44,6 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
+
+[build-dependencies]
+clap = "2.32"
