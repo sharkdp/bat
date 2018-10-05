@@ -63,7 +63,7 @@ contexts:
     - match: \b(if|while|for|try|return|throw|end(if|for|while|try)?|au(g|group)|else(if|)?|do|in|catch|finally|:)\b
       scope: keyword.control.viml
   number_hex:
-    - match: "#[0-9a-f]{6}"
+    - match: "0x[0-9a-f]+"
       scope: constant.numeric.hex
   number_int:
     - match: '-?\d+'
