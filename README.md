@@ -167,7 +167,9 @@ scoop install bat
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
-prebuilt versions of `bat` for many different architectures.
+prebuilt versions of `bat` for many different architectures. Statically-linked
+binaries are available, just look for releases with `musl` in the name on the
+releases page.
 
 ### From source
 
