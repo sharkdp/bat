@@ -192,9 +192,12 @@ highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent.
-Want to rapidly preview the themes on a file that matters to you? Have
-[`fzf`](https://github.com/junegunn/fzf) installed? Try this:
-`bat --list-themes|fzf --preview='bat --theme={} --color=always /path/to/file'`
+
+If you want to preview the different themes on a custom file, you can use
+the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
+``` bash
+bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
+```
 
 ### Output style
 
