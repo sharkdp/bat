@@ -180,10 +180,8 @@ impl HighlightingAssets {
                     .find_syntax_by_extension(file_name)
                     .or_else(|| self.syntax_set.find_syntax_by_extension(extension));
                 let line_syntax = if ext_syntax.is_none() {
-                    reader
-                        .get_first_line()
+                    String::from_utf8(reader.first_line.clone())
                         .ok()
-                        .and_then(|v| String::from_utf8(v).ok())
                         .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
                 } else {
                     None
