@@ -13,11 +13,6 @@ use directories::ProjectDirs;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
 
-lazy_static! {
-    static ref PROJECT_DIRS: ProjectDirs =
-        ProjectDirs::from("", "", crate_name!()).expect("Could not get home directory");
-}
-
 pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
 pub struct HighlightingAssets {
