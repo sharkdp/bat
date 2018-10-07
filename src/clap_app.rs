@@ -17,12 +17,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .global_setting(clap_color_setting)
         .global_setting(AppSettings::DeriveDisplayOrder)
         .global_setting(AppSettings::UnifiedHelpMessage)
-        .global_setting(AppSettings::NextLineHelp)
+        .global_setting(AppSettings::HidePossibleValuesInHelp)
         .setting(AppSettings::InferSubcommands)
         .setting(AppSettings::ArgsNegateSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::VersionlessSubcommands)
-        .max_term_width(90)
+        .max_term_width(100)
         .about(
             "A cat(1) clone with wings.\n\n\
              Use '--help' instead of '-h' to see a more detailed version of the help text.",
@@ -87,14 +87,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .possible_values(&[
                     "auto", "full", "plain", "changes", "header", "grid", "numbers",
                 ])
-                .help("Comma-separated list of style elements to display.")
+                .help(
+                    "Comma-separated list of style elements to display \
+                     (*auto*, full, plain, changes, header, grid, numbers).",
+                )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
                      borders, Git modifications, ..) to display in addition to the \
                      file contents. The argument is a comma-separated list of \
                      components to display (e.g. 'numbers,changes,grid') or a \
                      pre-defined style ('full'). To set a default theme, export the \
-                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"numbers\").",
+                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"numbers\"). \
+                     Possible values: *auto*, full, plain, changes, header, grid, numbers.",
                 ),
         )
         .arg(
@@ -144,11 +148,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true)
                 .value_name("when")
                 .possible_values(&["auto", "never", "always"])
+                .hide_default_value(true)
                 .default_value("auto")
-                .help("When to use colors.")
+                .help("When to use colors (*auto*, never, always).")
                 .long_help(
                     "Specify when to use colored output. The automatic mode \
-                     only enables colors if an interactive terminal is detected.",
+                     only enables colors if an interactive terminal is detected. \
+                     Possible values: *auto*, never, always.",
                 ),
         )
         .arg(
@@ -159,11 +165,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("when")
                 .possible_values(&["auto", "never", "always"])
                 .default_value("auto")
-                .help("When to show the decorations specified by '--style'.")
+                .hide_default_value(true)
+                .help("When to show the decorations (*auto*, never, always).")
                 .long_help(
                     "Specify when to use the decorations that have been specified \
                      via '--style'. The automatic mode only enables decorations if \
-                     an interactive terminal is detected.",
+                     an interactive terminal is detected. Possible values: *auto*, never, always.",
                 ),
         )
         .arg(
@@ -174,13 +181,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("when")
                 .possible_values(&["auto", "never", "always"])
                 .default_value("auto")
-                .help("Specify when to use the pager.")
+                .hide_default_value(true)
+                .help("Specify when to use the pager (*auto*, never, always).")
                 .long_help(
                     "Specify when to use the pager. To control which pager \
                      is used, set the PAGER or BAT_PAGER environment \
                      variables (the latter takes precedence). The default \
                      pager is 'less'. To disable the pager permanently, set \
-                     BAT_PAGER to an empty string.",
+                     BAT_PAGER to an empty string. \
+                     Possible values: *auto*, never, always.",
                 ),
         )
         .arg(
@@ -191,24 +200,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("mode")
                 .possible_values(&["auto", "never", "character"])
                 .default_value("auto")
-                .help("Specify the text-wrapping mode.")
-                .long_help("Specify the text-wrapping mode."),
-        )
-        .arg(
-            Arg::with_name("unbuffered")
-                .short("u")
-                .hidden_short_help(true)
-                .long_help(
-                    "This option exists for POSIX-compliance reasons ('u' is for \
-                     'unbuffered'). The output is always unbuffered - this option \
-                     is simply ignored.",
-                ),
+                .hide_default_value(true)
+                .help("Specify the text-wrapping mode (*auto*, never, character).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character)."),
         )
         .arg(
             Arg::with_name("tabs")
                 .long("tabs")
                 .takes_value(true)
-                .value_name("tabs")
+                .value_name("T")
                 .validator(
                     |t| {
                         t.parse::<u32>()
@@ -217,10 +217,21 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                             .map_err(|e| e.to_string())
                     }, // Convert to Result<(), String>
                 )
-                .help("Sets the tab width.")
+                .help("Set the tab width to T spaces.")
                 .long_help(
-                    "Sets the tab width. Use a width of 0 to pass tabs through \
+                    "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
                      directly",
+                ),
+        )
+        .arg(
+            Arg::with_name("unbuffered")
+                .short("u")
+                .long("unbuffered")
+                .hidden_short_help(true)
+                .long_help(
+                    "This option exists for POSIX-compliance reasons ('u' is for \
+                     'unbuffered'). The output is always unbuffered - this option \
+                     is simply ignored.",
                 ),
         )
         .arg(
