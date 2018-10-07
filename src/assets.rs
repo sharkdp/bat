@@ -8,10 +8,7 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxDefinition, SyntaxSet};
 
-#[cfg(unix)]
-use std::os::unix::fs::FileTypeExt;
-
-use inputfile::InputFile;
+use inputfile::{InputFile, InputFileReader};
 
 lazy_static! {
     static ref PROJECT_DIRS: ProjectDirs =
@@ -166,27 +163,33 @@ impl HighlightingAssets {
         }
     }
 
-    pub fn get_syntax(&self, language: Option<&str>, filename: InputFile) -> &SyntaxDefinition {
+    pub fn get_syntax(
+        &self,
+        language: Option<&str>,
+        filename: InputFile,
+        reader: &mut InputFileReader,
+    ) -> &SyntaxDefinition {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(filename)) => {
-                #[cfg(not(unix))]
-                let may_read_from_file = true;
-
-                // Do not peek at the file (to determine the syntax) if it is a FIFO because they can
-                // only be read once.
-                #[cfg(unix)]
-                let may_read_from_file = !fs::metadata(filename)
-                    .map(|m| m.file_type().is_fifo())
-                    .unwrap_or(false);
-
-                if may_read_from_file {
-                    self.syntax_set
-                        .find_syntax_for_file(filename)
-                        .unwrap_or(None)
+                let path = Path::new(filename);
+                let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
+                let ext_syntax = self
+                    .syntax_set
+                    .find_syntax_by_extension(file_name)
+                    .or_else(|| self.syntax_set.find_syntax_by_extension(extension));
+                let line_syntax = if ext_syntax.is_none() {
+                    reader
+                        .get_first_line()
+                        .ok()
+                        .and_then(|v| String::from_utf8(v).ok())
+                        .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
                 } else {
                     None
-                }
+                };
+                let syntax = ext_syntax.or(line_syntax);
+                syntax
             }
             (None, InputFile::StdIn) => None,
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
