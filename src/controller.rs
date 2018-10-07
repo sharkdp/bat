@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, BufRead, Write};
 
 use app::Config;
 use assets::HighlightingAssets;
@@ -8,8 +7,6 @@ use inputfile::InputFile;
 use line_range::LineRange;
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
-
-const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -26,13 +23,13 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        for filename in &self.config.files {
+        for input_file in &self.config.files {
             let result = if self.config.loop_through {
                 let mut printer = SimplePrinter::new();
-                self.print_file(&mut printer, writer, *filename)
+                self.print_file(&mut printer, writer, *input_file)
             } else {
-                let mut printer = InteractivePrinter::new(&self.config, &self.assets, *filename);
-                self.print_file(&mut printer, writer, *filename)
+                let mut printer = InteractivePrinter::new(&self.config, &self.assets, *input_file);
+                self.print_file(&mut printer, writer, *input_file)
             };
 
             if let Err(error) = result {
@@ -48,28 +45,15 @@ impl<'b> Controller<'b> {
         &self,
         printer: &mut P,
         writer: &mut Write,
-        filename: InputFile<'a>,
+        input_file: InputFile<'a>,
     ) -> Result<()> {
         let stdin = io::stdin();
-        {
-            let reader: Box<BufRead> = match filename {
-                InputFile::StdIn => Box::new(stdin.lock()),
-                InputFile::Ordinary(filename) => {
-                    let file = File::open(filename)?;
+        let reader = input_file.get_reader(&stdin)?;
 
-                    if file.metadata()?.is_dir() {
-                        return Err(format!("'{}' is a directory.", filename).into());
-                    }
+        printer.print_header(writer, input_file)?;
+        self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
+        printer.print_footer(writer)?;
 
-                    Box::new(BufReader::new(file))
-                }
-                InputFile::ThemePreviewFile => Box::new(THEME_PREVIEW_FILE),
-            };
-
-            printer.print_header(writer, filename)?;
-            self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
-            printer.print_footer(writer)?;
-        }
         Ok(())
     }
 
