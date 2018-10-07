@@ -20,7 +20,14 @@ impl<'b> Controller<'b> {
 
     pub fn run(&self) -> Result<bool> {
         let mut output_type = OutputType::from_mode(self.config.paging_mode);
-        let writer = output_type.handle()?;
+        let mut lock;
+        let writer: &mut Write = match output_type {
+            OutputType::Stdout(ref mut stdout) => {
+                lock = stdout.lock();
+                &mut lock
+            }
+            _ => output_type.handle()?,
+        };
         let mut no_errors: bool = true;
 
         let stdin = io::stdin();
