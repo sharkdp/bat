@@ -189,7 +189,9 @@ impl HighlightingAssets {
                 let syntax = ext_syntax.or(line_syntax);
                 syntax
             }
-            (None, InputFile::StdIn) => None,
+            (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
+                .ok()
+                .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
         };
 
