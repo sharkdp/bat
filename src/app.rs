@@ -15,6 +15,7 @@ use ansi_term;
 
 use assets::BAT_THEME_DEFAULT;
 use errors::*;
+use inputfile::InputFile;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
 
@@ -23,13 +24,6 @@ pub enum PagingMode {
     Always,
     QuitIfOneScreen,
     Never,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InputFile<'a> {
-    StdIn,
-    Ordinary(&'a str),
-    ThemePreviewFile,
 }
 
 #[derive(Clone)]
