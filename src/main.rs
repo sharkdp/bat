@@ -15,6 +15,7 @@ extern crate atty;
 extern crate console;
 extern crate content_inspector;
 extern crate directories;
+extern crate encoding;
 extern crate git2;
 extern crate syntect;
 extern crate wild;

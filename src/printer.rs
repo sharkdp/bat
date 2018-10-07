@@ -9,7 +9,10 @@ use console::AnsiCodeIterator;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 
-use content_inspector::{self, ContentType};
+use content_inspector::ContentType;
+
+use encoding::all::{UTF_16BE, UTF_16LE};
+use encoding::{DecoderTrap, Encoding};
 
 use app::Config;
 use assets::HighlightingAssets;
@@ -121,12 +124,9 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        // Determine file content type
-        let content_type = content_inspector::inspect(&reader.first_line[..]);
-
         let mut line_changes = None;
 
-        let highlighter = if content_type.is_binary() {
+        let highlighter = if reader.content_type.is_binary() {
             None
         } else {
             // Get the Git modifications
@@ -149,8 +149,8 @@ impl<'a> InteractivePrinter<'a> {
             colors,
             config,
             decorations,
+            content_type: reader.content_type,
             ansi_prefix_sgr: String::new(),
-            content_type,
             line_changes,
             highlighter,
         }
@@ -207,10 +207,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
             _ => ("", "STDIN"),
         };
 
-        let mode = if self.content_type.is_binary() {
-            "   <BINARY>"
-        } else {
-            ""
+        let mode = match self.content_type {
+            ContentType::BINARY => "   <BINARY>",
+            ContentType::UTF_16LE => "   <UTF-16LE>",
+            ContentType::UTF_16BE => "   <UTF-16BE>",
+            _ => ""
         };
 
         writeln!(
@@ -247,7 +248,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let line = String::from_utf8_lossy(&line_buffer).to_string();
+        let line = match self.content_type {
+            ContentType::BINARY => {
+                return Ok(());
+            }
+            ContentType::UTF_16LE => UTF_16LE
+                .decode(&line_buffer, DecoderTrap::Strict)
+                .unwrap_or("Invalid UTF-16LE".into()),
+            ContentType::UTF_16BE => UTF_16BE
+                .decode(&line_buffer, DecoderTrap::Strict)
+                .unwrap_or("Invalid UTF-16BE".into()),
+            _ => String::from_utf8_lossy(&line_buffer).to_string(),
+        };
         let regions = {
             let highlighter = match self.highlighter {
                 Some(ref mut highlighter) => highlighter,
