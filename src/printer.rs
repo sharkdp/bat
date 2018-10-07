@@ -15,7 +15,7 @@ use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineN
 use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
-use inputfile::InputFile;
+use inputfile::{InputFile, InputFileReader};
 use preprocessor::expand;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
@@ -74,7 +74,12 @@ pub struct InteractivePrinter<'a> {
 }
 
 impl<'a> InteractivePrinter<'a> {
-    pub fn new(config: &'a Config, assets: &'a HighlightingAssets, file: InputFile) -> Self {
+    pub fn new(
+        config: &'a Config,
+        assets: &'a HighlightingAssets,
+        file: InputFile,
+        reader: &mut InputFileReader,
+    ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
         let colors = if config.colored_output {
@@ -124,7 +129,7 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         // Determine the type of syntax for highlighting
-        let syntax = assets.get_syntax(config.language, file);
+        let syntax = assets.get_syntax(config.language, file, reader);
         let highlighter = HighlightLines::new(syntax, theme);
 
         InteractivePrinter {
