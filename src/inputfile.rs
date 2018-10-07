@@ -45,3 +45,30 @@ impl<'a> InputFile<'a> {
         }
     }
 }
+
+#[test]
+fn basic() {
+    let content = b"hello\nworld";
+    let mut reader = InputFileReader::new(&content[..]);
+
+    let mut buffer = vec![];
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert_eq!(true, res.unwrap());
+    assert_eq!(b"hello\n", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert_eq!(true, res.unwrap());
+    assert_eq!(b"world", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert_eq!(false, res.unwrap());
+    assert!(buffer.is_empty());
+}
