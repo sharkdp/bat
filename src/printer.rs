@@ -10,12 +10,13 @@ use console::AnsiCodeIterator;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 
-use app::{Config, InputFile};
+use app::Config;
 use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
+use inputfile::InputFile;
 use preprocessor::expand;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};

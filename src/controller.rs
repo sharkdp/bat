@@ -1,9 +1,10 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 
-use app::{Config, InputFile};
+use app::Config;
 use assets::HighlightingAssets;
 use errors::*;
+use inputfile::InputFile;
 use line_range::LineRange;
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};

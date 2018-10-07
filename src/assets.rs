@@ -11,7 +11,7 @@ use syntect::parsing::{SyntaxDefinition, SyntaxSet};
 #[cfg(unix)]
 use std::os::unix::fs::FileTypeExt;
 
-use app::InputFile;
+use inputfile::InputFile;
 
 lazy_static! {
     static ref PROJECT_DIRS: ProjectDirs =
