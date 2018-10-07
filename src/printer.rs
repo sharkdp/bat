@@ -211,7 +211,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             ContentType::BINARY => "   <BINARY>",
             ContentType::UTF_16LE => "   <UTF-16LE>",
             ContentType::UTF_16BE => "   <UTF-16BE>",
-            _ => ""
+            _ => "",
         };
 
         writeln!(
