@@ -173,7 +173,7 @@ releases page.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.26 or
+If you want to build `bat` from source, you need Rust 1.27 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
