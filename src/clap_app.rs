@@ -84,6 +84,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("style-components")
                 .use_delimiter(true)
                 .takes_value(true)
+                .overrides_with("style")
                 .possible_values(&[
                     "auto", "full", "plain", "changes", "header", "grid", "numbers",
                 ])
@@ -207,6 +208,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("tabs")
                 .long("tabs")
+                .overrides_with("tabs")
                 .takes_value(true)
                 .value_name("T")
                 .validator(

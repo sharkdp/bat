@@ -14,6 +14,7 @@ use console::Term;
 use ansi_term;
 
 use assets::BAT_THEME_DEFAULT;
+use config::get_args_from_config_file;
 use errors::*;
 use inputfile::InputFile;
 use line_range::LineRange;
@@ -97,7 +98,26 @@ impl App {
     }
 
     fn matches(interactive_output: bool) -> ArgMatches<'static> {
-        clap_app::build_app(interactive_output).get_matches_from(wild::args())
+        let args = if wild::args_os().nth(1) == Some("cache".into()) {
+            // Skip the arguments in bats config file
+
+            wild::args_os().collect::<Vec<_>>()
+        } else {
+            let mut cli_args = wild::args_os();
+
+            // Read arguments from bats config file
+            let mut args = get_args_from_config_file();
+
+            // Put the zero-th CLI argument (program name) first
+            args.insert(0, cli_args.next().unwrap());
+
+            // .. and the rest at the end
+            cli_args.for_each(|a| args.push(a));
+
+            args
+        };
+
+        clap_app::build_app(interactive_output).get_matches_from(args)
     }
 
     pub fn config(&self) -> Result<Config> {
