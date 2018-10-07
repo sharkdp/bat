@@ -5,6 +5,22 @@ use errors::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
+pub struct InputFileReader<'a> {
+    inner: Box<dyn BufRead + 'a>,
+}
+
+impl<'a> InputFileReader<'a> {
+    fn new<R: BufRead + 'a>(reader: R) -> InputFileReader<'a> {
+        InputFileReader {
+            inner: Box::new(reader),
+        }
+    }
+
+    pub fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+        self.inner.read_until(b'\n', buf).map(|size| size > 0)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputFile<'a> {
     StdIn,
@@ -13,9 +29,9 @@ pub enum InputFile<'a> {
 }
 
 impl<'a> InputFile<'a> {
-    pub fn get_reader(&self, stdin: &'a io::Stdin) -> Result<Box<dyn BufRead + 'a>> {
+    pub fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
         match self {
-            InputFile::StdIn => Ok(Box::new(stdin.lock())),
+            InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
             InputFile::Ordinary(filename) => {
                 let file = File::open(filename)?;
 
@@ -23,9 +39,9 @@ impl<'a> InputFile<'a> {
                     return Err(format!("'{}' is a directory.", filename).into());
                 }
 
-                Ok(Box::new(BufReader::new(file)))
+                Ok(InputFileReader::new(BufReader::new(file)))
             }
-            InputFile::ThemePreviewFile => Ok(Box::new(THEME_PREVIEW_FILE)),
+            InputFile::ThemePreviewFile => Ok(InputFileReader::new(THEME_PREVIEW_FILE)),
         }
     }
 }

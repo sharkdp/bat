@@ -1,9 +1,9 @@
-use std::io::{self, BufRead, Write};
+use std::io::{self, Write};
 
 use app::Config;
 use assets::HighlightingAssets;
 use errors::*;
-use inputfile::InputFile;
+use inputfile::{InputFile, InputFileReader};
 use line_range::LineRange;
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -61,14 +61,14 @@ impl<'b> Controller<'b> {
         &self,
         printer: &mut P,
         writer: &mut Write,
-        mut reader: Box<BufRead + 'a>,
+        mut reader: InputFileReader,
         line_ranges: &Option<LineRange>,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
 
         let mut line_number: usize = 1;
 
-        while reader.read_until(b'\n', &mut line_buffer)? > 0 {
+        while reader.read_line(&mut line_buffer)? {
             match line_ranges {
                 &Some(ref range) => {
                     if line_number < range.lower {
