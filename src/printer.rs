@@ -9,6 +9,8 @@ use console::AnsiCodeIterator;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
 
+use content_inspector::{self, ContentType};
+
 use app::Config;
 use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
@@ -69,8 +71,9 @@ pub struct InteractivePrinter<'a> {
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
     ansi_prefix_sgr: String,
+    content_type: ContentType,
     pub line_changes: Option<LineChanges>,
-    highlighter: HighlightLines<'a>,
+    highlighter: Option<HighlightLines<'a>>,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -118,19 +121,28 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        // Get the Git modifications
-        let line_changes = if config.output_components.changes() {
-            match file {
-                InputFile::Ordinary(filename) => get_git_diff(filename),
-                _ => None,
-            }
-        } else {
-            None
-        };
+        // Determine file content type
+        let content_type = content_inspector::inspect(&reader.first_line[..]);
 
-        // Determine the type of syntax for highlighting
-        let syntax = assets.get_syntax(config.language, file, reader);
-        let highlighter = HighlightLines::new(syntax, theme);
+        let mut line_changes = None;
+
+        let highlighter = if content_type.is_binary() {
+            None
+        } else {
+            // Get the Git modifications
+            line_changes = if config.output_components.changes() {
+                match file {
+                    InputFile::Ordinary(filename) => get_git_diff(filename),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Determine the type of syntax for highlighting
+            let syntax = assets.get_syntax(config.language, file, reader);
+            Some(HighlightLines::new(syntax, theme))
+        };
 
         InteractivePrinter {
             panel_width,
@@ -138,6 +150,7 @@ impl<'a> InteractivePrinter<'a> {
             config,
             decorations,
             ansi_prefix_sgr: String::new(),
+            content_type,
             line_changes,
             highlighter,
         }
@@ -194,17 +207,33 @@ impl<'a> Printer for InteractivePrinter<'a> {
             _ => ("", "STDIN"),
         };
 
-        writeln!(handle, "{}{}", prefix, self.colors.filename.paint(name))?;
+        let mode = if self.content_type.is_binary() {
+            "   <BINARY>"
+        } else {
+            ""
+        };
+
+        writeln!(
+            handle,
+            "{}{}{}",
+            prefix,
+            self.colors.filename.paint(name),
+            mode
+        )?;
 
         if self.config.output_components.grid() {
-            self.print_horizontal_line(handle, '┼')?;
+            if self.content_type.is_text() {
+                self.print_horizontal_line(handle, '┼')?;
+            } else {
+                self.print_horizontal_line(handle, '┴')?;
+            }
         }
 
         Ok(())
     }
 
     fn print_footer(&mut self, handle: &mut Write) -> Result<()> {
-        if self.config.output_components.grid() {
+        if self.config.output_components.grid() && self.content_type.is_text() {
             self.print_horizontal_line(handle, '┴')
         } else {
             Ok(())
@@ -219,7 +248,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = String::from_utf8_lossy(&line_buffer).to_string();
-        let regions = self.highlighter.highlight(line.as_ref());
+        let regions = {
+            let highlighter = match self.highlighter {
+                Some(ref mut highlighter) => highlighter,
+                _ => {
+                    return Ok(());
+                }
+            };
+            highlighter.highlight(line.as_ref())
+        };
 
         if out_of_range {
             return Ok(());

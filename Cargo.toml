@@ -22,6 +22,7 @@ console = "0.6"
 directories = "1.0"
 lazy_static = "1.0"
 wild = "2.0"
+content_inspector = "0.2.2"
 
 [dependencies.git2]
 version = "0.7"
