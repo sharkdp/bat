@@ -84,27 +84,25 @@ impl<'b> Controller<'b> {
         let mut line_number: usize = 1;
 
         while reader.read_until(b'\n', &mut line_buffer)? > 0 {
-            {
-                match line_ranges {
-                    &Some(ref range) => {
-                        if line_number < range.lower {
-                            // Call the printer in case we need to call the syntax highlighter
-                            // for this line. However, set `out_of_range` to `true`.
-                            printer.print_line(true, writer, line_number, &line_buffer)?;
-                        } else if line_number > range.upper {
-                            // no more lines in range, exit early
-                            break;
-                        } else {
-                            printer.print_line(false, writer, line_number, &line_buffer)?;
-                        }
-                    }
-                    &None => {
+            match line_ranges {
+                &Some(ref range) => {
+                    if line_number < range.lower {
+                        // Call the printer in case we need to call the syntax highlighter
+                        // for this line. However, set `out_of_range` to `true`.
+                        printer.print_line(true, writer, line_number, &line_buffer)?;
+                    } else if line_number > range.upper {
+                        // no more lines in range, exit early
+                        break;
+                    } else {
                         printer.print_line(false, writer, line_number, &line_buffer)?;
                     }
                 }
-
-                line_number += 1;
+                &None => {
+                    printer.print_line(false, writer, line_number, &line_buffer)?;
+                }
             }
+
+            line_number += 1;
             line_buffer.clear();
         }
         Ok(())
