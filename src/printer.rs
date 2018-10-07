@@ -1,4 +1,3 @@
-use std::boxed::Box;
 use std::io::Write;
 use std::vec::Vec;
 
@@ -67,7 +66,7 @@ impl Printer for SimplePrinter {
 pub struct InteractivePrinter<'a> {
     colors: Colors,
     config: &'a Config<'a>,
-    decorations: Vec<Box<Decoration>>,
+    decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
     ansi_prefix_sgr: String,
     pub line_changes: Option<LineChanges>,
@@ -85,7 +84,7 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         // Create decorations.
-        let mut decorations: Vec<Box<Decoration>> = Vec::new();
+        let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
 
         if config.output_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
