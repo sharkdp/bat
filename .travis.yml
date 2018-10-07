@@ -29,18 +29,18 @@ matrix:
         - TARGET=aarch64-unknown-linux-gnu
         - CC_aarch64-unknown-linux-gnu=/usr/bin/aarch64-linux-gnu-gcc-4.8
         - CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc-4.8
-        
+
     # Minimum Rust supported channel.
     - os: linux
-      rust: 1.26.0
+      rust: 1.27.0
       env: TARGET=x86_64-unknown-linux-gnu
     - os: linux
-      rust: 1.26.0
+      rust: 1.27.0
       env:
         - TARGET=x86_64-unknown-linux-musl
         - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
     - os: osx
-      rust: 1.26.0
+      rust: 1.27.0
       env: TARGET=x86_64-apple-darwin
 
     # Code formatting check
