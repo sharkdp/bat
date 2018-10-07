@@ -53,15 +53,18 @@ Display multiple files at once
 > bat src/*.rs
 ```
 
-Read from stdin, explicitly specify the language
+Read from stdin, determine the syntax automatically
+
+```bash
+> curl -s https://sh.rustup.rs | bat
+```
+
+Read from stdin, specify the language explicitly
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
-```bash
-> curl -s https://raw.githubusercontent.com/sharkdp/bat/master/src/main.rs | bat -l rs
-```
 
 As a replacement for `cat`:
 
