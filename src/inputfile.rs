@@ -7,29 +7,25 @@ const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
 pub struct InputFileReader<'a> {
     inner: Box<dyn BufRead + 'a>,
-    buffer: Vec<u8>,
+    pub first_line: Vec<u8>,
 }
 
 impl<'a> InputFileReader<'a> {
-    fn new<R: BufRead + 'a>(reader: R) -> InputFileReader<'a> {
+    fn new<R: BufRead + 'a>(mut reader: R) -> InputFileReader<'a> {
+        let mut first_line = vec![];
+        reader.read_until(b'\n', &mut first_line).ok();
+
         InputFileReader {
             inner: Box::new(reader),
-            buffer: vec![],
+            first_line,
         }
     }
 
-    pub fn get_first_line(&mut self) -> io::Result<Vec<u8>> {
-        assert!(self.buffer.is_empty());
-
-        self.inner.read_until(b'\n', &mut self.buffer)?;
-        Ok(self.buffer.clone())
-    }
-
     pub fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
-        if self.buffer.is_empty() {
+        if self.first_line.is_empty() {
             self.inner.read_until(b'\n', buf).map(|size| size > 0)
         } else {
-            buf.append(&mut self.buffer);
+            buf.append(&mut self.first_line);
             return Ok(true);
         }
     }
@@ -65,9 +61,7 @@ fn basic() {
     let content = b"#!/bin/bash\necho hello";
     let mut reader = InputFileReader::new(&content[..]);
 
-    let first_line = reader.get_first_line();
-    assert!(first_line.is_ok());
-    assert_eq!(b"#!/bin/bash\n", &first_line.unwrap()[..]);
+    assert_eq!(b"#!/bin/bash\n", &reader.first_line[..]);
 
     let mut buffer = vec![];
 
