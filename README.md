@@ -148,6 +148,14 @@ This should work with the following distributions:
 - FreeBSD
 - MacOS
 
+### Via nix
+
+You can install `bat` using the [nix package manager](https://nixos.org/nix):
+
+```bash
+nix-env -i bat
+```
+
 ### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
@@ -318,7 +326,7 @@ or by setting `BAT_PAGER` to an empty string.
 
 ### Cygwin
 
-`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)` 
+`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)`
 
 This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
 
