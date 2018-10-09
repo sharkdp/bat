@@ -8,6 +8,7 @@ use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
+use syntect::parsing::SyntaxSet;
 
 use content_inspector::ContentType;
 
@@ -77,6 +78,7 @@ pub struct InteractivePrinter<'a> {
     content_type: ContentType,
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
+    syntax_set: &'a SyntaxSet,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -153,6 +155,7 @@ impl<'a> InteractivePrinter<'a> {
             ansi_prefix_sgr: String::new(),
             line_changes,
             highlighter,
+            syntax_set: &assets.syntax_set,
         }
     }
 
@@ -267,7 +270,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     return Ok(());
                 }
             };
-            highlighter.highlight(line.as_ref())
+            highlighter.highlight(line.as_ref(), self.syntax_set)
         };
 
         if out_of_range {
