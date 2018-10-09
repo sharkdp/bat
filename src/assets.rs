@@ -1,13 +1,16 @@
-use directories::ProjectDirs;
-use errors::*;
 use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
+use std::io::BufReader;
 use std::path::{Path, PathBuf};
+
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
-use syntect::parsing::{SyntaxDefinition, SyntaxSet};
+use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
+use directories::ProjectDirs;
+
+use errors::*;
 use inputfile::{InputFile, InputFileReader};
 
 lazy_static! {
@@ -27,31 +30,20 @@ impl HighlightingAssets {
         Self::from_cache().unwrap_or_else(|_| Self::from_binary())
     }
 
-    fn empty() -> Self {
-        let mut syntax_set = SyntaxSet::new();
-        syntax_set.load_plain_text_syntax();
-
-        let theme_set = ThemeSet {
-            themes: BTreeMap::new(),
-        };
-        HighlightingAssets {
-            syntax_set,
-            theme_set,
-        }
-    }
-
     pub fn from_files(dir: Option<&Path>, start_empty: bool) -> Result<Self> {
         let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
 
-        let mut assets = if start_empty {
-            Self::empty()
+        let mut theme_set = if start_empty {
+            ThemeSet {
+                themes: BTreeMap::new(),
+            }
         } else {
-            Self::from_binary_unlinked()
+            Self::get_integrated_themeset()
         };
 
         let theme_dir = source_dir.join("themes");
 
-        let res = extend_theme_set(&mut assets.theme_set, &theme_dir);
+        let res = theme_set.add_from_folder(&theme_dir);
         if !res.is_ok() {
             println!(
                 "No themes were found in '{}', using the default set",
@@ -59,9 +51,17 @@ impl HighlightingAssets {
             );
         }
 
+        let mut syntax_set_builder = if start_empty {
+            let mut builder = SyntaxSetBuilder::new();
+            builder.add_plain_text_syntax();
+            builder
+        } else {
+            Self::get_integrated_syntaxset().into_builder()
+        };
+
         let syntax_dir = source_dir.join("syntaxes");
         if syntax_dir.exists() {
-            assets.syntax_set.load_syntaxes(syntax_dir, true)?;
+            syntax_set_builder.add_from_folder(syntax_dir, true)?;
         } else {
             println!(
                 "No syntaxes were found in '{}', using the default set.",
@@ -69,7 +69,10 @@ impl HighlightingAssets {
             );
         }
 
-        Ok(assets)
+        Ok(HighlightingAssets {
+            syntax_set: syntax_set_builder.build(),
+            theme_set,
+        })
     }
 
     fn from_cache() -> Result<Self> {
@@ -80,9 +83,8 @@ impl HighlightingAssets {
                 syntax_set_path().to_string_lossy()
             )
         })?;
-        let mut syntax_set: SyntaxSet =
-            from_reader(syntax_set_file).chain_err(|| "Could not parse cached syntax set")?;
-        syntax_set.link_syntaxes();
+        let syntax_set: SyntaxSet = from_reader(BufReader::new(syntax_set_file))
+            .chain_err(|| "Could not parse cached syntax set")?;
 
         let theme_set_file = File::open(&theme_set_path).chain_err(|| {
             format!(
@@ -90,8 +92,8 @@ impl HighlightingAssets {
                 theme_set_path.to_string_lossy()
             )
         })?;
-        let theme_set: ThemeSet =
-            from_reader(theme_set_file).chain_err(|| "Could not parse cached theme set")?;
+        let theme_set: ThemeSet = from_reader(BufReader::new(theme_set_file))
+            .chain_err(|| "Could not parse cached theme set")?;
 
         Ok(HighlightingAssets {
             syntax_set,
@@ -99,20 +101,22 @@ impl HighlightingAssets {
         })
     }
 
-    fn from_binary_unlinked() -> Self {
-        let syntax_set: SyntaxSet = from_binary(include_bytes!("../assets/syntaxes.bin"));
-        let theme_set: ThemeSet = from_binary(include_bytes!("../assets/themes.bin"));
+    fn get_integrated_syntaxset() -> SyntaxSet {
+        from_binary(include_bytes!("../assets/syntaxes.bin"))
+    }
+
+    fn get_integrated_themeset() -> ThemeSet {
+        from_binary(include_bytes!("../assets/themes.bin"))
+    }
+
+    fn from_binary() -> Self {
+        let syntax_set = Self::get_integrated_syntaxset();
+        let theme_set = Self::get_integrated_themeset();
 
         HighlightingAssets {
             syntax_set,
             theme_set,
         }
-    }
-
-    fn from_binary() -> Self {
-        let mut assets = Self::from_binary_unlinked();
-        assets.syntax_set.link_syntaxes();
-        assets
     }
 
     pub fn save(&self, dir: Option<&Path>) -> Result<()> {
@@ -168,7 +172,7 @@ impl HighlightingAssets {
         language: Option<&str>,
         filename: InputFile,
         reader: &mut InputFileReader,
-    ) -> &SyntaxDefinition {
+    ) -> &SyntaxReference {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(filename)) => {
@@ -197,21 +201,6 @@ impl HighlightingAssets {
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
     }
-}
-
-// TODO: this function will soon be part of syntect's `ThemeSet`.
-fn extend_theme_set<P: AsRef<Path>>(theme_set: &mut ThemeSet, folder: P) -> Result<()> {
-    let paths = ThemeSet::discover_theme_paths(folder)?;
-    for p in &paths {
-        let theme = ThemeSet::get_theme(p)?;
-        let basename = p
-            .file_stem()
-            .and_then(|x| x.to_str())
-            .ok_or("Could not get theme basename")?;
-        theme_set.themes.insert(basename.to_owned(), theme);
-    }
-
-    Ok(())
 }
 
 fn theme_set_path() -> PathBuf {
