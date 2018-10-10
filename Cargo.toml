@@ -47,6 +47,7 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
+assert_cmd = "0.10.1"
 
 [build-dependencies]
 clap = "2.32"
