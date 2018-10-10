@@ -309,8 +309,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 } else {
                     None
                 }
-             }
-            _ => None
+            }
+            _ => None,
         };
 
         // Line contents.
