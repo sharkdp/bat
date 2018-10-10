@@ -64,6 +64,9 @@ pub struct Config<'a> {
 
     /// The syntax highlighting theme
     pub theme: String,
+
+    /// A line to highlight
+    pub highlight_line: Option<usize>,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -182,6 +185,7 @@ impl App {
                 .or_else(|| env::var("BAT_THEME").ok())
                 .unwrap_or(String::from(BAT_THEME_DEFAULT)),
             line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
+            highlight_line: self.matches.value_of("highlight-line").and_then(|w| w.parse().ok()),
             output_components,
         })
     }
