@@ -243,6 +243,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Set the width of the terminal"),
         )
+        .arg(
+            Arg::with_name("no-config")
+                .long("no-config")
+                .hidden(true)
+                .help("Do not use the configuration file"),
+        )
         .subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
