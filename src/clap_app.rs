@@ -146,10 +146,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("highlight-line")
                 .overrides_with("highlight-line")
                 .takes_value(true)
-                .value_name("n")
+                .value_name("N")
                 .help("Highlight a line.")
                 .long_help(
-                    "Highlight the nth line. The background color is changed to create contrast.",
+                    "Highlight the Nth line. The background color is changed to create contrast.",
                 ),
         )
         .arg(

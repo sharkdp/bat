@@ -302,16 +302,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         // Line highlighting
-        let background = match self.config.highlight_line {
-            Some(line) => {
-                if line_number == line {
-                    self.background_highlight
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
+        let background = self.config.highlight_line
+            .filter(|line| *line == line_number)
+            .map(|_| self.background_highlight)
+            .unwrap();
 
         // Line contents.
         if self.config.output_wrap == OutputWrap::None {
