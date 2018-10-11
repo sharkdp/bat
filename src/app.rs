@@ -81,19 +81,19 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new() -> Result<Self> {
         #[cfg(windows)]
         let _ = ansi_term::enable_ansi_support();
 
         let interactive_output = atty::is(Stream::Stdout);
 
-        App {
-            matches: Self::matches(interactive_output),
+        Ok(App {
+            matches: Self::matches(interactive_output)?,
             interactive_output,
-        }
+        })
     }
 
-    fn matches(interactive_output: bool) -> ArgMatches<'static> {
+    fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
         let args = if wild::args_os().nth(1) == Some("cache".into())
             || wild::args_os().any(|arg| arg == OsStr::new("--no-config"))
         {
@@ -104,7 +104,8 @@ impl App {
             let mut cli_args = wild::args_os();
 
             // Read arguments from bats config file
-            let mut args = get_args_from_config_file();
+            let mut args =
+                get_args_from_config_file().chain_err(|| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
@@ -115,7 +116,7 @@ impl App {
             args
         };
 
-        clap_app::build_app(interactive_output).get_matches_from(args)
+        Ok(clap_app::build_app(interactive_output).get_matches_from(args))
     }
 
     pub fn config(&self) -> Result<Config> {

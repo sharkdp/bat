@@ -196,7 +196,7 @@ fn run_controller(config: &Config) -> Result<bool> {
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
 /// `Some(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
-    let app = App::new();
+    let app = App::new()?;
 
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {

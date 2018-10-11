@@ -1,44 +1,54 @@
+use std::env;
 use std::ffi::OsString;
 use std::fs;
 
 use shell_words;
 
 use dirs::PROJECT_DIRS;
+use util::transpose;
 
-pub fn get_args_from_config_file() -> Vec<OsString> {
+pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
     let config_file = PROJECT_DIRS.config_dir().join("config");
-    fs::read_to_string(config_file)
-        .map(|content| get_args_from_str(&content))
-        .unwrap_or(vec![])
+    Ok(transpose(
+        fs::read_to_string(config_file)
+            .ok()
+            .map(|content| get_args_from_str(&content)),
+    )?
+    .unwrap_or(vec![]))
 }
 
-fn get_args_from_str<'a>(content: &'a str) -> Vec<OsString> {
-    content
+fn get_args_from_str<'a>(content: &'a str) -> Result<Vec<OsString>, shell_words::ParseError> {
+    let args_per_line = content
         .split('\n')
         .map(|line| line.trim())
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with("#"))
-        .flat_map(|line| shell_words::split(line).unwrap())
+        .map(|line| shell_words::split(line))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(args_per_line
+        .iter()
+        .flatten()
         .map(|line| line.into())
-        .collect()
+        .collect())
 }
 
 #[test]
 fn empty() {
-    let args = get_args_from_str("");
+    let args = get_args_from_str("").unwrap();
     assert!(args.is_empty());
 }
 
 #[test]
 fn single() {
-    assert_eq!(vec!["--plain"], get_args_from_str("--plain"));
+    assert_eq!(vec!["--plain"], get_args_from_str("--plain").unwrap());
 }
 
 #[test]
 fn multiple() {
     assert_eq!(
         vec!["--plain", "--language=cpp"],
-        get_args_from_str("--plain --language=cpp")
+        get_args_from_str("--plain --language=cpp").unwrap()
     );
 }
 
@@ -46,7 +56,7 @@ fn multiple() {
 fn quotes() {
     assert_eq!(
         vec!["--theme", "Sublime Snazzy"],
-        get_args_from_str("--theme \"Sublime Snazzy\"")
+        get_args_from_str("--theme \"Sublime Snazzy\"").unwrap()
     );
 }
 
@@ -60,7 +70,7 @@ fn multi_line() {
     ";
     assert_eq!(
         vec!["-p", "--style", "numbers,changes", "--color=always"],
-        get_args_from_str(config)
+        get_args_from_str(config).unwrap()
     );
 }
 
@@ -78,6 +88,6 @@ fn comments() {
     ";
     assert_eq!(
         vec!["-p", "--style", "numbers,changes", "--color=always"],
-        get_args_from_str(config)
+        get_args_from_str(config).unwrap()
     );
 }
