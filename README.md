@@ -152,7 +152,7 @@ scoop install bat
 There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
 ```bash
 docker pull danlynn/bat
-alias bat='docker run -it --rm -e BAT_THEME -v "$(pwd):/myapp" danlynn/bat'
+alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
 ```
 
 ### Via Ansible
