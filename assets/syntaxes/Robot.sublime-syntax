@@ -1,0 +1,54 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Robot Framework syntax highlighting.
+file_extensions:
+  - robot
+scope: source.robot
+contexts:
+  main:
+    - match: '\$\{(\d+|\d+\.\d*|0[bB][01]+|0[oO][0-7]+|0[xX][0-9a-fA-F]+)\}'
+      comment: "Robot Framework numbers, like ${1} or ${12.3}"
+      scope: constant.numeric.robot
+    - match: '(?i)(%\{[\w|\s]+\})'
+      comment: "Robot Framework environment variable, like %{USER}"
+      scope: variable.parameter.robot
+    - match: '((?<!\\)|(?<=\\\\))[$&]{'
+      comment: Robot Framework scalar and dictionary variables
+      push:
+        - meta_scope: entity.name.class
+        - match: '\}'
+          pop: true
+    - match: '((?<!\\)(@{)|(?<=\\\\)(@{))'
+      comment: Robot Framework list variables
+      push:
+        - meta_scope: entity.name.class
+        - match: '(}\[.+])|(})'
+          pop: true
+    - match: '(?i)^(\|\s*)?(\*{1,3} ?)(settings?|variables?|keywords?|test cases?)( ?\*{1,3})?(\s*\|)?'
+      comment: Robot Framework data tables
+      scope: string.robot.header
+    - match: '(?i)(^\|\s*)?\[?Documentation\]?\s+'
+      comment: Test case, keyword and settings table documentation
+      push:
+        - meta_scope: comment
+        - match: ^(?!\s*+\.\.\.)
+          pop: true
+    - match: '(^| {2,}|\t|\\| {1,})(?<!\\\\)#'
+      comment: Comment character
+      push:
+        - meta_scope: comment
+        - match: $
+          pop: true
+    - match: '(?i)\s+\[(Tags|Setup|Teardown|Template|Timeout|Arguments|Return)\]'
+      comment: Tests case and keyword settings
+      scope: storage.type
+    - match: (?i)^(\|\s*)?(Library|Resource|Test Timeout|Test Template|Test Teardown|Test Setup|Default Tags|Force Tags|Metadata|Variables|Suite Setup|Suite Teardown)(?:(  )|( \| ))
+      comment: Settings table settings, like Library
+      scope: constant.language
+    - match: '^(\|\s+)?(?!^\.{3})(?![\|$&])\S+'
+      comment: Keywords and test cases
+      push:
+        - meta_scope: keyword.control.robot
+        - match: '($|\||\s{2,})'
+          pop: true

@@ -53,15 +53,18 @@ Display multiple files at once
 > bat src/*.rs
 ```
 
-Read from stdin, explicitly specify the language
+Read from stdin, determine the syntax automatically
+
+```bash
+> curl -s https://sh.rustup.rs | bat
+```
+
+Read from stdin, specify the language explicitly
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
-```bash
-> curl -s https://raw.githubusercontent.com/sharkdp/bat/master/src/main.rs | bat -l rs
-```
 
 As a replacement for `cat`:
 
@@ -83,7 +86,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 Download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
 ``` bash
-sudo dpkg -i bat_0.7.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.7.1_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Arch Linux
@@ -117,6 +120,41 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
+### Via nix
+
+You can install `bat` using the [nix package manager](https://nixos.org/nix):
+
+```bash
+nix-env -i bat
+```
+
+### On macOS
+
+You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
+
+```bash
+brew install bat
+```
+
+### On Windows
+
+You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+or install it with [scoop](https://scoop.sh/):
+
+```bash
+scoop install bat
+```
+
+[See below](#using-bat-on-windows) for notes.
+
+### Via Docker
+
+There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
+```bash
+docker pull danlynn/bat
+alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
+```
+
 ### Via Ansible
 
 You can install `bat` with [Ansible](https://www.ansible.com/):
@@ -135,7 +173,7 @@ ansible-galaxy install aeimer.install_bat
 ```
 
 - [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
-- [Github](https://github.com/aeimer/ansible-install-bat)
+- [GitHub](https://github.com/aeimer/ansible-install-bat)
 
 This should work with the following distributions:
 - Debian/Ubuntu
@@ -145,33 +183,16 @@ This should work with the following distributions:
 - FreeBSD
 - MacOS
 
-### On macOS
-
-You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
-
-```bash
-brew install bat
-```
-
-### On Windows
-
-You can download pre-built binaries from the [Release page](https://github.com/sharkdp/bat/releases),
-or install it with [scoop](https://scoop.sh/):
-
-```bash
-scoop install bat
-```
-
-[See below](#using-bat-on-windows) for notes.
-
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
-prebuilt versions of `bat` for many different architectures.
+prebuilt versions of `bat` for many different architectures. Statically-linked
+binaries are available, just look for releases with `musl` in the name on the
+releases page.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.26 or
+If you want to build `bat` from source, you need Rust 1.27 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
@@ -188,8 +209,19 @@ You may have to install `cmake` and the `libz` development package
 Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
-`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shells startup file to
+`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent.
+
+If you want to preview the different themes on a custom file, you can use
+the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
+``` bash
+bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
+```
+
+`bat` looks good on a dark background by default. However, if your terminal uses a
+light background, some themes will work better for you. For example, the `GitHub`
+theme is made for light backgrounds. You can also make your own theme by following the
+['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
 
 ### Output style
 
@@ -257,14 +289,31 @@ Finally, use `bat --list-themes` to check if the new themes are available.
 `bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
 set, `less` is used by default. If you want to use a different pager, you can either modify the
 `PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
-`PAGER`. If you want to pass command-line arguments to the pager, you need to create a small shell
-script as a wrapper, for example:
+`PAGER`.
+
+If you want to pass command-line arguments to the pager, you need to create a small shell
+script as a wrapper, for example
 
 ```bash
 #!/bin/bash
 
-less --tabs 4 -RF "$@"
+less --tabs 4 -R "$@"
 ```
+(put this in a file `~/.bat-pager.sh`, make it executable `chmod +x ~/.bat-pager.sh` and use
+`export BAT_PAGER="$HOME/.bat-pager.sh"` in your shells `rc` file)
+
+**Note**: By default, if the pager is set to `less`, `bat` will pass the following command line
+options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
+The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
+less to exit immediately if the output size is smaller than the vertical size of the terminal.
+This is convenient for small files because you do not have to press `q` to quit the pager. The
+third option (`-X`) is needed to fix a bug with the `--quit-if-one-screen` feature in old versions
+of `less`. Unfortunately, it also breaks mouse-wheel support in `less`. If you want to enable
+mouse-wheel scrolling, you can either pass just `-R` (as in the example above, this will disable
+the quit-if-one-screen feature), or you can use a recent version of `less` and pass `-RF` which
+will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
+
+If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
 
 ## Using `bat` on Windows
 
@@ -290,7 +339,7 @@ or by setting `BAT_PAGER` to an empty string.
 
 ### Cygwin
 
-`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)` 
+`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)`
 
 This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
 

@@ -13,15 +13,20 @@ extern crate lazy_static;
 extern crate ansi_term;
 extern crate atty;
 extern crate console;
+extern crate content_inspector;
 extern crate directories;
+extern crate encoding;
 extern crate git2;
 extern crate syntect;
+extern crate wild;
 
 mod app;
 mod assets;
+mod clap_app;
 mod controller;
 mod decorations;
 mod diff;
+mod inputfile;
 mod line_range;
 mod output;
 mod preprocessor;
@@ -38,9 +43,10 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use app::{App, Config, InputFile};
+use app::{App, Config};
 use assets::{clear_assets, config_dir, HighlightingAssets};
 use controller::Controller;
+use inputfile::InputFile;
 use style::{OutputComponent, OutputComponents};
 
 mod errors {

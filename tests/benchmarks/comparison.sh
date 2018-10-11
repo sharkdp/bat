@@ -10,6 +10,7 @@ SRC="test-src/jquery-3.3.1.js"
 
 
 cmd_bat="bat --style=full --color=always --paging=never '$SRC'"
+cmd_bat_simple="bat --plain --wrap=never --tabs=0 --color=always --paging=never '$SRC'"
 cmd_pygmentize="pygmentize -g '$SRC'"
 cmd_highlight="highlight -O truecolor '$SRC'"
 cmd_ccat="ccat --color=always '$SRC'"
@@ -20,6 +21,7 @@ cmd_rouge="rougify '$SRC'"
 
 hyperfine --warmup 3 \
     "$cmd_bat" \
+    "$cmd_bat_simple" \
     "$cmd_pygmentize" \
     "$cmd_highlight" \
     "$cmd_ccat" \

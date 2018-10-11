@@ -23,11 +23,13 @@ pub enum OutputWrap {
 impl OutputComponent {
     pub fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
         match *self {
-            OutputComponent::Auto => if interactive_terminal {
-                OutputComponent::Full.components(interactive_terminal)
-            } else {
-                OutputComponent::Plain.components(interactive_terminal)
-            },
+            OutputComponent::Auto => {
+                if interactive_terminal {
+                    OutputComponent::Full.components(interactive_terminal)
+                } else {
+                    OutputComponent::Plain.components(interactive_terminal)
+                }
+            }
             OutputComponent::Changes => &[OutputComponent::Changes],
             OutputComponent::Grid => &[OutputComponent::Grid],
             OutputComponent::Header => &[OutputComponent::Header],

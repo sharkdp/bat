@@ -7,18 +7,23 @@ license = "MIT/Apache-2.0"
 name = "bat"
 readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
-version = "0.7.0"
+version = "0.7.1"
 exclude = [
     "assets/syntaxes/*",
     "assets/themes/*",
 ]
+build = "build.rs"
 
 [dependencies]
 atty = "0.2.2"
 ansi_term = "0.11"
+ansi_colours = "^1.0"
 console = "0.6"
 directories = "1.0"
 lazy_static = "1.0"
+wild = "2.0"
+content_inspector = "0.2.3"
+encoding = "0.2"
 
 [dependencies.git2]
 version = "0.7"
@@ -26,7 +31,7 @@ default-features = false
 features = []
 
 [dependencies.syntect]
-version = "2.1"
+version = "3.0"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
@@ -42,3 +47,7 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
+assert_cmd = "0.10.1"
+
+[build-dependencies]
+clap = "2.32"

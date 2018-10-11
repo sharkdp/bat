@@ -1,14 +1,12 @@
-use std::fs::File;
-use std::io::{self, BufRead, BufReader, Write};
+use std::io::{self, Write};
 
-use app::{Config, InputFile};
+use app::Config;
 use assets::HighlightingAssets;
 use errors::*;
+use inputfile::{InputFile, InputFileReader};
 use line_range::LineRange;
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
-
-const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -25,13 +23,18 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        for filename in &self.config.files {
+        let stdin = io::stdin();
+
+        for input_file in &self.config.files {
+            let mut reader = input_file.get_reader(&stdin)?;
+
             let result = if self.config.loop_through {
                 let mut printer = SimplePrinter::new();
-                self.print_file(&mut printer, writer, *filename)
+                self.print_file(reader, &mut printer, writer, *input_file)
             } else {
-                let mut printer = InteractivePrinter::new(&self.config, &self.assets, *filename);
-                self.print_file(&mut printer, writer, *filename)
+                let mut printer =
+                    InteractivePrinter::new(&self.config, &self.assets, *input_file, &mut reader);
+                self.print_file(reader, &mut printer, writer, *input_file)
             };
 
             if let Err(error) = result {
@@ -45,30 +48,15 @@ impl<'b> Controller<'b> {
 
     fn print_file<'a, P: Printer>(
         &self,
+        reader: InputFileReader,
         printer: &mut P,
         writer: &mut Write,
-        filename: InputFile<'a>,
+        input_file: InputFile<'a>,
     ) -> Result<()> {
-        let stdin = io::stdin();
-        {
-            let reader: Box<BufRead> = match filename {
-                InputFile::StdIn => Box::new(stdin.lock()),
-                InputFile::Ordinary(filename) => {
-                    let file = File::open(filename)?;
+        printer.print_header(writer, input_file)?;
+        self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
+        printer.print_footer(writer)?;
 
-                    if file.metadata()?.is_dir() {
-                        return Err(format!("'{}' is a directory.", filename).into());
-                    }
-
-                    Box::new(BufReader::new(file))
-                }
-                InputFile::ThemePreviewFile => Box::new(THEME_PREVIEW_FILE),
-            };
-
-            printer.print_header(writer, filename)?;
-            self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
-            printer.print_footer(writer)?;
-        }
         Ok(())
     }
 
@@ -76,35 +64,33 @@ impl<'b> Controller<'b> {
         &self,
         printer: &mut P,
         writer: &mut Write,
-        mut reader: Box<BufRead + 'a>,
+        mut reader: InputFileReader,
         line_ranges: &Option<LineRange>,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
 
         let mut line_number: usize = 1;
 
-        while reader.read_until(b'\n', &mut line_buffer)? > 0 {
-            {
-                match line_ranges {
-                    &Some(ref range) => {
-                        if line_number < range.lower {
-                            // Call the printer in case we need to call the syntax highlighter
-                            // for this line. However, set `out_of_range` to `true`.
-                            printer.print_line(true, writer, line_number, &line_buffer)?;
-                        } else if line_number > range.upper {
-                            // no more lines in range, exit early
-                            break;
-                        } else {
-                            printer.print_line(false, writer, line_number, &line_buffer)?;
-                        }
-                    }
-                    &None => {
+        while reader.read_line(&mut line_buffer)? {
+            match line_ranges {
+                &Some(ref range) => {
+                    if line_number < range.lower {
+                        // Call the printer in case we need to call the syntax highlighter
+                        // for this line. However, set `out_of_range` to `true`.
+                        printer.print_line(true, writer, line_number, &line_buffer)?;
+                    } else if line_number > range.upper {
+                        // no more lines in range, exit early
+                        break;
+                    } else {
                         printer.print_line(false, writer, line_number, &line_buffer)?;
                     }
                 }
-
-                line_number += 1;
+                &None => {
+                    printer.print_line(false, writer, line_number, &line_buffer)?;
+                }
             }
+
+            line_number += 1;
             line_buffer.clear();
         }
         Ok(())

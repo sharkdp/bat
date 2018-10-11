@@ -91,3 +91,6 @@
 [submodule "assets/syntaxes/PowerShell"]
 	path = assets/syntaxes/PowerShell
 	url = https://github.com/PowerShell/EditorSyntax
+[submodule "assets/syntaxes/Robot"]
+	path = assets/syntaxes/Robot
+	url = https://github.com/andriyko/sublime-robot-framework-assistant.git

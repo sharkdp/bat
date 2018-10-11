@@ -1,4 +1,3 @@
-use std::boxed::Box;
 use std::io::Write;
 use std::vec::Vec;
 
@@ -9,13 +8,20 @@ use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Theme;
+use syntect::parsing::SyntaxSet;
 
-use app::{Config, InputFile};
+use content_inspector::ContentType;
+
+use encoding::all::{UTF_16BE, UTF_16LE};
+use encoding::{DecoderTrap, Encoding};
+
+use app::Config;
 use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
+use inputfile::{InputFile, InputFileReader};
 use preprocessor::expand;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
@@ -66,15 +72,22 @@ impl Printer for SimplePrinter {
 pub struct InteractivePrinter<'a> {
     colors: Colors,
     config: &'a Config<'a>,
-    decorations: Vec<Box<Decoration>>,
+    decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
     ansi_prefix_sgr: String,
+    content_type: ContentType,
     pub line_changes: Option<LineChanges>,
-    highlighter: HighlightLines<'a>,
+    highlighter: Option<HighlightLines<'a>>,
+    syntax_set: &'a SyntaxSet,
 }
 
 impl<'a> InteractivePrinter<'a> {
-    pub fn new(config: &'a Config, assets: &'a HighlightingAssets, file: InputFile) -> Self {
+    pub fn new(
+        config: &'a Config,
+        assets: &'a HighlightingAssets,
+        file: InputFile,
+        reader: &mut InputFileReader,
+    ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
         let colors = if config.colored_output {
@@ -84,7 +97,7 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         // Create decorations.
-        let mut decorations: Vec<Box<Decoration>> = Vec::new();
+        let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
 
         if config.output_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
@@ -113,28 +126,36 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        // Get the Git modifications
-        let line_changes = if config.output_components.changes() {
-            match file {
-                InputFile::Ordinary(filename) => get_git_diff(filename),
-                _ => None,
-            }
-        } else {
-            None
-        };
+        let mut line_changes = None;
 
-        // Determine the type of syntax for highlighting
-        let syntax = assets.get_syntax(config.language, file);
-        let highlighter = HighlightLines::new(syntax, theme);
+        let highlighter = if reader.content_type.is_binary() {
+            None
+        } else {
+            // Get the Git modifications
+            line_changes = if config.output_components.changes() {
+                match file {
+                    InputFile::Ordinary(filename) => get_git_diff(filename),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+
+            // Determine the type of syntax for highlighting
+            let syntax = assets.get_syntax(config.language, file, reader);
+            Some(HighlightLines::new(syntax, theme))
+        };
 
         InteractivePrinter {
             panel_width,
             colors,
             config,
             decorations,
+            content_type: reader.content_type,
             ansi_prefix_sgr: String::new(),
             line_changes,
             highlighter,
+            syntax_set: &assets.syntax_set,
         }
     }
 
@@ -189,17 +210,34 @@ impl<'a> Printer for InteractivePrinter<'a> {
             _ => ("", "STDIN"),
         };
 
-        writeln!(handle, "{}{}", prefix, self.colors.filename.paint(name))?;
+        let mode = match self.content_type {
+            ContentType::BINARY => "   <BINARY>",
+            ContentType::UTF_16LE => "   <UTF-16LE>",
+            ContentType::UTF_16BE => "   <UTF-16BE>",
+            _ => "",
+        };
+
+        writeln!(
+            handle,
+            "{}{}{}",
+            prefix,
+            self.colors.filename.paint(name),
+            mode
+        )?;
 
         if self.config.output_components.grid() {
-            self.print_horizontal_line(handle, '┼')?;
+            if self.content_type.is_text() {
+                self.print_horizontal_line(handle, '┼')?;
+            } else {
+                self.print_horizontal_line(handle, '┴')?;
+            }
         }
 
         Ok(())
     }
 
     fn print_footer(&mut self, handle: &mut Write) -> Result<()> {
-        if self.config.output_components.grid() {
+        if self.config.output_components.grid() && self.content_type.is_text() {
             self.print_horizontal_line(handle, '┴')
         } else {
             Ok(())
@@ -213,8 +251,27 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let line = String::from_utf8_lossy(&line_buffer).to_string();
-        let regions = self.highlighter.highlight(line.as_ref());
+        let line = match self.content_type {
+            ContentType::BINARY => {
+                return Ok(());
+            }
+            ContentType::UTF_16LE => UTF_16LE
+                .decode(&line_buffer, DecoderTrap::Strict)
+                .unwrap_or("Invalid UTF-16LE".into()),
+            ContentType::UTF_16BE => UTF_16BE
+                .decode(&line_buffer, DecoderTrap::Strict)
+                .unwrap_or("Invalid UTF-16BE".into()),
+            _ => String::from_utf8_lossy(&line_buffer).to_string(),
+        };
+        let regions = {
+            let highlighter = match self.highlighter {
+                Some(ref mut highlighter) => highlighter,
+                _ => {
+                    return Ok(());
+                }
+            };
+            highlighter.highlight(line.as_ref(), self.syntax_set)
+        };
 
         if out_of_range {
             return Ok(());
@@ -319,7 +376,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                                 .iter()
                                                 .map(|ref d| d
                                                     .generate(line_number, true, self)
-                                                    .text).collect::<Vec<String>>()
+                                                    .text)
+                                                .collect::<Vec<String>>()
                                                 .join(" ")
                                         ))
                                     } else {
