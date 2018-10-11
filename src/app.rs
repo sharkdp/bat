@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::env;
-use std::ffi::OsStr;
 use std::str::FromStr;
 
 use atty::{self, Stream};
@@ -95,7 +94,7 @@ impl App {
 
     fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
         let args = if wild::args_os().nth(1) == Some("cache".into())
-            || wild::args_os().any(|arg| arg == OsStr::new("--no-config"))
+            || wild::args_os().any(|arg| arg == "--no-config")
         {
             // Skip the arguments in bats config file
 
