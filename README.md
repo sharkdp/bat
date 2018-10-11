@@ -120,6 +120,41 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
+### Via nix
+
+You can install `bat` using the [nix package manager](https://nixos.org/nix):
+
+```bash
+nix-env -i bat
+```
+
+### On macOS
+
+You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
+
+```bash
+brew install bat
+```
+
+### On Windows
+
+You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+or install it with [scoop](https://scoop.sh/):
+
+```bash
+scoop install bat
+```
+
+[See below](#using-bat-on-windows) for notes.
+
+### Via Docker
+
+There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
+```bash
+docker pull danlynn/bat
+alias bat='docker run -it --rm -e BAT_THEME -v "$(pwd):/myapp" danlynn/bat'
+```
+
 ### Via Ansible
 
 You can install `bat` with [Ansible](https://www.ansible.com/):
@@ -147,33 +182,6 @@ This should work with the following distributions:
 - Void Linux
 - FreeBSD
 - MacOS
-
-### Via nix
-
-You can install `bat` using the [nix package manager](https://nixos.org/nix):
-
-```bash
-nix-env -i bat
-```
-
-### On macOS
-
-You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
-
-```bash
-brew install bat
-```
-
-### On Windows
-
-You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
-or install it with [scoop](https://scoop.sh/):
-
-```bash
-scoop install bat
-```
-
-[See below](#using-bat-on-windows) for notes.
 
 ### From binaries
 
