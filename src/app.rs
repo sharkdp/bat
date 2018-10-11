@@ -15,7 +15,7 @@ use console::Term;
 use ansi_term;
 
 use assets::BAT_THEME_DEFAULT;
-use config::get_args_from_config_file;
+use config::{get_args_from_config_file, get_args_from_env_var};
 use errors::*;
 use inputfile::InputFile;
 use line_range::LineRange;
@@ -104,8 +104,9 @@ impl App {
             let mut cli_args = wild::args_os();
 
             // Read arguments from bats config file
-            let mut args =
-                get_args_from_config_file().chain_err(|| "Could not parse configuration file")?;
+            let mut args = get_args_from_env_var()
+                .unwrap_or_else(|| get_args_from_config_file())
+                .chain_err(|| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
