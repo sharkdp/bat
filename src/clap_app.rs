@@ -84,7 +84,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("style-components")
                 .use_delimiter(true)
                 .takes_value(true)
-                .overrides_with("style")
                 .possible_values(&[
                     "auto", "full", "plain", "changes", "header", "grid", "numbers",
                 ])
