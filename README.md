@@ -212,10 +212,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 `bat` looks good on a dark background by default. However, if your terminal uses a
 light background, some themes will work better for you. For example, the `GitHub`
-theme is made for light backgrounds. To set your theme permanently, put
-`export BAT_THEME="GitHub"` in your shell's startup file (like `.bashrc`). If you'd
-like to see the other available themes, run `bat --list-themes`. You can also make
-your own theme by following the
+theme is made for light backgrounds. You can also make your own theme by following the
 ['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
 
 ### Output style
