@@ -1,6 +1,8 @@
 use std::ffi::OsString;
 use std::fs;
 
+use shell_words;
+
 use dirs::PROJECT_DIRS;
 
 pub fn get_args_from_config_file() -> Vec<OsString> {
@@ -16,6 +18,7 @@ fn get_args_from_str<'a>(content: &'a str) -> Vec<OsString> {
         .map(|line| line.trim())
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with("#"))
+        .flat_map(|line| shell_words::split(line).unwrap())
         .map(|line| line.into())
         .collect()
 }
@@ -23,7 +26,6 @@ fn get_args_from_str<'a>(content: &'a str) -> Vec<OsString> {
 #[test]
 fn empty() {
     let args = get_args_from_str("");
-    println!("{:?}", args);
     assert!(args.is_empty());
 }
 
@@ -41,7 +43,7 @@ fn multiple() {
     --color=always
     ";
     assert_eq!(
-        vec!["-p", "--style numbers,changes", "--color=always"],
+        vec!["-p", "--style", "numbers,changes", "--color=always"],
         get_args_from_str(config)
     );
 }
@@ -59,7 +61,7 @@ fn comments() {
     --color=always
     ";
     assert_eq!(
-        vec!["-p", "--style numbers,changes", "--color=always"],
+        vec!["-p", "--style", "numbers,changes", "--color=always"],
         get_args_from_str(config)
     );
 }
