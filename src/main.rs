@@ -36,6 +36,7 @@ mod preprocessor;
 mod printer;
 mod style;
 mod terminal;
+mod util;
 
 use std::collections::HashSet;
 use std::io;
