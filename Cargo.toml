@@ -32,7 +32,7 @@ default-features = false
 features = []
 
 [dependencies.syntect]
-version = "3.0"
+version = "3.0.1"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
