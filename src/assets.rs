@@ -8,7 +8,7 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
-use directories::ProjectDirs;
+use dirs::PROJECT_DIRS;
 
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
