@@ -26,20 +26,30 @@ impl<'b> Controller<'b> {
         let stdin = io::stdin();
 
         for input_file in &self.config.files {
-            let mut reader = input_file.get_reader(&stdin)?;
+            match input_file.get_reader(&stdin) {
+                Err(error) => {
+                    handle_error(&error);
+                    no_errors = false;
+                }
+                Ok(mut reader) => {
+                    let result = if self.config.loop_through {
+                        let mut printer = SimplePrinter::new();
+                        self.print_file(reader, &mut printer, writer, *input_file)
+                    } else {
+                        let mut printer = InteractivePrinter::new(
+                            &self.config,
+                            &self.assets,
+                            *input_file,
+                            &mut reader,
+                        );
+                        self.print_file(reader, &mut printer, writer, *input_file)
+                    };
 
-            let result = if self.config.loop_through {
-                let mut printer = SimplePrinter::new();
-                self.print_file(reader, &mut printer, writer, *input_file)
-            } else {
-                let mut printer =
-                    InteractivePrinter::new(&self.config, &self.assets, *input_file, &mut reader);
-                self.print_file(reader, &mut printer, writer, *input_file)
-            };
-
-            if let Err(error) = result {
-                handle_error(&error);
-                no_errors = false;
+                    if let Err(error) = result {
+                        handle_error(&error);
+                        no_errors = false;
+                    }
+                }
             }
         }
 

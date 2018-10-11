@@ -102,3 +102,13 @@ fn fail_non_existing() {
 fn fail_directory() {
     bat().arg("sub_directory").assert().failure();
 }
+
+#[test]
+fn do_not_exit_directory() {
+    bat()
+        .arg("sub_directory")
+        .arg("test.txt")
+        .assert()
+        .stdout("hello world\n")
+        .failure();
+}
