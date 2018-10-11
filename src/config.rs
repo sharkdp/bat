@@ -36,6 +36,22 @@ fn single() {
 
 #[test]
 fn multiple() {
+    assert_eq!(
+        vec!["--plain", "--language=cpp"],
+        get_args_from_str("--plain --language=cpp")
+    );
+}
+
+#[test]
+fn quotes() {
+    assert_eq!(
+        vec!["--theme", "Sublime Snazzy"],
+        get_args_from_str("--theme \"Sublime Snazzy\"")
+    );
+}
+
+#[test]
+fn multi_line() {
     let config = "
     -p
     --style numbers,changes

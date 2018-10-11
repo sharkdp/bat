@@ -17,6 +17,7 @@ extern crate content_inspector;
 extern crate directories;
 extern crate encoding;
 extern crate git2;
+extern crate shell_words;
 extern crate syntect;
 extern crate wild;
 
