@@ -17,6 +17,10 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
     .unwrap_or(vec![]))
 }
 
+pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
+    env::var("BAT_OPTS").ok().map(|s| get_args_from_str(&s))
+}
+
 fn get_args_from_str<'a>(content: &'a str) -> Result<Vec<OsString>, shell_words::ParseError> {
     let args_per_line = content
         .split('\n')
