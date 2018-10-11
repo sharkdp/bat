@@ -20,6 +20,7 @@ use errors::*;
 use inputfile::InputFile;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
+use util::transpose;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
@@ -72,12 +73,6 @@ fn is_truecolor_terminal() -> bool {
     env::var("COLORTERM")
         .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
         .unwrap_or(false)
-}
-
-/// Helper function that might appear in Rust stable at some point
-/// (https://doc.rust-lang.org/stable/std/option/enum.Option.html#method.transpose)
-fn transpose<T>(opt: Option<Result<T>>) -> Result<Option<T>> {
-    opt.map_or(Ok(None), |res| res.map(Some))
 }
 
 pub struct App {
