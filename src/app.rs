@@ -98,7 +98,9 @@ impl App {
     }
 
     fn matches(interactive_output: bool) -> ArgMatches<'static> {
-        let args = if wild::args_os().nth(1) == Some("cache".into()) {
+        let args = if wild::args_os().nth(1) == Some("cache".into())
+            || wild::args_os().any(|arg| arg == "--no-config")
+        {
             // Skip the arguments in bats config file
 
             wild::args_os().collect::<Vec<_>>()

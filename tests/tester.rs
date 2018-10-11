@@ -43,6 +43,7 @@ impl BatTester {
             .current_dir(self.temp_dir.path())
             .args(&[
                 "sample.rs",
+                "--no-config",
                 "--paging=never",
                 "--color=never",
                 "--decorations=always",
