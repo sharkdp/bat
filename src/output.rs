@@ -1,3 +1,5 @@
+extern crate shell_words;
+
 use std::env;
 use std::ffi::OsString;
 use std::io::{self, Write};
@@ -28,23 +30,27 @@ impl OutputType {
             .or_else(|_| env::var("PAGER"))
             .unwrap_or(String::from("less"));
 
-        let less_path = PathBuf::from(&pager);
+        let pagerflags = shell_words::split(&pager).unwrap_or(vec![pager]);
+
+        let less_path = PathBuf::from(&pagerflags[0]);
         let is_less = less_path.file_stem() == Some(&OsString::from("less"));
 
         let mut process = if is_less {
-            let mut args = vec!["--RAW-CONTROL-CHARS", "--no-init"];
-            if quit_if_one_screen {
-                args.push("--quit-if-one-screen");
-            }
-
             let mut p = Command::new(&less_path);
-            p.args(&args).env("LESSCHARSET", "UTF-8");
+            if pagerflags.len() == 1 {
+                p.args(vec!["--RAW-CONTROL-CHARS", "--no-init"]);
+                if quit_if_one_screen {
+                    p.arg("--quit-if-one-screen");
+                }
+            }
+            p.env("LESSCHARSET", "UTF-8");
             p
         } else {
-            Command::new(pager)
+            Command::new(&less_path)
         };
 
         process
+            .args(&pagerflags[1..])
             .stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
