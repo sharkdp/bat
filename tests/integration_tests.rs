@@ -1,12 +1,19 @@
 extern crate assert_cmd;
 
+mod tester;
+
 use assert_cmd::prelude::*;
 use std::process::Command;
+use tester::BatTester;
 
 fn bat() -> Command {
     let mut cmd = Command::main_binary().unwrap();
     cmd.current_dir("tests/examples");
     cmd
+}
+
+fn tester() -> BatTester {
+    BatTester::new()
 }
 
 #[test]
@@ -91,6 +98,36 @@ fn line_range_last_3() {
         .assert()
         .success()
         .stdout("line 2\nline 3\nline 4\n");
+}
+
+#[test]
+fn tabs_passthrough_wrapped() {
+    tester().test_snapshot("tabs_passthrough_wrapped", "full", 0, true);
+}
+
+#[test]
+fn tabs_4_wrapped() {
+    tester().test_snapshot("tabs_4_wrapped", "full", 4, true);
+}
+
+#[test]
+fn tabs_8_wrapped() {
+    tester().test_snapshot("tabs_8_wrapped", "full", 8, true);
+}
+
+#[test]
+fn tabs_passthrough() {
+    tester().test_snapshot("tabs_passthrough", "full", 0, false);
+}
+
+#[test]
+fn tabs_4() {
+    tester().test_snapshot("tabs_4", "full", 4, false);
+}
+
+#[test]
+fn tabs_8() {
+    tester().test_snapshot("tabs_8", "full", 8, false);
 }
 
 #[test]
