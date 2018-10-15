@@ -1,19 +1,12 @@
 extern crate assert_cmd;
 
-mod tester;
-
 use assert_cmd::prelude::*;
 use std::process::Command;
-use tester::BatTester;
 
 fn bat() -> Command {
     let mut cmd = Command::main_binary().unwrap();
     cmd.current_dir("tests/examples");
     cmd
-}
-
-fn tester() -> BatTester {
-    BatTester::new()
 }
 
 #[test]
@@ -102,32 +95,140 @@ fn line_range_last_3() {
 
 #[test]
 fn tabs_passthrough_wrapped() {
-    tester().test_snapshot("tabs_passthrough_wrapped", "full", 0, true);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=0")
+        .arg("--wrap=character")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+	1	2	3	4
+1	?
+22	?
+333	?
+4444	?
+55555	?
+666666	?
+7777777	?
+88888888	?
+");
 }
 
 #[test]
 fn tabs_4_wrapped() {
-    tester().test_snapshot("tabs_4_wrapped", "full", 4, true);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--wrap=character")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+");
 }
 
 #[test]
 fn tabs_8_wrapped() {
-    tester().test_snapshot("tabs_8_wrapped", "full", 8, true);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=8")
+        .arg("--wrap=character")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+        1       2       3       4
+1       ?
+22      ?
+333     ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888        ?
+");
 }
 
 #[test]
 fn tabs_passthrough() {
-    tester().test_snapshot("tabs_passthrough", "full", 0, false);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=0")
+        .arg("--wrap=never")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+	1	2	3	4
+1	?
+22	?
+333	?
+4444	?
+55555	?
+666666	?
+7777777	?
+88888888	?
+");
 }
 
 #[test]
 fn tabs_4() {
-    tester().test_snapshot("tabs_4", "full", 4, false);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--wrap=never")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+");
 }
 
 #[test]
 fn tabs_8() {
-    tester().test_snapshot("tabs_8", "full", 8, false);
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=8")
+        .arg("--wrap=never")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+        1       2       3       4
+1       ?
+22      ?
+333     ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888        ?
+");
 }
 
 #[test]
