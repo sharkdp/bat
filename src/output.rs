@@ -40,7 +40,7 @@ impl OutputType {
 
                 let mut process = if is_less {
                     let mut p = Command::new(&pager_path);
-                    if pagerflags.len() == 1 {
+                    if args.is_empty() {
                         p.args(vec!["--RAW-CONTROL-CHARS", "--no-init"]);
                         if quit_if_one_screen {
                             p.arg("--quit-if-one-screen");
