@@ -33,29 +33,34 @@ impl OutputType {
         let pagerflags = shell_words::split(&pager)
             .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
 
-        let less_path = PathBuf::from(&pagerflags[0]);
-        let is_less = less_path.file_stem() == Some(&OsString::from("less"));
+        match pagerflags.split_first() {
+            Some((pager_name, args)) => {
+                let pager_path = PathBuf::from(pager_name);
+                let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
-        let mut process = if is_less {
-            let mut p = Command::new(&less_path);
-            if pagerflags.len() == 1 {
-                p.args(vec!["--RAW-CONTROL-CHARS", "--no-init"]);
-                if quit_if_one_screen {
-                    p.arg("--quit-if-one-screen");
-                }
+                let mut process = if is_less {
+                    let mut p = Command::new(&pager_path);
+                    if pagerflags.len() == 1 {
+                        p.args(vec!["--RAW-CONTROL-CHARS", "--no-init"]);
+                        if quit_if_one_screen {
+                            p.arg("--quit-if-one-screen");
+                        }
+                    }
+                    p.env("LESSCHARSET", "UTF-8");
+                    p
+                } else {
+                    Command::new(&pager_path)
+                };
+
+                Ok(process
+                    .args(args)
+                    .stdin(Stdio::piped())
+                    .spawn()
+                    .map(OutputType::Pager)
+                    .unwrap_or_else(|_| OutputType::stdout()))
             }
-            p.env("LESSCHARSET", "UTF-8");
-            p
-        } else {
-            Command::new(&less_path)
-        };
-
-        Ok(process
-            .args(&pagerflags[1..])
-            .stdin(Stdio::piped())
-            .spawn()
-            .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout()))
+            None => Ok(OutputType::stdout()),
+        }
     }
 
     fn stdout() -> Self {
