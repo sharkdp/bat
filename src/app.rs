@@ -19,6 +19,7 @@ use errors::*;
 use inputfile::InputFile;
 use line_range::LineRange;
 use style::{OutputComponent, OutputComponents, OutputWrap};
+use syntax_mapping::SyntaxMapping;
 use util::transpose;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -66,6 +67,9 @@ pub struct Config<'a> {
 
     /// The syntax highlighting theme
     pub theme: String,
+
+    /// File extension/name mappings
+    pub syntax_mapping: SyntaxMapping,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -146,6 +150,20 @@ impl App {
             }
         };
 
+        let mut syntax_mapping = SyntaxMapping::new();
+
+        if let Some(values) = self.matches.values_of("map-syntax") {
+            for from_to in values {
+                let parts: Vec<_> = from_to.split(":").collect();
+
+                if parts.len() != 2 {
+                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
+                }
+
+                syntax_mapping.insert(parts[0].into(), parts[1].into());
+            }
+        }
+
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self.matches.value_of("language"),
@@ -202,6 +220,7 @@ impl App {
                 .unwrap_or(String::from(BAT_THEME_DEFAULT)),
             line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
             output_components,
+            syntax_mapping,
         })
     }
 

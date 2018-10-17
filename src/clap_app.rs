@@ -60,6 +60,22 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help("Display a list of supported languages for syntax highlighting."),
         )
         .arg(
+            Arg::with_name("map-syntax")
+                .short("m")
+                .long("map-syntax")
+                .multiple(true)
+                .takes_value(true)
+                .value_name("from:to")
+                .help("Map a file extension or name to an existing syntax")
+                .long_help(
+                    "Map a file extension or file name to an existing syntax. For example, \
+                     to highlight *.conf files with the INI syntax, use '-m conf:ini'. \
+                     To highlight files named '.myignore' with the Git Ignore syntax, use \
+                     '-m .myignore:gitignore'.",
+                )
+                .takes_value(true),
+        )
+        .arg(
             Arg::with_name("theme")
                 .long("theme")
                 .overrides_with("theme")
