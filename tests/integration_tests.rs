@@ -7,6 +7,8 @@ fn bat() -> Command {
     let mut cmd = Command::main_binary().unwrap();
     cmd.current_dir("tests/examples");
     cmd.arg("--no-config");
+    cmd.env_remove("PAGER");
+    cmd.env_remove("BAT_PAGER");
     cmd
 }
 
@@ -112,4 +114,39 @@ fn do_not_exit_directory() {
         .assert()
         .stdout("hello world\n")
         .failure();
+}
+
+#[test]
+fn pager_basic() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("pager-output\n");
+}
+
+#[test]
+fn pager_overwrite() {
+    bat()
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("pager-output\n");
+}
+
+#[test]
+fn pager_disable() {
+    bat()
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
 }
