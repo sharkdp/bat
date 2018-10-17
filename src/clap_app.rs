@@ -66,7 +66,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .multiple(true)
                 .takes_value(true)
                 .value_name("from:to")
-                .help("Map a file extension or name to an existing syntax")
+                .help("Map a file extension or name to an existing syntax.")
                 .long_help(
                     "Map a file extension or file name to an existing syntax. For example, \
                      to highlight *.conf files with the INI syntax, use '-m conf:ini'. \
@@ -271,7 +271,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .conflicts_with("list-languages")
                 .conflicts_with("list-themes")
                 .hidden(true)
-                .help("Show path to the configuration file"),
+                .help("Show path to the configuration file."),
         )
         .subcommand(
             SubCommand::with_name("cache")
