@@ -19,7 +19,7 @@ impl<'b> Controller<'b> {
     }
 
     pub fn run(&self) -> Result<bool> {
-        let mut output_type = OutputType::from_mode(self.config.paging_mode);
+        let mut output_type = OutputType::from_mode(self.config.paging_mode)?;
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 

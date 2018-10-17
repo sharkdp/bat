@@ -15,22 +15,23 @@ pub enum OutputType {
 }
 
 impl OutputType {
-    pub fn from_mode(mode: PagingMode) -> Self {
+    pub fn from_mode(mode: PagingMode) -> Result<Self> {
         use self::PagingMode::*;
-        match mode {
-            Always => OutputType::try_pager(false),
-            QuitIfOneScreen => OutputType::try_pager(true),
+        Ok(match mode {
+            Always => OutputType::try_pager(false)?,
+            QuitIfOneScreen => OutputType::try_pager(true)?,
             _ => OutputType::stdout(),
-        }
+        })
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
-    fn try_pager(quit_if_one_screen: bool) -> Self {
+    fn try_pager(quit_if_one_screen: bool) -> Result<Self> {
         let pager = env::var("BAT_PAGER")
             .or_else(|_| env::var("PAGER"))
             .unwrap_or(String::from("less"));
 
-        let pagerflags = shell_words::split(&pager).unwrap_or(vec![pager]);
+        let pagerflags = shell_words::split(&pager)
+            .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
 
         let less_path = PathBuf::from(&pagerflags[0]);
         let is_less = less_path.file_stem() == Some(&OsString::from("less"));
@@ -49,12 +50,12 @@ impl OutputType {
             Command::new(&less_path)
         };
 
-        process
+        Ok(process
             .args(&pagerflags[1..])
             .stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout())
+            .unwrap_or_else(|_| OutputType::stdout()))
     }
 
     fn stdout() -> Self {
