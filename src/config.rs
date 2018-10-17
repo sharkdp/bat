@@ -1,16 +1,20 @@
 use std::env;
 use std::ffi::OsString;
 use std::fs;
+use std::path::PathBuf;
 
 use shell_words;
 
 use dirs::PROJECT_DIRS;
 use util::transpose;
 
+pub fn config_file() -> PathBuf {
+    PROJECT_DIRS.config_dir().join("config")
+}
+
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    let config_file = PROJECT_DIRS.config_dir().join("config");
     Ok(transpose(
-        fs::read_to_string(config_file)
+        fs::read_to_string(config_file())
             .ok()
             .map(|content| get_args_from_str(&content)),
     )?

@@ -265,6 +265,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Do not use the configuration file"),
         )
+        .arg(
+            Arg::with_name("config-file")
+                .long("config-file")
+                .conflicts_with("list-languages")
+                .conflicts_with("list-themes")
+                .hidden(true)
+                .help("Show path to the configuration file"),
+        )
         .subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")

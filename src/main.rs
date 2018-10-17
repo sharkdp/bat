@@ -50,6 +50,7 @@ use ansi_term::Style;
 
 use app::{App, Config};
 use assets::{clear_assets, config_dir, HighlightingAssets};
+use config::config_file;
 use controller::Controller;
 use inputfile::InputFile;
 use style::{OutputComponent, OutputComponents};
@@ -223,6 +224,10 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
                 list_themes(&config)?;
+
+                Ok(true)
+            } else if app.matches.is_present("config-file") {
+                println!("{}", config_file().to_string_lossy());
 
                 Ok(true)
             } else {
