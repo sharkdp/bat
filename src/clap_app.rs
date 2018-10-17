@@ -65,6 +65,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("map-syntax")
                 .multiple(true)
                 .takes_value(true)
+                .number_of_values(1)
                 .value_name("from:to")
                 .help("Map a file extension or name to an existing syntax.")
                 .long_help(
