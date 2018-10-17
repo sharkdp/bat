@@ -21,6 +21,12 @@ names and file extensions.
 .IP
 Display a list of supported languages for syntax highlighting.
 .HP
+\fB\-m\fR, \fB\-\-map\-syntax\fR <from:to>...
+.IP
+Map a file extension or file name to an existing syntax. For example, to highlight
+*.conf files with the INI syntax, use '\-m conf:ini'. To highlight files named
+\&'.myignore' with the Git Ignore syntax, use '\-m .myignore:gitignore'.
+.HP
 \fB\-\-theme\fR <theme>
 .IP
 Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
@@ -41,7 +47,7 @@ theme, export the BAT_STYLE environment variable (e.g.: export
 BAT_STYLE="numbers"). [possible values: auto, full, plain, changes, header,
 grid, numbers]
 .HP
-\fB\-p\fR
+\fB\-p\fR, \fB\-\-plain\fR
 .IP
 Only show plain style, no decorations. This is an alias for '\-\-style=plain'
 .HP
@@ -64,38 +70,34 @@ prints lines 40 to the end of the file
 .HP
 \fB\-\-color\fR <when>
 .IP
-Specify when to use colored output. The automatic mode only enables colors if
-an interactive terminal is detected. [default: auto]  [possible values: auto,
-never, always]
+Specify when to use colored output. The automatic mode only enables colors if an
+interactive terminal is detected. Possible values: *auto*, never, always.
 .HP
 \fB\-\-decorations\fR <when>
 .IP
-Specify when to use the decorations that have been specified via '\-\-style'.
-The automatic mode only enables decorations if an interactive terminal is
-detected. [default: auto]  [possible values: auto, never, always]
+Specify when to use the decorations that have been specified via '\-\-style'. The
+automatic mode only enables decorations if an interactive terminal is detected. Possible
+values: *auto*, never, always.
 .HP
 \fB\-\-paging\fR <when>
 .IP
-Specify when to use the pager. To control which pager is used, set the PAGER
-or BAT_PAGER environment variables (the latter takes precedence). The default
-pager is 'less'. To disable the pager permanently, set BAT_PAGER to an empty
-string. [default: auto]  [possible values: auto, never, always]
+Specify when to use the pager. To control which pager is used, set the PAGER or
+BAT_PAGER environment variables (the latter takes precedence). The default pager is
+\&'less'. To disable the pager permanently, set BAT_PAGER to an empty string. Possible
+values: *auto*, never, always.
 .HP
 \fB\-\-wrap\fR <mode>
-.TP
-Specify the text\-wrapping mode. [default: auto]
-[possible values: auto,
 .IP
-never, character]
+Specify the text\-wrapping mode (*auto*, never, character).
 .HP
-\fB\-u\fR
+\fB\-\-tabs\fR <T>
 .IP
-This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The
-output is always unbuffered \- this option is simply ignored.
+Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .HP
-\fB\-\-tabs\fR <tabs>
+\fB\-u\fR, \fB\-\-unbuffered\fR
 .IP
-Sets the tab width. Use a width of 0 to pass tabs through directly
+This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
+always unbuffered \- this option is simply ignored.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
