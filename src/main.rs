@@ -35,6 +35,7 @@ mod output;
 mod preprocessor;
 mod printer;
 mod style;
+mod syntax_mapping;
 mod terminal;
 mod util;
 

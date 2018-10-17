@@ -142,7 +142,7 @@ impl<'a> InteractivePrinter<'a> {
             };
 
             // Determine the type of syntax for highlighting
-            let syntax = assets.get_syntax(config.language, file, reader);
+            let syntax = assets.get_syntax(config.language, file, reader, &config.syntax_mapping);
             Some(HighlightLines::new(syntax, theme))
         };
 

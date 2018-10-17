@@ -12,6 +12,7 @@ use dirs::PROJECT_DIRS;
 
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
+use syntax_mapping::SyntaxMapping;
 
 pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
@@ -167,6 +168,7 @@ impl HighlightingAssets {
         language: Option<&str>,
         filename: InputFile,
         reader: &mut InputFileReader,
+        mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
         let syntax = match (language, filename) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
@@ -174,10 +176,14 @@ impl HighlightingAssets {
                 let path = Path::new(filename);
                 let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
+
+                let file_name = mapping.replace(file_name);
+                let extension = mapping.replace(extension);
+
                 let ext_syntax = self
                     .syntax_set
-                    .find_syntax_by_extension(file_name)
-                    .or_else(|| self.syntax_set.find_syntax_by_extension(extension));
+                    .find_syntax_by_extension(&file_name)
+                    .or_else(|| self.syntax_set.find_syntax_by_extension(&extension));
                 let line_syntax = if ext_syntax.is_none() {
                     String::from_utf8(reader.first_line.clone())
                         .ok()
