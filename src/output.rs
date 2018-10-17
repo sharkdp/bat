@@ -1,10 +1,10 @@
-extern crate shell_words;
-
 use std::env;
 use std::ffi::OsString;
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+
+use shell_words;
 
 use app::PagingMode;
 use errors::*;
