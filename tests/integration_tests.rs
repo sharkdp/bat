@@ -105,17 +105,15 @@ fn tabs_numbers() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-   1
-   2     1   2   3   4
-   3 1   ?
-   4 22  ?
-   5 333 ?
-   6 4444    ?
-   7 55555   ?
-   8 666666  ?
-   9 7777777 ?
-  10 88888888    ?
+        .stdout("   1     1   2   3   4
+   2 1   ?
+   3 22  ?
+   4 333 ?
+   5 4444    ?
+   6 55555   ?
+   7 666666  ?
+   8 7777777 ?
+   9 88888888    ?
 ");
 }
 
@@ -128,8 +126,7 @@ fn tabs_passthrough_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-	1	2	3	4
+        .stdout("	1	2	3	4
 1	?
 22	?
 333	?
@@ -150,8 +147,7 @@ fn tabs_4_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-    1   2   3   4
+        .stdout("    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -172,8 +168,7 @@ fn tabs_8_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-        1       2       3       4
+        .stdout("        1       2       3       4
 1       ?
 22      ?
 333     ?
@@ -194,8 +189,7 @@ fn tabs_passthrough() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-	1	2	3	4
+        .stdout("	1	2	3	4
 1	?
 22	?
 333	?
@@ -216,8 +210,7 @@ fn tabs_4() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-    1   2   3   4
+        .stdout("    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -238,8 +231,7 @@ fn tabs_8() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("
-        1       2       3       4
+        .stdout("        1       2       3       4
 1       ?
 22      ?
 333     ?
