@@ -97,6 +97,29 @@ fn line_range_last_3() {
 }
 
 #[test]
+fn tabs_numbers() {
+    bat()
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("
+   1
+   2     1   2   3   4
+   3 1   ?
+   4 22  ?
+   5 333 ?
+   6 4444    ?
+   7 55555   ?
+   8 666666  ?
+   9 7777777 ?
+  10 88888888    ?
+");
+}
+
+#[test]
 fn tabs_passthrough_wrapped() {
     bat()
         .arg("tabs.txt")
