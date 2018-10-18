@@ -14,6 +14,10 @@
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a>
 </p>
+<p align="center">
+  <b>Translation:</b><a href="https://github.com/chinanf-boy/bat-zh">中文</a>
+</p>
+
 
 ### Syntax highlighting
 
