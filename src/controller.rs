@@ -4,7 +4,7 @@ use app::Config;
 use assets::HighlightingAssets;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
-use line_range::LineRange;
+use line_range::{LineRanges, RangeCheckResult};
 use output::OutputType;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
 
@@ -64,7 +64,7 @@ impl<'b> Controller<'b> {
         input_file: InputFile<'a>,
     ) -> Result<()> {
         printer.print_header(writer, input_file)?;
-        self.print_file_ranges(printer, writer, reader, &self.config.line_range)?;
+        self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
         printer.print_footer(writer)?;
 
         Ok(())
@@ -75,28 +75,24 @@ impl<'b> Controller<'b> {
         printer: &mut P,
         writer: &mut Write,
         mut reader: InputFileReader,
-        line_ranges: &Option<LineRange>,
+        line_ranges: &LineRanges,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
 
         let mut line_number: usize = 1;
 
         while reader.read_line(&mut line_buffer)? {
-            match line_ranges {
-                &Some(ref range) => {
-                    if line_number < range.lower {
-                        // Call the printer in case we need to call the syntax highlighter
-                        // for this line. However, set `out_of_range` to `true`.
-                        printer.print_line(true, writer, line_number, &line_buffer)?;
-                    } else if line_number > range.upper {
-                        // no more lines in range, exit early
-                        break;
-                    } else {
-                        printer.print_line(false, writer, line_number, &line_buffer)?;
-                    }
+            match line_ranges.check(line_number) {
+                RangeCheckResult::OutsideRange => {
+                    // Call the printer in case we need to call the syntax highlighter
+                    // for this line. However, set `out_of_range` to `true`.
+                    printer.print_line(true, writer, line_number, &line_buffer)?;
                 }
-                &None => {
+                RangeCheckResult::InRange => {
                     printer.print_line(false, writer, line_number, &line_buffer)?;
+                }
+                RangeCheckResult::AfterLastRange => {
+                    break;
                 }
             }
 

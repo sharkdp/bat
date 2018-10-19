@@ -146,8 +146,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("line-range")
                 .long("line-range")
-                .overrides_with("line-range")
+                .multiple(true)
                 .takes_value(true)
+                .number_of_values(1)
                 .value_name("N:M")
                 .help("Only print the lines from N to M.")
                 .long_help(

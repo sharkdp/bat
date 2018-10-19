@@ -38,6 +38,10 @@ impl LineRange {
 
         Err("expected single ':' character".into())
     }
+
+    pub fn is_inside(&self, line: usize) -> bool {
+        line >= self.lower && line <= self.upper
+    }
 }
 
 #[test]
@@ -71,4 +75,106 @@ fn test_parse_fail() {
     assert!(range.is_err());
     let range = LineRange::from("40");
     assert!(range.is_err());
+}
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum RangeCheckResult {
+    // Within one of the given ranges
+    InRange,
+
+    // Before the first range or within two ranges
+    OutsideRange,
+
+    // Line number is outside of all ranges and larger than the last range.
+    AfterLastRange,
+}
+
+#[derive(Clone)]
+pub struct LineRanges {
+    ranges: Vec<LineRange>,
+    largest_upper_bound: usize,
+}
+
+impl LineRanges {
+    pub fn from(ranges: Vec<LineRange>) -> LineRanges {
+        let largest_upper_bound = ranges
+            .iter()
+            .map(|r| r.upper)
+            .max()
+            .unwrap_or(usize::max_value());
+        LineRanges {
+            ranges,
+            largest_upper_bound,
+        }
+    }
+
+    pub fn check(&self, line: usize) -> RangeCheckResult {
+        if self.ranges.is_empty() {
+            RangeCheckResult::InRange
+        } else {
+            if self.ranges.iter().any(|r| r.is_inside(line)) {
+                RangeCheckResult::InRange
+            } else {
+                if line < self.largest_upper_bound {
+                    RangeCheckResult::OutsideRange
+                } else {
+                    RangeCheckResult::AfterLastRange
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+fn ranges(rs: &[&str]) -> LineRanges {
+    LineRanges::from(rs.iter().map(|r| LineRange::from(r).unwrap()).collect())
+}
+
+#[test]
+fn test_ranges_simple() {
+    let ranges = ranges(&["3:8"]);
+
+    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(2));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
+    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
+}
+
+#[test]
+fn test_ranges_advanced() {
+    let ranges = ranges(&["3:8", "11:20", "25:30"]);
+
+    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(2));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
+    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(9));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(11));
+    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(22));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(28));
+    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(31));
+}
+
+#[test]
+fn test_ranges_open_low() {
+    let ranges = ranges(&["3:8", ":5"]);
+
+    assert_eq!(RangeCheckResult::InRange, ranges.check(1));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(3));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(7));
+    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
+}
+
+#[test]
+fn test_ranges_open_high() {
+    let ranges = ranges(&["3:", "2:5"]);
+
+    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(1));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(3));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(9));
+}
+
+#[test]
+fn test_ranges_empty() {
+    let ranges = ranges(&[]);
+
+    assert_eq!(RangeCheckResult::InRange, ranges.check(1));
 }
