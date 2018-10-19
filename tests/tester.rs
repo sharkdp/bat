@@ -38,7 +38,7 @@ impl BatTester {
         BatTester { temp_dir, exe }
     }
 
-    pub fn test_snapshot(&self, name: &str, style: &str, tab_width: u32, wrap: bool) {
+    pub fn test_snapshot(&self, name: &str, style: &str) {
         let output = Command::new(&self.exe)
             .current_dir(self.temp_dir.path())
             .args(&[
@@ -48,8 +48,6 @@ impl BatTester {
                 "--color=never",
                 "--decorations=always",
                 "--terminal-width=80",
-                &format!("--wrap={}", if wrap { "character" } else { "never" }),
-                &format!("--tabs={}", tab_width),
                 &format!("--style={}", style),
             ])
             .output()
