@@ -12,12 +12,9 @@
   <a href="#how-to-use">How To Use</a> •
   <a href="#installation">Installation</a> •
   <a href="#customization">Customization</a> •
-  <a href="#project-goals-and-alternatives">Project goals, alternatives</a>
+  <a href="#project-goals-and-alternatives">Project goals, alternatives</a> •
+  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
 </p>
-<p align="center">
-  <b>Translation:</b><a href="https://github.com/chinanf-boy/bat-zh">中文</a>
-</p>
-
 
 ### Syntax highlighting
 
