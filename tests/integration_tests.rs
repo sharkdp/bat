@@ -102,7 +102,8 @@ fn tabs_numbers() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("   1     1   2   3   4
+        .stdout(
+            "   1     1   2   3   4
    2 1   ?
    3 22  ?
    4 333 ?
@@ -111,7 +112,8 @@ fn tabs_numbers() {
    7 666666  ?
    8 7777777 ?
    9 88888888    ?
-");
+",
+        );
 }
 
 #[test]
@@ -123,7 +125,8 @@ fn tabs_passthrough_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("	1	2	3	4
+        .stdout(
+            "	1	2	3	4
 1	?
 22	?
 333	?
@@ -132,7 +135,8 @@ fn tabs_passthrough_wrapped() {
 666666	?
 7777777	?
 88888888	?
-");
+",
+        );
 }
 
 #[test]
@@ -144,7 +148,8 @@ fn tabs_4_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("    1   2   3   4
+        .stdout(
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -153,7 +158,8 @@ fn tabs_4_wrapped() {
 666666  ?
 7777777 ?
 88888888    ?
-");
+",
+        );
 }
 
 #[test]
@@ -165,7 +171,8 @@ fn tabs_8_wrapped() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("        1       2       3       4
+        .stdout(
+            "        1       2       3       4
 1       ?
 22      ?
 333     ?
@@ -174,7 +181,8 @@ fn tabs_8_wrapped() {
 666666  ?
 7777777 ?
 88888888        ?
-");
+",
+        );
 }
 
 #[test]
@@ -186,7 +194,8 @@ fn tabs_passthrough() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("	1	2	3	4
+        .stdout(
+            "	1	2	3	4
 1	?
 22	?
 333	?
@@ -195,7 +204,8 @@ fn tabs_passthrough() {
 666666	?
 7777777	?
 88888888	?
-");
+",
+        );
 }
 
 #[test]
@@ -207,7 +217,8 @@ fn tabs_4() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("    1   2   3   4
+        .stdout(
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -216,7 +227,8 @@ fn tabs_4() {
 666666  ?
 7777777 ?
 88888888    ?
-");
+",
+        );
 }
 
 #[test]
@@ -228,7 +240,8 @@ fn tabs_8() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("        1       2       3       4
+        .stdout(
+            "        1       2       3       4
 1       ?
 22      ?
 333     ?
@@ -237,7 +250,8 @@ fn tabs_8() {
 666666  ?
 7777777 ?
 88888888        ?
-");
+",
+        );
 }
 
 #[test]
