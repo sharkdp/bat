@@ -17,7 +17,7 @@ use assets::BAT_THEME_DEFAULT;
 use config::{get_args_from_config_file, get_args_from_env_var};
 use errors::*;
 use inputfile::InputFile;
-use line_range::LineRange;
+use line_range::{LineRange, LineRanges};
 use style::{OutputComponent, OutputComponents, OutputWrap};
 use syntax_mapping::SyntaxMapping;
 use util::transpose;
@@ -62,8 +62,8 @@ pub struct Config<'a> {
     /// Pager or STDOUT
     pub paging_mode: PagingMode,
 
-    /// The range lines that should be printed, if specified
-    pub line_range: Option<LineRange>,
+    /// Specifies the lines that should be printed
+    pub line_ranges: LineRanges,
 
     /// The syntax highlighting theme
     pub theme: String,
@@ -218,7 +218,14 @@ impl App {
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
                 .unwrap_or(String::from(BAT_THEME_DEFAULT)),
-            line_range: transpose(self.matches.value_of("line-range").map(LineRange::from))?,
+            line_ranges: LineRanges::from(
+                transpose(
+                    self.matches
+                        .values_of("line-range")
+                        .map(|vs| vs.map(LineRange::from).collect()),
+                )?
+                .unwrap_or(vec![]),
+            ),
             output_components,
             syntax_mapping,
         })

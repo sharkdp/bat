@@ -97,6 +97,17 @@ fn line_range_last_3() {
 }
 
 #[test]
+fn line_range_multiple() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=1:2")
+        .arg("--line-range=4:4")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\nline 4\n");
+}
+
+#[test]
 fn tabs_numbers() {
     bat()
         .arg("tabs.txt")
