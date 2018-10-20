@@ -292,16 +292,12 @@ set, `less` is used by default. If you want to use a different pager, you can ei
 `PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
 `PAGER`.
 
-If you want to pass command-line arguments to the pager, you need to create a small shell
-script as a wrapper, for example
+If you want to pass command-line arguments to the pager, you can also set them via the
+`PAGER`/`BAT_PAGER` variables:
 
 ```bash
-#!/bin/bash
-
-less --tabs 4 -R "$@"
+export BAT_PAGER="less -RF"
 ```
-(put this in a file `~/.bat-pager.sh`, make it executable `chmod +x ~/.bat-pager.sh` and use
-`export BAT_PAGER="$HOME/.bat-pager.sh"` in your shells `rc` file)
 
 **Note**: By default, if the pager is set to `less`, `bat` will pass the following command line
 options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
