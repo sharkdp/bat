@@ -94,3 +94,6 @@
 [submodule "assets/syntaxes/Robot"]
 	path = assets/syntaxes/Robot
 	url = https://github.com/andriyko/sublime-robot-framework-assistant.git
+[submodule "assets/themes/sublime-snazzy"]
+	path = assets/themes/sublime-snazzy
+	url = https://github.com/greggb/sublime-snazzy
