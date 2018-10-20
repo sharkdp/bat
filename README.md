@@ -299,7 +299,8 @@ If you want to pass command-line arguments to the pager, you can also set them v
 export BAT_PAGER="less -RF"
 ```
 
-**Note**: By default, if the pager is set to `less`, `bat` will pass the following command line
+**Note**: By default, if the pager is set to `less` (any no command-line options are specified),
+`bat` will pass the following command line
 options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
 The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
 less to exit immediately if the output size is smaller than the vertical size of the terminal.
