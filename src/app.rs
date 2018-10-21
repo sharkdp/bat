@@ -71,7 +71,7 @@ pub struct Config<'a> {
     /// File extension/name mappings
     pub syntax_mapping: SyntaxMapping,
 
-    /// Pager option
+    /// Command to start the pager
     pub pager: Option<&'a str>,
 }
 
