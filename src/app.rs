@@ -266,8 +266,14 @@ impl App {
                             .collect::<Result<Vec<OutputComponent>>>()
                     }))?;
 
-                values_t!(matches.values_of("style"), OutputComponent)
-                    .ok()
+                matches.value_of("style")
+                    .map(|styles| {
+                        styles
+                            .split(",")
+                            .map(|style| style.parse::<OutputComponent>())
+                            .filter_map(|style| style.ok())
+                            .collect::<Vec<_>>()
+                    })
                     .or(env_style_components)
                     .unwrap_or(vec![OutputComponent::Full])
                     .into_iter()

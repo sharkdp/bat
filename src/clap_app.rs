@@ -99,11 +99,26 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             Arg::with_name("style")
                 .long("style")
                 .value_name("style-components")
-                .use_delimiter(true)
+                // Need to turn this off for overrides_with to work as we want. See the bottom most
+                // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
+                .use_delimiter(false)
                 .takes_value(true)
-                .possible_values(&[
-                    "auto", "full", "plain", "changes", "header", "grid", "numbers",
-                ])
+                .overrides_with("style")
+                // Cannot use clap's built in validation because we have to turn off clap's delimiters
+                .validator(|val| {
+                    let mut invalid_vals = val.split(",").filter(|style| {
+                        !&[
+                            "auto", "full", "plain", "changes", "header", "grid", "numbers",
+                        ]
+                            .contains(style)
+                    });
+
+                    if let Some(invalid) = invalid_vals.next() {
+                        Err(format!("Unknown style, '{}'", invalid))
+                    } else {
+                        Ok(())
+                    }
+                })
                 .help(
                     "Comma-separated list of style elements to display \
                      (*auto*, full, plain, changes, header, grid, numbers).",
