@@ -270,7 +270,8 @@ impl App {
                             .collect::<Result<Vec<OutputComponent>>>()
                     }))?;
 
-                matches.value_of("style")
+                matches
+                    .value_of("style")
                     .map(|styles| {
                         styles
                             .split(",")

@@ -110,7 +110,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         !&[
                             "auto", "full", "plain", "changes", "header", "grid", "numbers",
                         ]
-                            .contains(style)
+                        .contains(style)
                     });
 
                     if let Some(invalid) = invalid_vals.next() {
