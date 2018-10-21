@@ -104,6 +104,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .use_delimiter(false)
                 .takes_value(true)
                 .overrides_with("style")
+                .overrides_with("plain")
+                .overrides_with("number")
                 // Cannot use clap's built in validation because we have to turn off clap's delimiters
                 .validator(|val| {
                     let mut invalid_vals = val.split(",").filter(|style| {
@@ -136,10 +138,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("plain")
                 .overrides_with("plain")
+                .overrides_with("number")
                 .short("p")
                 .long("plain")
-                .conflicts_with("style")
-                .conflicts_with("number")
+                // .conflicts_with("style")
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
@@ -151,7 +153,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("number")
                 .overrides_with("number")
                 .short("n")
-                .conflicts_with("style")
                 .help("Show line numbers (alias for '--style=numbers').")
                 .long_help(
                     "Only show line numbers, no other decorations. This is an alias for \
