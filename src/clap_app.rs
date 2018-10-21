@@ -220,7 +220,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Set pager")
                 .long_help(
                     "Set which pager is used. This option will overwrite \
-                    PAGER or BAT_PAGER environment variables.",
+                     PAGER or BAT_PAGER environment variables.",
                 ),
         )
         .arg(
