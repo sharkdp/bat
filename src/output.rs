@@ -15,19 +15,21 @@ pub enum OutputType {
 }
 
 impl OutputType {
-    pub fn from_mode(mode: PagingMode) -> Result<Self> {
+    pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match mode {
-            Always => OutputType::try_pager(false)?,
-            QuitIfOneScreen => OutputType::try_pager(true)?,
+            Always => OutputType::try_pager(false, pager)?,
+            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
             _ => OutputType::stdout(),
         })
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
-    fn try_pager(quit_if_one_screen: bool) -> Result<Self> {
-        let pager = env::var("BAT_PAGER")
-            .or_else(|_| env::var("PAGER"))
+    fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
+        let pager_from_env = env::var("BAT_PAGER")
+            .or_else(|_| env::var("PAGER"));
+        let pager = pager_from_config.map(|p| p.to_string())
+            .or(pager_from_env.ok())
             .unwrap_or(String::from("less"));
 
         let pagerflags = shell_words::split(&pager)

@@ -70,6 +70,9 @@ pub struct Config<'a> {
 
     /// File extension/name mappings
     pub syntax_mapping: SyntaxMapping,
+
+    /// Pager option
+    pub pager: Option<&'a str>,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -228,6 +231,7 @@ impl App {
             ),
             output_components,
             syntax_mapping,
+            pager: self.matches.value_of("pager"),
         })
     }
 
