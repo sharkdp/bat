@@ -141,7 +141,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .overrides_with("number")
                 .short("p")
                 .long("plain")
-                // .conflicts_with("style")
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
