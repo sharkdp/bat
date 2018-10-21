@@ -204,10 +204,23 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help(
                     "Specify when to use the pager. To control which pager \
                      is used, set the PAGER or BAT_PAGER environment \
-                     variables (the latter takes precedence). The default \
-                     pager is 'less'. To disable the pager permanently, set \
-                     BAT_PAGER to an empty string. \
+                     variables (the latter takes precedence) or set --pager option.\
+                     The default  pager is 'less'. To disable the pager permanently,\
+                     set BAT_PAGER to an empty string. \
                      Possible values: *auto*, never, always.",
+                ),
+        )
+        .arg(
+            Arg::with_name("pager")
+                .long("pager")
+                .overrides_with("pager")
+                .takes_value(true)
+                .value_name("pager-command")
+                .hidden_short_help(true)
+                .help("Set pager")
+                .long_help(
+                    "Set which pager is used. This option will overwrite \
+                    PAGER or BAT_PAGER environment variables.",
                 ),
         )
         .arg(
