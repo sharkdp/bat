@@ -204,10 +204,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help(
                     "Specify when to use the pager. To control which pager \
                      is used, set the PAGER or BAT_PAGER environment \
-                     variables (the latter takes precedence) or set --pager option.\
-                     The default  pager is 'less'. To disable the pager permanently,\
-                     set BAT_PAGER to an empty string. \
-                     Possible values: *auto*, never, always.",
+                     variables (the latter takes precedence) or use the '--pager' option. \
+                     The default pager is 'less'. To disable the pager permanently,\
+                     set BAT_PAGER to an empty string or set '--pager \"\"' in the config \
+                     file. Possible values: *auto*, never, always.",
                 ),
         )
         .arg(
@@ -215,12 +215,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("pager")
                 .overrides_with("pager")
                 .takes_value(true)
-                .value_name("pager-command")
+                .value_name("command")
                 .hidden_short_help(true)
-                .help("Set pager")
+                .help("Determine which pager to use.")
                 .long_help(
-                    "Set which pager is used. This option will overwrite \
-                     PAGER or BAT_PAGER environment variables.",
+                    "Determine which pager is used. This option will overwrite \
+                     the PAGER and BAT_PAGER environment variables. \
+                     Example: '--pager \"less -RF\"'.",
                 ),
         )
         .arg(
