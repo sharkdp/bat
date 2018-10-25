@@ -14,9 +14,8 @@ pub fn config_file() -> PathBuf {
             let env_path_buf = PathBuf::from(env_path);
             if env_path_buf.is_file() {
                 return env_path_buf;
-            }
-            else {
-               return PROJECT_DIRS.config_dir().join("config"); 
+            } else {
+                return PROJECT_DIRS.config_dir().join("config");
             }
         }
         Err(_) => PROJECT_DIRS.config_dir().join("config"),
