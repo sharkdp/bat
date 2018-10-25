@@ -9,7 +9,18 @@ use dirs::PROJECT_DIRS;
 use util::transpose;
 
 pub fn config_file() -> PathBuf {
-    PROJECT_DIRS.config_dir().join("config")
+    match env::var("BAT_CONFIG_PATH") {
+        Ok(env_path) => {
+            let env_path_buf = PathBuf::from(env_path);
+            if env_path_buf.is_file() {
+                return env_path_buf;
+            }
+            else {
+               return PROJECT_DIRS.config_dir().join("config"); 
+            }
+        }
+        Err(_) => PROJECT_DIRS.config_dir().join("config"),
+    }
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
