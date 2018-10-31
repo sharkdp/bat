@@ -27,10 +27,15 @@ impl OutputType {
     /// Try to launch the pager. Fall back to stdout in case of errors.
     fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
         let pager_from_env = env::var("BAT_PAGER").or_else(|_| env::var("PAGER"));
-        let pager = pager_from_config
+
+        let mut pager = pager_from_config
             .map(|p| p.to_string())
             .or(pager_from_env.ok())
             .unwrap_or(String::from("less"));
+
+        if pager == "bat" {
+            pager = String::from("less");
+        }
 
         let pagerflags = shell_words::split(&pager)
             .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
