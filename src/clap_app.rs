@@ -287,8 +287,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("terminal-width")
                 .takes_value(true)
                 .value_name("width")
-                .hidden(true)
-                .help("Set the width of the terminal"),
+                .hidden_short_help(true)
+                .help(
+                    "Explicitly set the width of the terminal instead of determining it \
+                     automatically. If prefixed with '+' or '-', the value will be treated \
+                     as an offset to the actual terminal width.",
+                ),
         )
         .arg(
             Arg::with_name("no-config")

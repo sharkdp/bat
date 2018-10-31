@@ -196,7 +196,23 @@ impl App {
             term_width: self
                 .matches
                 .value_of("terminal-width")
-                .and_then(|w| w.parse().ok())
+                .and_then(|w| {
+                    if w.starts_with("+") || w.starts_with("-") {
+                        // Treat argument as a delta to the current terminal width
+                        w.parse().ok().map(|delta: i16| {
+                            let old_width: u16 = Term::stdout().size().1;
+                            let new_width: i32 = old_width as i32 + delta as i32;
+
+                            if new_width <= 0 {
+                                old_width as usize
+                            } else {
+                                new_width as usize
+                            }
+                        })
+                    } else {
+                        w.parse().ok()
+                    }
+                })
                 .unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
