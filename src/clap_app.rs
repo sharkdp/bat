@@ -304,6 +304,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Show path to the configuration file."),
         )
+        .arg(
+            Arg::with_name("enable-italics")
+                .long("enable-italics")
+                .takes_value(true)
+                .possible_values(&["always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Use italics in output (always, *never)")
+        )
         .subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
