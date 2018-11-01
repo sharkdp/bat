@@ -33,39 +33,41 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     buffer
 }
 
-pub fn replace_nonprintable(input: &mut Vec<u8>, output: &mut Vec<u8>, tab_width: usize) {
-    output.clear();
+pub fn replace_nonprintable(input: &str, tab_width: usize) -> String {
+    let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
 
-    for chr in input {
-        match *chr {
+    for chr in input.chars() {
+        match chr {
             // space
-            b' ' => output.extend_from_slice("•".as_bytes()),
+            ' ' => output.push('•'),
             // tab
-            b'\t' => {
+            '\t' => {
                 if tab_width == 1 {
-                    output.extend_from_slice("↹".as_bytes());
+                    output.push('↹');
                 } else {
-                    output.extend_from_slice("├".as_bytes());
-                    output.extend_from_slice("─".repeat(tab_width - 2).as_bytes());
-                    output.extend_from_slice("┤".as_bytes());
+                    output.push('├');
+                    output.push_str(&"─".repeat(tab_width - 2));
+                    output.push('┤');
                 }
             }
             // line feed
-            0x0A => output.extend_from_slice("␊".as_bytes()),
+            '\x0A' => output.push('␊'),
             // carriage return
-            0x0D => output.extend_from_slice("␍".as_bytes()),
+            '\x0D' => output.push('␍'),
             // null
-            0x00 => output.extend_from_slice("␀".as_bytes()),
+            '\x00' => output.push('␀'),
             // bell
-            0x07 => output.extend_from_slice("␇".as_bytes()),
+            '\x07' => output.push('␇'),
             // backspace
-            0x08 => output.extend_from_slice("␈".as_bytes()),
+            '\x08' => output.push('␈'),
             // escape
-            0x1B => output.extend_from_slice("␛".as_bytes()),
+            '\x1B' => output.push('␛'),
             // anything else
-            _ => output.push(*chr),
+            _ => output.push(chr),
         }
     }
+
+    output
 }

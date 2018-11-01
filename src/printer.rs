@@ -22,7 +22,7 @@ use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
-use preprocessor::expand_tabs;
+use preprocessor::{expand_tabs, replace_nonprintable};
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
@@ -251,7 +251,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let line = match self.content_type {
+        let mut line = match self.content_type {
             ContentType::BINARY => {
                 return Ok(());
             }
@@ -263,6 +263,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 .unwrap_or("Invalid UTF-16BE".into()),
             _ => String::from_utf8_lossy(&line_buffer).to_string(),
         };
+
+        if self.config.show_nonprintable {
+            line = replace_nonprintable(&mut line, self.config.tab_width);
+        }
+
         let regions = {
             let highlighter = match self.highlighter {
                 Some(ref mut highlighter) => highlighter,
