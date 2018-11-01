@@ -17,13 +17,6 @@ def generate_snapshots():
     for style in collective_styles:
         generate_style_snapshot(style)
 
-    generate_snapshot("tabs_passthrough", "--tabs=0 --style=full --wrap=never")
-    generate_snapshot("tabs_passthrough_wrapped", "--tabs=0 --style=full --wrap=character")
-    generate_snapshot("tabs_4", "--tabs=4 --style=full --wrap=never")
-    generate_snapshot("tabs_4_wrapped", "--tabs=4 --style=full --wrap=character")
-    generate_snapshot("tabs_8", "--tabs=8 --style=full --wrap=never")
-    generate_snapshot("tabs_8_wrapped", "--tabs=8 --style=full --wrap=character")
-
 
 def generate_style_snapshot(style):
     generate_snapshot(style.replace(",", "_"), "--style={}".format(style))
