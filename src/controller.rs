@@ -1,4 +1,5 @@
 use std::io::{self, Write};
+use std::mem::swap;
 
 use app::Config;
 use assets::HighlightingAssets;
@@ -6,6 +7,7 @@ use errors::*;
 use inputfile::{InputFile, InputFileReader};
 use line_range::{LineRanges, RangeCheckResult};
 use output::OutputType;
+use preprocessor::replace_nonprintable;
 use printer::{InteractivePrinter, Printer, SimplePrinter};
 
 pub struct Controller<'a> {
@@ -64,7 +66,14 @@ impl<'b> Controller<'b> {
         input_file: InputFile<'a>,
     ) -> Result<()> {
         printer.print_header(writer, input_file)?;
-        self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
+        self.print_file_ranges(
+            printer,
+            writer,
+            reader,
+            &self.config.line_ranges,
+            self.config.show_nonprintable,
+            self.config.tab_width,
+        )?;
         printer.print_footer(writer)?;
 
         Ok(())
@@ -76,12 +85,20 @@ impl<'b> Controller<'b> {
         writer: &mut Write,
         mut reader: InputFileReader,
         line_ranges: &LineRanges,
+        show_nonprintable: bool,
+        tab_width: usize,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
+        let mut line_buffer_processed = Vec::new();
 
         let mut line_number: usize = 1;
 
         while reader.read_line(&mut line_buffer)? {
+            if show_nonprintable {
+                replace_nonprintable(&mut line_buffer, &mut line_buffer_processed, tab_width);
+                swap(&mut line_buffer, &mut line_buffer_processed);
+            }
+
             match line_ranges.check(line_number) {
                 RangeCheckResult::OutsideRange => {
                     // Call the printer in case we need to call the syntax highlighter

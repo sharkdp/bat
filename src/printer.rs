@@ -22,7 +22,7 @@ use diff::get_git_diff;
 use diff::LineChanges;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
-use preprocessor::expand;
+use preprocessor::expand_tabs;
 use style::OutputWrap;
 use terminal::{as_terminal_escaped, to_ansi_color};
 
@@ -177,7 +177,7 @@ impl<'a> InteractivePrinter<'a> {
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
-            expand(text, self.config.tab_width, cursor)
+            expand_tabs(text, self.config.tab_width, cursor)
         } else {
             text.to_string()
         }

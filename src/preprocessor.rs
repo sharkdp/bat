@@ -1,7 +1,7 @@
 use console::AnsiCodeIterator;
 
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand(line: &str, width: usize, cursor: &mut usize) -> String {
+pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
 
     for chunk in AnsiCodeIterator::new(line) {
@@ -31,4 +31,43 @@ pub fn expand(line: &str, width: usize, cursor: &mut usize) -> String {
     }
 
     buffer
+}
+
+pub fn replace_nonprintable(input: &mut Vec<u8>, output: &mut Vec<u8>, tab_width: usize) {
+    output.clear();
+
+    let tab_width = if tab_width == 0 {
+        4
+    } else if tab_width == 1 {
+        2
+    } else {
+        tab_width
+    };
+
+    for chr in input {
+        match *chr {
+            // space
+            b' ' => output.extend_from_slice("•".as_bytes()),
+            // tab
+            b'\t' => {
+                output.extend_from_slice("├".as_bytes());
+                output.extend_from_slice("─".repeat(tab_width - 2).as_bytes());
+                output.extend_from_slice("┤".as_bytes());
+            }
+            // new line
+            b'\n' => output.extend_from_slice("␤".as_bytes()),
+            // carriage return
+            b'\r' => output.extend_from_slice("␍".as_bytes()),
+            // null
+            0x00 => output.extend_from_slice("␀".as_bytes()),
+            // bell
+            0x07 => output.extend_from_slice("␇".as_bytes()),
+            // backspace
+            0x08 => output.extend_from_slice("␈".as_bytes()),
+            // escape
+            0x1B => output.extend_from_slice("␛".as_bytes()),
+            // anything else
+            _ => output.push(*chr),
+        }
+    }
 }

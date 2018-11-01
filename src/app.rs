@@ -37,6 +37,9 @@ pub struct Config<'a> {
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
 
+    /// Whether or not to show/replace non-printable characters like space, tab and newline.
+    pub show_nonprintable: bool,
+
     /// The character width of the terminal
     pub term_width: usize,
 
@@ -169,7 +172,14 @@ impl App {
 
         Ok(Config {
             true_color: is_truecolor_terminal(),
-            language: self.matches.value_of("language"),
+            language: self.matches.value_of("language").or_else(|| {
+                if self.matches.is_present("show-all") {
+                    Some("show-nonprintable")
+                } else {
+                    None
+                }
+            }),
+            show_nonprintable: self.matches.is_present("show-all"),
             output_wrap: if !self.interactive_output {
                 // We don't have the tty width when piping to another program.
                 // There's no point in wrapping when this is the case.
