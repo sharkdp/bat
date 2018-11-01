@@ -321,8 +321,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Show path to the configuration file."),
         )
         .arg(
-            Arg::with_name("enable-italics")
-                .long("enable-italics")
+            Arg::with_name("italic-text")
+                .long("italic-text")
                 .takes_value(true)
                 .multiple(false)
                 .value_name("always|*never*")

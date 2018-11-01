@@ -260,7 +260,7 @@ impl App {
             output_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
-            italics: match self.matches.value_of("enable-italics") {
+            italics: match self.matches.value_of("italic-text") {
                 Some("always") => true,
                 _ => false
             },
