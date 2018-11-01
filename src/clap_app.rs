@@ -159,6 +159,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("show-all")
+                .long("show-all")
+                .alias("show-nonprintable")
+                .short("A")
+                .conflicts_with("language")
+                .help("Show non-printable characters (space, tab, newline, ..).")
+                .long_help(
+                    "Show non-printable characters like space, tab or newline. \
+                     Use '--tabs' to control the width of the tab-placeholders.",
+                ),
+        )
+        .arg(
             Arg::with_name("line-range")
                 .long("line-range")
                 .multiple(true)
