@@ -52,10 +52,10 @@ pub fn replace_nonprintable(input: &mut Vec<u8>, output: &mut Vec<u8>, tab_width
                     output.extend_from_slice("┤".as_bytes());
                 }
             }
-            // new line
-            b'\n' => output.extend_from_slice("␤".as_bytes()),
+            // line feed
+            0x0A => output.extend_from_slice("␊".as_bytes()),
             // carriage return
-            b'\r' => output.extend_from_slice("␍".as_bytes()),
+            0x0D => output.extend_from_slice("␍".as_bytes()),
             // null
             0x00 => output.extend_from_slice("␀".as_bytes()),
             // bell
