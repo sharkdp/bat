@@ -36,13 +36,7 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
 pub fn replace_nonprintable(input: &mut Vec<u8>, output: &mut Vec<u8>, tab_width: usize) {
     output.clear();
 
-    let tab_width = if tab_width == 0 {
-        4
-    } else if tab_width == 1 {
-        2
-    } else {
-        tab_width
-    };
+    let tab_width = if tab_width == 0 { 4 } else { tab_width };
 
     for chr in input {
         match *chr {
@@ -50,9 +44,13 @@ pub fn replace_nonprintable(input: &mut Vec<u8>, output: &mut Vec<u8>, tab_width
             b' ' => output.extend_from_slice("•".as_bytes()),
             // tab
             b'\t' => {
-                output.extend_from_slice("├".as_bytes());
-                output.extend_from_slice("─".repeat(tab_width - 2).as_bytes());
-                output.extend_from_slice("┤".as_bytes());
+                if tab_width == 1 {
+                    output.extend_from_slice("↹".as_bytes());
+                } else {
+                    output.extend_from_slice("├".as_bytes());
+                    output.extend_from_slice("─".repeat(tab_width - 2).as_bytes());
+                    output.extend_from_slice("┤".as_bytes());
+                }
             }
             // new line
             b'\n' => output.extend_from_slice("␤".as_bytes()),

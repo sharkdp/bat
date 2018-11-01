@@ -11,6 +11,8 @@ contexts:
       scope: support.function.show-nonprintable.space
     - match: "├─*┤"
       scope: constant.character.escape.show-nonprintable.tab
+    - match: "↹"
+      scope: constant.character.escape.show-nonprintable.tab
     - match: "␤"
       scope: keyword.operator.show-nonprintable.newline
     - match: "␍"
