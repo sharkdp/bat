@@ -308,10 +308,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             Arg::with_name("enable-italics")
                 .long("enable-italics")
                 .takes_value(true)
+                .multiple(false)
+                .value_name("always|*never*")
                 .possible_values(&["always", "never"])
                 .default_value("never")
                 .hide_default_value(true)
-                .help("Use italics in output (always, *never)")
+                .help("Use italics in output (always, *never*)")
         )
         .subcommand(
             SubCommand::with_name("cache")
