@@ -13,8 +13,8 @@ contexts:
       scope: constant.character.escape.show-nonprintable.tab
     - match: "↹"
       scope: constant.character.escape.show-nonprintable.tab
-    - match: "␤"
-      scope: keyword.operator.show-nonprintable.newline
+    - match: "␊"
+      scope: keyword.operator.show-nonprintable.line-feed
     - match: "␍"
       scope: string.show-nonprintable.carriage-return
     - match: "␀"
