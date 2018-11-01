@@ -228,7 +228,7 @@ impl App {
                     if output_components.plain() && paging_mode == PagingMode::Never {
                         0
                     } else {
-                        8
+                        4
                     },
                 ),
             theme: self
