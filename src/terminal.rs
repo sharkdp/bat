@@ -18,6 +18,7 @@ pub fn as_terminal_escaped(
     text: &str,
     true_color: bool,
     colored: bool,
+    italics: bool,
 ) -> String {
     let style = if !colored {
         Style::default()
@@ -28,7 +29,7 @@ pub fn as_terminal_escaped(
             color.bold()
         } else if style.font_style.contains(FontStyle::UNDERLINE) {
             color.underline()
-        } else if style.font_style.contains(FontStyle::ITALIC) {
+        } else if style.font_style.contains(FontStyle::ITALIC) && italics {
             color.italic()
         } else {
             color.normal()
