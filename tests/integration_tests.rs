@@ -322,3 +322,34 @@ fn pager_disable() {
         .success()
         .stdout("hello world\n");
 }
+
+fn bat_config() -> Command {
+    let mut cmd = Command::main_binary().unwrap();
+        cmd.current_dir("tests/examples");
+        cmd.env_remove("BAT_PAGER");
+        cmd.env_remove("BAT_CONFIG_PATH");
+    cmd 
+}
+
+#[test]
+fn config_location_test() {
+    bat_config()
+        .env_remove("BAT_CONFIG_PATH")
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .arg("--config-file")
+        .assert()
+        .success()
+        .stdout("bat.conf\n");
+}
+
+#[test]
+fn config_read_paging_test() {
+    bat_config()
+        .env_remove("BAT_CONFIG_PATH")
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_PAGER", "echo testing-config-file")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("testing-config-file\n");
+}
