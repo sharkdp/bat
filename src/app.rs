@@ -77,7 +77,7 @@ pub struct Config<'a> {
     /// Command to start the pager
     pub pager: Option<&'a str>,
 
-    pub italics: bool
+    pub italics: bool,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -262,7 +262,7 @@ impl App {
             pager: self.matches.value_of("pager"),
             italics: match self.matches.value_of("italic-text") {
                 Some("always") => true,
-                _ => false
+                _ => false,
             },
         })
     }
