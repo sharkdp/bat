@@ -306,7 +306,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
             let italics = self.config.italics;
-    
+
             for &(style, region) in regions.iter() {
                 let text = &*self.preprocess(region, &mut cursor_total);
                 write!(
