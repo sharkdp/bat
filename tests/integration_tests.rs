@@ -9,6 +9,9 @@ fn bat_with_config() -> Command {
     cmd.env_remove("PAGER");
     cmd.env_remove("BAT_PAGER");
     cmd.env_remove("BAT_CONFIG_PATH");
+    cmd.env_remove("BAT_STYLE");
+    cmd.env_remove("BAT_THEME");
+    cmd.env_remove("BAT_TABS");
     cmd
 }
 
