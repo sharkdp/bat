@@ -29,7 +29,7 @@ pub fn as_terminal_escaped(
             color.bold()
         } else if style.font_style.contains(FontStyle::UNDERLINE) {
             color.underline()
-        } else if style.font_style.contains(FontStyle::ITALIC) && italics {
+        } else if italics && style.font_style.contains(FontStyle::ITALIC) {
             color.italic()
         } else {
             color.normal()
