@@ -3,12 +3,18 @@ extern crate assert_cmd;
 use assert_cmd::prelude::*;
 use std::process::Command;
 
-fn bat() -> Command {
+fn bat_with_config() -> Command {
     let mut cmd = Command::main_binary().unwrap();
     cmd.current_dir("tests/examples");
-    cmd.arg("--no-config");
     cmd.env_remove("PAGER");
     cmd.env_remove("BAT_PAGER");
+    cmd.env_remove("BAT_CONFIG_PATH");
+    cmd
+}
+
+fn bat() -> Command {
+    let mut cmd = bat_with_config();
+    cmd.arg("--no-config");
     cmd
 }
 
@@ -323,18 +329,9 @@ fn pager_disable() {
         .stdout("hello world\n");
 }
 
-fn bat_config() -> Command {
-    let mut cmd = Command::main_binary().unwrap();
-        cmd.current_dir("tests/examples");
-        cmd.env_remove("BAT_PAGER");
-        cmd.env_remove("BAT_CONFIG_PATH");
-    cmd 
-}
-
 #[test]
 fn config_location_test() {
-    bat_config()
-        .env_remove("BAT_CONFIG_PATH")
+    bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
         .arg("--config-file")
         .assert()
@@ -344,8 +341,7 @@ fn config_location_test() {
 
 #[test]
 fn config_read_paging_test() {
-    bat_config()
-        .env_remove("BAT_CONFIG_PATH")
+    bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
         .env("BAT_PAGER", "echo testing-config-file")
         .arg("test.txt")
