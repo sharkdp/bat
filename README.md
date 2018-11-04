@@ -321,6 +321,34 @@ will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
 
 If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
 
+### Configuration file
+
+`bat` can use a config file for options to cut down on command line flags, that you want to save for each run. 
+
+#### Location 
+
+The default location is operation system/install location dependent (macOS: `Users/<your_user>/Library/Preferences/bat/config`). To get the path of the current location use `bat --config-file` to print out the location of the current config file path.  
+
+You can change this with the `$BAT_CONFIG_PATH` enviroment variable. 
+
+#### Format
+
+The config file is formatted just as you would pass arguments to the CLI. Here is an example: 
+
+```
+# Make sure that the pager gets executed
+--paging=always
+
+# Always enable coloring (will send ANSI codes to pipe commands)
+--color=always
+
+# Set the theme to "TwoDark"
+--theme="TwoDark"
+
+# Do not display line numbers or borders
+--decorations=never
+```
+
 ## Using `bat` on Windows
 
 `bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
