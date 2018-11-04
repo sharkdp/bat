@@ -343,12 +343,11 @@ fn config_location_test() {
 }
 
 #[test]
-fn config_read_paging_test() {
+fn config_read_arguments_from_file() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
-        .env("BAT_PAGER", "echo testing-config-file")
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("testing-config-file\n");
+        .stdout("dummy-pager-from-config\n");
 }
