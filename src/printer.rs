@@ -305,7 +305,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         if self.config.output_wrap == OutputWrap::None {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
-            let italics = self.config.italics;
+            let italics = self.config.use_italic_text;
 
             for &(style, region) in regions.iter() {
                 let text = &*self.preprocess(region, &mut cursor_total);
@@ -368,7 +368,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             ),
                                             self.config.true_color,
                                             self.config.colored_output,
-                                            self.config.italics
+                                            self.config.use_italic_text
                                         )
                                     )?;
                                     break;
@@ -408,7 +408,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                         ),
                                         self.config.true_color,
                                         self.config.colored_output,
-                                        self.config.italics
+                                        self.config.use_italic_text
                                     ),
                                     panel_wrap.clone().unwrap()
                                 )?;

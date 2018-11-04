@@ -203,6 +203,17 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("italic-text")
+                .long("italic-text")
+                .takes_value(true)
+                .value_name("when")
+                .possible_values(&["always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Use italics in output (always, *never*)")
+                .long_help("Specify when to use ANSI sequences for italic text in the output. Possible values: always, *never*."),
+        )
+        .arg(
             Arg::with_name("decorations")
                 .long("decorations")
                 .overrides_with("decorations")
@@ -319,17 +330,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .conflicts_with("list-themes")
                 .hidden(true)
                 .help("Show path to the configuration file."),
-        )
-        .arg(
-            Arg::with_name("italic-text")
-                .long("italic-text")
-                .takes_value(true)
-                .multiple(false)
-                .value_name("always|*never*")
-                .possible_values(&["always", "never"])
-                .default_value("never")
-                .hide_default_value(true)
-                .help("Use italics in output (always, *never*)"),
         )
         .subcommand(
             SubCommand::with_name("cache")
