@@ -37,11 +37,15 @@ impl OutputType {
             .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
 
         match pagerflags.split_first() {
-            Some((initial_pager, args)) => {
-                let pager_name = match initial_pager.as_ref() {
-                    "bat" => "less",
-                    _ => initial_pager,
-                };
+            Some((initial_pager, mut args)) => {
+                let pager_name;
+                if initial_pager == "bat" {
+                    pager_name = "less";
+                    args = &[];
+                }
+                else {
+                    pager_name = initial_pager;
+                }
 
                 let pager_path = PathBuf::from(pager_name);
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
