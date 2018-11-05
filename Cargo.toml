@@ -22,7 +22,7 @@ console = "0.6"
 directories = "1.0"
 lazy_static = "1.2"
 wild = "2.0"
-content_inspector = "0.2.3"
+content_inspector = "0.2.4"
 encoding = "0.2"
 shell-words = "0.1.0"
 
