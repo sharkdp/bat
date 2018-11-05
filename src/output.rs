@@ -28,20 +28,21 @@ impl OutputType {
     fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
         let pager_from_env = env::var("BAT_PAGER").or_else(|_| env::var("PAGER"));
 
-        let mut pager = pager_from_config
+        let pager = pager_from_config
             .map(|p| p.to_string())
             .or(pager_from_env.ok())
             .unwrap_or(String::from("less"));
-
-        if pager == "bat" {
-            pager = String::from("less");
-        }
 
         let pagerflags = shell_words::split(&pager)
             .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
 
         match pagerflags.split_first() {
-            Some((pager_name, args)) => {
+            Some((initial_pager, args)) => {
+                let pager_name = match initial_pager.as_ref() {
+                    "bat" => "less",
+                    _ => initial_pager,
+                };
+
                 let pager_path = PathBuf::from(pager_name);
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
