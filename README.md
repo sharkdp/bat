@@ -129,6 +129,14 @@ You can install `bat` using the [nix package manager](https://nixos.org/nix):
 nix-env -i bat
 ```
 
+### On openSUSE
+
+You can install `bat` with zypper:
+
+```
+zypper install bat
+```
+
 ### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
