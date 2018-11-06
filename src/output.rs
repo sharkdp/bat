@@ -42,8 +42,7 @@ impl OutputType {
                 if initial_pager == "bat" {
                     pager_name = "less";
                     args = &[];
-                }
-                else {
+                } else {
                     pager_name = initial_pager;
                 }
 
