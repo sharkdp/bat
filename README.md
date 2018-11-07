@@ -319,26 +319,33 @@ If scrolling still doesn't work for you, you can try to pass the `-S` option in 
 
 #### Location 
 
-The default location is operation system/install location dependent (macOS: `Users/<your_user>/Library/Preferences/bat/config`). To get the path of the current location use `bat --config-file` to print out the location of the current config file path.  
+The default location is OS/install location dependent to get the path for your operating system use `bat --config-file` to print out the location of the current config file path.  
 
-You can change this with the `$BAT_CONFIG_PATH` enviroment variable. 
+You can use the `$BAT_CONFIG_PATH` environment variable to point `bat` to a non-default location of the configuration file like so: 
+```bash
+export BAT_CONFIG_PATH=$HOME/code/setup/bat.conf
+```
 
 #### Format
 
 The config file is formatted just as you would pass arguments to the CLI. Here is an example: 
 
-```
-# Make sure that the pager gets executed
---paging=always
-
-# Always enable coloring (will send ANSI codes to pipe commands)
---color=always
-
+```bash
 # Set the theme to "TwoDark"
 --theme="TwoDark"
 
-# Do not display line numbers or borders
---decorations=never
+# Show line numbers, Git modifications and file header (but no grid)
+--style="numbers,changes,header"
+
+# Add mouse scrolling support in less (does not work with older
+# versions of "less")
+--pager="less -FR"
+
+# Use C++ syntax (instead of C) for .h header files
+--map-syntax h:cpp
+
+# Use "gitignore" highlighting for ".ignore" files
+--map-syntax .ignore:.gitignore
 ```
 
 ## Using `bat` on Windows
