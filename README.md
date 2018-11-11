@@ -30,6 +30,10 @@ languages:
 
 ![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
+### Show non-printable characters
+
+![Non-printable character example](https://i.imgur.com/2KTHhYT.png)
+
 ### Automatic paging
 
 `bat` can pipe its own output to `less` if the output is too large for one screen.
