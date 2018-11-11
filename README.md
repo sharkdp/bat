@@ -32,6 +32,9 @@ languages:
 
 ### Show non-printable characters
 
+You can use the `-A`/`--show-all` option to show and highlight non-printable
+characters:
+
 ![Non-printable character example](https://i.imgur.com/2KTHhYT.png)
 
 ### Automatic paging
@@ -70,8 +73,12 @@ Read from stdin, specify the language explicitly
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
+Show and highlight non-printable characters:
+```bash
+> bat -A /etc/hosts
+```
 
-As a replacement for `cat`:
+Use it as a `cat` replacement:
 
 ```bash
 bat > note.md  # quickly create a new file
@@ -200,8 +207,7 @@ This should work with the following distributions:
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
 prebuilt versions of `bat` for many different architectures. Statically-linked
-binaries are available, just look for releases with `musl` in the name on the
-releases page.
+binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
@@ -223,7 +229,8 @@ Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
-make the change permanent.
+make the change permanent. Alternatively, use `bat`s
+[configuration file](https://github.com/sharkdp/bat#configuration-file).
 
 If you want to preview the different themes on a custom file, you can use
 the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
@@ -232,16 +239,17 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
 `bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes will work better for you. For example, the `GitHub`
-theme is made for light backgrounds. You can also make your own theme by following the
+light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
+You can also use a custom theme by following the
 ['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
 
 ### Output style
 
 You can use the `--style` option to control the appearance of `bat`s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
-and line numbers but no grid and no file header. Use the `BAT_STYLE` environment
-variable to make these changes permanent.
+and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
+variable to make these changes permanent or use `bat`s
+[configuration file](https://github.com/sharkdp/bat#configuration-file).
 
 ### Adding new syntaxes / language definitions
 
@@ -311,6 +319,8 @@ If you want to pass command-line arguments to the pager, you can also set them v
 export BAT_PAGER="less -RF"
 ```
 
+Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
+
 **Note**: By default, if the pager is set to `less` (any no command-line options are specified),
 `bat` will pass the following command line
 options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
@@ -325,7 +335,7 @@ will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
 
 If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
 
-### Configuration file
+## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent on you operating system. To get the default path for your system, call
 ```
@@ -337,7 +347,7 @@ Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
-#### Format
+### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
 
