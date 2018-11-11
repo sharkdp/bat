@@ -338,12 +338,14 @@ If scrolling still doesn't work for you, you can try to pass the `-S` option in 
 
 ## Configuration file
 
-`bat` can also be customized with a configuration file. The location of the file is dependent on you operating system. To get the default path for your system, call
+`bat` can also be customized with a configuration file. The location of the file is dependent
+on your operating system. To get the default path for your system, call
 ```
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a non-default location of the configuration file:
+Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
+non-default location of the configuration file:
 ```bash
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
