@@ -84,9 +84,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Set the color theme for syntax highlighting.")
                 .long_help(
                     "Set the theme for syntax highlighting. Use '--list-themes' to \
-                     see all available themes. To set a default theme, export the \
+                     see all available themes. To set a default theme, add the \
+                     '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"TwoDark\").",
+                     BAT_THEME=\"...\").",
                 ),
         )
         .arg(
@@ -130,8 +131,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      borders, Git modifications, ..) to display in addition to the \
                      file contents. The argument is a comma-separated list of \
                      components to display (e.g. 'numbers,changes,grid') or a \
-                     pre-defined style ('full'). To set a default theme, export the \
-                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"numbers\"). \
+                     pre-defined style ('full'). To set a default style, add the \
+                     '--style=\"..\"' option to the configuration file or export the \
+                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
                      Possible values: *auto*, full, plain, changes, header, grid, numbers.",
                 ),
         )
@@ -243,9 +245,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                     "Specify when to use the pager. To control which pager \
                      is used, set the PAGER or BAT_PAGER environment \
                      variables (the latter takes precedence) or use the '--pager' option. \
-                     The default pager is 'less'. To disable the pager permanently,\
-                     set BAT_PAGER to an empty string or set '--pager \"\"' in the config \
-                     file. Possible values: *auto*, never, always.",
+                     To disable the pager permanently, set BAT_PAGER to an empty string \
+                     or set '--paging=never' in the configuration file. \
+                     Possible values: *auto*, never, always.",
                 ),
         )
         .arg(
@@ -258,7 +260,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Determine which pager to use.")
                 .long_help(
                     "Determine which pager is used. This option will overwrite \
-                     the PAGER and BAT_PAGER environment variables. \
+                     the PAGER and BAT_PAGER environment variables. The default \
+                     pager is 'less'. To disable the pager completely, use the \
+                     '--paging' option. \
                      Example: '--pager \"less -RF\"'.",
                 ),
         )
