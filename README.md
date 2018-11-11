@@ -315,21 +315,21 @@ If scrolling still doesn't work for you, you can try to pass the `-S` option in 
 
 ### Configuration file
 
-`bat` can use a config file for options to cut down on command line flags, that you want to save for each run. 
+`bat` can also be customized with a configuration file. The location of the file is dependent on you operating system. To get the default path for your system, call
+```
+bat --config-file
+```
 
-#### Location 
-
-The default location is OS/install location dependent to get the path for your operating system use `bat --config-file` to print out the location of the current config file path.  
-
-You can use the `$BAT_CONFIG_PATH` environment variable to point `bat` to a non-default location of the configuration file like so: 
+Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a non-default location of the configuration file:
 ```bash
-export BAT_CONFIG_PATH=$HOME/code/setup/bat.conf
+export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
 #### Format
 
-The config file is formatted just as you would pass arguments to the CLI. Here is an example: 
+The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
 
+Example configuration file:
 ```bash
 # Set the theme to "TwoDark"
 --theme="TwoDark"
