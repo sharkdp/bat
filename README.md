@@ -345,6 +345,9 @@ Example configuration file:
 # Show line numbers, Git modifications and file header (but no grid)
 --style="numbers,changes,header"
 
+# Use italic text on the terminal (not supported on all terminals)
+--italic-text=always
+
 # Add mouse scrolling support in less (does not work with older
 # versions of "less")
 --pager="less -FR"
