@@ -35,7 +35,7 @@ languages:
 You can use the `-A`/`--show-all` option to show and highlight non-printable
 characters:
 
-![Non-printable character example](https://i.imgur.com/2KTHhYT.png)
+![Non-printable character example](https://i.imgur.com/WndGp9H.png)
 
 ### Automatic paging
 
