@@ -34,7 +34,7 @@ pub fn get_git_diff(filename: &str) -> Option<LineChanges> {
 
     let mark_section =
         |line_changes: &mut LineChanges, start: u32, end: i32, change: LineChange| {
-            for line in start..(end + 1) as u32 {
+            for line in start..=end as u32 {
                 line_changes.insert(line, change);
             }
         };
