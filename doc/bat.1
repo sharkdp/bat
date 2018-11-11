@@ -12,10 +12,9 @@ bat <SUBCOMMAND>
 .HP
 \fB\-l\fR, \fB\-\-language\fR <language>
 .IP
-Explicitly set the language for syntax highlighting. The language can be
-specified as a name (like 'C++' or 'LaTeX') or possible file extension (like
-\&'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported language
-names and file extensions.
+Explicitly set the language for syntax highlighting. The language can be specified as a
+name (like 'C++' or 'LaTeX') or possible file extension (like 'cpp', 'hpp' or 'md'). Use
+\&'\-\-list\-languages' to show all supported language names and file extensions.
 .HP
 \fB\-\-list\-languages\fR
 .IP
@@ -29,9 +28,9 @@ Map a file extension or file name to an existing syntax. For example, to highlig
 .HP
 \fB\-\-theme\fR <theme>
 .IP
-Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
-available themes. To set a default theme, export the BAT_THEME environment
-variable (e.g.: export BAT_THEME="TwoDark").
+Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
+To set a default theme, add the '\-\-theme="..."' option to the configuration file or
+export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
 .HP
 \fB\-\-list\-themes\fR
 .IP
@@ -39,13 +38,12 @@ Display a list of supported themes for syntax highlighting.
 .HP
 \fB\-\-style\fR <style\-components>
 .IP
-Configure which elements (line numbers, file headers, grid borders, Git
-modifications, ..) to display in addition to the file contents. The argument
-is a comma\-separated list of components to display (e.g.
-\&'numbers,changes,grid') or a pre\-defined style ('full'). To set a default
-theme, export the BAT_STYLE environment variable (e.g.: export
-BAT_STYLE="numbers"). [possible values: auto, full, plain, changes, header,
-grid, numbers]
+Configure which elements (line numbers, file headers, grid borders, Git modifications,
+\&..) to display in addition to the file contents. The argument is a comma\-separated list
+of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
+To set a default style, add the '\-\-style=".."' option to the configuration file or
+export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
+values: *auto*, full, plain, changes, header, grid, numbers.
 .HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
@@ -53,10 +51,14 @@ Only show plain style, no decorations. This is an alias for '\-\-style=plain'
 .HP
 \fB\-n\fR, \fB\-\-number\fR
 .IP
-Only show line numbers, no other decorations. This is an alias for
-\&'\-\-style=numbers'
+Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
 .HP
-\fB\-\-line\-range\fR <N:M>
+\fB\-A\fR, \fB\-\-show\-all\fR
+.IP
+Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to control the
+width of the tab\-placeholders.
+.HP
+\fB\-\-line\-range\fR <N:M>...
 .IP
 Only print the specified range of lines for each file. For example:
 .RS
@@ -73,6 +75,11 @@ prints lines 40 to the end of the file
 Specify when to use colored output. The automatic mode only enables colors if an
 interactive terminal is detected. Possible values: *auto*, never, always.
 .HP
+\fB\-\-italic\-text\fR <when>
+.IP
+Specify when to use ANSI sequences for italic text in the output. Possible values:
+always, *never*.
+.HP
 \fB\-\-decorations\fR <when>
 .IP
 Specify when to use the decorations that have been specified via '\-\-style'. The
@@ -82,9 +89,15 @@ values: *auto*, never, always.
 \fB\-\-paging\fR <when>
 .IP
 Specify when to use the pager. To control which pager is used, set the PAGER or
-BAT_PAGER environment variables (the latter takes precedence). The default pager is
-\&'less'. To disable the pager permanently, set BAT_PAGER to an empty string. Possible
-values: *auto*, never, always.
+BAT_PAGER environment variables (the latter takes precedence) or use the '\-\-pager'
+option. To disable the pager permanently, set BAT_PAGER to an empty string or set
+\&'\-\-paging=never' in the configuration file. Possible values: *auto*, never, always.
+.HP
+\fB\-\-pager\fR <command>
+.IP
+Determine which pager is used. This option will overwrite the PAGER and BAT_PAGER
+environment variables. The default pager is 'less'. To disable the pager completely, use
+the '\-\-paging' option. Example: '\-\-pager "less \fB\-RF\fR"'.
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
@@ -98,6 +111,12 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .IP
 This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
 always unbuffered \- this option is simply ignored.
+.HP
+\fB\-\-terminal\-width\fR <width>
+.IP
+Explicitly set the width of the terminal instead of determining it automatically. If
+prefixed with '+' or '\-', the value will be treated as an offset to the actual terminal
+width.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
@@ -115,5 +134,4 @@ from standard input.
 .SH "SUBCOMMANDS"
 .IP
 cache
-.IP
-Modify the syntax\-definition and theme cache. See "bat cache --help" for more information
+Modify the syntax\-definition and theme cache
