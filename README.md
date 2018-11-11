@@ -44,8 +44,9 @@ characters:
 ### File concatenation
 
 Oh.. you can also use it to concatenate files :wink:. Whenever
-`bat` detects a non-interactive terminal, it will fall back to printing
-the plain file contents.
+`bat` detects a non-interactive terminal (i.e. when you pipe into another process
+or into a file), `bat` will act as a drop-in replacement for `cat` and
+fall back to printing the plain file contents.
 
 ## How to use
 
