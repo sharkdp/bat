@@ -7,6 +7,14 @@
   A <i>cat(1)</i> clone with syntax highlighting and Git integration.
 </p>
 
+<p align="center">
+  <a href="#syntax-highlighting">特徴</a> •
+  <a href="#how-to-use">使い方</a> •
+  <a href="#installation">インストール</a> •
+  <a href="#customization">カスタマイズ</a> •
+  <a href="#project-goals-and-alternatives">プロジェクトの目標と既存の類似したOSS</a> •
+  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja">日本文]
+</p>
 
 ### シンタックスハイライト
 
