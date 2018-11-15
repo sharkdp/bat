@@ -8,12 +8,13 @@
 </p>
 
 <p align="center">
-  <a href="#syntax-highlighting">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#customization">Customization</a> •
-  <a href="#project-goals-and-alternatives">Project goals, alternatives</a> •
-  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  <a href="#syntax-highlighting">特徴</a> •
+  <a href="#how-to-use">使い方</a> •
+  <a href="#installation">インストール</a> •
+  <a href="#customization">カスタマイズ</a> •
+  <a href="#project-goals-and-alternatives">プロジェクトの目標と選択肢</a>
+  公式ドキュメント [<a href="https://github.com/sharkdp/bat">英文</a>]
+  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
 </p>
 
 ### Syntax highlighting
