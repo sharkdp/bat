@@ -83,7 +83,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 
 ## インストール
 
-### On Ubuntu
+###  Ubuntu
 *... や他のDebianベースのLinuxディストリビューション*
 
 最新の `.deb` パッケージを[こちら](https://github.com/sharkdp/bat/releases)からダウンロードして、インストールしてください:
@@ -92,7 +92,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 sudo dpkg -i bat_0.9.0_amd64.deb  # adapt version number and architecture
 ```
 
-### On Arch Linux
+###  Arch Linux
 
 [Arch Linuxの公式リソース](https://www.archlinux.org/packages/community/x86_64/bat/)からインストールできます。
 
@@ -100,7 +100,7 @@ sudo dpkg -i bat_0.9.0_amd64.deb  # adapt version number and architecture
 pacman -S bat
 ```
 
-### On Void Linux
+###  Void Linux
 
 xbps-ininstall経由で `bat` をインストールできます。
 
@@ -108,7 +108,7 @@ xbps-ininstall経由で `bat` をインストールできます。
 xbps-install -S bat
 ```
 
-### On FreeBSD
+###  FreeBSD
 
 事前にコンパイル済みである[pkg](https://www.freshports.org/textproc/bat)をインストールできます:
 
@@ -123,7 +123,7 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
-### Via nix
+###  nix
 
 `bat` を[nix package manager](https://nixos.org/nix)経由でインストールすることができます:
 
@@ -131,7 +131,7 @@ make install
 nix-env -i bat
 ```
 
-### On openSUSE
+###  openSUSE
 
 You can install `bat` with zypper:
 
@@ -141,7 +141,7 @@ You can install `bat` with zypper:
 zypper install bat
 ```
 
-### On macOS
+###  macOS
 
 [Homebrew](http://braumeister.org/formula/bat)でインストールすることができます:
 
@@ -150,7 +150,7 @@ zypper install bat
 brew install bat
 ```
 
-### On Windows
+###  Windows
 
 You can download prebuilt binaries from the [Release page],
 or install it with :
@@ -163,7 +163,7 @@ scoop install bat
 
 [See below](#using-bat-on-windows) for notes.
 
-### Via Docker
+###  Docker
 
 
 コンテナ内で`bat` を使いたい方のために[Docker image](https://hub.docker.com/r/danlynn/bat/)が用意されています。
@@ -173,7 +173,7 @@ docker pull danlynn/bat
 alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
 ```
 
-### Via Ansible
+###  Ansible
 
 [Ansible](https://www.ansible.com/)でインストールすることができます:
 
@@ -218,44 +218,33 @@ cargo install bat
 
 `cmake` と `libz` 開発パッケージ（`libz-dev` または `libz-devel`）が正しくビルドをするためにインストールする必要があるかもしれません。
 
-## Customization
+## カスタマイズ
 
-### Highlighting theme
+### ハイライト テーマ
 
-Use `bat --list-themes` to get a list of all available themes for syntax
-highlighting. To select the `TwoDark` theme, call `bat` with the
-`--theme=TwoDark` option or set the `BAT_THEME` environment variable to
-`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
-make the change permanent. Alternatively, use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+`bat --list-themes` を使うと現在利用可能なシンタックスハイライトのテーマを入手できます。 `TwoDark` テーマを選ぶためには `--theme=TwoDark` オプションをつけるか `BAT_THEME` という環境変数に `TwoDark` を代入する必要があります。 シェルの起動ファイルに `export BAT_THEME="TwoDark"` と定義すればその設定が変わることはないでしょう。あるいは、 `bat` の[設定ファイル](https://github.com/sharkdp/bat#configuration-file)を利用してください。
 
-If you want to preview the different themes on a custom file, you can use
-the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
+
+もし、ファイルにより異なるテーマを利用したい場合は、以下の[`fzf`](https://github.com/junegunn/fzf)を利用した以下のコマンドを使うことができます:
 ``` bash
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
-`bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
-You can also use a custom theme by following the
-['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
+`bat` はデフォルトだと黒い背景色のターミナルに適しています。しかし、`GitHub` や `OneHalfLight` のような白い背景色のテーマでもいい感じにすることができます。
+以下のカスタムテーマを参考にしてみてください。
+['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes)
 
-### Output style
+### 出力のスタイル
 
-You can use the `--style` option to control the appearance of `bat`s output.
-You can use `--style=numbers,changes`, for example, to show only Git changes
-and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
-variable to make these changes permanent or use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+`--style` を使うことで `bat` の表示の見た目を変更することができます。例えば、 `--style=numbers,changes` と入力します。すると、Gitの差分と行番号だけが表示され、グリッド線とファイルヘッダーは表示されません。
+環境変数に `BAT_STYLE` を定義するとこれらの設定を永続的に使用することができます。
+[設定ファイル](https://github.com/sharkdp/bat#configuration-file)を参考にしても良いでしょう。
 
-### Adding new syntaxes / language definitions
+### 新しい構文の追加 / 言語の定義
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
-library for syntax highlighting. `syntect` can read any
-[Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
-and theme. To add new syntax definitions, do the following.
+`bat` はシンタックスハイライトのための[`syntext`](https://github.com/trishume/syntect/)という最高にイケてるライブラリを使用しています。`syntect` はSublime Textのために作られた[`.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)テーマです。新しい構文を定義するために以下の手順を行います。
 
-Create a folder with syntax definition files:
+構文定義ファイルを入れておくためのフォルダを作る:
 
 ```bash
 BAT_CONFIG_DIR="$(bat cache --config-dir)"
@@ -268,25 +257,24 @@ cd "$BAT_CONFIG_DIR/syntaxes"
 git clone https://github.com/tellnobody1/sublime-purescript-syntax
 ```
 
-Now use the following command to parse these files into a binary cache:
+次のコマンドを使用して、これらのファイルをバイナリキャッシュに解析します:
 
 ```bash
 bat cache --init
 ```
 
-Finally, use `bat --list-languages` to check if the new languages are available.
-
-If you ever want to go back to the default settings, call:
+最後に `bat --list-languages` と入力すると新しい言語が利用可能かどうかチェックします。
+デフォルトの設定に戻したいときは以下のコマンドを実行します:
 
 ```bash
 bat cache --clear
 ```
 
-### Adding new themes
+### 新しいテーマの追加
 
-This works very similar to how we add new syntax definitions.
+これは構文を新しく定義するやり方と非常に似ています。
 
-First, create a folder with the new syntax highlighting themes:
+まず、新しいシンタックスハイライトのテーマのフォルダを作ります:
 ```bash
 BAT_CONFIG_DIR="$(bat cache --config-dir)"
 
@@ -300,57 +288,45 @@ git clone https://github.com/greggb/sublime-snazzy
 bat cache --init
 ```
 
-Finally, use `bat --list-themes` to check if the new themes are available.
+最後に、 `bat --list-themes` で新しいテーマが利用可能がチェックします
 
-### Using a different pager
+### 異なるページャーの使用
 
-`bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
-set, `less` is used by default. If you want to use a different pager, you can either modify the
-`PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
-`PAGER`.
+`bat` は環境変数 `PAGER` に使用するページャーを明記します。
+この環境変数が定義されていない場合、デフォルトで `less` が使用されます。もし、異なるページャーが使用したい場合は、`PAGER` を修正してください。または、`PAGER` を上書きする環境変数として `BAT_PAGER` を定義することも可能です。
 
-If you want to pass command-line arguments to the pager, you can also set them via the
-`PAGER`/`BAT_PAGER` variables:
-
+もし、ページャーにコマンドライン引数を渡したい場合は、 `PAGER`/`BAT_PAGER` 環境変数を定義してください:
 ```bash
 export BAT_PAGER="less -RF"
 ```
 
-Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
+環境変数を利用する代わりに、 `bat` の[設定ファイル](https://github.com/sharkdp/bat#configuration-file)の `--pager` オプションを使用することも可能です。
 
-**Note**: By default, if the pager is set to `less` (any no command-line options are specified),
-`bat` will pass the following command line
-options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
-The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
-less to exit immediately if the output size is smaller than the vertical size of the terminal.
-This is convenient for small files because you do not have to press `q` to quit the pager. The
-third option (`-X`) is needed to fix a bug with the `--quit-if-one-screen` feature in old versions
-of `less`. Unfortunately, it also breaks mouse-wheel support in `less`. If you want to enable
-mouse-wheel scrolling, you can either pass just `-R` (as in the example above, this will disable
-the quit-if-one-screen feature), or you can use a recent version of `less` and pass `-RF` which
-will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
+**注意**: デフォルトにより、ページャーが `less` にセットされているならば `bat` は以下のコマンドラインを受け付けるでしょう。
+ページャーのオプション： `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` , `-X`/`--no-init`
+最初の `-R` はANSIカラーを正しく解釈するために必要です。2番目の `-F` は出力サイズがターミナルの縦のサイズよりも小さいならば `less` に即座に終了するように命令します。したがって、少量のファイルのためにページャーを終了する `q` を押す必要がありません。3番目のオプションの `-X` は `less` の古いバージョンの機能である `--quit-if-one-screen` でバグを修正するために必要です。運の悪いことに、これは `less` のマウス-ホイールのサポートを無効にします。もし、マウス-ホイール スクローリングを有効にしたいなら、`-R` だけをオプションとしてつけてください（ただし、これは `--quit-if-one-screen` を無効にするでしょう）。または、 `less` の最近バージョンを利用し、 `-RF` をつけてください。 これは望ましいことに `--quit-if-one-screen` と マウス-ホイールスクローリングの両方を有効にするでしょう。
 
-If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
+スクロールが未だ動作しないのであれば、加えて `-S` オプションを追加してみてください。
 
-## Configuration file
+## 設定ファイル
 
-`bat` can also be customized with a configuration file. The location of the file is dependent
-on your operating system. To get the default path for your system, call
+
+`bat` は設定ファイルでカスタマイズすることが可能です。ファイルの場所はOSに依存します。使用しているOSのデフォルトパスを調べるには以下のコマンドを実行してください:
 ```
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
-non-default location of the configuration file:
+また、環境変数 `BAT_CONFIG_PATH` に設定ファイルの場所を明記することもできます:
 ```bash
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
-### Format
+### フォーマット
 
-The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
 
-Example configuration file:
+この設定ファイルはコマンドライン引数の単純なリストです。 `bat --help` を利用すると、利用可能なオプションとその値を閲覧することができます。さらに、`#` でコメント文を加えることができます。
+
+設定ファイルの例:
 ```bash
 # Set the theme to "TwoDark"
 --theme="TwoDark"
@@ -372,34 +348,31 @@ Example configuration file:
 --map-syntax .ignore:.gitignore
 ```
 
-## Using `bat` on Windows
+## Windows での `bat` の利用
 
-`bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
+Windows 上で `bat` はほとんど動作しますが、いくつかの機能は設定を必要をする場合があります。
 
-### Paging
+### ページング
 
 Windows only includes a very limited pager in the form of `more`. You can download a Windows binary
 for `less` [from its homepage](http://www.greenwoodsoftware.com/less/download.html) or [through
 Chocolatey](https://chocolatey.org/packages/Less). To use it, place the binary in a directory in
 your `PATH` or [define an environment variable](#using-a-different-pager).
 
-### Colours
 
-Windows 10 natively supports colours in both `conhost.exe` (Command Prompt) and PowerShell since
-[v1511](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)), as
-well as in newer versions of bash. On earlier versions of Windows, you can use
-[Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
 
-**Note:** The Git and MSYS versions of `less` do not correctly interpret colours on Windows. If you
-don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never`
-or by setting `BAT_PAGER` to an empty string.
+### 色
+
+Windows 10 は[v1151](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update))からbashの新しいバージョンと同様に `conhost.exe`（コマンドプロンプト）と PowerShell の色をネイティブサポートしていません。Windows の新しいバージョンでは、[Cmder](http://cmder.net/)を使うことができます。これは[ConEmu](https://conemu.github.io/)を含んでいます。
+
+**注意:** Git と MSYS の `less` はWindows上で色を正しく解釈しません。もし、あなたが他のページャーをインストールしていないのであれば、 `--paging=never` オプションを付け加えるまたは `BAT_PAGER` に空文字を設定することでページングを完全に無効にできます。
 
 ### Cygwin
 
-`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)`
+Windows上の `bat` は Cygwin のunix風のpath(`/cygdrive/*`)をネイティブサポートしていません。
+絶対的なcygwinパスを引数として受けたときに、 `bat` は以下のエラーを返すでしょう: `The system cannot find the path specified. (os error 3)`
 
-This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
-
+wrapperを作成するまたは以下の関数を `.bash_profile` に追記することでこの問題を解決することができます:
 ```shell
 bat() {
     local index
@@ -414,26 +387,21 @@ bat() {
 }
 ```
 
-## Troubleshooting
+## トラブルシューティング
 
-### Terminals & colors
+### ターミナルと色
 
-`bat` handles terminals *with* and *without* truecolor support. However, the colors in the syntax
-highlighting themes are not optimized for 8-bit colors and it is therefore strongly recommended
-that you use a terminal with 24-bit truecolor support (`terminator`, `konsole`, `iTerm2`, ...).
-See [this article](https://gist.github.com/XVilka/8346728) for more details and a full list of
-terminals with truecolor support.
+`bat` はターミナルがトゥルーカラーをサポートしている/していない関係なくサポートします。しかし、シンタックスハイライトのテーマの色が8-bitカラーに最適化されていない場合、24-bitであるトゥルーカラーをサポートしているターミナルを使用することを強く推奨します（`terminator`, `konsole`, `iTerm2`, ...）。
+この[記事](https://gist.github.com/XVilka/8346728)には24-bitカラーがサポートされているターミナルの一覧が掲載されています。
 
-Make sure that your truecolor terminal sets the `COLORTERM` variable to either `truecolor` or
-`24bit`. Otherwise, `bat` will not be able to determine whether or not 24-bit escape sequences
-are supported (and fall back to 8-bit colors).
+本当の色をターミナルにセットするために、環境変数 `COLORTERM` に `truecolor` か `24bit` のどちらかを代入してください。さもなければ、 `bat` はどの色を使うのか決定することができません。または、24-bit エスケープシーケンスがサポートされません（そして、8-bit colorに戻ります）。
 
-### Line numbers and grid are hardly visible
+### 行番号とグリッド線がほとんど見えない
 
-Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
-`OneHalfLight` themes provide grid and line colors that are brighter.
+異なるテーマを試してみてください(`bat --list-themes` でテーマを閲覧できます)。 `OneHalfDark` と `OneHalfLight` テーマはグリッド線と線の色を明るくします。
 
-## Development
+
+## 開発
 
 ```bash
 # Recursive clone to retrieve all submodules
