@@ -81,21 +81,20 @@ bat -n main.rs  # show line numbers (only)
 bat f - g  # output 'f', then stdin, then 'g'.
 ```
 
-## Installation
+## インストール
 
 ### On Ubuntu
-*... and other Debian-based Linux distributions.*
+*... や他のDebianベースのLinuxディストリビューション*
 
-Download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
-and install it via:
+最新の `.deb` パッケージを[こちら](https://github.com/sharkdp/bat/releases)からダウンロードして、インストールしてください:
+
 ``` bash
 sudo dpkg -i bat_0.9.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Arch Linux
 
-You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
-from the official sources:
+[Arch Linuxの公式リソース](https://www.archlinux.org/packages/community/x86_64/bat/)からインストールできます。
 
 ```bash
 pacman -S bat
@@ -103,20 +102,21 @@ pacman -S bat
 
 ### On Void Linux
 
-You can install `bat` via xbps-install:
+xbps-ininstall経由で `bat` をインストールできます。
+
 ```
 xbps-install -S bat
 ```
 
 ### On FreeBSD
 
-You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
+事前にコンパイル済みである[pkg](https://www.freshports.org/textproc/bat)をインストールできます:
 
 ```bash
 pkg install bat
 ```
 
-or build it on your own from the FreeBSD ports:
+または、FreeBSDのportsから自身でビルドすることも可能です:
 
 ```bash
 cd /usr/ports/textproc/bat
@@ -125,7 +125,7 @@ make install
 
 ### Via nix
 
-You can install `bat` using the [nix package manager](https://nixos.org/nix):
+`bat` を[nix package manager](https://nixos.org/nix)経由でインストールすることができます:
 
 ```bash
 nix-env -i bat
@@ -135,13 +135,16 @@ nix-env -i bat
 
 You can install `bat` with zypper:
 
+`bat` をzypperでインストールすることができます:
+
 ```
 zypper install bat
 ```
 
 ### On macOS
 
-You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
+[Homebrew](http://braumeister.org/formula/bat)でインストールすることができます:
+
 
 ```bash
 brew install bat
@@ -149,8 +152,10 @@ brew install bat
 
 ### On Windows
 
-You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
-or install it with [scoop](https://scoop.sh/):
+You can download prebuilt binaries from the [Release page],
+or install it with :
+
+事前にビルド済みのバイナリを[リリースページ](https://github.com/sharkdp/bat/releases)からダウンロードすることができます。または、[scoop](https://scoop.sh/)でインストールすることも可能です。
 
 ```bash
 scoop install bat
@@ -160,7 +165,9 @@ scoop install bat
 
 ### Via Docker
 
-There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
+
+コンテナ内で`bat` を使いたい方のために[Docker image](https://hub.docker.com/r/danlynn/bat/)が用意されています。
+
 ```bash
 docker pull danlynn/bat
 alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
@@ -168,7 +175,7 @@ alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):
 
 ### Via Ansible
 
-You can install `bat` with [Ansible](https://www.ansible.com/):
+[Ansible](https://www.ansible.com/)でインストールすることができます:
 
 ```bash
 # Install role on local machine
@@ -186,7 +193,7 @@ ansible-galaxy install aeimer.install_bat
 - [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
 - [GitHub](https://github.com/aeimer/ansible-install-bat)
 
-This should work with the following distributions:
+これは以下のディストリビューションで動作するはずです:
 - Debian/Ubuntu
 - ARM (eg. Raspberry PI)
 - Arch Linux
@@ -196,21 +203,20 @@ This should work with the following distributions:
 
 ### From binaries
 
-Check out the [Release page](https://github.com/sharkdp/bat/releases) for
-prebuilt versions of `bat` for many different architectures. Statically-linked
-binaries are also available: look for archives with `musl` in the file name.
+
+多くの異なるアーキテクチャのためのプレビルドバージョンを[リリースページ](https://github.com/sharkdp/bat/releases)からチェックしてみてください。静的にリンクされている多くのバイナリも利用できます: ファイル名に `musl` を含むアーカイブを探します。
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.29 or
-higher. You can then use `cargo` to build everything:
+
+`bat` をソースからビルドしたいならば、Rust 1.29 以上の環境が必要です。そして、 `cargo` をビルドに対して使用します:
 
 ```bash
 cargo install bat
 ```
 
-You may have to install `cmake` and the `libz` development package
-(`libz-dev` or `libz-devel`) in order for the build to succeed.
+
+`cmake` と `libz` 開発パッケージ（`libz-dev` または `libz-devel`）が正しくビルドをするためにインストールする必要があるかもしれません。
 
 ## Customization
 
