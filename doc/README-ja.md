@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://travis-ci.org/sharkdp/bat"><img src="https://travis-ci.org/sharkdp/bat.svg?branch=master" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf?svg=true"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
@@ -432,4 +432,4 @@ cargo install -f
 - ユーザーフレンドリーがコマンドラインインターフェースの提供
 
 既存の類似したOSSはたくさんあります。 
-`bat` とこれらを比較した表が[こちら](doc/alternatives.md)にあります。
+`bat` とこれらを比較した表が[こちら](alternatives.md)にあります。
