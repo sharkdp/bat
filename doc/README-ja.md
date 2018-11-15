@@ -7,80 +7,69 @@
   A <i>cat(1)</i> clone with syntax highlighting and Git integration.
 </p>
 
-<p align="center">
-  <a href="#syntax-highlighting">特徴</a> •
-  <a href="#how-to-use">使い方</a> •
-  <a href="#installation">インストール</a> •
-  <a href="#customization">カスタマイズ</a> •
-  <a href="#project-goals-and-alternatives">プロジェクトの目標と選択肢</a>
-  公式ドキュメント [<a href="https://github.com/sharkdp/bat">英文</a>]
-  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
-</p>
 
-### Syntax highlighting
+### シンタックスハイライト
 
-`bat` supports syntax highlighting for a large number of programming and markup
-languages:
+`bat` は多くのプログラミング言語やマークアップ言語のシンタックスハイライトに対応しています。
 
 ![Syntax highlighting example](https://imgur.com/rGsdnDe.png)
 
-### Git integration
+### Gitの統合
 
-`bat` communicates with `git` to show modifications with respect to the index
-(see left side bar):
+
+`bat` は `git` とも連携しており、差分を表現する記号が表示されます（図の左端）:
 
 ![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
-### Show non-printable characters
+### 空白文字の可視化
 
-You can use the `-A`/`--show-all` option to show and highlight non-printable
-characters:
+`-A`/`--show-all` オプションをつけることで、空白文字を可視化できます:
 
 ![Non-printable character example](https://i.imgur.com/WndGp9H.png)
 
-### Automatic paging
+### 自動呼び出し
 
-`bat` can pipe its own output to `less` if the output is too large for one screen.
+出力が1つの画面に対して大きすぎる場合、`bat` は自身の出力を `less` にパイプで繋げることが可能です。
 
-### File concatenation
+### ファイルの連結
 
-Oh.. you can also use it to concatenate files :wink:. Whenever
-`bat` detects a non-interactive terminal (i.e. when you pipe into another process
-or into a file), `bat` will act as a drop-in replacement for `cat` and
-fall back to printing the plain file contents.
+あなたはさらにファイルを連結させるに使うことも可能です:wink:。
+`bat` は非対話型のターミナルを検出すると、いつでも `cat` の完全互換として振る舞い、
+プレーンなファイルを表示します。
 
-## How to use
+## 使い方
 
-Display a single file on the terminal
+単一のファイルを表示させたい
 
 ```bash
 > bat README.md
 ```
 
-Display multiple files at once
+複数のファイルを一度に表示させたい場合
 
 ```bash
 > bat src/*.rs
 ```
 
-Read from stdin, determine the syntax automatically
+標準入力から自動的に構文を決定させたい場合
 
 ```bash
 > curl -s https://sh.rustup.rs | bat
 ```
 
 Read from stdin, specify the language explicitly
+標準入力から明示的に言語を指定したい場合
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
-Show and highlight non-printable characters:
+空白文字を可視化させたい場合:
 ```bash
 > bat -A /etc/hosts
 ```
 
-Use it as a `cat` replacement:
+`cat` の代わりに `bat` を使用する際の例:
 
 ```bash
 bat > note.md  # quickly create a new file
