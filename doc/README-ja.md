@@ -422,14 +422,14 @@ bash assets/create.sh
 cargo install -f
 ```
 
-## Project goals and alternatives
+## プロジェクトの目標と既存の類似したOSS
 
-`bat` tries to achieve the following goals:
+`bat` は以下の目標を達成しようと試みています:
 
-- Provide beautiful, advanced syntax highlighting
-- Integrate with Git to show file modifications
-- Be a drop-in replacement for (POSIX) `cat`
-- Offer a user-friendly command-line interface
+- 美しい高度なシンタックスハイライトの提供
+- ファイルの差分を表示するためのGitとの連携
+-  (POSIX) `cat` との完全互換
+- ユーザーフレンドリーがコマンドラインインターフェースの提供
 
-There are a lot of alternatives, if you are looking for similar programs. See
-[this document](doc/alternatives.md) for a comparison.
+既存の類似したOSSはたくさんあります。 
+`bat` とこれらを比較した表が[こちら](doc/alternatives.md)にあります。
