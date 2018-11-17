@@ -97,3 +97,6 @@
 [submodule "assets/themes/sublime-snazzy"]
 	path = assets/themes/sublime-snazzy
 	url = https://github.com/greggb/sublime-snazzy
+[submodule "assets/syntaxes/HTML (Twig)"]
+	path = assets/syntaxes/HTML (Twig)
+	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
