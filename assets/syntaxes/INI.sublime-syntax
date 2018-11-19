@@ -12,6 +12,7 @@ file_extensions:
   - lng
   - cfg
   - CFG
+  - desktop
   - url
   - URL
   - .editorconfig
