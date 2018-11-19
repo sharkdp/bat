@@ -29,4 +29,4 @@ themes (`bat cache --clear`).
 The following files have been manually modified after converting from a `.tmLanguage` file:
 
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
-* `INI.sublime-syntax` => added `.hgrc` and `hgrc` file types.
+* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
