@@ -48,7 +48,7 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
-assert_cmd = "0.10.1"
+assert_cmd = "0.10.2"
 escargot = "0.3.1"
 
 [build-dependencies]
