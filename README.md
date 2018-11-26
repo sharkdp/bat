@@ -322,7 +322,7 @@ export BAT_PAGER="less -RF"
 
 Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
 
-**Note**: By default, if the pager is set to `less` (any no command-line options are specified),
+**Note**: By default, if the pager is set to `less` (and no command-line options are specified),
 `bat` will pass the following command line
 options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
 The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
