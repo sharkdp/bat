@@ -168,7 +168,7 @@ impl App {
                     return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
                 }
 
-                syntax_mapping.insert(parts[0].into(), parts[1].into());
+                syntax_mapping.insert(parts[0], parts[1]);
             }
         }
 
