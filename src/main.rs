@@ -195,8 +195,8 @@ fn run_controller(config: &Config) -> Result<bool> {
     controller.run()
 }
 
-/// Returns `Err(..)` upon fatal errors. Otherwise, returns `Some(true)` on full success and
-/// `Some(false)` if any intermediate errors occurred (were printed).
+/// Returns `Err(..)` upon fatal errors. Otherwise, returns `Ok(true)` on full success and
+/// `Ok(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
     let app = App::new()?;
 
