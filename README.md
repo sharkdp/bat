@@ -111,6 +111,14 @@ from the official sources:
 pacman -S bat
 ```
 
+### On Fedora
+
+On Fedora 29 and higher, you can install `bat` from the official package sources:
+
+```bash
+dnf install bat
+```
+
 ### On Void Linux
 
 You can install `bat` via xbps-install:
