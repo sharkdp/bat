@@ -262,10 +262,8 @@ and theme. To add new syntax definitions, do the following.
 Create a folder with syntax definition files:
 
 ```bash
-BAT_CONFIG_DIR="$(bat cache --config-dir)"
-
-mkdir -p "$BAT_CONFIG_DIR/syntaxes"
-cd "$BAT_CONFIG_DIR/syntaxes"
+mkdir -p "$(bat cache --config-dir)/syntaxes"
+cd "$(bat cache --config-dir)/syntaxes"
 
 # Put new '.sublime-syntax' language definition files
 # in this folder (or its subdirectories), for example:
@@ -292,10 +290,8 @@ This works very similar to how we add new syntax definitions.
 
 First, create a folder with the new syntax highlighting themes:
 ```bash
-BAT_CONFIG_DIR="$(bat cache --config-dir)"
-
-mkdir -p "$BAT_CONFIG_DIR/themes"
-cd "$BAT_CONFIG_DIR/themes"
+mkdir -p "$(bat cache --config-dir)/themes"
+cd "$(bat cache --config-dir)/themes"
 
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
