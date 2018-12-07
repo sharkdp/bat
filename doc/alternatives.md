@@ -21,3 +21,4 @@ request.
 
 Some other alternatives that are also related, but not yet included in the table:
 - [lesspipe](https://github.com/wofr06/lesspipe)
+- [vimpager](https://github.com/rkitover/vimpager)
