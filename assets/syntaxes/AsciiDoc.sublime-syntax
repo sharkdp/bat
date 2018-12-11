@@ -1,0 +1,283 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: AsciiDoc
+comment: |
+  A very early hack. Mostly ripped from other syntaxes.
+          Only the very basic stuff is working.
+file_extensions:
+  - adoc
+  - asciidoc
+  - asc
+scope: text.html.asciidoc
+contexts:
+  main:
+    - include: heading_inline
+    - include: heading-block
+    - include: heading-blockattr
+    - match: \$\$(?!\$)
+      push:
+        - meta_scope: comment.block.passthrough.macro.doubledollar.asciidoc
+        - match: \$\$(?!\$)
+          pop: true
+    - match: \+\+\+(?!\+)
+      push:
+        - meta_scope: comment.block.passthrough.macro.tripeplus.asciidoc
+        - match: \+\+\+(?!\+)
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.asciidoc
+    - match: |-
+        (?x)^
+        (?= ([/+-.*_=]{4,})\s*$
+        | ([ \t]{1,})
+        | [=]{1,6}\s*+
+        | [ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+        )
+      push:
+        - meta_scope: meta.block-level.asciidoc
+        - match: |-
+            (?x)^
+            (?! \1
+            | ([ \t]{1,})
+            | [=]{1,6}\s*+
+            | [ ]{,3}(?<marker>[-*_])([ ]{,2}\k<marker>){2,}[ \t]*+$
+            )
+          pop: true
+        - include: block_quote
+        - include: block_raw
+        - include: heading_inline
+        - include: heading-block
+        - include: separator
+    - match: '^[ ]{0,3}([*+-])(?=\s)'
+      captures:
+        1: punctuation.definition.list_item.asciidoc
+      push:
+        - meta_scope: markup.list.unnumbered.asciidoc
+        - match: ^(?=\S)
+          captures:
+            1: punctuation.definition.list_item.asciidoc
+          pop: true
+        - include: list-paragraph
+    - match: '^[ ]{0,3}[0-9]+(\.)(?=\s)'
+      captures:
+        1: punctuation.definition.list_item.asciidoc
+      push:
+        - meta_scope: markup.list.numbered.asciidoc
+        - match: ^(?=\S)
+          captures:
+            1: punctuation.definition.list_item.asciidoc
+          pop: true
+        - include: list-paragraph
+    - match: '^([/+-.*_=]){4,}\s*$'
+      push:
+        - meta_scope: comment.block.asciidoc
+        - match: '^\1{4,}\s*$'
+          pop: true
+    - match: '^([/+.]){4,}\s*$'
+      comment: asciidoc formatting is disabled inside certain blocks.
+      push:
+        - meta_scope: meta.disable-asciidoc
+        - match: '^[/+.]{4,}\s*$'
+          pop: true
+    - match: '^(?=\S)(?![=-]{3,}(?=$))(?!\.\S+)'
+      push:
+        - meta_scope: meta.paragraph.asciidoc
+        - match: '^(?:\s*$|(?=[ ]{,3}>.))|(?=[ \t]*\n)(?<=^===|^====|=====|^---|^----|-----)[ \t]*\n'
+          pop: true
+        - include: inline
+        - include: scope:text.html.basic
+        - match: '^(={3,})(?=[ \t]*$)'
+          scope: markup.heading.0.asciidoc
+          captures:
+            1: punctuation.definition.heading.asciidoc
+        - match: '^(-{3,})(?=[ \t]*$)'
+          scope: markup.heading.1.asciidoc
+          captures:
+            1: punctuation.definition.heading.asciidoc
+        - match: '^(~{3,})(?=[ \t]*$)'
+          scope: markup.heading.2.asciidoc
+          captures:
+            1: punctuation.definition.heading.asciidoc
+        - match: '^(\^{3,})(?=[ \t]*$)'
+          scope: markup.heading.3.asciidoc
+          captures:
+            1: punctuation.definition.heading.asciidoc
+        - match: '^(\+{3,})(?=[ \t]*$)'
+          scope: markup.heading.4.asciidoc
+          captures:
+            1: punctuation.definition.heading.asciidoc
+  attribute-entry:
+    - match: '^:[-_. A-Za-z0-9]+:\s*(.*)\s*$'
+      scope: variable.other
+  attribute-reference:
+    - match: "{[-_. A-Za-z0-9]+}"
+      scope: variable.other
+  attribute-reference-predefined:
+    - match: "{(?i:amp|asciidoc-dir|asciidoc-file|asciidoc-version|author|authored|authorinitials|backend-docbook|backend-xhtml11|backend-html4|docbook-article|xhtml11-article|html4-article|docbook-book|xhtml11-book|html4-book|docbook-manpage|xhtml11-manpage|html4-manpage|backend|backslash|basebackend|brvbar|date|docdate|doctime|docname|docfile|docdir|doctitle|doctype-article|doctype-book|doctype-manpage|doctype|email|empty|encoding|filetype|firstname|gt|id|indir|infile|lastname|level|listindex|localdate|localtime|lt|manname|manpurpose|mantitle|manvolnum|middlename|nbsp|outdir|outfile|reftext|revision|sectnum|showcomments|title|two_colons|two_semicolons|user-dir|verbose)}"
+      scope: support.variable
+  block_quote:
+    - match: '^([/+-.*_=]){4,}\s*$'
+      push:
+        - meta_scope: comment.block.asciidoc
+        - match: '^\1{4,}\s*$'
+          pop: true
+  block_raw:
+    - match: '\G([ ]{4}|\t).*$\n?'
+      scope: markup.raw.block.asciidoc
+  bracket:
+    - match: '<(?![a-z/?\$!])'
+      comment: |
+        asciidoc will convert this for us. We match it so that the
+                        HTML grammar will not mark it up as invalid.
+      scope: meta.other.valid-bracket.asciidoc
+  character-replacements:
+    - match: \(C\)|\(R\)|\(TM\)|--(?!-)|\.\.\.(?!\.)|->|<-|=>|<=
+      scope: constant.character.asciidoc
+  escape:
+    - match: '\\[-`*_#+.!(){}\[\]\\>:]'
+      scope: constant.character.escape.asciidoc
+  heading:
+    - match: '(?m)^(\S+)$([=-~^+])+\s*$'
+      scope: markup.heading.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+  heading-block:
+    - match: ^\.(\w.*)$
+      scope: markup.heading.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+  heading-blockattr:
+    - match: '^\[\[?(\w.*)\]$'
+      scope: markup.heading.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+  heading_inline:
+    - match: '\G(={1,6})(?!=)\s*(?=\S)'
+      captures:
+        1: punctuation.definition.heading.asciidoc
+      push:
+        - meta_scope: markup.heading.asciidoc
+        - meta_content_scope: entity.name.section.asciidoc
+        - match: \s*(=*)$\n?
+          captures:
+            1: punctuation.definition.heading.asciidoc
+          pop: true
+        - include: inline
+  inline:
+    - include: line-break
+    - include: line-page-break
+    - include: line-ruler
+    - include: escape
+    - include: passthrough-macro-trippleplus-inline
+    - include: passthrough-macro-doubledollar-inline
+    - include: character-replacements
+    - include: bracket
+    - include: raw
+    - include: text-quote-single
+    - include: text-quote-double
+    - include: text-quote-other
+    - include: text-bold-unconstrained
+    - include: text-italic-unconstrained
+    - include: text-monospace-unconstrained
+    - include: text-unquoted-unconstrained
+    - include: text-bold
+    - include: text-italic
+    - include: text-monospace
+    - include: text-unquoted
+    - include: attribute-entry
+    - include: attribute-reference-predefined
+    - include: attribute-reference
+  line-break:
+    - match: (?<=\S)\s+\+$
+      scope: constant.character.escape.asciidoc
+  line-page-break:
+    - match: "^<{3,}$"
+      scope: constant.character.escape.asciidoc
+  line-ruler:
+    - match: "^'{3,}$"
+      scope: constant.character.escape.asciidoc
+  list-paragraph:
+    - match: \G\s+(?=\S)
+      push:
+        - meta_scope: meta.paragraph.list.asciidoc
+        - match: ^\s*$
+          pop: true
+        - include: inline
+  passthrough-macro-doubledollar-inline:
+    - match: '(?:\[.*\])?\$\$(?!\$).+\$\$(?!\$)'
+      scope: comment.block.passthrough.asciidoc
+  passthrough-macro-trippleplus-inline:
+    - match: '(?:\[.*\])?\+\+\+(?!\+).+\+\+\+(?!\+)'
+      scope: comment.block.passthrough.asciidoc
+  raw:
+    - match: '(`+)(?:[^`]|(?!(?<!`)\1(?!`))`)*+(\1)'
+      scope: markup.raw.inline.asciidoc
+      captures:
+        1: punctuation.definition.raw.asciidoc
+        2: punctuation.definition.raw.asciidoc
+  separator:
+    - match: '\G[ ]{,3}([-*_])([ ]{,2}\1){2,}[ \t]*$\n?'
+      scope: meta.separator.asciidoc
+  text-bold:
+    - match: (?<!\w)(\*)(?=\S)
+      captures:
+        1: punctuation.definition.bold.asciidoc
+      push:
+        - meta_scope: markup.bold.asciidoc
+        - match: (?<=\S)(\1)(?!\w)
+          captures:
+            1: punctuation.definition.bold.asciidoc
+          pop: true
+  text-bold-unconstrained:
+    - match: (\*\*)(?=\S)
+      captures:
+        1: punctuation.definition.bold.asciidoc
+      push:
+        - meta_scope: markup.bold.asciidoc
+        - match: (?<=\S)(\1)
+          captures:
+            1: punctuation.definition.bold.asciidoc
+          pop: true
+  text-italic:
+    - match: (?<!\w)('|_)(?=\S)
+      captures:
+        1: punctuation.definition.italic.asciidoc
+      push:
+        - meta_scope: markup.italic.asciidoc
+        - match: (?<=\S)(\1)((?!\1)|(?=\1\1))(?!\w)
+          captures:
+            1: punctuation.definition.italic.asciidoc
+          pop: true
+  text-italic-unconstrained:
+    - match: (__)(?=\S)
+      captures:
+        1: punctuation.definition.italic.asciidoc
+      push:
+        - meta_scope: markup.italic.asciidoc
+        - match: (?<=\S)(\1)
+          captures:
+            1: punctuation.definition.italic.asciidoc
+          pop: true
+  text-monospace:
+    - match: '(?<!\w)([\+`])[^\+]*(\1)(?!\w)'
+      scope: string.interpolated.asciidoc
+  text-monospace-unconstrained:
+    - match: (\+\+).*(\1)
+      scope: string.interpolated.asciidoc
+  text-quote-double:
+    - match: '(?<!\w)(?:\[.*\])?``(?!`).*''''(?!'')(?!\w)'
+      scope: string.quoted.double.asciidoc
+  text-quote-other:
+    - match: '(?<!\w)(?:\[.*\])?([~^]).*(\1)(?!\w)'
+      scope: string.quoted.single.asciidoc
+  text-quote-single:
+    - match: '(?<!\w)(?:\[.*\])?`(?!`).*''(?!'')(?!\w)'
+      comment: "TODO: Sub- and Superscript are really unconstrained"
+      scope: string.quoted.single.asciidoc
+  text-unquoted:
+    - match: (?<!\w)(#).*(\1)(?!\w)
+      scope: string.unquoted.asciidoc
+  text-unquoted-unconstrained:
+    - match: (##).*(\1)
+      scope: string.unquoted.asciidoc
