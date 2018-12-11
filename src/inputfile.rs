@@ -59,10 +59,7 @@ impl<'a> InputFile<'a> {
         match self {
             InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
             InputFile::Ordinary(filename) => {
-                let file = match File::open(filename) {
-                    Ok(f) => f,
-                    Err(e) => return Err(format!("{}: {}", filename, e).into()),
-                };
+                let file = File::open(filename).map_err(|e| format!("'{}': {}", filename, e))?;
 
                 if file.metadata()?.is_dir() {
                     return Err(format!("'{}' is a directory.", filename).into());
