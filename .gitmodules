@@ -100,3 +100,6 @@
 [submodule "assets/syntaxes/HTML (Twig)"]
 	path = assets/syntaxes/HTML (Twig)
 	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
+[submodule "assets/syntaxes/AsciiDoc"]
+	path = assets/syntaxes/AsciiDoc
+	url = https://github.com/SublimeText/AsciiDoc.git
