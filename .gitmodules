@@ -103,9 +103,6 @@
 [submodule "assets/syntaxes/AsciiDoc"]
 	path = assets/syntaxes/AsciiDoc
 	url = https://github.com/SublimeText/AsciiDoc.git
-[submodule "assets/syntaxes/Assembly (x86_64)"]
-	path = assets/syntaxes/Assembly (x86_64)
-	url = https://github.com/13xforever/x86-assembly-textmate-bundle
 [submodule "assets/syntaxes/Assembly (ARM)"]
 	path = assets/syntaxes/Assembly (ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
