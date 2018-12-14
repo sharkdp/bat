@@ -309,11 +309,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             for &(style, region) in regions.iter() {
                 let text = &*self.preprocess(region, &mut cursor_total);
+                let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
                 write!(
                     handle,
                     "{}",
-                    as_terminal_escaped(style, &*text, true_color, colored_output, italics,)
+                    as_terminal_escaped(style, text_trimmed, true_color, colored_output, italics,)
                 )?;
+                write!(handle, "{}", &text[text_trimmed.len()..])?;
             }
 
             if line.bytes().next_back() != Some(b'\n') {
@@ -342,7 +344,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         // Regular text.
                         (text, false) => {
                             let text = self.preprocess(
-                                text.trim_right_matches(|c| c == '\r' || c == '\n'),
+                                text.trim_end_matches(|c| c == '\r' || c == '\n'),
                                 &mut cursor_total,
                             );
 
