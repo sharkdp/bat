@@ -1,6 +1,7 @@
 use std::io::{self, Write};
+use std::path::Path;
 
-use app::Config;
+use app::{Config, PagingMode};
 use assets::HighlightingAssets;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};
@@ -19,7 +20,22 @@ impl<'b> Controller<'b> {
     }
 
     pub fn run(&self) -> Result<bool> {
-        let mut output_type = OutputType::from_mode(self.config.paging_mode, self.config.pager)?;
+        // Do not launch the pager if NONE of the input files exist
+        let mut paging_mode = self.config.paging_mode;
+        if self.config.paging_mode != PagingMode::Never {
+            let call_pager = self.config.files.iter().any(|file| {
+                if let InputFile::Ordinary(path) = file {
+                    return Path::new(path).exists();
+                } else {
+                    return true;
+                }
+            });
+            if !call_pager {
+                paging_mode = PagingMode::Never;
+            }
+        }
+
+        let mut output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
