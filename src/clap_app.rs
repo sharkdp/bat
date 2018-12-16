@@ -175,6 +175,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("line-range")
                 .long("line-range")
+                .short("r")
                 .multiple(true)
                 .takes_value(true)
                 .number_of_values(1)
@@ -191,6 +192,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("highlight-line")
                 .long("highlight-line")
+                .short("H")
                 .takes_value(true)
                 .multiple(true)
                 .value_name("N")
