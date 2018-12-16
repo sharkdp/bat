@@ -77,7 +77,11 @@ pub struct Config<'a> {
     /// Command to start the pager
     pub pager: Option<&'a str>,
 
+    /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
+
+    /// A line to highlight
+    pub highlight_line: Option<usize>,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -264,6 +268,10 @@ impl App {
                 Some("always") => true,
                 _ => false,
             },
+            highlight_line: self
+                .matches
+                .value_of("highlight-line")
+                .and_then(|w| w.parse().ok()),
         })
     }
 

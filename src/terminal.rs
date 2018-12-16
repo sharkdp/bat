@@ -19,8 +19,9 @@ pub fn as_terminal_escaped(
     true_color: bool,
     colored: bool,
     italics: bool,
+    background_color: Option<highlighting::Color>,
 ) -> String {
-    let style = if !colored {
+    let mut style = if !colored {
         Style::default()
     } else {
         let color = to_ansi_color(style.foreground, true_color);
@@ -36,5 +37,6 @@ pub fn as_terminal_escaped(
         }
     };
 
+    style.background = background_color.map(|c| to_ansi_color(c, true_color));
     style.paint(text).to_string()
 }

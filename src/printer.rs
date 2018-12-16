@@ -7,6 +7,7 @@ use ansi_term::Style;
 use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
+use syntect::highlighting::Color;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -79,6 +80,7 @@ pub struct InteractivePrinter<'a> {
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
+    background_highlight: Option<Color>,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -89,6 +91,8 @@ impl<'a> InteractivePrinter<'a> {
         reader: &mut InputFileReader,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
+
+        let background_highlight = theme.settings.line_highlight;
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -156,6 +160,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter,
             syntax_set: &assets.syntax_set,
+            background_highlight,
         }
     }
 
@@ -301,6 +306,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         }
 
+        // Line highlighting
+        let background = self.config.highlight_line
+            .filter(|line| *line == line_number)
+            .map(|_| self.background_highlight)
+            .unwrap();
+
         // Line contents.
         if self.config.output_wrap == OutputWrap::None {
             let true_color = self.config.true_color;
@@ -313,7 +324,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 write!(
                     handle,
                     "{}",
-                    as_terminal_escaped(style, text_trimmed, true_color, colored_output, italics,)
+                    as_terminal_escaped(style, text_trimmed, true_color, colored_output, italics, background)
                 )?;
                 write!(handle, "{}", &text[text_trimmed.len()..])?;
             }
@@ -370,7 +381,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             ),
                                             self.config.true_color,
                                             self.config.colored_output,
-                                            self.config.use_italic_text
+                                            self.config.use_italic_text,
+                                            background
                                         )
                                     )?;
                                     break;
@@ -410,7 +422,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                         ),
                                         self.config.true_color,
                                         self.config.colored_output,
-                                        self.config.use_italic_text
+                                        self.config.use_italic_text,
+                                        background
                                     ),
                                     panel_wrap.clone().unwrap()
                                 )?;
