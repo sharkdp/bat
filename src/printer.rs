@@ -293,17 +293,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut panel_wrap: Option<String> = None;
 
         // Line highlighting
-        let background_color = if self
+        let highlight_this_line = self
             .config
             .highlight_lines
             .iter()
-            .find(|&&l| l == line_number)
-            .is_some()
-        {
-            self.background_color_highlight
-        } else {
-            None
-        };
+            .any(|&l| l == line_number);
+
+        let background_color = self
+            .background_color_highlight
+            .filter(|_| highlight_this_line);
 
         // Line decorations.
         if self.panel_width > 0 {
@@ -340,7 +338,20 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         background_color
                     )
                 )?;
-                write!(handle, "{}", &text[text_trimmed.len()..])?;
+
+                if text.len() != text_trimmed.len() {
+                    if let Some(background_color) = background_color {
+                        let mut ansi_style = Style::default();
+                        ansi_style.background = Some(to_ansi_color(background_color, true_color));
+                        let width = if cursor_total <= cursor_max {
+                            cursor_max - cursor_total + 1
+                        } else {
+                            0
+                        };
+                        write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                    }
+                    write!(handle, "{}", &text[text_trimmed.len()..])?;
+                }
             }
 
             if line.bytes().next_back() != Some(b'\n') {
@@ -450,6 +461,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
+            if let Some(background_color) = background_color {
+                let mut ansi_style = Style::default();
+                ansi_style.background =
+                    Some(to_ansi_color(background_color, self.config.true_color));
+
+                write!(
+                    handle,
+                    "{}",
+                    ansi_style.paint(" ".repeat(cursor_max - cursor))
+                )?;
+            }
             write!(handle, "\n")?;
         }
 
