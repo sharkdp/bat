@@ -194,6 +194,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("highlight-line")
                 .short("H")
                 .takes_value(true)
+                .number_of_values(1)
                 .multiple(true)
                 .value_name("N")
                 .help("Highlight the given line.")
