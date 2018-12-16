@@ -80,8 +80,8 @@ pub struct Config<'a> {
     /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
 
-    /// A line to highlight
-    pub highlight_line: Option<usize>,
+    /// Lines to highlight
+    pub highlight_lines: Vec<usize>,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -268,10 +268,11 @@ impl App {
                 Some("always") => true,
                 _ => false,
             },
-            highlight_line: self
+            highlight_lines: self
                 .matches
-                .value_of("highlight-line")
-                .and_then(|w| w.parse().ok()),
+                .values_of("highlight-line")
+                .and_then(|ws| ws.map(|w| w.parse().ok()).collect())
+                .unwrap_or_default(),
         })
     }
 

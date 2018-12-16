@@ -80,7 +80,7 @@ pub struct InteractivePrinter<'a> {
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
-    background_highlight: Option<Color>,
+    background_color_highlight: Option<Color>,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -92,7 +92,7 @@ impl<'a> InteractivePrinter<'a> {
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
-        let background_highlight = theme.settings.line_highlight;
+        let background_color_highlight = theme.settings.line_highlight;
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -160,7 +160,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter,
             syntax_set: &assets.syntax_set,
-            background_highlight,
+            background_color_highlight,
         }
     }
 
@@ -292,6 +292,19 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
+        // Line highlighting
+        let background_color = if self
+            .config
+            .highlight_lines
+            .iter()
+            .find(|&&l| l == line_number)
+            .is_some()
+        {
+            self.background_color_highlight
+        } else {
+            None
+        };
+
         // Line decorations.
         if self.panel_width > 0 {
             let decorations = self
@@ -306,12 +319,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         }
 
-        // Line highlighting
-        let background = self.config.highlight_line
-            .filter(|line| *line == line_number)
-            .map(|_| self.background_highlight)
-            .unwrap();
-
         // Line contents.
         if self.config.output_wrap == OutputWrap::None {
             let true_color = self.config.true_color;
@@ -324,7 +331,14 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 write!(
                     handle,
                     "{}",
-                    as_terminal_escaped(style, text_trimmed, true_color, colored_output, italics, background)
+                    as_terminal_escaped(
+                        style,
+                        text_trimmed,
+                        true_color,
+                        colored_output,
+                        italics,
+                        background_color
+                    )
                 )?;
                 write!(handle, "{}", &text[text_trimmed.len()..])?;
             }
@@ -382,7 +396,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
-                                            background
+                                            background_color
                                         )
                                     )?;
                                     break;
@@ -423,7 +437,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                         self.config.true_color,
                                         self.config.colored_output,
                                         self.config.use_italic_text,
-                                        background
+                                        background_color
                                     ),
                                     panel_wrap.clone().unwrap()
                                 )?;
