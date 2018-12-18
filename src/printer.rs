@@ -7,6 +7,7 @@ use ansi_term::Style;
 use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
+use syntect::highlighting::Color;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -79,6 +80,7 @@ pub struct InteractivePrinter<'a> {
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
+    background_color_highlight: Option<Color>,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -89,6 +91,8 @@ impl<'a> InteractivePrinter<'a> {
         reader: &mut InputFileReader,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
+
+        let background_color_highlight = theme.settings.line_highlight;
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -156,6 +160,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter,
             syntax_set: &assets.syntax_set,
+            background_color_highlight,
         }
     }
 
@@ -287,6 +292,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
+        // Line highlighting
+        let highlight_this_line = self
+            .config
+            .highlight_lines
+            .iter()
+            .any(|&l| l == line_number);
+
+        let background_color = self
+            .background_color_highlight
+            .filter(|_| highlight_this_line);
+
         // Line decorations.
         if self.panel_width > 0 {
             let decorations = self
@@ -313,9 +329,29 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 write!(
                     handle,
                     "{}",
-                    as_terminal_escaped(style, text_trimmed, true_color, colored_output, italics,)
+                    as_terminal_escaped(
+                        style,
+                        text_trimmed,
+                        true_color,
+                        colored_output,
+                        italics,
+                        background_color
+                    )
                 )?;
-                write!(handle, "{}", &text[text_trimmed.len()..])?;
+
+                if text.len() != text_trimmed.len() {
+                    if let Some(background_color) = background_color {
+                        let mut ansi_style = Style::default();
+                        ansi_style.background = Some(to_ansi_color(background_color, true_color));
+                        let width = if cursor_total <= cursor_max {
+                            cursor_max - cursor_total + 1
+                        } else {
+                            0
+                        };
+                        write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                    }
+                    write!(handle, "{}", &text[text_trimmed.len()..])?;
+                }
             }
 
             if line.bytes().next_back() != Some(b'\n') {
@@ -370,7 +406,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             ),
                                             self.config.true_color,
                                             self.config.colored_output,
-                                            self.config.use_italic_text
+                                            self.config.use_italic_text,
+                                            background_color
                                         )
                                     )?;
                                     break;
@@ -410,7 +447,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                         ),
                                         self.config.true_color,
                                         self.config.colored_output,
-                                        self.config.use_italic_text
+                                        self.config.use_italic_text,
+                                        background_color
                                     ),
                                     panel_wrap.clone().unwrap()
                                 )?;
@@ -423,6 +461,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
+            if let Some(background_color) = background_color {
+                let mut ansi_style = Style::default();
+                ansi_style.background =
+                    Some(to_ansi_color(background_color, self.config.true_color));
+
+                write!(
+                    handle,
+                    "{}",
+                    ansi_style.paint(" ".repeat(cursor_max - cursor))
+                )?;
+            }
             write!(handle, "\n")?;
         }
 

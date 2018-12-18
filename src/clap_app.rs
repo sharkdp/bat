@@ -175,6 +175,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("line-range")
                 .long("line-range")
+                .short("r")
                 .multiple(true)
                 .takes_value(true)
                 .number_of_values(1)
@@ -186,6 +187,19 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--line-range 30:40' prints lines 30 to 40\n  \
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file",
+                ),
+        )
+        .arg(
+            Arg::with_name("highlight-line")
+                .long("highlight-line")
+                .short("H")
+                .takes_value(true)
+                .number_of_values(1)
+                .multiple(true)
+                .value_name("N")
+                .help("Highlight the given line.")
+                .long_help(
+                    "Highlight the N-th line with a different background color",
                 ),
         )
         .arg(
