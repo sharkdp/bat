@@ -26,7 +26,8 @@ impl OutputType {
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
     fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
-        let pager_from_env = env::var("BAT_PAGER").or_else(|_| env::var("PAGER"));
+        let pager_from_env =
+            env::var("BAT_PAGER").or_else(|_| env::var("PAGER").map(add_default_flags_to_less));
 
         let pager = pager_from_config
             .map(|p| p.to_string())
@@ -85,6 +86,28 @@ impl OutputType {
             OutputType::Stdout(ref mut handle) => handle,
         })
     }
+}
+
+// Since someone could set PAGER to less without arg -R that bat needs,
+// ignore flags for less and change flags to -FRX.
+// If a user wants an env variable with flags unchanged, he/she should use
+// BAT_PAGER.
+fn add_default_flags_to_less(pager: String) -> String {
+    if let Some(pager_name) = shell_words::split(&pager)
+        .ok()
+        .as_ref()
+        .and_then(|flags| flags.first())
+        .and_then(|pager_path| {
+            let path_buf = PathBuf::from(pager_path);
+            path_buf.file_stem().map(|os_str| os_str.to_os_string())
+        })
+    {
+        if pager_name == OsString::from("less") {
+            return "less -FRX".to_string();
+        }
+    }
+
+    pager.to_string()
 }
 
 impl Drop for OutputType {
