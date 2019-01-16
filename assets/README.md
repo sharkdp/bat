@@ -19,6 +19,9 @@ In order to add new syntaxes to `bat`, follow these steps:
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
    `bat` binary.
 
+5. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
+   file. A new binary cache file will be created once before every new release of `bat`.
+
 ### Troubleshooting
 
 Make sure that the local cache does not interfere with the internally stored syntaxes and
