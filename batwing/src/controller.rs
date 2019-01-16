@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 use std::path::Path;
 
-use app::{Config, PagingMode};
+use config::{Config, PagingMode};
 use assets::HighlightingAssets;
 use errors::*;
 use inputfile::{InputFile, InputFileReader};

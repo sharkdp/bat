@@ -16,7 +16,7 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
-use app::Config;
+use config::Config;
 use assets::HighlightingAssets;
 use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
 use diff::get_git_diff;

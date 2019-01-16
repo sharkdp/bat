@@ -12,37 +12,16 @@ exclude = [
     "assets/syntaxes/*",
     "assets/themes/*",
 ]
-build = "build.rs"
+
+[workspace]
+members = [".", "batwing"]
 
 [dependencies]
-atty = "0.2.2"
-ansi_term = "0.11"
-ansi_colours = "^1.0"
-console = "0.7"
-directories = "1.0"
+batwing = { version = "0.9.0", path = "batwing", features = ["cli"] }
 lazy_static = "1.2"
-wild = "2.0"
-content_inspector = "0.2.4"
-encoding = "0.2"
-shell-words = "0.1.0"
 
 [dependencies.git2]
 version = "0.8"
-default-features = false
-features = []
-
-[dependencies.syntect]
-version = "3.0.2"
-default-features = false
-features = ["parsing", "yaml-load", "dump-load", "dump-create"]
-
-[dependencies.clap]
-version = "2.32"
-default-features = false
-features = ["suggestions", "color", "wrap_help"]
-
-[dependencies.error-chain]
-version = "0.12"
 default-features = false
 features = []
 
@@ -50,6 +29,3 @@ features = []
 tempdir = "0.3"
 assert_cmd = "0.10.2"
 escargot = "0.4.0"
-
-[build-dependencies]
-clap = "2.32"

@@ -15,7 +15,7 @@ install:
 
 build: false
 test_script:
-  - cargo test --target %TARGET% --verbose
+  - cargo test --all --target %TARGET% --verbose
   - cargo run --target %TARGET% -- src/main.rs README.md --paging=never
 
 before_deploy:
