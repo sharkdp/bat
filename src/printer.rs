@@ -64,7 +64,7 @@ impl Printer for SimplePrinter {
         line_buffer: &[u8],
     ) -> Result<()> {
         if !out_of_range {
-            handle.write(line_buffer)?;
+            handle.write_all(line_buffer)?;
         }
         Ok(())
     }
