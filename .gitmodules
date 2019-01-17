@@ -106,3 +106,7 @@
 [submodule "assets/syntaxes/Assembly (ARM)"]
 	path = assets/syntaxes/Assembly (ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
+[submodule "assets/syntaxes/syslog-syntax"]
+	path = assets/syntaxes/syslog-syntax
+	url = https://github.com/caos21/syslog-syntax.git
+	branch = master
