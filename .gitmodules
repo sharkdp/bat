@@ -109,8 +109,6 @@
 [submodule "assets/syntaxes/syslog-syntax"]
 	path = assets/syntaxes/Syslog
 	url = https://github.com/caos21/syslog-syntax.git
-	branch = master
 [submodule "assets/syntaxes/protobuf-syntax-highlighting"]
 	path = assets/syntaxes/Protobuf
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
-	branch = master
