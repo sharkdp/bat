@@ -110,3 +110,7 @@
 	path = assets/syntaxes/syslog-syntax
 	url = https://github.com/caos21/syslog-syntax.git
 	branch = master
+[submodule "assets/syntaxes/protobuf-syntax-highlighting"]
+	path = assets/syntaxes/protobuf-syntax-highlighting
+	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
+	branch = master
