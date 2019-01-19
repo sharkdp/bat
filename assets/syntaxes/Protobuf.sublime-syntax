@@ -1,0 +1,460 @@
+%YAML 1.2
+---
+# Syntax for Protocol Buffer definition files.
+# Works with proto2 and proto3.
+# See official Protobuff documentation at https://developers.google.com/protocol-buffers/docs/proto3
+#
+# Authors: Jiarong Wei, Raul Rangel & Guillaume Wenzek
+#
+# .sublime-syntax reference: http://www.sublimetext.com/docs/3/syntax.html
+name: Protocol Buffer
+file_extensions:
+  - proto
+  - protodevel
+scope: source.proto
+
+first_line_match: '^(syntax)\s*(=)\s*("proto\d")\s*(;)\s*$'
+
+variables:
+  ident: '\b([A-Za-z][A-Za-z0-9_]*)\b'
+
+contexts:
+  prototype:
+    - include: comments
+
+  main:
+    - include: syntax
+    - include: package
+    - include: import
+    - include: option
+    - include: enum
+    - include: message
+    - include: extend
+    - include: service
+
+    # This is proto1 syntax which is deprecated, only providing minimal support.
+    - match: '\b(parsed)?\s*(class)\s+{{ident}}\s+{'
+      scope: meta.parsed.message.proto
+      captures:
+        1: storage.modifier.proto
+        2: storage.type.message.proto
+        3: entity.name.class.proto
+      push:
+        - match: '}'
+          pop: true
+        - include: message_body
+    # Groups are deprecated, only providing minimal support.
+    - match: '\b(group)\s+{{ident}}\s+=\s+(\d+)\s+{'
+      scope: meta.group.proto
+      captures:
+        1: storage.type.proto invalid.deprecated.group.proto
+        2: variable.other.field.proto
+        3: constant.numeric.proto
+      push:
+        - match: '}'
+          pop: true
+        - include: message_body
+
+
+# Comments
+  comments:
+    - match: //
+      scope: punctuation.definition.comment.begin.proto
+      push:
+        - meta_scope: comment.line.proto
+        - match: '$'
+          pop: true
+    - match: /\*
+      scope: punctuation.definition.comment.proto
+      push:
+        - meta_scope: comment.block.proto
+        - match: \*/
+          scope: punctuation.definition.comment.proto
+          pop: true
+
+
+# Others
+  or_pop:
+    # Pop when seeing unexpected characters.
+    - match: '(?=\S)'
+      pop: true
+
+  field_name_or_pop:
+    - match: '{{ident}}'
+      scope: variable.other.field.proto
+      pop: true
+    - include: or_pop
+
+  one_liner:
+    - match: ;
+      scope: punctuation.terminator.proto
+      pop: true
+    - match: $
+      pop: true
+
+  semicolon_or_pop:
+    - match: ';'
+      captures:
+        0: punctuation.terminator.proto
+      pop: true
+    - include: or_pop
+
+  assignment_or_pop:
+    - match: '='
+      scope: keyword.operator.assignment.proto
+      pop: true
+    - include: or_pop
+
+
+# Syntax
+  syntax:
+    - match: '^\s*(syntax)\s*(=)'
+      captures:
+        1: keyword.other.syntax.proto
+        2: keyword.operator.assignment.proto
+      push:
+        - include: string
+        - include: one_liner
+
+
+# Import
+  import:
+    - match: '\b(import)\b\s*(weak|public)?\b'
+      captures:
+        1: keyword.other.import.proto
+        2: storage.modifier.proto
+      push:
+        - include: string
+        - include: one_liner
+
+
+# Package
+  package:
+    - match: \b(package)\b
+      scope: keyword.other.namespace.proto
+      push:
+        - match: '{{ident}}(\.)'
+          captures:
+            1: variable.namespace.proto
+            2: punctuation.separator.namespace.proto
+        - match: '{{ident}}'
+          scope: entity.name.namespace.proto
+        - include: one_liner
+
+
+# Option
+  option:
+    - match: '\b(option)\b'
+      scope: storage.type.annotation.proto
+      push:
+        - match: ';'
+          scope: punctuation.terminator.option.proto
+          pop: true
+        - include: option_inline
+        - include: or_pop
+
+  option_inline:
+    - match: '{{ident}}'
+      scope: variable.annotation.proto
+    - include: full_option_name
+    - match: =
+      scope: keyword.operator.assignment.proto
+      push: option_value
+
+  full_option_name:
+    - match: \(
+      scope: punctuation.definition.name.option.begin.proto
+      push:
+        - match: (\))(?:(\.){{ident}})?
+          captures:
+            1: punctuation.definition.name.option.end.proto
+            2: punctuation.accessor.proto
+            3: variable.annotation.proto
+          pop: true
+        - match: '{{ident}}(\.)'
+          captures:
+            1: variable.namespace.proto
+            2: punctuation.accessor.proto
+        - match: '{{ident}}'
+          scope: variable.annotation.proto
+
+
+# Message
+  message:
+    - match: '\b(message)\b\s*{{ident}}'
+      captures:
+        1: storage.type.message.proto
+        2: entity.name.class.proto
+      push:
+        - meta_scope: meta.class.proto
+        - match: '{'
+          scope: punctuation.definition.block.message.begin.proto
+          set: message_body
+        - include: or_pop
+
+  message_body:
+    - meta_scope: meta.class.proto
+    - match: '}'
+      scope: punctuation.definition.block.message.end.proto
+      pop: true
+    - include: option
+    - include: message
+    - include: extend
+    - include: oneof
+    - include: enum
+    - include: reserved
+    - include: field
+
+  field:
+    - match: '\b(optional|required|repeated)\b'
+      captures:
+        1: storage.modifier.proto
+      push: [ field_end_or_pop, field_name_or_pop, message_type_or_pop ]
+    - match: '\b(map)\b\s*\b(<)'
+      captures:
+        1: support.type.map.proto
+        2: punctuation.definition.map.begin.proto
+      push: [ field_end_or_pop, field_name_or_pop, map_type ]
+    # field are assumed 'optional' by default in proto3.
+    - match: '(?={{ident}})'
+      push: [ field_end_or_pop, field_name_or_pop, message_type_or_pop ]
+
+# Enum
+  enum:
+    - match: '\b(enum)\b\s*{{ident}}'
+      captures:
+        1: storage.type.enum.proto
+        2: entity.name.enum.proto
+      push:
+        - meta_scope: meta.enum.proto
+        - match: '{'
+          scope: punctuation.definition.block.enum.begin.proto
+          set: enum_body
+        - include: or_pop
+
+  enum_body:
+    - meta_scope: meta.enum.proto
+    - match: '}'
+      scope: punctuation.definition.block.enum.end.proto
+      pop: true
+    - include: option
+    - match: '{{ident}}'
+      scope: constant.other.enum.proto
+      push:
+        - semicolon_or_pop
+        - field_attributes_or_pop
+        - number_or_pop
+        - assignment_or_pop
+
+
+# Extend
+  extend:
+    - match: '\b(extend)\b'
+      scope: storage.modifier.extend.proto
+      push: [ extend_body_or_pop, message_type_or_pop]
+
+  extend_body_or_pop:
+    - match: '{'
+      scope: punctuation.definition.block.extend.begin.proto
+      set:
+        - meta_scope: meta.extend.body.proto
+        - match: '}'
+          scope: punctuation.definition.block.extend.end.proto
+          pop: true
+        - include: message_body
+    - include: or_pop
+
+
+# Oneof
+  oneof:
+    - match: '\b(oneof)\b\s*{{ident}}'
+      captures:
+        1: storage.modifier.oneof.proto
+        2: entity.name.member.proto
+      push:
+        - meta_scope: meta.oneof.proto
+        - match: '{'
+          scope: punctuation.definition.block.oneof.begin.proto
+          set: oneof_body
+        - include: or_pop
+
+  oneof_body:
+    - match: '}'
+      scope: punctuation.definition.block.oneof.end.proto
+      pop: true
+    - match: '(?=\S)'
+      push: [ field_end_or_pop, field_name_or_pop, message_type_or_pop ]
+
+
+# Service
+  service:
+    - match: '\b(service)\b\s*{{ident}}'
+      captures:
+        1: storage.type.service.proto
+        2: entity.name.class.proto
+      push:
+        - meta_scope: meta.service.proto
+        - match: '{'
+          scope: punctuation.definition.block.service.begin.proto
+          set:
+            - meta_scope: meta.service.proto
+            - match: '}'
+              scope: punctuation.definition.block.service.end.proto
+              pop: true
+            - include: option
+            - include: rpc
+        - include: or_pop
+
+
+# Rpc
+  rpc:
+    - match: '\b(rpc)\b\s*{{ident}}'
+      captures:
+        1: storage.type.rpc.proto
+        2: entity.name.function.rpc.proto
+      push: [rpc_body, rpc_param, rpc_returns, rpc_param]
+
+  rpc_returns:
+    - match: returns
+      scope: keyword.other.returns.proto
+      pop: true
+
+  rpc_param:
+    - match: \(
+      scope: punctuation.definition.parameter.rpc.begin.proto
+      set:
+        - match: \)
+          scope: punctuation.definition.parameter.rpc.end.proto
+          pop: true
+        - match: '\bstream\b'
+          scope: storage.modifier.proto
+        - match: (?=\S)
+          push: message_type_or_pop
+
+  rpc_body:
+    - match: '{'
+      scope: punctuation.definition.block.rpc.begin.proto
+      set:
+        - meta_scope: meta.rpc.body.proto
+        - match: '}'
+          scope: punctuation.definition.block.rpc.end.proto
+          pop: true
+        - include: option
+    - match: ;
+      scope: punctuation.terminator.proto
+      pop: true
+    - include: or_pop
+
+
+# Reserved
+  reserved:
+    - match: '\b(reserved)\b'
+      scope: storage.modifier.proto
+      push:
+        - include: numeric_range
+        - include: string
+    - match: '\b(extensions)\b'
+      scope: storage.modifier.proto
+      push: numeric_range
+
+  numeric_range:
+    - match: \d+
+      scope: constant.numeric.proto
+    - match: max
+      scope: constant.language.proto
+    - match: ','
+      scope: punctuation.separator.proto
+    - match: to
+      scope: keyword.other.to.proto
+    - match: ';'
+      scope: punctuation.terminator.proto
+      pop: true
+
+  field_end_or_pop:
+    - match: ''
+      set:
+        - semicolon_or_pop
+        - field_attributes_or_pop
+        - number_or_pop
+        - assignment_or_pop
+
+  field_attributes_or_pop:
+    - match: '\['
+      scope: punctuation.definition.attributes.begin.proto
+      set:
+        - meta_scope: meta.field.attributes.proto
+        - match: \b(default|deprecated|packed)\b
+          scope: support.function.proto
+        - match: \,
+          scope: punctuation.separator.option.proto
+        - match: '\]'
+          scope: punctuation.definition.attributes.end.proto
+          pop: true
+        - include: option_inline
+    - include: or_pop
+
+
+# Values
+  option_value:
+    # Reuse prototxt syntax to parse embedded literal or protos.
+    - match: '{'
+      scope: punctuation.definition.block.option.begin.proto
+      push:
+        - meta_scope: meta.embedded.prototxt
+        - match: '}'
+          scope: punctuation.definition.block.option.end.proto
+          pop: true
+        - include: scope:text.prototxt
+    - include: scope:text.prototxt#field_value_or_pop
+
+  number_or_pop:
+    - match: \d+
+      scope: constant.numeric.proto
+      pop: true
+    - include: or_pop
+
+  string:
+    - match: '"'
+      scope: punctuation.definition.string.begin.proto
+      push:
+        - meta_scope: string.quoted.double.proto
+        - meta_include_prototype: false
+        - match: '\\"'
+          scope: constant.character.escape.proto
+        - match: '"'
+          scope: punctuation.definition.string.end.proto
+          pop: true
+        - match: (?=$) # pop if string is malformed.
+          pop: true
+
+
+# All types
+  message_type_or_pop:
+    # see documentation for the list of base types:
+    # https://developers.google.com/protocol-buffers/docs/proto#scalar
+    - match: '(double|float|bool|string|bytes)'
+      scope: support.type.proto
+      pop: true
+    - match: '(u|s)?int(32|64)'
+      scope: support.type.proto
+      pop: true
+    - match: 's?fixed(32|64)'
+      scope: support.type.proto
+      pop: true
+    - match: '{{ident}}(\.)'
+      captures:
+        1: variable.namespace.proto
+        2: punctuation.accessor.proto
+    - match: '{{ident}}'
+      # TODO: Use the convention decided in https://github.com/sublimehq/Packages/issues/582
+      scope: storage.type.proto variable.type.proto
+      pop: true
+
+  map_type:
+    - match: ','
+      scope: punctuation.separator.map.proto
+    - match: '>'
+      scope: punctuation.definition.map.end.proto
+      pop: true
+    - match: '(?={{ident}})'
+      push: message_type_or_pop

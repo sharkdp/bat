@@ -1,0 +1,186 @@
+%YAML 1.2
+---
+# Syntax for Protocol Buffer serialized as human readable text.
+# Works with proto2 and proto3.
+# See official Protobuff documentation at https://developers.google.com/protocol-buffers/docs/proto3
+#
+# Author: Raul Rangel & Guillaume Wenzek
+#
+# .sublime-syntax reference: http://www.sublimetext.com/docs/3/syntax.html
+name: Protocol Buffer (TEXT)
+file_extensions:
+  - pb.txt
+  - proto.text
+  - textpb
+  - pbtxt
+  - prototxt
+scope: text.prototxt
+variables:
+  stringEscape: '(?:\\(?:[''"\\/abfnrtv?]|[0-9]{3}|(?i:u|x)[0-9A-Fa-f]+))'
+  field_name: '\b([A-Za-z][A-Za-z0-9_]*)\b'
+  integer: '(?:\+|-)?(?:0|[1-9]\d*)'
+  exp: '(?i:e(?:\+|-)?{{integer}})'
+
+contexts:
+  prototype:
+    - include: comments
+
+  or_pop:
+    # Pop if nothing matched (whitespace are ignored).
+    - match: '(?=\S)'
+      pop: true
+
+  main:
+    - include: field
+
+  comments:
+    - match: '#'
+      scope: punctuation.definition.comment.begin.prototxt
+      push:
+        - meta_scope: comment.line.prototxt
+        - match: '$'
+          pop: true
+
+  field:
+    - match: '{{field_name}}'
+      scope: variable.other.member.prototxt
+      push: field_sep_or_pop
+    - match: \[
+      scope: punctuation.definition.field_name.begin.prototxt
+      push:
+        - match: \]
+          set: field_sep_or_pop
+          scope: punctuation.definition.field_name.end.prototxt
+        - match: '{{field_name}}(\.)'
+          captures:
+            1: variable.other.namespace.prototxt
+            2: punctuation.accessor.prototxt
+        - match: '{{field_name}}'
+          scope: variable.other.member.prototxt
+
+  field_sep_or_pop:
+    - match: '(:)|(?=\{|<)'
+      scope: punctuation.separator.key-value.prototxt
+      set: [comma_or_pop, field_value_or_pop]
+    - include: or_pop
+
+  field_value_or_pop:
+    - match: '{'
+      scope: punctuation.definition.dictionary.begin.prototxt
+      set:
+        - meta_scope: meta.message.prototxt
+        - match: '}'
+          scope: punctuation.definition.dictionary.end.prototxt
+          pop: true
+        - include: field
+    - match: '<'
+      scope: punctuation.definition.dictionary.begin.prototxt
+      set:
+        - meta_scope: meta.message.prototxt
+        - match: '>'
+          scope: punctuation.definition.dictionary.end.prototxt
+          pop: true
+        - include: field
+    - include: constant
+    - include: string_double_multiline
+    - include: string_single_multiline
+    - include: enum_value
+    - include: number
+    - include: array
+    - include: or_pop
+
+  array:
+    - match: '\['
+      scope: punctuation.definition.array.begin.prototxt
+      set:
+        - match: '\]'
+          scope: punctuation.definition.array.end.prototxt
+          pop: true
+        - match: \,
+          scope: punctuation.separator.array.prototxt
+        - match: (?=\S)
+          push: field_value_or_pop
+
+  comma_or_pop:
+    - match: ','
+      scope: punctuation.separator.prototxt
+      pop: true
+    - include: or_pop
+
+  constant:
+    - match: \b(true|True|t|false|False|f)\b
+      scope: constant.language.prototxt
+      pop: true
+    - match: (\+|-)?\b(?i:inf|infinity)\b
+      scope: constant.language.prototxt
+      pop: true
+    - match: \b(?i:nan)\b
+      scope: constant.language.prototxt
+      pop: true
+
+  number:
+    - match: |-
+        (?xi:
+          {{integer}}?\.\d+{{exp}}?(f?)  # literal with a dot: .3 .3e+4 1.3 1.3f
+          |{{integer}}(f)                # literal with a 'f': 1f
+          |{{integer}}{{exp}}(f?)        # literal with an exp: .3e+4 1e-3 1e3f
+        )\b
+      scope: constant.numeric.float.prototxt
+      captures:
+        1: punctuation.definition.numeric.float.prototxt
+        2: punctuation.definition.numeric.float.prototxt
+        3: punctuation.definition.numeric.float.prototxt
+      pop: true
+    - match: '{{integer}}\b'
+      scope: constant.numeric.integer.prototxt
+      pop: true
+    - match: '(0)[0-8]+\b'
+      scope: constant.numeric.octal.prototxt
+      captures:
+        1: punctuation.definition.numeric.octal.prototxt
+      pop: true
+    - match: '(0[xX])[0-9A-Fa-f]+\b'
+      scope: constant.numeric.hex.prototxt
+      captures:
+        1: punctuation.definition.numeric.hex.prototxt
+      pop: true
+
+  enum_value:
+    - match: '{{field_name}}'
+      scope: constant.numeric.enum.prototxt
+      pop: true
+
+  string_double_multiline:
+    - match: '"'
+      scope: punctuation.definition.string.begin.prototxt
+      set:
+        - meta_scope: string.quoted.double.prototxt
+        - meta_include_prototype: false
+        - match: '{{stringEscape}}'
+          scope: constant.character.escape.prototxt
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.prototxt
+        - match: '"'
+          scope: punctuation.definition.string.end.prototxt
+          set:
+            - include: string_double_multiline
+            - include: or_pop
+
+  string_single_multiline:
+    - match: "'"
+      scope: punctuation.definition.string.quoted.single.begin.prototxt
+      set:
+        - meta_scope: string.quoted.single.prototxt
+        - meta_include_prototype: false
+        # Note that technically "bytes" field main don't respect escapes,
+        # but there is no way to know if the given string will be interpreted as
+        # "bytes".
+        - match: '{{stringEscape}}'
+          scope: constant.character.escape.prototxt
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.prototxt
+        - match: "'"
+          scope: punctuation.definition.string.quoted.single.end.prototxt
+          set:
+            - include: string_single_multiline
+            - include: or_pop
