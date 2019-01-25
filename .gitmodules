@@ -112,3 +112,6 @@
 [submodule "assets/syntaxes/protobuf-syntax-highlighting"]
 	path = assets/syntaxes/Protobuf
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
+[submodule "assets/syntaxes/Chapel"]
+	path = assets/syntaxes/Chapel
+	url = https://github.com/caos21/chapel-syntax.git
