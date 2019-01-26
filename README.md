@@ -113,10 +113,10 @@ pacman -S bat
 
 ### On Fedora
 
-On Fedora 29 and higher, you can install `bat` from the official package sources:
+You can install `bat` from the [Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/) repository. On Fedora 29 and higher, it is enabled by default. Otherwise, run `dnf install fedora-repos-modular` to set up, and make sure that the `fedora-modular` and `fedora-updates-modular` repos are enabled in `/etc/yum.repos.d`.
 
 ```bash
-dnf install bat
+dnf module install bat
 ```
 
 ### On Void Linux
