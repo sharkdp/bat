@@ -1,26 +1,31 @@
-#[macro_use]
-extern crate clap;
+// TODO: Re-enable generation of shell completion files (below) when clap 3 is out.
+// For more details, see https://github.com/sharkdp/bat/issues/372
 
-use clap::Shell;
-use std::fs;
+fn main() {}
 
-include!("src/clap_app.rs");
+// #[macro_use]
+// extern crate clap;
 
-const BIN_NAME: &str = "bat";
+// use clap::Shell;
+// use std::fs;
 
-fn main() {
-    let outdir = std::env::var_os("SHELL_COMPLETIONS_DIR").or(std::env::var_os("OUT_DIR"));
+// include!("src/clap_app.rs");
 
-    let outdir = match outdir {
-        None => return,
-        Some(outdir) => outdir,
-    };
+// const BIN_NAME: &str = "bat";
 
-    fs::create_dir_all(&outdir).unwrap();
+// fn main() {
+//     let outdir = std::env::var_os("SHELL_COMPLETIONS_DIR").or(std::env::var_os("OUT_DIR"));
 
-    let mut app = build_app(true);
-    app.gen_completions(BIN_NAME, Shell::Bash, &outdir);
-    app.gen_completions(BIN_NAME, Shell::Fish, &outdir);
-    app.gen_completions(BIN_NAME, Shell::Zsh, &outdir);
-    app.gen_completions(BIN_NAME, Shell::PowerShell, &outdir);
-}
+//     let outdir = match outdir {
+//         None => return,
+//         Some(outdir) => outdir,
+//     };
+
+//     fs::create_dir_all(&outdir).unwrap();
+
+//     let mut app = build_app(true);
+//     app.gen_completions(BIN_NAME, Shell::Bash, &outdir);
+//     app.gen_completions(BIN_NAME, Shell::Fish, &outdir);
+//     app.gen_completions(BIN_NAME, Shell::Zsh, &outdir);
+//     app.gen_completions(BIN_NAME, Shell::PowerShell, &outdir);
+// }
