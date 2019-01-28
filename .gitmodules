@@ -114,3 +114,6 @@
 	path = assets/syntaxes/Protobuf
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
 	branch = master
+[submodule "assets/syntaxes/Terraform"]
+	path = assets/syntaxes/Terraform
+	url = https://github.com/alexlouden/Terraform.tmLanguage.git
