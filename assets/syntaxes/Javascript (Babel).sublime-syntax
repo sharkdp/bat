@@ -4,6 +4,7 @@
 name: JavaScript (Babel)
 file_extensions:
   - js
+  - mjs
   - jsx
   - babel
   - es6
