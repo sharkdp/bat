@@ -14,7 +14,7 @@ extern crate ansi_term;
 extern crate atty;
 extern crate console;
 extern crate content_inspector;
-extern crate directories;
+extern crate dirs as dirs_rs;
 extern crate encoding;
 extern crate git2;
 extern crate shell_words;
