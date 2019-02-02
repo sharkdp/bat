@@ -43,6 +43,7 @@ impl<'b> Controller<'b> {
 
         for input_file in &self.config.files {
             match input_file.get_reader(&stdin) {
+                Err(Error(ErrorKind::ImmediateEOF, _)) => (),
                 Err(error) => {
                     handle_error(&error);
                     no_errors = false;
