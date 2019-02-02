@@ -63,6 +63,9 @@ mod errors {
             SyntectError(::syntect::LoadingError);
             ParseIntError(::std::num::ParseIntError);
         }
+        errors {
+            ImmediateEOF
+        }
     }
 
     pub fn handle_error(error: &Error) {

@@ -14,9 +14,11 @@ pub struct InputFileReader<'a> {
 }
 
 impl<'a> InputFileReader<'a> {
-    fn new<R: BufRead + 'a>(mut reader: R) -> InputFileReader<'a> {
+    fn new<R: BufRead + 'a>(mut reader: R) -> Result<InputFileReader<'a>> {
         let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line).ok();
+        if reader.read_until(b'\n', &mut first_line)? == 0 {
+            return Err(ErrorKind::ImmediateEOF.into());
+        }
 
         let content_type = content_inspector::inspect(&first_line[..]);
 
@@ -24,11 +26,11 @@ impl<'a> InputFileReader<'a> {
             reader.read_until(0x00, &mut first_line).ok();
         }
 
-        InputFileReader {
+        Ok(InputFileReader {
             inner: Box::new(reader),
             first_line,
             content_type,
-        }
+        })
     }
 
     pub fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
@@ -57,7 +59,7 @@ pub enum InputFile<'a> {
 impl<'a> InputFile<'a> {
     pub fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
         match self {
-            InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
+            InputFile::StdIn => InputFileReader::new(stdin.lock()),
             InputFile::Ordinary(filename) => {
                 let file = File::open(filename).map_err(|e| format!("'{}': {}", filename, e))?;
 
@@ -65,9 +67,9 @@ impl<'a> InputFile<'a> {
                     return Err(format!("'{}' is a directory.", filename).into());
                 }
 
-                Ok(InputFileReader::new(BufReader::new(file)))
+                InputFileReader::new(BufReader::new(file))
             }
-            InputFile::ThemePreviewFile => Ok(InputFileReader::new(THEME_PREVIEW_FILE)),
+            InputFile::ThemePreviewFile => InputFileReader::new(THEME_PREVIEW_FILE),
         }
     }
 }
@@ -75,7 +77,7 @@ impl<'a> InputFile<'a> {
 #[test]
 fn basic() {
     let content = b"#!/bin/bash\necho hello";
-    let mut reader = InputFileReader::new(&content[..]);
+    let mut reader = InputFileReader::new(&content[..]).unwrap();
 
     assert_eq!(b"#!/bin/bash\n", &reader.first_line[..]);
 
@@ -104,7 +106,7 @@ fn basic() {
 #[test]
 fn utf16le() {
     let content = b"\xFF\xFE\x73\x00\x0A\x00\x64\x00";
-    let mut reader = InputFileReader::new(&content[..]);
+    let mut reader = InputFileReader::new(&content[..]).unwrap();
 
     assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &reader.first_line[..]);
 
