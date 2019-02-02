@@ -123,3 +123,6 @@
 [submodule "assets/syntaxes/varlink"]
 	path = assets/syntaxes/varlink
 	url = https://github.com/varlink/syntax-highlight-varlink.git
+[submodule "assets/syntaxes/sublime-fish"]
+	path = assets/syntaxes/sublime-fish
+	url = https://github.com/Phidica/sublime-fish.git
