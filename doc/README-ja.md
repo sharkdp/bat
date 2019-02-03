@@ -116,6 +116,14 @@ xbps-ininstall経由で `bat` をインストールできます。
 xbps-install -S bat
 ```
 
+###  Fedora
+
+[Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/)経由で `bat` をインストールできます。これはFedora 29以上ではデフォルトで有効化されています。 もしそうでなければ、 `dnf install fedora-repos-modular` を実行してセットアップし、 `fedora-modular` と `fedora-updates-modular` が `/etc/yum.repos.d` で有効化されていることを確認してください。
+
+```bash
+dnf module install bat
+```
+
 ###  FreeBSD
 
 事前にコンパイル済みである[pkg](https://www.freshports.org/textproc/bat)をインストールできます:
