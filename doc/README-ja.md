@@ -116,6 +116,14 @@ xbps-ininstall経由で `bat` をインストールできます。
 xbps-install -S bat
 ```
 
+###  Fedora
+
+[Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/)経由で `bat` をインストールできます。これはFedora 29以上ではデフォルトで有効化されています。 もしそうでなければ、 `dnf install fedora-repos-modular` を実行してセットアップし、 `fedora-modular` と `fedora-updates-modular` が `/etc/yum.repos.d` で有効化されていることを確認してください。
+
+```bash
+dnf module install bat
+```
+
 ###  FreeBSD
 
 事前にコンパイル済みである[pkg](https://www.freshports.org/textproc/bat)をインストールできます:
@@ -255,10 +263,8 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 構文定義ファイルを入れておくためのフォルダを作る:
 
 ```bash
-BAT_CONFIG_DIR="$(bat cache --config-dir)"
-
-mkdir -p "$BAT_CONFIG_DIR/syntaxes"
-cd "$BAT_CONFIG_DIR/syntaxes"
+mkdir -p "$(bat cache --config-dir)/syntaxes"
+cd "$(bat cache --config-dir)/syntaxes"
 
 # Put new '.sublime-syntax' language definition files
 # in this folder (or its subdirectories), for example:
@@ -284,10 +290,8 @@ bat cache --clear
 
 まず、新しいシンタックスハイライトのテーマのフォルダを作ります:
 ```bash
-BAT_CONFIG_DIR="$(bat cache --config-dir)"
-
-mkdir -p "$BAT_CONFIG_DIR/themes"
-cd "$BAT_CONFIG_DIR/themes"
+mkdir -p "$(bat cache --config-dir)/themes"
+cd "$(bat cache --config-dir)/themes"
 
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
