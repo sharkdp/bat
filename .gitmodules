@@ -120,3 +120,6 @@
 [submodule "assets/syntaxes/Jsonnet"]
 	path = assets/syntaxes/Jsonnet
 	url = https://github.com/gburiola/sublime-jsonnet-syntax.git
+[submodule "assets/syntaxes/varlink"]
+	path = assets/syntaxes/varlink
+	url = https://github.com/varlink/syntax-highlight-varlink.git
