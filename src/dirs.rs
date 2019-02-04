@@ -12,7 +12,7 @@ impl BatProjectDirs {
         #[cfg(target_os = "macos")]
         let cache_dir = match dirs_rs::home_dir() {
             Some(mut d) => {
-                d.push(".config/bat/cache");
+                d.push(".cache/bat");
                 d
             }
             None => return None,
