@@ -1,7 +1,10 @@
-use dirs_rs::home_dir;
-use std::env;
-use std::ffi::OsString;
+use dirs_rs;
 use std::path::{Path, PathBuf};
+
+#[cfg(target_os = "macos")]
+use std::env;
+#[cfg(target_os = "macos")]
+use std::ffi::OsString;
 
 /// Wrapper for dirs that treats MacOS more like Linux.
 /// First, env variables `XDG_CACHE_HOME` and `XDG_CONFIG_HOME` are checked and the fall back is
@@ -16,7 +19,7 @@ impl BatProjectDirs {
         #[cfg(target_os = "macos")]
         let cache_dir_op = env::var_os("XDG_CACHE_HOME")
             .and_then(is_absolute_path)
-            .or_else(|| home_dir().map(|d| d.join(".cache")));
+            .or_else(|| dirs_rs::home_dir().map(|d| d.join(".cache")));
 
         #[cfg(not(target_os = "macos"))]
         let cache_dir_op = dirs_rs::cache_dir();
@@ -29,7 +32,7 @@ impl BatProjectDirs {
         #[cfg(target_os = "macos")]
         let config_dir_op = env::var_os("XDG_CONFIG_HOME")
             .and_then(is_absolute_path)
-            .or_else(|| home_dir().map(|d| d.join(".config")));
+            .or_else(|| dirs_rs::home_dir().map(|d| d.join(".config")));
 
         #[cfg(not(target_os = "macos"))]
         let config_dir_op = dirs_rs::config_dir();
@@ -55,6 +58,7 @@ impl BatProjectDirs {
 }
 
 // Returns path if it is an absolute path
+#[cfg(target_os = "macos")]
 fn is_absolute_path(path: OsString) -> Option<PathBuf> {
     let path = PathBuf::from(path);
     if path.is_absolute() {
