@@ -4,9 +4,9 @@ use std::path::{Path, PathBuf};
 #[cfg(target_os = "macos")]
 use std::env;
 
-/// Wrapper for dirs that treats MacOS more like Linux.
-/// First, env variables `XDG_CACHE_HOME` and `XDG_CONFIG_HOME` are checked and the fall back is
-/// `~/.cache/bat` and `~/.config/bat`.
+/// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.
+/// This means that the `XDG_CACHE_HOME` and `XDG_CONFIG_HOME` environment variables are
+/// checked first. The fallback directories are `~/.cache/bat` and `~/.config/bat`, respectively.
 pub struct BatProjectDirs {
     cache_dir: PathBuf,
     config_dir: PathBuf,
