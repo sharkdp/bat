@@ -18,7 +18,8 @@ impl BatProjectDirs {
     fn new() -> Option<BatProjectDirs> {
         #[cfg(target_os = "macos")]
         let cache_dir_op = env::var_os("XDG_CACHE_HOME")
-            .and_then(is_absolute_path)
+            .map(PathBuf::from)
+            .filter(|p| p.is_absolute())
             .or_else(|| dirs_rs::home_dir().map(|d| d.join(".cache")));
 
         #[cfg(not(target_os = "macos"))]
@@ -31,7 +32,8 @@ impl BatProjectDirs {
 
         #[cfg(target_os = "macos")]
         let config_dir_op = env::var_os("XDG_CONFIG_HOME")
-            .and_then(is_absolute_path)
+            .map(PathBuf::from)
+            .filter(|p| p.is_absolute())
             .or_else(|| dirs_rs::home_dir().map(|d| d.join(".config")));
 
         #[cfg(not(target_os = "macos"))]
@@ -54,17 +56,6 @@ impl BatProjectDirs {
 
     pub fn config_dir(&self) -> &Path {
         &self.config_dir
-    }
-}
-
-// Returns path if it is an absolute path
-#[cfg(target_os = "macos")]
-fn is_absolute_path(path: OsString) -> Option<PathBuf> {
-    let path = PathBuf::from(path);
-    if path.is_absolute() {
-        Some(path)
-    } else {
-        None
     }
 }
 
