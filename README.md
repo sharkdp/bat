@@ -281,7 +281,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 Now use the following command to parse these files into a binary cache:
 
 ```bash
-bat cache --init
+bat cache --build
 ```
 
 Finally, use `bat --list-languages` to check if the new languages are available.
@@ -305,7 +305,7 @@ cd "$(bat cache --config-dir)/themes"
 git clone https://github.com/greggb/sublime-snazzy
 
 # Update the binary cache
-bat cache --init
+bat cache --build
 ```
 
 Finally, use `bat --list-themes` to check if the new themes are available.

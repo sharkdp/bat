@@ -11,6 +11,6 @@ JAVADOC_FILE="${ASSET_DIR}/syntaxes/Packages/Java/JavaDoc.sublime-syntax"
 JAVADOC_PATCH="${ASSET_DIR}/JavaDoc.sublime-syntax.patch"
 patch "$JAVADOC_FILE" "$JAVADOC_PATCH"
 
-bat cache --init --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
+bat cache --build --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
 
 patch -R "$JAVADOC_FILE" "$JAVADOC_PATCH"
