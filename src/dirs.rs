@@ -25,10 +25,7 @@ impl BatProjectDirs {
         #[cfg(not(target_os = "macos"))]
         let cache_dir_op = dirs_rs::cache_dir();
 
-        let cache_dir = match cache_dir_op {
-            Some(d) => d.join("bat"),
-            None => return None,
-        };
+        let cache_dir = cache_dir_op.map(|d| d.join("bat"))?;
 
         #[cfg(target_os = "macos")]
         let config_dir_op = env::var_os("XDG_CONFIG_HOME")
@@ -39,10 +36,7 @@ impl BatProjectDirs {
         #[cfg(not(target_os = "macos"))]
         let config_dir_op = dirs_rs::config_dir();
 
-        let config_dir = match config_dir_op {
-            Some(d) => d.join("bat"),
-            None => return None,
-        };
+        let config_dir = config_dir_op.map(|d| d.join("bat"))?;
 
         Some(BatProjectDirs {
             cache_dir,
