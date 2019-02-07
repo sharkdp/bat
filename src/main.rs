@@ -86,7 +86,7 @@ mod errors {
 use errors::*;
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
-    if matches.is_present("init") {
+    if matches.is_present("build") {
         let source_dir = matches.value_of("source").map(Path::new);
         let target_dir = matches.value_of("target").map(Path::new);
 

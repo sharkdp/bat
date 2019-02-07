@@ -353,13 +353,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
                 .arg(
-                    Arg::with_name("init")
-                        .long("init")
-                        .short("i")
-                        .help("Initialize the syntax/theme cache.")
+                    Arg::with_name("build")
+                        .long("build")
+                        .short("b")
+                        .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
-                            "Initialize the syntax/theme cache by loading from the \
-                             source directory (default: the configuration directory).",
+                            "Initialize (or update) the syntax/theme cache by loading from \
+                             the source directory (default: the configuration directory).",
                         ),
                 )
                 .arg(
@@ -381,13 +381,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 )
                 .group(
                     ArgGroup::with_name("cache-actions")
-                        .args(&["init", "clear", "config-dir", "cache-dir"])
+                        .args(&["build", "clear", "config-dir", "cache-dir"])
                         .required(arg_group_required),
                 )
                 .arg(
                     Arg::with_name("source")
                         .long("source")
-                        .requires("init")
+                        .requires("build")
                         .takes_value(true)
                         .value_name("dir")
                         .help("Use a different directory to load syntaxes and themes from."),
@@ -395,14 +395,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .arg(
                     Arg::with_name("target")
                         .long("target")
-                        .requires("init")
+                        .requires("build")
                         .takes_value(true)
                         .value_name("dir")
                         .help(
                             "Use a different directory to store the cached syntax and theme set.",
                         ),
                 )
-                .arg(Arg::with_name("blank").long("blank").requires("init").help(
+                .arg(Arg::with_name("blank").long("blank").requires("build").help(
                     "Create completely new syntax and theme sets \
                      (instead of appending to the default sets).",
                 )),

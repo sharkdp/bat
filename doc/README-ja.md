@@ -274,7 +274,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 次のコマンドを使用して、これらのファイルをバイナリキャッシュに解析します:
 
 ```bash
-bat cache --init
+bat cache --build
 ```
 
 最後に `bat --list-languages` と入力すると新しい言語が利用可能かどうかチェックします。
@@ -297,7 +297,7 @@ cd "$(bat cache --config-dir)/themes"
 git clone https://github.com/greggb/sublime-snazzy
 
 # Update the binary cache
-bat cache --init
+bat cache --build
 ```
 
 最後に、 `bat --list-themes` で新しいテーマが利用可能がチェックします
