@@ -3,8 +3,6 @@ use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "macos")]
 use std::env;
-#[cfg(target_os = "macos")]
-use std::ffi::OsString;
 
 /// Wrapper for dirs that treats MacOS more like Linux.
 /// First, env variables `XDG_CACHE_HOME` and `XDG_CONFIG_HOME` are checked and the fall back is
