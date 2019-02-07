@@ -96,10 +96,6 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
         assets.save(target_dir)?;
     } else if matches.is_present("clear") {
         clear_assets();
-    } else if matches.is_present("config-dir") {
-        writeln!(io::stdout(), "{}", config_dir())?;
-    } else if matches.is_present("cache-dir") {
-        writeln!(io::stdout(), "{}", cache_dir())?;
     }
 
     Ok(())
@@ -234,6 +230,12 @@ fn run() -> Result<bool> {
             } else if app.matches.is_present("config-file") {
                 println!("{}", config_file().to_string_lossy());
 
+                Ok(true)
+            } else if app.matches.is_present("config-dir") {
+                writeln!(io::stdout(), "{}", config_dir())?;
+                Ok(true)
+            } else if app.matches.is_present("cache-dir") {
+                writeln!(io::stdout(), "{}", cache_dir())?;
                 Ok(true)
             } else {
                 run_controller(&config)
