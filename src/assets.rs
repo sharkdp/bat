@@ -216,6 +216,10 @@ pub fn config_dir() -> Cow<'static, str> {
     PROJECT_DIRS.config_dir().to_string_lossy()
 }
 
+pub fn cache_dir() -> Cow<'static, str> {
+    PROJECT_DIRS.cache_dir().to_string_lossy()
+}
+
 pub fn clear_assets() {
     print!("Clearing theme set cache ... ");
     fs::remove_file(theme_set_path()).ok();

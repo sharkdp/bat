@@ -49,7 +49,7 @@ use ansi_term::Colour::Green;
 use ansi_term::Style;
 
 use app::{App, Config};
-use assets::{clear_assets, config_dir, HighlightingAssets};
+use assets::{cache_dir, clear_assets, config_dir, HighlightingAssets};
 use config::config_file;
 use controller::Controller;
 use inputfile::InputFile;
@@ -98,6 +98,8 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
         clear_assets();
     } else if matches.is_present("config-dir") {
         writeln!(io::stdout(), "{}", config_dir())?;
+    } else if matches.is_present("cache-dir") {
+        writeln!(io::stdout(), "{}", cache_dir())?;
     }
 
     Ok(())
