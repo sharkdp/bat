@@ -26,44 +26,60 @@ impl OutputType {
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
     fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
-        let pager_from_env =
-            env::var("BAT_PAGER").or_else(|_| env::var("PAGER").map(add_default_flags_to_less));
+        let mut replace_arguments_to_less = false;
+
+        let pager_from_env = match (env::var("BAT_PAGER"), env::var("PAGER")) {
+            (Ok(bat_pager), _) => Some(bat_pager),
+            (_, Ok(pager)) => {
+                // less needs to be called with the '-R' option in order to properly interpret the
+                // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
+                // therefore need to overwrite the arguments and add '-R'.
+                //
+                // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
+                // or bats '--pager' command line option.
+                replace_arguments_to_less = true;
+                Some(pager)
+            }
+            _ => None,
+        };
 
         let pager = pager_from_config
             .map(|p| p.to_string())
-            .or(pager_from_env.ok())
+            .or(pager_from_env)
             .unwrap_or(String::from("less"));
 
-        let pagerflags = shell_words::split(&pager)
-            .chain_err(|| "Could not parse (BAT_)PAGER environment variable.")?;
+        let pagerflags =
+            shell_words::split(&pager).chain_err(|| "Could not parse pager command.")?;
 
         match pagerflags.split_first() {
-            Some((pager_name, mut args)) => {
+            Some((pager_name, args)) => {
                 let mut pager_path = PathBuf::from(pager_name);
 
                 if pager_path.file_stem() == Some(&OsString::from("bat")) {
                     pager_path = PathBuf::from("less");
-                    args = &[];
                 }
 
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
                 let mut process = if is_less {
                     let mut p = Command::new(&pager_path);
-                    if args.is_empty() {
+                    if args.is_empty() || replace_arguments_to_less {
                         p.args(vec!["--RAW-CONTROL-CHARS", "--no-init"]);
                         if quit_if_one_screen {
                             p.arg("--quit-if-one-screen");
                         }
+                    } else {
+                        p.args(args);
                     }
                     p.env("LESSCHARSET", "UTF-8");
                     p
                 } else {
-                    Command::new(&pager_path)
+                    let mut p = Command::new(&pager_path);
+                    p.args(args);
+                    p
                 };
 
                 Ok(process
-                    .args(args)
                     .stdin(Stdio::piped())
                     .spawn()
                     .map(OutputType::Pager)
@@ -86,28 +102,6 @@ impl OutputType {
             OutputType::Stdout(ref mut handle) => handle,
         })
     }
-}
-
-// Since someone could set PAGER to less without arg -R that bat needs,
-// ignore flags for less and change flags to -FRX.
-// If a user wants an env variable with flags unchanged, he/she should use
-// BAT_PAGER.
-fn add_default_flags_to_less(pager: String) -> String {
-    if let Some(pager_name) = shell_words::split(&pager)
-        .ok()
-        .as_ref()
-        .and_then(|flags| flags.first())
-        .and_then(|pager_path| {
-            let path_buf = PathBuf::from(pager_path);
-            path_buf.file_stem().map(|os_str| os_str.to_os_string())
-        })
-    {
-        if pager_name == OsString::from("less") {
-            return "less -FRX".to_string();
-        }
-    }
-
-    pager.to_string()
 }
 
 impl Drop for OutputType {
