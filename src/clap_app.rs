@@ -374,9 +374,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         .short("d")
                         .help("Show bat's configuration directory."),
                 )
+                .arg(
+                    Arg::with_name("cache-dir")
+                        .long("cache-dir")
+                        .help("Show bat's cache directory."),
+                )
                 .group(
                     ArgGroup::with_name("cache-actions")
-                        .args(&["init", "clear", "config-dir"])
+                        .args(&["init", "clear", "config-dir", "cache-dir"])
                         .required(arg_group_required),
                 )
                 .arg(
