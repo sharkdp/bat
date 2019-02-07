@@ -349,6 +349,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Show path to the configuration file."),
         )
+        .arg(
+            Arg::with_name("config-dir")
+                .long("config-dir")
+                .hidden(true)
+                .help("Show bat's configuration directory."),
+        )
+        .arg(
+            Arg::with_name("cache-dir")
+                .long("cache-dir")
+                .hidden(true)
+                .help("Show bat's cache directory."),
+        )
         .subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
@@ -368,20 +380,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         .short("c")
                         .help("Remove the cached syntax definitions and themes."),
                 )
-                .arg(
-                    Arg::with_name("config-dir")
-                        .long("config-dir")
-                        .short("d")
-                        .help("Show bat's configuration directory."),
-                )
-                .arg(
-                    Arg::with_name("cache-dir")
-                        .long("cache-dir")
-                        .help("Show bat's cache directory."),
-                )
                 .group(
                     ArgGroup::with_name("cache-actions")
-                        .args(&["build", "clear", "config-dir", "cache-dir"])
+                        .args(&["build", "clear"])
                         .required(arg_group_required),
                 )
                 .arg(

@@ -263,8 +263,8 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 構文定義ファイルを入れておくためのフォルダを作る:
 
 ```bash
-mkdir -p "$(bat cache --config-dir)/syntaxes"
-cd "$(bat cache --config-dir)/syntaxes"
+mkdir -p "$(bat --config-dir)/syntaxes"
+cd "$(bat --config-dir)/syntaxes"
 
 # Put new '.sublime-syntax' language definition files
 # in this folder (or its subdirectories), for example:
@@ -290,8 +290,8 @@ bat cache --clear
 
 まず、新しいシンタックスハイライトのテーマのフォルダを作ります:
 ```bash
-mkdir -p "$(bat cache --config-dir)/themes"
-cd "$(bat cache --config-dir)/themes"
+mkdir -p "$(bat --config-dir)/themes"
+cd "$(bat --config-dir)/themes"
 
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
