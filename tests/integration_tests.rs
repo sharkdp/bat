@@ -77,6 +77,58 @@ fn concatenate_stdin() {
 }
 
 #[test]
+fn concatenate_empty_first() {
+    bat()
+        .arg("empty.txt")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn concatenate_empty_last() {
+    bat()
+        .arg("test.txt")
+        .arg("empty.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn concatenate_empty_both() {
+    bat()
+        .arg("empty.txt")
+        .arg("empty.txt")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn concatenate_empty_between() {
+    bat()
+        .arg("test.txt")
+        .arg("empty.txt")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\nhello world\n");
+}
+
+#[test]
+fn concatenate_empty_first_and_last() {
+    bat()
+        .arg("empty.txt")
+        .arg("test.txt")
+        .arg("empty.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
 fn line_numbers() {
     bat()
         .arg("multiline.txt")
