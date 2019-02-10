@@ -261,11 +261,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 return Ok(());
             }
             ContentType::UTF_16LE => UTF_16LE
-                .decode(&line_buffer, DecoderTrap::Strict)
-                .unwrap_or("Invalid UTF-16LE".into()),
+                .decode(&line_buffer, DecoderTrap::Replace)
+                .map_err(|_| "Invalid UTF-16LE")?,
             ContentType::UTF_16BE => UTF_16BE
-                .decode(&line_buffer, DecoderTrap::Strict)
-                .unwrap_or("Invalid UTF-16BE".into()),
+                .decode(&line_buffer, DecoderTrap::Replace)
+                .map_err(|_| "Invalid UTF-16BE")?,
             _ => String::from_utf8_lossy(&line_buffer).to_string(),
         };
 
