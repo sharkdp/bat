@@ -436,3 +436,15 @@ fn config_read_arguments_from_file() {
         .success()
         .stdout("dummy-pager-from-config\n");
 }
+
+#[test]
+fn utf16() {
+    // The output will be converted to UTF-8 with a leading UTF-8 BOM
+    bat()
+        .arg("--plain")
+        .arg("--decorations=always")
+        .arg("test_UTF-16LE.txt")
+        .assert()
+        .success()
+        .stdout(std::str::from_utf8(b"\xEF\xBB\xBFhello world\n").unwrap());
+}
