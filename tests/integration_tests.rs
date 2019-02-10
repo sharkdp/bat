@@ -129,6 +129,27 @@ fn concatenate_empty_first_and_last() {
 }
 
 #[test]
+fn concatenate_single_line() {
+    bat()
+        .arg("single-line.txt")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single LineSingle Line");
+}
+
+#[test]
+fn concatenate_single_line_empty() {
+    bat()
+        .arg("single-line.txt")
+        .arg("empty.txt")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single LineSingle Line");
+}
+
+#[test]
 fn line_numbers() {
     bat()
         .arg("multiline.txt")
