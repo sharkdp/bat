@@ -105,6 +105,15 @@ If you happen to use [`fd`](https://github.com/sharkdp/bat), you can use the `-X
 fd … -X bat
 ```
 
+#### `tail -f`
+
+`bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
+```bash
+tail -f /var/log/pacman.log | bat --paging=never -l log
+```
+Note that we have to switch off paging in order for this to work. We have also specified the syntax
+explicitly (`-l log`), as it can not be auto-detected in this case.
+
 ## Installation
 
 ### On Ubuntu
