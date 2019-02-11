@@ -91,6 +91,20 @@ bat -n main.rs  # show line numbers (only)
 bat f - g  # output 'f', then stdin, then 'g'.
 ```
 
+### Integration with other tools
+
+#### `find` or `fd`
+
+You can use the `-exec` option of `find` to preview all search results with `bat`:
+```bash
+find … -exec bat {} +
+```
+
+If you happen to use [`fd`](https://github.com/sharkdp/bat), you can use the `-X`/`--exec-batch` option to do the same:
+```bash
+fd … -X bat
+```
+
 ## Installation
 
 ### On Ubuntu
