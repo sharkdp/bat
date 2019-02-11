@@ -114,12 +114,20 @@ tail -f /var/log/pacman.log | bat --paging=never -l log
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
+### `git show`
+
+You can combine `bat` with `git show` to view an older version of a given file with proper syntax
+highlighting:
+```bash
+git show v0.6.0:src/main.rs | bat -l rs
+```
+
 #### `xclip`
 
 The line numbers and Git modification markers in the output of `bat` can make it hard to copy
 the contents of a file. To prevent this, you can call `bat` with the `-p`/`--plain` option or
 simply pipe the output into `xclip`:
-```
+```bash
 bat main.cpp | xclip
 ```
 `bat` will detect that the output is being redirected and print the plain file contents.
