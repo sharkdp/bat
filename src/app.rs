@@ -102,7 +102,7 @@ impl App {
 
         let interactive_output = atty::is(Stream::Stdout);
 
-        Ok(App {
+        Ok(Self {
             matches: Self::matches(interactive_output)?,
             interactive_output,
         })

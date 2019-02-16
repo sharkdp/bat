@@ -26,7 +26,7 @@ pub struct LineNumberDecoration {
 
 impl LineNumberDecoration {
     pub fn new(colors: &Colors) -> Self {
-        LineNumberDecoration {
+        Self {
             color: colors.line_number,
             cached_wrap_invalid_at: 10000,
             cached_wrap: DecorationText {
@@ -86,7 +86,7 @@ impl LineChangesDecoration {
     }
 
     pub fn new(colors: &Colors) -> Self {
-        LineChangesDecoration {
+        Self {
             cached_none: Self::generate_cached(Style::default(), " "),
             cached_added: Self::generate_cached(colors.git_added, "+"),
             cached_removed_above: Self::generate_cached(colors.git_removed, "‾"),
@@ -129,7 +129,7 @@ pub struct GridBorderDecoration {
 
 impl GridBorderDecoration {
     pub fn new(colors: &Colors) -> Self {
-        GridBorderDecoration {
+        Self {
             cached: DecorationText {
                 text: colors.grid.paint("│").to_string(),
                 width: 1,

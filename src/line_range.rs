@@ -7,19 +7,19 @@ pub struct LineRange {
 }
 
 impl LineRange {
-    pub fn from(range_raw: &str) -> Result<LineRange> {
-        LineRange::parse_range(range_raw)
+    pub fn from(range_raw: &str) -> Result<Self> {
+        Self::parse_range(range_raw)
     }
 
-    pub fn new() -> LineRange {
-        LineRange {
+    pub fn new() -> Self {
+        Self {
             lower: usize::min_value(),
             upper: usize::max_value(),
         }
     }
 
-    pub fn parse_range(range_raw: &str) -> Result<LineRange> {
-        let mut new_range = LineRange::new();
+    pub fn parse_range(range_raw: &str) -> Result<Self> {
+        let mut new_range = Self::new();
 
         if range_raw.bytes().nth(0).ok_or("Empty line range")? == b':' {
             new_range.upper = range_raw[1..].parse()?;

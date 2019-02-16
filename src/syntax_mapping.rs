@@ -5,8 +5,8 @@ use std::collections::HashMap;
 pub struct SyntaxMapping(HashMap<String, String>);
 
 impl SyntaxMapping {
-    pub fn new() -> SyntaxMapping {
-        SyntaxMapping(HashMap::new())
+    pub fn new() -> Self {
+        Self(HashMap::new())
     }
 
     pub fn insert(&mut self, from: impl Into<String>, to: impl Into<String>) -> Option<String> {

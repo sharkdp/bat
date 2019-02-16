@@ -65,7 +65,7 @@ impl HighlightingAssets {
             );
         }
 
-        Ok(HighlightingAssets {
+        Ok(Self {
             syntax_set: syntax_set_builder.build(),
             theme_set,
         })
@@ -91,7 +91,7 @@ impl HighlightingAssets {
         let theme_set: ThemeSet = from_reader(BufReader::new(theme_set_file))
             .chain_err(|| "Could not parse cached theme set")?;
 
-        Ok(HighlightingAssets {
+        Ok(Self {
             syntax_set,
             theme_set,
         })
@@ -109,7 +109,7 @@ impl HighlightingAssets {
         let syntax_set = Self::get_integrated_syntaxset();
         let theme_set = Self::get_integrated_themeset();
 
-        HighlightingAssets {
+        Self {
             syntax_set,
             theme_set,
         }

@@ -23,24 +23,24 @@ pub enum OutputWrap {
 impl OutputComponent {
     pub fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
         match *self {
-            OutputComponent::Auto => {
+            Self::Auto => {
                 if interactive_terminal {
-                    OutputComponent::Full.components(interactive_terminal)
+                    Self::Full.components(interactive_terminal)
                 } else {
-                    OutputComponent::Plain.components(interactive_terminal)
+                    Self::Plain.components(interactive_terminal)
                 }
             }
-            OutputComponent::Changes => &[OutputComponent::Changes],
-            OutputComponent::Grid => &[OutputComponent::Grid],
-            OutputComponent::Header => &[OutputComponent::Header],
-            OutputComponent::Numbers => &[OutputComponent::Numbers],
-            OutputComponent::Full => &[
-                OutputComponent::Changes,
-                OutputComponent::Grid,
-                OutputComponent::Header,
-                OutputComponent::Numbers,
+            Self::Changes => &[Self::Changes],
+            Self::Grid => &[Self::Grid],
+            Self::Header => &[Self::Header],
+            Self::Numbers => &[Self::Numbers],
+            Self::Full => &[
+                Self::Changes,
+                Self::Grid,
+                Self::Header,
+                Self::Numbers,
             ],
-            OutputComponent::Plain => &[],
+            Self::Plain => &[],
         }
     }
 }
@@ -50,13 +50,13 @@ impl FromStr for OutputComponent {
 
     fn from_str(s: &str) -> Result<Self> {
         match s {
-            "auto" => Ok(OutputComponent::Auto),
-            "changes" => Ok(OutputComponent::Changes),
-            "grid" => Ok(OutputComponent::Grid),
-            "header" => Ok(OutputComponent::Header),
-            "numbers" => Ok(OutputComponent::Numbers),
-            "full" => Ok(OutputComponent::Full),
-            "plain" => Ok(OutputComponent::Plain),
+            "auto" => Ok(Self::Auto),
+            "changes" => Ok(Self::Changes),
+            "grid" => Ok(Self::Grid),
+            "header" => Ok(Self::Header),
+            "numbers" => Ok(Self::Numbers),
+            "full" => Ok(Self::Full),
+            "plain" => Ok(Self::Plain),
             _ => Err(format!("Unknown style '{}'", s).into()),
         }
     }
