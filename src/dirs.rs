@@ -13,7 +13,7 @@ pub struct BatProjectDirs {
 }
 
 impl BatProjectDirs {
-    fn new() -> Option<BatProjectDirs> {
+    fn new() -> Option<Self> {
         #[cfg(target_os = "macos")]
         let cache_dir_op = env::var_os("XDG_CACHE_HOME")
             .map(PathBuf::from)
@@ -36,7 +36,7 @@ impl BatProjectDirs {
 
         let config_dir = config_dir_op.map(|d| d.join("bat"))?;
 
-        Some(BatProjectDirs {
+        Some(Self {
             cache_dir,
             config_dir,
         })

@@ -43,7 +43,7 @@ pub struct SimplePrinter;
 
 impl SimplePrinter {
     pub fn new() -> Self {
-        SimplePrinter {}
+        Self {}
     }
 }
 

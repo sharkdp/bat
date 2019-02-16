@@ -67,22 +67,22 @@ pub struct OutputComponents(pub HashSet<OutputComponent>);
 
 impl OutputComponents {
     pub fn changes(&self) -> bool {
-        self.0.contains(&OutputComponent::Changes)
+        self.0.contains(&Self::Changes)
     }
 
     pub fn grid(&self) -> bool {
-        self.0.contains(&OutputComponent::Grid)
+        self.0.contains(&Self::Grid)
     }
 
     pub fn header(&self) -> bool {
-        self.0.contains(&OutputComponent::Header)
+        self.0.contains(&Self::Header)
     }
 
     pub fn numbers(&self) -> bool {
-        self.0.contains(&OutputComponent::Numbers)
+        self.0.contains(&Self::Numbers)
     }
 
     pub fn plain(&self) -> bool {
-        self.0.iter().all(|c| c == &OutputComponent::Plain)
+        self.0.iter().all(|c| c == &Self::Plain)
     }
 }

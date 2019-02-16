@@ -18,9 +18,9 @@ impl OutputType {
     pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match mode {
-            Always => OutputType::try_pager(false, pager)?,
-            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
-            _ => OutputType::stdout(),
+            Always => Self::try_pager(false, pager)?,
+            QuitIfOneScreen => Self::try_pager(true, pager)?,
+            _ => Self::stdout(),
         })
     }
 
@@ -82,31 +82,31 @@ impl OutputType {
                 Ok(process
                     .stdin(Stdio::piped())
                     .spawn()
-                    .map(OutputType::Pager)
-                    .unwrap_or_else(|_| OutputType::stdout()))
+                    .map(Self::Pager)
+                    .unwrap_or_else(|_| Self::stdout()))
             }
-            None => Ok(OutputType::stdout()),
+            None => Ok(Self::stdout()),
         }
     }
 
     fn stdout() -> Self {
-        OutputType::Stdout(io::stdout())
+        Self::Stdout(io::stdout())
     }
 
     pub fn handle(&mut self) -> Result<&mut Write> {
         Ok(match *self {
-            OutputType::Pager(ref mut command) => command
+            Self::Pager(ref mut command) => command
                 .stdin
                 .as_mut()
                 .chain_err(|| "Could not open stdin for pager")?,
-            OutputType::Stdout(ref mut handle) => handle,
+            Self::Stdout(ref mut handle) => handle,
         })
     }
 }
 
 impl Drop for OutputType {
     fn drop(&mut self) {
-        if let OutputType::Pager(ref mut command) = *self {
+        if let Self::Pager(ref mut command) = *self {
             let _ = command.wait();
         }
     }
