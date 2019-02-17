@@ -100,7 +100,7 @@ You can use the `-exec` option of `find` to preview all search results with `bat
 find … -exec bat {} +
 ```
 
-If you happen to use [`fd`](https://github.com/sharkdp/bat), you can use the `-X`/`--exec-batch` option to do the same:
+If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`/`--exec-batch` option to do the same:
 ```bash
 fd … -X bat
 ```
