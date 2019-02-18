@@ -43,8 +43,13 @@ impl OutputType {
             _ => None,
         };
 
+        let pager_from_config = pager_from_config.map(|p| p.to_string());
+
+        if pager_from_config.is_some() {
+            replace_arguments_to_less = false;
+        }
+
         let pager = pager_from_config
-            .map(|p| p.to_string())
             .or(pager_from_env)
             .unwrap_or(String::from("less"));
 
