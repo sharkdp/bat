@@ -16,16 +16,16 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
-use app::Config;
-use assets::HighlightingAssets;
-use decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
-use diff::get_git_diff;
-use diff::LineChanges;
-use errors::*;
-use inputfile::{InputFile, InputFileReader};
-use preprocessor::{expand_tabs, replace_nonprintable};
-use style::OutputWrap;
-use terminal::{as_terminal_escaped, to_ansi_color};
+use crate::app::Config;
+use crate::assets::HighlightingAssets;
+use crate::decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
+use crate::diff::get_git_diff;
+use crate::diff::LineChanges;
+use crate::errors::*;
+use crate::inputfile::{InputFile, InputFileReader};
+use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::style::OutputWrap;
+use crate::terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()>;

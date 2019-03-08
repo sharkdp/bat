@@ -1,4 +1,4 @@
-use dirs_rs;
+use crate::dirs_rs;
 use std::path::{Path, PathBuf};
 
 #[cfg(target_os = "macos")]

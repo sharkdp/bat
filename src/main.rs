@@ -48,12 +48,12 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use app::{App, Config};
-use assets::{cache_dir, clear_assets, config_dir, HighlightingAssets};
-use config::config_file;
-use controller::Controller;
-use inputfile::InputFile;
-use style::{OutputComponent, OutputComponents};
+use crate::app::{App, Config};
+use crate::assets::{cache_dir, clear_assets, config_dir, HighlightingAssets};
+use crate::config::config_file;
+use crate::controller::Controller;
+use crate::inputfile::InputFile;
+use crate::style::{OutputComponent, OutputComponents};
 
 mod errors {
     error_chain! {
@@ -80,7 +80,7 @@ mod errors {
     }
 }
 
-use errors::*;
+use crate::errors::*;
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {

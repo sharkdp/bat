@@ -5,7 +5,7 @@ use std::str::FromStr;
 use atty::{self, Stream};
 
 use clap::ArgMatches;
-use clap_app;
+use crate::clap_app;
 use wild;
 
 use console::Term;
@@ -13,14 +13,14 @@ use console::Term;
 #[cfg(windows)]
 use ansi_term;
 
-use assets::BAT_THEME_DEFAULT;
-use config::{get_args_from_config_file, get_args_from_env_var};
-use errors::*;
-use inputfile::InputFile;
-use line_range::{LineRange, LineRanges};
-use style::{OutputComponent, OutputComponents, OutputWrap};
-use syntax_mapping::SyntaxMapping;
-use util::transpose;
+use crate::assets::BAT_THEME_DEFAULT;
+use crate::config::{get_args_from_config_file, get_args_from_env_var};
+use crate::errors::*;
+use crate::inputfile::InputFile;
+use crate::line_range::{LineRange, LineRanges};
+use crate::style::{OutputComponent, OutputComponents, OutputWrap};
+use crate::syntax_mapping::SyntaxMapping;
+use crate::util::transpose;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
