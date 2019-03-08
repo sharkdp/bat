@@ -18,7 +18,9 @@ use encoding::{DecoderTrap, Encoding};
 
 use crate::app::Config;
 use crate::assets::HighlightingAssets;
-use crate::decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration};
+use crate::decorations::{
+    Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
+};
 use crate::diff::get_git_diff;
 use crate::diff::LineChanges;
 use crate::errors::*;
