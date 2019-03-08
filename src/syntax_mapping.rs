@@ -9,7 +9,6 @@ impl SyntaxMapping {
         Default::default()
     }
 
-
     pub fn insert(&mut self, from: impl Into<String>, to: impl Into<String>) -> Option<String> {
         self.0.insert(from.into(), to.into())
     }
