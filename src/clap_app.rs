@@ -109,7 +109,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .overrides_with("number")
                 // Cannot use clap's built in validation because we have to turn off clap's delimiters
                 .validator(|val| {
-                    let mut invalid_vals = val.split(",").filter(|style| {
+                    let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
                             "auto", "full", "plain", "changes", "header", "grid", "numbers",
                         ]

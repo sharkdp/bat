@@ -51,7 +51,7 @@ impl OutputType {
 
         let pager = pager_from_config
             .or(pager_from_env)
-            .unwrap_or(String::from("less"));
+            .unwrap_or_else(|| String::from("less"));
 
         let pagerflags =
             shell_words::split(&pager).chain_err(|| "Could not parse pager command.")?;

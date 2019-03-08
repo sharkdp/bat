@@ -40,7 +40,7 @@ impl HighlightingAssets {
         let theme_dir = source_dir.join("themes");
 
         let res = theme_set.add_from_folder(&theme_dir);
-        if !res.is_ok() {
+        if res.is_err() {
             println!(
                 "No themes were found in '{}', using the default set",
                 theme_dir.to_string_lossy()
@@ -191,8 +191,8 @@ impl HighlightingAssets {
                 } else {
                     None
                 };
-                let syntax = ext_syntax.or(line_syntax);
-                syntax
+
+                ext_syntax.or(line_syntax)
             }
             (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
                 .ok()

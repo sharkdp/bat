@@ -1,13 +1,14 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping(HashMap<String, String>);
 
 impl SyntaxMapping {
     pub fn new() -> SyntaxMapping {
-        SyntaxMapping(HashMap::new())
+        Default::default()
     }
+
 
     pub fn insert(&mut self, from: impl Into<String>, to: impl Into<String>) -> Option<String> {
         self.0.insert(from.into(), to.into())

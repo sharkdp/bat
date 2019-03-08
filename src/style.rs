@@ -21,8 +21,8 @@ pub enum OutputWrap {
 }
 
 impl OutputComponent {
-    pub fn components(&self, interactive_terminal: bool) -> &'static [OutputComponent] {
-        match *self {
+    pub fn components(self, interactive_terminal: bool) -> &'static [OutputComponent] {
+        match self {
             OutputComponent::Auto => {
                 if interactive_terminal {
                     OutputComponent::Full.components(interactive_terminal)
