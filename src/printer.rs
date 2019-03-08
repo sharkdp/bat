@@ -64,7 +64,7 @@ impl Printer for SimplePrinter {
         line_buffer: &[u8],
     ) -> Result<()> {
         if !out_of_range {
-            handle.write(line_buffer)?;
+            handle.write_all(line_buffer)?;
         }
         Ok(())
     }
@@ -270,7 +270,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         if self.config.show_nonprintable {
-            line = replace_nonprintable(&mut line, self.config.tab_width);
+            line = replace_nonprintable(&line, self.config.tab_width);
         }
 
         let regions = {
@@ -355,11 +355,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
 
             if line.bytes().next_back() != Some(b'\n') {
-                write!(handle, "\n")?;
+                writeln!(handle)?;
             }
         } else {
             for &(style, region) in regions.iter() {
-                let mut ansi_iterator = AnsiCodeIterator::new(region);
+                let ansi_iterator = AnsiCodeIterator::new(region);
                 let mut ansi_prefix: String = String::new();
                 for chunk in ansi_iterator {
                     match chunk {
@@ -472,7 +472,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     ansi_style.paint(" ".repeat(cursor_max - cursor))
                 )?;
             }
-            write!(handle, "\n")?;
+            writeln!(handle)?;
         }
 
         Ok(())

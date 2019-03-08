@@ -109,18 +109,12 @@ impl LineRanges {
     }
 
     pub fn check(&self, line: usize) -> RangeCheckResult {
-        if self.ranges.is_empty() {
+        if self.ranges.is_empty() | self.ranges.iter().any(|r| r.is_inside(line)) {
             RangeCheckResult::InRange
+        } else if line < self.largest_upper_bound {
+            RangeCheckResult::OutsideRange
         } else {
-            if self.ranges.iter().any(|r| r.is_inside(line)) {
-                RangeCheckResult::InRange
-            } else {
-                if line < self.largest_upper_bound {
-                    RangeCheckResult::OutsideRange
-                } else {
-                    RangeCheckResult::AfterLastRange
-                }
-            }
+            RangeCheckResult::AfterLastRange
         }
     }
 }

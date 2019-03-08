@@ -67,7 +67,7 @@ mod errors {
 
     pub fn handle_error(error: &Error) {
         match error {
-            &Error(ErrorKind::Io(ref io_error), _)
+            Error(ErrorKind::Io(ref io_error), _)
                 if io_error.kind() == super::io::ErrorKind::BrokenPipe =>
             {
                 super::process::exit(0);

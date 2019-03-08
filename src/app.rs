@@ -120,7 +120,7 @@ impl App {
 
             // Read arguments from bats config file
             let mut args = get_args_from_env_var()
-                .unwrap_or_else(|| get_args_from_config_file())
+                .unwrap_or_else(get_args_from_config_file)
                 .chain_err(|| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
@@ -152,12 +152,10 @@ impl App {
                     } else {
                         PagingMode::Never
                     }
+                } else if self.interactive_output {
+                    PagingMode::QuitIfOneScreen
                 } else {
-                    if self.interactive_output {
-                        PagingMode::QuitIfOneScreen
-                    } else {
-                        PagingMode::Never
-                    }
+                    PagingMode::Never
                 }
             }
         };
@@ -166,7 +164,7 @@ impl App {
 
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {
-                let parts: Vec<_> = from_to.split(":").collect();
+                let parts: Vec<_> = from_to.split(':').collect();
 
                 if parts.len() != 2 {
                     return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
@@ -213,11 +211,11 @@ impl App {
                 .matches
                 .value_of("terminal-width")
                 .and_then(|w| {
-                    if w.starts_with("+") || w.starts_with("-") {
+                    if w.starts_with('+') || w.starts_with('-') {
                         // Treat argument as a delta to the current terminal width
                         w.parse().ok().map(|delta: i16| {
                             let old_width: u16 = Term::stdout().size().1;
-                            let new_width: i32 = old_width as i32 + delta as i32;
+                            let new_width: i32 = i32::from(old_width) + i32::from(delta);
 
                             if new_width <= 0 {
                                 old_width as usize
@@ -252,14 +250,14 @@ impl App {
                 .value_of("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
-                .unwrap_or(String::from(BAT_THEME_DEFAULT)),
+                .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
             line_ranges: LineRanges::from(
                 transpose(
                     self.matches
                         .values_of("line-range")
                         .map(|vs| vs.map(LineRange::from).collect()),
                 )?
-                .unwrap_or(vec![]),
+                .unwrap_or_else(|| vec![]),
             ),
             output_components,
             syntax_mapping,
@@ -306,7 +304,7 @@ impl App {
                 let env_style_components: Option<Vec<OutputComponent>> =
                     transpose(env::var("BAT_STYLE").ok().map(|style_str| {
                         style_str
-                            .split(",")
+                            .split(',')
                             .map(|x| OutputComponent::from_str(&x))
                             .collect::<Result<Vec<OutputComponent>>>()
                     }))?;
@@ -315,13 +313,13 @@ impl App {
                     .value_of("style")
                     .map(|styles| {
                         styles
-                            .split(",")
+                            .split(',')
                             .map(|style| style.parse::<OutputComponent>())
                             .filter_map(|style| style.ok())
                             .collect::<Vec<_>>()
                     })
                     .or(env_style_components)
-                    .unwrap_or(vec![OutputComponent::Full])
+                    .unwrap_or_else(|| vec![OutputComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {

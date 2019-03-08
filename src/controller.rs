@@ -88,7 +88,7 @@ impl<'b> Controller<'b> {
         Ok(())
     }
 
-    fn print_file_ranges<'a, P: Printer>(
+    fn print_file_ranges<P: Printer>(
         &self,
         printer: &mut P,
         writer: &mut Write,
