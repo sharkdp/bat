@@ -1,6 +1,6 @@
 mod tester;
 
-use tester::BatTester;
+use crate::tester::BatTester;
 
 macro_rules! snapshot_tests {
     ($($test_name: ident: $style: expr,)*) => {

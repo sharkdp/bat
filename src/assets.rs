@@ -8,11 +8,11 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
-use dirs::PROJECT_DIRS;
+use crate::dirs::PROJECT_DIRS;
 
-use errors::*;
-use inputfile::{InputFile, InputFileReader};
-use syntax_mapping::SyntaxMapping;
+use crate::errors::*;
+use crate::inputfile::{InputFile, InputFileReader};
+use crate::syntax_mapping::SyntaxMapping;
 
 pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
