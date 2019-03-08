@@ -261,7 +261,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.30 or
+If you want to build `bat` from source, you need Rust 1.31 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
