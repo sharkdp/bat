@@ -38,7 +38,7 @@ default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
 [dependencies.clap]
-version = "2.32"
+version = "2.33"
 default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
@@ -53,4 +53,4 @@ assert_cmd = "0.11.1"
 escargot = "0.4.0"
 
 [build-dependencies]
-clap = "2.32"
+clap = "2.33"
