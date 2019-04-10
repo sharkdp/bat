@@ -209,10 +209,14 @@ brew install bat
 ### On Windows
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
-or install it with [scoop](https://scoop.sh/):
+or install it with [scoop](https://scoop.sh/) or [Chocolatey](https://chocolatey.org):
 
 ```bash
 scoop install bat
+```
+
+```bash
+choco install bat-cat
 ```
 
 [See below](#using-bat-on-windows) for notes.
@@ -430,7 +434,7 @@ Example configuration file:
 Windows only includes a very limited pager in the form of `more`. You can download a Windows binary
 for `less` [from its homepage](http://www.greenwoodsoftware.com/less/download.html) or [through
 Chocolatey](https://chocolatey.org/packages/Less). To use it, place the binary in a directory in
-your `PATH` or [define an environment variable](#using-a-different-pager).
+your `PATH` or [define an environment variable](#using-a-different-pager). The [Chocolatey package](#on-windows) installs `less` automatically.
 
 ### Colors
 
