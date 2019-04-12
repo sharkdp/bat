@@ -33,12 +33,12 @@ default-features = false
 features = []
 
 [dependencies.syntect]
-version = "3.1.0"
+version = "3.2.0"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
 [dependencies.clap]
-version = "2.32"
+version = "2.33"
 default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
@@ -49,8 +49,8 @@ features = []
 
 [dev-dependencies]
 tempdir = "0.3"
-assert_cmd = "0.11.0"
-escargot = "0.4.0"
+assert_cmd = "0.11.1"
+escargot = "0.5.0"
 
 [build-dependencies]
-clap = "2.32"
+clap = "2.33"

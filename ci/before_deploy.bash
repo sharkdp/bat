@@ -59,6 +59,11 @@ make_deb() {
     local dpkgname
     local conflictname
     local gcc_prefix
+    local homepage
+    local maintainer
+
+    homepage="https://github.com/sharkdp/bat"
+    maintainer="David Peter <mail@david-peter.de>"
 
     case $TARGET in
         x86_64*)
@@ -105,6 +110,44 @@ make_deb() {
     install -Dm644 README.md "$tempdir/usr/share/doc/$PROJECT_NAME/README.md"
     install -Dm644 LICENSE-MIT "$tempdir/usr/share/doc/$PROJECT_NAME/LICENSE-MIT"
     install -Dm644 LICENSE-APACHE "$tempdir/usr/share/doc/$PROJECT_NAME/LICENSE-APACHE"
+    cat > "$tempdir/usr/share/doc/$PROJECT_NAME/copyright" <<EOF
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: $PROJECT_NAME
+Source: $homepage
+
+Files: *
+Copyright: $maintainer
+License: Apache-2.0 or MIT
+
+License: Apache-2.0
+ On Debian systems, the complete text of the Apache-2.0 can be found in the
+ file /usr/share/common-licenses/Apache-2.0.
+
+License: MIT
+ Permission is hereby granted, free of charge, to any
+ person obtaining a copy of this software and associated
+ documentation files (the "Software"), to deal in the
+ Software without restriction, including without
+ limitation the rights to use, copy, modify, merge,
+ publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software
+ is furnished to do so, subject to the following
+ conditions:
+ .
+ The above copyright notice and this permission notice
+ shall be included in all copies or substantial portions
+ of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ DEALINGS IN THE SOFTWARE.
+EOF
 
     # Control file
     mkdir "$tempdir/DEBIAN"
