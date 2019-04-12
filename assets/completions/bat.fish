@@ -27,23 +27,18 @@ complete -c bat -s r -l line-range -d "<N:M> Only print the specified range of l
 # TODO: possibly add completion showing max line (using 'wc -l') on file in current arguments (using commandline -opc)
 complete -c bat -s H -l highlight-line -d "<N> Highlight the N-th line with a different background color"
 
-# TODO: add completion for auto/never/always
-complete -c bat -l color -d "<when> Specify when to use colored output (*auto*, never, always)"
+complete -c bat -l color -xa 'auto never always' -d "<when> Specify when to use colored output (*auto*, never, always)"
 
-# TODO: add completion for always/never
-complete -c bat -l italic-text -d "<when> Specify when to use ANSI sequences for italic text (always, *never*)"
+complete -c bat -l italic-text -xa 'always never' -d "<when> Specify when to use ANSI sequences for italic text (always, *never*)"
 
-# TODO: add completion for auto/never/always
-complete -c bat -l decorations -d "<when> Specify when to use the decorations specified with '--style' (*auto*, never, always)"
+complete -c bat -l decorations -xa 'auto never always' -d "<when> Specify when to use the decorations specified with '--style' (*auto*, never, always)"
 
-# TODO: add completion for auto/never/always
-complete -c bat -l paging -d "<when> Specify when to use the pager (*auto*, never, always)"
+complete -c bat -l paging -xa 'auto never always' -d "<when> Specify when to use the pager (*auto*, never, always)"
 
 # TODO: add completion for sub-commands like less
 complete -c bat -l pager -d "<command> Specify which pager to use (default is 'less') eg. 'less -RF'"
 
-# TODO: add completion for auto/never/character
-complete -c bat -l wrap -d "<mode> Specify the text-wrapping mode (*auto*, never, character)"
+complete -c bat -l wrap -xa 'auto never character' -d "<mode> Specify the text-wrapping mode (*auto*, never, character)"
 
 complete -c bat -l tabs -d "<T> Set the tab width to T spaces (width of 0 passes tabs through directly)"
 
