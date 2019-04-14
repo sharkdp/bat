@@ -216,7 +216,7 @@ scoop install bat
 ```
 
 ```bash
-choco install bat-cat
+choco install bat
 ```
 
 [See below](#using-bat-on-windows) for notes.
