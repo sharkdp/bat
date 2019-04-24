@@ -194,6 +194,9 @@ impl<'a> InteractivePrinter<'a> {
 impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
+            if ContentType::BINARY == self.content_type {
+                writeln!(handle, "<BINARY>")?;
+            }
             return Ok(());
         }
 
