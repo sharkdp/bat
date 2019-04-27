@@ -6,7 +6,13 @@ use ansi_term::{self, Style};
 use syntect::highlighting::{self, FontStyle};
 
 pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term::Colour {
-    if true_color {
+    if color.a == 0 {
+        // Themes can specify one of the user-configurable terminal colors by
+        // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
+        // to the color palette number. The built-in themes ansi-light,
+        // ansi-dark, and base16 use this.
+        Fixed(color.r)
+    } else if true_color {
         RGB(color.r, color.g, color.b)
     } else {
         Fixed(ansi_colours::ansi256_from_rgb((color.r, color.g, color.b)))
