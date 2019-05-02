@@ -1,6 +1,38 @@
 # Fish Shell Completions
-
 # Place or symlink to $XDG_CONFIG_HOME/fish/completions/bat.fish ($XDG_CONFIG_HOME is usually set to ~/.config)
+
+# Helper function:
+function __bat_autocomplete_languages --description "A helper function used by "(status filename)
+	bat --list-languages | awk '
+		NR == 1 {
+			dc = 0;
+			while (substr($0, dc, 2) != "  ") dc++;
+			while (substr($0, dc, 1) == " ")  dc++;
+		}
+		
+		{
+			langField = substr($0, 0, dc - 2);
+			if (langField !~ /^ *$/) {
+				lang = langField;
+				sub(/ +$/, "", lang);
+			}
+
+			split(substr($0, dc), exts, ",");
+			for (i in exts) {
+				ext = exts[i]
+
+				sub(/^ +/, "", ext); # Trim leading whitespace.
+				sub(/ +$/, "", ext); # Trim trailing whitespace.
+
+				if (ext != "") {
+					print ext"\t"lang
+				}
+			}
+		}
+	' | sort
+end
+
+# Completions:
 
 complete -c bat -l color -xka "auto never always" -d "Specify when to use colored output (default: auto)" -n "not __fish_seen_subcommand_from cache"
 
@@ -16,9 +48,7 @@ complete -c bat -s H -l highlight-line -x -d "<N> Highlight the N-th line with a
 
 complete -c bat -l italic-text -xka "always never" -d "Specify when to use ANSI sequences for italic text (default: never)" -n "not __fish_seen_subcommand_from cache"
 
-# TODO: add parameter completion for available languages using option:  -xka "(bat --list-languages | cat)"
-# but replace 'cat' with some sed/awk like command that only outputs lines of valid options for this flag
-complete -c bat -s l -l language -d "Set the language for syntax highlighting" -n "not __fish_seen_subcommand_from cache"
+complete -c bat -s l -l language -d "Set the language for syntax highlighting" -n "not __fish_seen_subcommand_from cache" -xa "(__bat_autocomplete_languages)" 
 
 complete -c bat -s r -l line-range -x -d "<N:M> Only print the specified range of lines for each file" -n "not __fish_seen_subcommand_from cache"
 
