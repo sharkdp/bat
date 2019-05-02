@@ -24,7 +24,7 @@ function __bat_autocomplete_languages --description "A helper function used by "
 				sub(/^ +/, "", ext); # Trim leading whitespace.
 				sub(/ +$/, "", ext); # Trim trailing whitespace.
 
-				if (ext != "") {
+				if ((ext != "") && (ext !~ /[A-Z].*/)) {
 					print ext"\t"lang
 				}
 			}
