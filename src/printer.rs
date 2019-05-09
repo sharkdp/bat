@@ -367,7 +367,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
-                            let is_ansi_csi = text.chars().skip(1).nth(0).map_or(false, |c|c == '[');
+                            let is_ansi_csi =
+                                text.chars().skip(1).nth(0).map_or(false, |c| c == '[');
 
                             if is_ansi_csi && text.chars().last().map_or(false, |c| c == 'm') {
                                 // It's an ANSI SGR sequence.
