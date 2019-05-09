@@ -331,6 +331,24 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true)
                 .value_name("width")
                 .hidden_short_help(true)
+                .validator(
+                    |t| {
+                        let sign = t.chars().next().unwrap();
+                        let num = if (sign == '+') || (sign == '-') {
+                            t.chars().skip(1).collect()
+                        } else {
+                            t
+                        };
+
+                        num.parse::<u32>()
+                            .map_err(|_e| "must be an offset or number")
+                            .and_then(|v| if v == 0 && sign != '+' && sign != '-' {
+                                Err("terminal width cannot be zero".into())
+                            } else {
+                                Ok(())
+                            })
+                            .map_err(|e| e.to_string())
+                    })
                 .help(
                     "Explicitly set the width of the terminal instead of determining it \
                      automatically. If prefixed with '+' or '-', the value will be treated \
