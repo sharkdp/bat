@@ -367,15 +367,25 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
-                            if text.chars().last().map_or(false, |c| c == 'm') {
+                            let is_ansi_csi = text.chars().skip(1).nth(0).map_or(false, |c|c == '[');
+
+                            if is_ansi_csi && text.chars().last().map_or(false, |c| c == 'm') {
+                                // It's an ANSI SGR sequence.
+                                // We should be mostly safe to just append these together.
                                 ansi_prefix.push_str(text);
                                 if text == "\x1B[0m" {
                                     self.ansi_prefix_sgr = "\x1B[0m".to_owned();
                                 } else {
                                     self.ansi_prefix_sgr.push_str(text);
                                 }
-                            } else {
+                            } else if is_ansi_csi {
+                                // It's a regular CSI sequence.
+                                // We should be mostly safe to just append these together.
                                 ansi_prefix.push_str(text);
+                            } else {
+                                // It's probably a VT100 code.
+                                // Passing it through is the safest bet.
+                                write!(handle, "{}", text)?;
                             }
                         }
 
