@@ -143,10 +143,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .overrides_with("number")
                 .short("p")
                 .long("plain")
+                .multiple(true)
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
-                    "Only show plain style, no decorations. This is an alias for \
-                     '--style=plain'",
+                    "Only show plain style, no decorations. When '-p' is used, this is an alias for \
+                     '--style=plain'. When '-pp' is used, this is an alias for '--style=plain --pager=never'.",
                 ),
         )
         .arg(

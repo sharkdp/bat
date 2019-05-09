@@ -143,7 +143,10 @@ impl App {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
             Some("auto") | _ => {
-                if files.contains(&InputFile::StdIn) {
+                if self.matches.occurrences_of("plain") > 1 {
+                    // If we have -pp as an option when in auto mode, the pager should be disabled.
+                    PagingMode::Never
+                } else if files.contains(&InputFile::StdIn) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
