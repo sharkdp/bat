@@ -3,28 +3,14 @@
 
 # Helper function:
 function __bat_autocomplete_languages --description "A helper function used by "(status filename)
-	bat --list-languages | awk '
-		NR == 1 {
-			dc = 0;
-			while (substr($0, dc, 2) != "  ") dc++;
-			while (substr($0, dc, 1) == " ")  dc++;
-		}
-		
+	bat --list-languages | awk -F':' '
 		{
-			langField = substr($0, 0, dc - 2);
-			if (langField !~ /^ *$/) {
-				lang = langField;
-				sub(/ +$/, "", lang);
-			}
+			lang=$1
+			split($2, exts, ",")
 
-			split(substr($0, dc), exts, ",");
 			for (i in exts) {
-				ext = exts[i]
-
-				sub(/^ +/, "", ext); # Trim leading whitespace.
-				sub(/ +$/, "", ext); # Trim trailing whitespace.
-
-				if ((ext != "") && (ext !~ /[A-Z].*/)) {
+				ext=exts[i]
+				if (ext !~ /[A-Z].*/ && ext !~ /^\..*rc$/) {
 					print ext"\t"lang
 				}
 			}
