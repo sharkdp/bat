@@ -331,8 +331,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden_short_help(true)
                 .validator(
                     |t| {
-                        let sign = t.chars().next().unwrap();
-                        let num = if (sign == '+') || (sign == '-') {
+                        let is_offset = t.starts_with('+') || t.starts_with('-');
+                        let num = if is_offset {
                             t.chars().skip(1).collect()
                         } else {
                             t
@@ -340,7 +340,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
 
                         num.parse::<u32>()
                             .map_err(|_e| "must be an offset or number")
-                            .and_then(|v| if v == 0 && sign != '+' && sign != '-' {
+                            .and_then(|v| if v == 0 && !is_offset {
                                 Err("terminal width cannot be zero".into())
                             } else {
                                 Ok(())
