@@ -367,10 +367,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // ANSI escape passthrough.
                         (text, true) => {
-                            let is_ansi_csi =
-                                text.chars().skip(1).nth(0).map_or(false, |c| c == '[');
+                            let is_ansi_csi = text.starts_with("\x1B[");
 
-                            if is_ansi_csi && text.chars().last().map_or(false, |c| c == 'm') {
+                            if is_ansi_csi && text.ends_with('m') {
                                 // It's an ANSI SGR sequence.
                                 // We should be mostly safe to just append these together.
                                 ansi_prefix.push_str(text);
