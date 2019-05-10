@@ -332,13 +332,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(
                     |t| {
                         let is_offset = t.starts_with('+') || t.starts_with('-');
-                        let num = if is_offset {
-                            t.chars().skip(1).collect()
-                        } else {
-                            t
-                        };
-
-                        num.parse::<u32>()
+                        t.parse::<i32>()
                             .map_err(|_e| "must be an offset or number")
                             .and_then(|v| if v == 0 && !is_offset {
                                 Err("terminal width cannot be zero".into())
