@@ -18,7 +18,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .global_setting(AppSettings::DeriveDisplayOrder)
         .global_setting(AppSettings::UnifiedHelpMessage)
         .global_setting(AppSettings::HidePossibleValuesInHelp)
-        .setting(AppSettings::InferSubcommands)
         .setting(AppSettings::ArgsNegateSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::VersionlessSubcommands)
