@@ -291,7 +291,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .default_value("auto")
                 .hide_default_value(true)
                 .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character)."),
+                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+                           The '--terminal-width' option can be used in addition to \
+                           control the output width."),
         )
         .arg(
             Arg::with_name("tabs")
@@ -345,7 +347,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help(
                     "Explicitly set the width of the terminal instead of determining it \
                      automatically. If prefixed with '+' or '-', the value will be treated \
-                     as an offset to the actual terminal width.",
+                     as an offset to the actual terminal width. See also: '--wrap'.",
                 ),
         )
         .arg(
