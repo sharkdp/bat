@@ -195,7 +195,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
             if ContentType::BINARY == self.content_type {
-                writeln!(handle, "<BINARY>")?;
+                let input = match file {
+                    InputFile::Ordinary(filename) => format!("file '{}'", filename),
+                    _ => "STDIN".into(),
+                };
+
+                writeln!(
+                    handle,
+                    "{}: Binary content from {} will not be printed to the terminal \
+                     (but will be present if the output of 'bat' is piped).",
+                    Yellow.paint("[bat warning]"),
+                    input
+                )?;
             }
             return Ok(());
         }
