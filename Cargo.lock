@@ -103,7 +103,7 @@ dependencies = [
 
 [[package]]
 name = "bat"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "ansi_colours 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
