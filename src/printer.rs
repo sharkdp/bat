@@ -78,7 +78,7 @@ pub struct InteractivePrinter<'a> {
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
     ansi_prefix_sgr: String,
-    content_type: ContentType,
+    content_type: Option<ContentType>,
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
@@ -134,7 +134,7 @@ impl<'a> InteractivePrinter<'a> {
 
         let mut line_changes = None;
 
-        let highlighter = if reader.content_type.is_binary() {
+        let highlighter = if reader.content_type.map_or(false, |c| c.is_binary()) {
             None
         } else {
             // Get the Git modifications
@@ -194,7 +194,7 @@ impl<'a> InteractivePrinter<'a> {
 impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
-            if ContentType::BINARY == self.content_type {
+            if Some(ContentType::BINARY) == self.content_type {
                 let input = match file {
                     InputFile::Ordinary(filename) => format!("file '{}'", filename),
                     _ => "STDIN".into(),
@@ -232,9 +232,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         let mode = match self.content_type {
-            ContentType::BINARY => "   <BINARY>",
-            ContentType::UTF_16LE => "   <UTF-16LE>",
-            ContentType::UTF_16BE => "   <UTF-16BE>",
+            Some(ContentType::BINARY) => "   <BINARY>",
+            Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
+            Some(ContentType::UTF_16BE) => "   <UTF-16BE>",
+            None => "   <EMPTY>",
             _ => "",
         };
 
@@ -247,7 +248,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         )?;
 
         if self.config.output_components.grid() {
-            if self.content_type.is_text() {
+            if self.content_type.map_or(false, |c| c.is_text()) {
                 self.print_horizontal_line(handle, '┼')?;
             } else {
                 self.print_horizontal_line(handle, '┴')?;
@@ -258,7 +259,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
     }
 
     fn print_footer(&mut self, handle: &mut Write) -> Result<()> {
-        if self.config.output_components.grid() && self.content_type.is_text() {
+        if self.config.output_components.grid() && self.content_type.map_or(false, |c| c.is_text())
+        {
             self.print_horizontal_line(handle, '┴')
         } else {
             Ok(())
@@ -273,13 +275,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let mut line = match self.content_type {
-            ContentType::BINARY => {
+            Some(ContentType::BINARY) | None => {
                 return Ok(());
             }
-            ContentType::UTF_16LE => UTF_16LE
+            Some(ContentType::UTF_16LE) => UTF_16LE
                 .decode(&line_buffer, DecoderTrap::Replace)
                 .map_err(|_| "Invalid UTF-16LE")?,
-            ContentType::UTF_16BE => UTF_16BE
+            Some(ContentType::UTF_16BE) => UTF_16BE
                 .decode(&line_buffer, DecoderTrap::Replace)
                 .map_err(|_| "Invalid UTF-16BE")?,
             _ => String::from_utf8_lossy(&line_buffer).to_string(),
