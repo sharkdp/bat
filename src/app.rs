@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use atty::{self, Stream};
 
-use clap::ArgMatches;
 use crate::clap_app;
+use clap::ArgMatches;
 use wild;
 
 use console::Term;
