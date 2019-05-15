@@ -47,7 +47,9 @@ values: *auto*, full, plain, changes, header, grid, numbers.
 .HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
-Only show plain style, no decorations. This is an alias for '\-\-style=plain'
+Only show plain style, no decorations. This is an alias for '\-\-style=plain'. When '\-p'
+is used twice ('\-pp'), it also disables automatic paging (alias for '\-\-style=plain
+\fB\-\-pager\fR=\fI\,never\/\fR').
 .HP
 \fB\-n\fR, \fB\-\-number\fR
 .IP
@@ -58,7 +60,7 @@ Only show line numbers, no other decorations. This is an alias for '\-\-style=nu
 Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to control the
 width of the tab\-placeholders.
 .HP
-\fB\-\-line\-range\fR <N:M>...
+\fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
 Only print the specified range of lines for each file. For example:
 .RS
@@ -72,7 +74,7 @@ prints lines 40 to the end of the file
 .HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N>...
 .IP
-Highlight the N-th line with a different background color
+Highlight the N\-th line with a different background color
 .HP
 \fB\-\-color\fR <when>
 .IP
@@ -105,7 +107,8 @@ the '\-\-paging' option. Example: '\-\-pager "less \fB\-RF\fR"'.
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
-Specify the text\-wrapping mode (*auto*, never, character).
+Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
+can be used in addition to control the output width.
 .HP
 \fB\-\-tabs\fR <T>
 .IP
@@ -120,7 +123,7 @@ always unbuffered \- this option is simply ignored.
 .IP
 Explicitly set the width of the terminal instead of determining it automatically. If
 prefixed with '+' or '\-', the value will be treated as an offset to the actual terminal
-width.
+width. See also: '\-\-wrap'.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
