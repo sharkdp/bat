@@ -111,7 +111,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "changes", "header", "grid", "numbers",
+                            "auto", "full", "plain", "changes", "header", "grid", "numbers", "snip"
                         ]
                         .contains(style)
                     });
@@ -124,7 +124,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, numbers).",
+                     (*auto*, full, plain, changes, header, grid, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -134,7 +134,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
-                     Possible values: *auto*, full, plain, changes, header, grid, numbers.",
+                     Possible values: *auto*, full, plain, changes, header, grid, numbers, snip.",
                 ),
         )
         .arg(

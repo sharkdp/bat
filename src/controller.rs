@@ -98,14 +98,29 @@ impl<'b> Controller<'b> {
         let mut line_buffer = Vec::new();
         let mut line_number: usize = 1;
 
+        let mut first_range: bool = true;
+        let mut mid_range: bool = false;
+
         while reader.read_line(&mut line_buffer)? {
             match line_ranges.check(line_number) {
                 RangeCheckResult::OutsideRange => {
                     // Call the printer in case we need to call the syntax highlighter
                     // for this line. However, set `out_of_range` to `true`.
                     printer.print_line(true, writer, line_number, &line_buffer)?;
+                    mid_range = false;
                 }
+
                 RangeCheckResult::InRange => {
+                    if self.config.output_components.snip() {
+                        if first_range {
+                            first_range = false;
+                            mid_range = true;
+                        } else if !mid_range {
+                            mid_range = true;
+                            printer.print_snip(writer)?;
+                        }
+                    }
+
                     printer.print_line(false, writer, line_number, &line_buffer)?;
                 }
                 RangeCheckResult::AfterLastRange => {
