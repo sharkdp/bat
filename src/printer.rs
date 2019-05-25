@@ -32,6 +32,9 @@ use crate::terminal::{as_terminal_escaped, to_ansi_color};
 pub trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
+
+    fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
+
     fn print_line(
         &mut self,
         out_of_range: bool,
@@ -55,6 +58,10 @@ impl Printer for SimplePrinter {
     }
 
     fn print_footer(&mut self, _handle: &mut dyn Write) -> Result<()> {
+        Ok(())
+    }
+
+    fn print_snip(&mut self, _handle: &mut Write) -> Result<()> {
         Ok(())
     }
 
@@ -182,6 +189,24 @@ impl<'a> InteractivePrinter<'a> {
         Ok(())
     }
 
+    fn create_fake_panel(&self, text: &str) -> String {
+        if self.panel_width == 0 {
+            "".to_string()
+        } else {
+            let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
+            let text_filled: String = format!(
+                "{}{}",
+                text_truncated,
+                " ".repeat(self.panel_width - 1 - text_truncated.len())
+            );
+            if self.config.output_components.grid() {
+                format!("{} │ ", text_filled)
+            } else {
+                format!("{}", text_filled)
+            }
+        }
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             expand_tabs(text, self.config.tab_width, cursor)
@@ -269,6 +294,31 @@ impl<'a> Printer for InteractivePrinter<'a> {
         } else {
             Ok(())
         }
+    }
+
+    fn print_snip(&mut self, handle: &mut Write) -> Result<()> {
+        let panel = self.create_fake_panel(" ...");
+        let panel_count = panel.chars().count();
+
+        let title = "8<";
+        let title_count = title.chars().count();
+
+        let snip_left =
+            "─ ".repeat((self.config.term_width - panel_count - (title_count / 2)) / 4);
+        let snip_left_count = snip_left.chars().count(); // Can't use .len() with Unicode.
+
+        let snip_right = " ─"
+            .repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
+
+        write!(
+            handle,
+            "{}\n",
+            self.colors
+                .grid
+                .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
+        )?;
+
+        Ok(())
     }
 
     fn print_line(
