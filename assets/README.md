@@ -33,6 +33,7 @@ The following files have been manually modified after converting from a `.tmLang
 
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
 * `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
+* `Org mode.sublime-syntax` => removed `task` file type.
 
 ### Non-submodule additions
 

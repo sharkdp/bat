@@ -126,3 +126,6 @@
 [submodule "assets/syntaxes/sublime-fish"]
 	path = assets/syntaxes/sublime-fish
 	url = https://github.com/Phidica/sublime-fish.git
+[submodule "assets/syntaxes/Org mode"]
+	path = assets/syntaxes/Org mode
+	url = https://github.com/jezcope/Org.tmbundle.git
