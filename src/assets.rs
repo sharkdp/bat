@@ -117,7 +117,7 @@ impl HighlightingAssets {
 
     pub fn save(&self, dir: Option<&Path>) -> Result<()> {
         let target_dir = dir.unwrap_or_else(|| PROJECT_DIRS.cache_dir());
-        let _ = fs::create_dir(target_dir);
+        let _ = fs::create_dir_all(target_dir);
         let theme_set_path = target_dir.join("themes.bin");
         let syntax_set_path = target_dir.join("syntaxes.bin");
 
