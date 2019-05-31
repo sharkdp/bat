@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: requirements.txt
+file_extensions:
+  - requirements.txt
+scope: source.requirementstxt
+contexts:
+  main:
+    - match: (#).*$\n?
+      scope: comment.line.requirementstxt
+      captures:
+        1: punctuation.definition.comment.requirementstxt
+    - match: '(?i)^[a-z0-9_\-\.]+'
+      scope: string.package_name.requirementstxt
+    - match: (?i)==|<|<=|>=|>
+      scope: keyword.operator.logical.punctuation.requirementstxt
+    - match: '(?i)\d+\.[\da-z\-_\.]*'
+      scope: constant.numeric.verions.requirementstxt

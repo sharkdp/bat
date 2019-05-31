@@ -129,3 +129,6 @@
 [submodule "assets/syntaxes/Org mode"]
 	path = assets/syntaxes/Org mode
 	url = https://github.com/jezcope/Org.tmbundle.git
+[submodule "assets/syntaxes/requirementstxt"]
+	path = assets/syntaxes/requirementstxt
+	url = https://github.com/wuub/requirementstxt
