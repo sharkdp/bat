@@ -132,3 +132,6 @@
 [submodule "assets/syntaxes/requirementstxt"]
 	path = assets/syntaxes/requirementstxt
 	url = https://github.com/wuub/requirementstxt
+[submodule "assets/syntaxes/DotENV"]
+	path = assets/syntaxes/DotENV
+	url = https://github.com/zaynali53/DotENV
