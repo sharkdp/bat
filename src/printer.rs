@@ -207,6 +207,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     Yellow.paint("[bat warning]"),
                     input
                 )?;
+            } else {
+                if self.config.output_components.grid() {
+                    self.print_horizontal_line(handle, '┬')?;
+                }
             }
             return Ok(());
         }
