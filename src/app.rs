@@ -82,6 +82,9 @@ pub struct Config<'a> {
 
     /// Lines to highlight
     pub highlight_lines: Vec<usize>,
+
+    /// Use unbuffered output
+    pub unbuffered: bool,
 }
 
 fn is_truecolor_terminal() -> bool {
@@ -274,6 +277,7 @@ impl App {
                 .values_of("highlight-line")
                 .and_then(|ws| ws.map(|w| w.parse().ok()).collect())
                 .unwrap_or_default(),
+            unbuffered: self.matches.is_present("unbuffered"),
         })
     }
 

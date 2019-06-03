@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::io::{self, BufWriter, Write};
 use std::path::Path;
 
 use crate::app::{Config, PagingMode};
@@ -36,7 +36,13 @@ impl<'b> Controller<'b> {
         }
 
         let mut output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
-        let writer = output_type.handle()?;
+        let mut buf_writer;
+        let writer: &mut Write = if self.config.unbuffered {
+            output_type.handle()?
+        } else {
+            buf_writer = BufWriter::new(output_type.handle()?);
+            &mut buf_writer
+        };
         let mut no_errors: bool = true;
 
         let stdin = io::stdin();
