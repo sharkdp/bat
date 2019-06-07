@@ -1,0 +1,44 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: GN
+file_extensions:
+  - gn
+  - gni
+scope: source.gn
+contexts:
+  main:
+    - match: \b(?:if)\b
+      comment: keywords
+      scope: keyword.control.gn
+    - match: \b(?:true|false)\b
+      comment: constants
+      scope: constant.language.gn
+    - match: \b\d+\.?(?:\d+)?\b
+      comment: numbers
+      scope: constant.numeric.gn
+    - match: '\"[^\"]*\"'
+      comment: double quoted string
+      scope: string.quoted.double.gn
+    - match: "#"
+      comment: comment
+      push:
+        - meta_scope: comment.gn
+        - match: $
+          pop: true
+    - match: (?:=|==|\+=|-=|\+|-)
+      comment: operators
+      scope: keyword.operator.gn
+    - match: \b(?:action|action_foreach|copy|executable|group|shared_library|source_set|static_library)\b
+      comment: targets
+      scope: entity.name.tag.gn
+    - match: \b(?:assert|config|declare_args|defined|exec_script|foreach|get_label_info|get_path_info|get_target_outputs|getenv|import|print|process_file_template|read_file|rebase_path|set_default_toolchain|set_defaults|set_sources_assignment_filter|template|tool|toolchain|toolchain_args|write_file)\b
+      comment: functions
+      scope: entity.name.function.gn
+    - match: \b(?:current_cpu|current_os|current_toolchain|default_toolchain|host_cpu|host_os|python_path|root_build_dir|root_gen_dir|root_out_dir|target_cpu|target_gen_dir|target_os|target_out_dir)\b
+      comment: predefined variables
+      scope: variable.parameter.gn
+    - match: \b(?:all_dependent_configs|allow_circular_includes_from|args|cflags|cflags_c|cflags_cc|cflags_objc|cflags_objcc|check_includes|complete_static_lib|configs|data|data_deps|defines|depfile|deps|forward_dependent_configs_from|include_dirs|inputs|ldflags|lib_dirs|libs|output_extension|output_name|outputs|public|public_configs|public_deps|script|sources|testonly|visibility)\b
+      comment: target variables
+      scope: entity.other.attribute-name.gn
+

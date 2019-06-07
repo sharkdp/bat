@@ -141,3 +141,6 @@
 [submodule "assets/syntaxes/ssh-config"]
 	path = assets/syntaxes/ssh-config
 	url = https://github.com/robballou/sublimetext-sshconfig.git
+[submodule "assets/syntaxes/GN"]
+	path = assets/syntaxes/GN
+	url = https://github.com/eseidelGoogle/gn_sublime.git
