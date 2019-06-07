@@ -1,0 +1,23 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: hosts
+file_extensions:
+  - hosts
+scope: source.hosts
+
+contexts:
+  main:
+    - scope: comment.line.number-sign
+      match: \#.*
+      comment: comment
+
+    - match: ^\s*([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|[0-9a-f:]+)
+      comment: ipaddress
+      scope: constant.numeric.ipaddress
+
+
+    - match: \s(localhost|ip6-loopback|ip6-localhost|ip6-localnet|ip6-mcastprefix|ip6-allnodes|ip6-allrouters|ip6-allhosts|broadcasthost)\b
+      scope: keyword.host.predefined}
+      comment: prefdfined
+

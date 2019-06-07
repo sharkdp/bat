@@ -135,3 +135,6 @@
 [submodule "assets/syntaxes/DotENV"]
 	path = assets/syntaxes/DotENV
 	url = https://github.com/zaynali53/DotENV
+[submodule "assets/syntaxes/hosts"]
+	path = assets/syntaxes/hosts
+	url = https://github.com/brandonwamboldt/sublime-hosts
