@@ -138,3 +138,6 @@
 [submodule "assets/syntaxes/hosts"]
 	path = assets/syntaxes/hosts
 	url = https://github.com/brandonwamboldt/sublime-hosts
+[submodule "assets/syntaxes/ssh-config"]
+	path = assets/syntaxes/ssh-config
+	url = https://github.com/robballou/sublimetext-sshconfig.git
