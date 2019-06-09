@@ -160,6 +160,15 @@ You can install `bat` from the [Fedora Modular](https://docs.fedoraproject.org/e
 dnf module install bat
 ```
 
+### On Gentoo Linux
+
+You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
+from the official sources:
+
+```bash
+emerge sys-apps/bat
+```
+
 ### On Void Linux
 
 You can install `bat` via xbps-install:
