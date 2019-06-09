@@ -124,6 +124,14 @@ xbps-install -S bat
 dnf module install bat
 ```
 
+###  Gentoo Linux
+
+[Gentoo Linuxの公式リソース](https://packages.gentoo.org/packages/sys-apps/bat)からインストールできます。
+
+```bash
+emerge sys-apps/bat
+```
+
 ###  FreeBSD
 
 事前にコンパイル済みである[pkg](https://www.freshports.org/textproc/bat)をインストールできます:
