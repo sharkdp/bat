@@ -143,6 +143,15 @@ and install it via:
 sudo dpkg -i bat_0.11.0_amd64.deb  # adapt version number and architecture
 ```
 
+### On Alpine Linux
+
+You can install [the `bat` package](https://pkgs.alpinelinux.org/packages?name=bat)
+from the official sources, provided you have the appropriate repository enabled:
+
+```bash
+apk add bat
+```
+
 ### On Arch Linux
 
 You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
