@@ -49,6 +49,24 @@ impl<'a> InputFileReader<'a> {
             Ok(true)
         }
     }
+
+    pub fn read_chunk(& mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+        assert_eq!(buf.len(), 0);
+        if self.first_line.is_empty() {
+            let filled_buf = self.inner.fill_buf()?;
+            let filled_buf_len = filled_buf.len();
+            if filled_buf_len > 0 {
+                buf.extend(filled_buf);
+                self.inner.consume(filled_buf_len);
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        } else {
+            buf.append(&mut self.first_line);
+            Ok(true)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

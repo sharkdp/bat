@@ -25,19 +25,17 @@ use crate::diff::get_git_diff;
 use crate::diff::LineChanges;
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
+use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()>;
-    fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
-    fn print_line(
+    fn print_file(
         &mut self,
-        out_of_range: bool,
-        handle: &mut Write,
-        line_number: usize,
-        line_buffer: &[u8],
+        reader: &mut InputFileReader,
+        writer: &mut Write,
+        input_file: InputFile,
     ) -> Result<()>;
 }
 
@@ -50,23 +48,16 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut Write, _file: InputFile) -> Result<()> {
-        Ok(())
-    }
-
-    fn print_footer(&mut self, _handle: &mut Write) -> Result<()> {
-        Ok(())
-    }
-
-    fn print_line(
+    fn print_file(
         &mut self,
-        out_of_range: bool,
-        handle: &mut Write,
-        _line_number: usize,
-        line_buffer: &[u8],
+        reader: &mut InputFileReader,
+        writer: &mut Write,
+        _: InputFile,
     ) -> Result<()> {
-        if !out_of_range {
-            handle.write_all(line_buffer)?;
+        let mut buf = Vec::new();
+        while reader.read_chunk(&mut buf)? {
+            writer.write_all(&buf)?;
+            buf.clear();
         }
         Ok(())
     }
@@ -189,9 +180,37 @@ impl<'a> InteractivePrinter<'a> {
             text.to_string()
         }
     }
-}
 
-impl<'a> Printer for InteractivePrinter<'a> {
+    fn print_file_ranges(
+        &mut self,
+        writer: &mut Write,
+        reader: &mut InputFileReader,
+        line_ranges: &LineRanges,
+    ) -> Result<()> {
+        let mut line_buffer = Vec::new();
+        let mut line_number: usize = 1;
+
+        while reader.read_line(&mut line_buffer)? {
+            match line_ranges.check(line_number) {
+                RangeCheckResult::OutsideRange => {
+                    // Call the printer in case we need to call the syntax highlighter
+                    // for this line. However, set `out_of_range` to `true`.
+                    self.print_line(true, writer, line_number, &line_buffer)?;
+                }
+                RangeCheckResult::InRange => {
+                    self.print_line(false, writer, line_number, &line_buffer)?;
+                }
+                RangeCheckResult::AfterLastRange => {
+                    break;
+                }
+            }
+
+            line_number += 1;
+            line_buffer.clear();
+        }
+        Ok(())
+    }
+
     fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
             if Some(ContentType::BINARY) == self.content_type {
@@ -502,6 +521,23 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
             writeln!(handle)?;
         }
+
+        Ok(())
+    }
+}
+
+impl<'a> Printer for InteractivePrinter<'a> {
+    fn print_file(
+        &mut self,
+        reader: &mut InputFileReader,
+        writer: &mut Write,
+        input_file: InputFile,
+    ) -> Result<()> {
+        self.print_header(writer, input_file)?;
+        if !reader.first_line.is_empty() {
+            self.print_file_ranges(writer, reader, &self.config.line_ranges)?;
+        }
+        self.print_footer(writer)?;
 
         Ok(())
     }
