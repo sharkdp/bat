@@ -17,7 +17,7 @@ edition = '2018'
 
 [dependencies]
 atty = "0.2.12"
-ansi_term = "0.11"
+ansi_term = "0.12"
 ansi_colours = "^1.0"
 console = "0.7"
 dirs = "2.0"
