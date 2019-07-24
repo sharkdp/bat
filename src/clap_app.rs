@@ -332,6 +332,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true)
                 .value_name("width")
                 .hidden_short_help(true)
+                .allow_hyphen_values(true)
                 .validator(
                     |t| {
                         let is_offset = t.starts_with('+') || t.starts_with('-');
