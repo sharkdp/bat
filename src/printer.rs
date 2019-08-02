@@ -30,12 +30,12 @@ use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()>;
-    fn print_footer(&mut self, handle: &mut Write) -> Result<()>;
+    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;
+    fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: &mut Write,
+        handle: &mut dyn Write,
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()>;
@@ -50,18 +50,18 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut Write, _file: InputFile) -> Result<()> {
+    fn print_header(&mut self, _handle: &mut dyn Write, _file: InputFile) -> Result<()> {
         Ok(())
     }
 
-    fn print_footer(&mut self, _handle: &mut Write) -> Result<()> {
+    fn print_footer(&mut self, _handle: &mut dyn Write) -> Result<()> {
         Ok(())
     }
 
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: &mut Write,
+        handle: &mut dyn Write,
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
@@ -166,7 +166,7 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
-    fn print_horizontal_line(&mut self, handle: &mut Write, grid_char: char) -> Result<()> {
+    fn print_horizontal_line(&mut self, handle: &mut dyn Write, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
             writeln!(
                 handle,
@@ -192,7 +192,7 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut Write, file: InputFile) -> Result<()> {
+    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
             if Some(ContentType::BINARY) == self.content_type {
                 let input = match file {
@@ -262,7 +262,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         Ok(())
     }
 
-    fn print_footer(&mut self, handle: &mut Write) -> Result<()> {
+    fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()> {
         if self.config.output_components.grid() && self.content_type.map_or(false, |c| c.is_text())
         {
             self.print_horizontal_line(handle, '┴')
@@ -274,7 +274,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: &mut Write,
+        handle: &mut dyn Write,
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {

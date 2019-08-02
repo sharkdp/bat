@@ -76,7 +76,7 @@ impl<'b> Controller<'b> {
         &self,
         reader: InputFileReader,
         printer: &mut P,
-        writer: &mut Write,
+        writer: &mut dyn Write,
         input_file: InputFile<'a>,
     ) -> Result<()> {
         printer.print_header(writer, input_file)?;
@@ -91,7 +91,7 @@ impl<'b> Controller<'b> {
     fn print_file_ranges<P: Printer>(
         &self,
         printer: &mut P,
-        writer: &mut Write,
+        writer: &mut dyn Write,
         mut reader: InputFileReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
