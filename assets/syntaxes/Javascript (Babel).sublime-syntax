@@ -7,6 +7,7 @@ file_extensions:
   - jsx
   - babel
   - es6
+  - mjs
 first_line_match: ^#!\s*/.*\b(node|js)$\n?
 scope: source.js
 contexts:
