@@ -10,6 +10,11 @@ bat [OPTIONS] [FILE]...
 bat <SUBCOMMAND>
 .SH "OPTIONS"
 .HP
+General remarks
+.IP
+Command-line options like '-l'/'--language' that take values can be specified as
+either '--language value', '--language=value', '-l value' or '-lvalue'.
+.HP
 \fB\-l\fR, \fB\-\-language\fR <language>
 .IP
 Explicitly set the language for syntax highlighting. The language can be specified as a
@@ -29,7 +34,7 @@ Map a file extension or file name to an existing syntax. For example, to highlig
 \fB\-\-theme\fR <theme>
 .IP
 Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
-To set a default theme, add the '\-\-theme="..."' option to the configuration file or
+To set a default theme, add the '\-\-theme "..."' option to the configuration file or
 export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
 .HP
 \fB\-\-list\-themes\fR
@@ -41,19 +46,19 @@ Display a list of supported themes for syntax highlighting.
 Configure which elements (line numbers, file headers, grid borders, Git modifications,
 \&..) to display in addition to the file contents. The argument is a comma\-separated list
 of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
-To set a default style, add the '\-\-style=".."' option to the configuration file or
+To set a default style, add the '\-\-style ".."' option to the configuration file or
 export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
 values: *auto*, full, plain, changes, header, grid, numbers.
 .HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
-Only show plain style, no decorations. This is an alias for '\-\-style=plain'. When '\-p'
-is used twice ('\-pp'), it also disables automatic paging (alias for '\-\-style=plain
+Only show plain style, no decorations. This is an alias for '\-\-style plain'. When '\-p'
+is used twice ('\-pp'), it also disables automatic paging (alias for '\-\-style plain
 \fB\-\-pager\fR=\fI\,never\/\fR').
 .HP
 \fB\-n\fR, \fB\-\-number\fR
 .IP
-Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
+Only show line numbers, no other decorations. This is an alias for '\-\-style numbers'
 .HP
 \fB\-A\fR, \fB\-\-show\-all\fR
 .IP
@@ -97,7 +102,7 @@ values: *auto*, never, always.
 Specify when to use the pager. To control which pager is used, set the PAGER or
 BAT_PAGER environment variables (the latter takes precedence) or use the '\-\-pager'
 option. To disable the pager permanently, set BAT_PAGER to an empty string or set
-\&'\-\-paging=never' in the configuration file. Possible values: *auto*, never, always.
+\&'\-\-paging never' in the configuration file. Possible values: *auto*, never, always.
 .HP
 \fB\-\-pager\fR <command>
 .IP
