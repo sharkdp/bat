@@ -28,7 +28,7 @@ encoding = "0.2"
 shell-words = "0.1.0"
 
 [dependencies.git2]
-version = "0.9"
+version = "0.10"
 default-features = false
 features = []
 
