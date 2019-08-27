@@ -1,3 +1,4 @@
+use std::ascii;
 use std::io::Write;
 use std::vec::Vec;
 
@@ -141,7 +142,10 @@ impl<'a> InteractivePrinter<'a> {
 
         let mut line_changes = None;
 
-        let highlighter = if reader.content_type.map_or(false, |c| c.is_binary()) {
+        let highlighter = if reader
+            .content_type
+            .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
+        {
             None
         } else {
             // Get the Git modifications
@@ -328,9 +332,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let mut line = match self.content_type {
-            Some(ContentType::BINARY) | None => {
+            None => {
                 return Ok(());
             }
+            Some(ContentType::BINARY) => String::from_utf8(
+                line_buffer
+                    .as_ref()
+                    .iter()
+                    .map(|b| ascii::escape_default(*b))
+                    .flatten()
+                    .collect(),
+            )
+            .unwrap(),
             Some(ContentType::UTF_16LE) => UTF_16LE
                 .decode(&line_buffer, DecoderTrap::Replace)
                 .map_err(|_| "Invalid UTF-16LE")?,
