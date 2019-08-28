@@ -107,6 +107,9 @@ make_deb() {
     install -Dm644 "doc/$PROJECT_NAME.1" "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
     gzip --best "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
 
+    # completions
+    install -Dm644 assets/completions/bat.fish "$tempdir/usr/share/fish/completions/$PROJECT_NAME.fish"
+
     # readme and license
     install -Dm644 README.md "$tempdir/usr/share/doc/$PROJECT_NAME/README.md"
     install -Dm644 LICENSE-MIT "$tempdir/usr/share/doc/$PROJECT_NAME/LICENSE-MIT"
