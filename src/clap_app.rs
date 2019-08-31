@@ -54,6 +54,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("list-languages")
                 .long("list-languages")
+                .short("L")
                 .conflicts_with("list-themes")
                 .help("Display all supported languages.")
                 .long_help("Display a list of supported languages for syntax highlighting."),
