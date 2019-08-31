@@ -197,7 +197,7 @@ impl<'a> InteractivePrinter<'a> {
 impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()> {
         if !self.config.output_components.header() {
-            if Some(ContentType::BINARY) == self.content_type {
+            if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
                     InputFile::Ordinary(filename) => format!("file '{}'", filename),
                     _ => "STDIN".into(),
