@@ -172,8 +172,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
                     "Show non-printable characters like space, tab or newline. \
-                     Use '--tabs' to control the width of the tab-placeholders. \
-                     This option can also be used to print binary files.",
+                     This option can also be used to print binary files. \
+                     Use '--tabs' to control the width of the tab-placeholders."
                 ),
         )
         .arg(
