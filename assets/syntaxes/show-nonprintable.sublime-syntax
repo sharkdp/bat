@@ -25,3 +25,7 @@ contexts:
       scope: entity.other.attribute-name.show-nonprintable.escape
     - match: "␈"
       scope: entity.other.attribute-name.show-nonprintable.backspace
+    - match: "\\\\x[A-Z0-9][A-Z0-9]"
+      scope: comment.block.show-nonprintable.backspace
+    - match: "\\\\u\\{[a-z0-9]+\\}"
+      scope: comment.block.show-nonprintable.backspace
