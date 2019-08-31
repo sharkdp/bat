@@ -1,0 +1,44 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Manpage
+file_extensions:
+  - man
+scope: source.man
+
+variables:
+  section_heading: '^\S.*$'
+
+contexts:
+  main:
+    - match: ^
+      push: first_line
+
+  first_line:
+    - match: '([A-Z0-9]+)(\()([^)]+)(\))'
+      captures:
+        1: meta.preprocessor
+        2: keyword.operator
+        3: string.quoted.other
+        4: keyword.operator
+
+    - match: '$'
+      push: body
+
+  body:
+    - match: '^(SYNOPSIS|SYNTAX|SINTASSI|SKŁADNIA|СИНТАКСИС|書式)'
+      push: Packages/C/C.sublime-syntax
+      scope: markup.heading
+      with_prototype:
+        - match: '(?={{section_heading}})'
+          pop: true
+
+    - match: '^\S.*$'
+      scope: markup.heading
+
+    - match: '\b([a-z0-9_]+)(\()([^)]*)(\))'
+      captures:
+        1: entity.name.function
+        2: keyword.operator
+        3: constant.numeric
+        4: keyword.operator

@@ -132,6 +132,17 @@ bat main.cpp | xclip
 ```
 `bat` will detect that the output is being redirected and print the plain file contents.
 
+#### `man`
+
+`bat` can be used as a pager for `man`. It can be used like this:
+```
+export MANPAGER="sh -c 'col -b | bat -l man -p'"
+
+man 2 select
+```
+
+The [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+
 ## Installation
 
 ### On Ubuntu
