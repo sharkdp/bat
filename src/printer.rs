@@ -61,7 +61,7 @@ impl Printer for SimplePrinter {
         Ok(())
     }
 
-    fn print_snip(&mut self, _handle: &mut Write) -> Result<()> {
+    fn print_snip(&mut self, _handle: &mut dyn Write) -> Result<()> {
         Ok(())
     }
 
@@ -296,7 +296,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
     }
 
-    fn print_snip(&mut self, handle: &mut Write) -> Result<()> {
+    fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()> {
         let panel = self.create_fake_panel(" ...");
         let panel_count = panel.chars().count();
 
