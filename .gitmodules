@@ -147,3 +147,6 @@
 [submodule "assets/syntaxes/Verilog"]
 	path = assets/syntaxes/Verilog
 	url = https://github.com/pro711/sublime-verilog
+[submodule "assets/syntaxes/SCSS_Sass"]
+	path = assets/syntaxes/SCSS_Sass
+	url = https://github.com/braver/SublimeSass
