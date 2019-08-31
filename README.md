@@ -114,7 +114,7 @@ tail -f /var/log/pacman.log | bat --paging=never -l log
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
-### `git show`
+#### `git show`
 
 You can combine `bat` with `git show` to view an older version of a given file with proper syntax
 highlighting:
