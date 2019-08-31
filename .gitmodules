@@ -150,3 +150,6 @@
 [submodule "assets/syntaxes/SCSS_Sass"]
 	path = assets/syntaxes/SCSS_Sass
 	url = https://github.com/braver/SublimeSass
+[submodule "assets/syntaxes/Strace"]
+	path = assets/syntaxes/Strace
+	url = https://github.com/djuretic/SublimeStrace
