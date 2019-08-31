@@ -472,6 +472,7 @@ fn snip() {
         .arg("--decorations=always")
         .arg("--line-range=1:2")
         .arg("--line-range=4:")
+        .arg("--terminal-width=80")
         .assert()
         .success()
         .stdout(
