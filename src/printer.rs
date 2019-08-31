@@ -1,4 +1,3 @@
-use std::ascii;
 use std::io::Write;
 use std::vec::Vec;
 
@@ -232,7 +231,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 writeln!(
                     handle,
                     "{}: Binary content from {} will not be printed to the terminal \
-                     (but will be present if the output of 'bat' is piped).",
+                     (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
+                     to show the binary file contents.",
                     Yellow.paint("[bat warning]"),
                     input
                 )?;
@@ -281,7 +281,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         )?;
 
         if self.config.output_components.grid() {
-            if self.content_type.map_or(false, |c| c.is_text()) {
+            if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
                 self.print_horizontal_line(handle, '┼')?;
             } else {
                 self.print_horizontal_line(handle, '┴')?;
@@ -292,7 +292,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
     }
 
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()> {
-        if self.config.output_components.grid() && self.content_type.map_or(false, |c| c.is_text())
+        if self.config.output_components.grid()
+            && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
         {
             self.print_horizontal_line(handle, '┴')
         } else {
@@ -331,31 +332,22 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
-        let mut line = match self.content_type {
-            None => {
-                return Ok(());
+        let line = if self.config.show_nonprintable {
+            replace_nonprintable(&line_buffer, self.config.tab_width)
+        } else {
+            match self.content_type {
+                Some(ContentType::BINARY) | None => {
+                    return Ok(());
+                }
+                Some(ContentType::UTF_16LE) => UTF_16LE
+                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .map_err(|_| "Invalid UTF-16LE")?,
+                Some(ContentType::UTF_16BE) => UTF_16BE
+                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .map_err(|_| "Invalid UTF-16BE")?,
+                _ => String::from_utf8_lossy(&line_buffer).to_string(),
             }
-            Some(ContentType::BINARY) => String::from_utf8(
-                line_buffer
-                    .as_ref()
-                    .iter()
-                    .map(|b| ascii::escape_default(*b))
-                    .flatten()
-                    .collect(),
-            )
-            .unwrap(),
-            Some(ContentType::UTF_16LE) => UTF_16LE
-                .decode(&line_buffer, DecoderTrap::Replace)
-                .map_err(|_| "Invalid UTF-16LE")?,
-            Some(ContentType::UTF_16BE) => UTF_16BE
-                .decode(&line_buffer, DecoderTrap::Replace)
-                .map_err(|_| "Invalid UTF-16BE")?,
-            _ => String::from_utf8_lossy(&line_buffer).to_string(),
         };
-
-        if self.config.show_nonprintable {
-            line = replace_nonprintable(&line, self.config.tab_width);
-        }
 
         let regions = {
             let highlighter = match self.highlighter {
