@@ -144,3 +144,6 @@
 [submodule "assets/syntaxes/GraphQL"]
 	path = assets/syntaxes/GraphQL
 	url = https://github.com/dncrews/GraphQL-SublimeText3.git
+[submodule "assets/syntaxes/Verilog"]
+	path = assets/syntaxes/Verilog
+	url = https://github.com/pro711/sublime-verilog

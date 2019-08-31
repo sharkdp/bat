@@ -1,0 +1,149 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Verilog
+file_extensions:
+  - v
+  - V
+scope: source.verilog
+contexts:
+  main:
+    - match: '^\s*(module|function|primitive)\s+\b([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      scope: meta.entity.module.verilog
+      captures:
+        1: storage.type.verilog
+        2: entity.name.type.class.verilog
+    - match: '^\s*(?!else)(?!begin)([a-zA-Z_][a-zA-Z0-9_]*)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(\()'
+      scope: meta.definition.verilog
+      captures:
+        1: entity.name.type.class.verilog
+        2: entity.name.type.instance.verilog
+        3: keyword.operator.parenthesis.round.verilog
+    - match: '^\s*(?!else)(?!begin)([a-zA-Z_][a-zA-Z0-9_]*)\s+([#])(\()([ ._+`,a-zA-Z0-9]+)(\))\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*(\()'
+      scope: meta.definition.withparameter.verilog
+      captures:
+        1: entity.name.type.class.verilog
+        2: keyword.other.verilog
+        3: keyword.operator.parenthesis.round.verilog
+        4: keyword.other.verilog
+        5: keyword.operator.parenthesis.round.verilog
+        6: entity.name.type.instance.verilog
+        7: keyword.operator.parenthesis.round.verilog
+    - match: '^\s*\b(?!else)(?!begin)([a-zA-Z_][a-zA-Z0-9_]*)\b\s+([#])'
+      scope: meta.definition.withparameter.verilog
+      captures:
+        1: entity.name.type.class.verilog
+        2: keyword.other.verilog
+    - match: '^\s*(defparam)\s+([a-zA-Z_][a-zA-Z0-9_]*)(.[a-zA-Z_][a-zA-Z0-9_]*)\s*(=)'
+      scope: meta.definition.defparam.verilog
+      captures:
+        1: keyword.other.verilog
+        2: entity.name.type.instance.verilog
+        3: meta.module.parameters.verilog
+        4: keyword.other.verilog
+    - match: \b(automatic|cell|config|deassign|defparam|design|disable|edge|endconfig|endgenerate|endspecify|endtable|endtask|event|generate|genvar|ifnone|incdir|include|instance|liblist|library|localparam|macromodule|negedge|noshowcancelled|posedge|pulsestyle_onevent|pulsestyle_ondetect|real|realtime|scalared|showcancelled|specify|specparam|table|task|time|use|vectored)\b
+      scope: keyword.other.verilog
+    - match: "(#[0-9]+)"
+      scope: keyword.delay.verilog
+    - match: \b(initial|always|wait|force|release|assign)\b
+      scope: keyword.control.verilog
+    - match: \b(begin|end|fork|join)\b
+      scope: keyword.other.verilog
+    - match: \b(forever|repeat|while|for|if|else|case|casex|casez|default|endcase)\b
+      scope: keyword.control.verilog
+    - match: '^\s*(`include)\s+(["<].*[">])'
+      scope: meta.include.verilog
+      captures:
+        1: meta.preprocessor.verilog
+        2: entity.name.type.include.verilog
+    - match: '^\s*(`ifdef|`ifndef|`undef|`define)\s+([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      scope: meta.preprocessor.ifdef.verilog
+      captures:
+        1: meta.preprocessor.verilog
+        2: constant.other.define.verilog
+    - match: '`(celldefine|default_nettype|define|else|elsif|endcelldefine|endif|ifdef|ifndef|include|line|nounconnected_drive|resetall|timescale|unconnected_drive|undef)\b'
+      scope: meta.preprocessor.verilog
+    - match: "[.][_a-zA-Z0-9]+"
+      scope: meta.module.parameters.verilog
+    - match: '`\b([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      scope: constant.other.define.verilog
+    - include: comments
+    - match: \b(endmodule|endfunction|endprimitive)\b
+      scope: storage.type.verilog
+    - match: '^\s*\b([a-zA-Z_][a-zA-Z0-9_]*)\b\s*(:)\s*'
+      scope: meta.case.verilog
+      captures:
+        1: entity.name.state.verilog
+        2: keyword.operator.bitwise.verilog
+    - include: all-types
+    - match: (==|===|!=|!==|<=|>=|<|>)
+      scope: keyword.operator.comparison.verilog
+    - match: (\-|\+|\*|\/|%)
+      scope: keyword.operator.arithmetic.verilog
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.verilog
+    - match: (&|\||\^|~|<<|>>|\?|:)
+      scope: keyword.operator.bitwise.verilog
+    - match: "({|})"
+      scope: keyword.operator.parenthesis.curly.verilog
+    - match: (\(|\))
+      scope: keyword.operator.parenthesis.round.verilog
+    - match: '(\[|\])'
+      scope: keyword.operator.parenthesis.square.verilog
+    - match: "([;,])"
+      scope: keyword.delimiter.verilog
+    - match: (#|@|=)
+      scope: keyword.other.verilog
+    - match: '\b(output|input|inout|and|nand|nor|or|xor|xnor|buf|not|bufif[01]|notif[01]|r?[npc]mos|tran|r?tranif[01]|pullup|pulldown)\b'
+      scope: support.type.verilog
+    - match: '((\b\d+)?''s?([bB]\s*(([0-1_xXzZ?]+)|(`[A-Z]+[_0-9a-zA-Z]*))|[oO]\s*(([0-7_xXzZ?]+)|(`[A-Z]+[_0-9a-zA-Z]*))|[dD]\s*(([0-9_xXzZ?]+)|(`[A-Z]+[_0-9a-zA-Z]*))|[hH]\s*(([0-9a-fA-F_xXzZ?]+)|(`[A-Z]+[_0-9a-zA-Z]*)))((e|E)(\+|-)?[0-9]+)?\b)|(\b\d+\b)'
+      scope: constant.numeric.verilog
+    - include: strings
+    - match: '\$\b([a-zA-Z_][a-zA-Z0-9_]*)\b'
+      scope: support.function.verilog
+  all-types:
+    - include: storage-type-verilog
+    - include: storage-modifier-verilog
+  comments:
+    - match: /\*
+      captures:
+        0: punctuation.definition.comment.verilog
+      push:
+        - meta_scope: comment.block.verilog
+        - match: \*/
+          captures:
+            0: punctuation.definition.comment.verilog
+          pop: true
+    - match: (//).*$\n?
+      scope: comment.line.double-slash.verilog
+      captures:
+        1: punctuation.definition.comment.verilog
+  storage-modifier-verilog:
+    - match: '\b(signed|unsigned|small|medium|large|supply[01]|strong[01]|pull[01]|weak[01]|highz[01])\b'
+      scope: storage.modifier.verilog
+  storage-type-verilog:
+    - match: '\b(wire|tri|tri[01]|supply[01]|wand|triand|wor|trior|trireg|reg|parameter|integer)\b'
+      scope: storage.type.verilog
+  strings:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.verilog
+      push:
+        - meta_scope: string.quoted.double.verilog
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.verilog
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.verilog
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.verilog
+      push:
+        - meta_scope: string.quoted.single.verilog
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.verilog
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.verilog
