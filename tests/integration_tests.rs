@@ -463,3 +463,22 @@ fn can_print_file_named_cache() {
 fn does_not_print_unwanted_file_named_cache() {
     bat_with_config().arg("cach").assert().failure();
 }
+
+#[test]
+fn snip() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--style=numbers,snip")
+        .arg("--decorations=always")
+        .arg("--line-range=1:2")
+        .arg("--line-range=4:")
+        .assert()
+        .success()
+        .stdout(
+            "   1 line 1
+   2 line 2
+ ...─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 8< ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
+   4 line 4
+",
+        );
+}
