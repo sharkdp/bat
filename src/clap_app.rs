@@ -19,6 +19,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .global_setting(AppSettings::UnifiedHelpMessage)
         .global_setting(AppSettings::HidePossibleValuesInHelp)
         .setting(AppSettings::ArgsNegateSubcommands)
+        .setting(AppSettings::AllowExternalSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
         .setting(AppSettings::VersionlessSubcommands)
         .max_term_width(100)

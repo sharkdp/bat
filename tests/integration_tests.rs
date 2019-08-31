@@ -451,8 +451,18 @@ fn utf16() {
 
 #[test]
 fn can_print_file_named_cache() {
-    bat()
+    bat_with_config()
         .arg("cache")
+        .assert()
+        .success()
+        .stdout("test\n")
+        .stderr("");
+}
+
+#[test]
+fn can_print_file_starting_with_cache() {
+    bat_with_config()
+        .arg("cache.c")
         .assert()
         .success()
         .stdout("test\n")
