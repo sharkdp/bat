@@ -145,6 +145,8 @@ The [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in thi
 
 ## Installation
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
+
 ### On Ubuntu
 *... and other Debian-based Linux distributions.*
 
