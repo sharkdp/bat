@@ -7,7 +7,7 @@ license = "MIT/Apache-2.0"
 name = "bat"
 readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
-version = "0.12.0"
+version = "0.12.1"
 exclude = [
     "assets/syntaxes/*",
     "assets/themes/*",
@@ -17,7 +17,7 @@ edition = '2018'
 
 [dependencies]
 atty = "0.2.13"
-ansi_term = "0.12"
+ansi_term = "^0.12.1"
 ansi_colours = "^1.0"
 console = "0.8"
 dirs = "2.0"

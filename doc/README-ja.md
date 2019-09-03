@@ -97,7 +97,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 最新の `.deb` パッケージを[こちら](https://github.com/sharkdp/bat/releases)からダウンロードして、インストールしてください:
 
 ``` bash
-sudo dpkg -i bat_0.12.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
 ```
 
 ###  Arch Linux
