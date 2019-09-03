@@ -153,3 +153,7 @@
 [submodule "assets/syntaxes/Strace"]
 	path = assets/syntaxes/Strace
 	url = https://github.com/djuretic/SublimeStrace
+[submodule "assets/syntaxes/Jinja2"]
+	path = assets/syntaxes/Jinja2
+	url = https://github.com/Martin819/sublime-jinja2
+	branch = master
