@@ -538,6 +538,11 @@ bash assets/create.sh
 cargo install -f
 ```
 
+## Maintainers
+
+- [sharkdp](https://github.com/sharkdp)
+- [eth-p](https://github.com/eth-p)
+
 ## Project goals and alternatives
 
 `bat` tries to achieve the following goals:
