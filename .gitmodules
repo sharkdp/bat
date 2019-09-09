@@ -156,4 +156,7 @@
 [submodule "assets/syntaxes/Jinja2"]
 	path = assets/syntaxes/Jinja2
 	url = https://github.com/Martin819/sublime-jinja2
+[submodule "assets/syntaxes/SLS"]
+	path = assets/syntaxes/SLS
+	url = https://github.com/saltstack/sublime-text
 	branch = master
