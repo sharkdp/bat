@@ -422,7 +422,7 @@ If you make use of the dark mode feature in macOS, you might want to configure `
 theme based on the OS theme. The following snippet uses the `default` theme when in the light mode
 and the `GitHub` theme when in the dark mode.
 
-```
+```bash
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 ```
 
