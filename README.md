@@ -416,6 +416,16 @@ will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
 
 If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
 
+### Dark mode
+
+If you make use of the dark mode feature in macOS, you might want to configure `bat` to use a different
+theme based on the OS theme. The following snippet uses the `default` theme when in the light mode
+and the `GitHub` theme when in the dark mode.
+
+```
+alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
+```
+
 ## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
