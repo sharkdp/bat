@@ -105,6 +105,14 @@ If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`
 fd … -X bat
 ```
 
+#### `ripgrep`
+
+With [`batgrep`](https://github.com/eth-p/bat-extras/blob/master/doc/batgrep.md), `bat` can be used as the printer for [`ripgrep`](https://github.com/BurntSushi/ripgrep) search results.
+
+```bash
+batgrep Printer src/
+```
+
 #### `tail -f`
 
 `bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
@@ -134,13 +142,19 @@ bat main.cpp | xclip
 
 #### `man`
 
-`bat` can be used as a pager for `man`. It can be used like this:
+`bat` can be used as a pager for `man`. You can use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md), or like this in your shell:
+
 ```bash
 export MANPAGER="sh -c 'col -b | bat -l man -p'"
 man 2 select
 ```
 
 The [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+
+#### `prettier` / `shfmt` / `rustfmt`
+
+The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
+
 
 ## Installation
 
