@@ -135,9 +135,8 @@ bat main.cpp | xclip
 #### `man`
 
 `bat` can be used as a pager for `man`. It can be used like this:
-```
+```bash
 export MANPAGER="sh -c 'col -b | bat -l man -p'"
-
 man 2 select
 ```
 
@@ -152,7 +151,7 @@ The [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in thi
 
 Download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
-``` bash
+```bash
 sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
 ```
 
@@ -194,7 +193,7 @@ emerge sys-apps/bat
 ### On Void Linux
 
 You can install `bat` via xbps-install:
-```
+```bash
 xbps-install -S bat
 ```
 
@@ -225,7 +224,7 @@ nix-env -i bat
 
 You can install `bat` with zypper:
 
-```
+```bash
 zypper install bat
 ```
 
@@ -319,7 +318,7 @@ make the change permanent. Alternatively, use `bat`s
 
 If you want to preview the different themes on a custom file, you can use
 the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
-``` bash
+```bash
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
@@ -494,7 +493,7 @@ or by setting `BAT_PAGER` to an empty string.
 
 This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
 
-```shell
+```bash
 bat() {
     local index
     local args=("$@")
