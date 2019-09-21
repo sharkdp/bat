@@ -145,7 +145,7 @@ bat main.cpp | xclip
 `bat` can be used as a pager for `man`. You can use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md), or like this in your shell:
 
 ```bash
-export MANPAGER="sh -c 'col -b | bat -l man -p'"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
 
