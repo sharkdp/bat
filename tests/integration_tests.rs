@@ -460,6 +460,17 @@ fn can_print_file_named_cache() {
 }
 
 #[test]
+fn can_print_file_named_cache_with_additional_argument() {
+    bat_with_config()
+        .arg("cache")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("test\nhello world\n")
+        .stderr("");
+}
+
+#[test]
 fn can_print_file_starting_with_cache() {
     bat_with_config()
         .arg("cache.c")

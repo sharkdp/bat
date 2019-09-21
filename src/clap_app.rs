@@ -8,11 +8,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         AppSettings::ColorNever
     };
 
-    // Check if the current directory contains a file name cache, if it does
-    // do not make the arguements for subcommand 'cache' required.
-    let arg_group_required = !Path::new("cache").exists();
-
-    ClapApp::new(crate_name!())
+    let app = ClapApp::new(crate_name!())
         .version(crate_version!())
         .global_setting(clap_color_setting)
         .global_setting(AppSettings::DeriveDisplayOrder)
@@ -380,7 +376,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Show bat's cache directory."),
         )
-        .subcommand(
+        .help_message("Print this help message.")
+        .version_message("Show version information.");
+
+    // Check if the current directory contains a file name cache. Otherwise,
+    // enable the 'bat cache' subcommand.
+    if Path::new("cache").exists() {
+        app
+    } else {
+        app.subcommand(
             SubCommand::with_name("cache")
                 .about("Modify the syntax-definition and theme cache")
                 .arg(
@@ -402,7 +406,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .group(
                     ArgGroup::with_name("cache-actions")
                         .args(&["build", "clear"])
-                        .required(arg_group_required),
+                        .required(true),
                 )
                 .arg(
                     Arg::with_name("source")
@@ -422,11 +426,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                             "Use a different directory to store the cached syntax and theme set.",
                         ),
                 )
-                .arg(Arg::with_name("blank").long("blank").requires("build").help(
-                    "Create completely new syntax and theme sets \
-                     (instead of appending to the default sets).",
-                )),
+                .arg(
+                    Arg::with_name("blank")
+                        .long("blank")
+                        .requires("build")
+                        .help(
+                            "Create completely new syntax and theme sets \
+                             (instead of appending to the default sets).",
+                        ),
+                ),
         )
-        .help_message("Print this help message.")
-        .version_message("Show version information.")
+    }
 }
