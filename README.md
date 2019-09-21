@@ -110,7 +110,7 @@ fd … -X bat
 With [`batgrep`](https://github.com/eth-p/bat-extras/blob/master/doc/batgrep.md), `bat` can be used as the printer for [`ripgrep`](https://github.com/BurntSushi/ripgrep) search results.
 
 ```bash
-batgrep Printer src/
+batgrep needle src/
 ```
 
 #### `tail -f`
