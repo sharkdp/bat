@@ -142,14 +142,20 @@ bat main.cpp | xclip
 
 #### `man`
 
-`bat` can be used as a pager for `man`. You can use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md), or like this in your shell:
+`bat` can be used as a colorizing pager for `man`, by setting the
+`MANPAGER` environment variable:
 
 ```bash
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
 
-The [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+It might also be necessary to set `MANROFFOPT="-c"` if you experience
+formatting problems.
+
+If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
+
+Note that the [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in this repository and still needs some work.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
