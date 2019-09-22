@@ -15,7 +15,7 @@ contexts:
       push: first_line
 
   first_line:
-    - match: '([A-Z0-9]+)(\()([^)]+)(\))'
+    - match: '([A-Z0-9_\-]+)(\()([^)]+)(\))'
       captures:
         1: meta.preprocessor
         2: keyword.operator
@@ -36,7 +36,7 @@ contexts:
     - match: '^\S.*$'
       scope: markup.heading
 
-    - match: '\b([a-z0-9_]+)(\()([^)]*)(\))'
+    - match: '\b([a-z0-9_\-]+)(\()([^)]*)(\))'
       captures:
         1: entity.name.function
         2: keyword.operator
