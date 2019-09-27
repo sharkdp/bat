@@ -3,6 +3,10 @@ set -euo pipefail
 
 ASSET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# Ensure submodules are initialized.
+git submodule init
+git submodule update
+
 # Always remove the local cache to avoid any confusion
 bat cache --clear
 
