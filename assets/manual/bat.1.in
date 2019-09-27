@@ -1,13 +1,13 @@
-.TH BAT "1"
+.TH {{PROJECT_EXECUTABLE | upcase}} "1"
 .SH NAME
-bat \- manual page for bat
+{{PROJECT_EXECUTABLE}} \- manual page for {{PROJECT_NAME}}
 .SH DESCRIPTION
-bat - a cat(1) clone with syntax highlighting and Git integration.
+{{PROJECT_EXECUTABLE}} - a cat(1) clone with syntax highlighting and Git integration.
 .SH "USAGE"
 .IP
-bat [OPTIONS] [FILE]...
+{{PROJECT_EXECUTABLE}} [OPTIONS] [FILE]...
 .IP
-bat <SUBCOMMAND>
+{{PROJECT_EXECUTABLE}} <SUBCOMMAND>
 .SH "OPTIONS"
 .HP
 General remarks

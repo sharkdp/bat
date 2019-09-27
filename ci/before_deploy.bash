@@ -34,7 +34,7 @@ pack() {
     "${gcc_prefix}"strip "$tempdir/$package_name/$PROJECT_NAME"
 
     # manpage, readme and license
-    cp "doc/$PROJECT_NAME.1" "$tempdir/$package_name"
+    cp "assets/manual/$PROJECT_NAME.1" "$tempdir/$package_name"
     cp README.md "$tempdir/$package_name"
     cp LICENSE-MIT "$tempdir/$package_name"
     cp LICENSE-APACHE "$tempdir/$package_name"
