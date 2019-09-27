@@ -54,10 +54,17 @@ fn template(
 
 fn main() -> Result<(), Box<dyn Error>> {
     let variables = init_template();
+
     template(
         &variables,
         "assets/manual/bat.1.in",
         &format!("assets/manual/{}.1", EXECUTABLE_NAME.to_owned()),
+    )?;
+
+    template(
+        &variables,
+        "assets/completions/bat.fish.in",
+        &format!("assets/completions/{}.fish", EXECUTABLE_NAME.to_owned()),
     )?;
 
     Ok(())
