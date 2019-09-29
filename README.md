@@ -256,6 +256,12 @@ You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
 brew install bat
 ```
 
+Or install `bat` with [MacPorts](https://ports.macports.org/port/bat/summary):
+
+```bash
+port install bat
+```
+
 ### On Windows
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
