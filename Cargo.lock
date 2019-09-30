@@ -125,7 +125,7 @@ dependencies = [
  "escargot 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid 0.18.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "shell-words 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "syntect 3.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -367,6 +367,11 @@ dependencies = [
  "redox_users 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "doc-comment"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "either"
@@ -687,17 +692,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "liquid"
-version = "0.18.2"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "deunicode 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "doc-comment 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-compiler 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-error 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-interpreter 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-value 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-compiler 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-derive 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-interpreter 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-value 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-segmentation 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -706,41 +713,55 @@ dependencies = [
 
 [[package]]
 name = "liquid-compiler"
-version = "0.18.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-error 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-interpreter 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-value 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-interpreter 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-value 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest 2.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest_derive 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
+name = "liquid-derive"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "liquid-compiler 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-interpreter 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-value 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-quote 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "liquid-error"
-version = "0.18.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "liquid-interpreter"
-version = "0.18.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "anymap 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-error 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-value 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-value 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "liquid-value"
-version = "0.18.1"
+version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid-error 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -946,6 +967,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "proc-macro-hack"
+version = "0.5.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro2 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "0.4.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -959,6 +990,28 @@ version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "proc-quote"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-quote-impl 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "proc-quote-impl"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1492,6 +1545,7 @@ dependencies = [
 "checksum digest 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f3d0c8c8752312f9713efd397ff63acb9f85585afbf179282e720e7704954dd5"
 "checksum dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "13aea89a5c93364a98e9b37b2fa237effbb694d5cfe01c5b70941f7eb087d5e3"
 "checksum dirs-sys 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "afa0b23de8fd801745c471deffa6e12d248f962c9fd4b4c33787b055599bde7b"
+"checksum doc-comment 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "923dea538cea0aa3025e8685b20d6ee21ef99c4f77e954a30febbaac5ec73a97"
 "checksum either 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "bb1f6b1ce1c140482ea30ddd3335fc0024ac7ee112895426e0a629a6c20adfe3"
 "checksum encode_unicode 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 "checksum encoding 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)" = "6b0d943856b990d12d3b55b359144ff341533e516d94098b1d3fc1ac666d36ec"
@@ -1531,11 +1585,12 @@ dependencies = [
 "checksum libz-sys 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)" = "2eb5e43362e38e2bca2fd5f5134c4d4564a23a5c28e9b95411652021a8675ebe"
 "checksum line-wrap 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f30344350a2a51da54c1d53be93fade8a237e545dbcc4bdbe635413f2117cab9"
 "checksum linked-hash-map 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "ae91b68aebc4ddb91978b11a1b02ddd8602a05ec19002801c5666000e05e0f83"
-"checksum liquid 0.18.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e1d91078b50038dba2539ec474656192a0c83b4802e999e5ee334bf198a8120c"
-"checksum liquid-compiler 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d6b581cfb0437adeb4628cceafed44441d0a4a5c858ab169ec932ba4b4fda815"
-"checksum liquid-error 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)" = "76119f2171687b188d7b953627ae924ca0556499b0bd20099ee5f2dea8e8969b"
-"checksum liquid-interpreter 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0cc07e0e8d8b87a34579e42644ac63e290989d4e0539b79993979163bb43ea7b"
-"checksum liquid-value 0.18.1 (registry+https://github.com/rust-lang/crates.io-index)" = "21caa8903eae7cd9f5918d85d99a06e2a21528fcf6e3da33a7b319d03b81d87c"
+"checksum liquid 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c7cf7f28965f50ff06e2e9f26162f6d944b71f976506a7a01a6308ddebd36155"
+"checksum liquid-compiler 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7cd195c00674a2dc811b07969358c97c0639db4a73bc61514db48609d110356f"
+"checksum liquid-derive 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5b0faadd0dd1a7cf38390316c36a9a741949462750f9833b794ac6d7de145218"
+"checksum liquid-error 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7d5c0851812322e87dcf67c2d7e520c3efd8651bd44eb8d0c0246e6dfb94d481"
+"checksum liquid-interpreter 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "998e0411b8cb6210bb0729ccbb15abd2a1c8ef7e318c97511ae5a741c817c63e"
+"checksum liquid-value 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e7606ac3743bff9929daff0d0f51f9177ab3ec74520f7f832b8ec595dd96efee"
 "checksum log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)" = "14b6052be84e6b71ab17edffc2eeabf5c2c3ae1fdb464aae35ac50c67a44e1f7"
 "checksum maplit 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 "checksum matches 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
@@ -1562,8 +1617,11 @@ dependencies = [
 "checksum predicates 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "53e09015b0d3f5a0ec2d4428f7559bb7b3fff341b4e159fedd1d57fac8b939ff"
 "checksum predicates-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "06075c3a3e92559ff8929e7a280684489ea27fe44805174c3ebd9328dcb37178"
 "checksum predicates-tree 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8e63c4859013b38a76eca2414c64911fba30def9e3202ac461a2d22831220124"
+"checksum proc-macro-hack 0.5.9 (registry+https://github.com/rust-lang/crates.io-index)" = "e688f31d92ffd7c1ddc57a1b4e6d773c0f2a14ee437a4b0a4f5a69c80eb221c8"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
 "checksum proc-macro2 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "175a40b9cf564ce9bf050654633dbf339978706b8ead1a907bb970b63185dd95"
+"checksum proc-quote 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "fa612543f23fda013e1e6ce30b5285a9d313c6e582e57b4ceca74eb5b85685b5"
+"checksum proc-quote-impl 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f785f0f8cd00b7945efc3f3bdf8205eb06af5aacec598d83e67f41dc8d101fda"
 "checksum quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9274b940887ce9addde99c4eee6b5c44cc494b182b97e73dc8ffdcb3397fd3f0"
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
