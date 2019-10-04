@@ -328,9 +328,6 @@ higher. You can then use `cargo` to build everything:
 cargo install bat
 ```
 
-You may have to install `cmake` and the `libz` development package
-(`libz-dev` or `libz-devel`) in order for the build to succeed.
-
 ## Customization
 
 ### Highlighting theme
