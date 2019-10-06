@@ -2,24 +2,7 @@
 #![recursion_limit = "1024"]
 
 #[macro_use]
-extern crate error_chain;
-
-#[macro_use]
 extern crate clap;
-
-#[macro_use]
-extern crate lazy_static;
-
-extern crate ansi_term;
-extern crate atty;
-extern crate console;
-extern crate content_inspector;
-extern crate dirs as dirs_rs;
-extern crate encoding;
-extern crate git2;
-extern crate shell_words;
-extern crate syntect;
-extern crate wild;
 
 mod app;
 mod clap_app;
