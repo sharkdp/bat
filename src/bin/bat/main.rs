@@ -21,17 +21,14 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::{
-    app::{App, Config},
-    config::config_file,
-    controller::Controller,
-};
+use crate::{app::App, config::config_file, controller::Controller};
 
 use bat::{
     assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
     errors::*,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
+    Config,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {

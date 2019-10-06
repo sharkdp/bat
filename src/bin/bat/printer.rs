@@ -16,9 +16,8 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
-use crate::{
-    app::Config,
-    decorations::{Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration},
+use crate::decorations::{
+    Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
 };
 
 use bat::{
@@ -30,6 +29,7 @@ use bat::{
     preprocessor::{expand_tabs, replace_nonprintable},
     style::OutputWrap,
     terminal::{as_terminal_escaped, to_ansi_color},
+    Config,
 };
 
 pub trait Printer {
