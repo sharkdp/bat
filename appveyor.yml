@@ -20,7 +20,7 @@ test_script:
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --release --verbose
+  - cargo build --bins --release --verbose
   - ps: ci\before_deploy.ps1
 
 deploy:
