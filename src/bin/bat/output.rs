@@ -7,7 +7,7 @@ use std::process::{Child, Command, Stdio};
 use shell_words;
 
 use crate::app::PagingMode;
-use crate::errors::*;
+use bat::errors::*;
 
 pub enum OutputType {
     Pager(Child),
