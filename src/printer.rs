@@ -16,21 +16,18 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
+use crate::Config;
+use crate::assets::HighlightingAssets;
 use crate::decorations::{
     Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
 };
-
-use bat::{
-    assets::HighlightingAssets,
-    diff::get_git_diff,
-    diff::LineChanges,
-    errors::*,
-    inputfile::{InputFile, InputFileReader},
-    preprocessor::{expand_tabs, replace_nonprintable},
-    style::OutputWrap,
-    terminal::{as_terminal_escaped, to_ansi_color},
-    Config,
-};
+use crate::diff::get_git_diff;
+use crate::diff::LineChanges;
+use crate::errors::*;
+use crate::inputfile::{InputFile, InputFileReader};
+use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::style::OutputWrap;
+use crate::terminal::{as_terminal_escaped, to_ansi_color};
 
 pub trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;

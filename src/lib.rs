@@ -19,11 +19,15 @@ extern crate syntect;
 extern crate wild;
 
 pub mod assets;
+pub mod controller;
+pub mod decorations;
 pub mod diff;
 pub mod dirs;
 pub mod inputfile;
 pub mod line_range;
+pub mod output;
 pub mod preprocessor;
+pub mod printer;
 pub mod style;
 pub mod syntax_mapping;
 pub mod terminal;

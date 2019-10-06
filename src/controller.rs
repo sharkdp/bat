@@ -1,18 +1,13 @@
 use std::io::{self, Write};
 use std::path::Path;
 
-use crate::{
-    output::OutputType,
-    printer::{InteractivePrinter, Printer, SimplePrinter},
-};
-
-use bat::{
-    assets::HighlightingAssets,
-    errors::*,
-    inputfile::{InputFile, InputFileReader},
-    line_range::{LineRanges, RangeCheckResult},
-    Config, PagingMode,
-};
+use crate::{Config, PagingMode};
+use crate::assets::HighlightingAssets;
+use crate::errors::*;
+use crate::inputfile::{InputFile, InputFileReader};
+use crate::line_range::{LineRanges, RangeCheckResult};
+use crate::output::OutputType;
+use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,

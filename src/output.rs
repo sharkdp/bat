@@ -6,7 +6,8 @@ use std::process::{Child, Command, Stdio};
 
 use shell_words;
 
-use bat::{errors::*, PagingMode};
+use crate::PagingMode;
+use crate::errors::*;
 
 pub enum OutputType {
     Pager(Child),
