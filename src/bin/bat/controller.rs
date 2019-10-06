@@ -2,7 +2,6 @@ use std::io::{self, Write};
 use std::path::Path;
 
 use crate::{
-    app::{Config, PagingMode},
     output::OutputType,
     printer::{InteractivePrinter, Printer, SimplePrinter},
 };
@@ -12,6 +11,7 @@ use bat::{
     errors::*,
     inputfile::{InputFile, InputFileReader},
     line_range::{LineRanges, RangeCheckResult},
+    Config, PagingMode,
 };
 
 pub struct Controller<'a> {
