@@ -1,4 +1,4 @@
-use crate::diff::LineChange;
+use bat::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
 use ansi_term::Style;
 

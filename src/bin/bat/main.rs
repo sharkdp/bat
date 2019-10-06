@@ -22,22 +22,11 @@ extern crate syntect;
 extern crate wild;
 
 mod app;
-mod assets;
 mod clap_app;
-mod config;
 mod controller;
 mod decorations;
-mod diff;
-mod dirs;
-mod inputfile;
-mod line_range;
 mod output;
-mod preprocessor;
 mod printer;
-mod style;
-mod syntax_mapping;
-mod terminal;
-mod util;
 
 use std::collections::HashSet;
 use std::io;
@@ -48,39 +37,18 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::app::{App, Config};
-use crate::assets::{cache_dir, clear_assets, config_dir, HighlightingAssets};
-use crate::config::config_file;
-use crate::controller::Controller;
-use crate::inputfile::InputFile;
-use crate::style::{OutputComponent, OutputComponents};
+use crate::{
+    app::{App, Config},
+    controller::Controller,
+};
 
-mod errors {
-    error_chain! {
-        foreign_links {
-            Clap(::clap::Error);
-            Io(::std::io::Error);
-            SyntectError(::syntect::LoadingError);
-            ParseIntError(::std::num::ParseIntError);
-        }
-    }
-
-    pub fn handle_error(error: &Error) {
-        match error {
-            Error(ErrorKind::Io(ref io_error), _)
-                if io_error.kind() == super::io::ErrorKind::BrokenPipe =>
-            {
-                super::process::exit(0);
-            }
-            _ => {
-                use ansi_term::Colour::Red;
-                eprintln!("{}: {}", Red.paint("[bat error]"), error);
-            }
-        };
-    }
-}
-
-use crate::errors::*;
+use bat::{
+    assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
+    config::config_file,
+    errors::*,
+    inputfile::InputFile,
+    style::{OutputComponent, OutputComponents},
+};
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {

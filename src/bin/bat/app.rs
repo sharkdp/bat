@@ -13,14 +13,16 @@ use console::Term;
 #[cfg(windows)]
 use ansi_term;
 
-use crate::assets::BAT_THEME_DEFAULT;
-use crate::config::{get_args_from_config_file, get_args_from_env_var};
-use crate::errors::*;
-use crate::inputfile::InputFile;
-use crate::line_range::{LineRange, LineRanges};
-use crate::style::{OutputComponent, OutputComponents, OutputWrap};
-use crate::syntax_mapping::SyntaxMapping;
-use crate::util::transpose;
+use bat::{
+    assets::BAT_THEME_DEFAULT,
+    config::{get_args_from_config_file, get_args_from_env_var},
+    errors::*,
+    inputfile::InputFile,
+    line_range::{LineRange, LineRanges},
+    style::{OutputComponent, OutputComponents, OutputWrap},
+    syntax_mapping::SyntaxMapping,
+    util::transpose,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
