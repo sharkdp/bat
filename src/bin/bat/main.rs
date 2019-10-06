@@ -6,6 +6,7 @@ extern crate clap;
 
 mod app;
 mod clap_app;
+mod config;
 mod controller;
 mod decorations;
 mod output;
@@ -22,12 +23,12 @@ use ansi_term::Style;
 
 use crate::{
     app::{App, Config},
+    config::config_file,
     controller::Controller,
 };
 
 use bat::{
     assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
-    config::config_file,
     errors::*,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},

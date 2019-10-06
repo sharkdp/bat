@@ -4,7 +4,10 @@ use std::str::FromStr;
 
 use atty::{self, Stream};
 
-use crate::clap_app;
+use crate::{
+    clap_app,
+    config::{get_args_from_config_file, get_args_from_env_var},
+};
 use clap::ArgMatches;
 use wild;
 
@@ -15,7 +18,6 @@ use ansi_term;
 
 use bat::{
     assets::BAT_THEME_DEFAULT,
-    config::{get_args_from_config_file, get_args_from_env_var},
     errors::*,
     inputfile::InputFile,
     line_range::{LineRange, LineRanges},
