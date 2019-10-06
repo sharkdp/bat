@@ -571,7 +571,7 @@ git clone --recursive https://github.com/sharkdp/bat
 
 # Build (debug version)
 cd bat
-cargo build
+cargo build --bins
 
 # Run unit tests and integration tests
 cargo test
