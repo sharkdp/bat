@@ -19,7 +19,6 @@ extern crate syntect;
 extern crate wild;
 
 pub mod assets;
-pub mod config;
 pub mod diff;
 pub mod dirs;
 pub mod inputfile;
