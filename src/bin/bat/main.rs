@@ -7,10 +7,6 @@ extern crate clap;
 mod app;
 mod clap_app;
 mod config;
-mod controller;
-mod decorations;
-mod output;
-mod printer;
 
 use std::collections::HashSet;
 use std::io;
@@ -21,7 +17,8 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::{app::App, config::config_file, controller::Controller};
+use crate::{app::App, config::config_file};
+use bat::controller::Controller;
 
 use bat::{
     assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
