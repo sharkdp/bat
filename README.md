@@ -549,6 +549,18 @@ are supported (and fall back to 8-bit colors).
 Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
 `OneHalfLight` themes provide grid and line colors that are brighter.
 
+### File encodings
+
+`bat` natively supports UTF-8 as well as UTF-16. For every other file encoding, you may need to
+convert to UTF-8 first because the encodings can typically not be auto-detected. You can `iconv`
+to do so.
+Example: if you have a PHP file in Latin-1 (ISO-8859-1) encoding, you can call:
+``` bash
+iconv -f ISO-8859-1 -t UTF-8 my-file.php | bat
+```
+Note: you might have to use the `-l`/`--language` option if the syntax can not be auto-detected
+by `bat`.
+
 ## Development
 
 ```bash
