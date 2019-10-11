@@ -160,3 +160,6 @@
 	path = assets/syntaxes/SLS
 	url = https://github.com/saltstack/sublime-text
 	branch = master
+[submodule "assets/themes/dracula-sublime"]
+	path = assets/themes/dracula-sublime
+	url = https://github.com/dracula/sublime.git
