@@ -23,7 +23,7 @@ pub enum OutputWrap {
 
 impl Default for OutputWrap {
     fn default() -> Self {
-        Self::None
+        OutputWrap::None
     }
 }
 

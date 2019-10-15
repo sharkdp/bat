@@ -67,7 +67,7 @@ pub enum PagingMode {
 
 impl Default for PagingMode {
     fn default() -> Self {
-        Self::Never
+        PagingMode::Never
     }
 }
 
