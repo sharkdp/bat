@@ -8,7 +8,7 @@ use shell_words;
 use crate::dirs::PROJECT_DIRS;
 use crate::util::transpose;
 
-pub fn config_file() -> PathBuf {
+pub fn default_config_path() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
         .ok()
         .map(PathBuf::from)
@@ -17,8 +17,22 @@ pub fn config_file() -> PathBuf {
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
+    let mut config_file_path = vec![PathBuf::from("/etc/bat/config")];
+    config_file_path.push(default_config_path());
+
+    let mut config_args = vec![];
+
+    for path in config_file_path.iter() {
+        let args = read_args_from_config_file(path.to_path_buf());
+        config_args.append(&mut args.unwrap());
+    }
+
+    Ok(config_args)
+}
+
+fn read_args_from_config_file(config_file_path: PathBuf) -> Result<Vec<OsString>, shell_words::ParseError> {
     Ok(transpose(
-        fs::read_to_string(config_file())
+        fs::read_to_string(config_file_path)
             .ok()
             .map(|content| get_args_from_str(&content)),
     )?
