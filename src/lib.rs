@@ -65,12 +65,18 @@ pub enum PagingMode {
     Never,
 }
 
+impl Default for PagingMode {
+    fn default() -> Self {
+        Self::Never
+    }
+}
+
 use inputfile::InputFile;
 use line_range::LineRanges;
 use style::{OutputComponents, OutputWrap};
 use syntax_mapping::SyntaxMapping;
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Config<'a> {
     /// List of files to print
     pub files: Vec<InputFile<'a>>,
