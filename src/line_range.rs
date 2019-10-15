@@ -89,7 +89,7 @@ pub enum RangeCheckResult {
     AfterLastRange,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct LineRanges {
     ranges: Vec<LineRange>,
     largest_upper_bound: usize,
