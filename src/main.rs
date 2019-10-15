@@ -50,7 +50,7 @@ use ansi_term::Style;
 
 use crate::app::{App, Config};
 use crate::assets::{cache_dir, clear_assets, config_dir, HighlightingAssets};
-use crate::config::config_file;
+use crate::config::default_config_path;
 use crate::controller::Controller;
 use crate::inputfile::InputFile;
 use crate::style::{OutputComponent, OutputComponents};
@@ -231,7 +231,7 @@ fn run() -> Result<bool> {
 
                 Ok(true)
             } else if app.matches.is_present("config-file") {
-                println!("{}", config_file().to_string_lossy());
+                println!("{}", default_config_path().to_string_lossy());
 
                 Ok(true)
             } else if app.matches.is_present("config-dir") {
