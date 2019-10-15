@@ -9,6 +9,7 @@ use shell_words;
 use crate::errors::*;
 use crate::PagingMode;
 
+#[derive(Debug)]
 pub enum OutputType {
     Pager(Child),
     Stdout(io::Stdout),

@@ -16,6 +16,7 @@ use crate::syntax_mapping::SyntaxMapping;
 
 pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
+#[derive(Debug)]
 pub struct HighlightingAssets {
     pub syntax_set: SyntaxSet,
     pub theme_set: ThemeSet,

@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct LineRange {
     pub lower: usize,
     pub upper: usize,
@@ -89,7 +89,7 @@ pub enum RangeCheckResult {
     AfterLastRange,
 }
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct LineRanges {
     ranges: Vec<LineRange>,
     largest_upper_bound: usize,
