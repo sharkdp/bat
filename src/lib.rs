@@ -76,7 +76,7 @@ use line_range::LineRanges;
 use style::{OutputComponents, OutputWrap};
 use syntax_mapping::SyntaxMapping;
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Config<'a> {
     /// List of files to print
     pub files: Vec<InputFile<'a>>,

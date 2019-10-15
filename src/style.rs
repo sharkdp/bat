@@ -72,7 +72,7 @@ impl FromStr for OutputComponent {
     }
 }
 
-#[derive(Clone, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct OutputComponents(pub HashSet<OutputComponent>);
 
 impl OutputComponents {

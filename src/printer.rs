@@ -567,7 +567,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
 const DEFAULT_GUTTER_COLOR: u8 = 238;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Colors {
     pub grid: Style,
     pub filename: Style,
