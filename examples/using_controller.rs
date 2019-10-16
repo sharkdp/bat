@@ -19,7 +19,6 @@ fn main() {
     let mut add_file = |file: &'static str| config.files.push(InputFile::Ordinary(file));
 
     add_file("Cargo.toml");
-    // add_file("build.rs");
 
     let print = || Controller::new(&config, &assets).run();
     print().expect("no error");
