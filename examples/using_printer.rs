@@ -26,7 +26,6 @@ fn main() -> bat::errors::Result<()> {
     };
     let mut add_file = |file: &'static str| config.files.push(InputFile::Ordinary(file));
 
-    // add_file("Cargo.toml");
     add_file("build.rs");
 
     let mut output_type = OutputType::from_mode(config.paging_mode, config.pager)?;
