@@ -43,13 +43,14 @@ matrix:
       rust: 1.35.0
       env: TARGET=x86_64-apple-darwin
 
-    # Code formatting check
-    - os: linux
-      rust: nightly
-      # skip the global install step
-      install:
-        - cargo install --debug --force rustfmt-nightly
-      script: cargo fmt -- --check
+    # Disable nightly for now
+    # # Code formatting check
+    # - os: linux
+    #   rust: nightly
+    #   # skip the global install step
+    #   install:
+    #     - cargo install --debug --force rustfmt-nightly
+    #   script: cargo fmt -- --check
 
 sudo: required
 
