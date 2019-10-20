@@ -76,6 +76,10 @@ impl FromStr for OutputComponent {
 pub struct OutputComponents(pub HashSet<OutputComponent>);
 
 impl OutputComponents {
+    pub fn new(components: &[OutputComponent]) -> OutputComponents {
+        OutputComponents(components.iter().cloned().collect())
+    }
+
     pub fn changes(&self) -> bool {
         self.0.contains(&OutputComponent::Changes)
     }
