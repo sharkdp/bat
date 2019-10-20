@@ -31,7 +31,6 @@ pub mod printer;
 pub mod style;
 pub mod syntax_mapping;
 pub mod terminal;
-pub mod util;
 
 pub mod errors {
     error_chain! {

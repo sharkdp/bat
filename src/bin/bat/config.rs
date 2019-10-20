@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use shell_words;
 
-use bat::{dirs::PROJECT_DIRS, util::transpose};
+use bat::dirs::PROJECT_DIRS;
 
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
@@ -16,12 +16,11 @@ pub fn config_file() -> PathBuf {
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    Ok(transpose(
-        fs::read_to_string(config_file())
-            .ok()
-            .map(|content| get_args_from_str(&content)),
-    )?
-    .unwrap_or_else(|| vec![]))
+    Ok(fs::read_to_string(config_file())
+        .ok()
+        .map(|content| get_args_from_str(&content))
+        .transpose()?
+        .unwrap_or_else(|| vec![]))
 }
 
 pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {

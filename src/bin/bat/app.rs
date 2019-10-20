@@ -23,7 +23,6 @@ use bat::{
     line_range::{LineRange, LineRanges},
     style::{OutputComponent, OutputComponents, OutputWrap},
     syntax_mapping::SyntaxMapping,
-    util::transpose,
     Config, PagingMode,
 };
 
@@ -198,12 +197,11 @@ impl App {
                 .or_else(|| env::var("BAT_THEME").ok())
                 .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
             line_ranges: LineRanges::from(
-                transpose(
-                    self.matches
-                        .values_of("line-range")
-                        .map(|vs| vs.map(LineRange::from).collect()),
-                )?
-                .unwrap_or_else(|| vec![]),
+                self.matches
+                    .values_of("line-range")
+                    .map(|vs| vs.map(LineRange::from).collect())
+                    .transpose()?
+                    .unwrap_or_else(|| vec![]),
             ),
             output_components,
             syntax_mapping,
@@ -247,13 +245,15 @@ impl App {
             } else if matches.is_present("plain") {
                 [OutputComponent::Plain].iter().cloned().collect()
             } else {
-                let env_style_components: Option<Vec<OutputComponent>> =
-                    transpose(env::var("BAT_STYLE").ok().map(|style_str| {
+                let env_style_components: Option<Vec<OutputComponent>> = env::var("BAT_STYLE")
+                    .ok()
+                    .map(|style_str| {
                         style_str
                             .split(',')
                             .map(|x| OutputComponent::from_str(&x))
                             .collect::<Result<Vec<OutputComponent>>>()
-                    }))?;
+                    })
+                    .transpose()?;
 
                 matches
                     .value_of("style")
