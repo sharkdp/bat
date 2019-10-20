@@ -8,25 +8,25 @@ use bat::{
     style::{OutputComponent, OutputComponents},
     Config,
 };
+use console::Term;
 use std::{collections::HashSet, io};
 
 fn main() -> bat::errors::Result<()> {
-    let assets = HighlightingAssets::new();
-    let mut config = Config {
-        term_width: 14, // must be greater than 13 to enable style=numbers
+    let config = Config {
+        term_width: Term::stdout().size().1 as usize,
         colored_output: true,
         true_color: true,
+        theme: "1337".into(),
         line_ranges: LineRanges::from(vec![
             LineRange::from("5:7")?,
             LineRange::from("92:97")?,
             LineRange::from("15:17")?,
         ]),
         output_components: OutputComponents(with_full_decorations()),
+        files: vec![InputFile::Ordinary("build.rs")],
         ..Default::default()
     };
-    let mut add_file = |file: &'static str| config.files.push(InputFile::Ordinary(file));
-
-    add_file("build.rs");
+    let assets = HighlightingAssets::new();
 
     let mut output_type = OutputType::from_mode(config.paging_mode, config.pager)?;
     let writer = output_type.handle()?;
