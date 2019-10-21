@@ -17,7 +17,7 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::{app::App, config::config_file};
+use crate::{app::App, config::default_config_path};
 use bat::controller::Controller;
 
 use bat::{
