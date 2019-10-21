@@ -1,0 +1,22 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: fstab
+file_extensions:
+  - fstab
+scope: source.fstab
+
+contexts:
+  main:
+    - match: '^\s*\#.*'
+      scope: comment.line.number-sign
+    - match: ^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(0|1)\s+(0|1|2)\s*$
+      captures:
+        1: entity.name.device.fstab
+        2: entity.name.mountpoint.fstab
+        3: entity.name.type.fstab
+        4: entity.name.options.fstab
+        5: constant.numeric.dump.fstab
+        6: constant.numeric.pass.fstab
+    - match: '^.*$'
+      scope: invalid.illegal.fstab
