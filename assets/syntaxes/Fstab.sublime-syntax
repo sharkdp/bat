@@ -10,6 +10,7 @@ contexts:
   main:
     - match: '^\s*\#.*'
       scope: comment.line.number-sign
+      comment: just a comment line
     - match: ^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(0|1)\s+(0|1|2)\s*$
       captures:
         1: entity.name.device.fstab
@@ -18,5 +19,7 @@ contexts:
         4: entity.name.options.fstab
         5: constant.numeric.dump.fstab
         6: constant.numeric.pass.fstab
+      comment: a valid fstab line with 6 space-separated token groups
     - match: '^.*$'
       scope: invalid.illegal.fstab
+      comment: everything else, probably an error
