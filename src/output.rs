@@ -6,9 +6,10 @@ use std::process::{Child, Command, Stdio};
 
 use shell_words;
 
-use crate::app::PagingMode;
 use crate::errors::*;
+use crate::PagingMode;
 
+#[derive(Debug)]
 pub enum OutputType {
     Pager(Child),
     Stdout(io::Stdout),

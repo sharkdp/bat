@@ -328,6 +328,8 @@ higher. You can then use `cargo` to build everything:
 cargo install bat
 ```
 
+On some platforms, you might need to install `llvm` and/or `libclang-dev`.
+
 ## Customization
 
 ### Highlighting theme
@@ -569,7 +571,7 @@ git clone --recursive https://github.com/sharkdp/bat
 
 # Build (debug version)
 cd bat
-cargo build
+cargo build --bins
 
 # Run unit tests and integration tests
 cargo test

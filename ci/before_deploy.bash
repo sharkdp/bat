@@ -8,7 +8,7 @@ if [[ -z "$PROJECT_NAME" ]]; then
 fi
 
 build() {
-    cargo build --target "$TARGET" --release --verbose
+    cargo build --bins --target "$TARGET" --release --verbose
 }
 
 pack() {

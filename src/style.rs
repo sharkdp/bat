@@ -21,6 +21,12 @@ pub enum OutputWrap {
     None,
 }
 
+impl Default for OutputWrap {
+    fn default() -> Self {
+        OutputWrap::None
+    }
+}
+
 impl OutputComponent {
     pub fn components(self, interactive_terminal: bool) -> &'static [OutputComponent] {
         match self {
@@ -66,7 +72,7 @@ impl FromStr for OutputComponent {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct OutputComponents(pub HashSet<OutputComponent>);
 
 impl OutputComponents {

@@ -16,7 +16,6 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
-use crate::app::Config;
 use crate::assets::HighlightingAssets;
 use crate::decorations::{
     Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
@@ -28,6 +27,7 @@ use crate::inputfile::{InputFile, InputFileReader};
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
+use crate::Config;
 
 pub trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;
@@ -567,7 +567,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
 const DEFAULT_GUTTER_COLOR: u8 = 238;
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Colors {
     pub grid: Style,
     pub filename: Style,

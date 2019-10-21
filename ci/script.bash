@@ -10,5 +10,5 @@ if [[ $TARGET != arm-unknown-linux-gnueabihf ]] && [[ $TARGET != aarch64-unknown
     cargo test --target "$TARGET" --verbose
 
     # Run 'bat' on its own source code and the README
-    cargo run --target "$TARGET" -- src/main.rs README.md --paging=never
+    cargo run --target "$TARGET" -- src/bin/bat/main.rs README.md --paging=never
 fi
