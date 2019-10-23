@@ -35,103 +35,16 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .empty_values(false),
         )
         .arg(
-            Arg::with_name("language")
-                .short("l")
-                .long("language")
-                .overrides_with("language")
-                .help("Set the language for syntax highlighting.")
+            Arg::with_name("show-all")
+                .long("show-all")
+                .alias("show-nonprintable")
+                .short("A")
+                .conflicts_with("language")
+                .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
-                    "Explicitly set the language for syntax highlighting. The language can be \
-                     specified as a name (like 'C++' or 'LaTeX') or possible file extension \
-                     (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
-                     language names and file extensions.",
-                )
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("list-languages")
-                .long("list-languages")
-                .short("L")
-                .conflicts_with("list-themes")
-                .help("Display all supported languages.")
-                .long_help("Display a list of supported languages for syntax highlighting."),
-        )
-        .arg(
-            Arg::with_name("map-syntax")
-                .short("m")
-                .long("map-syntax")
-                .multiple(true)
-                .takes_value(true)
-                .number_of_values(1)
-                .value_name("from:to")
-                .help("Map a file extension or name to an existing syntax.")
-                .long_help(
-                    "Map a file extension or file name to an existing syntax. For example, \
-                     to highlight *.conf files with the INI syntax, use '-m conf:ini'. \
-                     To highlight files named '.myignore' with the Git Ignore syntax, use \
-                     '-m .myignore:gitignore'.",
-                )
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("theme")
-                .long("theme")
-                .overrides_with("theme")
-                .takes_value(true)
-                .help("Set the color theme for syntax highlighting.")
-                .long_help(
-                    "Set the theme for syntax highlighting. Use '--list-themes' to \
-                     see all available themes. To set a default theme, add the \
-                     '--theme=\"...\"' option to the configuration file or export the \
-                     BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"...\").",
-                ),
-        )
-        .arg(
-            Arg::with_name("list-themes")
-                .long("list-themes")
-                .help("Display all supported highlighting themes.")
-                .long_help("Display a list of supported themes for syntax highlighting."),
-        )
-        .arg(
-            Arg::with_name("style")
-                .long("style")
-                .value_name("style-components")
-                // Need to turn this off for overrides_with to work as we want. See the bottom most
-                // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
-                .use_delimiter(false)
-                .takes_value(true)
-                .overrides_with("style")
-                .overrides_with("plain")
-                .overrides_with("number")
-                // Cannot use clap's built in validation because we have to turn off clap's delimiters
-                .validator(|val| {
-                    let mut invalid_vals = val.split(',').filter(|style| {
-                        !&[
-                            "auto", "full", "plain", "changes", "header", "grid", "numbers", "snip"
-                        ]
-                        .contains(style)
-                    });
-
-                    if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{}'", invalid))
-                    } else {
-                        Ok(())
-                    }
-                })
-                .help(
-                    "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, numbers, snip).",
-                )
-                .long_help(
-                    "Configure which elements (line numbers, file headers, grid \
-                     borders, Git modifications, ..) to display in addition to the \
-                     file contents. The argument is a comma-separated list of \
-                     components to display (e.g. 'numbers,changes,grid') or a \
-                     pre-defined style ('full'). To set a default style, add the \
-                     '--style=\"..\"' option to the configuration file or export the \
-                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
-                     Possible values: *auto*, full, plain, changes, header, grid, numbers, snip.",
+                    "Show non-printable characters like space, tab or newline. \
+                     This option can also be used to print binary files. \
+                     Use '--tabs' to control the width of the tab-placeholders."
                 ),
         )
         .arg(
@@ -149,45 +62,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("number")
-                .long("number")
-                .overrides_with("number")
-                .short("n")
-                .help("Show line numbers (alias for '--style=numbers').")
+            Arg::with_name("language")
+                .short("l")
+                .long("language")
+                .overrides_with("language")
+                .help("Set the language for syntax highlighting.")
                 .long_help(
-                    "Only show line numbers, no other decorations. This is an alias for \
-                     '--style=numbers'",
-                ),
-        )
-        .arg(
-            Arg::with_name("show-all")
-                .long("show-all")
-                .alias("show-nonprintable")
-                .short("A")
-                .conflicts_with("language")
-                .help("Show non-printable characters (space, tab, newline, ..).")
-                .long_help(
-                    "Show non-printable characters like space, tab or newline. \
-                     This option can also be used to print binary files. \
-                     Use '--tabs' to control the width of the tab-placeholders."
-                ),
-        )
-        .arg(
-            Arg::with_name("line-range")
-                .long("line-range")
-                .short("r")
-                .multiple(true)
-                .takes_value(true)
-                .number_of_values(1)
-                .value_name("N:M")
-                .help("Only print the lines from N to M.")
-                .long_help(
-                    "Only print the specified range of lines for each file. \
-                     For example:\n  \
-                     '--line-range 30:40' prints lines 30 to 40\n  \
-                     '--line-range :40' prints lines 1 to 40\n  \
-                     '--line-range 40:' prints lines 40 to the end of the file",
-                ),
+                    "Explicitly set the language for syntax highlighting. The language can be \
+                     specified as a name (like 'C++' or 'LaTeX') or possible file extension \
+                     (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
+                     language names and file extensions.",
+                )
+                .takes_value(true),
         )
         .arg(
             Arg::with_name("highlight-line")
@@ -200,6 +86,76 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Highlight the given line.")
                 .long_help(
                     "Highlight the N-th line with a different background color",
+                ),
+        )
+        .arg(
+            Arg::with_name("tabs")
+                .long("tabs")
+                .overrides_with("tabs")
+                .takes_value(true)
+                .value_name("T")
+                .validator(
+                    |t| {
+                        t.parse::<u32>()
+                            .map_err(|_t| "must be a number")
+                            .map(|_t| ()) // Convert to Result<(), &str>
+                            .map_err(|e| e.to_string())
+                    }, // Convert to Result<(), String>
+                )
+                .help("Set the tab width to T spaces.")
+                .long_help(
+                    "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
+                     directly",
+                ),
+        )
+        .arg(
+            Arg::with_name("wrap")
+                .long("wrap")
+                .overrides_with("wrap")
+                .takes_value(true)
+                .value_name("mode")
+                .possible_values(&["auto", "never", "character"])
+                .default_value("auto")
+                .hide_default_value(true)
+                .help("Specify the text-wrapping mode (*auto*, never, character).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+                           The '--terminal-width' option can be used in addition to \
+                           control the output width."),
+        )
+        .arg(
+            Arg::with_name("terminal-width")
+                .long("terminal-width")
+                .takes_value(true)
+                .value_name("width")
+                .hidden_short_help(true)
+                .allow_hyphen_values(true)
+                .validator(
+                    |t| {
+                        let is_offset = t.starts_with('+') || t.starts_with('-');
+                        t.parse::<i32>()
+                            .map_err(|_e| "must be an offset or number")
+                            .and_then(|v| if v == 0 && !is_offset {
+                                Err("terminal width cannot be zero".into())
+                            } else {
+                                Ok(())
+                            })
+                            .map_err(|e| e.to_string())
+                    })
+                .help(
+                    "Explicitly set the width of the terminal instead of determining it \
+                     automatically. If prefixed with '+' or '-', the value will be treated \
+                     as an offset to the actual terminal width. See also: '--wrap'.",
+                ),
+        )
+        .arg(
+            Arg::with_name("number")
+                .long("number")
+                .overrides_with("number")
+                .short("n")
+                .help("Show line numbers (alias for '--style=numbers').")
+                .long_help(
+                    "Only show line numbers, no other decorations. This is an alias for \
+                     '--style=numbers'",
                 ),
         )
         .arg(
@@ -281,38 +237,107 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("wrap")
-                .long("wrap")
-                .overrides_with("wrap")
+            Arg::with_name("map-syntax")
+                .short("m")
+                .long("map-syntax")
+                .multiple(true)
                 .takes_value(true)
-                .value_name("mode")
-                .possible_values(&["auto", "never", "character"])
-                .default_value("auto")
-                .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
-                           The '--terminal-width' option can be used in addition to \
-                           control the output width."),
+                .number_of_values(1)
+                .value_name("from:to")
+                .help("Map a file extension or name to an existing syntax.")
+                .long_help(
+                    "Map a file extension or file name to an existing syntax. For example, \
+                     to highlight *.conf files with the INI syntax, use '-m conf:ini'. \
+                     To highlight files named '.myignore' with the Git Ignore syntax, use \
+                     '-m .myignore:gitignore'.",
+                )
+                .takes_value(true),
         )
         .arg(
-            Arg::with_name("tabs")
-                .long("tabs")
-                .overrides_with("tabs")
+            Arg::with_name("theme")
+                .long("theme")
+                .overrides_with("theme")
                 .takes_value(true)
-                .value_name("T")
-                .validator(
-                    |t| {
-                        t.parse::<u32>()
-                            .map_err(|_t| "must be a number")
-                            .map(|_t| ()) // Convert to Result<(), &str>
-                            .map_err(|e| e.to_string())
-                    }, // Convert to Result<(), String>
-                )
-                .help("Set the tab width to T spaces.")
+                .help("Set the color theme for syntax highlighting.")
                 .long_help(
-                    "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
-                     directly",
+                    "Set the theme for syntax highlighting. Use '--list-themes' to \
+                     see all available themes. To set a default theme, add the \
+                     '--theme=\"...\"' option to the configuration file or export the \
+                     BAT_THEME environment variable (e.g.: export \
+                     BAT_THEME=\"...\").",
                 ),
+        )
+        .arg(
+            Arg::with_name("list-themes")
+                .long("list-themes")
+                .help("Display all supported highlighting themes.")
+                .long_help("Display a list of supported themes for syntax highlighting."),
+        )
+        .arg(
+            Arg::with_name("style")
+                .long("style")
+                .value_name("style-components")
+                // Need to turn this off for overrides_with to work as we want. See the bottom most
+                // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
+                .use_delimiter(false)
+                .takes_value(true)
+                .overrides_with("style")
+                .overrides_with("plain")
+                .overrides_with("number")
+                // Cannot use clap's built in validation because we have to turn off clap's delimiters
+                .validator(|val| {
+                    let mut invalid_vals = val.split(',').filter(|style| {
+                        !&[
+                            "auto", "full", "plain", "changes", "header", "grid", "numbers", "snip"
+                        ]
+                            .contains(style)
+                    });
+
+                    if let Some(invalid) = invalid_vals.next() {
+                        Err(format!("Unknown style, '{}'", invalid))
+                    } else {
+                        Ok(())
+                    }
+                })
+                .help(
+                    "Comma-separated list of style elements to display \
+                     (*auto*, full, plain, changes, header, grid, numbers, snip).",
+                )
+                .long_help(
+                    "Configure which elements (line numbers, file headers, grid \
+                     borders, Git modifications, ..) to display in addition to the \
+                     file contents. The argument is a comma-separated list of \
+                     components to display (e.g. 'numbers,changes,grid') or a \
+                     pre-defined style ('full'). To set a default style, add the \
+                     '--style=\"..\"' option to the configuration file or export the \
+                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
+                     Possible values: *auto*, full, plain, changes, header, grid, numbers, snip.",
+                ),
+        )
+        .arg(
+            Arg::with_name("line-range")
+                .long("line-range")
+                .short("r")
+                .multiple(true)
+                .takes_value(true)
+                .number_of_values(1)
+                .value_name("N:M")
+                .help("Only print the lines from N to M.")
+                .long_help(
+                    "Only print the specified range of lines for each file. \
+                     For example:\n  \
+                     '--line-range 30:40' prints lines 30 to 40\n  \
+                     '--line-range :40' prints lines 1 to 40\n  \
+                     '--line-range 40:' prints lines 40 to the end of the file",
+                ),
+        )
+        .arg(
+            Arg::with_name("list-languages")
+                .long("list-languages")
+                .short("L")
+                .conflicts_with("list-themes")
+                .help("Display all supported languages.")
+                .long_help("Display a list of supported languages for syntax highlighting."),
         )
         .arg(
             Arg::with_name("unbuffered")
@@ -323,31 +348,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                     "This option exists for POSIX-compliance reasons ('u' is for \
                      'unbuffered'). The output is always unbuffered - this option \
                      is simply ignored.",
-                ),
-        )
-        .arg(
-            Arg::with_name("terminal-width")
-                .long("terminal-width")
-                .takes_value(true)
-                .value_name("width")
-                .hidden_short_help(true)
-                .allow_hyphen_values(true)
-                .validator(
-                    |t| {
-                        let is_offset = t.starts_with('+') || t.starts_with('-');
-                        t.parse::<i32>()
-                            .map_err(|_e| "must be an offset or number")
-                            .and_then(|v| if v == 0 && !is_offset {
-                                Err("terminal width cannot be zero".into())
-                            } else {
-                                Ok(())
-                            })
-                            .map_err(|e| e.to_string())
-                    })
-                .help(
-                    "Explicitly set the width of the terminal instead of determining it \
-                     automatically. If prefixed with '+' or '-', the value will be treated \
-                     as an offset to the actual terminal width. See also: '--wrap'.",
                 ),
         )
         .arg(
