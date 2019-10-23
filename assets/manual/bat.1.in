@@ -15,44 +15,10 @@ General remarks
 Command-line options like '-l'/'--language' that take values can be specified as
 either '--language value', '--language=value', '-l value' or '-lvalue'.
 .HP
-\fB\-l\fR, \fB\-\-language\fR <language>
+\fB\-A\fR, \fB\-\-show\-all\fR
 .IP
-Explicitly set the language for syntax highlighting. The language can be
-specified as a name (like 'C++' or 'LaTeX') or possible file extension
-(like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
-language names and file extensions.
-.HP
-\fB\-L\fR, \fB\-\-list\-languages\fR
-.IP
-Display a list of supported languages for syntax highlighting.
-.HP
-\fB\-m\fR, \fB\-\-map\-syntax\fR <from:to>...
-.IP
-Map a file extension or file name to an existing syntax. For example, to
-highlight *.conf files with the INI syntax, use '\-m conf:ini'. To
-highlight files named '.myignore' with the Git Ignore syntax, use '\-m
-\&.myignore:gitignore'.
-.HP
-\fB\-\-theme\fR <theme>
-.IP
-Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
-available themes. To set a default theme, add the '\-\-theme="..."' option
-to the configuration file or export the BAT_THEME environment variable
-(e.g.: export BAT_THEME="...").
-.HP
-\fB\-\-list\-themes\fR
-.IP
-Display a list of supported themes for syntax highlighting.
-.HP
-\fB\-\-style\fR <style\-components>
-.IP
-Configure which elements (line numbers, file headers, grid borders, Git
-modifications, ..) to display in addition to the file contents. The
-argument is a comma\-separated list of components to display (e.g.
-\&'numbers,changes,grid') or a pre\-defined style ('full'). To set a default
-style, add the '\-\-style=".."' option to the configuration file or export
-the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
-values: *auto*, full, plain, changes, header, grid, numbers, snip.
+Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
+control the width of the tab\-placeholders.
 .HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
@@ -60,31 +26,38 @@ Only show plain style, no decorations. This is an alias for
 \&'\-\-style=plain'. When '\-p' is used twice ('\-pp'), it also disables
 automatic paging (alias for '\-\-style=plain \fB\-\-pager\fR=\fI\,never\/\fR').
 .HP
-\fB\-n\fR, \fB\-\-number\fR
+\fB\-l\fR, \fB\-\-language\fR <language>
 .IP
-Only show line numbers, no other decorations. This is an alias for
-\&'\-\-style=numbers'
-.HP
-\fB\-A\fR, \fB\-\-show\-all\fR
-.IP
-Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
-control the width of the tab\-placeholders.
-.HP
-\fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
-.IP
-Only print the specified range of lines for each file. For example:
-.RS
-.IP "\-\-line\-range 30:40"
-prints lines 30 to 40
-.IP "\-\-line\-range :40"
-prints lines 1 to 40
-.IP "\-\-line\-range 40:"
-prints lines 40 to the end of the file
-.RE
+Explicitly set the language for syntax highlighting. The language can be
+specified as a name (like 'C++' or 'LaTeX') or possible file extension
+(like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
+language names and file extensions.
 .HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N>...
 .IP
 Highlight the N\-th line with a different background color
+.HP
+\fB\-\-tabs\fR <T>
+.IP
+Set the tab width to T spaces. Use a width of 0 to pass tabs through
+directly
+.HP
+\fB\-\-wrap\fR <mode>
+.IP
+Specify the text\-wrapping mode (*auto*, never, character). The
+\&'\-\-terminal\-width' option can be used in addition to control the output
+width.
+.HP
+\fB\-\-terminal\-width\fR <width>
+.IP
+Explicitly set the width of the terminal instead of determining it
+automatically. If prefixed with '+' or '\-', the value will be treated as
+an offset to the actual terminal width. See also: '\-\-wrap'.
+.HP
+\fB\-n\fR, \fB\-\-number\fR
+.IP
+Only show line numbers, no other decorations. This is an alias for
+\&'\-\-style=numbers'
 .HP
 \fB\-\-color\fR <when>
 .IP
@@ -118,27 +91,54 @@ BAT_PAGER environment variables. The default pager is 'less'. To disable
 the pager completely, use the '\-\-paging' option. Example: '\-\-pager "less
 \fB\-RF\fR"'.
 .HP
-\fB\-\-wrap\fR <mode>
+\fB\-m\fR, \fB\-\-map\-syntax\fR <from:to>...
 .IP
-Specify the text\-wrapping mode (*auto*, never, character). The
-\&'\-\-terminal\-width' option can be used in addition to control the output
-width.
+Map a file extension or file name to an existing syntax. For example, to
+highlight *.conf files with the INI syntax, use '\-m conf:ini'. To
+highlight files named '.myignore' with the Git Ignore syntax, use '\-m
+\&.myignore:gitignore'.
 .HP
-\fB\-\-tabs\fR <T>
+\fB\-\-theme\fR <theme>
 .IP
-Set the tab width to T spaces. Use a width of 0 to pass tabs through
-directly
+Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
+available themes. To set a default theme, add the '\-\-theme="..."' option
+to the configuration file or export the BAT_THEME environment variable
+(e.g.: export BAT_THEME="...").
+.HP
+\fB\-\-list\-themes\fR
+.IP
+Display a list of supported themes for syntax highlighting.
+.HP
+\fB\-\-style\fR <style\-components>
+.IP
+Configure which elements (line numbers, file headers, grid borders, Git
+modifications, ..) to display in addition to the file contents. The
+argument is a comma\-separated list of components to display (e.g.
+\&'numbers,changes,grid') or a pre\-defined style ('full'). To set a default
+style, add the '\-\-style=".."' option to the configuration file or export
+the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
+values: *auto*, full, plain, changes, header, grid, numbers, snip.
+.HP
+\fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
+.IP
+Only print the specified range of lines for each file. For example:
+.RS
+.IP "\-\-line\-range 30:40"
+prints lines 30 to 40
+.IP "\-\-line\-range :40"
+prints lines 1 to 40
+.IP "\-\-line\-range 40:"
+prints lines 40 to the end of the file
+.RE
+.HP
+\fB\-L\fR, \fB\-\-list\-languages\fR
+.IP
+Display a list of supported languages for syntax highlighting.
 .HP
 \fB\-u\fR, \fB\-\-unbuffered\fR
 .IP
 This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered').
 The output is always unbuffered \- this option is simply ignored.
-.HP
-\fB\-\-terminal\-width\fR <width>
-.IP
-Explicitly set the width of the terminal instead of determining it
-automatically. If prefixed with '+' or '\-', the value will be treated as
-an offset to the actual terminal width. See also: '\-\-wrap'.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
