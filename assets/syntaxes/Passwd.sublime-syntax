@@ -1,0 +1,71 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: passwd
+file_extensions:
+  - passwd
+scope: source.passwd
+
+contexts:
+  main:
+    - comment: name
+      match: ^[^:]+
+      scope: keyword
+
+    - comment: password
+      match: ":"
+      push: password
+
+  password:
+    - comment: uid
+      match: ":"
+      set: uid
+
+    - comment: shadowpassword
+      match: "[^:]+"
+      scope: invalid
+
+  uid:
+    - comment: gid
+      match: ":"
+      set: gid
+
+    - comment: number
+      match: "[0-9]+"
+      scope: constant.numeric
+
+  gid:
+    - comment: comment
+      match: ":"
+      set: comment
+
+    - comment: number
+      match: "[0-9]+"
+      scope: constant.language
+
+  comment:
+    - comment: directory
+      match: ":"
+      set: directory
+
+    - comment: comment
+      match: "[^:]+"
+      scope: entity.name
+
+  directory:
+    - comment: shell
+      match: ":"
+      set: shell
+
+    - comment: directory
+      match: "[^:]+"
+      scope: string.unquoted
+
+  shell:
+    - comment: newline
+      match: "\n"
+      pop: true
+
+    - comment: directory
+      match: "[^:\n]+"
+      scope: variable.parameter
