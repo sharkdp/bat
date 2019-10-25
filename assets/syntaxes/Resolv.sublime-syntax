@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: resolv
+file_extensions:
+  - resolv.conf
+scope: source.resolv
+
+contexts:
+  main:
+    - scope: comment.line.number-sign
+      match: \#.*
+      comment: comment
+
+    - comment: configuration
+      match: "(nameserver|domain|search|sortlist|options)"
+      scope: keyword.control
+
+    - comment: options
+      match: "(debug|ndots|timeout|attempts|rotate|no-check-names|inet6|ip6-bytestring|ip6-dotint|no-ip6-dotint|edns0|single-request|single-request-reopen|no-tld-query|use-vc|no-reload)"
+      scope: entity.name
