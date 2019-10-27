@@ -3,7 +3,7 @@ use std::path::Path;
 
 use crate::assets::HighlightingAssets;
 use crate::errors::*;
-use crate::inputfile::{InputFile, InputFileReader};
+use crate::inputfile::{InputFile, InputFileReader, ReadPosition};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -80,9 +80,7 @@ impl<'b> Controller<'b> {
         input_file: InputFile<'a>,
     ) -> Result<()> {
         printer.print_header(writer, input_file)?;
-        if !reader.first_line.is_empty() {
-            self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
-        }
+        self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
         printer.print_footer(writer)?;
 
         Ok(())
@@ -95,19 +93,18 @@ impl<'b> Controller<'b> {
         mut reader: InputFileReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
-        let mut line_buffer = Vec::new();
-        let mut line_number: usize = 1;
-
         let mut first_range: bool = true;
         let mut mid_range: bool = false;
 
-        while reader.read_line(&mut line_buffer)? {
-            match line_ranges.check(line_number) {
+        loop {
+            let position = reader.read_line()?;
+	    if position == ReadPosition::Eof { break; }
+            let is_out_range = match line_ranges.check(reader.line_number) {
                 RangeCheckResult::OutsideRange => {
                     // Call the printer in case we need to call the syntax highlighter
                     // for this line. However, set `out_of_range` to `true`.
-                    printer.print_line(true, writer, line_number, &line_buffer)?;
                     mid_range = false;
+                    true
                 }
 
                 RangeCheckResult::InRange => {
@@ -120,16 +117,17 @@ impl<'b> Controller<'b> {
                             printer.print_snip(writer)?;
                         }
                     }
-
-                    printer.print_line(false, writer, line_number, &line_buffer)?;
+                    false
                 }
-                RangeCheckResult::AfterLastRange => {
-                    break;
-                }
-            }
-
-            line_number += 1;
-            line_buffer.clear();
+                RangeCheckResult::AfterLastRange => break,
+            };
+            printer.print_line(
+                is_out_range,
+		position,
+                writer,
+                reader.line_number,
+                &reader.current_line,
+            )?;
         }
         Ok(())
     }

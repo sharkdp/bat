@@ -23,7 +23,7 @@ use crate::decorations::{
 use crate::diff::get_git_diff;
 use crate::diff::LineChanges;
 use crate::errors::*;
-use crate::inputfile::{InputFile, InputFileReader};
+use crate::inputfile::{InputFile, InputFileReader, ReadPosition};
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -38,6 +38,7 @@ pub trait Printer {
     fn print_line(
         &mut self,
         out_of_range: bool,
+        read_position: ReadPosition,
         handle: &mut dyn Write,
         line_number: usize,
         line_buffer: &[u8],
@@ -68,6 +69,7 @@ impl Printer for SimplePrinter {
     fn print_line(
         &mut self,
         out_of_range: bool,
+        _read_position: ReadPosition,
         handle: &mut dyn Write,
         _line_number: usize,
         line_buffer: &[u8],
@@ -90,6 +92,7 @@ pub struct InteractivePrinter<'a> {
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
     background_color_highlight: Option<Color>,
+    last_cursor: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -173,6 +176,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter,
             syntax_set: &assets.syntax_set,
             background_color_highlight,
+            last_cursor: 0,
         }
     }
 
@@ -236,10 +240,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     Yellow.paint("[bat warning]"),
                     input
                 )?;
-            } else {
-                if self.config.output_components.grid() {
-                    self.print_horizontal_line(handle, '┬')?;
-                }
+            } else if self.config.output_components.grid() {
+                self.print_horizontal_line(handle, '┬')?;
             }
             return Ok(());
         }
@@ -314,9 +316,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let snip_right =
             " ─".repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
 
-        write!(
+        writeln!(
             handle,
-            "{}\n",
+            "{}",
             self.colors
                 .grid
                 .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
@@ -328,6 +330,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
     fn print_line(
         &mut self,
         out_of_range: bool,
+        read_position: ReadPosition,
         handle: &mut dyn Write,
         line_number: usize,
         line_buffer: &[u8],
@@ -363,7 +366,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             return Ok(());
         }
 
-        let mut cursor: usize = 0;
+        let mut cursor: usize = self.last_cursor;
         let mut cursor_max: usize = self.config.term_width;
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
@@ -379,16 +382,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
             .background_color_highlight
             .filter(|_| highlight_this_line);
 
+        let is_start_line = read_position.is_begin_of_line();
+        let is_end_line = read_position.is_end_of_line();
+
         // Line decorations.
         if self.panel_width > 0 {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|ref d| d.generate(line_number, false, self))
+                .map(|ref d| d.generate(line_number, !is_start_line, self))
                 .collect::<Vec<_>>();
 
             for deco in decorations {
-                write!(handle, "{} ", deco.text)?;
+                if is_start_line {
+                    write!(handle, "{} ", deco.text)?;
+                }
                 cursor_max -= deco.width + 1;
             }
         }
@@ -430,7 +438,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            if line.bytes().next_back() != Some(b'\n') {
+            if line.bytes().next_back() != Some(b'\n') && is_end_line {
                 writeln!(handle)?;
             }
         } else {
@@ -552,13 +560,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 ansi_style.background =
                     Some(to_ansi_color(background_color, self.config.true_color));
 
-                write!(
-                    handle,
-                    "{}",
-                    ansi_style.paint(" ".repeat(cursor_max - cursor))
-                )?;
+                if is_end_line {
+                    write!(
+                        handle,
+                        "{}",
+                        ansi_style.paint(" ".repeat(cursor_max - cursor))
+                    )?;
+                }
             }
-            writeln!(handle)?;
+
+            if is_end_line {
+                writeln!(handle)?;
+                self.last_cursor = 0
+            } else {
+                self.last_cursor = cursor;
+            }
         }
 
         Ok(())
