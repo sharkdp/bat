@@ -175,7 +175,7 @@ You can install [the Ubuntu `bat` package](https://packages.ubuntu.com/eoan/bat)
 apt install bat
 ```
 
-On older releases, download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
+If you want to run the latest release of bat or if you are on older versions of Ubuntu/Debian, download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
 ```bash
 sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
