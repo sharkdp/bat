@@ -130,7 +130,7 @@ highlighting:
 git show v0.6.0:src/main.rs | bat -l rs
 ```
 
-Note that syntax highlighting within diffs is currently not supported. If you are looking for this, check out [delta](https://github.com/dandavison/delta).
+Note that syntax highlighting within diffs is currently not supported. If you are looking for this, check out [`delta`](https://github.com/dandavison/delta).
 
 #### `xclip`
 
