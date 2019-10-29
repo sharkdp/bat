@@ -20,5 +20,6 @@ If you think that some entries in this table are outdated or wrong, please open 
 request.
 
 Some other alternatives that are also related, but not yet included in the table:
+- [delta](https://github.com/dandavison/delta)
 - [lesspipe](https://github.com/wofr06/lesspipe)
 - [vimpager](https://github.com/rkitover/vimpager)
