@@ -1,0 +1,257 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nim
+file_extensions:
+  - nim
+  - nims
+scope: source.nim
+contexts:
+  main:
+    - match: '(\#\[\s*(TODO|todo)?)'
+      comment: A multiline comment.
+      captures:
+        1: punctuation.definition.multi-comment.nim
+        2: invalid.illegal.TODO.nim
+      push:
+        - meta_scope: comment.line.number-sign.multi-comment.nim
+        - match: '(.*]\#)'
+          captures:
+            1: punctuation.definition.multi-comment.nim
+            2: invalid.illegal.TODO.nim
+          pop: true
+    - match: (##\s*(TODO|todo)?).+$\n?
+      comment: A documentation comment.
+      scope: comment.line.number-sign.doc-comment.nim
+      captures:
+        1: punctuation.definition.doc-comment.nim
+        2: invalid.illegal.TODO.nim
+    - match: (##\s*)$\n?
+      comment: An empty documentation comment.
+      scope: comment.line.number-sign.doc-comment.empty.nim
+      captures:
+        1: punctuation.definition.doc-comment.empty.nim
+    - match: (#\s*(TODO|todo)?).*$\n?
+      comment: A regular comment
+      scope: comment.line.number-sign.comment.nim
+      captures:
+        1: punctuation.definition.comment.nim
+        2: invalid.illegal.TODO.nim
+    - match: '\{\.'
+      comment: Pragmas
+      push:
+        - meta_scope: pragma
+        - match: '\.?\}'
+          pop: true
+        - match: \"
+          push:
+            - meta_scope: string.something.nim
+            - match: \"
+              pop: true
+        - match: '([\w\x{80}-\x{10FFFF}]+)'
+          scope: entity.other.attribute-name.pragma.nim
+    - match: discard \"\"\"
+      comment: A discarded triple string literal comment
+      push:
+        - meta_scope: comment.line.discarded.nim
+        - match: \"\"\"
+          pop: true
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(\d[_\d]*((\.[_\d]+([eE][\+\-]?\d[_\d]*)?)|([eE][\+\-]?\d[_\d]*)))(''?([fF](32|64|128))|[fFdD])?'
+      comment: A float literal
+      scope: constant.numeric.float.decimal.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(0[xX][0-9A-Fa-f][_0-9A-Fa-f]*)(''?(([iIuUfF](8|16|32|64))|[uUfFdD]))?'
+      comment: A hexadecimal literal
+      scope: constant.numeric.integer.hexadecimal.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(0[ocC][0-7][_0-7]*)(''?(([iIuUfF](8|16|32|64))|[uUfFdD]))?'
+      comment: A base-8 integer literal
+      scope: constant.numeric.integer.octal.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(0(b|B)[01][_01]*)(''?(([iIuUfF](8|16|32|64))|[uUfFdD]))?'
+      comment: A base-2 integer literal
+      scope: constant.numeric.integer.binary.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(\d[_\d]*)(''?(([iIuUfF](8|16|32|64))|[uUfFdD]))?'
+      comment: A base-10 integer literal
+      scope: constant.numeric.integer.decimal.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(true|false|inf|nil)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Language Constants.
+      scope: constant.language.nim
+    - match: (?:^|\s+|=)(when|if)\b
+      comment: Primary branching keywords
+      captures:
+        1: keyword.control.primary.nim
+      push:
+        - match: (?=:)
+          captures:
+            1: control.variable.parameter.nim
+          pop: true
+        - include: scope:source.nim
+    - match: (?:^|\s+|=)(case)\b
+      comment: Primary branching keyword 'case'
+      captures:
+        1: keyword.control.primary.nim
+      push:
+        - match: (?=\bof\b)
+          captures:
+            1: control.variable.parameter.nim
+          pop: true
+        - include: scope:source.nim
+    - match: (?:^|\s+)(of|else|elif)\b
+      comment: Secondary branching keywords and their conditions
+      captures:
+        1: keyword.control.secondary.nim
+      push:
+        - match: (?=:)
+          captures:
+            1: control.variable.parameter.nim
+          pop: true
+        - include: scope:source.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(await|block|break|continue|do|end|except|finally|raise|return|try|while|yield)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Keywords that affect program control flow or scope.
+      scope: keyword.control.nim
+    - match: '((?<![\w\x{80}-\x{10FFFF}])(and|in|is|isnot|not|notin|or|xor)(?![\w\x{80}-\x{10FFFF}]))'
+      comment: Keyword boolean operators for expressions.
+      scope: keyword.operator.boolean.nim
+    - match: '((?<![\w\x{80}-\x{10FFFF}])(addr|as|atomic|bind|cast|const|converter|defer|discard|distinct|div|enum|export|include|let|mixin|object|of|ptr|ref|shl|shr|static|type|var)(?![\w\x{80}-\x{10FFFF}]))'
+      comment: Other keywords.
+      scope: keyword.other.nim
+    - match: (\b()\b|(=|\+|-|\*|/|<|>|@|\$|~|&|%|!|\?|\^|\.|:|\\)+)
+      comment: Generic operators for expressions.
+      scope: keyword.operator.nim
+    - match: (for)\s+
+      comment: in keyword in a 'for' loop
+      captures:
+        1: keyword.control.nim
+      push:
+        - meta_scope: meta.forloop.nim
+        - match: (?=:)
+          captures:
+            1: keyword.control.nim
+          pop: true
+        - match: '\ [\w\x{80}-\x{10FFFF},]+\s+(in)\s+'
+          captures:
+            1: keyword.control.nim
+        - include: scope:source.nim
+    - match: '((import)\s+[\.|\w|\/]+,?)'
+      comment: Import syntax
+      captures:
+        2: keyword.control.nim
+    - match: '(from)\s+[\/\w]+\s+(?=import)'
+      captures:
+        1: keyword.control.nim
+    - match: (var|let)\s*\(
+      comment: Destructure syntax
+      captures:
+        1: keyword.other.nim
+      push:
+        - match: \)
+          captures:
+            1: keyword.other.nim
+          pop: true
+    - match: '((?<![\w\x{80}-\x{10FFFF}])(generic|interface|lambda|out|shared|with|without)(?![\w\x{80}-\x{10FFFF}]))'
+      comment: Invalid and unused keywords.
+      scope: keyword.invalid.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(new|GC_ref|GC_unref|assert|echo|defined|declared|newException|countup|countdown|len|high|low)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Common functions
+      scope: keyword.other.common.function.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(((uint|int|float)(8|16|32|64)?)|clong|culong|cchar|cschar|cshort|cint|csize|clonglong|cfloat|cdouble|clongdouble|cuchar|cushort|cuint|culonglong|cstringArray|bool|string|auto|cstring|char|byte|tobject|typedesc|stmt|expr|any|untyped|typed)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Built-in, concrete types.
+      scope: storage.type.concrete.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(range|array|seq|tuple|natural|set|ref|ptr|pointer)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Built-in, generic types.
+      scope: storage.type.generic.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(proc|iterator|method|template|macro)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Function types
+      scope: storage.type.function.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(openarray|varargs|void)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Special types.
+      scope: storage.type.generic.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])([A-Z][A-Z0-9_]+)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Other constants.
+      scope: support.constant.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])([A-Z]\w+)(?![\w\x{80}-\x{10FFFF}])'
+      comment: Other types.
+      scope: support.type.nim
+    - match: '(?<![\w\x{80}-\x{10FFFF}])(\w+)(?![\w\x{80}-\x{10FFFF}])(?=\()'
+      comment: Function call.
+      scope: support.function.any-method.nim
+    - match: r?\"\"\"
+      comment: (Raw) Triple Quoted String
+      push:
+        - meta_scope: string.quoted.triple.nim
+        - match: '\"\"\"[^\"]'
+          pop: true
+    - match: r\"
+      comment: Raw Double Quoted String
+      push:
+        - meta_scope: string.quoted.double.raw.nim
+        - match: \"
+          pop: true
+        - match: \"\"
+    - match: \"
+      comment: Double Quoted String
+      push:
+        - meta_scope: string.quoted.double.nim
+        - match: \"
+          pop: true
+        - include: escaped_char
+    - match: \'
+      comment: Single quoted character literal
+      push:
+        - meta_scope: string.quoted.single.nim
+        - match: \'
+          pop: true
+        - match: \\n
+          scope: invalid.illegal.character.nim
+        - include: escaped_char
+        - match: '([^\''][^\'']+?)'
+          scope: invalid.illegal.character.nim
+    - match: '([\w\x{80}-\x{10FFFF}\`]+)\s*(?=\(|\[.+?\]\s*\()'
+      comment: Call syntax
+      captures:
+        1: support.function.any-method.nim
+      push:
+        - match: \)
+          captures:
+            1: support.function.any-method.nim
+          pop: true
+        - include: scope:source.nim
+    - match: '([\w\x{80}-\x{10FFFF}]+)(?=\s+[\w](?![\w\x{80}-\x{10FFFF}]+((?!\n)\s)+))'
+      comment: Command syntax
+      captures:
+        1: support.function.any-method.nim
+    - match: '([\w\x{80}-\x{10FFFF}]+)(?=\s+[\"\''\`])'
+      captures:
+        1: support.function.any-method.nim
+    - match: (tmpl(i)?)(?=( (nim|html|xml|js|css|glsl|md))?\"\"\")
+      comment: tmpl specifier
+      captures:
+        1: storage.type.function.nim
+        2: keyword.operator.nim
+  escaped_char:
+    - match: '\\[nN]'
+      scope: constant.character.escape.newline.nim
+    - match: '\\[cC]|\\[rR]'
+      scope: constant.character.escape.carriagereturn.nim
+    - match: '\\[lL]'
+      scope: constant.character.escape.linefeed.nim
+    - match: '\\[fF]'
+      scope: constant.character.escape.formfeed.nim
+    - match: '\\[tT]'
+      scope: constant.character.escape.tabulator.nim
+    - match: '\\[vV]'
+      scope: constant.character.escape.verticaltabulator.nim
+    - match: \\\"
+      scope: constant.character.escape.double-quote.nim
+    - match: \\'
+      scope: constant.character.escape.single-quote.nim
+    - match: '\\[0-9]+'
+      scope: constant.character.escape.chardecimalvalue.nim
+    - match: '\\[aA]'
+      scope: constant.character.escape.alert.nim
+    - match: '\\[bB]'
+      scope: constant.character.escape.backspace.nim
+    - match: '\\[eE]'
+      scope: constant.character.escape.escape.nim
+    - match: '\\[xX][0-9A-Fa-f]{2}'
+      scope: constant.character.escape.hex.nim
+    - match: \\\\
+      scope: constant.character.escape.backslash.nim
