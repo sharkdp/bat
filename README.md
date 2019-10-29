@@ -122,13 +122,15 @@ tail -f /var/log/pacman.log | bat --paging=never -l log
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
-#### `git show`
+#### `git`
 
 You can combine `bat` with `git show` to view an older version of a given file with proper syntax
 highlighting:
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
+
+Note that syntax highlighting within diffs is currently not supported. If you are looking for this, check out [delta](https://github.com/dandavison/delta).
 
 #### `xclip`
 
