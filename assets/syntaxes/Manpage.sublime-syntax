@@ -42,3 +42,12 @@ contexts:
         2: keyword.operator
         3: constant.numeric
         4: keyword.operator
+
+    # command-line options like --option=value, --some-flag, or -x
+    - match: '(?:[^a-zA-Z0-9_-]|^|\s)(--?[A-Za-z0-9][A-Za-z0-9-]*)(?:(=)?("?)([A-Za-z0-9]+)("?))?'
+      captures:
+        1: entity.name
+        2: keyword.operator
+        3: punctuation.definition.string.begin
+        4: variable.parameter
+        3: punctuation.definition.string.end
