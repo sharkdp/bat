@@ -36,7 +36,7 @@ contexts:
     - match: '^\S.*$'
       scope: markup.heading
 
-    - match: '\b([a-z0-9_\-]+)(\()([^)]*)(\))'
+    - match: '\b([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
       captures:
         1: entity.name.function
         2: keyword.operator
