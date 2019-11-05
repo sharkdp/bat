@@ -97,9 +97,6 @@
 [submodule "assets/themes/sublime-snazzy"]
 	path = assets/themes/sublime-snazzy
 	url = https://github.com/greggb/sublime-snazzy
-[submodule "assets/syntaxes/HTML (Twig)"]
-	path = assets/syntaxes/HTML (Twig)
-	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
 [submodule "assets/syntaxes/AsciiDoc"]
 	path = assets/syntaxes/AsciiDoc
 	url = https://github.com/SublimeText/AsciiDoc.git
@@ -163,3 +160,6 @@
 [submodule "assets/themes/dracula-sublime"]
 	path = assets/themes/dracula-sublime
 	url = https://github.com/dracula/sublime.git
+[submodule "assets/syntaxes/HTML (Twig)"]
+	path = assets/syntaxes/HTML (Twig)
+	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
