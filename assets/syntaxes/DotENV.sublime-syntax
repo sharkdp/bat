@@ -11,6 +11,7 @@ file_extensions:
   - .env.example
   - .env.test
   - .env.test.local
+  - .env.testing
   - .env.dev
   - .env.development
   - .env.development.local
@@ -18,6 +19,8 @@ file_extensions:
   - .env.production
   - .env.production.local
   - .env.dusk.local
+  - .flaskenv
+  - .env.staging
 scope: source.env
 contexts:
   main:
