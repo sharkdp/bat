@@ -121,7 +121,7 @@
 	path = assets/syntaxes/varlink
 	url = https://github.com/varlink/syntax-highlight-varlink.git
 [submodule "assets/syntaxes/sublime-fish"]
-	path = assets/syntaxes/sublime-fish
+	path = assets/syntaxes/Fish
 	url = https://github.com/Phidica/sublime-fish.git
 [submodule "assets/syntaxes/Org mode"]
 	path = assets/syntaxes/Org mode
