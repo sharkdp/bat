@@ -65,7 +65,6 @@
 > curl -s https://sh.rustup.rs | bat
 ```
 
-Read from stdin, specify the language explicitly
 標準入力から明示的に言語を指定したい場合
 
 ```bash
