@@ -195,6 +195,13 @@ impl App {
                 .value_of("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
+                .map(|s| {
+                    if s == String::from("default") {
+                        String::from(BAT_THEME_DEFAULT)
+                    } else {
+                        s
+                    }
+                })
                 .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
             line_ranges: LineRanges::from(
                 self.matches
