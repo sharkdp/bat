@@ -163,3 +163,6 @@
 [submodule "assets/syntaxes/HTML (Twig)"]
 	path = assets/syntaxes/HTML (Twig)
 	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
+[submodule "assets/themes/Nord-sublime"]
+	path = assets/themes/Nord-sublime
+	url = https://github.com/crabique/Nord-plist.git
