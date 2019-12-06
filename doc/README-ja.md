@@ -4,7 +4,7 @@
   <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf?svg=true"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  A <i>cat(1)</i> clone with syntax highlighting and Git integration.
+  シンタックスハイライトとGitとの連携機能付きの <i>cat(1)</i> クローン。
 </p>
 
 <p align="center">
