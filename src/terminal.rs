@@ -27,6 +27,10 @@ pub fn as_terminal_escaped(
     italics: bool,
     background_color: Option<highlighting::Color>,
 ) -> String {
+    if text.is_empty() {
+        return text.to_string();
+    }
+
     let mut style = if !colored {
         Style::default()
     } else {
