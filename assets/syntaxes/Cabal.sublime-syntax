@@ -33,7 +33,7 @@ contexts:
       captures:
         1: constant.other.cabal
         2: punctuation.entity.cabal
-    - match: '^(?i)(executable|library|test-suite|benchmark|flag|source-repository)\s+([^\s,]+)\s*$'
+    - match: '^(?i)(executable|library|test-suite|benchmark|flag|source-repository|custom-setup)\s+([^\s,]+)\s*$'
       scope: entity.cabal
       captures:
         1: keyword.entity.cabal
