@@ -131,9 +131,9 @@ contexts:
       scope: keyword.control.pseudo-method.crystal
     - match: '\b(nil|true|false)\b(?![?!])'
       scope: constant.language.crystal
-    - match: '\b(__(DIR|FILE|LINE)__|self)\b(?![?!])'
+    - match: '\b(__(DIR|FILE|LINE|END_LINE)__|self)\b(?![?!])'
       scope: variable.language.crystal
-    - match: '\b(initialize|new|loop|include|extend|raise|getter|setter|property|class_getter|class_setter|class_property|describe|it|with|delegate|def_hash|def_equals|def_equals_and_hash|forward_missing_to|record|assert_responds_to|spawn)\b[!?]?'
+    - match: '\b(initialize|new|loop|include|extend|raise|getter|setter|property|class_getter|class_setter|class_property|describe|context|it|with|delegate|def_hash|def_equals|def_equals_and_hash|forward_missing_to|record|assert_responds_to|spawn|annotation|verbatim)\b[!?]?'
       comment: everything being a method but having a special function is a..
       scope: keyword.control.special-method.crystal
     - match: \b(require)\b
@@ -180,7 +180,7 @@ contexts:
          (?<=^|\s)(def)\s+                                              # the def keyword
          ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\x{80}-\x{10FFFF}\w]*(?>\.|::))?                                   # a method name prefix
            (?>[a-zA-Z_\x{80}-\x{10FFFF}][\x{80}-\x{10FFFF}\w]*(?>[?!]|=(?!>))?                              # the method name
-           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) )  # …or an operator method
+           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\](?:=|\?)?) )  # …or an operator method
          \s*(\()                                                        # the openning parenthesis for arguments
       comment: the method pattern comes from the symbol pattern, see there for a explaination
       captures:
@@ -201,7 +201,7 @@ contexts:
          (?<=^|\s)(def)\s+                                              # the def keyword
          ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>\.|::))?                                   # a method name prefix
            (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?!>))?                              # the method name
-           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) )  # …or an operator method
+           |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\](?:=|\?)?) )  # …or an operator method
          [ \t]                                                          # the space separating the arguments
          (?=[ \t]*[^\s#;])                                              # make sure arguments and not a comment follow
       comment: same as the previous rule, but without parentheses around the arguments
@@ -221,7 +221,7 @@ contexts:
          ( \s+                                                               # an optional group of whitespace followed by…
            ( (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>\.|::))?                                      # a method name prefix
              (?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?!>))?                                 # the method name
-             |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?) ) )?  # …or an operator method
+             |===?|>[>=]?|<=>|<[<=]?|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\](?:=|\?)?) ) )?  # …or an operator method
       comment: the optional name is just to catch the def also without a method-name
       scope: meta.function.method.without-arguments.crystal
       captures:
@@ -588,7 +588,7 @@ contexts:
           pop: true
         - match: \\.
           comment: Cant be named because its not neccesarily an escape.
-    - match: '(?<!:)(:)(?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?![>=]))?|===?|>[>=]?|<[<=]?|<=>|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\]=?|@@?[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*)'
+    - match: '(?<!:)(:)(?>[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*(?>[?!]|=(?![>=]))?|===?|>[>=]?|<[<=]?|<=>|[%&`/\|]|\*\*?|=?~|[-+]@?|\[\](?:=|\?)?|@@?[a-zA-Z_\x{80}-\x{10FFFF}][\w\x{80}-\x{10FFFF}]*|!=?(?![?!]))'
       comment: symbols
       scope: constant.other.symbol.crystal
       captures:
@@ -713,14 +713,14 @@ contexts:
       captures:
         0: punctuation.definition.string.begin.crystal
       push:
-        - meta_scope: string.unquoted.embedded.js.jquery.crystal
-        - meta_content_scope: text.js.jquery.embedded.crystal
+        - meta_scope: string.unquoted.embedded.js.crystal
+        - meta_content_scope: text.js.embedded.crystal
         - match: \s*\2$
           captures:
             0: punctuation.definition.string.end.crystal
           pop: true
         - include: heredoc
-        - include: scope:source.js.jquery
+        - include: scope:source.js
         - include: interpolated_crystal
         - include: escaped_char
     - match: '(?><<-("?)((?:[_\w]+_|)(?:SH|SHELL))\b\1)'
