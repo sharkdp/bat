@@ -147,7 +147,7 @@ contexts:
         2: keyword.other.powershell
         3: variable.parameter.powershell
   attribute:
-    - match: '(\[)\s*\b(?i)(cmdletbinding|alias|outputtype|parameter|validatenotnull|validatenotnullorempty|validatecount|validateset|allownull|allowemptycollection|allowemptystring|validatescript|validaterange|validatepattern|validatelength)\b'
+    - match: '(\[)\s*\b(?i)(cmdletbinding|alias|outputtype|parameter|validatenotnull|validatenotnullorempty|validatecount|validateset|allownull|allowemptycollection|allowemptystring|validatescript|validaterange|validatepattern|validatelength|supportswildcards)\b'
       captures:
         1: punctuation.section.bracket.begin.powershell
         2: support.function.attribute.powershell
@@ -165,31 +165,11 @@ contexts:
               captures:
                 0: punctuation.section.group.end.powershell
               pop: true
-            - include: variable
-            - include: variableNoProperty
-            - include: hashtable
-            - include: scriptblock
-            - include: doubleQuotedStringEscapes
-            - include: doubleQuotedString
-            - include: type
-            - include: numericConstant
-            - include: doubleQuotedString
             - include: main
             - match: (?i)\b(mandatory|valuefrompipeline|valuefrompipelinebypropertyname|valuefromremainingarguments|position|parametersetname|defaultparametersetname|supportsshouldprocess|supportspaging|positionalbinding|helpuri|confirmimpact|helpmessage)\b(?:\s+)?(=)?
               captures:
                 1: variable.parameter.attribute.powershell
                 2: keyword.operator.assignment.powershell
-            - match: (?<!')'
-              captures:
-                0: punctuation.definition.string.begin.powershell
-              push:
-                - meta_scope: string.quoted.single.powershell
-                - match: "'(?!')"
-                  captures:
-                    0: punctuation.definition.string.end.powershell
-                  pop: true
-                - match: "''"
-                  scope: constant.character.escape.powershell
   commands:
     - match: '(?:(\p{L}|\d|_|-|\\|\:)*\\)?\b(?i:Add|Approve|Assert|Backup|Block|Build|Checkpoint|Clear|Close|Compare|Complete|Compress|Confirm|Connect|Convert|ConvertFrom|ConvertTo|Copy|Debug|Deny|Deploy|Disable|Disconnect|Dismount|Edit|Enable|Enter|Exit|Expand|Export|Find|Format|Get|Grant|Group|Hide|Import|Initialize|Install|Invoke|Join|Limit|Lock|Measure|Merge|Mount|Move|New|Open|Optimize|Out|Ping|Pop|Protect|Publish|Push|Read|Receive|Redo|Register|Remove|Rename|Repair|Request|Reset|Resize|Resolve|Restart|Restore|Resume|Revoke|Save|Search|Select|Send|Set|Show|Skip|Split|Start|Step|Stop|Submit|Suspend|Switch|Sync|Test|Trace|Unblock|Undo|Uninstall|Unlock|Unprotect|Unpublish|Unregister|Update|Use|Wait|Watch|Write)\-.+?(?:\.(?i:exe|cmd|bat|ps1))?\b'
       comment: "Verb-Noun pattern:"
@@ -242,14 +222,14 @@ contexts:
           pop: true
         - match: '(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,64}\b'
         - include: variableNoProperty
-        - include: variable
         - include: doubleQuotedStringEscapes
         - include: interpolation
         - match: '`\s*$'
           scope: keyword.other.powershell
   doubleQuotedStringEscapes:
-    - match: '`[0abnfrvt"''$`]'
+    - match: '`[`0abefnrtv"''$]'
       scope: constant.character.escape.powershell
+    - include: unicodeEscape
     - match: '""'
       scope: constant.character.escape.powershell
   function:
@@ -362,6 +342,11 @@ contexts:
         - match: '(?!\d+|\.)(?:\p{L}|\p{N}|\.)+'
           scope: storage.type.powershell
         - include: main
+  unicodeEscape:
+    - match: '`u\{(?:(?:10)?([0-9a-fA-F]){1,4}|0?\g<1>{1,5})}'
+      scope: constant.character.escape.powershell
+    - match: '`u(?:\{[0-9a-fA-F]{,6}.)?'
+      scope: invalid.character.escape.powershell
   variable:
     - match: (\$)(?i:(False|Null|True))\b
       comment: These are special constants.
@@ -374,13 +359,13 @@ contexts:
         0: support.constant.variable.powershell
         1: punctuation.definition.variable.powershell
         3: variable.other.member.powershell
-    - match: '(\$)(?i:(\$|\^|\?|_|Args|ConsoleFileName|Event|EventArgs|EventSubscriber|ForEach|Input|LastExitCode|Matches|MyInvocation|NestedPromptLevel|Profile|PSBoundParameters|PsCmdlet|PsCulture|PSDebugContext|PSItem|PSCommandPath|PSScriptRoot|PsUICulture|Pwd|Sender|SourceArgs|SourceEventArgs|StackTrace|Switch|This))((?:\.(?:\p{L}|\d|_)+)*\b)?\b'
+    - match: '(\$)((?:[$^?])|(?i:_|Args|ConsoleFileName|Event|EventArgs|EventSubscriber|ForEach|Input|LastExitCode|Matches|MyInvocation|NestedPromptLevel|Profile|PSBoundParameters|PsCmdlet|PsCulture|PSDebugContext|PSItem|PSCommandPath|PSScriptRoot|PsUICulture|Pwd|Sender|SourceArgs|SourceEventArgs|StackTrace|Switch|This)\b)((?:\.(?:\p{L}|\d|_)+)*\b)?'
       comment: Automatic variables are not constants, but they are read-only. In monokai (default) color schema support.variable doesn't have color, so we use constant.
       captures:
-        0: support.constant.automatic.powershell
+        0: support.variable.automatic.powershell
         1: punctuation.definition.variable.powershell
         3: variable.other.member.powershell
-    - match: '(\$)(?i:(ConfirmPreference|DebugPreference|ErrorActionPreference|ErrorView|FormatEnumerationLimit|MaximumAliasCount|MaximumDriveCount|MaximumErrorCount|MaximumFunctionCount|MaximumHistoryCount|MaximumVariableCount|OFS|OutputEncoding|ProgressPreference|PsCulture|PSDebugContext|PSDefaultParameterValues|PSEmailServer|PSItem|PSModuleAutoloadingPreference|PSSenderInfo|PSSessionApplicationName|PSSessionConfigurationName|PSSessionOption|VerbosePreference|WarningPreference|WhatIfPreference))((?:\.(?:\p{L}|\d|_)+)*\b)?\b'
+    - match: '(\$)(?i:(ConfirmPreference|DebugPreference|ErrorActionPreference|ErrorView|FormatEnumerationLimit|InformationPreference|LogCommandHealthEvent|LogCommandLifecycleEvent|LogEngineHealthEvent|LogEngineLifecycleEvent|LogProviderHealthEvent|LogProviderLifecycleEvent|MaximumAliasCount|MaximumDriveCount|MaximumErrorCount|MaximumFunctionCount|MaximumHistoryCount|MaximumVariableCount|OFS|OutputEncoding|PSCulture|PSDebugContext|PSDefaultParameterValues|PSEmailServer|PSItem|PSModuleAutoLoadingPreference|PSModuleAutoloadingPreference|PSSenderInfo|PSSessionApplicationName|PSSessionConfigurationName|PSSessionOption|ProgressPreference|VerbosePreference|WarningPreference|WhatIfPreference))((?:\.(?:\p{L}|\d|_)+)*\b)?\b'
       comment: Style preference variables as language variables so that they stand out.
       captures:
         0: variable.language.powershell
@@ -426,19 +411,19 @@ contexts:
         0: support.constant.variable.powershell
         1: punctuation.definition.variable.powershell
         3: variable.other.member.powershell
-    - match: (\$)(?i:(\$|\^|\?|_|Args|ConsoleFileName|Event|EventArgs|EventSubscriber|ForEach|Input|LastExitCode|Matches|MyInvocation|NestedPromptLevel|Profile|PSBoundParameters|PsCmdlet|PsCulture|PSDebugContext|PSItem|PSCommandPath|PSScriptRoot|PsUICulture|Pwd|Sender|SourceArgs|SourceEventArgs|StackTrace|Switch|This))\b
+    - match: '(\$)((?:[$^?])|(?i:_|Args|ConsoleFileName|Event|EventArgs|EventSubscriber|ForEach|Input|LastExitCode|Matches|MyInvocation|NestedPromptLevel|Profile|PSBoundParameters|PsCmdlet|PsCulture|PSDebugContext|PSItem|PSCommandPath|PSScriptRoot|PsUICulture|Pwd|Sender|SourceArgs|SourceEventArgs|StackTrace|Switch|This)\b)'
       comment: Automatic variables are not constants, but they are read-only...
       captures:
         0: support.variable.automatic.powershell
         1: punctuation.definition.variable.powershell
         3: variable.other.member.powershell
-    - match: (\$)(?i:(ConfirmPreference|DebugPreference|ErrorActionPreference|ErrorView|FormatEnumerationLimit|MaximumAliasCount|MaximumDriveCount|MaximumErrorCount|MaximumFunctionCount|MaximumHistoryCount|MaximumVariableCount|OFS|OutputEncoding|ProgressPreference|PsCulture|PSDebugContext|PSDefaultParameterValues|PSEmailServer|PSItem|PSModuleAutoloadingPreference|PSSenderInfo|PSSessionApplicationName|PSSessionConfigurationName|PSSessionOption|VerbosePreference|WarningPreference|WhatIfPreference))\b
+    - match: (\$)(?i:(ConfirmPreference|DebugPreference|ErrorActionPreference|ErrorView|FormatEnumerationLimit|InformationPreference|LogCommandHealthEvent|LogCommandLifecycleEvent|LogEngineHealthEvent|LogEngineLifecycleEvent|LogProviderHealthEvent|LogProviderLifecycleEvent|MaximumAliasCount|MaximumDriveCount|MaximumErrorCount|MaximumFunctionCount|MaximumHistoryCount|MaximumVariableCount|OFS|OutputEncoding|PSCulture|PSDebugContext|PSDefaultParameterValues|PSEmailServer|PSItem|PSModuleAutoLoadingPreference|PSModuleAutoloadingPreference|PSSenderInfo|PSSessionApplicationName|PSSessionConfigurationName|PSSessionOption|ProgressPreference|VerbosePreference|WarningPreference|WhatIfPreference))\b
       comment: Style preference variables as language variables so that they stand out.
       captures:
         0: variable.language.powershell
         1: punctuation.definition.variable.powershell
         3: variable.other.member.powershell
-    - match: '(?i:(\$|@)(global|local|private|script|using|workflow):((?:\p{L}|\d|_)+))'
+    - match: '(?i:(\$)(global|local|private|script|using|workflow):((?:\p{L}|\d|_)+))'
       captures:
         0: variable.other.readwrite.powershell
         1: punctuation.definition.variable.powershell
