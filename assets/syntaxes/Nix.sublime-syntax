@@ -140,7 +140,7 @@ contexts:
       push:
         - match: '(?=([\])};]|\b(else|then)\b))'
           pop: true
-        - match: '(?=(\s*\}|\"|\binherit\b|\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*(\s*\.|\s*=[^=])))'
+        - match: '(?=(\s*\}|\"|\binherit\b|\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*(\s*\.|\s*=[^=])|\$\{[a-zA-z0-9\_\''\-]+\}(\s*\.|\s*=[^=])))'
           push:
             - match: '(?=([\])};,]|\b(else|then)\b))'
               pop: true
@@ -563,7 +563,7 @@ contexts:
           pop: true
         - include: string-quoted
         - include: expression-cont
-    - match: '([a-zA-Z0-9\.\_\-\+]*(\/[a-zA-Z0-9\.\_\-\+]+)+)'
+    - match: '(~?[a-zA-Z0-9\.\_\-\+]*(\/[a-zA-Z0-9\.\_\-\+]+)+)'
       captures:
         0: string.unquoted.path.nix
       push:
