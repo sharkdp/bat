@@ -52,3 +52,6 @@ contexts:
         - meta_scope: keyword.control.robot
         - match: '($|\||\s{2,})'
           pop: true
+    - match: (?i)^\s+(Given|When|and|but|Then)
+      comment: BDD keywords
+      scope: string.robot.bdd
