@@ -196,7 +196,7 @@ impl App {
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
-                    if s == String::from("default") {
+                    if s == "default" {
                         String::from(BAT_THEME_DEFAULT)
                     } else {
                         s
