@@ -119,6 +119,24 @@ impl App {
             }
         }
 
+        let maybe_term_width = self.matches.value_of("terminal-width").and_then(|w| {
+            if w.starts_with('+') || w.starts_with('-') {
+                // Treat argument as a delta to the current terminal width
+                w.parse().ok().map(|delta: i16| {
+                    let old_width: u16 = Term::stdout().size().1;
+                    let new_width: i32 = i32::from(old_width) + i32::from(delta);
+
+                    if new_width <= 0 {
+                        old_width as usize
+                    } else {
+                        new_width as usize
+                    }
+                })
+            } else {
+                w.parse().ok()
+            }
+        });
+
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self.matches.value_of("language").or_else(|| {
@@ -129,11 +147,7 @@ impl App {
                 }
             }),
             show_nonprintable: self.matches.is_present("show-all"),
-            output_wrap: if !self.interactive_output {
-                // We don't have the tty width when piping to another program.
-                // There's no point in wrapping when this is the case.
-                OutputWrap::None
-            } else {
+            output_wrap: if self.interactive_output || maybe_term_width.is_some() {
                 match self.matches.value_of("wrap") {
                     Some("character") => OutputWrap::Character,
                     Some("never") => OutputWrap::None,
@@ -145,6 +159,10 @@ impl App {
                         }
                     }
                 }
+            } else {
+                // We don't have the tty width when piping to another program.
+                // There's no point in wrapping when this is the case.
+                OutputWrap::None
             },
             colored_output: match self.matches.value_of("color") {
                 Some("always") => true,
@@ -152,27 +170,7 @@ impl App {
                 Some("auto") | _ => self.interactive_output,
             },
             paging_mode,
-            term_width: self
-                .matches
-                .value_of("terminal-width")
-                .and_then(|w| {
-                    if w.starts_with('+') || w.starts_with('-') {
-                        // Treat argument as a delta to the current terminal width
-                        w.parse().ok().map(|delta: i16| {
-                            let old_width: u16 = Term::stdout().size().1;
-                            let new_width: i32 = i32::from(old_width) + i32::from(delta);
-
-                            if new_width <= 0 {
-                                old_width as usize
-                            } else {
-                                new_width as usize
-                            }
-                        })
-                    } else {
-                        w.parse().ok()
-                    }
-                })
-                .unwrap_or(Term::stdout().size().1 as usize),
+            term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
