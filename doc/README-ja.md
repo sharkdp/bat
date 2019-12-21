@@ -13,7 +13,7 @@
   <a href="#installation">インストール</a> •
   <a href="#customization">カスタマイズ</a> •
   <a href="#project-goals-and-alternatives">プロジェクトの目標と既存の類似したOSS</a> •
-  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja">日本文</a>]
+  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja">日本語</a>]
 </p>
 
 ### シンタックスハイライト
