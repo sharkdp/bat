@@ -56,3 +56,6 @@ escargot = "0.5.0"
 clap = "2.33"
 liquid = "0.19"
 lazy_static = "1.4"
+
+[profile.release]
+lto = true
