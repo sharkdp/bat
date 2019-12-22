@@ -246,10 +246,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .value_name("from:to")
                 .help("Map a file extension or name to an existing syntax.")
                 .long_help(
-                    "Map a file extension or file name to an existing syntax. For example, \
-                     to highlight *.conf files with the INI syntax, use '-m conf:ini'. \
-                     To highlight files named '.myignore' with the Git Ignore syntax, use \
-                     '-m .myignore:gitignore'.",
+                    "Map a file extension or file name to an existing syntax (specified by a file \
+                     extension or file name). For example, to highlight *.build files with the \
+                     Python syntax, use '-m build:py'. To highlight files named '.myignore' with \
+                     the Git Ignore syntax, use '-m .myignore:gitignore'.",
                 )
                 .takes_value(true),
         )
