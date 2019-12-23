@@ -81,6 +81,9 @@ impl OutputType {
                         //
                         // See: http://www.greenwoodsoftware.com/less/news.530.html
                         match retrieve_less_version() {
+                            None => {
+                                p.arg("--no-init");
+                            }
                             Some(version) if version < 530 => {
                                 p.arg("--no-init");
                             }
