@@ -29,6 +29,19 @@ Homepage: http://www.greenwoodsoftware.com/less";
 }
 
 #[test]
+fn test_parse_less_version_529() {
+    let output = b"less 529 (Spencer V8 regular expressions)
+Copyright (C) 1984-2017  Mark Nudelman
+
+less comes with NO WARRANTY, to the extent permitted by law.
+For information about the terms of redistribution,
+see the file named README in the less distribution.
+Homepage: http://www.greenwoodsoftware.com/less";
+
+    assert_eq!(Some(529), parse_less_version(output));
+}
+
+#[test]
 fn test_parse_less_version_551() {
     let output = b"less 551 (PCRE regular expressions)
 Copyright (C) 1984-2019  Mark Nudelman
