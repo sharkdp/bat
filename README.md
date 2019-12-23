@@ -435,18 +435,19 @@ export BAT_PAGER="less -RF"
 Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
 
 **Note**: By default, if the pager is set to `less` (and no command-line options are specified),
-`bat` will pass the following command line
-options to the pager: `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen` and `-X`/`--no-init`.
-The first (`-R`) is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
+`bat` will pass the following command line options to the pager: `-R`/`--RAW-CONTROL-CHARS`,
+`-F`/`--quit-if-one-screen` and `-X`/`--no-init`. The last option (`-X`) is only used for `less`
+versions older than 530.
+
+The `-R` option is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
 less to exit immediately if the output size is smaller than the vertical size of the terminal.
 This is convenient for small files because you do not have to press `q` to quit the pager. The
 third option (`-X`) is needed to fix a bug with the `--quit-if-one-screen` feature in old versions
-of `less`. Unfortunately, it also breaks mouse-wheel support in `less`. If you want to enable
-mouse-wheel scrolling, you can either pass just `-R` (as in the example above, this will disable
-the quit-if-one-screen feature), or you can use a recent version of `less` and pass `-RF` which
-will hopefully enable both quit-if-one-screen and mouse-wheel scrolling.
+of `less`. Unfortunately, it also breaks mouse-wheel support in `less`.
 
-If scrolling still doesn't work for you, you can try to pass the `-S` option in addition.
+If you want to enable mouse-wheel scrolling on older versions of `less`, you can pass just `-R` (as
+in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer,
+it should work out of the box.
 
 ### Dark mode
 
