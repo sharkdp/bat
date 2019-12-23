@@ -24,6 +24,7 @@ mod decorations;
 mod diff;
 pub mod dirs;
 pub mod inputfile;
+mod less;
 pub mod line_range;
 mod output;
 mod preprocessor;
