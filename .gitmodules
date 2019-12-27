@@ -169,3 +169,6 @@
 [submodule "assets/themes/solarized-sublime"]
 	path = assets/themes/solarized-sublime
 	url = https://github.com/paulcpederson/solarized-sublime.git
+[submodule "assets/syntaxes/Ledger"]
+	path = assets/syntaxes/Ledger
+	url = https://github.com/vqv/Ledger3.git
