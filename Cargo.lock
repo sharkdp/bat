@@ -68,9 +68,10 @@ dependencies = [
 
 [[package]]
 name = "atty"
-version = "0.2.13"
+version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
+ "hermit-abi 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -115,7 +116,7 @@ dependencies = [
  "ansi_colours 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ansi_term 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "assert_cmd 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "console 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "content_inspector 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -257,7 +258,7 @@ version = "2.33.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "ansi_term 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "strsim 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "term_size 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -271,7 +272,7 @@ name = "clicolors-control"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -445,7 +446,7 @@ name = "env_logger"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "humantime 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -570,6 +571,14 @@ dependencies = [
 name = "glob"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "hermit-abi"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.62 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "humantime"
@@ -1514,7 +1523,7 @@ dependencies = [
 "checksum arrayref 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "0d382e583f07208808f6b1249e60848879ba3543f57c32277bf52d69c2f0f0ee"
 "checksum arrayvec 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)" = "b8d73f9beda665eaa98ab9e4f7442bd4e7de6652587de55b2525e52e29c1b0ba"
 "checksum assert_cmd 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2dc477793bd82ec39799b6f6b3df64938532fdf2ab0d49ef817eac65856a5a1e"
-"checksum atty 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)" = "1803c647a3ec87095e7ae7acfca019e98de5ec9a7d01343f611cf3152ed71a90"
+"checksum atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
 "checksum autocfg 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "b671c8fb71b457dd4ae18c4ba1e59aa81793daacc361d82fcd410cef0d491875"
 "checksum backtrace 0.3.35 (registry+https://github.com/rust-lang/crates.io-index)" = "1371048253fa3bac6704bfd6bbfc922ee9bdcee8881330d40f308b81cc5adc55"
 "checksum backtrace-sys 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)" = "82a830b4ef2d1124a711c71d263c5abdc710ef8e907bd508c88be475cebc422b"
@@ -1570,6 +1579,7 @@ dependencies = [
 "checksum getrandom 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)" = "473a1265acc8ff1e808cd0a1af8cee3c2ee5200916058a2ca113c29f2d903571"
 "checksum git2 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "77519ef7c5beee314d0804d4534f01e0f9e8d9acdee2b7a48627e590b27e0ec4"
 "checksum glob 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
+"checksum hermit-abi 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "eff2656d88f158ce120947499e971d743c05dbcbed62e5bd2f38f1698bbc3772"
 "checksum humantime 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3ca7e5f2e110db35f93b837c81797f3714500b81d517bf20c431b16d3ca4f114"
 "checksum idna 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "38f09e0f0b1fb55fdee1f17470ad800da77af5186a1a76c026b679358b7e844e"
 "checksum idna 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "02e2673c30ee86b5b96a9cb52ad15718aa1f966f5ab9ad54a8b95d5ca33120a9"
