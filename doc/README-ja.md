@@ -450,3 +450,10 @@ cargo install -f
 
 既存の類似したOSSはたくさんあります。 
 `bat` とこれらを比較した表が[こちら](alternatives.md)にあります。
+
+## ライセンス
+Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
+
+`bat` は MIT License 及び Apache License 2.0 の両方の条件の下で配布されています。
+
+ライセンスの詳細については [LICENSE-APACHE](../LICENSE-APACHE) 及び [LICENSE-MIT](../LICENSE-MIT) ファイルを参照して下さい。
