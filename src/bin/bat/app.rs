@@ -215,11 +215,13 @@ impl App {
                 Some("always") => true,
                 _ => false,
             },
-            highlight_lines: self
-                .matches
-                .values_of("highlight-line")
-                .and_then(|ws| ws.map(|w| w.parse().ok()).collect())
-                .unwrap_or_default(),
+            highlight_lines: LineRanges::from(
+                self.matches
+                    .values_of("highlight-line")
+                    .map(|ws| ws.map(LineRange::from).collect())
+                    .transpose()?
+                    .unwrap_or_else(|| vec![LineRange { lower: 0, upper: 0 }]),
+            ),
         })
     }
 

@@ -30,13 +30,19 @@ impl LineRange {
         }
 
         let line_numbers: Vec<&str> = range_raw.split(':').collect();
-        if line_numbers.len() == 2 {
-            new_range.lower = line_numbers[0].parse()?;
-            new_range.upper = line_numbers[1].parse()?;
-            return Ok(new_range);
+        match line_numbers.len() {
+            1 => {
+                new_range.lower = line_numbers[0].parse()?;
+                new_range.upper = new_range.lower;
+                Ok(new_range)
+            },
+            2 => {
+                new_range.lower = line_numbers[0].parse()?;
+                new_range.upper = line_numbers[1].parse()?;
+                Ok(new_range)
+            },
+            _ => Err("expected at most single ':' character".into()),
         }
-
-        Err("expected single ':' character".into())
     }
 
     pub fn is_inside(&self, line: usize) -> bool {
@@ -66,14 +72,19 @@ fn test_parse_partial_max() {
 }
 
 #[test]
+fn test_parse_single() {
+    let range = LineRange::from("40").expect("Shouldn't fail on test!");
+    assert_eq!(40, range.lower);
+    assert_eq!(40, range.upper);
+}
+
+#[test]
 fn test_parse_fail() {
     let range = LineRange::from("40:50:80");
     assert!(range.is_err());
     let range = LineRange::from("40::80");
     assert!(range.is_err());
     let range = LineRange::from(":40:");
-    assert!(range.is_err());
-    let range = LineRange::from("40");
     assert!(range.is_err());
 }
 
