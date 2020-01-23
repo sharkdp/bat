@@ -128,5 +128,5 @@ pub struct Config<'a> {
     pub use_italic_text: bool,
 
     /// Lines to highlight
-    pub highlight_lines: Vec<usize>,
+    pub highlight_lines: LineRanges,
 }

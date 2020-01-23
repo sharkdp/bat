@@ -24,6 +24,7 @@ use crate::diff::get_git_diff;
 use crate::diff::LineChanges;
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
+use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -369,11 +370,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut panel_wrap: Option<String> = None;
 
         // Line highlighting
-        let highlight_this_line = self
-            .config
-            .highlight_lines
-            .iter()
-            .any(|&l| l == line_number);
+        let highlight_this_line =
+            self.config.highlight_lines.check(line_number) == RangeCheckResult::InRange;
 
         let background_color = self
             .background_color_highlight
