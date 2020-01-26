@@ -186,7 +186,7 @@ impl HighlightingAssets {
                     .find_syntax_by_extension(&file_name)
                     .or_else(|| self.syntax_set.find_syntax_by_extension(&extension));
                 let line_syntax = if ext_syntax.is_none() {
-                    String::from_utf8(reader.first_line.clone())
+                    String::from_utf8(reader.current_line.clone())
                         .ok()
                         .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
                 } else {
@@ -195,7 +195,7 @@ impl HighlightingAssets {
 
                 ext_syntax.or(line_syntax)
             }
-            (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
+            (None, InputFile::StdIn) => String::from_utf8(reader.current_line.clone())
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),

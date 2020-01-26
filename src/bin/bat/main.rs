@@ -59,7 +59,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
 
     if config.loop_through {
         for lang in languages {
-            write!(stdout, "{}:{}\n", lang.name, lang.file_extensions.join(","))?;
+            writeln!(stdout, "{}:{}", lang.name, lang.file_extensions.join(","))?;
         }
     } else {
         let longest = languages
