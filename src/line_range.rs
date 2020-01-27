@@ -41,7 +41,7 @@ impl LineRange {
                 new_range.upper = line_numbers[1].parse()?;
                 Ok(new_range)
             },
-            _ => Err("expected at most single ':' character".into()),
+            _ => Err("Line range contained more than one ':' character. Expected format: 'N' or 'N:M'".into()),
         }
     }
 

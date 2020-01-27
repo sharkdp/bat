@@ -87,10 +87,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help(
                     "Highlight the specified line ranges with a different background color \
                      For example:\n  \
+                     '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
-                     '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
-                     '--highlight-line 40' highlights only line 40",
+                     '--highlight-line 40:' highlights lines 40 to the end of the file"
                 ),
         )
         .arg(
@@ -334,7 +334,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--line-range 30:40' prints lines 30 to 40\n  \
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file\n  \
-                     '--line-range 40' prints only line 40",
+                     '--line-range 40' only prints line 40",
                 ),
         )
         .arg(
