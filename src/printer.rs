@@ -16,6 +16,8 @@ use content_inspector::ContentType;
 use encoding::all::{UTF_16BE, UTF_16LE};
 use encoding::{DecoderTrap, Encoding};
 
+use unicode_width::UnicodeWidthChar;
+
 use crate::assets::HighlightingAssets;
 use crate::decorations::{
     Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
@@ -468,75 +470,84 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 &mut cursor_total,
                             );
 
-                            let mut chars = text.chars();
-                            let mut remaining = text.chars().count();
+                            let max_width = cursor_max - cursor;
 
-                            while remaining > 0 {
-                                let available = cursor_max - cursor;
+                            // line buffer (avoid calling write! for every character)
+                            let mut line_buf = String::with_capacity(max_width * 4);
 
-                                // It fits.
-                                if remaining <= available {
-                                    let text = chars.by_ref().take(remaining).collect::<String>();
-                                    cursor += remaining;
+                            // Displayed width of line_buf
+                            let mut current_width = 0;
 
+                            for c in text.chars() {
+                                // calculate the displayed width for next character
+                                let cw = c.width().unwrap_or(0);
+                                current_width += cw;
+
+                                // if next character cannot be printed on this line,
+                                // flush the buffer.
+                                if current_width > max_width {
+                                    // Generate wrap padding if not already generated.
+                                    if panel_wrap.is_none() {
+                                        panel_wrap = if self.panel_width > 0 {
+                                            Some(format!(
+                                                "{} ",
+                                                self.decorations
+                                                    .iter()
+                                                    .map(|ref d| d
+                                                        .generate(line_number, true, self)
+                                                        .text)
+                                                    .collect::<Vec<String>>()
+                                                    .join(" ")
+                                            ))
+                                        } else {
+                                            Some("".to_string())
+                                        }
+                                    }
+
+                                    cursor = 0;
+
+                                    // It wraps.
                                     write!(
                                         handle,
-                                        "{}",
+                                        "{}\n{}",
                                         as_terminal_escaped(
                                             style,
                                             &*format!(
                                                 "{}{}{}",
-                                                self.ansi_prefix_sgr, ansi_prefix, text
+                                                self.ansi_prefix_sgr, ansi_prefix, line_buf
                                             ),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
                                             background_color
-                                        )
-                                    )?;
-                                    break;
-                                }
-
-                                // Generate wrap padding if not already generated.
-                                if panel_wrap.is_none() {
-                                    panel_wrap = if self.panel_width > 0 {
-                                        Some(format!(
-                                            "{} ",
-                                            self.decorations
-                                                .iter()
-                                                .map(|ref d| d
-                                                    .generate(line_number, true, self)
-                                                    .text)
-                                                .collect::<Vec<String>>()
-                                                .join(" ")
-                                        ))
-                                    } else {
-                                        Some("".to_string())
-                                    }
-                                }
-
-                                // It wraps.
-                                let text = chars.by_ref().take(available).collect::<String>();
-                                cursor = 0;
-                                remaining -= available;
-
-                                write!(
-                                    handle,
-                                    "{}\n{}",
-                                    as_terminal_escaped(
-                                        style,
-                                        &*format!(
-                                            "{}{}{}",
-                                            self.ansi_prefix_sgr, ansi_prefix, text
                                         ),
-                                        self.config.true_color,
-                                        self.config.colored_output,
-                                        self.config.use_italic_text,
-                                        background_color
-                                    ),
-                                    panel_wrap.clone().unwrap()
-                                )?;
+                                        panel_wrap.clone().unwrap()
+                                    )?;
+
+                                    line_buf.clear();
+                                    current_width = cw;
+                                }
+
+                                line_buf.push(c);
                             }
+
+                            // flush the buffer
+                            cursor += current_width;
+                            write!(
+                                handle,
+                                "{}",
+                                as_terminal_escaped(
+                                    style,
+                                    &*format!(
+                                        "{}{}{}",
+                                        self.ansi_prefix_sgr, ansi_prefix, line_buf
+                                    ),
+                                    self.config.true_color,
+                                    self.config.colored_output,
+                                    self.config.use_italic_text,
+                                    background_color
+                                )
+                            )?;
 
                             // Clear the ANSI prefix buffer.
                             ansi_prefix.clear();
