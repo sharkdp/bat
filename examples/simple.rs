@@ -9,7 +9,7 @@ use console::Term;
 use std::process;
 
 fn main() {
-    let files = std::env::args().skip(1).collect::<Vec<_>>();
+    let files = std::env::args_os().skip(1).collect::<Vec<_>>();
 
     if files.is_empty() {
         eprintln!("No input files specified");

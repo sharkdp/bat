@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
+use std::ffi::OsStr;
 
 use content_inspector::{self, ContentType};
 
@@ -54,7 +55,7 @@ impl<'a> InputFileReader<'a> {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputFile<'a> {
     StdIn,
-    Ordinary(&'a str),
+    Ordinary(&'a OsStr),
     ThemePreviewFile,
 }
 
@@ -63,10 +64,10 @@ impl<'a> InputFile<'a> {
         match self {
             InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
             InputFile::Ordinary(filename) => {
-                let file = File::open(filename).map_err(|e| format!("'{}': {}", filename, e))?;
+                let file = File::open(filename).map_err(|e| format!("'{}': {}", filename.to_string_lossy(), e))?;
 
                 if file.metadata()?.is_dir() {
-                    return Err(format!("'{}' is a directory.", filename).into());
+                    return Err(format!("'{}' is a directory.", filename.to_string_lossy()).into());
                 }
 
                 Ok(InputFileReader::new(BufReader::new(file)))

@@ -1,7 +1,9 @@
-use git2::{DiffOptions, IntoCString, Repository};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::ffi::OsStr;
+
+use git2::{DiffOptions, IntoCString, Repository};
 
 #[derive(Copy, Clone, Debug)]
 pub enum LineChange {
@@ -13,7 +15,7 @@ pub enum LineChange {
 
 pub type LineChanges = HashMap<u32, LineChange>;
 
-pub fn get_git_diff(filename: &str) -> Option<LineChanges> {
+pub fn get_git_diff(filename: &OsStr) -> Option<LineChanges> {
     let repo = Repository::discover(&filename).ok()?;
 
     let repo_path_absolute = fs::canonicalize(repo.workdir()?).ok()?;
