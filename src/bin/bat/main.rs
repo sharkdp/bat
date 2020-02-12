@@ -13,6 +13,7 @@ use std::io;
 use std::io::Write;
 use std::path::Path;
 use std::process;
+use std::ffi::OsStr;
 
 use ansi_term::Colour::Green;
 use ansi_term::Style;
@@ -160,7 +161,7 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else {
                 let mut config = app.config()?;
-                config.files = vec![InputFile::Ordinary(&"cache")];
+                config.files = vec![InputFile::Ordinary(OsStr::new("cache"))];
 
                 run_controller(&config)
             }

@@ -227,7 +227,7 @@ impl App {
 
     fn files(&self) -> Vec<InputFile> {
         self.matches
-            .values_of("FILE")
+            .values_of_os("FILE")
             .map(|values| {
                 values
                     .map(|filename| {
