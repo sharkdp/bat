@@ -169,3 +169,7 @@
 [submodule "assets/themes/solarized-sublime"]
 	path = assets/themes/solarized-sublime
 	url = https://github.com/paulcpederson/solarized-sublime.git
+[submodule "assets/syntaxes/Vue"]
+	path = assets/syntaxes/Vue
+	url = https://github.com/vuejs/vue-syntax-highlight.git
+	branch = new
