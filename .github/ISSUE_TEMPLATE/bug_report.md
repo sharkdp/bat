@@ -9,7 +9,7 @@ assignees: ''
 
 \-------------------------------------------------------------------------------------------------
 **Hey there, thanks for creating an issue!**  
-In order to replicate your issue, we might need to know a little bit more about the environment
+In order to reproduce your issue, we might need to know a little bit more about the environment
 which you're running `bat` on.
 
 **If you're on Linux or MacOS:**  
