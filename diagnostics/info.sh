@@ -87,9 +87,10 @@ _ask_module() {
 
 cat 1>&2 <<EOF
 --------------------------------------------------------------------------------
-This script will collect information to help assist in issue resolution.
-You will be provided with a description of the data collected, and will be
-offered the opportunity to give consent for each piece of information collected.
+This script runs some harmless commands to collect information about your
+system and bat configuration. It will give you a small preview of the commands
+that will be run, and ask consent before running them. Once completed, it will
+output a small report that you can review and copy into the issue description.
 --------------------------------------------------------------------------------
 EOF
 
@@ -113,7 +114,7 @@ EOF
 	printf "\n" 1>&2
 	local response
 	while true; do
-		_tput cup "$(( $(tput lines 2>/dev/null || echo 22) - 1 ))"
+		_tput cup "$(( $(tput lines || echo 22) - 2 ))"
 		_tput el
 		read -er -p "Collect $(sed 's/_/ /' <<< "$1") data? [Y/n] " response
 		case "$response" in
