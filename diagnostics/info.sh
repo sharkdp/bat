@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-_modules=('system' 'bat' 'bat_config' 'bat_wrapper' 'tool')
+_modules=('system' 'bat' 'bat_config' 'bat_wrapper' 'bat_wrapper_function' 'tool')
 _modules_consented=()
 
 
@@ -18,6 +18,10 @@ _bat_config_:description() {
 
 _bat_wrapper_:description() {
 	_collects "Any wrapper script used by 'bat'."
+}
+
+_bat_wrapper_function_description() {
+	_collects "The wrapper function surrounding 'bat' (if applicable)."
 }
 
 _system_:description() {
@@ -46,7 +50,28 @@ _bat_config_:run() {
 _bat_wrapper_:run() {
 	if file "$(which bat)" | grep "text executable" &>/dev/null; then
 		_out cat "$(which bat)"
+		return
 	fi
+	printf "\nNo wrapper script.\n"
+}
+
+_bat_wrapper_function_:run() {
+	case "$("$SHELL" --version | head -n 1)" in
+		*fish*) 
+			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+				_out "$SHELL" --login -c 'functions bat'
+			fi ;;
+
+		*bash*)
+			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+				_out "$SHELL" --login -c 'declare -f bat'
+			fi ;;
+
+		*) 
+			echo "Unable to determine if a wrapper function is set."
+			return ;;
+	esac
+	printf "\nNo wrapper function.\n"
 }
 
 _system_:run() {
@@ -65,11 +90,14 @@ _tool_:run() {
 # Functions:
 # -----------------------------------------------------------------------------
 
-_out() {
+_print_command() {
 	printf "\n+" 1>&2
 	printf " %s" "$@" 1>&2
 	printf "\n" 1>&2
+}
 
+_out() {
+	_print_command "$@"
 	"$@" 2>&1
 }
 
@@ -107,8 +135,8 @@ EOF
 	_tput sgr0
 	declare -f "_$1_:run" \
 		| sed 's/^ *//; s/;$//' \
-		| grep '^_out ' \
-		| sed 's/^_out //' 1>&2
+		| grep '^_out\([21]*\) ' \
+		| sed 's/^_out\([21]*\) //' 1>&2
 
 	# Prompt
 	printf "\n" 1>&2
