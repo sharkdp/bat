@@ -371,11 +371,7 @@ Windows 上で `bat` はほとんど動作しますが、いくつかの機能�
 
 ### ページング
 
-Windows only includes a very limited pager in the form of `more`. You can download a Windows binary
-for `less` [from its homepage](http://www.greenwoodsoftware.com/less/download.html) or [through
-Chocolatey](https://chocolatey.org/packages/Less). To use it, place the binary in a directory in
-your `PATH` or [define an environment variable](#using-a-different-pager).
-
+Windowsには、`more`形式の非常に限られたページャーしか含まれていません。[ホームページ](http://www.greenwoodsoftware.com/less/download.html)または[Chocolatey](https://chocolatey.org/packages/Less)からWindows用の`less`バイナリをダウンロードできます。 使用するには、バイナリを`PATH`の通っているディレクトリに配置するか、[環境変数を定義](#異なるページャーの使用)します。
 
 
 ### 色
