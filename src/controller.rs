@@ -79,7 +79,10 @@ impl<'b> Controller<'b> {
         writer: &mut dyn Write,
         input_file: InputFile<'a>,
     ) -> Result<()> {
-        printer.print_header(writer, input_file)?;
+        if !reader.first_line.is_empty() || self.config.output_components.header() {
+            printer.print_header(writer, input_file)?;
+        }
+
         if !reader.first_line.is_empty() {
             self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
         }
