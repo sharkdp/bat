@@ -33,15 +33,15 @@ matrix:
 
     # Minimum Rust supported channel.
     - os: linux
-      rust: 1.35.0
+      rust: 1.36.0
       env: TARGET=x86_64-unknown-linux-gnu
     - os: linux
-      rust: 1.35.0
+      rust: 1.36.0
       env:
         - TARGET=x86_64-unknown-linux-musl
         - CC_x86_64_unknown_linux_musl=/usr/bin/musl-gcc
     - os: osx
-      rust: 1.35.0
+      rust: 1.36.0
       env: TARGET=x86_64-apple-darwin
 
     # Disable nightly for now
