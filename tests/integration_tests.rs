@@ -504,3 +504,15 @@ fn snip() {
 ",
         );
 }
+
+#[test]
+fn empty_file_leads_to_empty_output_with_grid_enabled() {
+    bat()
+        .arg("empty.txt")
+        .arg("--style=grid")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout("");
+}
