@@ -37,6 +37,7 @@ Please remove this header and continue.
 **How did you install `bat`?**  
 apt-get, homebrew, GitHub release, etc.
 
-**If applicable, can you tell us more about your system?**
-...
+---
+
+[paste the output of `info.sh` here]
 
