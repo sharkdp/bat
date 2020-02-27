@@ -43,13 +43,13 @@ _bat_:run() {
 
 _bat_config_:run() {
 	if [[ -f "$(bat --config-file)" ]]; then 
-		_out cat "$(bat --config-file)"; 
+		_out_fence cat "$(bat --config-file)"; 
 	fi
 }
 
 _bat_wrapper_:run() {
 	if file "$(which bat)" | grep "text executable" &>/dev/null; then
-		_out cat "$(which bat)"
+		_out_fence cat "$(which bat)"
 		return
 	fi
 	printf "\nNo wrapper script.\n"
@@ -59,12 +59,12 @@ _bat_wrapper_function_:run() {
 	case "$("$SHELL" --version | head -n 1)" in
 		*fish*) 
 			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
-				_out "$SHELL" --login -c 'functions bat'
+				_out_fence "$SHELL" --login -c 'functions bat'
 			fi ;;
 
 		*bash*)
 			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
-				_out "$SHELL" --login -c 'declare -f bat'
+				_out_fence "$SHELL" --login -c 'declare -f bat'
 			fi ;;
 
 		*) 
@@ -91,14 +91,21 @@ _tool_:run() {
 # -----------------------------------------------------------------------------
 
 _print_command() {
-	printf "\n+" 1>&2
-	printf " %s" "$@" 1>&2
-	printf "\n" 1>&2
+	printf '\n**$' 1>&2
+	printf ' %s' "$@" 1>&2
+	printf '**\n' 1>&2
 }
 
 _out() {
 	_print_command "$@"
+	"$@" 2>&1 | sed 's/$/  /'
+}
+
+_out_fence() {
+	_print_command "$@"
+	printf '```\n' 1>&2
 	"$@" 2>&1
+	printf '```\n' 1>&2
 }
 
 _tput() {
@@ -135,8 +142,8 @@ EOF
 	_tput sgr0
 	declare -f "_$1_:run" \
 		| sed 's/^ *//; s/;$//' \
-		| grep '^_out\([21]*\) ' \
-		| sed 's/^_out\([21]*\) //' 1>&2
+		| grep '^_out[^ ]* ' \
+		| sed 's/^_out[^ ]* //' 1>&2
 
 	# Prompt
 	printf "\n" 1>&2
@@ -154,7 +161,8 @@ EOF
 }
 
 _run_module() {
-	printf "========== %s ==========\n" "$1"
+	local module="$1"
+	printf "%s\n%s\n" "$module" "$(printf "%${#module}s" | tr ' ' '-')"
 	"_$1_:run"
 }
 
@@ -179,7 +187,7 @@ fi
 
 # Collect information.
 for _module in "${_modules_consented[@]}"; do
-	_run_module "$_module"
+	_run_module "$_module" 2>&1
 	printf "\n"
 done
 
