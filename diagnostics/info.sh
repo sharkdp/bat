@@ -20,7 +20,7 @@ _bat_wrapper_:description() {
 	_collects "Any wrapper script used by 'bat'."
 }
 
-_bat_wrapper_function_description() {
+_bat_wrapper_function_:description() {
 	_collects "The wrapper function surrounding 'bat' (if applicable)."
 }
 
