@@ -7,8 +7,8 @@ assignees: ''
 
 ---
 
-\-------------------------------------------------------------------------------------------------
-**BEFORE YOU MAKE A REQUEST:**
+<!--
+BEFORE YOU MAKE A REQUEST:
 
 Are you looking to add a new syntax to use on one of your devices?
 Bat supports locally-installed language definitions. See the link below:
@@ -19,13 +19,11 @@ If you think adding this syntax would help others as well, please make sure that
 guidelines for adding new syntaxes:
 
  - 10,000 downloads on packagecontrol.io
-
-Once you have confirmed that it meets our guidelines, you can remove this header and continue.
-\-------------------------------------------------------------------------------------------------
+-->
 
 
-**Syntax:** syntax/language name
+**Syntax:**
+[Name or description of the syntax/language here]
 
 **Guideline Criteria:**
 [packagecontro.io link here]
-
