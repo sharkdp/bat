@@ -9,11 +9,11 @@ mod clap_app;
 mod config;
 
 use std::collections::HashSet;
+use std::ffi::OsStr;
 use std::io;
 use std::io::Write;
 use std::path::Path;
 use std::process;
-use std::ffi::OsStr;
 
 use ansi_term::Colour::Green;
 use ansi_term::Style;

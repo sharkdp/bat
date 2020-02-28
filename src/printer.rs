@@ -1,6 +1,6 @@
+use std::borrow::Cow;
 use std::io::Write;
 use std::vec::Vec;
-use std::borrow::Cow;
 
 use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
@@ -228,7 +228,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
         if !self.config.output_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
-                    InputFile::Ordinary(filename) => format!("file '{}'", filename.to_string_lossy()),
+                    InputFile::Ordinary(filename) => {
+                        format!("file '{}'", filename.to_string_lossy())
+                    }
                     _ => "STDIN".into(),
                 };
 

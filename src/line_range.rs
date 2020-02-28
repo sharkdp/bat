@@ -35,13 +35,16 @@ impl LineRange {
                 new_range.lower = line_numbers[0].parse()?;
                 new_range.upper = new_range.lower;
                 Ok(new_range)
-            },
+            }
             2 => {
                 new_range.lower = line_numbers[0].parse()?;
                 new_range.upper = line_numbers[1].parse()?;
                 Ok(new_range)
-            },
-            _ => Err("Line range contained more than one ':' character. Expected format: 'N' or 'N:M'".into()),
+            }
+            _ => Err(
+                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M'"
+                    .into(),
+            ),
         }
     }
 
