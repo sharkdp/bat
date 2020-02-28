@@ -2,7 +2,7 @@
 name: Syntax Request
 about: Request adding a new syntax to bat.
 title: ""
-labels: new-syntax
+labels: syntax-request
 assignees: ''
 
 ---
