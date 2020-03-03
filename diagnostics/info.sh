@@ -73,11 +73,13 @@ _bat_wrapper_function_:run() {
 		*fish*)
 			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
 				_out_fence "$SHELL" --login -c 'functions bat'
+				return
 			fi ;;
 
-		*bash*)
+		*bash*|*zsh*)
 			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
-				_out_fence "$SHELL" --login -c 'declare -f bat'
+				_out_fence "$SHELL" --login -i -c 'declare -f bat'
+				return
 			fi ;;
 
 		*)
