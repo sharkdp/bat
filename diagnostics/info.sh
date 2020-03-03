@@ -2,6 +2,7 @@
 _modules=('system' 'bat' 'bat_config' 'bat_wrapper' 'bat_wrapper_function' 'tool')
 _modules_consented=()
 
+set -o pipefail
 
 # -----------------------------------------------------------------------------
 # Modules:
@@ -9,6 +10,7 @@ _modules_consented=()
 
 _bat_:description() {
 	_collects "Version information for 'bat'."
+	_collects "Custom syntaxes and themes for 'bat'."
 }
 
 _bat_config_:description() {
@@ -39,11 +41,22 @@ _tool_:description() {
 _bat_:run() {
 	_out bat --version
 	_out env | grep '^BAT_\|^PAGER='
+
+	local cache_dir="$(bat --cache-dir)"
+	if [[ -f "${cache_dir}/syntaxes.bin" ]]; then
+		_print_command "bat" "--list-languages"
+		echo "Found custom syntax set."
+	fi
+
+	if [[ -f "${cache_dir}/themes.bin" ]]; then
+		_print_command "bat" "--list-themes"
+		echo "Found custom theme set."
+	fi
 }
 
 _bat_config_:run() {
-	if [[ -f "$(bat --config-file)" ]]; then 
-		_out_fence cat "$(bat --config-file)"; 
+	if [[ -f "$(bat --config-file)" ]]; then
+		_out_fence cat "$(bat --config-file)";
 	fi
 }
 
@@ -57,7 +70,7 @@ _bat_wrapper_:run() {
 
 _bat_wrapper_function_:run() {
 	case "$("$SHELL" --version | head -n 1)" in
-		*fish*) 
+		*fish*)
 			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
 				_out_fence "$SHELL" --login -c 'functions bat'
 			fi ;;
@@ -67,7 +80,7 @@ _bat_wrapper_function_:run() {
 				_out_fence "$SHELL" --login -c 'declare -f bat'
 			fi ;;
 
-		*) 
+		*)
 			echo "Unable to determine if a wrapper function is set."
 			return ;;
 	esac
@@ -135,7 +148,7 @@ EOF
 	_tput sgr0
 	"_$1_:description"
 	_tput sgr0
-	
+
 	# Print preview.
 	_tput setaf 3
 	printf "\nThe following commands will be run:\n" 1>&2
