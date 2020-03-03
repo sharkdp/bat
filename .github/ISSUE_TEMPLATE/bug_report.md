@@ -14,7 +14,7 @@ In order to reproduce your issue, we might need to know a little bit more about 
 which you're running `bat` on.
 
 If you're on Linux or MacOS:
-  Please run the script at https://github.com/sharkdp/bat/blob/diag-tools/diagnostics/info.sh and
+  Please run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and
   paste the output at the bottom of the bug report.
 
 If you're on Windows:
