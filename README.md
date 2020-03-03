@@ -568,6 +568,10 @@ iconv -f ISO-8859-1 -t UTF-8 my-file.php | bat
 Note: you might have to use the `-l`/`--language` option if the syntax can not be auto-detected
 by `bat`.
 
+### No output on Windows
+
+Install the Visual C++ Redistributable: [The latest supported Visual C++ downloads - Microsoft Support](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+
 ## Development
 
 ```bash
