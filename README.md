@@ -283,6 +283,8 @@ scoop install bat
 choco install bat
 ```
 
+You will need to install the Visual C++ Redistributable: [The latest supported Visual C++ downloads - Microsoft Support](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+
 [See below](#using-bat-on-windows) for notes.
 
 ### Via Docker
@@ -497,7 +499,7 @@ Example configuration file:
 
 ## Using `bat` on Windows
 
-`bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration. You will need to install the Visual C++ Redistributable: [The latest supported Visual C++ downloads - Microsoft Support](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+`bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
 
 ### Paging
 
