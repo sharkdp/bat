@@ -34,17 +34,17 @@ pub fn as_terminal_escaped(
     let mut style = if !colored {
         Style::default()
     } else {
-        let color = to_ansi_color(style.foreground, true_color);
-
+        let mut color = Style::from(to_ansi_color(style.foreground, true_color));
         if style.font_style.contains(FontStyle::BOLD) {
-            color.bold()
-        } else if style.font_style.contains(FontStyle::UNDERLINE) {
-            color.underline()
-        } else if italics && style.font_style.contains(FontStyle::ITALIC) {
-            color.italic()
-        } else {
-            color.normal()
+            color = color.bold();
         }
+        if style.font_style.contains(FontStyle::UNDERLINE) {
+            color = color.underline();
+        }
+        if italics && style.font_style.contains(FontStyle::ITALIC) {
+            color = color.italic();
+        }
+        color
     };
 
     style.background = background_color.map(|c| to_ansi_color(c, true_color));
