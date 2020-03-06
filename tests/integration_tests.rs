@@ -1,22 +1,7 @@
-extern crate assert_cmd;
-extern crate escargot;
-#[macro_use]
-extern crate lazy_static;
-
-use assert_cmd::prelude::*;
-use escargot::CargoRun;
-use std::process::Command;
-
-lazy_static! {
-    static ref CARGO_RUN: CargoRun = escargot::CargoBuild::new()
-        .bin("bat")
-        .current_release()
-        .run()
-        .unwrap();
-}
+use assert_cmd::Command;
 
 fn bat_with_config() -> Command {
-    let mut cmd = CARGO_RUN.command();
+    let mut cmd = Command::cargo_bin("bat").unwrap();
     cmd.current_dir("tests/examples");
     cmd.env_remove("PAGER");
     cmd.env_remove("BAT_PAGER");
@@ -46,8 +31,7 @@ fn basic() {
 #[test]
 fn stdin() {
     bat()
-        .with_stdin()
-        .buffer("foo\nbar\n")
+        .write_stdin("foo\nbar\n")
         .assert()
         .success()
         .stdout("foo\nbar\n");
@@ -69,8 +53,7 @@ fn concatenate_stdin() {
         .arg("test.txt")
         .arg("-")
         .arg("test.txt")
-        .with_stdin()
-        .buffer("stdin\n")
+        .write_stdin("stdin\n")
         .assert()
         .success()
         .stdout("hello world\nstdin\nhello world\n");
