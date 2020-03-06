@@ -277,7 +277,7 @@ take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
 #### With Chocolatey
 
-You can install `bat` via [Chocolatey](https://chocolatey.org):
+You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
 ```bash
 choco install bat
 ```
