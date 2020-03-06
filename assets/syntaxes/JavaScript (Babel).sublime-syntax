@@ -4,9 +4,11 @@
 name: JavaScript (Babel)
 file_extensions:
   - js
+  - mjs
   - jsx
   - babel
   - es6
+  - cjs
 first_line_match: ^#!\s*/.*\b(node|js)$\n?
 scope: source.js
 contexts:
