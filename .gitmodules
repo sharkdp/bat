@@ -173,3 +173,6 @@
 	path = assets/syntaxes/Vue
 	url = https://github.com/vuejs/vue-syntax-highlight.git
 	branch = new
+[submodule "assets/syntaxes/CoffeeScript"]
+	path = assets/syntaxes/CoffeeScript
+	url = https://github.com/sustained/CoffeeScript-Sublime-Plugin
