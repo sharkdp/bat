@@ -112,7 +112,7 @@ make_deb() {
     gzip --best "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
 
     # completions
-    install -Dm644 "assets/completions/bat.fish" "$tempdir/usr/share/fish/completions/$PROJECT_NAME.fish"
+    install -Dm644 "assets/completions/bat.fish" "$tempdir/usr/share/fish/vendor_completions.d/$PROJECT_NAME.fish"
 
     # readme and license
     install -Dm644 README.md "$tempdir/usr/share/doc/$PROJECT_NAME/README.md"
