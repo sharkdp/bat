@@ -272,20 +272,30 @@ port install bat
 
 ### On Windows
 
-You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
-or install it with [scoop](https://scoop.sh/) or [Chocolatey](https://chocolatey.org):
+There are a few options to install `bat` on Windows. Once you have installed `bat`,
+take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
-```bash
-scoop install bat
-```
+#### With Chocolatey
 
+You can install `bat` via [Chocolatey](https://chocolatey.org):
 ```bash
 choco install bat
 ```
 
-You will need to install the Visual C++ Redistributable: [The latest supported Visual C++ downloads - Microsoft Support](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+#### With Scoop
 
-[See below](#using-bat-on-windows) for notes.
+You can install `bat` via [scoop](https://scoop.sh/):
+```bash
+scoop install bat
+```
+
+You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+
+#### From prebuilt binaries:
+
+You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+
+You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
 
 ### Via Docker
 
