@@ -29,7 +29,7 @@ shell-words = "0.1.0"
 unicode-width = "0.1.7"
 
 [dependencies.git2]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = []
 
