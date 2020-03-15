@@ -1,18 +1,23 @@
 .TH {{PROJECT_EXECUTABLE | upcase}} "1"
 .SH NAME
-{{PROJECT_EXECUTABLE}} \- manual page for {{PROJECT_NAME}}
-.SH DESCRIPTION
-{{PROJECT_EXECUTABLE}} - a cat(1) clone with syntax highlighting and Git integration.
+{{PROJECT_EXECUTABLE}} \- a cat(1) clone with syntax highlighting and Git integration.
 .SH "USAGE"
-.IP
-{{PROJECT_EXECUTABLE}} [OPTIONS] [FILE]...
-.IP
-{{PROJECT_EXECUTABLE}} <SUBCOMMAND>
+.IP "{{PROJECT_EXECUTABLE}} [OPTIONS] [FILE]..."
+.IP "{{PROJECT_EXECUTABLE}} cache [CACHE-OPTIONS] [--build|--clear]
+.SH DESCRIPTION
+{{PROJECT_EXECUTABLE}} prints the syntax-highlighted content of a collection of FILEs to the
+terminal. If no FILE is specified, or when FILE is '-', it reads from standard input.
+
+{{PROJECT_EXECUTABLE}} supports a large number of programming and markup languages.
+It also communicates with git(1) to show modifications with respect to the git index.
+{{PROJECT_EXECUTABLE}} automatically pipes its output through a pager (by default: less).
+
+Whenever the output of {{PROJECT_EXECUTABLE}} goes to a non-interactive terminal, i.e. when the
+output is piped into another process or into a file, {{PROJECT_EXECUTABLE}} will act as a drop-in
+replacement for cat(1) and fall back to printing the plain file contents.
+
 .SH "OPTIONS"
-.HP
-General remarks
-.IP
-Command-line options like '-l'/'--language' that take values can be specified as
+General remarks: Command-line options like '-l'/'--language' that take values can be specified as
 either '--language value', '--language=value', '-l value' or '-lvalue'.
 .HP
 \fB\-A\fR, \fB\-\-show\-all\fR
@@ -33,78 +38,80 @@ specified as a name (like 'C++' or 'LaTeX') or possible file extension
 (like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
 language names and file extensions.
 .HP
-\fB\-H\fR, \fB\-\-highlight\-line\fR <N>...
+\fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
-Highlight the N\-th line with a different background color
+Highlight the specified line ranges with a different background color For example:
+.RS
+.IP "\-\-highlight\-line 40"
+highlights line 40
+.IP "\-\-highlight\-line 30:40"
+highlights lines 30 to 40
+.IP "\-\-highlight\-line :40"
+highlights lines 1 to 40
+.IP "\-\-highlight\-line 40:"
+highlights lines 40 to the end of the file
+.RE
 .HP
 \fB\-\-tabs\fR <T>
 .IP
-Set the tab width to T spaces. Use a width of 0 to pass tabs through
-directly
+Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
-Specify the text\-wrapping mode (*auto*, never, character). The
-\&'\-\-terminal\-width' option can be used in addition to control the output
-width.
+Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
+can be used in addition to control the output width.
 .HP
 \fB\-\-terminal\-width\fR <width>
 .IP
-Explicitly set the width of the terminal instead of determining it
-automatically. If prefixed with '+' or '\-', the value will be treated as
-an offset to the actual terminal width. See also: '\-\-wrap'.
+Explicitly set the width of the terminal instead of determining it automatically. If
+prefixed with '+' or '\-', the value will be treated as an offset to the actual terminal
+width. See also: '\-\-wrap'.
 .HP
 \fB\-n\fR, \fB\-\-number\fR
 .IP
-Only show line numbers, no other decorations. This is an alias for
-\&'\-\-style=numbers'
+Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
 .HP
 \fB\-\-color\fR <when>
 .IP
-Specify when to use colored output. The automatic mode only enables colors
-if an interactive terminal is detected. Possible values: *auto*, never,
-always.
+Specify when to use colored output. The automatic mode only enables colors if an
+interactive terminal is detected. Possible values: *auto*, never, always.
 .HP
 \fB\-\-italic\-text\fR <when>
 .IP
-Specify when to use ANSI sequences for italic text in the output. Possible
-values: always, *never*.
+Specify when to use ANSI sequences for italic text in the output. Possible values:
+always, *never*.
 .HP
 \fB\-\-decorations\fR <when>
 .IP
-Specify when to use the decorations that have been specified via
-\&'\-\-style'. The automatic mode only enables decorations if an interactive
-terminal is detected. Possible values: *auto*, never, always.
+Specify when to use the decorations that have been specified via '\-\-style'. The
+automatic mode only enables decorations if an interactive terminal is detected. Possible
+values: *auto*, never, always.
 .HP
 \fB\-\-paging\fR <when>
 .IP
-Specify when to use the pager. To control which pager is used, set the
-PAGER or BAT_PAGER environment variables (the latter takes precedence) or
-use the '\-\-pager' option. To disable the pager permanently, set BAT_PAGER
-to an empty string or set '\-\-paging=never' in the configuration file.
-Possible values: *auto*, never, always.
+Specify when to use the pager. To control which pager is used, set the PAGER or
+BAT_PAGER environment variables (the latter takes precedence) or use the '\-\-pager'
+option. To disable the pager permanently, set BAT_PAGER to an empty string or set
+\&'\-\-paging=never' in the configuration file. Possible values: *auto*, never, always.
 .HP
 \fB\-\-pager\fR <command>
 .IP
-Determine which pager is used. This option will overwrite the PAGER and
-BAT_PAGER environment variables. The default pager is 'less'. To disable
-the pager completely, use the '\-\-paging' option. Example: '\-\-pager "less
-\fB\-RF\fR"'.
+Determine which pager is used. This option will overwrite the PAGER and BAT_PAGER
+environment variables. The default pager is 'less'. To disable the pager completely, use
+the '\-\-paging' option. Example: '\-\-pager "less \fB\-RF\fR"'.
 .HP
 \fB\-m\fR, \fB\-\-map\-syntax\fR <from:to>...
 .IP
-Map a file extension or file name to an existing syntax (specified by a
-file extension or file name). For example, to
-highlight *.build files with the Python syntax, use '\-m build:py'. To
-highlight files named '.myignore' with the Git Ignore syntax, use '\-m
+Map a file extension or file name to an existing syntax (specified by a file extension
+or file name). For example, to highlight *.build files with the Python syntax, use '\-m
+build:py'. To highlight files named '.myignore' with the Git Ignore syntax, use '\-m
 \&.myignore:gitignore'.
 .HP
 \fB\-\-theme\fR <theme>
 .IP
-Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all
-available themes. To set a default theme, add the '\-\-theme="..."' option
-to the configuration file or export the BAT_THEME environment variable
-(e.g.: export BAT_THEME="...").
+Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
+To set a default theme, add the '\-\-theme="..."' option to the configuration file or
+export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
 .HP
 \fB\-\-list\-themes\fR
 .IP
@@ -112,12 +119,11 @@ Display a list of supported themes for syntax highlighting.
 .HP
 \fB\-\-style\fR <style\-components>
 .IP
-Configure which elements (line numbers, file headers, grid borders, Git
-modifications, ..) to display in addition to the file contents. The
-argument is a comma\-separated list of components to display (e.g.
-\&'numbers,changes,grid') or a pre\-defined style ('full'). To set a default
-style, add the '\-\-style=".."' option to the configuration file or export
-the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
+Configure which elements (line numbers, file headers, grid borders, Git modifications,
+\&..) to display in addition to the file contents. The argument is a comma\-separated list
+of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
+To set a default style, add the '\-\-style=".."' option to the configuration file or
+export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
 values: *auto*, full, plain, changes, header, grid, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
@@ -138,8 +144,8 @@ Display a list of supported languages for syntax highlighting.
 .HP
 \fB\-u\fR, \fB\-\-unbuffered\fR
 .IP
-This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered').
-The output is always unbuffered \- this option is simply ignored.
+This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
+always unbuffered \- this option is simply ignored.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
@@ -148,13 +154,20 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
-.SH "ARGS"
+.SH "POSITIONAL ARGUMENTS"
+.HP
+\fB<FILE>...\fR
 .IP
-<FILE>...
-.IP
-File(s) to print / concatenate. Use a dash ('\-') or no argument at all to read
-from standard input.
+Files to print and concatenate. Use a dash ('\-') or no argument at all to read from
+standard input.
 .SH "SUBCOMMANDS"
-.IP
-cache
-Modify the syntax\-definition and theme cache
+.HP
+\fBcache\fR - Modify the syntax\-definition and theme cache.
+.SH "FILES"
+{{PROJECT_EXECUTABLE}} can also be customized with a configuration file. The location of the file
+is dependent on your operating system. To get the default path for your system, call:
+
+\fB{{PROJECT_EXECUTABLE}} --config-file\fR
+
+Alternatively, you can use the BAT_CONFIG_PATH environment variable to point bat to a non-default
+location of the configuration file.
