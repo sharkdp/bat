@@ -58,6 +58,17 @@ fn syntax_detection_basic() {
 }
 
 #[test]
+fn syntax_detection_well_defined_mapping_for_duplicate_extensions() {
+    let test = SyntaxDetectionTest::new();
+
+    assert_eq!(test.syntax_name("test.sass"), "Sass");
+    // TODO: make these tests pass:
+    // assert_eq!(test.syntax_name("test.h"), "C");
+    // assert_eq!(test.syntax_name("test.hs"), "Haskell (Improved)");
+    // assert_eq!(test.syntax_name("test.js"), "JavaScript (Babel)");
+}
+
+#[test]
 fn syntax_detection_first_line() {
     let test = SyntaxDetectionTest::new();
 
