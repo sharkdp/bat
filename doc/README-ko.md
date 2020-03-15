@@ -14,7 +14,7 @@
   <a href="#설치">설치</a> •
   <a href="#커스터마이즈">커스터마이즈</a> •
   <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a> •
-  번역 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>]
+  번역 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="../doc/README-ja.md">日本語</a>]
 </p>
 
 ### 문법 강조
