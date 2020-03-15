@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="../doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://travis-ci.org/sharkdp/bat"><img src="https://travis-ci.org/sharkdp/bat.svg?branch=master" alt="Build Status"></a>
   <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf/branch/master?svg=true"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  A <i>cat(1)</i> clone with syntax highlighting and Git integration.
+
   문법 강조와 깃 통합 기능의 <i>cat(1)</i> 클론
 </p>
 
@@ -144,9 +144,10 @@ man 2 select
 
 포매팅 문제가 발생한다면, `MANROFFOPT="-c"` 설정 해야 할 수도 있습니다 .
 
-새 커맨드에서 이 번들을 사용하려면, [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)를 이용 할 수 있습니다. 
+새 커맨드에서 이 번들을 사용하려면, [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)을 이용 할 수 있습니다. 
 
-참고 : [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax)는 이 저장소에서 개발되고 있으며, 아직 작업 중 입니다. 
+
+참고 : [Manpage syntax](../assets/syntaxes/Manpage.sublime-syntax)는 이 저장소에서 개발되고 있으며, 아직 작업 중 입니다. 
 
 #### `prettier` / `shfmt` / `rustfmt`
 
@@ -165,9 +166,8 @@ Ubuntu Eoan 19.10 혹은 Debian unstable sid 이후 버전 부터는 [Ubuntu용 
 ```bash
 apt install bat
 ```
-최신 버전의 bat를 실행하거나 이전 버전의 Ubuntu / Debian .deb을 사용중인 경우 릴리스 페이지 에서 최신 패키지를 다운로드하여 다음을 통해 설치하십시오.
 
-만약 최근 릴리즈된 bat을 사용을 원하거나 buntu/Debian 이전 버전을 사용하는 경우, [release page](https://github.com/sharkdp/bat/releases)애서 다음과 같이 `.deb` 패키지를 받아 설치 할 수도 있습니다:
+만약 최근 릴리즈된 bat을 사용을 원하거나 buntu/Debian 예전 버전을 사용하는 경우, [릴리즈 페이지](https://github.com/sharkdp/bat/releases)에서 다음과 같이 `.deb` 패키지를 받아 설치 할 수도 있습니다:
 
 ```bash
 sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
@@ -336,7 +336,7 @@ cargo install bat
 
 ### 문법 강조 테마 
 
-`bat --list-themes`을 사용하면, 현재 사용 가능한 문법 강조 테마들을 확인할 수 있습니다. `TwoDark` 테마 선택하는 경우,  `--theme=TwoDark` 옵션과 함께 `bat`을 사용하거나 환경변수에서 `BAT_THEME`를 `TwoDark`로 세팅해주면 됩니다. 쉘 시작 파일에 `export BAT_THEME="TwoDark"` 를 정의해 계속 사용도 가능합니다. 이 밖에 `bat`의 [설정파일](https://github.com/sharkdp/bat#configuration-file)을 이용할 수도 있습니다. 
+`bat --list-themes`을 사용하면, 현재 사용 가능한 문법 강조 테마들을 확인할 수 있습니다. `TwoDark` 테마 선택하는 경우,  `--theme=TwoDark` 옵션과 함께 `bat`을 사용하거나 환경변수에서 `BAT_THEME`를 `TwoDark`로 세팅해주면 됩니다. 쉘 시작 파일에 `export BAT_THEME="TwoDark"` 를 정의해 계속 사용도 가능합니다. 이 밖에 `bat`의 [설정 파일](#설정-파일)을 이용할 수도 있습니다. 
 
 다른 테마를 미리 보고 싶은경우 다음 명령어와 같이 사용할 수 있습니다.(이 경우 [`fzf`](https://github.com/junegunn/fzf)가 필요합니다.)
 
