@@ -1,8 +1,6 @@
 use crate::dirs_rs;
-use std::path::{Path, PathBuf};
-
-#[cfg(target_os = "macos")]
 use std::env;
+use std::path::{Path, PathBuf};
 
 /// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.
 /// This means that the `XDG_CACHE_HOME` and `XDG_CONFIG_HOME` environment variables are
@@ -14,16 +12,7 @@ pub struct BatProjectDirs {
 
 impl BatProjectDirs {
     fn new() -> Option<BatProjectDirs> {
-        #[cfg(target_os = "macos")]
-        let cache_dir_op = env::var_os("XDG_CACHE_HOME")
-            .map(PathBuf::from)
-            .filter(|p| p.is_absolute())
-            .or_else(|| dirs_rs::home_dir().map(|d| d.join(".cache")));
-
-        #[cfg(not(target_os = "macos"))]
-        let cache_dir_op = dirs_rs::cache_dir();
-
-        let cache_dir = cache_dir_op.map(|d| d.join("bat"))?;
+        let cache_dir = BatProjectDirs::get_cache_dir()?;
 
         #[cfg(target_os = "macos")]
         let config_dir_op = env::var_os("XDG_CONFIG_HOME")
@@ -40,6 +29,27 @@ impl BatProjectDirs {
             cache_dir,
             config_dir,
         })
+    }
+
+    pub fn get_cache_dir() -> Option<PathBuf> {
+        // on all OS prefer BAT_CACHE_PATH if set
+        let cache_dir_op = env::var_os("BAT_CACHE_PATH")
+            .map(PathBuf::from)
+            .filter(|p| p.is_absolute());
+        if !cache_dir_op.is_none() {
+            return cache_dir_op;
+        }
+
+        #[cfg(target_os = "macos")]
+        let cache_dir_op = env::var_os("XDG_CACHE_HOME")
+            .map(PathBuf::from)
+            .filter(|p| p.is_absolute())
+            .or_else(|| dirs_rs::home_dir().map(|d| d.join(".cache")));
+
+        #[cfg(not(target_os = "macos"))]
+        let cache_dir_op = dirs_rs::cache_dir();
+
+        Some(cache_dir_op.map(|d| d.join("bat")))?
     }
 
     pub fn cache_dir(&self) -> &Path {
