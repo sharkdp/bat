@@ -33,10 +33,8 @@ impl BatProjectDirs {
 
     pub fn get_cache_dir() -> Option<PathBuf> {
         // on all OS prefer BAT_CACHE_PATH if set
-        let cache_dir_op = env::var_os("BAT_CACHE_PATH")
-            .map(PathBuf::from)
-            .filter(|p| p.is_absolute());
-        if !cache_dir_op.is_none() {
+        let cache_dir_op = env::var_os("BAT_CACHE_PATH").map(PathBuf::from);
+        if cache_dir_op.is_some() {
             return cache_dir_op;
         }
 
