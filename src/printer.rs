@@ -231,7 +231,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     InputFile::Ordinary(filename) => {
                         format!("file '{}'", filename.to_string_lossy())
                     }
-                    _ => "STDIN".into(),
+                    _ => self.config.filename.unwrap_or("STDIN").to_owned(),
                 };
 
                 writeln!(
@@ -267,7 +267,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         let (prefix, name) = match file {
             InputFile::Ordinary(filename) => ("File: ", filename.to_string_lossy()),
-            _ => ("", Cow::from("STDIN")),
+            _ => (
+                "File: ",
+                Cow::from(self.config.filename.unwrap_or("STDIN").to_owned()),
+            ),
         };
 
         let mode = match self.content_type {

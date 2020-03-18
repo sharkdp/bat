@@ -94,6 +94,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("file-name")
+                .long("file-name")
+                .takes_value(true)
+                .number_of_values(1)
+                .multiple(true)
+                .value_name("name")
+                .help("Specify the name to display for a file.")
+                .long_help("Specify the name to display for a file. Useful when piping \
+                            data to bat from STDIN when bat does not otherwise know \
+                            the filename."),
+        )
+        .arg(
             Arg::with_name("tabs")
                 .long("tabs")
                 .overrides_with("tabs")

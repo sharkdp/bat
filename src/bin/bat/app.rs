@@ -222,6 +222,7 @@ impl App {
                     .transpose()?
                     .unwrap_or_else(|| vec![LineRange { lower: 0, upper: 0 }]),
             ),
+            filename: self.matches.value_of("file-name").or_else(|| None),
         })
     }
 
