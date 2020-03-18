@@ -222,6 +222,7 @@ impl App {
                 .map(LineRanges::from)
                 .map(|lr| HighlightedLineRanges(lr))
                 .unwrap_or_default(),
+            filename: self.matches.value_of("file-name").or_else(|| None),
         })
     }
 

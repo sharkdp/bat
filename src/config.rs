@@ -70,6 +70,9 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
+
+    /// Name of file to display when printing
+    pub filename: Option<&'a str>,
 }
 
 #[test]
