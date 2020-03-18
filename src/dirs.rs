@@ -47,7 +47,7 @@ impl BatProjectDirs {
         #[cfg(not(target_os = "macos"))]
         let cache_dir_op = dirs_rs::cache_dir();
 
-        Some(cache_dir_op.map(|d| d.join("bat")))?
+        cache_dir_op.map(|d| d.join("bat"))
     }
 
     pub fn cache_dir(&self) -> &Path {
