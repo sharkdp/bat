@@ -228,9 +228,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
-                    InputFile::Ordinary(filename) => {
-                        format!("file '{}'", filename.to_string_lossy())
-                    }
+                    InputFile::Ordinary(filename) => format!(
+                        "file '{}'",
+                        self.config.filename.unwrap_or(&filename.to_string_lossy())
+                    ),
                     _ => self.config.filename.unwrap_or("STDIN").to_owned(),
                 };
 
@@ -266,7 +267,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         let (prefix, name) = match file {
-            InputFile::Ordinary(filename) => ("File: ", filename.to_string_lossy()),
+            InputFile::Ordinary(filename) => (
+                "File: ",
+                Cow::from(
+                    self.config
+                        .filename
+                        .unwrap_or(&filename.to_string_lossy())
+                        .to_owned(),
+                ),
+            ),
             _ => (
                 "File: ",
                 Cow::from(self.config.filename.unwrap_or("STDIN").to_owned()),
