@@ -23,13 +23,13 @@ impl HighlightingAssets {
         "Monokai Extended"
     }
 
-    pub fn from_files(source_dir: &Path, start_empty: bool) -> Result<Self> {
-        let mut theme_set = if start_empty {
+    pub fn from_files(source_dir: &Path, include_integrated_assets: bool) -> Result<Self> {
+        let mut theme_set = if include_integrated_assets {
+            Self::get_integrated_themeset()
+        } else {
             ThemeSet {
                 themes: BTreeMap::new(),
             }
-        } else {
-            Self::get_integrated_themeset()
         };
 
         let theme_dir = source_dir.join("themes");
@@ -42,7 +42,7 @@ impl HighlightingAssets {
             );
         }
 
-        let mut syntax_set_builder = if start_empty {
+        let mut syntax_set_builder = if !include_integrated_assets {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
             builder
@@ -112,7 +112,7 @@ impl HighlightingAssets {
         }
     }
 
-    pub fn save(&self, target_dir: &Path) -> Result<()> {
+    pub fn save_to_cache(&self, target_dir: &Path) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
         let theme_set_path = target_dir.join("themes.bin");
         let syntax_set_path = target_dir.join("syntaxes.bin");
