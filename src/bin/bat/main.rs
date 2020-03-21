@@ -4,9 +4,13 @@
 #[macro_use]
 extern crate clap;
 
+extern crate dirs as dirs_rs;
+
 mod app;
 mod clap_app;
 mod config;
+mod directories;
+mod assets;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -19,10 +23,12 @@ use ansi_term::Colour::Green;
 use ansi_term::Style;
 
 use crate::{app::App, config::config_file};
+use directories::PROJECT_DIRS;
+use assets::{cache_dir, clear_assets, config_dir, assets_from_cache_or_binary};
 use bat::controller::Controller;
 
 use bat::{
-    assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
+    assets::HighlightingAssets,
     errors::*,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
@@ -31,8 +37,8 @@ use bat::{
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
-        let source_dir = matches.value_of("source").map(Path::new);
-        let target_dir = matches.value_of("target").map(Path::new);
+        let source_dir = matches.value_of("source").map(Path::new).unwrap_or_else(|| PROJECT_DIRS.config_dir());
+        let target_dir = matches.value_of("target").map(Path::new).unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
         let blank = matches.is_present("blank");
 
@@ -46,7 +52,7 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 }
 
 pub fn list_languages(config: &Config) -> Result<()> {
-    let assets = HighlightingAssets::new();
+    let assets = assets_from_cache_or_binary();
     let mut languages = assets
         .syntax_set
         .syntaxes()
@@ -109,7 +115,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
-    let assets = HighlightingAssets::new();
+    let assets = assets_from_cache_or_binary();
     let themes = &assets.theme_set.themes;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
@@ -141,7 +147,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 }
 
 fn run_controller(config: &Config) -> Result<bool> {
-    let assets = HighlightingAssets::new();
+    let assets = assets_from_cache_or_binary();
     let controller = Controller::new(&config, &assets);
     controller.run()
 }

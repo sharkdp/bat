@@ -18,7 +18,7 @@ struct SyntaxDetectionTest {
 impl SyntaxDetectionTest {
     fn new() -> Self {
         SyntaxDetectionTest {
-            assets: HighlightingAssets::new(),
+            assets: HighlightingAssets::from_binary(),
             syntax_mapping: SyntaxMapping::new(),
             temp_dir: TempDir::new("bat_syntax_detection_tests")
                 .expect("creation of temporary directory"),

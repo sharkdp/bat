@@ -1,14 +1,11 @@
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
-
-use crate::dirs::PROJECT_DIRS;
 
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
@@ -23,13 +20,7 @@ pub struct HighlightingAssets {
 }
 
 impl HighlightingAssets {
-    pub fn new() -> Self {
-        Self::from_cache().unwrap_or_else(|_| Self::from_binary())
-    }
-
-    pub fn from_files(dir: Option<&Path>, start_empty: bool) -> Result<Self> {
-        let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
-
+    pub fn from_files(source_dir: &Path, start_empty: bool) -> Result<Self> {
         let mut theme_set = if start_empty {
             ThemeSet {
                 themes: BTreeMap::new(),
@@ -72,12 +63,11 @@ impl HighlightingAssets {
         })
     }
 
-    fn from_cache() -> Result<Self> {
-        let theme_set_path = theme_set_path();
-        let syntax_set_file = File::open(&syntax_set_path()).chain_err(|| {
+    pub fn from_cache(theme_set_path: &Path, syntax_set_path: &Path) -> Result<Self> {
+        let syntax_set_file = File::open(syntax_set_path).chain_err(|| {
             format!(
                 "Could not load cached syntax set '{}'",
-                syntax_set_path().to_string_lossy()
+                syntax_set_path.to_string_lossy()
             )
         })?;
         let syntax_set: SyntaxSet = from_reader(BufReader::new(syntax_set_file))
@@ -106,7 +96,7 @@ impl HighlightingAssets {
         from_binary(include_bytes!("../assets/themes.bin"))
     }
 
-    fn from_binary() -> Self {
+    pub fn from_binary() -> Self {
         let syntax_set = Self::get_integrated_syntaxset();
         let theme_set = Self::get_integrated_themeset();
 
@@ -116,8 +106,7 @@ impl HighlightingAssets {
         }
     }
 
-    pub fn save(&self, dir: Option<&Path>) -> Result<()> {
-        let target_dir = dir.unwrap_or_else(|| PROJECT_DIRS.cache_dir());
+    pub fn save(&self, target_dir: &Path) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
         let theme_set_path = target_dir.join("themes.bin");
         let syntax_set_path = target_dir.join("syntaxes.bin");
@@ -203,30 +192,4 @@ impl HighlightingAssets {
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
     }
-}
-
-fn theme_set_path() -> PathBuf {
-    PROJECT_DIRS.cache_dir().join("themes.bin")
-}
-
-fn syntax_set_path() -> PathBuf {
-    PROJECT_DIRS.cache_dir().join("syntaxes.bin")
-}
-
-pub fn config_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.config_dir().to_string_lossy()
-}
-
-pub fn cache_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.cache_dir().to_string_lossy()
-}
-
-pub fn clear_assets() {
-    print!("Clearing theme set cache ... ");
-    fs::remove_file(theme_set_path()).ok();
-    println!("okay");
-
-    print!("Clearing syntax set cache ... ");
-    fs::remove_file(syntax_set_path()).ok();
-    println!("okay");
 }
