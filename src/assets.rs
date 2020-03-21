@@ -160,12 +160,14 @@ impl HighlightingAssets {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
             None => {
-                use ansi_term::Colour::Yellow;
-                eprintln!(
-                    "{}: Unknown theme '{}', using default.",
-                    Yellow.paint("[bat warning]"),
-                    theme
-                );
+                if theme != "" {
+                    use ansi_term::Colour::Yellow;
+                    eprintln!(
+                        "{}: Unknown theme '{}', using default.",
+                        Yellow.paint("[bat warning]"),
+                        theme
+                    );
+                }
                 &self.theme_set.themes[self.fallback_theme.unwrap_or(Self::default_theme())]
             }
         }
