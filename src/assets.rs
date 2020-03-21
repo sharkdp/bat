@@ -11,15 +11,18 @@ use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::syntax_mapping::SyntaxMapping;
 
-pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
-
 #[derive(Debug)]
 pub struct HighlightingAssets {
     pub(crate) syntax_set: SyntaxSet,
     pub(crate) theme_set: ThemeSet,
+    fallback_theme: Option<&'static str>,
 }
 
 impl HighlightingAssets {
+    pub fn default_theme() -> &'static str {
+        "Monokai Extended"
+    }
+
     pub fn from_files(source_dir: &Path, start_empty: bool) -> Result<Self> {
         let mut theme_set = if start_empty {
             ThemeSet {
@@ -60,6 +63,7 @@ impl HighlightingAssets {
         Ok(HighlightingAssets {
             syntax_set: syntax_set_builder.build(),
             theme_set,
+            fallback_theme: None,
         })
     }
 
@@ -85,6 +89,7 @@ impl HighlightingAssets {
         Ok(HighlightingAssets {
             syntax_set,
             theme_set,
+            fallback_theme: None,
         })
     }
 
@@ -103,6 +108,7 @@ impl HighlightingAssets {
         HighlightingAssets {
             syntax_set,
             theme_set,
+            fallback_theme: None,
         }
     }
 
@@ -138,6 +144,10 @@ impl HighlightingAssets {
         Ok(())
     }
 
+    pub fn set_fallback_theme(&mut self, theme: &'static str) {
+        self.fallback_theme = Some(theme);
+    }
+
     pub fn syntaxes(&self) -> &[SyntaxReference] {
         self.syntax_set.syntaxes()
     }
@@ -156,7 +166,7 @@ impl HighlightingAssets {
                     Yellow.paint("[bat warning]"),
                     theme
                 );
-                &self.theme_set.themes[BAT_THEME_DEFAULT]
+                &self.theme_set.themes[self.fallback_theme.unwrap_or(Self::default_theme())]
             }
         }
     }

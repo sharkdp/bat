@@ -17,7 +17,7 @@ use console::Term;
 use ansi_term;
 
 use bat::{
-    assets::BAT_THEME_DEFAULT,
+    assets::HighlightingAssets,
     config::{Config, PagingMode},
     errors::*,
     inputfile::InputFile,
@@ -195,12 +195,12 @@ impl App {
                 .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
                     if s == "default" {
-                        String::from(BAT_THEME_DEFAULT)
+                        String::from(HighlightingAssets::default_theme())
                     } else {
                         s
                     }
                 })
-                .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
+                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
             line_ranges: self
                 .matches
                 .values_of("line-range")
