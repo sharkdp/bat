@@ -9,7 +9,7 @@ error_chain! {
     }
 }
 
-pub fn handle_error(error: &Error) {
+pub fn default_error_handler(error: &Error) {
     match error {
         Error(ErrorKind::Io(ref io_error), _)
             if io_error.kind() == ::std::io::ErrorKind::BrokenPipe =>

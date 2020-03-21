@@ -211,7 +211,7 @@ fn main() {
 
     match result {
         Err(error) => {
-            handle_error(&error);
+            default_error_handler(&error);
             process::exit(1);
         }
         Ok(false) => {

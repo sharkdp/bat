@@ -20,6 +20,10 @@ impl<'b> Controller<'b> {
     }
 
     pub fn run(&self) -> Result<bool> {
+        self.run_with_error_handler(default_error_handler)
+    }
+
+    pub fn run_with_error_handler(&self, handle_error: impl Fn(&Error)) -> Result<bool> {
         // Do not launch the pager if NONE of the input files exist
         let mut paging_mode = self.config.paging_mode;
         if self.config.paging_mode != PagingMode::Never {
