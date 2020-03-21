@@ -60,7 +60,6 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 pub fn list_languages(config: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary();
     let mut languages = assets
-        .syntax_set
         .syntaxes()
         .iter()
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
@@ -122,7 +121,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary();
-    let themes = &assets.theme_set.themes;
+    let themes = assets.themes();
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(OutputComponent::Plain);

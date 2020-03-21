@@ -15,8 +15,8 @@ pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    pub syntax_set: SyntaxSet,
-    pub theme_set: ThemeSet,
+    pub(crate) syntax_set: SyntaxSet,
+    pub(crate) theme_set: ThemeSet,
 }
 
 impl HighlightingAssets {
@@ -136,6 +136,14 @@ impl HighlightingAssets {
         println!("okay");
 
         Ok(())
+    }
+
+    pub fn syntaxes(&self) -> &[SyntaxReference] {
+        self.syntax_set.syntaxes()
+    }
+
+    pub fn themes(&self) -> &BTreeMap<String, Theme> {
+        &self.theme_set.themes
     }
 
     pub fn get_theme(&self, theme: &str) -> &Theme {
