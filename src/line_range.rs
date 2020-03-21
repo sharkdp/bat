@@ -99,7 +99,7 @@ pub enum RangeCheckResult {
     InRange,
 
     // Before the first range or within two ranges
-    OutsideRange,
+    BeforeOrBetweenRanges,
 
     // Line number is outside of all ranges and larger than the last range.
     AfterLastRange,
@@ -131,10 +131,10 @@ impl LineRanges {
     }
 
     pub fn check(&self, line: usize) -> RangeCheckResult {
-        if self.ranges.is_empty() | self.ranges.iter().any(|r| r.is_inside(line)) {
+        if self.ranges.is_empty() || self.ranges.iter().any(|r| r.is_inside(line)) {
             RangeCheckResult::InRange
         } else if line < self.largest_upper_bound {
-            RangeCheckResult::OutsideRange
+            RangeCheckResult::BeforeOrBetweenRanges
         } else {
             RangeCheckResult::AfterLastRange
         }
@@ -150,7 +150,7 @@ fn ranges(rs: &[&str]) -> LineRanges {
 fn test_ranges_simple() {
     let ranges = ranges(&["3:8"]);
 
-    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(2));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
     assert_eq!(RangeCheckResult::InRange, ranges.check(5));
     assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
 }
@@ -159,11 +159,11 @@ fn test_ranges_simple() {
 fn test_ranges_advanced() {
     let ranges = ranges(&["3:8", "11:20", "25:30"]);
 
-    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(2));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
     assert_eq!(RangeCheckResult::InRange, ranges.check(5));
-    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(9));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(9));
     assert_eq!(RangeCheckResult::InRange, ranges.check(11));
-    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(22));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(22));
     assert_eq!(RangeCheckResult::InRange, ranges.check(28));
     assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(31));
 }
@@ -182,7 +182,7 @@ fn test_ranges_open_low() {
 fn test_ranges_open_high() {
     let ranges = ranges(&["3:", "2:5"]);
 
-    assert_eq!(RangeCheckResult::OutsideRange, ranges.check(1));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(1));
     assert_eq!(RangeCheckResult::InRange, ranges.check(3));
     assert_eq!(RangeCheckResult::InRange, ranges.check(5));
     assert_eq!(RangeCheckResult::InRange, ranges.check(9));

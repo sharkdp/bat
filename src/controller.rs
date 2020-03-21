@@ -106,7 +106,7 @@ impl<'b> Controller<'b> {
 
         while reader.read_line(&mut line_buffer)? {
             match line_ranges.check(line_number) {
-                RangeCheckResult::OutsideRange => {
+                RangeCheckResult::BeforeOrBetweenRanges => {
                     // Call the printer in case we need to call the syntax highlighter
                     // for this line. However, set `out_of_range` to `true`.
                     printer.print_line(true, writer, line_number, &line_buffer)?;
