@@ -121,7 +121,6 @@ pub fn list_languages(config: &Config) -> Result<()> {
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary();
-    let themes = assets.themes();
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(OutputComponent::Plain);
@@ -132,7 +131,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     let mut stdout = stdout.lock();
 
     if config.colored_output {
-        for (theme, _) in themes.iter() {
+        for theme in assets.themes() {
             writeln!(
                 stdout,
                 "Theme: {}\n",
@@ -143,7 +142,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             writeln!(stdout)?;
         }
     } else {
-        for (theme, _) in themes.iter() {
+        for theme in assets.themes() {
             writeln!(stdout, "{}", theme)?;
         }
     }

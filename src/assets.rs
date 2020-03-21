@@ -142,11 +142,11 @@ impl HighlightingAssets {
         self.syntax_set.syntaxes()
     }
 
-    pub fn themes(&self) -> &BTreeMap<String, Theme> {
-        &self.theme_set.themes
+    pub fn themes(&self) -> impl Iterator<Item = &String> {
+        self.theme_set.themes.keys()
     }
 
-    pub fn get_theme(&self, theme: &str) -> &Theme {
+    pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
             None => {
@@ -161,6 +161,7 @@ impl HighlightingAssets {
         }
     }
 
+    #[doc(hidden)]
     pub fn get_syntax(
         &self,
         language: Option<&str>,
