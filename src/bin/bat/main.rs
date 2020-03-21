@@ -29,10 +29,8 @@ use directories::PROJECT_DIRS;
 
 use bat::{
     assets::HighlightingAssets,
-    config::Config,
+    config::{Config, InputFile, StyleComponent, StyleComponents},
     errors::*,
-    inputfile::InputFile,
-    style::{StyleComponent, StyleComponents},
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
