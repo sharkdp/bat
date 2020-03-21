@@ -6,20 +6,22 @@ pub struct LineRange {
     pub upper: usize,
 }
 
-impl LineRange {
-    pub fn from(range_raw: &str) -> Result<LineRange> {
-        LineRange::parse_range(range_raw)
-    }
-
-    pub fn new() -> LineRange {
+impl Default for LineRange {
+    fn default() -> LineRange {
         LineRange {
             lower: usize::min_value(),
             upper: usize::max_value(),
         }
     }
+}
+
+impl LineRange {
+    pub fn from(range_raw: &str) -> Result<LineRange> {
+        LineRange::parse_range(range_raw)
+    }
 
     pub fn parse_range(range_raw: &str) -> Result<LineRange> {
-        let mut new_range = LineRange::new();
+        let mut new_range = LineRange::default();
 
         if range_raw.bytes().nth(0).ok_or("Empty line range")? == b':' {
             new_range.upper = range_raw[1..].parse()?;
@@ -103,10 +105,16 @@ pub enum RangeCheckResult {
     AfterLastRange,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct LineRanges {
     ranges: Vec<LineRange>,
     largest_upper_bound: usize,
+}
+
+impl Default for LineRanges {
+    fn default() -> Self {
+        LineRanges::from(vec![LineRange { lower: 0, upper: 0 }])
+    }
 }
 
 impl LineRanges {

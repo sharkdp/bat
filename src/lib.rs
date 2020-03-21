@@ -4,9 +4,6 @@
 #[macro_use]
 extern crate error_chain;
 
-#[macro_use]
-extern crate lazy_static;
-
 extern crate ansi_term;
 extern crate atty;
 extern crate console;
@@ -22,7 +19,6 @@ pub mod assets;
 pub mod controller;
 mod decorations;
 mod diff;
-pub mod dirs;
 pub mod inputfile;
 mod less;
 pub mod line_range;

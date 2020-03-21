@@ -19,7 +19,7 @@ fn no_duplicate_extensions() {
         "sass",
     ];
 
-    let assets = HighlightingAssets::new();
+    let assets = HighlightingAssets::from_binary();
 
     let mut extensions = HashSet::new();
 

@@ -29,7 +29,7 @@ fn main() {
         theme: "1337".into(),
         ..Default::default()
     };
-    let assets = HighlightingAssets::new();
+    let assets = HighlightingAssets::from_binary();
 
     Controller::new(&config, &assets).run().expect("no errors");
 }

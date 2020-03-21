@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use shell_words;
 
-use bat::dirs::PROJECT_DIRS;
+use crate::directories::PROJECT_DIRS;
 
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
