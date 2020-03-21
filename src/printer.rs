@@ -376,7 +376,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         // Line highlighting
         let highlight_this_line =
-            self.config.highlight_lines.check(line_number) == RangeCheckResult::InRange;
+            self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
         let background_color = self
             .background_color_highlight

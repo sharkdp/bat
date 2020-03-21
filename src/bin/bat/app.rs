@@ -20,7 +20,7 @@ use bat::{
     assets::BAT_THEME_DEFAULT,
     errors::*,
     inputfile::InputFile,
-    line_range::{LineRange, LineRanges},
+    line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{OutputComponent, OutputComponents, OutputWrap},
     syntax_mapping::SyntaxMapping,
     Config, PagingMode,
@@ -201,13 +201,14 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
-            line_ranges: LineRanges::from(
+            line_ranges:
                 self.matches
                     .values_of("line-range")
                     .map(|vs| vs.map(LineRange::from).collect())
                     .transpose()?
-                    .unwrap_or_else(|| vec![]),
-            ),
+                    .map(LineRanges::from)
+                    .unwrap_or_default()
+            ,
             output_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
@@ -215,13 +216,14 @@ impl App {
                 Some("always") => true,
                 _ => false,
             },
-            highlight_lines: LineRanges::from(
+            highlighted_lines:
                 self.matches
                     .values_of("highlight-line")
                     .map(|ws| ws.map(LineRange::from).collect())
                     .transpose()?
-                    .unwrap_or_else(|| vec![LineRange { lower: 0, upper: 0 }]),
-            ),
+                    .map(LineRanges::from)
+                    .map(|lr| HighlightedLineRanges(lr))
+                    .unwrap_or_default()
         })
     }
 

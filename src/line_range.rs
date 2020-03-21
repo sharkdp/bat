@@ -111,13 +111,15 @@ pub struct LineRanges {
     largest_upper_bound: usize,
 }
 
-impl Default for LineRanges {
-    fn default() -> Self {
-        LineRanges::from(vec![LineRange { lower: 0, upper: 0 }])
-    }
-}
-
 impl LineRanges {
+    pub fn none() -> LineRanges {
+        LineRanges::from(vec![])
+    }
+
+    pub fn all() -> LineRanges {
+        LineRanges::from(vec![LineRange::default()])
+    }
+
     pub fn from(ranges: Vec<LineRange>) -> LineRanges {
         let largest_upper_bound = ranges
             .iter()
@@ -131,7 +133,7 @@ impl LineRanges {
     }
 
     pub fn check(&self, line: usize) -> RangeCheckResult {
-        if self.ranges.is_empty() || self.ranges.iter().any(|r| r.is_inside(line)) {
+        if self.ranges.iter().any(|r| r.is_inside(line)) {
             RangeCheckResult::InRange
         } else if line < self.largest_upper_bound {
             RangeCheckResult::BeforeOrBetweenRanges
@@ -140,6 +142,23 @@ impl LineRanges {
         }
     }
 }
+
+impl Default for LineRanges {
+    fn default() -> Self {
+        Self::all()
+    }
+}
+
+/// Similar to LineRanges, but "empty" by default
+#[derive(Debug, Clone)]
+pub struct HighlightedLineRanges(pub LineRanges);
+
+impl Default for HighlightedLineRanges {
+    fn default() -> Self {
+        HighlightedLineRanges(LineRanges::none())
+    }
+}
+
 
 #[cfg(test)]
 fn ranges(rs: &[&str]) -> LineRanges {
@@ -189,8 +208,15 @@ fn test_ranges_open_high() {
 }
 
 #[test]
-fn test_ranges_empty() {
-    let ranges = ranges(&[]);
+fn test_ranges_all() {
+    let ranges = LineRanges::all();
 
     assert_eq!(RangeCheckResult::InRange, ranges.check(1));
+}
+
+#[test]
+fn test_ranges_none() {
+    let ranges = LineRanges::none();
+
+    assert_ne!(RangeCheckResult::InRange, ranges.check(1));
 }
