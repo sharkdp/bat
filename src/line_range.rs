@@ -159,7 +159,6 @@ impl Default for HighlightedLineRanges {
     }
 }
 
-
 #[cfg(test)]
 fn ranges(rs: &[&str]) -> LineRanges {
     LineRanges::from(rs.iter().map(|r| LineRange::from(r).unwrap()).collect())

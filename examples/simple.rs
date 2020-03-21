@@ -1,9 +1,9 @@
 use bat::{
     assets::HighlightingAssets,
+    config::Config,
     controller::Controller,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
-    config::Config,
 };
 use console::Term;
 use std::process;
