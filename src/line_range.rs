@@ -20,7 +20,7 @@ impl LineRange {
         LineRange::parse_range(range_raw)
     }
 
-    pub fn parse_range(range_raw: &str) -> Result<LineRange> {
+    fn parse_range(range_raw: &str) -> Result<LineRange> {
         let mut new_range = LineRange::default();
 
         if range_raw.bytes().nth(0).ok_or("Empty line range")? == b':' {
@@ -50,7 +50,7 @@ impl LineRange {
         }
     }
 
-    pub fn is_inside(&self, line: usize) -> bool {
+    pub(crate) fn is_inside(&self, line: usize) -> bool {
         line >= self.lower && line <= self.upper
     }
 }
@@ -132,7 +132,7 @@ impl LineRanges {
         }
     }
 
-    pub fn check(&self, line: usize) -> RangeCheckResult {
+    pub(crate) fn check(&self, line: usize) -> RangeCheckResult {
         if self.ranges.iter().any(|r| r.is_inside(line)) {
             RangeCheckResult::InRange
         } else if line < self.largest_upper_bound {
@@ -149,7 +149,6 @@ impl Default for LineRanges {
     }
 }
 
-/// Similar to LineRanges, but "empty" by default
 #[derive(Debug, Clone)]
 pub struct HighlightedLineRanges(pub LineRanges);
 
