@@ -273,6 +273,8 @@ mod tests {
         assert_eq!(test.syntax_name("test.rs"), "Rust");
         assert_eq!(test.syntax_name("test.cpp"), "C++");
         assert_eq!(test.syntax_name("PKGBUILD"), "Bourne Again Shell (bash)");
+        assert_eq!(test.syntax_name(".bashrc"), "Bourne Again Shell (bash)");
+        assert_eq!(test.syntax_name("Makefile"), "Makefile");
     }
 
     #[test]
@@ -280,10 +282,8 @@ mod tests {
         let test = SyntaxDetectionTest::new();
 
         assert_eq!(test.syntax_name("test.sass"), "Sass");
-        // TODO: make these tests pass:
-        // assert_eq!(test.syntax_name("test.h"), "C");
-        // assert_eq!(test.syntax_name("test.hs"), "Haskell (Improved)");
-        // assert_eq!(test.syntax_name("test.js"), "JavaScript (Babel)");
+        assert_eq!(test.syntax_name("test.hs"), "Haskell (improved)");
+        assert_eq!(test.syntax_name("test.js"), "JavaScript (Babel)");
     }
 
     #[test]

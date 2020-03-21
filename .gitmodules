@@ -1,32 +1,32 @@
 [submodule "assets/syntaxes/Elixir"]
-	path = assets/syntaxes/Elixir
+	path = assets/syntaxes/02_Extra/Elixir
 	url = https://github.com/princemaple/elixir-sublime-syntax/
 [submodule "assets/syntaxes/Packages"]
-	path = assets/syntaxes/Packages
+	path = assets/syntaxes/01_Packages
 	url = https://github.com/sublimehq/Packages/
 [submodule "assets/syntaxes/TOML"]
-	path = assets/syntaxes/TOML
+	path = assets/syntaxes/02_Extra/TOML
 	url = https://github.com/jasonwilliams/sublime_toml_highlighting
 [submodule "assets/syntaxes/Julia"]
-	path = assets/syntaxes/Julia
+	path = assets/syntaxes/02_Extra/Julia
 	url = https://github.com/JuliaEditorSupport/Julia-sublime
 [submodule "assets/themes/sublime-monokai-extended"]
 	path = assets/themes/sublime-monokai-extended
 	url = https://github.com/jonschlinkert/sublime-monokai-extended
 [submodule "assets/syntaxes/Docker"]
-	path = assets/syntaxes/Docker
+	path = assets/syntaxes/02_Extra/Docker
 	url = https://github.com/asbjornenge/Docker.tmbundle
 [submodule "assets/syntaxes/VimL"]
-	path = assets/syntaxes/VimL
+	path = assets/syntaxes/02_Extra/VimL
 	url = https://github.com/SalGnt/Sublime-VimL
 [submodule "assets/syntaxes/INI"]
-	path = assets/syntaxes/INI
+	path = assets/syntaxes/02_Extra/INI
 	url = https://github.com/clintberry/sublime-text-2-ini
 [submodule "assets/syntaxes/CMake"]
-	path = assets/syntaxes/CMake
+	path = assets/syntaxes/02_Extra/CMake
 	url = https://github.com/zyxar/Sublime-CMakeLists
 [submodule "assets/syntaxes/LESS"]
-	path = assets/syntaxes/LESS
+	path = assets/syntaxes/02_Extra/LESS
 	url = https://github.com/danro/LESS-sublime
 [submodule "assets/themes/DarkNeon"]
 	path = assets/themes/DarkNeon
@@ -41,127 +41,127 @@
 	path = assets/themes/TwoDark
 	url = https://github.com/erremauro/TwoDark
 [submodule "assets/syntaxes/AWK"]
-	path = assets/syntaxes/AWK
+	path = assets/syntaxes/02_Extra/AWK
 	url = https://github.com/JohnNilsson/awk-sublime
 [submodule "assets/syntaxes/Nix"]
-	path = assets/syntaxes/Nix
+	path = assets/syntaxes/02_Extra/Nix
 	url = https://github.com/wmertens/sublime-nix
 [submodule "assets/themes/zenburn"]
 	path = assets/themes/zenburn
 	url = https://github.com/colinta/zenburn.git
 [submodule "assets/syntaxes/Kotlin"]
-	path = assets/syntaxes/Kotlin
+	path = assets/syntaxes/02_Extra/Kotlin
 	url = https://github.com/vkostyukov/kotlin-sublime-package
 [submodule "assets/syntaxes/Elm"]
-	path = assets/syntaxes/Elm
+	path = assets/syntaxes/02_Extra/Elm
 	url = https://github.com/elm-community/SublimeElmLanguageSupport
 [submodule "assets/syntaxes/TypeScript"]
-	path = assets/syntaxes/TypeScript
+	path = assets/syntaxes/02_Extra/TypeScript
 	url = https://github.com/Microsoft/TypeScript-Sublime-Plugin
 [submodule "assets/syntaxes/Puppet"]
-	path = assets/syntaxes/Puppet
+	path = assets/syntaxes/02_Extra/Puppet
 	url = https://github.com/russCloak/SublimePuppet
 [submodule "assets/syntaxes/CSV"]
-	path = assets/syntaxes/CSV
+	path = assets/syntaxes/02_Extra/CSV
 	url = https://github.com/wadetb/Sublime-Text-Advanced-CSV
 [submodule "assets/themes/onehalf"]
 	path = assets/themes/onehalf
 	url = https://github.com/sonph/onehalf
 [submodule "assets/syntaxes/JavaScript (Babel)"]
-	path = assets/syntaxes/JavaScript (Babel)
+	path = assets/syntaxes/02_Extra/JavaScript (Babel)
 	url = https://github.com/babel/babel-sublime
 [submodule "assets/syntaxes/Cabal"]
-	path = assets/syntaxes/Cabal
+	path = assets/syntaxes/02_Extra/Cabal
 	url = https://github.com/SublimeHaskell/SublimeHaskell
 [submodule "assets/syntaxes/Dart"]
-	path = assets/syntaxes/Dart
+	path = assets/syntaxes/02_Extra/Dart
 	url = https://github.com/guillermooo/dart-sublime-bundle
 [submodule "assets/syntaxes/FSharp"]
-	path = assets/syntaxes/FSharp
+	path = assets/syntaxes/02_Extra/FSharp
 	url = https://github.com/hoest/sublimetext-fsharp
 [submodule "assets/syntaxes/PureScript"]
-	path = assets/syntaxes/PureScript
+	path = assets/syntaxes/02_Extra/PureScript
 	url = https://github.com/tellnobody1/sublime-purescript-syntax
 [submodule "assets/syntaxes/Swift"]
-	path = assets/syntaxes/Swift
+	path = assets/syntaxes/02_Extra/Swift
 	url = https://github.com/quiqueg/Swift-Sublime-Package
 [submodule "assets/syntaxes/Crystal"]
-	path = assets/syntaxes/Crystal
+	path = assets/syntaxes/02_Extra/Crystal
 	url = https://github.com/crystal-lang-tools/sublime-crystal.git
 [submodule "assets/syntaxes/PowerShell"]
-	path = assets/syntaxes/PowerShell
+	path = assets/syntaxes/02_Extra/PowerShell
 	url = https://github.com/PowerShell/EditorSyntax
 [submodule "assets/syntaxes/Robot"]
-	path = assets/syntaxes/Robot
+	path = assets/syntaxes/02_Extra/Robot
 	url = https://github.com/andriyko/sublime-robot-framework-assistant.git
 [submodule "assets/themes/sublime-snazzy"]
 	path = assets/themes/sublime-snazzy
 	url = https://github.com/greggb/sublime-snazzy
 [submodule "assets/syntaxes/AsciiDoc"]
-	path = assets/syntaxes/AsciiDoc
+	path = assets/syntaxes/02_Extra/AsciiDoc
 	url = https://github.com/SublimeText/AsciiDoc.git
 [submodule "assets/syntaxes/Assembly (ARM)"]
-	path = assets/syntaxes/Assembly (ARM)
+	path = assets/syntaxes/02_Extra/Assembly (ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
 [submodule "assets/syntaxes/syslog-syntax"]
-	path = assets/syntaxes/Syslog
+	path = assets/syntaxes/02_Extra/Syslog
 	url = https://github.com/caos21/syslog-syntax.git
 	branch = master
 [submodule "assets/syntaxes/protobuf-syntax-highlighting"]
-	path = assets/syntaxes/Protobuf
+	path = assets/syntaxes/02_Extra/Protobuf
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
 	branch = master
 [submodule "assets/syntaxes/Terraform"]
-	path = assets/syntaxes/Terraform
+	path = assets/syntaxes/02_Extra/Terraform
 	url = https://github.com/alexlouden/Terraform.tmLanguage.git
 [submodule "assets/syntaxes/Jsonnet"]
-	path = assets/syntaxes/Jsonnet
+	path = assets/syntaxes/02_Extra/Jsonnet
 	url = https://github.com/gburiola/sublime-jsonnet-syntax.git
 [submodule "assets/syntaxes/varlink"]
-	path = assets/syntaxes/varlink
+	path = assets/syntaxes/02_Extra/varlink
 	url = https://github.com/varlink/syntax-highlight-varlink.git
 [submodule "assets/syntaxes/sublime-fish"]
-	path = assets/syntaxes/Fish
+	path = assets/syntaxes/02_Extra/Fish
 	url = https://github.com/Phidica/sublime-fish.git
 [submodule "assets/syntaxes/Org mode"]
-	path = assets/syntaxes/Org mode
+	path = assets/syntaxes/02_Extra/Org mode
 	url = https://github.com/jezcope/Org.tmbundle.git
 [submodule "assets/syntaxes/requirementstxt"]
-	path = assets/syntaxes/requirementstxt
+	path = assets/syntaxes/02_Extra/requirementstxt
 	url = https://github.com/wuub/requirementstxt
 [submodule "assets/syntaxes/DotENV"]
-	path = assets/syntaxes/DotENV
+	path = assets/syntaxes/02_Extra/DotENV
 	url = https://github.com/zaynali53/DotENV
 [submodule "assets/syntaxes/hosts"]
-	path = assets/syntaxes/hosts
+	path = assets/syntaxes/02_Extra/hosts
 	url = https://github.com/brandonwamboldt/sublime-hosts
 [submodule "assets/syntaxes/ssh-config"]
-	path = assets/syntaxes/ssh-config
+	path = assets/syntaxes/02_Extra/ssh-config
 	url = https://github.com/robballou/sublimetext-sshconfig.git
 [submodule "assets/syntaxes/GraphQL"]
-	path = assets/syntaxes/GraphQL
+	path = assets/syntaxes/02_Extra/GraphQL
 	url = https://github.com/dncrews/GraphQL-SublimeText3.git
 [submodule "assets/syntaxes/Verilog"]
-	path = assets/syntaxes/Verilog
+	path = assets/syntaxes/02_Extra/Verilog
 	url = https://github.com/pro711/sublime-verilog
 [submodule "assets/syntaxes/SCSS_Sass"]
-	path = assets/syntaxes/SCSS_Sass
+	path = assets/syntaxes/02_Extra/SCSS_Sass
 	url = https://github.com/braver/SublimeSass
 [submodule "assets/syntaxes/Strace"]
-	path = assets/syntaxes/Strace
+	path = assets/syntaxes/02_Extra/Strace
 	url = https://github.com/djuretic/SublimeStrace
 [submodule "assets/syntaxes/Jinja2"]
-	path = assets/syntaxes/Jinja2
+	path = assets/syntaxes/02_Extra/Jinja2
 	url = https://github.com/Martin819/sublime-jinja2
 [submodule "assets/syntaxes/SLS"]
-	path = assets/syntaxes/SLS
+	path = assets/syntaxes/02_Extra/SLS
 	url = https://github.com/saltstack/sublime-text
 	branch = master
 [submodule "assets/themes/dracula-sublime"]
 	path = assets/themes/dracula-sublime
 	url = https://github.com/dracula/sublime.git
 [submodule "assets/syntaxes/HTML (Twig)"]
-	path = assets/syntaxes/HTML (Twig)
+	path = assets/syntaxes/02_Extra/HTML (Twig)
 	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
 [submodule "assets/themes/Nord-sublime"]
 	path = assets/themes/Nord-sublime
@@ -170,9 +170,9 @@
 	path = assets/themes/solarized-sublime
 	url = https://github.com/paulcpederson/solarized-sublime.git
 [submodule "assets/syntaxes/Vue"]
-	path = assets/syntaxes/Vue
+	path = assets/syntaxes/02_Extra/Vue
 	url = https://github.com/vuejs/vue-syntax-highlight.git
 	branch = new
 [submodule "assets/syntaxes/CoffeeScript"]
-	path = assets/syntaxes/CoffeeScript
+	path = assets/syntaxes/02_Extra/CoffeeScript
 	url = https://github.com/sustained/CoffeeScript-Sublime-Plugin
