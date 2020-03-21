@@ -3,7 +3,7 @@ use bat::{
     controller::Controller,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
-    Config,
+    config::Config,
 };
 use console::Term;
 use std::process;
