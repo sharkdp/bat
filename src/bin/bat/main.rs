@@ -32,7 +32,7 @@ use bat::{
     config::Config,
     errors::*,
     inputfile::InputFile,
-    style::{OutputComponent, OutputComponents},
+    style::{StyleComponent, StyleComponents},
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
@@ -123,9 +123,9 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary();
     let mut config = cfg.clone();
     let mut style = HashSet::new();
-    style.insert(OutputComponent::Plain);
+    style.insert(StyleComponent::Plain);
     config.files = vec![InputFile::ThemePreviewFile];
-    config.output_components = OutputComponents(style);
+    config.style_components = StyleComponents(style);
 
     let stdout = io::stdout();
     let mut stdout = stdout.lock();

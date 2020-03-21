@@ -22,8 +22,9 @@ use bat::{
     errors::*,
     inputfile::InputFile,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
-    style::{OutputComponent, OutputComponents, OutputWrap},
+    style::{StyleComponent, StyleComponents},
     syntax_mapping::SyntaxMapping,
+    wrap::OutputWrap,
 };
 
 fn is_truecolor_terminal() -> bool {
@@ -79,7 +80,7 @@ impl App {
 
     pub fn config(&self) -> Result<Config> {
         let files = self.files();
-        let output_components = self.output_components()?;
+        let style_components = self.style_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
@@ -152,7 +153,7 @@ impl App {
                     Some("character") => OutputWrap::Character,
                     Some("never") => OutputWrap::None,
                     Some("auto") | _ => {
-                        if output_components.plain() {
+                        if style_components.plain() {
                             OutputWrap::None
                         } else {
                             OutputWrap::Character
@@ -182,7 +183,7 @@ impl App {
                 .or_else(|| env::var("BAT_TABS").ok())
                 .and_then(|t| t.parse().ok())
                 .unwrap_or(
-                    if output_components.plain() && paging_mode == PagingMode::Never {
+                    if style_components.plain() && paging_mode == PagingMode::Never {
                         0
                     } else {
                         4
@@ -208,7 +209,7 @@ impl App {
                 .transpose()?
                 .map(LineRanges::from)
                 .unwrap_or_default(),
-            output_components,
+            style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
             use_italic_text: match self.matches.value_of("italic-text") {
@@ -243,23 +244,23 @@ impl App {
             .unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
-    fn output_components(&self) -> Result<OutputComponents> {
+    fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        Ok(OutputComponents(
+        Ok(StyleComponents(
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
             } else if matches.is_present("number") {
-                [OutputComponent::Numbers].iter().cloned().collect()
+                [StyleComponent::Numbers].iter().cloned().collect()
             } else if matches.is_present("plain") {
-                [OutputComponent::Plain].iter().cloned().collect()
+                [StyleComponent::Plain].iter().cloned().collect()
             } else {
-                let env_style_components: Option<Vec<OutputComponent>> = env::var("BAT_STYLE")
+                let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
                     .ok()
                     .map(|style_str| {
                         style_str
                             .split(',')
-                            .map(|x| OutputComponent::from_str(&x))
-                            .collect::<Result<Vec<OutputComponent>>>()
+                            .map(|x| StyleComponent::from_str(&x))
+                            .collect::<Result<Vec<StyleComponent>>>()
                     })
                     .transpose()?;
 
@@ -268,12 +269,12 @@ impl App {
                     .map(|styles| {
                         styles
                             .split(',')
-                            .map(|style| style.parse::<OutputComponent>())
+                            .map(|style| style.parse::<StyleComponent>())
                             .filter_map(|style| style.ok())
                             .collect::<Vec<_>>()
                     })
                     .or(env_style_components)
-                    .unwrap_or_else(|| vec![OutputComponent::Full])
+                    .unwrap_or_else(|| vec![StyleComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {

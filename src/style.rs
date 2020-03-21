@@ -4,7 +4,7 @@ use std::str::FromStr;
 use crate::errors::*;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-pub enum OutputComponent {
+pub enum StyleComponent {
     Auto,
     Changes,
     Grid,
@@ -15,92 +15,80 @@ pub enum OutputComponent {
     Plain,
 }
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-pub enum OutputWrap {
-    Character,
-    None,
-}
-
-impl Default for OutputWrap {
-    fn default() -> Self {
-        OutputWrap::None
-    }
-}
-
-impl OutputComponent {
-    pub fn components(self, interactive_terminal: bool) -> &'static [OutputComponent] {
+impl StyleComponent {
+    pub fn components(self, interactive_terminal: bool) -> &'static [StyleComponent] {
         match self {
-            OutputComponent::Auto => {
+            StyleComponent::Auto => {
                 if interactive_terminal {
-                    OutputComponent::Full.components(interactive_terminal)
+                    StyleComponent::Full.components(interactive_terminal)
                 } else {
-                    OutputComponent::Plain.components(interactive_terminal)
+                    StyleComponent::Plain.components(interactive_terminal)
                 }
             }
-            OutputComponent::Changes => &[OutputComponent::Changes],
-            OutputComponent::Grid => &[OutputComponent::Grid],
-            OutputComponent::Header => &[OutputComponent::Header],
-            OutputComponent::Numbers => &[OutputComponent::Numbers],
-            OutputComponent::Snip => &[OutputComponent::Snip],
-            OutputComponent::Full => &[
-                OutputComponent::Changes,
-                OutputComponent::Grid,
-                OutputComponent::Header,
-                OutputComponent::Numbers,
-                OutputComponent::Snip,
+            StyleComponent::Changes => &[StyleComponent::Changes],
+            StyleComponent::Grid => &[StyleComponent::Grid],
+            StyleComponent::Header => &[StyleComponent::Header],
+            StyleComponent::Numbers => &[StyleComponent::Numbers],
+            StyleComponent::Snip => &[StyleComponent::Snip],
+            StyleComponent::Full => &[
+                StyleComponent::Changes,
+                StyleComponent::Grid,
+                StyleComponent::Header,
+                StyleComponent::Numbers,
+                StyleComponent::Snip,
             ],
-            OutputComponent::Plain => &[],
+            StyleComponent::Plain => &[],
         }
     }
 }
 
-impl FromStr for OutputComponent {
+impl FromStr for StyleComponent {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self> {
         match s {
-            "auto" => Ok(OutputComponent::Auto),
-            "changes" => Ok(OutputComponent::Changes),
-            "grid" => Ok(OutputComponent::Grid),
-            "header" => Ok(OutputComponent::Header),
-            "numbers" => Ok(OutputComponent::Numbers),
-            "snip" => Ok(OutputComponent::Snip),
-            "full" => Ok(OutputComponent::Full),
-            "plain" => Ok(OutputComponent::Plain),
+            "auto" => Ok(StyleComponent::Auto),
+            "changes" => Ok(StyleComponent::Changes),
+            "grid" => Ok(StyleComponent::Grid),
+            "header" => Ok(StyleComponent::Header),
+            "numbers" => Ok(StyleComponent::Numbers),
+            "snip" => Ok(StyleComponent::Snip),
+            "full" => Ok(StyleComponent::Full),
+            "plain" => Ok(StyleComponent::Plain),
             _ => Err(format!("Unknown style '{}'", s).into()),
         }
     }
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct OutputComponents(pub HashSet<OutputComponent>);
+pub struct StyleComponents(pub HashSet<StyleComponent>);
 
-impl OutputComponents {
-    pub fn new(components: &[OutputComponent]) -> OutputComponents {
-        OutputComponents(components.iter().cloned().collect())
+impl StyleComponents {
+    pub fn new(components: &[StyleComponent]) -> StyleComponents {
+        StyleComponents(components.iter().cloned().collect())
     }
 
     pub fn changes(&self) -> bool {
-        self.0.contains(&OutputComponent::Changes)
+        self.0.contains(&StyleComponent::Changes)
     }
 
     pub fn grid(&self) -> bool {
-        self.0.contains(&OutputComponent::Grid)
+        self.0.contains(&StyleComponent::Grid)
     }
 
     pub fn header(&self) -> bool {
-        self.0.contains(&OutputComponent::Header)
+        self.0.contains(&StyleComponent::Header)
     }
 
     pub fn numbers(&self) -> bool {
-        self.0.contains(&OutputComponent::Numbers)
+        self.0.contains(&StyleComponent::Numbers)
     }
 
     pub fn snip(&self) -> bool {
-        self.0.contains(&OutputComponent::Snip)
+        self.0.contains(&StyleComponent::Snip)
     }
 
     pub fn plain(&self) -> bool {
-        self.0.iter().all(|c| c == &OutputComponent::Plain)
+        self.0.iter().all(|c| c == &StyleComponent::Plain)
     }
 }

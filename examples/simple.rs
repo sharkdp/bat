@@ -3,7 +3,7 @@ use bat::{
     config::Config,
     controller::Controller,
     inputfile::InputFile,
-    style::{OutputComponent, OutputComponents},
+    style::{StyleComponent, StyleComponents},
 };
 use console::Term;
 use std::process;
@@ -20,10 +20,10 @@ fn main() {
         term_width: Term::stdout().size().1 as usize,
         colored_output: true,
         true_color: true,
-        output_components: OutputComponents::new(&[
-            OutputComponent::Header,
-            OutputComponent::Grid,
-            OutputComponent::Numbers,
+        style_components: StyleComponents::new(&[
+            StyleComponent::Header,
+            StyleComponent::Grid,
+            StyleComponent::Numbers,
         ]),
         files: files.iter().map(|file| InputFile::Ordinary(file)).collect(),
         theme: "1337".into(),
