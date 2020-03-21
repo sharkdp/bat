@@ -17,12 +17,12 @@ use console::Term;
 use ansi_term;
 
 use bat::{
-    assets::HighlightingAssets,
     config::{
         Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, OutputWrap, PagingMode,
         StyleComponent, StyleComponents, SyntaxMapping,
     },
     errors::*,
+    HighlightingAssets,
 };
 
 fn is_truecolor_terminal() -> bool {

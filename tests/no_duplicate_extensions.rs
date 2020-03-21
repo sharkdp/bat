@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use bat::assets::HighlightingAssets;
+use bat::HighlightingAssets;
 
 #[test]
 fn no_duplicate_extensions() {

@@ -24,13 +24,13 @@ use ansi_term::Style;
 
 use crate::{app::App, config::config_file};
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
-use bat::controller::Controller;
+use bat::Controller;
 use directories::PROJECT_DIRS;
 
 use bat::{
-    assets::HighlightingAssets,
     config::{Config, InputFile, StyleComponent, StyleComponents},
     errors::*,
+    HighlightingAssets,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
