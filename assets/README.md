@@ -39,3 +39,6 @@ The following files have been manually modified after converting from a `.tmLang
 
 * `Assembly (x86_64)` has been manually added from https://github.com/13xforever/x86-assembly-textmate-bundle due to `git clone` recursion problems
 * `Nim.sublime-syntax` has been added manually from https://github.com/getzola/zola/blob/master/sublime_syntaxes/Nim.sublime-syntax as there was no suitable Git repository for it. The original syntax seems to originate from https://github.com/Varriount/NimLime
+* `Rego.sublime-syntax` has been added manually from https://github.com/open-policy-agent/opa/blob/master/misc/syntax/sublime/rego.sublime-syntax
+   as it is not kept in a standalone repository. The file is generated from
+   https://github.com/open-policy-agent/opa/blob/master/misc/syntax/textmate/Rego.tmLanguage

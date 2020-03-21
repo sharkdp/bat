@@ -1,0 +1,97 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Rego
+file_extensions:
+  - rego
+scope: source.rego
+contexts:
+  main:
+    - include: comment
+    - include: keyword
+    - include: operator
+    - include: head
+    - include: term
+  comment:
+    - match: (#).*$\n?
+      scope: comment.line.number-sign.rego
+      captures:
+        1: punctuation.definition.comment.rego
+  call:
+    - match: '([a-zA-Z_][a-zA-Z0-9_]*)\('
+      scope: meta.function-call.rego
+      captures:
+        1: support.function.any-method.rego
+  constant:
+    - match: \b(?:true|false|null)\b
+      scope: constant.language.rego
+  head:
+    - match: "^([[:alpha:]_][[:alnum:]_]*)"
+      captures:
+        1: entity.name.function.declaration
+      push:
+        - meta_scope: meta.function.rego
+        - match: '(=|{|\n)'
+          pop: true
+        - include: term
+  keyword:
+    - match: (^|\s+)(?:(default|not|package|import|as|with|else|some))\s+
+      scope: keyword.other.rego
+  number:
+    - match: |-
+        (?x:         # turn on extended mode
+          -?         # an optional minus
+          (?:
+            0        # a zero
+            |        # ...or...
+            [1-9]    # a 1-9 character
+            \d*      # followed by zero or more digits
+          )
+          (?:
+            (?:
+              \.     # a period
+              \d+    # followed by one or more digits
+            )?
+            (?:
+              [eE]   # an e character
+              [+-]?  # followed by an option +/-
+              \d+    # followed by one or more digits
+            )?       # make exponent optional
+          )?         # make decimal portion optional
+        )
+      scope: constant.numeric.rego
+  operator:
+    - match: \=|\!\=|>|<|<\=|>\=|\+|-|\*|%|/|\||&|:\=
+      scope: keyword.operator.comparison.rego
+  string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.rego
+      push:
+        - meta_scope: string.quoted.double.rego
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.rego
+          pop: true
+        - match: |-
+            (?x:                # turn on extended mode
+              \\                # a literal backslash
+              (?:               # ...followed by...
+                ["\\/bfnrt]     # one of these characters
+                |               # ...or...
+                u               # a u
+                [0-9a-fA-F]{4}  # and four hex digits
+              )
+            )
+          scope: constant.character.escape.rego
+        - match: \\.
+          scope: invalid.illegal.unrecognized-string-escape.rego
+  term:
+    - include: constant
+    - include: string
+    - include: number
+    - include: call
+    - include: variable
+  variable:
+    - match: '\b[[:alpha:]_][[:alnum:]_]*\b'
+      scope: meta.identifier.rego
