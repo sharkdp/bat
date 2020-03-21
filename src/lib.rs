@@ -1,9 +1,6 @@
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 
-#[macro_use]
-extern crate error_chain;
-
 extern crate ansi_term;
 extern crate atty;
 extern crate console;
@@ -19,6 +16,7 @@ pub mod assets;
 pub mod controller;
 mod decorations;
 mod diff;
+pub mod errors;
 pub mod inputfile;
 mod less;
 pub mod line_range;
@@ -28,31 +26,6 @@ mod printer;
 pub mod style;
 pub mod syntax_mapping;
 mod terminal;
-
-pub mod errors {
-    error_chain! {
-        foreign_links {
-            Clap(::clap::Error);
-            Io(::std::io::Error);
-            SyntectError(::syntect::LoadingError);
-            ParseIntError(::std::num::ParseIntError);
-        }
-    }
-
-    pub fn handle_error(error: &Error) {
-        match error {
-            Error(ErrorKind::Io(ref io_error), _)
-                if io_error.kind() == ::std::io::ErrorKind::BrokenPipe =>
-            {
-                ::std::process::exit(0);
-            }
-            _ => {
-                use ansi_term::Colour::Red;
-                eprintln!("{}: {}", Red.paint("[bat error]"), error);
-            }
-        };
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
@@ -68,7 +41,7 @@ impl Default for PagingMode {
 }
 
 use inputfile::InputFile;
-use line_range::{LineRanges, HighlightedLineRanges};
+use line_range::{HighlightedLineRanges, LineRanges};
 use style::{OutputComponents, OutputWrap};
 use syntax_mapping::SyntaxMapping;
 
@@ -131,12 +104,18 @@ pub struct Config<'a> {
 fn default_config_should_include_all_lines() {
     use line_range::RangeCheckResult;
 
-    assert_eq!(Config::default().line_ranges.check(17), RangeCheckResult::InRange);
+    assert_eq!(
+        Config::default().line_ranges.check(17),
+        RangeCheckResult::InRange
+    );
 }
 
 #[test]
 fn default_config_should_highlight_no_lines() {
     use line_range::RangeCheckResult;
 
-    assert_ne!(Config::default().highlighted_lines.0.check(17), RangeCheckResult::InRange);
+    assert_ne!(
+        Config::default().highlighted_lines.0.check(17),
+        RangeCheckResult::InRange
+    );
 }
