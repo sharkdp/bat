@@ -68,7 +68,7 @@ impl Default for PagingMode {
 }
 
 use inputfile::InputFile;
-use line_range::LineRanges;
+use line_range::{LineRanges, HighlightedLineRanges};
 use style::{OutputComponents, OutputWrap};
 use syntax_mapping::SyntaxMapping;
 
@@ -123,6 +123,20 @@ pub struct Config<'a> {
     /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
 
-    /// Lines to highlight
-    pub highlight_lines: LineRanges,
+    /// Ranges of lines which should be highlighted with a special background color
+    pub highlighted_lines: HighlightedLineRanges,
+}
+
+#[test]
+fn default_config_should_include_all_lines() {
+    use line_range::RangeCheckResult;
+
+    assert_eq!(Config::default().line_ranges.check(17), RangeCheckResult::InRange);
+}
+
+#[test]
+fn default_config_should_highlight_no_lines() {
+    use line_range::RangeCheckResult;
+
+    assert_ne!(Config::default().highlighted_lines.0.check(17), RangeCheckResult::InRange);
 }
