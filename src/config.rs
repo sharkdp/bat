@@ -1,7 +1,8 @@
 use crate::inputfile::InputFile;
 use crate::line_range::{HighlightedLineRanges, LineRanges};
-use crate::style::{OutputComponents, OutputWrap};
+use crate::style::StyleComponents;
 use crate::syntax_mapping::SyntaxMapping;
+use crate::wrap::OutputWrap;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
@@ -44,7 +45,7 @@ pub struct Config<'a> {
     pub true_color: bool,
 
     /// Style elements (grid, line numbers, ...)
-    pub output_components: OutputComponents,
+    pub style_components: StyleComponents,
 
     /// Text wrapping mode
     pub output_wrap: OutputWrap,

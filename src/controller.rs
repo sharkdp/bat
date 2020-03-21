@@ -83,7 +83,7 @@ impl<'b> Controller<'b> {
         writer: &mut dyn Write,
         input_file: InputFile<'a>,
     ) -> Result<()> {
-        if !reader.first_line.is_empty() || self.config.output_components.header() {
+        if !reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input_file)?;
         }
 
@@ -118,7 +118,7 @@ impl<'b> Controller<'b> {
                 }
 
                 RangeCheckResult::InRange => {
-                    if self.config.output_components.snip() {
+                    if self.config.style_components.snip() {
                         if first_range {
                             first_range = false;
                             mid_range = true;

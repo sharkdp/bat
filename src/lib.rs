@@ -27,3 +27,4 @@ mod printer;
 pub mod style;
 pub mod syntax_mapping;
 mod terminal;
+pub mod wrap;
