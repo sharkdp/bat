@@ -48,8 +48,8 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 
         let blank = matches.is_present("blank");
 
-        let assets = HighlightingAssets::from_files(source_dir, blank)?;
-        assets.save(target_dir)?;
+        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
+        assets.save_to_cache(target_dir)?;
     } else if matches.is_present("clear") {
         clear_assets();
     }
