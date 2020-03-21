@@ -18,13 +18,11 @@ use ansi_term;
 
 use bat::{
     assets::HighlightingAssets,
-    config::{Config, PagingMode},
+    config::{
+        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, OutputWrap, PagingMode,
+        StyleComponent, StyleComponents, SyntaxMapping,
+    },
     errors::*,
-    inputfile::InputFile,
-    line_range::{HighlightedLineRanges, LineRange, LineRanges},
-    style::{StyleComponent, StyleComponents},
-    syntax_mapping::SyntaxMapping,
-    wrap::OutputWrap,
 };
 
 fn is_truecolor_terminal() -> bool {

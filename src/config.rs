@@ -1,8 +1,8 @@
-use crate::inputfile::InputFile;
-use crate::line_range::{HighlightedLineRanges, LineRanges};
-use crate::style::StyleComponents;
-use crate::syntax_mapping::SyntaxMapping;
-use crate::wrap::OutputWrap;
+pub use crate::inputfile::InputFile;
+pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
+pub use crate::style::{StyleComponent, StyleComponents};
+pub use crate::syntax_mapping::SyntaxMapping;
+pub use crate::wrap::OutputWrap;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
