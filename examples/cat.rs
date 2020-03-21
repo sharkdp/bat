@@ -1,6 +1,5 @@
 /// A very simple colorized `cat` clone, using `bat` as a library.
 /// See `src/bin/bat` for the full `bat` application.
-
 use bat::{
     config::{Config, InputFile, StyleComponent, StyleComponents},
     Controller, HighlightingAssets,

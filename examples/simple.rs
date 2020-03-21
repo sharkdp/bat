@@ -1,5 +1,4 @@
 /// A simple program that prints its own source code using the bat library
-
 use bat::{
     config::{Config, InputFile},
     Controller, HighlightingAssets,
