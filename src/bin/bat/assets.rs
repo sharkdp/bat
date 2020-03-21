@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use crate::directories::PROJECT_DIRS;
 
-use bat::assets::HighlightingAssets;
+use bat::HighlightingAssets;
 
 fn theme_set_path() -> PathBuf {
     PROJECT_DIRS.cache_dir().join("themes.bin")

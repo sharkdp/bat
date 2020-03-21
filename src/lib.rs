@@ -12,9 +12,9 @@ extern crate shell_words;
 extern crate syntect;
 extern crate wild;
 
-pub mod assets;
+pub(crate) mod assets;
 pub mod config;
-pub mod controller;
+pub(crate) mod controller;
 mod decorations;
 mod diff;
 pub mod errors;
@@ -23,8 +23,12 @@ mod less;
 pub(crate) mod line_range;
 mod output;
 mod preprocessor;
-mod printer;
+pub(crate) mod printer;
 pub(crate) mod style;
 pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrap;
+
+pub use assets::HighlightingAssets;
+pub use controller::Controller;
+pub use printer::{InteractivePrinter, Printer, SimplePrinter};
