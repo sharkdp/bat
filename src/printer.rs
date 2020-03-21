@@ -31,7 +31,7 @@ use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::Config;
+use crate::config::Config;
 
 pub trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;

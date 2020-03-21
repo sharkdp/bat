@@ -32,7 +32,7 @@ use bat::{
     errors::*,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
-    Config,
+    config::Config,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {

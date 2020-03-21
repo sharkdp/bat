@@ -8,7 +8,7 @@ use shell_words;
 
 use crate::errors::*;
 use crate::less::retrieve_less_version;
-use crate::PagingMode;
+use crate::config::PagingMode;
 
 #[derive(Debug)]
 pub enum OutputType {

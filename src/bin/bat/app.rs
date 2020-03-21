@@ -23,7 +23,7 @@ use bat::{
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{OutputComponent, OutputComponents, OutputWrap},
     syntax_mapping::SyntaxMapping,
-    Config, PagingMode,
+    config::{Config, PagingMode},
 };
 
 fn is_truecolor_terminal() -> bool {
