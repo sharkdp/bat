@@ -13,7 +13,7 @@ impl SyntaxMapping {
         self.0.insert(from.into(), to.into())
     }
 
-    pub fn replace<'a>(&self, input: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
+    pub(crate) fn replace<'a>(&self, input: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
         let input = input.into();
         match self.0.get(input.as_ref()) {
             Some(s) => Cow::from(s.clone()),
