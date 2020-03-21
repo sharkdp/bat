@@ -6,9 +6,9 @@ use std::process::{Child, Command, Stdio};
 
 use shell_words;
 
+use crate::config::PagingMode;
 use crate::errors::*;
 use crate::less::retrieve_less_version;
-use crate::config::PagingMode;
 
 #[derive(Debug)]
 pub enum OutputType {

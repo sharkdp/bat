@@ -18,12 +18,12 @@ use ansi_term;
 
 use bat::{
     assets::BAT_THEME_DEFAULT,
+    config::{Config, PagingMode},
     errors::*,
     inputfile::InputFile,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{OutputComponent, OutputComponents, OutputWrap},
     syntax_mapping::SyntaxMapping,
-    config::{Config, PagingMode},
 };
 
 fn is_truecolor_terminal() -> bool {
@@ -201,14 +201,13 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
-            line_ranges:
-                self.matches
-                    .values_of("line-range")
-                    .map(|vs| vs.map(LineRange::from).collect())
-                    .transpose()?
-                    .map(LineRanges::from)
-                    .unwrap_or_default()
-            ,
+            line_ranges: self
+                .matches
+                .values_of("line-range")
+                .map(|vs| vs.map(LineRange::from).collect())
+                .transpose()?
+                .map(LineRanges::from)
+                .unwrap_or_default(),
             output_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
@@ -216,14 +215,14 @@ impl App {
                 Some("always") => true,
                 _ => false,
             },
-            highlighted_lines:
-                self.matches
-                    .values_of("highlight-line")
-                    .map(|ws| ws.map(LineRange::from).collect())
-                    .transpose()?
-                    .map(LineRanges::from)
-                    .map(|lr| HighlightedLineRanges(lr))
-                    .unwrap_or_default()
+            highlighted_lines: self
+                .matches
+                .values_of("highlight-line")
+                .map(|ws| ws.map(LineRange::from).collect())
+                .transpose()?
+                .map(LineRanges::from)
+                .map(|lr| HighlightedLineRanges(lr))
+                .unwrap_or_default(),
         })
     }
 

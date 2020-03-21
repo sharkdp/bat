@@ -33,5 +33,6 @@ pub fn clear_assets() {
 }
 
 pub fn assets_from_cache_or_binary() -> HighlightingAssets {
-    HighlightingAssets::from_cache(&theme_set_path(), &syntax_set_path()).unwrap_or(HighlightingAssets::from_binary())
+    HighlightingAssets::from_cache(&theme_set_path(), &syntax_set_path())
+        .unwrap_or(HighlightingAssets::from_binary())
 }

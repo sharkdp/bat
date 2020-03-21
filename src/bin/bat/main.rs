@@ -7,10 +7,10 @@ extern crate clap;
 extern crate dirs as dirs_rs;
 
 mod app;
+mod assets;
 mod clap_app;
 mod config;
 mod directories;
-mod assets;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -23,22 +23,28 @@ use ansi_term::Colour::Green;
 use ansi_term::Style;
 
 use crate::{app::App, config::config_file};
-use directories::PROJECT_DIRS;
-use assets::{cache_dir, clear_assets, config_dir, assets_from_cache_or_binary};
+use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use bat::controller::Controller;
+use directories::PROJECT_DIRS;
 
 use bat::{
     assets::HighlightingAssets,
+    config::Config,
     errors::*,
     inputfile::InputFile,
     style::{OutputComponent, OutputComponents},
-    config::Config,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
-        let source_dir = matches.value_of("source").map(Path::new).unwrap_or_else(|| PROJECT_DIRS.config_dir());
-        let target_dir = matches.value_of("target").map(Path::new).unwrap_or_else(|| PROJECT_DIRS.cache_dir());
+        let source_dir = matches
+            .value_of("source")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
+        let target_dir = matches
+            .value_of("target")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
         let blank = matches.is_present("blank");
 
