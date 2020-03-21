@@ -10,8 +10,8 @@ const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
 pub struct InputFileReader<'a> {
     inner: Box<dyn BufRead + 'a>,
-    pub first_line: Vec<u8>,
-    pub content_type: Option<ContentType>,
+    pub(crate) first_line: Vec<u8>,
+    pub(crate) content_type: Option<ContentType>,
 }
 
 impl<'a> InputFileReader<'a> {
@@ -36,7 +36,7 @@ impl<'a> InputFileReader<'a> {
         }
     }
 
-    pub fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+    pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
         if self.first_line.is_empty() {
             let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
 
@@ -60,7 +60,7 @@ pub enum InputFile<'a> {
 }
 
 impl<'a> InputFile<'a> {
-    pub fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
+    pub(crate) fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
         match self {
             InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
             InputFile::Ordinary(filename) => {
