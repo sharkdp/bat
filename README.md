@@ -180,7 +180,7 @@ apt install bat
 If you want to run the latest release of bat or if you are on older versions of Ubuntu/Debian, download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
 ```bash
-sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.13.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
