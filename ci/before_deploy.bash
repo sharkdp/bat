@@ -38,7 +38,7 @@ pack() {
     "${gcc_prefix}"strip "$tempdir/$package_name/$PROJECT_NAME"
 
     # manpage, readme and license
-    cp "$out_dir/assets/manual/bat.1" "$tempdir/$package_name/$PROJECT_NAME.1"
+    cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/assets/manual/bat.1 "$tempdir/$package_name/$PROJECT_NAME.1"
     cp README.md "$tempdir/$package_name"
     cp LICENSE-MIT "$tempdir/$package_name"
     cp LICENSE-APACHE "$tempdir/$package_name"
@@ -47,7 +47,7 @@ pack() {
     # TODO: disabled for now, see issue #372
     # cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/"$PROJECT_NAME".bash "$tempdir/$package_name/autocomplete/${PROJECT_NAME}.bash-completion"
     # cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/"$PROJECT_NAME".fish "$tempdir/$package_name/autocomplete"
-    cp "$out_dir/assets/completions/bat.fish" "$tempdir/$package_name/autocomplete/$PROJECT_NAME.fish"
+    cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/assets/completions/bat.fish "$tempdir/$package_name/autocomplete/$PROJECT_NAME.fish"
     # cp target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/_"$PROJECT_NAME" "$tempdir/$package_name/autocomplete"
 
     # archiving
@@ -108,11 +108,11 @@ make_deb() {
     "${gcc_prefix}"strip "$tempdir/usr/bin/$PROJECT_NAME"
 
     # manpage
-    install -Dm644 "$out_dir/assets/manual/bat.1" "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
+    install -Dm644 target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/assets/manual/bat.1 "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
     gzip --best "$tempdir/usr/share/man/man1/$PROJECT_NAME.1"
 
     # completions
-    install -Dm644 "$out_dir/assets/completions/bat.fish" "$tempdir/usr/share/fish/vendor_completions.d/$PROJECT_NAME.fish"
+    install -Dm644 target/"$TARGET"/release/build/"$PROJECT_NAME"-*/out/assets/completions/bat.fish "$tempdir/usr/share/fish/vendor_completions.d/$PROJECT_NAME.fish"
 
     # readme and license
     install -Dm644 README.md "$tempdir/usr/share/doc/$PROJECT_NAME/README.md"
