@@ -6,6 +6,7 @@ error_chain! {
         Io(::std::io::Error);
         SyntectError(::syntect::LoadingError);
         ParseIntError(::std::num::ParseIntError);
+        GlobParsingError(::globset::Error);
     }
 }
 

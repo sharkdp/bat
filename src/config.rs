@@ -1,7 +1,7 @@
 pub use crate::inputfile::InputFile;
 pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
 pub use crate::style::{StyleComponent, StyleComponents};
-pub use crate::syntax_mapping::SyntaxMapping;
+pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use crate::wrap::OutputWrap;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -60,7 +60,7 @@ pub struct Config<'a> {
     pub theme: String,
 
     /// File extension/name mappings
-    pub syntax_mapping: SyntaxMapping,
+    pub syntax_mapping: SyntaxMapping<'a>,
 
     /// Command to start the pager
     pub pager: Option<&'a str>,
