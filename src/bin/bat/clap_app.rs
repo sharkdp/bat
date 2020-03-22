@@ -248,13 +248,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .multiple(true)
                 .takes_value(true)
                 .number_of_values(1)
-                .value_name("from:to")
-                .help("Map a file extension or name to an existing syntax.")
+                .value_name("glob:syntax")
+                .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
                 .long_help(
-                    "Map a file extension or file name to an existing syntax (specified by a file \
-                     extension or file name). For example, to highlight *.build files with the \
-                     Python syntax, use '-m build:py'. To highlight files named '.myignore' with \
-                     the Git Ignore syntax, use '-m .myignore:gitignore'.",
+                    "Map a glob pattern to an existing syntax name. The glob pattern is matched \
+                     on the full path and the filename. For example, to highlight *.build files \
+                     with the Python syntax, use -m '*.build:Python'. To highlight files named \
+                     '.myignore' with the Git Ignore syntax, use -m '.myignore:Git Ignore'.",
                 )
                 .takes_value(true),
         )
@@ -281,7 +281,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("style")
                 .long("style")
-                .value_name("style-components")
+                .value_name("components")
                 // Need to turn this off for overrides_with to work as we want. See the bottom most
                 // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
                 .use_delimiter(false)
