@@ -500,11 +500,11 @@ Example configuration file:
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax (instead of C) for .h header files
---map-syntax h:cpp
+# Use C++ syntax for .ino files
+--map-syntax "*.ino:C++"
 
-# Use "gitignore" highlighting for ".ignore" files
---map-syntax .ignore:.gitignore
+# Use ".gitignore"-style highlighting for ".ignore" files
+--map-syntax ".ignore:Git Ignore"
 ```
 
 ## Using `bat` on Windows

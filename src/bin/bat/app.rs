@@ -111,7 +111,7 @@ impl App {
                 let parts: Vec<_> = from_to.split(':').collect();
 
                 if parts.len() != 2 {
-                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
+                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'.".into());
                 }
 
                 syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
