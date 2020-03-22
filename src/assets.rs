@@ -285,6 +285,7 @@ mod tests {
     fn syntax_detection_well_defined_mapping_for_duplicate_extensions() {
         let test = SyntaxDetectionTest::new();
 
+        assert_eq!(test.syntax_name("test.h"), "C++");
         assert_eq!(test.syntax_name("test.sass"), "Sass");
         assert_eq!(test.syntax_name("test.hs"), "Haskell (improved)");
         assert_eq!(test.syntax_name("test.js"), "JavaScript (Babel)");
@@ -309,11 +310,11 @@ mod tests {
     fn syntax_detection_with_custom_mapping() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_name("test.h"), "C++");
-        test.syntax_mapping
-            .insert("*.h", MappingTarget::MapTo("C++"))
-            .ok();
         assert_eq!(test.syntax_name("test.h"), "C++");
+        test.syntax_mapping
+            .insert("*.h", MappingTarget::MapTo("C"))
+            .ok();
+        assert_eq!(test.syntax_name("test.h"), "C");
     }
 
     #[test]

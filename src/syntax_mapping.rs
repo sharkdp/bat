@@ -22,8 +22,18 @@ impl<'a> SyntaxMapping<'a> {
 
     pub fn builtin() -> SyntaxMapping<'a> {
         let mut mapping = Self::empty();
+        mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
         mapping
             .insert("build", MappingTarget::MapToUnknown)
+            .unwrap();
+        mapping
+            .insert("**/.ssh/config", MappingTarget::MapTo("SSH Config"))
+            .unwrap();
+        mapping
+            .insert(
+                "/etc/profile",
+                MappingTarget::MapTo("Bourne Again Shell (bash)"),
+            )
             .unwrap();
 
         mapping
@@ -41,7 +51,7 @@ impl<'a> SyntaxMapping<'a> {
     pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         let candidate = Candidate::new(path.as_ref());
         let canddidate_filename = path.as_ref().file_name().map(Candidate::new);
-        for (ref glob, ref syntax) in &self.mappings {
+        for (ref glob, ref syntax) in self.mappings.iter().rev() {
             if glob.is_match_candidate(&candidate)
                 || canddidate_filename
                     .as_ref()
@@ -71,6 +81,22 @@ fn basic() {
     assert_eq!(
         map.get_syntax_for("/path/to/.ignore"),
         Some(MappingTarget::MapTo("Git Ignore"))
+    );
+}
+
+#[test]
+fn user_can_override_builtin_mappings() {
+    let mut map = SyntaxMapping::builtin();
+
+    assert_eq!(
+        map.get_syntax_for("/etc/profile"),
+        Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
+    );
+    map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
+        .ok();
+    assert_eq!(
+        map.get_syntax_for("/etc/profile"),
+        Some(MappingTarget::MapTo("My Syntax"))
     );
 }
 
