@@ -246,7 +246,7 @@ mod tests {
             }
         }
 
-        fn syntax_name_with_content(&self, file_name: &str, first_line: &str) -> String {
+        fn synax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             {
                 let mut temp_file = File::create(&file_path).unwrap();
@@ -264,8 +264,8 @@ mod tests {
             syntax.name.clone()
         }
 
-        fn syntax_name(&self, file_name: &str) -> String {
-            self.syntax_name_with_content(file_name, "")
+        fn syntax_for_file(&self, file_name: &str) -> String {
+            self.synax_for_file_with_content(file_name, "")
         }
     }
 
@@ -273,22 +273,25 @@ mod tests {
     fn syntax_detection_basic() {
         let test = SyntaxDetectionTest::new();
 
-        assert_eq!(test.syntax_name("test.rs"), "Rust");
-        assert_eq!(test.syntax_name("test.cpp"), "C++");
-        assert_eq!(test.syntax_name("test.build"), "NAnt Build File");
-        assert_eq!(test.syntax_name("PKGBUILD"), "Bourne Again Shell (bash)");
-        assert_eq!(test.syntax_name(".bashrc"), "Bourne Again Shell (bash)");
-        assert_eq!(test.syntax_name("Makefile"), "Makefile");
+        assert_eq!(test.syntax_for_file("test.rs"), "Rust");
+        assert_eq!(test.syntax_for_file("test.cpp"), "C++");
+        assert_eq!(test.syntax_for_file("test.build"), "NAnt Build File");
+        assert_eq!(
+            test.syntax_for_file("PKGBUILD"),
+            "Bourne Again Shell (bash)"
+        );
+        assert_eq!(test.syntax_for_file(".bashrc"), "Bourne Again Shell (bash)");
+        assert_eq!(test.syntax_for_file("Makefile"), "Makefile");
     }
 
     #[test]
     fn syntax_detection_well_defined_mapping_for_duplicate_extensions() {
         let test = SyntaxDetectionTest::new();
 
-        assert_eq!(test.syntax_name("test.h"), "C++");
-        assert_eq!(test.syntax_name("test.sass"), "Sass");
-        assert_eq!(test.syntax_name("test.hs"), "Haskell (improved)");
-        assert_eq!(test.syntax_name("test.js"), "JavaScript (Babel)");
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
+        assert_eq!(test.syntax_for_file("test.sass"), "Sass");
+        assert_eq!(test.syntax_for_file("test.hs"), "Haskell (improved)");
+        assert_eq!(test.syntax_for_file("test.js"), "JavaScript (Babel)");
     }
 
     #[test]
@@ -296,35 +299,38 @@ mod tests {
         let test = SyntaxDetectionTest::new();
 
         assert_eq!(
-            test.syntax_name_with_content("my_script", "#!/bin/bash"),
+            test.synax_for_file_with_content("my_script", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
         assert_eq!(
-            test.syntax_name_with_content("build", "#!/bin/bash"),
+            test.synax_for_file_with_content("build", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
-        assert_eq!(test.syntax_name_with_content("my_script", "<?php"), "PHP");
+        assert_eq!(
+            test.synax_for_file_with_content("my_script", "<?php"),
+            "PHP"
+        );
     }
 
     #[test]
     fn syntax_detection_with_custom_mapping() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_eq!(test.syntax_name("test.h"), "C++");
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
         test.syntax_mapping
             .insert("*.h", MappingTarget::MapTo("C"))
             .ok();
-        assert_eq!(test.syntax_name("test.h"), "C");
+        assert_eq!(test.syntax_for_file("test.h"), "C");
     }
 
     #[test]
     fn syntax_detection_is_case_sensitive() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_name("README.MD"), "Markdown");
+        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
         test.syntax_mapping
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
-        assert_eq!(test.syntax_name("README.MD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
     }
 }
