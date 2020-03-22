@@ -18,34 +18,13 @@ lazy_static! {
         .unwrap_or("bat");
 }
 
-fn init_template() -> liquid::value::Object {
-    let mut globals = liquid::value::Object::new();
-
-    globals.insert(
-        "PROJECT_NAME".into(),
-        liquid::value::Value::scalar(PROJECT_NAME.to_owned()),
-    );
-
-    globals.insert(
-        "PROJECT_EXECUTABLE".into(),
-        liquid::value::Value::scalar(EXECUTABLE_NAME.to_owned()),
-    );
-
-    globals.insert(
-        "PROJECT_VERSION".into(),
-        liquid::value::Value::scalar(PROJECT_VERSION.to_owned()),
-    );
-
-    globals
-}
-
 /// Generates a file from a liquid template.
 fn template(
-    variables: &liquid::value::Object,
+    variables: &liquid::Object,
     in_file: &str,
     out_file: impl AsRef<Path>,
 ) -> Result<(), Box<dyn Error>> {
-    let template = liquid::ParserBuilder::with_liquid()
+    let template = liquid::ParserBuilder::with_stdlib()
         .build()?
         .parse(&fs::read_to_string(in_file)?)?;
 
@@ -54,7 +33,11 @@ fn template(
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let variables = init_template();
+    let variables = liquid::object!({
+        "PROJECT_NAME": PROJECT_NAME.to_owned(),
+        "PROJECT_EXECUTABLE": EXECUTABLE_NAME.to_owned(),
+        "PROJECT_VERSION": PROJECT_VERSION.to_owned(),
+    });
 
     let out_dir_env = std::env::var_os("OUT_DIR").expect("OUT_DIR to be set in build.rs");
     let out_dir = Path::new(&out_dir_env);

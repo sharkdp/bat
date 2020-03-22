@@ -55,7 +55,7 @@ assert_cmd = "0.12.0"
 
 [build-dependencies]
 clap = "2.33"
-liquid = "0.19"
+liquid = "0.20"
 lazy_static = "1.4"
 
 [profile.release]
