@@ -196,8 +196,8 @@ impl HighlightingAssets {
                     .ok()
                     .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l));
 
-                dbg!(path);
-                match dbg!(mapping.get_syntax_for(path)) {
+                let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
+                match mapping.get_syntax_for(absolute_path) {
                     Some(MappingTarget::MapTo(syntax_name)) => {
                         // TODO: we should probably return an error here if this syntax can not be
                         // found. Currently, we just fall back to 'plain'.
@@ -275,6 +275,7 @@ mod tests {
 
         assert_eq!(test.syntax_name("test.rs"), "Rust");
         assert_eq!(test.syntax_name("test.cpp"), "C++");
+        assert_eq!(test.syntax_name("test.build"), "NAnt Build File");
         assert_eq!(test.syntax_name("PKGBUILD"), "Bourne Again Shell (bash)");
         assert_eq!(test.syntax_name(".bashrc"), "Bourne Again Shell (bash)");
         assert_eq!(test.syntax_name("Makefile"), "Makefile");
