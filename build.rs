@@ -7,6 +7,7 @@ extern crate liquid;
 
 use std::error::Error;
 use std::fs;
+use std::path::Path;
 
 // Read environment variables.
 lazy_static! {
@@ -42,7 +43,7 @@ fn init_template() -> liquid::value::Object {
 fn template(
     variables: &liquid::value::Object,
     in_file: &str,
-    out_file: &str,
+    out_file: impl AsRef<Path>,
 ) -> Result<(), Box<dyn Error>> {
     let template = liquid::ParserBuilder::with_liquid()
         .build()?
@@ -55,11 +56,21 @@ fn template(
 fn main() -> Result<(), Box<dyn Error>> {
     let variables = init_template();
 
-    template(&variables, "assets/manual/bat.1.in", "assets/manual/bat.1")?;
+    let out_dir_env = std::env::var_os("OUT_DIR").expect("OUT_DIR to be set in build.rs");
+    let out_dir = Path::new(&out_dir_env);
+
+    std::fs::create_dir_all(out_dir.join("assets/manual")).unwrap();
+    std::fs::create_dir_all(out_dir.join("assets/completions")).unwrap();
+
+    template(
+        &variables,
+        "assets/manual/bat.1.in",
+        out_dir.join("assets/manual/bat.1"),
+    )?;
     template(
         &variables,
         "assets/completions/bat.fish.in",
-        "assets/completions/bat.fish",
+        out_dir.join("assets/completions/bat.fish"),
     )?;
 
     Ok(())
