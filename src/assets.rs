@@ -9,7 +9,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
-use crate::syntax_mapping::SyntaxMapping;
+use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
@@ -184,25 +184,28 @@ impl HighlightingAssets {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(filename)) => {
                 let path = Path::new(filename);
+
                 let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
-
-                let file_name = mapping.replace(file_name);
-                let extension = mapping.replace(extension);
 
                 let ext_syntax = self
                     .syntax_set
                     .find_syntax_by_extension(&file_name)
                     .or_else(|| self.syntax_set.find_syntax_by_extension(&extension));
-                let line_syntax = if ext_syntax.is_none() {
-                    String::from_utf8(reader.first_line.clone())
-                        .ok()
-                        .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
-                } else {
-                    None
-                };
+                let line_syntax = String::from_utf8(reader.first_line.clone())
+                    .ok()
+                    .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l));
 
-                ext_syntax.or(line_syntax)
+                dbg!(path);
+                match dbg!(mapping.get_syntax_for(path)) {
+                    Some(MappingTarget::MapTo(syntax_name)) => {
+                        // TODO: we should probably return an error here if this syntax can not be
+                        // found. Currently, we just fall back to 'plain'.
+                        self.syntax_set.find_syntax_by_name(syntax_name)
+                    }
+                    Some(MappingTarget::MapToUnknown) => line_syntax,
+                    None => ext_syntax.or(line_syntax),
+                }
             }
             (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
                 .ok()
@@ -225,19 +228,19 @@ mod tests {
 
     use crate::assets::HighlightingAssets;
     use crate::inputfile::InputFile;
-    use crate::syntax_mapping::SyntaxMapping;
+    use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
-    struct SyntaxDetectionTest {
+    struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
-        pub syntax_mapping: SyntaxMapping,
+        pub syntax_mapping: SyntaxMapping<'a>,
         temp_dir: TempDir,
     }
 
-    impl SyntaxDetectionTest {
+    impl<'a> SyntaxDetectionTest<'a> {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
-                syntax_mapping: SyntaxMapping::new(),
+                syntax_mapping: SyntaxMapping::builtin(),
                 temp_dir: TempDir::new("bat_syntax_detection_tests")
                     .expect("creation of temporary directory"),
             }
@@ -294,6 +297,10 @@ mod tests {
             test.syntax_name_with_content("my_script", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
+        assert_eq!(
+            test.syntax_name_with_content("build", "#!/bin/bash"),
+            "Bourne Again Shell (bash)"
+        );
         assert_eq!(test.syntax_name_with_content("my_script", "<?php"), "PHP");
     }
 
@@ -302,7 +309,20 @@ mod tests {
         let mut test = SyntaxDetectionTest::new();
 
         assert_ne!(test.syntax_name("test.h"), "C++");
-        test.syntax_mapping.insert("h", "cpp");
+        test.syntax_mapping
+            .insert("*.h", MappingTarget::MapTo("C++"))
+            .ok();
         assert_eq!(test.syntax_name("test.h"), "C++");
+    }
+
+    #[test]
+    fn syntax_detection_is_case_sensitive() {
+        let mut test = SyntaxDetectionTest::new();
+
+        assert_ne!(test.syntax_name("README.MD"), "Markdown");
+        test.syntax_mapping
+            .insert("*.MD", MappingTarget::MapTo("Markdown"))
+            .ok();
+        assert_eq!(test.syntax_name("README.MD"), "Markdown");
     }
 }

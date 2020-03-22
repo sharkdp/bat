@@ -18,8 +18,8 @@ use ansi_term;
 
 use bat::{
     config::{
-        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, OutputWrap, PagingMode,
-        StyleComponent, StyleComponents, SyntaxMapping,
+        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget, OutputWrap,
+        PagingMode, StyleComponent, StyleComponents, SyntaxMapping,
     },
     errors::*,
     HighlightingAssets,
@@ -104,7 +104,7 @@ impl App {
             }
         };
 
-        let mut syntax_mapping = SyntaxMapping::new();
+        let mut syntax_mapping = SyntaxMapping::builtin();
 
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {
@@ -114,7 +114,7 @@ impl App {
                     return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
                 }
 
-                syntax_mapping.insert(parts[0], parts[1]);
+                syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
             }
         }
 
