@@ -23,7 +23,7 @@ def generate_style_snapshot(style):
 
 
 def generate_snapshot(name, arguments):
-    command = "cargo run -- --paging=never --color=never --decorations=always "
+    command = "cargo run --locked -- --paging=never --color=never --decorations=always "
     command += "{args} sample.rs > output/{name}.snapshot.txt".format(
         name=name,
         args=arguments
@@ -34,7 +34,7 @@ def generate_snapshot(name, arguments):
 
 def build_bat():
     print("building bat")
-    subprocess.call("cargo build", cwd="../..", shell=True)
+    subprocess.call("cargo build --locked", cwd="../..", shell=True)
 
 
 def prepare_output_dir():

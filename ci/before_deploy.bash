@@ -8,7 +8,7 @@ if [[ -z "$PROJECT_NAME" ]]; then
 fi
 
 build() {
-    cargo build --bins --target "$TARGET" --release --verbose
+    cargo build --locked --bins --target "$TARGET" --release --verbose
 }
 
 pack() {
@@ -83,9 +83,9 @@ make_deb() {
             architecture=arm64
             gcc_prefix="aarch64-linux-gnu-"
             ;;
-        arm*hf) 
-            architecture=armhf  
-            gcc_prefix="arm-linux-gnueabihf-"   
+        arm*hf)
+            architecture=armhf
+            gcc_prefix="arm-linux-gnueabihf-"
             ;;
         *)
             echo "make_deb: skipping target '${TARGET}'" >&2

@@ -345,7 +345,7 @@ ansible-galaxy install aeimer.install_bat
 そして `cargo` をビルドに対して使用します:
 
 ```bash
-cargo install bat
+cargo install --locked bat
 ```
 
 一部のプラットフォームでは `llvm` および/または `libclang-dev` のインストールが必要になる場合があります。
@@ -454,16 +454,16 @@ export BAT_PAGER="less -RF"
 `-R` オプションは、ANSIカラーを正しく解釈するために必要です。
 2番目のオプション（`-F`）は、出力サイズが端末の垂直サイズよりも小さい場合、すぐに終了するようにlessに指示します。
 これは、ページャーを終了するために `q` を押す必要がないため、小さなファイルに便利です。
-3番目のオプション（`-X`）は、`less` の古いバージョンの `--quit-if-one-screen` 機能のバグを修正するために必要です。 
+3番目のオプション（`-X`）は、`less` の古いバージョンの `--quit-if-one-screen` 機能のバグを修正するために必要です。
 残念ながら、`less` のマウスホイールのサポートも少なくなります。
 
 `less` の古いバージョンでマウスホイールのスクロールを有効にしたい場合は、
-`-R` だけを渡すことができます（上記の例のように、これは1画面終了機能を無効にします）。 
+`-R` だけを渡すことができます（上記の例のように、これは1画面終了機能を無効にします）。
 530以下の場合は、そのまま使用できます。
 
 ### Dark mode
 
-macOSでダークモード機能を使用する場合、OSテーマに基づいて異なるテーマを使用するように `bat` を構成することができます。 
+macOSでダークモード機能を使用する場合、OSテーマに基づいて異なるテーマを使用するように `bat` を構成することができます。
 次のスニペットは、ライトモードの場合は `デフォルト` のテーマを使用し、
 ダークモードの場合は `GitHub` テーマを使用します。
 
@@ -588,17 +588,17 @@ git clone --recursive https://github.com/sharkdp/bat
 
 # Build (debug version)
 cd bat
-cargo build --bins
+cargo build --locked --bins
 
 # Run unit tests and integration tests
-cargo test
+cargo test --locked
 
 # Install (release version)
-cargo install
+cargo install --locked
 
 # Build a bat binary with modified syntaxes and themes
 bash assets/create.sh
-cargo install -f
+cargo install --locked -f
 ```
 
 ## Maintainers

@@ -50,7 +50,7 @@ matrix:
     #   rust: nightly
     #   # skip the global install step
     #   install:
-    #     - cargo install --debug --force rustfmt-nightly
+    #     - cargo install --locked --debug --force rustfmt-nightly
     #   script: cargo fmt -- --check
 
 sudo: required

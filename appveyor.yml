@@ -15,12 +15,12 @@ install:
 
 build: false
 test_script:
-  - cargo test --target %TARGET% --verbose
-  - cargo run --target %TARGET% -- src/bin/bat/main.rs README.md --paging=never
+  - cargo test --locked --target %TARGET% --verbose
+  - cargo run --locked --target %TARGET% -- src/bin/bat/main.rs README.md --paging=never
 
 before_deploy:
   # Generate artifacts for release
-  - cargo build --bins --release --verbose
+  - cargo build --locked --bins --release --verbose
   - ps: ci\before_deploy.ps1
 
 deploy:
