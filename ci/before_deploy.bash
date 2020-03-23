@@ -164,7 +164,8 @@ Package: $dpkgname
 Version: $version
 Section: utils
 Priority: optional
-Maintainer: David Peter <mail@david-peter.de>
+Maintainer: $maintainer
+Homepage: $homepage
 Architecture: $architecture
 Provides: $PROJECT_NAME
 Conflicts: $conflictname
