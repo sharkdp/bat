@@ -22,7 +22,7 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::{app::App, config::config_file};
+use crate::{app::App, config::{config_file, generate_config_file}};
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use bat::Controller;
 use directories::PROJECT_DIRS;
@@ -187,6 +187,10 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else if app.matches.is_present("config-file") {
                 println!("{}", config_file().to_string_lossy());
+
+                Ok(true)
+            } else if app.matches.is_present("generate-config-file") {
+                generate_config_file();
 
                 Ok(true)
             } else if app.matches.is_present("config-dir") {

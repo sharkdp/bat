@@ -371,6 +371,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Show path to the configuration file."),
         )
         .arg(
+            Arg::with_name("generate-config-file")
+                .long("generate-config-file")
+                .conflicts_with("list-languages")
+                .conflicts_with("list-themes")
+                .hidden(true)
+                .help("Generates a default configuration file."),
+        )
+        .arg(
             Arg::with_name("config-dir")
                 .long("config-dir")
                 .hidden(true)
