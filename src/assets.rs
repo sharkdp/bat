@@ -1,41 +1,35 @@
-use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
-use crate::dirs::PROJECT_DIRS;
-
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
-use crate::syntax_mapping::SyntaxMapping;
-
-pub const BAT_THEME_DEFAULT: &str = "Monokai Extended";
+use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    pub syntax_set: SyntaxSet,
-    pub theme_set: ThemeSet,
+    pub(crate) syntax_set: SyntaxSet,
+    pub(crate) theme_set: ThemeSet,
+    fallback_theme: Option<&'static str>,
 }
 
 impl HighlightingAssets {
-    pub fn new() -> Self {
-        Self::from_cache().unwrap_or_else(|_| Self::from_binary())
+    pub fn default_theme() -> &'static str {
+        "Monokai Extended"
     }
 
-    pub fn from_files(dir: Option<&Path>, start_empty: bool) -> Result<Self> {
-        let source_dir = dir.unwrap_or_else(|| PROJECT_DIRS.config_dir());
-
-        let mut theme_set = if start_empty {
+    pub fn from_files(source_dir: &Path, include_integrated_assets: bool) -> Result<Self> {
+        let mut theme_set = if include_integrated_assets {
+            Self::get_integrated_themeset()
+        } else {
             ThemeSet {
                 themes: BTreeMap::new(),
             }
-        } else {
-            Self::get_integrated_themeset()
         };
 
         let theme_dir = source_dir.join("themes");
@@ -48,7 +42,7 @@ impl HighlightingAssets {
             );
         }
 
-        let mut syntax_set_builder = if start_empty {
+        let mut syntax_set_builder = if !include_integrated_assets {
             let mut builder = SyntaxSetBuilder::new();
             builder.add_plain_text_syntax();
             builder
@@ -69,15 +63,15 @@ impl HighlightingAssets {
         Ok(HighlightingAssets {
             syntax_set: syntax_set_builder.build(),
             theme_set,
+            fallback_theme: None,
         })
     }
 
-    fn from_cache() -> Result<Self> {
-        let theme_set_path = theme_set_path();
-        let syntax_set_file = File::open(&syntax_set_path()).chain_err(|| {
+    pub fn from_cache(theme_set_path: &Path, syntax_set_path: &Path) -> Result<Self> {
+        let syntax_set_file = File::open(syntax_set_path).chain_err(|| {
             format!(
                 "Could not load cached syntax set '{}'",
-                syntax_set_path().to_string_lossy()
+                syntax_set_path.to_string_lossy()
             )
         })?;
         let syntax_set: SyntaxSet = from_reader(BufReader::new(syntax_set_file))
@@ -95,6 +89,7 @@ impl HighlightingAssets {
         Ok(HighlightingAssets {
             syntax_set,
             theme_set,
+            fallback_theme: None,
         })
     }
 
@@ -106,18 +101,18 @@ impl HighlightingAssets {
         from_binary(include_bytes!("../assets/themes.bin"))
     }
 
-    fn from_binary() -> Self {
+    pub fn from_binary() -> Self {
         let syntax_set = Self::get_integrated_syntaxset();
         let theme_set = Self::get_integrated_themeset();
 
         HighlightingAssets {
             syntax_set,
             theme_set,
+            fallback_theme: None,
         }
     }
 
-    pub fn save(&self, dir: Option<&Path>) -> Result<()> {
-        let target_dir = dir.unwrap_or_else(|| PROJECT_DIRS.cache_dir());
+    pub fn save_to_cache(&self, target_dir: &Path) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
         let theme_set_path = target_dir.join("themes.bin");
         let syntax_set_path = target_dir.join("syntaxes.bin");
@@ -149,22 +144,36 @@ impl HighlightingAssets {
         Ok(())
     }
 
-    pub fn get_theme(&self, theme: &str) -> &Theme {
+    pub fn set_fallback_theme(&mut self, theme: &'static str) {
+        self.fallback_theme = Some(theme);
+    }
+
+    pub fn syntaxes(&self) -> &[SyntaxReference] {
+        self.syntax_set.syntaxes()
+    }
+
+    pub fn themes(&self) -> impl Iterator<Item = &String> {
+        self.theme_set.themes.keys()
+    }
+
+    pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
             None => {
-                use ansi_term::Colour::Yellow;
-                eprintln!(
-                    "{}: Unknown theme '{}', using default.",
-                    Yellow.paint("[bat warning]"),
-                    theme
-                );
-                &self.theme_set.themes[BAT_THEME_DEFAULT]
+                if theme != "" {
+                    use ansi_term::Colour::Yellow;
+                    eprintln!(
+                        "{}: Unknown theme '{}', using default.",
+                        Yellow.paint("[bat warning]"),
+                        theme
+                    );
+                }
+                &self.theme_set.themes[self.fallback_theme.unwrap_or(Self::default_theme())]
             }
         }
     }
 
-    pub fn get_syntax(
+    pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
         filename: InputFile,
@@ -175,25 +184,28 @@ impl HighlightingAssets {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(filename)) => {
                 let path = Path::new(filename);
+
                 let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
-
-                let file_name = mapping.replace(file_name);
-                let extension = mapping.replace(extension);
 
                 let ext_syntax = self
                     .syntax_set
                     .find_syntax_by_extension(&file_name)
                     .or_else(|| self.syntax_set.find_syntax_by_extension(&extension));
-                let line_syntax = if ext_syntax.is_none() {
-                    String::from_utf8(reader.first_line.clone())
-                        .ok()
-                        .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
-                } else {
-                    None
-                };
+                let line_syntax = String::from_utf8(reader.first_line.clone())
+                    .ok()
+                    .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l));
 
-                ext_syntax.or(line_syntax)
+                let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
+                match mapping.get_syntax_for(absolute_path) {
+                    Some(MappingTarget::MapTo(syntax_name)) => {
+                        // TODO: we should probably return an error here if this syntax can not be
+                        // found. Currently, we just fall back to 'plain'.
+                        self.syntax_set.find_syntax_by_name(syntax_name)
+                    }
+                    Some(MappingTarget::MapToUnknown) => line_syntax,
+                    None => ext_syntax.or(line_syntax),
+                }
             }
             (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
                 .ok()
@@ -205,28 +217,120 @@ impl HighlightingAssets {
     }
 }
 
-fn theme_set_path() -> PathBuf {
-    PROJECT_DIRS.cache_dir().join("themes.bin")
-}
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsStr;
+    use std::fs::File;
+    use std::io;
+    use std::io::Write;
 
-fn syntax_set_path() -> PathBuf {
-    PROJECT_DIRS.cache_dir().join("syntaxes.bin")
-}
+    use tempdir::TempDir;
 
-pub fn config_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.config_dir().to_string_lossy()
-}
+    use crate::assets::HighlightingAssets;
+    use crate::inputfile::InputFile;
+    use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
-pub fn cache_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.cache_dir().to_string_lossy()
-}
+    struct SyntaxDetectionTest<'a> {
+        assets: HighlightingAssets,
+        pub syntax_mapping: SyntaxMapping<'a>,
+        temp_dir: TempDir,
+    }
 
-pub fn clear_assets() {
-    print!("Clearing theme set cache ... ");
-    fs::remove_file(theme_set_path()).ok();
-    println!("okay");
+    impl<'a> SyntaxDetectionTest<'a> {
+        fn new() -> Self {
+            SyntaxDetectionTest {
+                assets: HighlightingAssets::from_binary(),
+                syntax_mapping: SyntaxMapping::builtin(),
+                temp_dir: TempDir::new("bat_syntax_detection_tests")
+                    .expect("creation of temporary directory"),
+            }
+        }
 
-    print!("Clearing syntax set cache ... ");
-    fs::remove_file(syntax_set_path()).ok();
-    println!("okay");
+        fn synax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
+            let file_path = self.temp_dir.path().join(file_name);
+            {
+                let mut temp_file = File::create(&file_path).unwrap();
+                writeln!(temp_file, "{}", first_line).unwrap();
+            }
+
+            let input_file = InputFile::Ordinary(OsStr::new(&file_path));
+            let syntax = self.assets.get_syntax(
+                None,
+                input_file,
+                &mut input_file.get_reader(&io::stdin()).unwrap(),
+                &self.syntax_mapping,
+            );
+
+            syntax.name.clone()
+        }
+
+        fn syntax_for_file(&self, file_name: &str) -> String {
+            self.synax_for_file_with_content(file_name, "")
+        }
+    }
+
+    #[test]
+    fn syntax_detection_basic() {
+        let test = SyntaxDetectionTest::new();
+
+        assert_eq!(test.syntax_for_file("test.rs"), "Rust");
+        assert_eq!(test.syntax_for_file("test.cpp"), "C++");
+        assert_eq!(test.syntax_for_file("test.build"), "NAnt Build File");
+        assert_eq!(
+            test.syntax_for_file("PKGBUILD"),
+            "Bourne Again Shell (bash)"
+        );
+        assert_eq!(test.syntax_for_file(".bashrc"), "Bourne Again Shell (bash)");
+        assert_eq!(test.syntax_for_file("Makefile"), "Makefile");
+    }
+
+    #[test]
+    fn syntax_detection_well_defined_mapping_for_duplicate_extensions() {
+        let test = SyntaxDetectionTest::new();
+
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
+        assert_eq!(test.syntax_for_file("test.sass"), "Sass");
+        assert_eq!(test.syntax_for_file("test.hs"), "Haskell (improved)");
+        assert_eq!(test.syntax_for_file("test.js"), "JavaScript (Babel)");
+    }
+
+    #[test]
+    fn syntax_detection_first_line() {
+        let test = SyntaxDetectionTest::new();
+
+        assert_eq!(
+            test.synax_for_file_with_content("my_script", "#!/bin/bash"),
+            "Bourne Again Shell (bash)"
+        );
+        assert_eq!(
+            test.synax_for_file_with_content("build", "#!/bin/bash"),
+            "Bourne Again Shell (bash)"
+        );
+        assert_eq!(
+            test.synax_for_file_with_content("my_script", "<?php"),
+            "PHP"
+        );
+    }
+
+    #[test]
+    fn syntax_detection_with_custom_mapping() {
+        let mut test = SyntaxDetectionTest::new();
+
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
+        test.syntax_mapping
+            .insert("*.h", MappingTarget::MapTo("C"))
+            .ok();
+        assert_eq!(test.syntax_for_file("test.h"), "C");
+    }
+
+    #[test]
+    fn syntax_detection_is_case_sensitive() {
+        let mut test = SyntaxDetectionTest::new();
+
+        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
+        test.syntax_mapping
+            .insert("*.MD", MappingTarget::MapTo("Markdown"))
+            .ok();
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
+    }
 }

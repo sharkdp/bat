@@ -4,9 +4,13 @@
 #[macro_use]
 extern crate clap;
 
+extern crate dirs as dirs_rs;
+
 mod app;
+mod assets;
 mod clap_app;
 mod config;
+mod directories;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
@@ -19,25 +23,31 @@ use ansi_term::Colour::Green;
 use ansi_term::Style;
 
 use crate::{app::App, config::config_file};
-use bat::controller::Controller;
+use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
+use bat::Controller;
+use directories::PROJECT_DIRS;
 
 use bat::{
-    assets::{cache_dir, clear_assets, config_dir, HighlightingAssets},
+    config::{Config, InputFile, StyleComponent, StyleComponents},
     errors::*,
-    inputfile::InputFile,
-    style::{OutputComponent, OutputComponents},
-    Config,
+    HighlightingAssets,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
-        let source_dir = matches.value_of("source").map(Path::new);
-        let target_dir = matches.value_of("target").map(Path::new);
+        let source_dir = matches
+            .value_of("source")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
+        let target_dir = matches
+            .value_of("target")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
         let blank = matches.is_present("blank");
 
-        let assets = HighlightingAssets::from_files(source_dir, blank)?;
-        assets.save(target_dir)?;
+        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
+        assets.save_to_cache(target_dir)?;
     } else if matches.is_present("clear") {
         clear_assets();
     }
@@ -46,9 +56,8 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 }
 
 pub fn list_languages(config: &Config) -> Result<()> {
-    let assets = HighlightingAssets::new();
+    let assets = assets_from_cache_or_binary();
     let mut languages = assets
-        .syntax_set
         .syntaxes()
         .iter()
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
@@ -109,19 +118,18 @@ pub fn list_languages(config: &Config) -> Result<()> {
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
-    let assets = HighlightingAssets::new();
-    let themes = &assets.theme_set.themes;
+    let assets = assets_from_cache_or_binary();
     let mut config = cfg.clone();
     let mut style = HashSet::new();
-    style.insert(OutputComponent::Plain);
+    style.insert(StyleComponent::Plain);
     config.files = vec![InputFile::ThemePreviewFile];
-    config.output_components = OutputComponents(style);
+    config.style_components = StyleComponents(style);
 
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 
     if config.colored_output {
-        for (theme, _) in themes.iter() {
+        for theme in assets.themes() {
             writeln!(
                 stdout,
                 "Theme: {}\n",
@@ -132,7 +140,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             writeln!(stdout)?;
         }
     } else {
-        for (theme, _) in themes.iter() {
+        for theme in assets.themes() {
             writeln!(stdout, "{}", theme)?;
         }
     }
@@ -141,7 +149,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 }
 
 fn run_controller(config: &Config) -> Result<bool> {
-    let assets = HighlightingAssets::new();
+    let assets = assets_from_cache_or_binary();
     let controller = Controller::new(&config, &assets);
     controller.run()
 }
@@ -199,7 +207,7 @@ fn main() {
 
     match result {
         Err(error) => {
-            handle_error(&error);
+            default_error_handler(&error);
             process::exit(1);
         }
         Ok(false) => {

@@ -1,35 +1,20 @@
+/// A simple program that prints its own source code using the bat library
 use bat::{
-    assets::HighlightingAssets,
-    controller::Controller,
-    inputfile::InputFile,
-    style::{OutputComponent, OutputComponents},
-    Config,
+    config::{Config, InputFile},
+    Controller, HighlightingAssets,
 };
-use console::Term;
-use std::process;
+use std::ffi::OsStr;
 
 fn main() {
-    let files = std::env::args_os().skip(1).collect::<Vec<_>>();
-
-    if files.is_empty() {
-        eprintln!("No input files specified");
-        process::exit(1);
-    }
+    let path_to_this_file = OsStr::new(file!());
 
     let config = Config {
-        term_width: Term::stdout().size().1 as usize,
+        files: vec![InputFile::Ordinary(path_to_this_file)],
         colored_output: true,
         true_color: true,
-        output_components: OutputComponents::new(&[
-            OutputComponent::Header,
-            OutputComponent::Grid,
-            OutputComponent::Numbers,
-        ]),
-        files: files.iter().map(|file| InputFile::Ordinary(file)).collect(),
-        theme: "1337".into(),
         ..Default::default()
     };
-    let assets = HighlightingAssets::new();
+    let assets = HighlightingAssets::from_binary();
 
     Controller::new(&config, &assets).run().expect("no errors");
 }

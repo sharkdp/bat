@@ -20,6 +20,7 @@ use encoding::{DecoderTrap, Encoding};
 use unicode_width::UnicodeWidthChar;
 
 use crate::assets::HighlightingAssets;
+use crate::config::Config;
 use crate::decorations::{
     Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
 };
@@ -29,9 +30,8 @@ use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
-use crate::style::OutputWrap;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::Config;
+use crate::wrap::OutputWrap;
 
 pub trait Printer {
     fn print_header(
@@ -126,11 +126,11 @@ impl<'a> InteractivePrinter<'a> {
         // Create decorations.
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
 
-        if config.output_components.numbers() {
+        if config.style_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
         }
 
-        if config.output_components.changes() {
+        if config.style_components.changes() {
             decorations.push(Box::new(LineChangesDecoration::new(&colors)));
         }
 
@@ -140,7 +140,7 @@ impl<'a> InteractivePrinter<'a> {
         // The grid border decoration isn't added until after the panel_width calculation, since the
         // print_horizontal_line, print_header, and print_footer functions all assume the panel
         // width is without the grid border.
-        if config.output_components.grid() && !decorations.is_empty() {
+        if config.style_components.grid() && !decorations.is_empty() {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
         }
 
@@ -162,7 +162,7 @@ impl<'a> InteractivePrinter<'a> {
             None
         } else {
             // Get the Git modifications
-            line_changes = if config.output_components.changes() {
+            line_changes = if config.style_components.changes() {
                 match file {
                     InputFile::Ordinary(filename) => get_git_diff(filename),
                     _ => None,
@@ -216,7 +216,7 @@ impl<'a> InteractivePrinter<'a> {
                 text_truncated,
                 " ".repeat(self.panel_width - 1 - text_truncated.len())
             );
-            if self.config.output_components.grid() {
+            if self.config.style_components.grid() {
                 format!("{} │ ", text_filled)
             } else {
                 format!("{}", text_filled)
@@ -240,7 +240,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         file: InputFile,
         file_name: Option<&str>,
     ) -> Result<()> {
-        if !self.config.output_components.header() {
+        if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
                     InputFile::Ordinary(filename) => format!(
@@ -259,14 +259,14 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     input
                 )?;
             } else {
-                if self.config.output_components.grid() {
+                if self.config.style_components.grid() {
                     self.print_horizontal_line(handle, '┬')?;
                 }
             }
             return Ok(());
         }
 
-        if self.config.output_components.grid() {
+        if self.config.style_components.grid() {
             self.print_horizontal_line(handle, '┬')?;
 
             write!(
@@ -305,7 +305,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             mode
         )?;
 
-        if self.config.output_components.grid() {
+        if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
                 self.print_horizontal_line(handle, '┼')?;
             } else {
@@ -317,7 +317,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
     }
 
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()> {
-        if self.config.output_components.grid()
+        if self.config.style_components.grid()
             && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
         {
             self.print_horizontal_line(handle, '┴')
@@ -395,7 +395,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         // Line highlighting
         let highlight_this_line =
-            self.config.highlight_lines.check(line_number) == RangeCheckResult::InRange;
+            self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
         let background_color = self
             .background_color_highlight

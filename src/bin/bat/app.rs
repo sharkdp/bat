@@ -17,13 +17,12 @@ use console::Term;
 use ansi_term;
 
 use bat::{
-    assets::BAT_THEME_DEFAULT,
+    config::{
+        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget, OutputWrap,
+        PagingMode, StyleComponent, StyleComponents, SyntaxMapping,
+    },
     errors::*,
-    inputfile::InputFile,
-    line_range::{LineRange, LineRanges},
-    style::{OutputComponent, OutputComponents, OutputWrap},
-    syntax_mapping::SyntaxMapping,
-    Config, PagingMode,
+    HighlightingAssets,
 };
 
 fn is_truecolor_terminal() -> bool {
@@ -79,7 +78,7 @@ impl App {
 
     pub fn config(&self) -> Result<Config> {
         let files = self.files();
-        let output_components = self.output_components()?;
+        let style_components = self.style_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
@@ -105,17 +104,17 @@ impl App {
             }
         };
 
-        let mut syntax_mapping = SyntaxMapping::new();
+        let mut syntax_mapping = SyntaxMapping::builtin();
 
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {
                 let parts: Vec<_> = from_to.split(':').collect();
 
                 if parts.len() != 2 {
-                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is 'from:to'.".into());
+                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'.".into());
                 }
 
-                syntax_mapping.insert(parts[0], parts[1]);
+                syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
             }
         }
 
@@ -158,7 +157,7 @@ impl App {
                     Some("character") => OutputWrap::Character,
                     Some("never") => OutputWrap::None,
                     Some("auto") | _ => {
-                        if output_components.plain() {
+                        if style_components.plain() {
                             OutputWrap::None
                         } else {
                             OutputWrap::Character
@@ -188,7 +187,7 @@ impl App {
                 .or_else(|| env::var("BAT_TABS").ok())
                 .and_then(|t| t.parse().ok())
                 .unwrap_or(
-                    if output_components.plain() && paging_mode == PagingMode::Never {
+                    if style_components.plain() && paging_mode == PagingMode::Never {
                         0
                     } else {
                         4
@@ -201,33 +200,34 @@ impl App {
                 .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
                     if s == "default" {
-                        String::from(BAT_THEME_DEFAULT)
+                        String::from(HighlightingAssets::default_theme())
                     } else {
                         s
                     }
                 })
-                .unwrap_or_else(|| String::from(BAT_THEME_DEFAULT)),
-            line_ranges: LineRanges::from(
-                self.matches
-                    .values_of("line-range")
-                    .map(|vs| vs.map(LineRange::from).collect())
-                    .transpose()?
-                    .unwrap_or_else(|| vec![]),
-            ),
-            output_components,
+                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+            line_ranges: self
+                .matches
+                .values_of("line-range")
+                .map(|vs| vs.map(LineRange::from).collect())
+                .transpose()?
+                .map(LineRanges::from)
+                .unwrap_or_default(),
+            style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
             use_italic_text: match self.matches.value_of("italic-text") {
                 Some("always") => true,
                 _ => false,
             },
-            highlight_lines: LineRanges::from(
-                self.matches
-                    .values_of("highlight-line")
-                    .map(|ws| ws.map(LineRange::from).collect())
-                    .transpose()?
-                    .unwrap_or_else(|| vec![LineRange { lower: 0, upper: 0 }]),
-            ),
+            highlighted_lines: self
+                .matches
+                .values_of("highlight-line")
+                .map(|ws| ws.map(LineRange::from).collect())
+                .transpose()?
+                .map(LineRanges::from)
+                .map(|lr| HighlightedLineRanges(lr))
+                .unwrap_or_default(),
             filenames: self
                 .matches
                 .values_of("file-name")
@@ -252,23 +252,23 @@ impl App {
             .unwrap_or_else(|| vec![InputFile::StdIn])
     }
 
-    fn output_components(&self) -> Result<OutputComponents> {
+    fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        Ok(OutputComponents(
+        Ok(StyleComponents(
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
             } else if matches.is_present("number") {
-                [OutputComponent::Numbers].iter().cloned().collect()
+                [StyleComponent::Numbers].iter().cloned().collect()
             } else if matches.is_present("plain") {
-                [OutputComponent::Plain].iter().cloned().collect()
+                [StyleComponent::Plain].iter().cloned().collect()
             } else {
-                let env_style_components: Option<Vec<OutputComponent>> = env::var("BAT_STYLE")
+                let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
                     .ok()
                     .map(|style_str| {
                         style_str
                             .split(',')
-                            .map(|x| OutputComponent::from_str(&x))
-                            .collect::<Result<Vec<OutputComponent>>>()
+                            .map(|x| StyleComponent::from_str(&x))
+                            .collect::<Result<Vec<StyleComponent>>>()
                     })
                     .transpose()?;
 
@@ -277,12 +277,12 @@ impl App {
                     .map(|styles| {
                         styles
                             .split(',')
-                            .map(|style| style.parse::<OutputComponent>())
+                            .map(|style| style.parse::<StyleComponent>())
                             .filter_map(|style| style.ok())
                             .collect::<Vec<_>>()
                     })
                     .or(env_style_components)
-                    .unwrap_or_else(|| vec![OutputComponent::Full])
+                    .unwrap_or_else(|| vec![StyleComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {

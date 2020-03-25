@@ -7,7 +7,7 @@ license = "MIT/Apache-2.0"
 name = "bat"
 readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
-version = "0.12.1"
+version = "0.13.0"
 exclude = [
     "assets/syntaxes/*",
     "assets/themes/*",
@@ -27,9 +27,10 @@ content_inspector = "0.2.4"
 encoding = "0.2"
 shell-words = "0.1.0"
 unicode-width = "0.1.7"
+globset = "0.4"
 
 [dependencies.git2]
-version = "0.12"
+version = "0.13"
 default-features = false
 features = []
 
@@ -54,7 +55,7 @@ assert_cmd = "0.12.0"
 
 [build-dependencies]
 clap = "2.33"
-liquid = "0.19"
+liquid = "0.20"
 lazy_static = "1.4"
 
 [profile.release]

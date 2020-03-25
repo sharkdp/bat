@@ -13,7 +13,7 @@
   <a href="#installation">Installation</a> •
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a> •
-  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>]
+  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>]
 </p>
 
 ### Syntax highlighting
@@ -180,7 +180,7 @@ apt install bat
 If you want to run the latest release of bat or if you are on older versions of Ubuntu/Debian, download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
 and install it via:
 ```bash
-sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.13.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
@@ -341,7 +341,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.36 or
+If you want to build `bat` from source, you need Rust 1.37 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
@@ -500,11 +500,11 @@ Example configuration file:
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax (instead of C) for .h header files
---map-syntax h:cpp
+# Use C++ syntax for .ino files
+--map-syntax "*.ino:C++"
 
-# Use "gitignore" highlighting for ".ignore" files
---map-syntax .ignore:.gitignore
+# Use ".gitignore"-style highlighting for ".ignore" files
+--map-syntax ".ignore:Git Ignore"
 ```
 
 ## Using `bat` on Windows

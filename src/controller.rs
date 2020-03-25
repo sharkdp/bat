@@ -2,12 +2,12 @@ use std::io::{self, Write};
 use std::path::Path;
 
 use crate::assets::HighlightingAssets;
+use crate::config::{Config, PagingMode};
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
-use crate::{Config, PagingMode};
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -20,6 +20,10 @@ impl<'b> Controller<'b> {
     }
 
     pub fn run(&self) -> Result<bool> {
+        self.run_with_error_handler(default_error_handler)
+    }
+
+    pub fn run_with_error_handler(&self, handle_error: impl Fn(&Error)) -> Result<bool> {
         // Do not launch the pager if NONE of the input files exist
         let mut paging_mode = self.config.paging_mode;
         if self.config.paging_mode != PagingMode::Never {
@@ -93,7 +97,7 @@ impl<'b> Controller<'b> {
         input_file: InputFile<'a>,
         file_name: Option<&str>,
     ) -> Result<()> {
-        if !reader.first_line.is_empty() || self.config.output_components.header() {
+        if !reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input_file, file_name)?;
         }
 
@@ -120,7 +124,7 @@ impl<'b> Controller<'b> {
 
         while reader.read_line(&mut line_buffer)? {
             match line_ranges.check(line_number) {
-                RangeCheckResult::OutsideRange => {
+                RangeCheckResult::BeforeOrBetweenRanges => {
                     // Call the printer in case we need to call the syntax highlighter
                     // for this line. However, set `out_of_range` to `true`.
                     printer.print_line(true, writer, line_number, &line_buffer)?;
@@ -128,7 +132,7 @@ impl<'b> Controller<'b> {
                 }
 
                 RangeCheckResult::InRange => {
-                    if self.config.output_components.snip() {
+                    if self.config.style_components.snip() {
                         if first_range {
                             first_range = false;
                             mid_range = true;

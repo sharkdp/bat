@@ -1,7 +1,7 @@
-diff --git syntaxes/Packages/Java/JavaDoc.sublime-syntax syntaxes/Packages/Java/JavaDoc.sublime-syntax
+diff --git syntaxes/01_Packages/Java/JavaDoc.sublime-syntax syntaxes/01_Packages/Java/JavaDoc.sublime-syntax
 index 422a6a9..40a741e 100644
---- syntaxes/Packages/Java/JavaDoc.sublime-syntax
-+++ syntaxes/Packages/Java/JavaDoc.sublime-syntax
+--- syntaxes/01_Packages/Java/JavaDoc.sublime-syntax
++++ syntaxes/01_Packages/Java/JavaDoc.sublime-syntax
 @@ -13,7 +13,7 @@ variables:
  contexts:
    prototype:

@@ -13,7 +13,7 @@
   <a href="#インストール">インストール</a> •
   <a href="#カスタマイズ">カスタマイズ</a> •
   <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a> •
-  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja.md">日本語</a>]
+  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja.md">日本語</a>][<a href="README-ko.md">한국어</a>]
 </p>
 
 ### シンタックスハイライト
@@ -180,7 +180,7 @@ apt install bat
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
 ```bash
-sudo dpkg -i bat_0.12.1_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.13.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
@@ -500,11 +500,11 @@ export BAT_CONFIG_PATH="/path/to/bat.conf"
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax (instead of C) for .h header files
---map-syntax h:cpp
+# Use C++ syntax for .ino files
+--map-syntax "*.ino:C++"
 
-# Use "gitignore" highlighting for ".ignore" files
---map-syntax .ignore:.gitignore
+# Use ".gitignore"-style highlighting for ".ignore" files
+--map-syntax ".ignore:Git Ignore"
 ```
 
 ## Windows での `bat` の利用
