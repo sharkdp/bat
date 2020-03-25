@@ -598,3 +598,32 @@ fn filename_stdin_binary() {
         .stdout("File: foo   <BINARY>\n")
         .stderr("");
 }
+
+#[test]
+fn filename_multiple_ok() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("test.txt")
+        .arg("--file-name=foo")
+        .arg("single-line.txt")
+        .arg("--file-name=bar")
+        .assert()
+        .success()
+        .stdout("File: foo\nFile: bar\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_multiple_err() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("test.txt")
+        .arg("--file-name=foo")
+        .arg("single-line.txt")
+        .assert()
+        .failure();
+}

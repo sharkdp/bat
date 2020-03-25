@@ -131,5 +131,5 @@ pub struct Config<'a> {
     pub highlight_lines: LineRanges,
 
     /// Name of file to display when printing
-    pub filename: Option<&'a str>,
+    pub filenames: Option<Vec<&'a str>>,
 }

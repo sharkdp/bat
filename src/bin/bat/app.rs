@@ -137,6 +137,12 @@ impl App {
             }
         });
 
+        if self.matches.value_of("file-name").is_some()
+            && self.matches.values_of("file-name").unwrap().len() != files.len()
+        {
+            return Err("When using --file-name, each input file must have a corresponding --file-name specified.".into());
+        }
+
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self.matches.value_of("language").or_else(|| {
@@ -222,7 +228,10 @@ impl App {
                     .transpose()?
                     .unwrap_or_else(|| vec![LineRange { lower: 0, upper: 0 }]),
             ),
-            filename: self.matches.value_of("file-name").or_else(|| None),
+            filenames: self
+                .matches
+                .values_of("file-name")
+                .map(|values| values.collect()),
         })
     }
 
