@@ -157,7 +157,7 @@ formatting problems.
 
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
-Note that the [Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
