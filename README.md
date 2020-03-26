@@ -485,6 +485,11 @@ non-default location of the configuration file:
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
+A default configuration file can be created with the `--generate-config-file` option.
+```bash
+bat --generate-config-file
+```
+
 ### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
