@@ -541,3 +541,89 @@ fn empty_file_leads_to_empty_output_with_grid_enabled() {
         .success()
         .stdout("");
 }
+
+#[test]
+fn filename_basic() {
+    bat()
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_binary() {
+    bat()
+        .arg("test.binary")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_stdin() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("-")
+        .write_stdin("stdin\n")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_stdin_binary() {
+    let vec = vec![0; 1];
+    bat_with_config()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .write_stdin(vec)
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_multiple_ok() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("test.txt")
+        .arg("--file-name=foo")
+        .arg("single-line.txt")
+        .arg("--file-name=bar")
+        .assert()
+        .success()
+        .stdout("File: foo\nFile: bar\n")
+        .stderr("");
+}
+
+#[test]
+fn filename_multiple_err() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("test.txt")
+        .arg("--file-name=foo")
+        .arg("single-line.txt")
+        .assert()
+        .failure();
+}

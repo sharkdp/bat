@@ -136,6 +136,13 @@ impl App {
             }
         });
 
+        match self.matches.values_of("file-name") {
+            Some(filenames) if filenames.len() != files.len() => {
+                return Err(format!("{} {}", filenames.len(), files.len()).into());
+            }
+            _ => {}
+        }
+
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self.matches.value_of("language").or_else(|| {
@@ -222,6 +229,10 @@ impl App {
                 .map(LineRanges::from)
                 .map(|lr| HighlightedLineRanges(lr))
                 .unwrap_or_default(),
+            filenames: self
+                .matches
+                .values_of("file-name")
+                .map(|values| values.collect()),
         })
     }
 

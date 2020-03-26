@@ -70,6 +70,9 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
+
+    /// Names of files to display when printing
+    pub filenames: Option<Vec<&'a str>>,
 }
 
 #[test]

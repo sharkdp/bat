@@ -34,7 +34,12 @@ use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrap::OutputWrap;
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;
+    fn print_header(
+        &mut self,
+        handle: &mut dyn Write,
+        file: InputFile,
+        file_name: Option<&str>,
+    ) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
 
     fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
@@ -57,7 +62,12 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut dyn Write, _file: InputFile) -> Result<()> {
+    fn print_header(
+        &mut self,
+        _handle: &mut dyn Write,
+        _file: InputFile,
+        _file_name: Option<&str>,
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -224,14 +234,20 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()> {
+    fn print_header(
+        &mut self,
+        handle: &mut dyn Write,
+        file: InputFile,
+        file_name: Option<&str>,
+    ) -> Result<()> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
-                    InputFile::Ordinary(filename) => {
-                        format!("file '{}'", filename.to_string_lossy())
-                    }
-                    _ => "STDIN".into(),
+                    InputFile::Ordinary(filename) => format!(
+                        "file '{}'",
+                        file_name.unwrap_or(&filename.to_string_lossy())
+                    ),
+                    _ => file_name.unwrap_or("STDIN").to_owned(),
                 };
 
                 writeln!(
@@ -266,8 +282,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         let (prefix, name) = match file {
-            InputFile::Ordinary(filename) => ("File: ", filename.to_string_lossy()),
-            _ => ("", Cow::from("STDIN")),
+            InputFile::Ordinary(filename) => (
+                "File: ",
+                Cow::from(file_name.unwrap_or(&filename.to_string_lossy()).to_owned()),
+            ),
+            _ => ("File: ", Cow::from(file_name.unwrap_or("STDIN").to_owned())),
         };
 
         let mode = match self.content_type {

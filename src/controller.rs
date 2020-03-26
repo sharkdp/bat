@@ -45,7 +45,12 @@ impl<'b> Controller<'b> {
 
         let stdin = io::stdin();
 
-        for input_file in &self.config.files {
+        let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
+            Some(ref filenames) => Box::new(filenames.into_iter().map(|name| Some(*name))),
+            None => Box::new(std::iter::repeat(None)),
+        };
+
+        for (input_file, file_name) in self.config.files.iter().zip(filenames) {
             match input_file.get_reader(&stdin) {
                 Err(error) => {
                     handle_error(&error);
@@ -54,7 +59,7 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, *input_file)
+                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
@@ -62,7 +67,7 @@ impl<'b> Controller<'b> {
                             *input_file,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, *input_file)
+                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
                     };
 
                     if let Err(error) = result {
@@ -82,9 +87,10 @@ impl<'b> Controller<'b> {
         printer: &mut P,
         writer: &mut dyn Write,
         input_file: InputFile<'a>,
+        file_name: Option<&str>,
     ) -> Result<()> {
         if !reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input_file)?;
+            printer.print_header(writer, input_file, file_name)?;
         }
 
         if !reader.first_line.is_empty() {
