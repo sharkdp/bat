@@ -137,7 +137,7 @@ impl App {
         });
 
         match self.matches.values_of("file-name") {
-            Some(filenames) if filenames.len() != files.len() => {
+            Some(ref filenames) if filenames.len() != files.len() => {
                 return Err(format!("{} {}", filenames.len(), files.len()).into());
             }
             _ => {}
