@@ -112,6 +112,7 @@ impl<'a> InteractivePrinter<'a> {
         config: &'a Config,
         assets: &'a HighlightingAssets,
         file: InputFile,
+        file_name: Option<&str>,
         reader: &mut InputFileReader,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
@@ -177,7 +178,13 @@ impl<'a> InteractivePrinter<'a> {
             }
 
             // Determine the type of syntax for highlighting
-            let syntax = assets.get_syntax(config.language, file, reader, &config.syntax_mapping);
+            let syntax = assets.get_syntax(
+                config.language,
+                file,
+                file_name,
+                reader,
+                &config.syntax_mapping,
+            );
             Some(HighlightLines::new(syntax, theme))
         };
 

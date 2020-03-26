@@ -78,6 +78,7 @@ impl<'b> Controller<'b> {
                             &self.config,
                             &self.assets,
                             *input_file,
+                            file_name,
                             &mut reader,
                         );
                         self.print_file(reader, &mut printer, writer, *input_file, file_name)
