@@ -176,14 +176,15 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
-        filename: InputFile,
+        file: InputFile,
+        file_name: Option<&str>,
         reader: &mut InputFileReader,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
-        let syntax = match (language, filename) {
-            (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
-            (None, InputFile::Ordinary(filename)) => {
-                let path = Path::new(filename);
+        let syntax = match (language, file, file_name) {
+            (Some(language), _, _) => self.syntax_set.find_syntax_by_token(language),
+            (None, InputFile::Ordinary(file), _) => {
+                let path = Path::new(file);
 
                 let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
                 let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
@@ -207,10 +208,24 @@ impl HighlightingAssets {
                     None => ext_syntax.or(line_syntax),
                 }
             }
-            (None, InputFile::StdIn) => String::from_utf8(reader.first_line.clone())
+            (None, InputFile::StdIn, None) => String::from_utf8(reader.first_line.clone())
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
-            (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
+            (None, InputFile::StdIn, Some(file_name)) => self
+                .syntax_set
+                .find_syntax_by_extension(&file_name)
+                .or_else(|| {
+                    self.syntax_set.find_syntax_by_extension(
+                        Path::new(file_name)
+                            .extension()
+                            .and_then(|x| x.to_str())
+                            .unwrap_or(""),
+                    )
+                })
+                .or(String::from_utf8(reader.first_line.clone())
+                    .ok()
+                    .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))),
+            (_, InputFile::ThemePreviewFile, _) => self.syntax_set.find_syntax_by_name("Rust"),
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
@@ -246,7 +261,12 @@ mod tests {
             }
         }
 
-        fn synax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
+        fn syntax_for_file_with_content(
+            &self,
+            file_name: &str,
+            first_line: &str,
+            as_stdin: bool,
+        ) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             {
                 let mut temp_file = File::create(&file_path).unwrap();
@@ -254,9 +274,15 @@ mod tests {
             }
 
             let input_file = InputFile::Ordinary(OsStr::new(&file_path));
+            let (file, file_name) = if as_stdin {
+                (InputFile::StdIn, Some(file_name))
+            } else {
+                (input_file, None)
+            };
             let syntax = self.assets.get_syntax(
                 None,
-                input_file,
+                file,
+                file_name,
                 &mut input_file.get_reader(&io::stdin()).unwrap(),
                 &self.syntax_mapping,
             );
@@ -265,7 +291,7 @@ mod tests {
         }
 
         fn syntax_for_file(&self, file_name: &str) -> String {
-            self.synax_for_file_with_content(file_name, "")
+            self.syntax_for_file_with_content(file_name, "", false)
         }
     }
 
@@ -299,15 +325,15 @@ mod tests {
         let test = SyntaxDetectionTest::new();
 
         assert_eq!(
-            test.synax_for_file_with_content("my_script", "#!/bin/bash"),
+            test.syntax_for_file_with_content("my_script", "#!/bin/bash", false),
             "Bourne Again Shell (bash)"
         );
         assert_eq!(
-            test.synax_for_file_with_content("build", "#!/bin/bash"),
+            test.syntax_for_file_with_content("build", "#!/bin/bash", false),
             "Bourne Again Shell (bash)"
         );
         assert_eq!(
-            test.synax_for_file_with_content("my_script", "<?php"),
+            test.syntax_for_file_with_content("my_script", "<?php", false),
             "PHP"
         );
     }
@@ -332,5 +358,21 @@ mod tests {
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
         assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
+    }
+
+    #[test]
+    fn syntax_detection_stdin_filename() {
+        let test = SyntaxDetectionTest::new();
+
+        // from file extension
+        assert_eq!(
+            test.syntax_for_file_with_content("test.cpp", "", true),
+            "C++"
+        );
+        // from first line (fallback)
+        assert_eq!(
+            test.syntax_for_file_with_content("my_script", "#!/bin/bash", true),
+            "Bourne Again Shell (bash)"
+        );
     }
 }
