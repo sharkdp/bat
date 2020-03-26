@@ -179,19 +179,15 @@ fn run() -> Result<bool> {
 
             if app.matches.is_present("list-languages") {
                 list_languages(&config)?;
-
                 Ok(true)
             } else if app.matches.is_present("list-themes") {
                 list_themes(&config)?;
-
                 Ok(true)
             } else if app.matches.is_present("config-file") {
                 println!("{}", config_file().to_string_lossy());
-
                 Ok(true)
             } else if app.matches.is_present("generate-config-file") {
-                generate_config_file();
-
+                generate_config_file()?;
                 Ok(true)
             } else if app.matches.is_present("config-dir") {
                 writeln!(io::stdout(), "{}", config_dir())?;

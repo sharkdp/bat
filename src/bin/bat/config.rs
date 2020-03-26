@@ -16,28 +16,31 @@ pub fn config_file() -> PathBuf {
         .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
 }
 
-pub fn generate_config_file() {
+pub fn generate_config_file() -> bat::errors::Result<()> {
     let config_file = config_file();
     if config_file.exists() {
         println!("A config file already exists at: {}", config_file.to_string_lossy());
 
-        print!("Overwrite? (y/n): ");
-        let _ = io::stdout().flush();
+        print!("Overwrite? (y/N): ");
+        io::stdout().flush()?;
         let mut decision = String::new();
-        io::stdin().read_line(&mut decision).expect("Failed to read input");
+        io::stdin().read_line(&mut decision)?;
 
         if !decision.trim().eq_ignore_ascii_case("Y") {
-            return;
+            return Ok(());
         }
     } else {
-        let config_dir = config_file.parent().unwrap();
-        if !config_dir.exists() {
-            fs::create_dir(config_dir).expect("Unable to create config directory");
+        let config_dir = config_file.parent();
+        match config_dir {
+            Some(path) => fs::create_dir_all(path)?,
+            None => return Ok(Err(format!("Unable to write config file to: {}", config_file.to_string_lossy()))?),
         }
     }
 
-    let default_config = "# Specify desired theme (e.g. \"TwoDark\")
-#--theme=\"TwoDark\"
+    let default_config = r#"# bat config
+
+# Specify desired theme (e.g. "TwoDark").  Issue `bat --list-themes` for a list of all available themes
+#--theme="TwoDark"
 
 # Enable this to use italic text on the terminal (not supported on all terminals):
 #--italic-text=always
@@ -46,14 +49,16 @@ pub fn generate_config_file() {
 #--paging=never
 
 # Use C++ syntax for .ino files
-#--map-syntax \"*.ino:C++\"
+#--map-syntax "*.ino:C++"
 
-# Use \".gitignore\"-style highlighting for \".ignore\" files
-#--map-syntax \".ignore:Git Ignore\"
-";
+# Use ".gitignore"-style highlighting for ".ignore" files
+#--map-syntax ".ignore:Git Ignore"
+"#;
 
-    fs::write(&config_file, default_config).expect("Error writing config file!");
+    fs::write(&config_file, default_config)?;
     println!("Success! Config file written to {}", config_file.to_string_lossy());
+
+    return Ok(());
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
