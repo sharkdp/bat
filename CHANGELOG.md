@@ -1,5 +1,26 @@
 # Upcoming release
 
+## Features
+
+- Added a new `--file-name <name>…` option to overwrite the displayed filename(s)
+  in the header. This is useful when piping input into `bat`. See #654 (@neuronull).
+- Added a new `--generate-config-file` option to creat an initial configuration file
+  at the right place. See #870 (@jmick414)
+
+## Bugfixes
+
+## Other
+
+- Updated `liquid` dependency to 0.20, see #880 (@ignatenkobrain)
+
+## New syntaxes
+
+## New themes
+
+## Packaging
+
+
+
 # v0.13.0
 
 ## `bat` as a library
