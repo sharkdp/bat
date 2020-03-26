@@ -136,10 +136,11 @@ impl App {
             }
         });
 
-        if self.matches.value_of("file-name").is_some()
-            && self.matches.values_of("file-name").unwrap().len() != files.len()
-        {
-            return Err("When using --file-name, each input file must have a corresponding --file-name specified.".into());
+        match self.matches.values_of("file-name") {
+            Some(filenames) if filenames.len() != files.len() => {
+                return Err(format!("{} {}", filenames.len(), files.len()).into());
+            }
+            _ => {}
         }
 
         Ok(Config {

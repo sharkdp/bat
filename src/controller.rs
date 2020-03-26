@@ -45,20 +45,12 @@ impl<'b> Controller<'b> {
 
         let stdin = io::stdin();
 
-        let filenames = if self.config.filenames.is_none() {
-            vec![None; self.config.files.len()]
-        } else {
-            self.config
-                .filenames
-                .as_ref()
-                .unwrap()
-                .into_iter()
-                .map(|name| Some(*name))
-                .collect()
+        let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
+            Some(ref filenames) => Box::new(filenames.into_iter().map(|name| Some(*name))),
+            None => Box::new(std::iter::repeat(None)),
         };
 
-        for it in self.config.files.iter().zip(filenames) {
-            let (input_file, file_name) = it;
+        for (input_file, file_name) in self.config.files.iter().zip(filenames) {
             match input_file.get_reader(&stdin) {
                 Err(error) => {
                     handle_error(&error);
