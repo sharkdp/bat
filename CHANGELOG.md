@@ -15,6 +15,8 @@
 
 ## New syntaxes
 
+- Rego, see #872 (@patrick-east)
+
 ## New themes
 
 ## Packaging
