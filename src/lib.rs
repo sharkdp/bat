@@ -1,17 +1,6 @@
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 
-extern crate ansi_term;
-extern crate atty;
-extern crate console;
-extern crate content_inspector;
-extern crate dirs as dirs_rs;
-extern crate encoding;
-extern crate git2;
-extern crate shell_words;
-extern crate syntect;
-extern crate wild;
-
 pub(crate) mod assets;
 pub mod config;
 pub(crate) mod controller;

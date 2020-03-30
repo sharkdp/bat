@@ -1,11 +1,6 @@
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 
-#[macro_use]
-extern crate clap;
-
-extern crate dirs as dirs_rs;
-
 mod app;
 mod assets;
 mod clap_app;

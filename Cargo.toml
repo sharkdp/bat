@@ -15,14 +15,27 @@ exclude = [
 build = "build.rs"
 edition = '2018'
 
+[features]
+default = ["application"]
+# Feature required for bat the application. Should be disabled when depending on
+# bat as a library.
+application = [
+    "atty",
+    "clap",
+    "dirs",
+    "lazy_static",
+    "liquid",
+    "wild",
+]
+
 [dependencies]
-atty = "0.2.14"
+atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
 ansi_colours = "^1.0"
 console = "0.10"
-dirs = "2.0"
-lazy_static = "1.4"
-wild = "2.0"
+dirs = { version = "2.0", optional = true }
+lazy_static = { version = "1.4", optional = true }
+wild = { version = "2.0", optional = true }
 content_inspector = "0.2.4"
 encoding = "0.2"
 shell-words = "0.1.0"
@@ -32,7 +45,6 @@ globset = "0.4"
 [dependencies.git2]
 version = "0.13"
 default-features = false
-features = []
 
 [dependencies.syntect]
 version = "3.3.0"
@@ -41,22 +53,22 @@ features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
 [dependencies.clap]
 version = "2.33"
+optional = true
 default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dependencies.error-chain]
 version = "0.12"
 default-features = false
-features = []
 
 [dev-dependencies]
 tempdir = "0.3"
 assert_cmd = "0.12.0"
 
 [build-dependencies]
-clap = "2.33"
-liquid = "0.20"
-lazy_static = "1.4"
+clap = { version = "2.33", optional = true }
+liquid = { version = "0.20", optional = true }
+lazy_static = { version = "1.4", optional = true }
 
 [profile.release]
 lto = true

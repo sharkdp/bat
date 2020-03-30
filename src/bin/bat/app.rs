@@ -9,12 +9,8 @@ use crate::{
     config::{get_args_from_config_file, get_args_from_env_var},
 };
 use clap::ArgMatches;
-use wild;
 
 use console::Term;
-
-#[cfg(windows)]
-use ansi_term;
 
 use bat::{
     config::{

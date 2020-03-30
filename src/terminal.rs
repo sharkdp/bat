@@ -1,5 +1,3 @@
-extern crate ansi_colours;
-
 use ansi_term::Colour::{Fixed, RGB};
 use ansi_term::{self, Style};
 
