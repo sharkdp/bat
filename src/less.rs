@@ -1,3 +1,5 @@
+#![cfg(feature = "paging")]
+
 use std::process::Command;
 
 pub fn retrieve_less_version() -> Option<usize> {
