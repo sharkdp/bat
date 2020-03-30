@@ -23,10 +23,12 @@ application = [
     "atty",
     "clap",
     "dirs",
+    "git",
     "lazy_static",
     "liquid",
     "wild",
 ]
+git = ["git2"] # Support indicating git modifications
 
 [dependencies]
 atty = { version = "0.2.14", optional = true }
@@ -44,6 +46,7 @@ globset = "0.4"
 
 [dependencies.git2]
 version = "0.13"
+optional = true
 default-features = false
 
 [dependencies.syntect]
