@@ -17,3 +17,4 @@ fi
 cargo check --target "$TARGET" --verbose --lib --no-default-features
 cargo check --target "$TARGET" --verbose --lib --no-default-features --features git
 cargo check --target "$TARGET" --verbose --lib --no-default-features --features paging
+cargo check --target "$TARGET" --verbose --lib --no-default-features --features git,paging

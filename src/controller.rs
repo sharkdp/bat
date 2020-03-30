@@ -1,8 +1,9 @@
 use std::io::{self, Write};
-use std::path::Path;
 
 use crate::assets::HighlightingAssets;
-use crate::config::{Config, PagingMode};
+use crate::config::Config;
+#[cfg(feature = "paging")]
+use crate::config::PagingMode;
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::line_range::{LineRanges, RangeCheckResult};
@@ -24,22 +25,34 @@ impl<'b> Controller<'b> {
     }
 
     pub fn run_with_error_handler(&self, handle_error: impl Fn(&Error)) -> Result<bool> {
-        // Do not launch the pager if NONE of the input files exist
-        let mut paging_mode = self.config.paging_mode;
-        if self.config.paging_mode != PagingMode::Never {
-            let call_pager = self.config.files.iter().any(|file| {
-                if let InputFile::Ordinary(path) = file {
-                    return Path::new(path).exists();
-                } else {
-                    return true;
+        let mut output_type;
+
+        #[cfg(feature = "paging")]
+        {
+            use std::path::Path;
+
+            // Do not launch the pager if NONE of the input files exist
+            let mut paging_mode = self.config.paging_mode;
+            if self.config.paging_mode != PagingMode::Never {
+                let call_pager = self.config.files.iter().any(|file| {
+                    if let InputFile::Ordinary(path) = file {
+                        return Path::new(path).exists();
+                    } else {
+                        return true;
+                    }
+                });
+                if !call_pager {
+                    paging_mode = PagingMode::Never;
                 }
-            });
-            if !call_pager {
-                paging_mode = PagingMode::Never;
             }
+            output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
         }
 
-        let mut output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
+        #[cfg(not(feature = "paging"))]
+        {
+            output_type = OutputType::stdout();
+        }
+
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 

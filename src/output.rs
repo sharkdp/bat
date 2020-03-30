@@ -2,6 +2,7 @@ use std::io::{self, Write};
 #[cfg(feature = "paging")]
 use std::process::Child;
 
+#[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::errors::*;
 #[cfg(feature = "paging")]
@@ -15,13 +16,12 @@ pub enum OutputType {
 }
 
 impl OutputType {
+    #[cfg(feature = "paging")]
     pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
-        let _ = pager;
+        use self::PagingMode::*;
         Ok(match mode {
-            #[cfg(feature = "paging")]
-            PagingMode::Always => OutputType::try_pager(false, pager)?,
-            #[cfg(feature = "paging")]
-            PagingMode::QuitIfOneScreen => OutputType::try_pager(true, pager)?,
+            Always => OutputType::try_pager(false, pager)?,
+            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
             _ => OutputType::stdout(),
         })
     }
@@ -116,7 +116,7 @@ impl OutputType {
         }
     }
 
-    fn stdout() -> Self {
+    pub(crate) fn stdout() -> Self {
         OutputType::Stdout(io::stdout())
     }
 
