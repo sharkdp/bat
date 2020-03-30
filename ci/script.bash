@@ -15,3 +15,4 @@ fi
 
 # Check bat-as-a-library, which has a smaller set of dependencies
 cargo check --target "$TARGET" --verbose --lib --no-default-features
+cargo check --target "$TARGET" --verbose --lib --no-default-features --features git

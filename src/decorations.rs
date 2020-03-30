@@ -1,3 +1,4 @@
+#[cfg(feature = "git")]
 use crate::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
 use ansi_term::Style;
@@ -68,6 +69,7 @@ impl Decoration for LineNumberDecoration {
     }
 }
 
+#[cfg(feature = "git")]
 pub struct LineChangesDecoration {
     cached_none: DecorationText,
     cached_added: DecorationText,
@@ -76,6 +78,7 @@ pub struct LineChangesDecoration {
     cached_modified: DecorationText,
 }
 
+#[cfg(feature = "git")]
 impl LineChangesDecoration {
     #[inline]
     fn generate_cached(style: Style, text: &str) -> DecorationText {
@@ -96,6 +99,7 @@ impl LineChangesDecoration {
     }
 }
 
+#[cfg(feature = "git")]
 impl Decoration for LineChangesDecoration {
     fn generate(
         &self,

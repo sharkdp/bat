@@ -21,11 +21,11 @@ use unicode_width::UnicodeWidthChar;
 
 use crate::assets::HighlightingAssets;
 use crate::config::Config;
-use crate::decorations::{
-    Decoration, GridBorderDecoration, LineChangesDecoration, LineNumberDecoration,
-};
-use crate::diff::get_git_diff;
-use crate::diff::LineChanges;
+use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
+#[cfg(feature = "git")]
+use crate::decorations::LineChangesDecoration;
+#[cfg(feature = "git")]
+use crate::diff::{get_git_diff, LineChanges};
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::line_range::RangeCheckResult;
@@ -100,6 +100,7 @@ pub struct InteractivePrinter<'a> {
     panel_width: usize,
     ansi_prefix_sgr: String,
     content_type: Option<ContentType>,
+    #[cfg(feature = "git")]
     pub line_changes: Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
@@ -130,8 +131,11 @@ impl<'a> InteractivePrinter<'a> {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
         }
 
-        if config.style_components.changes() {
-            decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+        #[cfg(feature = "git")]
+        {
+            if config.style_components.changes() {
+                decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+            }
         }
 
         let mut panel_width: usize =
@@ -153,6 +157,7 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
+        #[cfg(feature = "git")]
         let mut line_changes = None;
 
         let highlighter = if reader
@@ -162,14 +167,14 @@ impl<'a> InteractivePrinter<'a> {
             None
         } else {
             // Get the Git modifications
-            line_changes = if config.style_components.changes() {
-                match file {
-                    InputFile::Ordinary(filename) => get_git_diff(filename),
-                    _ => None,
+            #[cfg(feature = "git")]
+            {
+                if config.style_components.changes() {
+                    if let InputFile::Ordinary(filename) = file {
+                        line_changes = get_git_diff(filename);
+                    }
                 }
-            } else {
-                None
-            };
+            }
 
             // Determine the type of syntax for highlighting
             let syntax = assets.get_syntax(config.language, file, reader, &config.syntax_mapping);
@@ -183,6 +188,7 @@ impl<'a> InteractivePrinter<'a> {
             decorations,
             content_type: reader.content_type,
             ansi_prefix_sgr: String::new(),
+            #[cfg(feature = "git")]
             line_changes,
             highlighter,
             syntax_set: &assets.syntax_set,

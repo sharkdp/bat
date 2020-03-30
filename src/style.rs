@@ -68,6 +68,7 @@ impl StyleComponents {
         StyleComponents(components.iter().cloned().collect())
     }
 
+    #[cfg(feature = "git")]
     pub fn changes(&self) -> bool {
         self.0.contains(&StyleComponent::Changes)
     }
