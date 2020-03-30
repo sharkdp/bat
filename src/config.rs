@@ -5,14 +5,14 @@ pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use crate::wrap::OutputWrap;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg(feature = "paging")]
 pub enum PagingMode {
-    #[cfg(feature = "paging")]
     Always,
-    #[cfg(feature = "paging")]
     QuitIfOneScreen,
     Never,
 }
 
+#[cfg(feature = "paging")]
 impl Default for PagingMode {
     fn default() -> Self {
         PagingMode::Never
@@ -53,6 +53,7 @@ pub struct Config<'a> {
     pub output_wrap: OutputWrap,
 
     /// Pager or STDOUT
+    #[cfg(feature = "paging")]
     pub paging_mode: PagingMode,
 
     /// Specifies the lines that should be printed
