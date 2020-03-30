@@ -1,31 +1,39 @@
-use std::env;
-use std::ffi::OsString;
 use std::io::{self, Write};
-use std::path::PathBuf;
-use std::process::{Child, Command, Stdio};
+#[cfg(feature = "paging")]
+use std::process::Child;
 
 use crate::config::PagingMode;
 use crate::errors::*;
+#[cfg(feature = "paging")]
 use crate::less::retrieve_less_version;
 
 #[derive(Debug)]
 pub enum OutputType {
+    #[cfg(feature = "paging")]
     Pager(Child),
     Stdout(io::Stdout),
 }
 
 impl OutputType {
     pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
-        use self::PagingMode::*;
+        let _ = pager;
         Ok(match mode {
-            Always => OutputType::try_pager(false, pager)?,
-            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
+            #[cfg(feature = "paging")]
+            PagingMode::Always => OutputType::try_pager(false, pager)?,
+            #[cfg(feature = "paging")]
+            PagingMode::QuitIfOneScreen => OutputType::try_pager(true, pager)?,
             _ => OutputType::stdout(),
         })
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
+    #[cfg(feature = "paging")]
     fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
+        use std::env;
+        use std::ffi::OsString;
+        use std::path::PathBuf;
+        use std::process::{Command, Stdio};
+
         let mut replace_arguments_to_less = false;
 
         let pager_from_env = match (env::var("BAT_PAGER"), env::var("PAGER")) {
@@ -114,6 +122,7 @@ impl OutputType {
 
     pub fn handle(&mut self) -> Result<&mut dyn Write> {
         Ok(match *self {
+            #[cfg(feature = "paging")]
             OutputType::Pager(ref mut command) => command
                 .stdin
                 .as_mut()
@@ -123,6 +132,7 @@ impl OutputType {
     }
 }
 
+#[cfg(feature = "paging")]
 impl Drop for OutputType {
     fn drop(&mut self) {
         if let OutputType::Pager(ref mut command) = *self {

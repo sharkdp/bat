@@ -6,7 +6,9 @@ pub use crate::wrap::OutputWrap;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PagingMode {
+    #[cfg(feature = "paging")]
     Always,
+    #[cfg(feature = "paging")]
     QuitIfOneScreen,
     Never,
 }
