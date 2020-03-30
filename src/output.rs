@@ -4,8 +4,6 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
-use shell_words;
-
 use crate::config::PagingMode;
 use crate::errors::*;
 use crate::less::retrieve_less_version;

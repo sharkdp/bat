@@ -4,8 +4,6 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use shell_words;
-
 use crate::directories::PROJECT_DIRS;
 
 pub fn config_file() -> PathBuf {

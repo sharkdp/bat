@@ -1,4 +1,4 @@
-use clap::{App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
+use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
 use std::path::Path;
 
 pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {

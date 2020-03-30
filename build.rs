@@ -1,38 +1,42 @@
 // TODO: Re-enable generation of shell completion files (below) when clap 3 is out.
 // For more details, see https://github.com/sharkdp/bat/issues/372
 
-#[macro_use]
-extern crate lazy_static;
-extern crate liquid;
+// For bat-as-a-library, no build script is required. The build script is for
+// the manpage and completions, which are only relevant to the bat application.
+#[cfg(not(feature = "application"))]
+fn main() {}
 
-use std::error::Error;
-use std::fs;
-use std::path::Path;
+#[cfg(feature = "application")]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use std::error::Error;
+    use std::fs;
+    use std::path::Path;
 
-// Read environment variables.
-lazy_static! {
-    pub static ref PROJECT_NAME: &'static str = option_env!("PROJECT_NAME").unwrap_or("bat");
-    pub static ref PROJECT_VERSION: &'static str = option_env!("CARGO_PKG_VERSION").unwrap();
-    pub static ref EXECUTABLE_NAME: &'static str = option_env!("PROJECT_EXECUTABLE")
-        .or(option_env!("PROJECT_NAME"))
-        .unwrap_or("bat");
-}
+    use lazy_static::lazy_static;
 
-/// Generates a file from a liquid template.
-fn template(
-    variables: &liquid::Object,
-    in_file: &str,
-    out_file: impl AsRef<Path>,
-) -> Result<(), Box<dyn Error>> {
-    let template = liquid::ParserBuilder::with_stdlib()
-        .build()?
-        .parse(&fs::read_to_string(in_file)?)?;
+    // Read environment variables.
+    lazy_static! {
+        static ref PROJECT_NAME: &'static str = option_env!("PROJECT_NAME").unwrap_or("bat");
+        static ref PROJECT_VERSION: &'static str = option_env!("CARGO_PKG_VERSION").unwrap();
+        static ref EXECUTABLE_NAME: &'static str = option_env!("PROJECT_EXECUTABLE")
+            .or(option_env!("PROJECT_NAME"))
+            .unwrap_or("bat");
+    }
 
-    fs::write(out_file, template.render(variables)?)?;
-    Ok(())
-}
+    /// Generates a file from a liquid template.
+    fn template(
+        variables: &liquid::Object,
+        in_file: &str,
+        out_file: impl AsRef<Path>,
+    ) -> Result<(), Box<dyn Error>> {
+        let template = liquid::ParserBuilder::with_stdlib()
+            .build()?
+            .parse(&fs::read_to_string(in_file)?)?;
 
-fn main() -> Result<(), Box<dyn Error>> {
+        fs::write(out_file, template.render(variables)?)?;
+        Ok(())
+    }
+
     let variables = liquid::object!({
         "PROJECT_NAME": PROJECT_NAME.to_owned(),
         "PROJECT_EXECUTABLE": EXECUTABLE_NAME.to_owned(),

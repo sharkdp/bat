@@ -12,3 +12,6 @@ if [[ $TARGET != arm-unknown-linux-gnueabihf ]] && [[ $TARGET != aarch64-unknown
     # Run 'bat' on its own source code and the README
     cargo run --target "$TARGET" -- src/bin/bat/main.rs README.md --paging=never
 fi
+
+# Check bat-as-a-library, which has a smaller set of dependencies
+cargo check --target "$TARGET" --verbose --lib --no-default-features

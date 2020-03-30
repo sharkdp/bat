@@ -1,7 +1,6 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use dirs;
 use lazy_static::lazy_static;
 
 /// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.

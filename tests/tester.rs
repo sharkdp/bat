@@ -4,13 +4,11 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-extern crate tempdir;
-use self::tempdir::TempDir;
+use tempdir::TempDir;
 
-extern crate git2;
-use self::git2::build::CheckoutBuilder;
-use self::git2::Repository;
-use self::git2::Signature;
+use git2::build::CheckoutBuilder;
+use git2::Repository;
+use git2::Signature;
 
 pub struct BatTester {
     /// Temporary working directory
