@@ -28,9 +28,12 @@ application = [
     "liquid",
     "paging",
     "wild",
+    "regex-onig",
 ]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
+regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
+regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
 atty = { version = "0.2.14", optional = true }
@@ -52,7 +55,7 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "3.2.0"
+version = "4.1.0"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
