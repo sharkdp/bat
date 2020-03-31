@@ -13,6 +13,20 @@
 
 - Updated `liquid` dependency to 0.20, see #880 (@ignatenkobrain)
 
+## `bat` as a library
+
+- Stripped out a lot of binary-only dependencies, see #895 and #899 (@dtolnay)
+
+  This introduces a `features = ["application"]` which is enabled by default and pulls in
+  everything required by `bat` the application. When depending on bat as a library, downstream
+  `Cargo.toml` should disable this feature to cut out inapplicable heavy dependencies:
+  ``` toml
+  [dependencies]
+  bat = { version = "0.13", default-features = false }
+  ```
+  Other optional functionality has also been put behind features: `paging` and `git` support.
+- Allow using the library with older syntect, see #896 and #898 (@dtolnay)
+
 ## New syntaxes
 
 - Rego, see #872 (@patrick-east)
