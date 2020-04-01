@@ -54,14 +54,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "assert_cmd"
-version = "0.12.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "doc-comment 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "escargot 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "predicates 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "predicates-core 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "predicates-tree 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wait-timeout 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -118,7 +118,7 @@ version = "0.13.0"
 dependencies = [
  "ansi_colours 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ansi_term 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "assert_cmd 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "assert_cmd 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "console 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -456,17 +456,6 @@ version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "escargot"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1342,6 +1331,14 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "wait-timeout"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.68 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "walkdir"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1432,7 +1429,7 @@ dependencies = [
 "checksum anymap 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)" = "33954243bd79057c2de7338850b85983a44588021f8a5fee574a8888c6de4344"
 "checksum arrayref 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "a4c527152e37cf757a3f78aae5a06fbeefdb07ccc535c980a3208ee3060dd544"
 "checksum arrayvec 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cff77d8686867eceff3105329d4698d96c2391c176d5d03adc90c7389162b5b8"
-"checksum assert_cmd 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6283bac8dd7226470d491bc4737816fea4ca1fba7a2847f2e9097fd6bfb4624c"
+"checksum assert_cmd 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c88b9ca26f9c16ec830350d309397e74ee9abdfd8eb1f71cb6ecc71a3fc818da"
 "checksum atty 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8"
 "checksum autocfg 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f8aac770f1885fd7e387acedd76065302551364496e46b3dd00860b2f8359b9d"
 "checksum backtrace 0.3.45 (registry+https://github.com/rust-lang/crates.io-index)" = "ad235dabf00f36301792cfe82499880ba54c6486be094d1047b02bacb67c14e8"
@@ -1476,7 +1473,6 @@ dependencies = [
 "checksum encoding_index_tests 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
 "checksum env_logger 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)" = "aafcde04e90a5226a6443b7aabdb016ba2f8307c847d524724bd9b346dd1a2d3"
 "checksum error-chain 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d371106cc88ffdfb1eabd7111e432da544f16f3e2d7bf1dfe8bf575f1df045cd"
-"checksum escargot 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "74cf96bec282dcdb07099f7e31d9fed323bca9435a09aba7b6d99b7617bca96d"
 "checksum failure 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "b8529c2421efa3066a5cbd8063d2244603824daccb6936b079010bb2aa89464b"
 "checksum fake-simd 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 "checksum flate2 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "2cfff41391129e0a856d6d822600b8d71179d46879e310417eb9c762eb178b42"
@@ -1587,6 +1583,7 @@ dependencies = [
 "checksum vec_map 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "05c78687fb1a80548ae3250346c3db86a80a7cdd77bda190189f2d0a0987c81a"
 "checksum version_check 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 "checksum version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "078775d0255232fb988e6fccf26ddc9d1ac274299aaedcedce21c6f72cc533ce"
+"checksum wait-timeout 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9f200f5b12eb75f8c1ed65abd4b2db8a6e1b138a20de009dacee265a2498f3f6"
 "checksum walkdir 2.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "777182bc735b6424e1a57516d35ed72cb8019d85c8c9bf536dccb3445c1a2f7d"
 "checksum wasi 0.9.0+wasi-snapshot-preview1 (registry+https://github.com/rust-lang/crates.io-index)" = "cccddf32554fecc6acb585f82a32a72e28b48f8c4c1883ddfeeeaa96f7d8e519"
 "checksum which 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b57acb10231b9493c8472b20cb57317d0679a49e0bdbee44b3b803a6473af164"
