@@ -20,16 +20,32 @@ impl<'b> Controller<'b> {
     }
 
     pub fn get_output<'a>(&self) -> Result<Vec<u8>> {
+        let mut writer = Vec::new();
+
         let stdin = io::stdin();
 
-        let mut buf = Vec::new();
+        let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
+            Some(ref filenames) => Box::new(filenames.into_iter().map(|name| Some(*name))),
+            None => Box::new(std::iter::repeat(None)),
+        };
 
-        for input_file in self.config.files.iter() {
+        for (input_file, file_name) in self.config.files.iter().zip(filenames) {
             let mut reader = input_file.get_reader(&stdin)?;
-            while reader.read_line(&mut buf)? {}
+            if self.config.loop_through {
+                let mut printer = SimplePrinter::new();
+                self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)?;
+            } else {
+                let mut printer = InteractivePrinter::new(
+                    &self.config,
+                    &self.assets,
+                    *input_file,
+                    &mut reader,
+                );
+                self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)?;
+            }
         }
 
-        Ok(buf)
+        Ok(writer)
     }
 
     pub fn run(&self) -> Result<bool> {
