@@ -19,35 +19,6 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
-    pub fn get_output<'a>(&self) -> Result<Vec<u8>> {
-        let mut writer = Vec::new();
-
-        let stdin = io::stdin();
-
-        let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
-            Some(ref filenames) => Box::new(filenames.into_iter().map(|name| Some(*name))),
-            None => Box::new(std::iter::repeat(None)),
-        };
-
-        for (input_file, file_name) in self.config.files.iter().zip(filenames) {
-            let mut reader = input_file.get_reader(&stdin)?;
-            if self.config.loop_through {
-                let mut printer = SimplePrinter::new();
-                self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)?;
-            } else {
-                let mut printer = InteractivePrinter::new(
-                    &self.config,
-                    &self.assets,
-                    *input_file,
-                    &mut reader,
-                );
-                self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)?;
-            }
-        }
-
-        Ok(writer)
-    }
-
     pub fn run(&self) -> Result<bool> {
         self.run_with_error_handler(default_error_handler)
     }
@@ -70,8 +41,14 @@ impl<'b> Controller<'b> {
 
         let mut output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
         let writer = output_type.handle()?;
-        let mut no_errors: bool = true;
 
+        let no_errors = self.run_with_writer(writer, handle_error);
+
+        Ok(no_errors)
+    }
+
+    pub fn run_with_writer(&self, mut writer: &mut dyn Write, handle_error: impl Fn(&Error)) -> bool {
+        let mut no_errors: bool = true;
         let stdin = io::stdin();
 
         let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
@@ -88,7 +65,7 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
+                        self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
@@ -96,7 +73,7 @@ impl<'b> Controller<'b> {
                             *input_file,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
+                        self.print_file(reader, &mut printer, &mut writer, *input_file, file_name)
                     };
 
                     if let Err(error) = result {
@@ -107,7 +84,7 @@ impl<'b> Controller<'b> {
             }
         }
 
-        Ok(no_errors)
+        no_errors
     }
 
     fn print_file<'a, P: Printer>(
