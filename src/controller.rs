@@ -19,6 +19,19 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
+    pub fn get_output<'a>(&self) -> Result<Vec<u8>> {
+        let stdin = io::stdin();
+
+        let mut buf = Vec::new();
+
+        for input_file in self.config.files.iter() {
+            let mut reader = input_file.get_reader(&stdin)?;
+            while reader.read_line(&mut buf)? {}
+        }
+
+        Ok(buf)
+    }
+
     pub fn run(&self) -> Result<bool> {
         self.run_with_error_handler(default_error_handler)
     }
