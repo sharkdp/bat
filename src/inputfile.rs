@@ -53,22 +53,43 @@ impl<'a> InputFileReader<'a> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+pub struct OrdinaryFile<'a> {
+    filename: &'a OsStr,
+    user_provided_name: Option<&'a OsStr>,
+}
+
+impl<'a> OrdinaryFile<'a> {
+    pub fn new(filename: &'a OsStr, user_provided_name: Option<&'a OsStr>) -> OrdinaryFile<'a> {
+        OrdinaryFile {
+            filename: filename,
+            user_provided_name: user_provided_name,
+        }
+    }
+
+    pub fn filename(&self) -> &'a OsStr {
+        self.user_provided_name.unwrap_or_else(|| self.filename)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum InputFile<'a> {
-    StdIn,
-    Ordinary(&'a OsStr),
+    StdIn(Option<&'a OsStr>),
+    Ordinary(OrdinaryFile<'a>),
     ThemePreviewFile,
 }
 
 impl<'a> InputFile<'a> {
     pub(crate) fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
         match self {
-            InputFile::StdIn => Ok(InputFileReader::new(stdin.lock())),
-            InputFile::Ordinary(filename) => {
-                let file = File::open(filename)
-                    .map_err(|e| format!("'{}': {}", filename.to_string_lossy(), e))?;
+            InputFile::StdIn(_) => Ok(InputFileReader::new(stdin.lock())),
+            InputFile::Ordinary(ofile) => {
+                let file = File::open(ofile.filename)
+                    .map_err(|e| format!("'{}': {}", ofile.filename.to_string_lossy(), e))?;
 
                 if file.metadata()?.is_dir() {
-                    return Err(format!("'{}' is a directory.", filename.to_string_lossy()).into());
+                    return Err(
+                        format!("'{}' is a directory.", ofile.filename.to_string_lossy()).into(),
+                    );
                 }
 
                 Ok(InputFileReader::new(BufReader::new(file)))

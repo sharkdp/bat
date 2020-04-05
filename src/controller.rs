@@ -35,8 +35,8 @@ impl<'b> Controller<'b> {
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
                 let call_pager = self.config.files.iter().any(|file| {
-                    if let InputFile::Ordinary(path) = file {
-                        return Path::new(path).exists();
+                    if let InputFile::Ordinary(ofile) = file {
+                        return Path::new(ofile.filename()).exists();
                     } else {
                         return true;
                     }
@@ -58,12 +58,7 @@ impl<'b> Controller<'b> {
 
         let stdin = io::stdin();
 
-        let filenames: Box<dyn Iterator<Item = _>> = match self.config.filenames {
-            Some(ref filenames) => Box::new(filenames.into_iter().map(|name| Some(*name))),
-            None => Box::new(std::iter::repeat(None)),
-        };
-
-        for (input_file, file_name) in self.config.files.iter().zip(filenames) {
+        for input_file in self.config.files.iter() {
             match input_file.get_reader(&stdin) {
                 Err(error) => {
                     handle_error(&error);
@@ -72,16 +67,15 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
+                        self.print_file(reader, &mut printer, writer, *input_file)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
                             &self.assets,
                             *input_file,
-                            file_name,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, *input_file, file_name)
+                        self.print_file(reader, &mut printer, writer, *input_file)
                     };
 
                     if let Err(error) = result {
@@ -101,10 +95,9 @@ impl<'b> Controller<'b> {
         printer: &mut P,
         writer: &mut dyn Write,
         input_file: InputFile<'a>,
-        file_name: Option<&str>,
     ) -> Result<()> {
         if !reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input_file, file_name)?;
+            printer.print_header(writer, input_file)?;
         }
 
         if !reader.first_line.is_empty() {

@@ -26,7 +26,7 @@ use bat::Controller;
 use directories::PROJECT_DIRS;
 
 use bat::{
-    config::{Config, InputFile, StyleComponent, StyleComponents},
+    config::{Config, InputFile, OrdinaryFile, StyleComponent, StyleComponents},
     errors::*,
     HighlightingAssets,
 };
@@ -167,7 +167,10 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else {
                 let mut config = app.config()?;
-                config.files = vec![InputFile::Ordinary(OsStr::new("cache"))];
+                config.files = vec![InputFile::Ordinary(OrdinaryFile::new(
+                    OsStr::new("cache"),
+                    None,
+                ))];
 
                 run_controller(&config)
             }
