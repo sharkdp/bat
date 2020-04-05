@@ -1,7 +1,7 @@
 /// A very simple colorized `cat` clone, using `bat` as a library.
 /// See `src/bin/bat` for the full `bat` application.
 use bat::{
-    config::{Config, InputFile, StyleComponent, StyleComponents},
+    config::{Config, InputFile, OrdinaryFile, StyleComponent, StyleComponents},
     Controller, HighlightingAssets,
 };
 use console::Term;
@@ -24,7 +24,10 @@ fn main() {
             StyleComponent::Grid,
             StyleComponent::Numbers,
         ]),
-        files: files.iter().map(|file| InputFile::Ordinary(file)).collect(),
+        files: files
+            .iter()
+            .map(|file| InputFile::Ordinary(OrdinaryFile::new(file, None)))
+            .collect(),
         ..Default::default()
     };
     let assets = HighlightingAssets::from_binary();

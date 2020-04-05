@@ -1,4 +1,5 @@
 pub use crate::inputfile::InputFile;
+pub use crate::inputfile::OrdinaryFile;
 pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
 pub use crate::style::{StyleComponent, StyleComponents};
 pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
@@ -73,9 +74,8 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
-
-    /// Names of files to display when printing
-    pub filenames: Option<Vec<&'a str>>,
+    ///// Names of files to display when printing
+    // pub filenames: Option<Vec<&'a str>>,
 }
 
 #[test]

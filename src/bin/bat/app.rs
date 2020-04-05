@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::env;
+use std::ffi::OsStr;
 use std::str::FromStr;
 
 use atty::{self, Stream};
@@ -14,8 +15,8 @@ use console::Term;
 
 use bat::{
     config::{
-        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget, OutputWrap,
-        PagingMode, StyleComponent, StyleComponents, SyntaxMapping,
+        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget,
+        OrdinaryFile, OutputWrap, PagingMode, StyleComponent, StyleComponents, SyntaxMapping,
     },
     errors::*,
     HighlightingAssets,
@@ -73,7 +74,7 @@ impl App {
     }
 
     pub fn config(&self) -> Result<Config> {
-        let files = self.files();
+        let files = self.files()?;
         let style_components = self.style_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
@@ -83,7 +84,7 @@ impl App {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
-                } else if files.contains(&InputFile::StdIn) {
+                } else if files.contains(&InputFile::StdIn(None)) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
@@ -131,13 +132,6 @@ impl App {
                 w.parse().ok()
             }
         });
-
-        match self.matches.values_of("file-name") {
-            Some(ref filenames) if filenames.len() != files.len() => {
-                return Err(format!("{} {}", filenames.len(), files.len()).into());
-            }
-            _ => {}
-        }
 
         Ok(Config {
             true_color: is_truecolor_terminal(),
@@ -225,28 +219,59 @@ impl App {
                 .map(LineRanges::from)
                 .map(|lr| HighlightedLineRanges(lr))
                 .unwrap_or_default(),
-            filenames: self
-                .matches
-                .values_of("file-name")
-                .map(|values| values.collect()),
         })
     }
 
-    fn files(&self) -> Vec<InputFile> {
-        self.matches
+    fn files(&self) -> Result<Vec<InputFile>> {
+        // verify equal length of file-names and input FILEs
+        match self.matches.values_of("file-name") {
+            Some(filenames)
+                if self.matches.values_of_os("FILE").is_some()
+                    && filenames.len() != self.matches.values_of_os("FILE").unwrap().len() =>
+            {
+                return Err("Must be one file name per input type.".into());
+            }
+            _ => {}
+        }
+        let filenames: Option<Vec<&str>> = self
+            .matches
+            .values_of("file-name")
+            .map(|values| values.collect());
+
+        let mut filenames_or_none: Box<dyn Iterator<Item = _>> = match filenames {
+            Some(ref filenames) => {
+                Box::new(filenames.into_iter().map(|name| Some(OsStr::new(*name))))
+            }
+            None => Box::new(std::iter::repeat(None)),
+        };
+        let files: Option<Vec<&str>> = self
+            .matches
             .values_of_os("FILE")
-            .map(|values| {
-                values
-                    .map(|filename| {
-                        if filename == "-" {
-                            InputFile::StdIn
-                        } else {
-                            InputFile::Ordinary(filename)
-                        }
-                    })
-                    .collect()
-            })
-            .unwrap_or_else(|| vec![InputFile::StdIn])
+            .map(|values| values.map(|fname| fname.to_str()).collect())
+            .unwrap_or(None);
+
+        if files.is_none() {
+            return Ok(vec![InputFile::StdIn(filenames_or_none.nth(0).unwrap())]);
+        }
+        let files_or_none: Box<dyn Iterator<Item = _>> = match files {
+            Some(ref files) => Box::new(files.into_iter().map(|name| Some(OsStr::new(*name)))),
+            None => Box::new(std::iter::repeat(None)),
+        };
+
+        let mut file_input = Vec::new();
+        for (input, name) in files_or_none.zip(filenames_or_none) {
+            match input {
+                Some(input) => {
+                    if input.to_str().unwrap() == "-" {
+                        file_input.push(InputFile::StdIn(name));
+                    } else {
+                        file_input.push(InputFile::Ordinary(OrdinaryFile::new(input, name)))
+                    }
+                }
+                None => {}
+            }
+        }
+        return Ok(file_input);
     }
 
     fn style_components(&self) -> Result<StyleComponents> {
