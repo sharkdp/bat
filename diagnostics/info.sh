@@ -7,7 +7,6 @@ set -o pipefail
 export LC_ALL=C
 export LANG=C
 
-
 # -----------------------------------------------------------------------------
 # Modules:
 # -----------------------------------------------------------------------------
@@ -59,12 +58,12 @@ _bat_:run() {
 
 _bat_config_:run() {
 	if [[ -f "$(bat --config-file)" ]]; then
-		_out_fence cat "$(bat --config-file)";
+		_out_fence cat "$(bat --config-file)"
 	fi
 }
 
 _bat_wrapper_:run() {
-	if file "$(which bat)" | grep "text executable" &>/dev/null; then
+	if file "$(which bat)" | grep "text executable" &> /dev/null; then
 		_out_fence cat "$(which bat)"
 		return
 	fi
@@ -74,20 +73,23 @@ _bat_wrapper_:run() {
 _bat_wrapper_function_:run() {
 	case "$("$SHELL" --version | head -n 1)" in
 		*fish*)
-			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &> /dev/null; then
 				_out_fence "$SHELL" --login -c 'functions bat'
 				return
-			fi ;;
+			fi
+			;;
 
-		*bash*|*zsh*)
-			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+		*bash* | *zsh*)
+			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &> /dev/null; then
 				_out_fence "$SHELL" --login -c 'declare -f bat'
 				return
-			fi ;;
+			fi
+			;;
 
 		*)
 			echo "Unable to determine if a wrapper function is set."
-			return ;;
+			return
+			;;
 	esac
 	printf "\nNo wrapper function.\n"
 }
@@ -95,14 +97,13 @@ _bat_wrapper_function_:run() {
 _system_:run() {
 	_out uname -srm
 
-	if command -v "sw_vers" &>/dev/null; then _out sw_vers; fi
-	if command -v "lsb_release" &>/dev/null; then _out lsb_release -a; fi
+	if command -v "sw_vers" &> /dev/null; then _out sw_vers; fi
+	if command -v "lsb_release" &> /dev/null; then _out lsb_release -a; fi
 }
 
 _tool_:run() {
 	_out less --version | head -n1
 }
-
 
 # -----------------------------------------------------------------------------
 # Functions:
@@ -127,7 +128,7 @@ _out_fence() {
 }
 
 _tput() {
-	tput "$@" 1>&2 2>/dev/null
+	tput "$@" 1>&2 2> /dev/null
 }
 
 _collects() {
@@ -138,7 +139,7 @@ _ask_module() {
 	_tput clear
 	_tput cup 0 0
 
-cat 1>&2 <<EOF
+	cat 1>&2 << EOF
 --------------------------------------------------------------------------------
 This script runs some harmless commands to collect information about your
 system and bat configuration. It will give you a small preview of the commands
@@ -167,13 +168,13 @@ EOF
 	printf "\n" 1>&2
 	local response
 	while true; do
-		_tput cup "$(( $(tput lines || echo 22) - 2 ))"
+		_tput cup "$(($( tput lines || echo 22) - 2))"
 		_tput el
 		read -er -p "Collect $(sed 's/_/ /' <<< "$1") data? [Y/n] " response
 		case "$response" in
-			Y|y|yes|'') return 0 ;;
-			N|n|no)     return 1 ;;
-			*) continue
+			Y | y | yes | '') return 0 ;;
+			N | n | no) return 1 ;;
+			*) continue ;;
 		esac
 	done
 }
@@ -184,13 +185,12 @@ _run_module() {
 	"_$1_:run"
 }
 
-
 # -----------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------
 
 # Ask for consent.
-if [[ "$1" = '-y' ]]; then
+if [[ "$1" == '-y' ]]; then
 	_modules_consented=("${_modules[@]}")
 else
 	trap '_tput rmcup; exit 1' INT
@@ -208,5 +208,3 @@ for _module in "${_modules_consented[@]}"; do
 	_run_module "$_module" 2>&1
 	printf "\n"
 done
-
-
