@@ -35,7 +35,6 @@ _tool_:description() {
 	_collects "Version information for 'less'."
 }
 
-
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 _bat_:run() {
@@ -71,14 +70,14 @@ _bat_wrapper_:run() {
 _bat_wrapper_function_:run() {
 	case "$("$SHELL" --version | head -n 1)" in
 		*fish*)
-			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
 				_out_fence "$SHELL" --login -c 'functions bat'
 				return
 			fi ;;
 
 		*bash*|*zsh*)
-			if "$SHELL" --login -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
-				_out_fence "$SHELL" --login -i -c 'declare -f bat'
+			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &>/dev/null; then
+				_out_fence "$SHELL" --login -c 'declare -f bat'
 				return
 			fi ;;
 
