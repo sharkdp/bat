@@ -9,6 +9,8 @@
 
 ## Bugfixes
 
+- Performance problems with C# source code have been fixed, see #677 (@keith-hall)
+
 ## Other
 
 - Updated `liquid` dependency to 0.20, see #880 (@ignatenkobrain)
