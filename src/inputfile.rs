@@ -73,7 +73,7 @@ impl<'a> OrdinaryFile<'a> {
         }
     }
 
-    pub fn filename(&self) -> &'a OsStr {
+    pub(crate) fn filename(&self) -> &'a OsStr {
         self.user_provided_name.unwrap_or_else(|| self.path)
     }
 }
