@@ -66,13 +66,10 @@ impl<'a> OrdinaryFile<'a> {
         }
     }
 
-    pub fn from_path_with_name(
-        path: &'a OsStr,
-        user_provided_name: Option<&'a OsStr>,
-    ) -> OrdinaryFile<'a> {
+    pub fn from_path_with_name(path: &'a OsStr, user_provided_name: &'a OsStr) -> OrdinaryFile<'a> {
         OrdinaryFile {
             path,
-            user_provided_name,
+            user_provided_name: Some(user_provided_name),
         }
     }
 

@@ -260,17 +260,15 @@ impl App {
 
         let mut file_input = Vec::new();
         for (input, name) in files_or_none.zip(filenames_or_none) {
-            match input {
-                Some(input) => {
-                    if input.to_str().unwrap() == "-" {
-                        file_input.push(InputFile::StdIn(name));
-                    } else {
-                        file_input.push(InputFile::Ordinary(OrdinaryFile::from_path_with_name(
-                            input, name,
-                        )))
-                    }
+            if let Some(input) = input {
+                if input.to_str().unwrap() == "-" {
+                    file_input.push(InputFile::StdIn(name));
+                } else {
+                    let ofile = name.map_or(OrdinaryFile::from_path(input), |n| {
+                        OrdinaryFile::from_path_with_name(input, n)
+                    });
+                    file_input.push(InputFile::Ordinary(ofile))
                 }
-                None => {}
             }
         }
         return Ok(file_input);
