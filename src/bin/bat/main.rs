@@ -17,7 +17,10 @@ use std::process;
 use ansi_term::Colour::Green;
 use ansi_term::Style;
 
-use crate::{app::App, config::{config_file, generate_config_file}};
+use crate::{
+    app::App,
+    config::{config_file, generate_config_file},
+};
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use bat::Controller;
 use directories::PROJECT_DIRS;

@@ -21,9 +21,9 @@ use unicode_width::UnicodeWidthChar;
 
 use crate::assets::HighlightingAssets;
 use crate::config::Config;
-use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
+use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::errors::*;

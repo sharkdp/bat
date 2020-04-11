@@ -17,7 +17,10 @@ pub fn config_file() -> PathBuf {
 pub fn generate_config_file() -> bat::errors::Result<()> {
     let config_file = config_file();
     if config_file.exists() {
-        println!("A config file already exists at: {}", config_file.to_string_lossy());
+        println!(
+            "A config file already exists at: {}",
+            config_file.to_string_lossy()
+        );
 
         print!("Overwrite? (y/N): ");
         io::stdout().flush()?;
@@ -31,7 +34,12 @@ pub fn generate_config_file() -> bat::errors::Result<()> {
         let config_dir = config_file.parent();
         match config_dir {
             Some(path) => fs::create_dir_all(path)?,
-            None => return Ok(Err(format!("Unable to write config file to: {}", config_file.to_string_lossy()))?),
+            None => {
+                return Ok(Err(format!(
+                    "Unable to write config file to: {}",
+                    config_file.to_string_lossy()
+                ))?)
+            }
         }
     }
 
@@ -54,7 +62,10 @@ pub fn generate_config_file() -> bat::errors::Result<()> {
 "#;
 
     fs::write(&config_file, default_config)?;
-    println!("Success! Config file written to {}", config_file.to_string_lossy());
+    println!(
+        "Success! Config file written to {}",
+        config_file.to_string_lossy()
+    );
 
     return Ok(());
 }
