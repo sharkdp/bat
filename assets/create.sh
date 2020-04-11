@@ -42,12 +42,22 @@ fi
 # Always remove the local cache to avoid any confusion
 bat cache --clear
 
-# TODO: Remove this (and the reverse part below) when
-# https://github.com/trishume/syntect/issues/222 has been fixed
-JAVADOC_FILE="${ASSET_DIR}/syntaxes/01_Packages/Java/JavaDoc.sublime-syntax"
-JAVADOC_PATCH="${ASSET_DIR}/JavaDoc.sublime-syntax.patch"
-patch "$JAVADOC_FILE" "$JAVADOC_PATCH"
+# TODO:
+# - Remove the JavaDoc patch once https://github.com/trishume/syntect/issues/222 has been fixed
+# - Remove the C# patch once https://github.com/sublimehq/Packages/pull/2331 has been merged
+
+(
+    cd "$ASSET_DIR"
+    for patch in patches/*.patch; do
+        patch --strip=0 < "$patch"
+    done
+)
 
 bat cache --build --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
 
-patch -R "$JAVADOC_FILE" "$JAVADOC_PATCH"
+(
+    cd "$ASSET_DIR"
+    for patch in patches/*.patch; do
+        patch --strip=0 --reverse < "$patch"
+    done
+)
