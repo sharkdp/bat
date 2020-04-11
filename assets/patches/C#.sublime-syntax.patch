@@ -1,0 +1,13 @@
+diff --git syntaxes/01_Packages/C#/C#.sublime-syntax syntaxes/01_Packages/C#/C#.sublime-syntax
+index ed494f8b..01b710e8 100644
+--- syntaxes/01_Packages/C#/C#.sublime-syntax
++++ syntaxes/01_Packages/C#/C#.sublime-syntax
+@@ -1312,7 +1312,7 @@ contexts:
+             2: punctuation.separator.cs
+             3: punctuation.section.brackets.end.cs
+             4: keyword.operator.pointer.cs
+-    - match: \((?=(?:[^,)(]*|\([^\)]*\))*,)
++    - match: \((?=(?:[^,)(]|\([^\)]*\))*,)
+       scope: punctuation.section.group.begin.cs
+       push:
+         - meta_scope: meta.group.tuple.cs
