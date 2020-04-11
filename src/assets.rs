@@ -267,7 +267,7 @@ mod tests {
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input_file = InputFile::Ordinary(OrdinaryFile::new(OsStr::new(&file_path), None));
+            let input_file = InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(&file_path)));
             let syntax = self.assets.get_syntax(
                 None,
                 input_file,

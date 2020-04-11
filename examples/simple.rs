@@ -9,9 +9,8 @@ fn main() {
     let path_to_this_file = OsStr::new(file!());
 
     let config = Config {
-        files: vec![InputFile::Ordinary(OrdinaryFile::new(
+        files: vec![InputFile::Ordinary(OrdinaryFile::from_path(
             path_to_this_file,
-            None,
         ))],
         colored_output: true,
         true_color: true,

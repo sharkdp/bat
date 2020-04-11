@@ -26,7 +26,7 @@ fn main() {
         ]),
         files: files
             .iter()
-            .map(|file| InputFile::Ordinary(OrdinaryFile::new(file, None)))
+            .map(|file| InputFile::Ordinary(OrdinaryFile::from_path(file)))
             .collect(),
         ..Default::default()
     };
