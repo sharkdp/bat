@@ -167,10 +167,9 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else {
                 let mut config = app.config()?;
-                config.files = vec![InputFile::Ordinary(OrdinaryFile::new(
-                    OsStr::new("cache"),
-                    None,
-                ))];
+                config.files = vec![InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(
+                    "cache",
+                )))];
 
                 run_controller(&config)
             }

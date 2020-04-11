@@ -265,7 +265,9 @@ impl App {
                     if input.to_str().unwrap() == "-" {
                         file_input.push(InputFile::StdIn(name));
                     } else {
-                        file_input.push(InputFile::Ordinary(OrdinaryFile::new(input, name)))
+                        file_input.push(InputFile::Ordinary(OrdinaryFile::from_path_with_name(
+                            input, name,
+                        )))
                     }
                 }
                 None => {}
