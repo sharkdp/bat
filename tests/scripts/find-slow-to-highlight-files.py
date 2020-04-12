@@ -1,9 +1,23 @@
+#!/usr/bin/env python
+#
+# This script goes through all languages that are supported by 'bat'. For each
+# language, it loops over the correspoinding file extensions and searches a
+# given folder for matching files. It calls 'bat' for each of these files and
+# measures the highlighting speed (number of characters per second). The script
+# reports files which lead to slow highlighting speeds or errors during the
+# execution of 'bat'.
+#
+# Requirements (external programs):
+#   - bat (in the $PATH)
+#   - fd (https://github.com/sharkdp/fd)
+#   - wc
+
 import time
 import os
 import subprocess as sp
 
 
-# Threshold speed in chars per second
+# Threshold speed, characters per second
 THRESHOLD_SPEED = 20000
 
 # Maximum time we allow `bat` to run
