@@ -176,3 +176,6 @@
 [submodule "assets/syntaxes/CoffeeScript"]
 	path = assets/syntaxes/02_Extra/CoffeeScript
 	url = https://github.com/sustained/CoffeeScript-Sublime-Plugin
+[submodule "assets/syntaxes/02_Extra/Stylus"]
+	path = assets/syntaxes/02_Extra/Stylus
+	url = https://github.com/billymoon/Stylus

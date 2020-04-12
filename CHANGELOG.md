@@ -32,6 +32,7 @@
 ## New syntaxes
 
 - Rego, see #872 (@patrick-east)
+- Stylo, see #917
 
 ## New themes
 
