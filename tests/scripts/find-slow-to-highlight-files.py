@@ -12,6 +12,7 @@
 #   - fd (https://github.com/sharkdp/fd)
 #   - wc
 
+import sys
 import time
 import os
 import subprocess as sp
@@ -30,7 +31,7 @@ MAX_NUM_FILES = 100
 SEARCH_ROOT = os.getenv("HOME")
 
 
-def find_slow_files(startup_time, language, glob_pattern):
+def find_slow_files(startup_time, glob_pattern, language=None):
     out = sp.check_output(
         [
             "fd",
@@ -46,7 +47,8 @@ def find_slow_files(startup_time, language, glob_pattern):
     )
 
     paths = out.split(b"\n")[:-1]
-    print(f"Language: {language}, glob pattern: {glob_pattern} ({len(paths)} matches)")
+    language_text = f"Language {language}, " if language else ""
+    print(f"{language_text}glob pattern: {glob_pattern} ({len(paths)} matches)")
 
     for path in paths:
         num_chars = int(sp.check_output(["wc", "-c", path]).split(b" ")[0].decode())
@@ -96,19 +98,27 @@ def measure_bat_startup_speed():
     return min_duration
 
 
-def main():
-    print("Measuring 'bat' startup speed ... ", flush=True, end="")
-    startup_time = measure_bat_startup_speed()
-    print(f"{startup_time * 1000:.1f} ms")
-
+def traverse_all_languages(startup_time):
     output = sp.check_output(["bat", "--list-languages"]).decode()
 
     for line in output.strip().split("\n"):
         language, extensions = line.split(":")
         for ext in extensions.split(","):
-            find_slow_files(startup_time, language, ext)
+            find_slow_files(startup_time, ext, language)
             if not ext.startswith("."):
-                find_slow_files(startup_time, language, f"*.{ext}")
+                find_slow_files(startup_time, f"*.{ext}", language)
+
+
+def main():
+    print("Measuring 'bat' startup speed ... ", flush=True, end="")
+    startup_time = measure_bat_startup_speed()
+    print(f"{startup_time * 1000:.1f} ms")
+
+    if len(sys.argv) == 1:
+        traverse_all_languages(startup_time)
+    else:
+        pattern = sys.argv[1]
+        find_slow_files(startup_time, pattern)
 
 
 if __name__ == "__main__":
