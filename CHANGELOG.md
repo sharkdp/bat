@@ -10,6 +10,7 @@
 ## Bugfixes
 
 - Performance problems with C# source code have been fixed, see #677 (@keith-hall)
+- Performance problems with Makefiles have been fixed, see #750 (@keith-hall)
 
 ## Other
 
