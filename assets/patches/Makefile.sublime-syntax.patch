@@ -1,0 +1,81 @@
+diff --git syntaxes/01_Packages/Makefile/Makefile.sublime-syntax syntaxes/01_Packages/Makefile/Makefile.sublime-syntax
+index 3cc3a97e..0c7a3f24 100644
+--- syntaxes/01_Packages/Makefile/Makefile.sublime-syntax
++++ syntaxes/01_Packages/Makefile/Makefile.sublime-syntax
+@@ -44,64 +44,50 @@ variables:
+   # variable substitutions anywhere. We try to remedy this by hacking in a
+   # regex that matches up to four levels of nested parentheses, and ignores
+   # whatever's inside the parentheses.
+-  nps: '[^()]*'
+-  open: '(?:\('
+-  close: '\))?'       # ignore this invalid.illegal
++  nps_unnested: '[^()]*'
++  nps: '[^()]*(?=[()])'
++  open: '(?:{{nps}}\('
++  close: '\){{nps_unnested}})?'       # ignore this invalid.illegal
+   just_eat: |         # WARNING: INSANITY FOLLOWS!
+-    (?x)              # ignore whitespace in this regex
+-      {{nps}}         #       level 0
++    (?x)(?:              # ignore whitespace in this regex
+       {{open}}        # start level 1                      __
+-        {{nps}}       #       level 1          _______    /*_>-<
+         {{open}}      # start level 2      ___/ _____ \__/ /
+-          {{nps}}     #       level 2     <____/     \____/
+           {{open}}    # start level 3     is like snek... (by Valerie Haecky)
+-            {{nps}}   #       level 3
+             {{open}}  # start level 4
+               {{nps}} #       level 4
+             {{close}} #   end level 4
+-            {{nps}}   #       level 3
+           {{close}}   #   end level 3
+-          {{nps}}     #       level 2
+           {{open}}    # start level 3
+-            {{nps}}   #       level 3
+             {{open}}  # start level 4
+               {{nps}} #       level 4
+             {{close}} #   end level 4
+-            {{nps}}   #       level 3
+           {{close}}   #   end level 3
+-          {{nps}}     #       level 2
++          {{nps}}
+         {{close}}     #   end level 2
+-        {{nps}}       #       level 1
+         {{open}}      # start level 2
+-          {{nps}}     #       level 2
+           {{open}}    # start level 3
+-            {{nps}}   #       level 3
+             {{open}}  # start level 4
+               {{nps}} #       level 4
+             {{close}} #   end level 4
+-            {{nps}}   #       level 3
++          {{nps}}
+           {{close}}   #   end level 3
+-          {{nps}}     #       level 2
+           {{open}}    # start level 3
+-            {{nps}}   #       level 3
+             {{open}}  # start level 4
+               {{nps}} #       level 4
+             {{close}} #   end level 4
+-            {{nps}}   #       level 3
++          {{nps}}
+           {{close}}   #   end level 3
+-          {{nps}}     #       level 2
+           {{open}}    # start level 3
+-            {{nps}}   #       level 3
+             {{open}}  # start level 4
+               {{nps}} #       level 4
+             {{close}} #   end level 4
+-            {{nps}}   #       level 3
++          {{nps}}
+           {{close}}   #   end level 3
+-          {{nps}}     #       level 2
++        {{nps}}
+         {{close}}     #   end level 2
+-        {{nps}}       #       level 1
++      {{nps}}
+       {{close}}       #   end level 1
+-      {{nps}}         #       level 0
++      |{{nps_unnested}})
+   rule_lookahead: '{{just_eat}}{{ruleassign}}{{just_eat}}'
+ 
+   var_lookahead_base: '{{just_eat}}({{varassign}}|{{shellassign}}){{just_eat}}'
