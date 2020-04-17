@@ -171,14 +171,21 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 ### On Ubuntu
 *... and other Debian-based Linux distributions.*
 
-You can install [the Ubuntu `bat` package](https://packages.ubuntu.com/eoan/bat) or [the Debian `bat` package](https://packages.debian.org/sid/bat) since Ubuntu Eoan 19.10 or Debian unstable sid.
+`bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
+[Debian](https://packages.debian.org/sid/bat) package release process, and is available
+for Ubuntu as of Eoan 19.10. On Debian `bat` is currently only available on the unstable
+"Sid" branch.
+
+If your Ubuntu/Debian installation is new enough you can simply run:
 
 ```bash
 apt install bat
 ```
 
-If you want to run the latest release of bat or if you are on older versions of Ubuntu/Debian, download the latest `.deb` package from the [release page](https://github.com/sharkdp/bat/releases)
-and install it via:
+If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
+the most recent release of `bat`, download the latest `.deb` package from the
+[release page](https://github.com/sharkdp/bat/releases) and install it via:
+
 ```bash
 sudo dpkg -i bat_0.13.0_amd64.deb  # adapt version number and architecture
 ```
