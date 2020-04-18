@@ -225,7 +225,7 @@ impl App {
     fn files(&self) -> Result<Vec<InputFile>> {
         // verify equal length of file-names and input FILEs
         match self.matches.values_of("file-name") {
-            Some(filenames)
+            Some(ref filenames)
                 if self.matches.values_of_os("FILE").is_some()
                     && filenames.len() != self.matches.values_of_os("FILE").unwrap().len() =>
             {
