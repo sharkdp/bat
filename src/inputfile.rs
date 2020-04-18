@@ -86,9 +86,9 @@ pub enum InputFile<'a> {
 }
 
 impl<'a> InputFile<'a> {
-    pub(crate) fn get_reader(&self, stdin: &'a io::Stdin) -> Result<InputFileReader> {
+    pub(crate) fn get_reader<R: BufRead + 'a>(&self, stdin: R) -> Result<InputFileReader> {
         match self {
-            InputFile::StdIn(_) => Ok(InputFileReader::new(stdin.lock())),
+            InputFile::StdIn(_) => Ok(InputFileReader::new(stdin)),
             InputFile::Ordinary(ofile) => {
                 let file = File::open(ofile.path)
                     .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
