@@ -56,10 +56,8 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        let stdin = io::stdin();
-
         for input_file in self.config.files.iter() {
-            match input_file.get_reader(&stdin) {
+            match input_file.get_reader(io::stdin().lock()) {
                 Err(error) => {
                     handle_error(&error);
                     no_errors = false;

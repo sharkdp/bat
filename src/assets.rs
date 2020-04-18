@@ -271,7 +271,7 @@ mod tests {
             let syntax = self.assets.get_syntax(
                 None,
                 input_file,
-                &mut input_file.get_reader(&io::stdin()).unwrap(),
+                &mut input_file.get_reader(io::stdin().lock()).unwrap(),
                 &self.syntax_mapping,
             );
 
@@ -280,6 +280,17 @@ mod tests {
 
         fn syntax_for_file(&self, file_name: &str) -> String {
             self.syntax_for_file_with_content(file_name, "")
+        }
+
+        fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
+            let input_file = InputFile::StdIn(Some(OsStr::new(file_name)));
+            let syntax = self.assets.get_syntax(
+                None,
+                input_file,
+                &mut input_file.get_reader(content).unwrap(),
+                &self.syntax_mapping,
+            );
+            syntax.name.clone()
         }
     }
 
@@ -353,10 +364,10 @@ mod tests {
         let test = SyntaxDetectionTest::new();
 
         // from file extension
-        assert_eq!(test.syntax_for_file_with_content("test.cpp", ""), "C++");
+        assert_eq!(test.syntax_for_stdin_with_content("test.cpp", b"a"), "C++");
         // from first line (fallback)
         assert_eq!(
-            test.syntax_for_file_with_content("my_script", "#!/bin/bash"),
+            test.syntax_for_stdin_with_content("my_script", b"#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
     }
