@@ -237,7 +237,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     InputFile::Ordinary(ofile) => {
                         format!("file '{}'", &ofile.filename().to_string_lossy())
                     }
-                    InputFile::StdIn(Some(name)) => name.to_str().unwrap().to_string(),
+                    InputFile::StdIn(Some(name)) => name.to_string_lossy().into_owned(),
                     InputFile::StdIn(None) => "STDIN".to_owned(),
                     InputFile::ThemePreviewFile => "".to_owned(),
                 };
