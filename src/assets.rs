@@ -184,17 +184,8 @@ impl HighlightingAssets {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(ofile)) => {
                 let path = Path::new(ofile.filename());
-
                 let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-                let extension = path.extension().and_then(|x| x.to_str()).unwrap_or("");
-
-                let ext_syntax = self
-                    .syntax_set
-                    .find_syntax_by_extension(&file_name)
-                    .or_else(|| self.syntax_set.find_syntax_by_extension(&extension));
-                let line_syntax = String::from_utf8(reader.first_line.clone())
-                    .ok()
-                    .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l));
+                let line_syntax = self.get_first_line_syntax(reader);
 
                 let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
                 match mapping.get_syntax_for(absolute_path) {
@@ -204,30 +195,38 @@ impl HighlightingAssets {
                         self.syntax_set.find_syntax_by_name(syntax_name)
                     }
                     Some(MappingTarget::MapToUnknown) => line_syntax,
-                    None => ext_syntax.or(line_syntax),
+                    None => self.get_extension_syntax(file_name).or(line_syntax),
                 }
             }
             (None, InputFile::StdIn(None)) => String::from_utf8(reader.first_line.clone())
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
             (None, InputFile::StdIn(Some(file_name))) => self
-                .syntax_set
-                .find_syntax_by_extension(file_name.to_str().unwrap())
-                .or_else(|| {
-                    self.syntax_set.find_syntax_by_extension(
-                        Path::new(file_name)
-                            .extension()
-                            .and_then(|x| x.to_str())
-                            .unwrap_or(""),
-                    )
-                })
-                .or(String::from_utf8(reader.first_line.clone())
-                    .ok()
-                    .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))),
+                .get_extension_syntax(file_name.to_str().unwrap())
+                .or(self.get_first_line_syntax(reader)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
+    }
+
+    fn get_extension_syntax(&self, file_name: &str) -> Option<&SyntaxReference> {
+        self.syntax_set
+            .find_syntax_by_extension(file_name)
+            .or_else(|| {
+                self.syntax_set.find_syntax_by_extension(
+                    Path::new(file_name)
+                        .extension()
+                        .and_then(|x| x.to_str())
+                        .unwrap_or(""),
+                )
+            })
+    }
+
+    fn get_first_line_syntax(&self, reader: &mut InputFileReader) -> Option<&SyntaxReference> {
+        String::from_utf8(reader.first_line.clone())
+            .ok()
+            .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
     }
 }
 
