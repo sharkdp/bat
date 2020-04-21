@@ -4,7 +4,7 @@
 
 - Added a new `--file-name <name>…` option to overwrite the displayed filename(s)
   in the header. This is useful when piping input into `bat`. See #654 and #892 (@neuronull).
-- Added a new `--generate-config-file` option to creat an initial configuration file
+- Added a new `--generate-config-file` option to create an initial configuration file
   at the right place. See #870 (@jmick414)
 
 ## Bugfixes
