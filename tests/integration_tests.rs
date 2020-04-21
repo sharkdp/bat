@@ -632,12 +632,26 @@ fn filename_multiple_err() {
 #[test]
 fn file_with_invalid_utf8_filename() {
     use std::ffi::OsStr;
+    use std::fs::File;
+    use std::io::Write;
     use std::os::unix::ffi::OsStrExt;
 
+    use tempdir::TempDir;
+
+    let tmp_dir = TempDir::new("bat_test").expect("can create temporary directory");
+    let file_path = tmp_dir
+        .path()
+        .join(OsStr::from_bytes(b"test-invalid-utf8-\xC3(.rs"));
+    {
+        let mut file = File::create(&file_path).expect("can create temporary file");
+        writeln!(file, "dummy content").expect("can write to file");
+    }
+
     bat()
-        .arg(OsStr::from_bytes(b"test-invalid-utf8-\xC3(.rs"))
+        .arg(file_path.as_os_str())
         .assert()
-        .success();
+        .success()
+        .stdout("dummy content\n");
 }
 
 #[test]
