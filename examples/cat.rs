@@ -4,16 +4,14 @@ use bat::{PrettyPrinter, StyleComponent, StyleComponents};
 use console::Term;
 
 fn main() {
-    let mut printer = PrettyPrinter::new();
-
-    printer
+    PrettyPrinter::new()
         .term_width(Term::stdout().size().1 as usize)
         .style_components(StyleComponents::new(&[
             StyleComponent::Header,
             StyleComponent::Grid,
             StyleComponent::Numbers,
         ]))
-        .files(std::env::args_os().skip(1));
-
-    printer.run().expect("no errors");
+        .input_files(std::env::args_os().skip(1))
+        .run()
+        .expect("no errors");
 }

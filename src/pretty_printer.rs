@@ -33,14 +33,14 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Add a file which should be pretty-printed
-    pub fn file(&mut self, path: &OsStr) -> &mut Self {
+    pub fn input_file(&mut self, path: &OsStr) -> &mut Self {
         self.inputs
             .push(Input::Ordinary(OrdinaryFile::from_path(path)));
         self
     }
 
     /// Add multiple files which should be pretty-printed
-    pub fn files<I, P>(&mut self, paths: I) -> &mut Self
+    pub fn input_files<I, P>(&mut self, paths: I) -> &mut Self
     where
         I: IntoIterator<Item = P>,
         P: AsRef<OsStr>,
@@ -52,6 +52,7 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Specify the syntax file which should be used (default: auto-detect)
     pub fn language(&mut self, language: &'a str) -> &mut Self {
         self.config.language = Some(language);
         self
@@ -81,7 +82,7 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Configure style elements (grid, line numbers, ...)
+    /// Configure style elements like grid or  line numbers (default: "full" style)
     pub fn style_components(&mut self, components: StyleComponents) -> &mut Self {
         self.config.style_components = components;
         self
@@ -137,8 +138,14 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    pub fn run(self) -> Result<bool> {
+    /// Pretty-print all specified inputs. This method will drain all stored inputs.
+    /// If you want to call 'run' multiple times, you have to call the appropriate
+    /// input_* methods again.
+    pub fn run(&mut self) -> Result<bool> {
+        let mut inputs: Vec<Input> = vec![];
+        std::mem::swap(&mut inputs, &mut self.inputs);
+
         let controller = Controller::new(&self.config, &self.assets);
-        controller.run(self.inputs)
+        controller.run(inputs)
     }
 }
