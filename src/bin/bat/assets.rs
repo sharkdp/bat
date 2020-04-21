@@ -37,7 +37,7 @@ pub fn clear_assets() {
 pub fn assets_from_cache_or_binary() -> Result<HighlightingAssets> {
     let cache_dir = PROJECT_DIRS.cache_dir();
     if let Some(metadata) = AssetsMetadata::load_from_folder(&cache_dir)? {
-        if !metadata.is_compatible() {
+        if !metadata.is_compatible_with(crate_version!()) {
             return Err(format!(
                 "The binary caches for the user-customized syntaxes and themes \
                  in '{}' are not compatible with this version of bat ({}). To solve this, \

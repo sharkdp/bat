@@ -2,7 +2,6 @@ use std::fs::File;
 use std::path::Path;
 use std::time::SystemTime;
 
-use clap::crate_version;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
@@ -17,9 +16,9 @@ pub struct AssetsMetadata {
 const FILENAME: &'static str = "metadata.yaml";
 
 impl AssetsMetadata {
-    pub(crate) fn new() -> AssetsMetadata {
+    pub(crate) fn new(current_version: &str) -> AssetsMetadata {
         AssetsMetadata {
-            bat_version: Some(crate_version!().into()),
+            bat_version: Some(current_version.to_owned()),
             creation_time: Some(SystemTime::now()),
         }
     }
@@ -64,9 +63,9 @@ impl AssetsMetadata {
         }
     }
 
-    pub fn is_compatible(&self) -> bool {
+    pub fn is_compatible_with(&self, current_version: &str) -> bool {
         let current_version =
-            Version::parse(crate_version!()).expect("bat follows semantic versioning");
+            Version::parse(current_version).expect("bat follows semantic versioning");
         let stored_version = self
             .bat_version
             .as_ref()
