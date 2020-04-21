@@ -627,3 +627,20 @@ fn filename_multiple_err() {
         .assert()
         .failure();
 }
+
+#[test]
+fn do_not_panic_regression_tests() {
+    for filename in &[
+        "issue_28.md",
+        "issue_190.md",
+        "issue_314.hs",
+        "issue_914.rb",
+        "issue_915.vue",
+    ] {
+        bat()
+            .arg("--color=always")
+            .arg(&format!("regression_tests/{}", filename))
+            .assert()
+            .success();
+    }
+}
