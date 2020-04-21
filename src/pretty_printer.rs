@@ -1,10 +1,16 @@
 use std::ffi::OsStr;
 
 use crate::{
-    config::{Config, InputFile, OrdinaryFile, StyleComponents, WrappingMode},
+    config::{
+        Config, HighlightedLineRanges, InputFile, LineRanges, OrdinaryFile, StyleComponents,
+        SyntaxMapping, WrappingMode,
+    },
     errors::Result,
     Controller, HighlightingAssets,
 };
+
+#[cfg(feature = "paging")]
+use crate::config::PagingMode;
 
 pub struct PrettyPrinter<'a> {
     config: Config<'a>,
@@ -46,6 +52,11 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    pub fn language(&mut self, language: &'a str) -> &mut Self {
+        self.config.language = Some(language);
+        self
+    }
+
     /// The character width of the terminal (default: unlimited)
     pub fn term_width(&mut self, width: usize) -> &mut Self {
         self.config.term_width = width;
@@ -77,8 +88,52 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Text wrapping mode (default: do not wrap)
-    pub fn wrapping_mode(&mut self, wrapping_mode: WrappingMode) -> &mut Self {
-        self.config.wrapping_mode = wrapping_mode;
+    pub fn wrapping_mode(&mut self, mode: WrappingMode) -> &mut Self {
+        self.config.wrapping_mode = mode;
+        self
+    }
+
+    /// Whether or not to use ANSI italics (default: off)
+    pub fn use_italics(&mut self, yes: bool) -> &mut Self {
+        self.config.use_italic_text = yes;
+        self
+    }
+
+    /// If and how to use a pager (default: no paging)
+    #[cfg(feature = "paging")]
+    pub fn paging_mode(&mut self, mode: PagingMode) -> &mut Self {
+        self.config.paging_mode = mode;
+        self
+    }
+
+    /// Specify the command to start the pager (default: use "less")
+    #[cfg(feature = "paging")]
+    pub fn pager(&mut self, cmd: &'a str) -> &mut Self {
+        self.config.pager = Some(cmd);
+        self
+    }
+
+    /// Specify the lines that should be printed (default: all)
+    pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
+        self.config.line_ranges = ranges;
+        self
+    }
+
+    /// Specify which lines should be highlighted (default: none)
+    pub fn highlighted_lines(&mut self, ranges: HighlightedLineRanges) -> &mut Self {
+        self.config.highlighted_lines = ranges;
+        self
+    }
+
+    /// Specify the highlighting theme
+    pub fn theme(&mut self, theme: impl AsRef<str>) -> &mut Self {
+        self.config.theme = theme.as_ref().to_owned();
+        self
+    }
+
+    /// Specify custom file extension / file name to syntax mappings
+    pub fn syntax_mapping(&mut self, mapping: SyntaxMapping<'a>) -> &mut Self {
+        self.config.syntax_mapping = mapping;
         self
     }
 
