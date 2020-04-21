@@ -31,10 +31,10 @@ use crate::inputfile::{InputFile, InputFileReader};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::wrap::OutputWrap;
+use crate::wrap::WrappingMode;
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()>;
+    fn print_header(&mut self, handle: &mut dyn Write, file: &InputFile) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
 
     fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
@@ -57,7 +57,7 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut dyn Write, _file: InputFile) -> Result<()> {
+    fn print_header(&mut self, _handle: &mut dyn Write, _file: &InputFile) -> Result<()> {
         Ok(())
     }
 
@@ -101,7 +101,7 @@ impl<'a> InteractivePrinter<'a> {
     pub fn new(
         config: &'a Config,
         assets: &'a HighlightingAssets,
-        file: InputFile,
+        file: &InputFile,
         reader: &mut InputFileReader,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
@@ -230,7 +230,7 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut dyn Write, file: InputFile) -> Result<()> {
+    fn print_header(&mut self, handle: &mut dyn Write, file: &InputFile) -> Result<()> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
@@ -415,7 +415,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         // Line contents.
-        if self.config.output_wrap == OutputWrap::None {
+        if self.config.wrapping_mode == WrappingMode::NoWrapping {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;

@@ -1,4 +1,4 @@
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 
@@ -52,42 +52,44 @@ impl<'a> InputFileReader<'a> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct OrdinaryFile<'a> {
-    path: &'a OsStr,
-    user_provided_path: Option<&'a OsStr>,
+#[derive(Debug, Clone, PartialEq)]
+pub struct OrdinaryFile {
+    path: OsString,
+    user_provided_path: Option<OsString>,
 }
 
-impl<'a> OrdinaryFile<'a> {
-    pub fn from_path(path: &'a OsStr) -> OrdinaryFile<'a> {
+impl OrdinaryFile {
+    pub fn from_path(path: &OsStr) -> OrdinaryFile {
         OrdinaryFile {
-            path,
+            path: path.to_os_string(),
             user_provided_path: None,
         }
     }
 
-    pub fn set_provided_path(&mut self, user_provided_path: &'a OsStr) {
-        self.user_provided_path = Some(user_provided_path);
+    pub fn set_provided_path(&mut self, user_provided_path: &OsStr) {
+        self.user_provided_path = Some(user_provided_path.to_os_string());
     }
 
-    pub(crate) fn provided_path(&self) -> &'a OsStr {
-        self.user_provided_path.unwrap_or_else(|| self.path)
+    pub(crate) fn provided_path<'a>(&'a self) -> &'a OsStr {
+        self.user_provided_path
+            .as_ref()
+            .unwrap_or_else(|| &self.path)
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum InputFile<'a> {
-    StdIn(Option<&'a OsStr>),
-    Ordinary(OrdinaryFile<'a>),
+#[derive(Debug, Clone, PartialEq)]
+pub enum InputFile {
+    StdIn(Option<OsString>),
+    Ordinary(OrdinaryFile),
     ThemePreviewFile,
 }
 
-impl<'a> InputFile<'a> {
-    pub(crate) fn get_reader<R: BufRead + 'a>(&self, stdin: R) -> Result<InputFileReader> {
+impl InputFile {
+    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputFileReader<'a>> {
         match self {
             InputFile::StdIn(_) => Ok(InputFileReader::new(stdin)),
             InputFile::Ordinary(ofile) => {
-                let file = File::open(ofile.path)
+                let file = File::open(&ofile.path)
                     .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
 
                 if file.metadata()?.is_dir() {

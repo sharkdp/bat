@@ -65,15 +65,15 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, *input_file)
+                        self.print_file(reader, &mut printer, writer, input_file)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
                             &self.assets,
-                            *input_file,
+                            input_file,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, *input_file)
+                        self.print_file(reader, &mut printer, writer, input_file)
                     };
 
                     if let Err(error) = result {
@@ -92,7 +92,7 @@ impl<'b> Controller<'b> {
         reader: InputFileReader,
         printer: &mut P,
         writer: &mut dyn Write,
-        input_file: InputFile<'a>,
+        input_file: &InputFile,
     ) -> Result<()> {
         if !reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input_file)?;
