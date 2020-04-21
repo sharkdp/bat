@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::Path;
@@ -183,8 +184,7 @@ impl HighlightingAssets {
         let syntax = match (language, file) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, InputFile::Ordinary(ofile)) => {
-                let path = Path::new(ofile.filename());
-                let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                let path = Path::new(ofile.provided_path());
                 let line_syntax = self.get_first_line_syntax(reader);
 
                 let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
@@ -195,14 +195,17 @@ impl HighlightingAssets {
                         self.syntax_set.find_syntax_by_name(syntax_name)
                     }
                     Some(MappingTarget::MapToUnknown) => line_syntax,
-                    None => self.get_extension_syntax(file_name).or(line_syntax),
+                    None => {
+                        let file_name = path.file_name().unwrap_or_default();
+                        self.get_extension_syntax(file_name).or(line_syntax)
+                    }
                 }
             }
             (None, InputFile::StdIn(None)) => String::from_utf8(reader.first_line.clone())
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
             (None, InputFile::StdIn(Some(file_name))) => self
-                .get_extension_syntax(file_name.to_str().unwrap())
+                .get_extension_syntax(file_name)
                 .or(self.get_first_line_syntax(reader)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
         };
@@ -210,15 +213,15 @@ impl HighlightingAssets {
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
     }
 
-    fn get_extension_syntax(&self, file_name: &str) -> Option<&SyntaxReference> {
+    fn get_extension_syntax(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
         self.syntax_set
-            .find_syntax_by_extension(file_name)
+            .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
             .or_else(|| {
                 self.syntax_set.find_syntax_by_extension(
                     Path::new(file_name)
                         .extension()
                         .and_then(|x| x.to_str())
-                        .unwrap_or(""),
+                        .unwrap_or_default(),
                 )
             })
     }
@@ -259,14 +262,14 @@ mod tests {
             }
         }
 
-        fn syntax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
+        fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             {
                 let mut temp_file = File::create(&file_path).unwrap();
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input_file = InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(&file_path)));
+            let input_file = InputFile::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
             let syntax = self.assets.get_syntax(
                 None,
                 input_file,
@@ -275,6 +278,14 @@ mod tests {
             );
 
             syntax.name.clone()
+        }
+
+        fn syntax_for_file_os(&self, file_name: &OsStr) -> String {
+            self.syntax_for_file_with_content_os(file_name, "")
+        }
+
+        fn syntax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
+            self.syntax_for_file_with_content_os(OsStr::new(file_name), first_line)
         }
 
         fn syntax_for_file(&self, file_name: &str) -> String {
@@ -306,6 +317,19 @@ mod tests {
         );
         assert_eq!(test.syntax_for_file(".bashrc"), "Bourne Again Shell (bash)");
         assert_eq!(test.syntax_for_file("Makefile"), "Makefile");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn syntax_detection_invalid_utf8() {
+        use std::os::unix::ffi::OsStrExt;
+
+        let test = SyntaxDetectionTest::new();
+
+        assert_eq!(
+            test.syntax_for_file_os(OsStr::from_bytes(b"invalid_\xFEutf8_filename.rs")),
+            "Rust"
+        );
     }
 
     #[test]

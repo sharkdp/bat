@@ -55,26 +55,23 @@ impl<'a> InputFileReader<'a> {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct OrdinaryFile<'a> {
     path: &'a OsStr,
-    user_provided_name: Option<&'a OsStr>,
+    user_provided_path: Option<&'a OsStr>,
 }
 
 impl<'a> OrdinaryFile<'a> {
     pub fn from_path(path: &'a OsStr) -> OrdinaryFile<'a> {
         OrdinaryFile {
             path,
-            user_provided_name: None,
+            user_provided_path: None,
         }
     }
 
-    pub fn from_path_with_name(path: &'a OsStr, user_provided_name: &'a OsStr) -> OrdinaryFile<'a> {
-        OrdinaryFile {
-            path,
-            user_provided_name: Some(user_provided_name),
-        }
+    pub fn set_provided_path(&mut self, user_provided_path: &'a OsStr) {
+        self.user_provided_path = Some(user_provided_path);
     }
 
-    pub(crate) fn filename(&self) -> &'a OsStr {
-        self.user_provided_name.unwrap_or_else(|| self.path)
+    pub(crate) fn provided_path(&self) -> &'a OsStr {
+        self.user_provided_path.unwrap_or_else(|| self.path)
     }
 }
 
