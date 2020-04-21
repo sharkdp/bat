@@ -2,7 +2,7 @@ use std::ffi::OsStr;
 
 use crate::{
     config::{
-        Config, HighlightedLineRanges, InputFile, LineRanges, OrdinaryFile, StyleComponents,
+        Config, HighlightedLineRanges, Input, LineRanges, OrdinaryFile, StyleComponents,
         SyntaxMapping, WrappingMode,
     },
     errors::Result,
@@ -13,7 +13,7 @@ use crate::{
 use crate::config::PagingMode;
 
 pub struct PrettyPrinter<'a> {
-    inputs: Vec<InputFile>,
+    inputs: Vec<Input>,
     config: Config<'a>,
     assets: HighlightingAssets,
 }
@@ -35,7 +35,7 @@ impl<'a> PrettyPrinter<'a> {
     /// Add a file which should be pretty-printed
     pub fn file(&mut self, path: &OsStr) -> &mut Self {
         self.inputs
-            .push(InputFile::Ordinary(OrdinaryFile::from_path(path)));
+            .push(Input::Ordinary(OrdinaryFile::from_path(path)));
         self
     }
 
@@ -47,7 +47,7 @@ impl<'a> PrettyPrinter<'a> {
     {
         for path in paths {
             self.inputs
-                .push(InputFile::Ordinary(OrdinaryFile::from_path(path.as_ref())));
+                .push(Input::Ordinary(OrdinaryFile::from_path(path.as_ref())));
         }
         self
     }

@@ -26,7 +26,7 @@ use clap::crate_version;
 use directories::PROJECT_DIRS;
 
 use bat::{
-    config::{Config, InputFile, OrdinaryFile, StyleComponent, StyleComponents},
+    config::{Config, Input, OrdinaryFile, StyleComponent, StyleComponents},
     errors::*,
     Controller, HighlightingAssets,
 };
@@ -134,7 +134,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![InputFile::ThemePreviewFile])
+                .run(vec![Input::ThemePreviewFile])
                 .ok();
             writeln!(stdout)?;
         }
@@ -147,7 +147,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     Ok(())
 }
 
-fn run_controller(inputs: Vec<InputFile>, config: &Config) -> Result<bool> {
+fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
     let assets = assets_from_cache_or_binary()?;
     let controller = Controller::new(&config, &assets);
     controller.run(inputs)
@@ -167,10 +167,10 @@ fn run() -> Result<bool> {
                 run_cache_subcommand(cache_matches)?;
                 Ok(true)
             } else {
-                let inputs = vec![InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(
+                let inputs = vec![Input::Ordinary(OrdinaryFile::from_path(OsStr::new(
                     "cache",
                 )))];
-                let mut config = app.config(&inputs)?;
+                let config = app.config(&inputs)?;
 
                 run_controller(inputs, &config)
             }

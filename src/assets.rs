@@ -10,7 +10,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets_metadata::AssetsMetadata;
 use crate::errors::*;
-use crate::inputfile::{InputFile, InputFileReader};
+use crate::input::{Input, InputReader};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
@@ -188,13 +188,13 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
-        file: &InputFile,
-        reader: &mut InputFileReader,
+        file: &Input,
+        reader: &mut InputReader,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
         let syntax = match (language, file) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
-            (None, InputFile::Ordinary(ofile)) => {
+            (None, Input::Ordinary(ofile)) => {
                 let path = Path::new(ofile.provided_path());
                 let line_syntax = self.get_first_line_syntax(reader);
 
@@ -212,14 +212,14 @@ impl HighlightingAssets {
                     }
                 }
             }
-            (None, InputFile::StdIn(None)) => String::from_utf8(reader.first_line.clone())
+            (None, Input::StdIn(None)) => String::from_utf8(reader.first_line.clone())
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
-            (None, InputFile::StdIn(Some(file_name))) => self
+            (None, Input::StdIn(Some(file_name))) => self
                 .get_extension_syntax(&file_name)
                 .or(self.get_first_line_syntax(reader)),
-            (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
-            (None, InputFile::FromReader(s, _)) => None,
+            (_, Input::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
+            (None, Input::FromReader(_, _)) => unimplemented!(),
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
@@ -238,7 +238,7 @@ impl HighlightingAssets {
             })
     }
 
-    fn get_first_line_syntax(&self, reader: &mut InputFileReader) -> Option<&SyntaxReference> {
+    fn get_first_line_syntax(&self, reader: &mut InputReader) -> Option<&SyntaxReference> {
         String::from_utf8(reader.first_line.clone())
             .ok()
             .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
@@ -249,7 +249,7 @@ impl HighlightingAssets {
 mod tests {
     use super::*;
 
-    use crate::inputfile::OrdinaryFile;
+    use crate::input::OrdinaryFile;
 
     use std::ffi::{OsStr, OsString};
     use std::fs::File;
@@ -281,11 +281,11 @@ mod tests {
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input_file = InputFile::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
+            let input = Input::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
             let syntax = self.assets.get_syntax(
                 None,
-                &input_file,
-                &mut input_file.get_reader(io::stdin().lock()).unwrap(),
+                &input,
+                &mut input.get_reader(io::stdin().lock()).unwrap(),
                 &self.syntax_mapping,
             );
 
@@ -305,11 +305,11 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let input_file = InputFile::StdIn(Some(OsString::from(file_name)));
+            let input = Input::StdIn(Some(OsString::from(file_name)));
             let syntax = self.assets.get_syntax(
                 None,
-                &input_file,
-                &mut input_file.get_reader(content).unwrap(),
+                &input,
+                &mut input.get_reader(content).unwrap(),
                 &self.syntax_mapping,
             );
             syntax.name.clone()
