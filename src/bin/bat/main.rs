@@ -22,13 +22,13 @@ use crate::{
     config::{config_file, generate_config_file},
 };
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
-use bat::Controller;
+use clap::crate_version;
 use directories::PROJECT_DIRS;
 
 use bat::{
     config::{Config, InputFile, OrdinaryFile, StyleComponent, StyleComponents},
     errors::*,
-    HighlightingAssets,
+    Controller, HighlightingAssets,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
@@ -45,7 +45,7 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
         let blank = matches.is_present("blank");
 
         let assets = HighlightingAssets::from_files(source_dir, !blank)?;
-        assets.save_to_cache(target_dir)?;
+        assets.save_to_cache(target_dir, crate_version!())?;
     } else if matches.is_present("clear") {
         clear_assets();
     }

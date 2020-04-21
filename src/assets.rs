@@ -117,7 +117,7 @@ impl HighlightingAssets {
         }
     }
 
-    pub fn save_to_cache(&self, target_dir: &Path) -> Result<()> {
+    pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
         let theme_set_path = target_dir.join("themes.bin");
         let syntax_set_path = target_dir.join("syntaxes.bin");
@@ -150,7 +150,7 @@ impl HighlightingAssets {
             "Writing metadata to folder {} ... ",
             target_dir.to_string_lossy()
         );
-        AssetsMetadata::new().save_to_folder(target_dir)?;
+        AssetsMetadata::new(current_version).save_to_folder(target_dir)?;
         println!("okay");
 
         Ok(())
