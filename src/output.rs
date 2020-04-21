@@ -82,28 +82,16 @@ impl OutputType {
                             p.arg("--quit-if-one-screen");
                         }
 
-                        let less_version = retrieve_less_version();
-
                         // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                         // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                         //
                         // See: http://www.greenwoodsoftware.com/less/news.530.html
-                        match less_version {
+                        match retrieve_less_version() {
                             None => {
                                 p.arg("--no-init");
                             }
                             Some(version) if version < 530 => {
                                 p.arg("--no-init");
-                            }
-                            _ => {}
-                        }
-
-                        // Passing '--mouse' allows mouse scrolling in terminals which do not
-                        // support "fake scrolling", see https://github.com/sharkdp/bat/issues/904
-                        // The '--mouse' argument is only supported in less 551 or higher.
-                        match less_version {
-                            Some(version) if version >= 551 => {
-                                p.arg("--mouse");
                             }
                             _ => {}
                         }
