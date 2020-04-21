@@ -5,8 +5,9 @@ use std::ffi::OsStr;
 fn main() {
     let path_to_this_file = OsStr::new(file!());
 
-    PrettyPrinter::new()
-        .file(path_to_this_file)
-        .run()
-        .expect("no errors");
+    let mut printer = PrettyPrinter::new();
+
+    printer.file(path_to_this_file);
+
+    printer.run().expect("no errors");
 }

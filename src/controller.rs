@@ -20,11 +20,15 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
-    pub fn run(&self) -> Result<bool> {
-        self.run_with_error_handler(default_error_handler)
+    pub fn run(&self, inputs: Vec<InputFile>) -> Result<bool> {
+        self.run_with_error_handler(inputs, default_error_handler)
     }
 
-    pub fn run_with_error_handler(&self, handle_error: impl Fn(&Error)) -> Result<bool> {
+    pub fn run_with_error_handler(
+        &self,
+        inputs: Vec<InputFile>,
+        handle_error: impl Fn(&Error),
+    ) -> Result<bool> {
         let mut output_type;
 
         #[cfg(feature = "paging")]
@@ -34,7 +38,7 @@ impl<'b> Controller<'b> {
             // Do not launch the pager if NONE of the input files exist
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
-                let call_pager = self.config.files.iter().any(|file| {
+                let call_pager = inputs.iter().any(|file| {
                     if let InputFile::Ordinary(ofile) = file {
                         return Path::new(ofile.provided_path()).exists();
                     } else {
@@ -56,7 +60,7 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        for input_file in self.config.files.iter() {
+        for input_file in inputs.into_iter() {
             match input_file.get_reader(io::stdin().lock()) {
                 Err(error) => {
                     handle_error(&error);
@@ -65,15 +69,15 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, input_file)
+                        self.print_file(reader, &mut printer, writer, &input_file)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
                             &self.assets,
-                            input_file,
+                            &input_file,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, input_file)
+                        self.print_file(reader, &mut printer, writer, &input_file)
                     };
 
                     if let Err(error) = result {

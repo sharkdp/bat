@@ -22,9 +22,6 @@ impl Default for PagingMode {
 
 #[derive(Debug, Clone, Default)]
 pub struct Config<'a> {
-    /// List of files to print
-    pub files: Vec<InputFile>,
-
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
 
