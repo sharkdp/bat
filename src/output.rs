@@ -100,12 +100,16 @@ impl OutputType {
 
                         // Passing '--mouse' allows mouse scrolling in terminals which do not
                         // support "fake scrolling", see https://github.com/sharkdp/bat/issues/904
-                        // The '--mouse' argument is only supported in less 551 or higher.
-                        match less_version {
-                            Some(version) if version >= 551 => {
-                                p.arg("--mouse");
+                        // The '--mouse' argument is only supported in less 551 or higher. We do
+                        // not enable this option everywhere because it prevents users from
+                        // drag-selecting text without pressing shift.
+                        if env::var_os("TMUX").is_some() {
+                            match less_version {
+                                Some(version) if version >= 551 => {
+                                    p.arg("--mouse");
+                                }
+                                _ => {}
                             }
-                            _ => {}
                         }
                     } else {
                         p.args(args);
