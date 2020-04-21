@@ -8,6 +8,7 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
+use crate::assets_metadata::AssetsMetadata;
 use crate::errors::*;
 use crate::inputfile::{InputFile, InputFileReader};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
@@ -68,8 +69,11 @@ impl HighlightingAssets {
         })
     }
 
-    pub fn from_cache(theme_set_path: &Path, syntax_set_path: &Path) -> Result<Self> {
-        let syntax_set_file = File::open(syntax_set_path).chain_err(|| {
+    pub fn from_cache(cache_path: &Path) -> Result<Self> {
+        let syntax_set_path = cache_path.join("syntaxes.bin");
+        let theme_set_path = cache_path.join("themes.bin");
+
+        let syntax_set_file = File::open(&syntax_set_path).chain_err(|| {
             format!(
                 "Could not load cached syntax set '{}'",
                 syntax_set_path.to_string_lossy()
@@ -140,6 +144,13 @@ impl HighlightingAssets {
                 syntax_set_path.to_string_lossy()
             )
         })?;
+        println!("okay");
+
+        print!(
+            "Writing metadata to folder {} ... ",
+            target_dir.to_string_lossy()
+        );
+        AssetsMetadata::new().save_to_folder(target_dir)?;
         println!("okay");
 
         Ok(())

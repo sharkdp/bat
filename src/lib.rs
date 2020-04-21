@@ -2,6 +2,7 @@
 #![recursion_limit = "1024"]
 
 pub(crate) mod assets;
+pub(crate) mod assets_metadata;
 pub mod config;
 pub(crate) mod controller;
 mod decorations;
@@ -19,5 +20,6 @@ mod terminal;
 pub(crate) mod wrap;
 
 pub use assets::HighlightingAssets;
+pub use assets_metadata::AssetsMetadata;
 pub use controller::Controller;
 pub use printer::{InteractivePrinter, Printer, SimplePrinter};
