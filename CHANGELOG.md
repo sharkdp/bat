@@ -16,6 +16,10 @@
 
 ## Other
 
+- When saving/reading user-provided syntaxes or themes, `bat` will now maintain a
+  `metadata.yaml` file which includes information about the `bat` version which was
+  used to create the cached files. When loading cached files, we now print an error
+  if they have been created with an incompatible version. See #882
 - Updated `liquid` dependency to 0.20, see #880 (@ignatenkobrain)
 
 ## `bat` as a library

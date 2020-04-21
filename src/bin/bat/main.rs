@@ -54,7 +54,7 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 }
 
 pub fn list_languages(config: &Config) -> Result<()> {
-    let assets = assets_from_cache_or_binary();
+    let assets = assets_from_cache_or_binary()?;
     let mut languages = assets
         .syntaxes()
         .iter()
@@ -116,7 +116,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
-    let assets = assets_from_cache_or_binary();
+    let assets = assets_from_cache_or_binary()?;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
@@ -147,7 +147,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 }
 
 fn run_controller(config: &Config) -> Result<bool> {
-    let assets = assets_from_cache_or_binary();
+    let assets = assets_from_cache_or_binary()?;
     let controller = Controller::new(&config, &assets);
     controller.run()
 }
