@@ -71,27 +71,34 @@ _bat_wrapper_:run() {
 }
 
 _bat_wrapper_function_:run() {
-	case "$("$SHELL" --version | head -n 1)" in
-		*fish*)
-			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &> /dev/null; then
-				_out_fence "$SHELL" --login -c 'functions bat'
-				return
-			fi
-			;;
+	_bat_wrapper_function_:detect_wrapper() {
+		local command="$1"
+		case "$("$SHELL" --version | head -n 1)" in
+			*fish*)
+				if "$SHELL" --login -i -c "type ${command}" 2>&1 | grep 'function' &>/dev/null; then
+					_out_fence "$SHELL" --login -i -c "functions ${command}"
+					return
+				fi ;;
 
-		*bash* | *zsh*)
-			if "$SHELL" --login -i -c 'type bat' 2>&1 | grep 'function' &> /dev/null; then
-				_out_fence "$SHELL" --login -i -c 'declare -f bat'
-				return
-			fi
-			;;
+			*bash*|*zsh*)
+				local type="$("$SHELL" --login -i -c "type ${command}" 2>&1)"
+				if grep 'function' <<< "$type" &>/dev/null; then
+					_out_fence "$SHELL" --login -i -c "declare -f ${command}"
+					return
+				elif grep 'alias' <<< "$type" &>/dev/null; then
+					_out_fence "$SHELL" --login -i -c "type ${command}"
+					return
+				fi ;;
 
-		*)
-			echo "Unable to determine if a wrapper function is set."
-			return
-			;;
-	esac
-	printf "\nNo wrapper function.\n"
+			*)
+				echo "Unable to determine if a wrapper function for '${command}' is set."
+				return ;;
+		esac
+		printf "\nNo wrapper function for '%s'.\n" "${command}"
+	}
+
+	_bat_wrapper_function_:detect_wrapper bat
+	_bat_wrapper_function_:detect_wrapper cat
 }
 
 _system_:run() {
