@@ -1,6 +1,6 @@
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Read};
 
 use content_inspector::{self, ContentType};
 
@@ -77,10 +77,10 @@ impl OrdinaryFile {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
 pub enum InputFile {
     StdIn(Option<OsString>),
     Ordinary(OrdinaryFile),
+    FromReader(Box<dyn Read>, Option<OsString>),
     ThemePreviewFile,
 }
 
@@ -101,6 +101,7 @@ impl InputFile {
                 Ok(InputFileReader::new(BufReader::new(file)))
             }
             InputFile::ThemePreviewFile => Ok(InputFileReader::new(THEME_PREVIEW_FILE)),
+            InputFile::FromReader(reader, _) => unimplemented!(), //Ok(InputFileReader::new(BufReader::new(reader))),
         }
     }
 }

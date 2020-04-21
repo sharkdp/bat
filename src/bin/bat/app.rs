@@ -73,8 +73,7 @@ impl App {
         Ok(clap_app::build_app(interactive_output).get_matches_from(args))
     }
 
-    pub fn config(&self) -> Result<Config> {
-        let files = self.files()?;
+    pub fn config(&self, inputs: &[InputFile]) -> Result<Config> {
         let style_components = self.style_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
@@ -84,7 +83,13 @@ impl App {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
-                } else if files.contains(&InputFile::StdIn(None)) {
+                } else if inputs.iter().any(|f| {
+                    if let InputFile::StdIn(None) = f {
+                        true
+                    } else {
+                        false
+                    }
+                }) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
@@ -170,7 +175,6 @@ impl App {
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
                 || self.matches.value_of("decorations") == Some("always")),
-            files,
             tab_width: self
                 .matches
                 .value_of("tabs")
@@ -222,7 +226,7 @@ impl App {
         })
     }
 
-    fn files(&self) -> Result<Vec<InputFile>> {
+    pub fn inputs(&self) -> Result<Vec<InputFile>> {
         // verify equal length of file-names and input FILEs
         match self.matches.values_of("file-name") {
             Some(ref filenames)

@@ -13,6 +13,7 @@ use crate::{
 use crate::config::PagingMode;
 
 pub struct PrettyPrinter<'a> {
+    inputs: Vec<InputFile>,
     config: Config<'a>,
     assets: HighlightingAssets,
 }
@@ -25,6 +26,7 @@ impl<'a> PrettyPrinter<'a> {
         config.true_color = true;
 
         PrettyPrinter {
+            inputs: vec![],
             config,
             assets: HighlightingAssets::from_binary(),
         }
@@ -32,8 +34,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Add a file which should be pretty-printed
     pub fn file(&mut self, path: &OsStr) -> &mut Self {
-        self.config
-            .files
+        self.inputs
             .push(InputFile::Ordinary(OrdinaryFile::from_path(path)));
         self
     }
@@ -45,8 +46,7 @@ impl<'a> PrettyPrinter<'a> {
         P: AsRef<OsStr>,
     {
         for path in paths {
-            self.config
-                .files
+            self.inputs
                 .push(InputFile::Ordinary(OrdinaryFile::from_path(path.as_ref())));
         }
         self
@@ -137,8 +137,8 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    pub fn run(&'a self) -> Result<bool> {
+    pub fn run(self) -> Result<bool> {
         let controller = Controller::new(&self.config, &self.assets);
-        controller.run()
+        controller.run(self.inputs)
     }
 }

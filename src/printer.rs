@@ -243,6 +243,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     ),
                     InputFile::StdIn(None) => "STDIN".to_owned(),
                     InputFile::ThemePreviewFile => "".to_owned(),
+                    InputFile::FromReader(_, Some(name)) => {
+                        format!("file '{}'", name.to_string_lossy())
+                    }
+                    InputFile::FromReader(_, None) => "READER".to_owned(),
                 };
 
                 writeln!(
@@ -286,6 +290,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
             InputFile::StdIn(None) => ("File: ", Cow::from("STDIN".to_owned())),
             InputFile::ThemePreviewFile => ("", Cow::from("")),
+            InputFile::FromReader(_, Some(name)) => {
+                ("File: ", Cow::from(name.to_string_lossy().to_owned()))
+            }
+            InputFile::FromReader(_, None) => ("File: ", Cow::from("READER".to_owned())),
         };
 
         let mode = match self.content_type {

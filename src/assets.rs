@@ -219,6 +219,7 @@ impl HighlightingAssets {
                 .get_extension_syntax(&file_name)
                 .or(self.get_first_line_syntax(reader)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
+            (None, InputFile::FromReader(s, _)) => None,
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())

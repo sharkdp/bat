@@ -120,7 +120,6 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
-    config.files = vec![InputFile::ThemePreviewFile];
     config.style_components = StyleComponents(style);
 
     let stdout = io::stdout();
@@ -134,7 +133,9 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
                 Style::new().bold().paint(theme.to_string())
             )?;
             config.theme = theme.to_string();
-            let _controller = Controller::new(&config, &assets).run();
+            Controller::new(&config, &assets)
+                .run(vec![InputFile::ThemePreviewFile])
+                .ok();
             writeln!(stdout)?;
         }
     } else {
@@ -146,10 +147,10 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     Ok(())
 }
 
-fn run_controller(config: &Config) -> Result<bool> {
+fn run_controller(inputs: Vec<InputFile>, config: &Config) -> Result<bool> {
     let assets = assets_from_cache_or_binary()?;
     let controller = Controller::new(&config, &assets);
-    controller.run()
+    controller.run(inputs)
 }
 
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Ok(true)` on full success and
@@ -166,16 +167,17 @@ fn run() -> Result<bool> {
                 run_cache_subcommand(cache_matches)?;
                 Ok(true)
             } else {
-                let mut config = app.config()?;
-                config.files = vec![InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(
+                let inputs = vec![InputFile::Ordinary(OrdinaryFile::from_path(OsStr::new(
                     "cache",
                 )))];
+                let mut config = app.config(&inputs)?;
 
-                run_controller(&config)
+                run_controller(inputs, &config)
             }
         }
         _ => {
-            let config = app.config()?;
+            let inputs = app.inputs()?;
+            let config = app.config(&inputs)?;
 
             if app.matches.is_present("list-languages") {
                 list_languages(&config)?;
@@ -196,7 +198,7 @@ fn run() -> Result<bool> {
                 writeln!(io::stdout(), "{}", cache_dir())?;
                 Ok(true)
             } else {
-                run_controller(&config)
+                run_controller(inputs, &config)
             }
         }
     }
