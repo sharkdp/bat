@@ -6,6 +6,8 @@
   in the header. This is useful when piping input into `bat`. See #654 and #892 (@neuronull).
 - Added a new `--generate-config-file` option to creat an initial configuration file
   at the right place. See #870 (@jmick414)
+- When using `less` version 551 or newer, `bat` will now pass the `--mouse` argument, allowing
+  for (better) mouse scrolling support in some terminals, see #904
 
 ## Bugfixes
 
