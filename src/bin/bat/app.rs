@@ -264,9 +264,10 @@ impl App {
                 if input.to_str().unwrap() == "-" {
                     file_input.push(InputFile::StdIn(name));
                 } else {
-                    let ofile = name.map_or(OrdinaryFile::from_path(input), |n| {
-                        OrdinaryFile::from_path_with_name(input, n)
-                    });
+                    let mut ofile = OrdinaryFile::from_path(input);
+                    if let Some(path) = name {
+                        ofile.set_provided_path(path);
+                    }
                     file_input.push(InputFile::Ordinary(ofile))
                 }
             }

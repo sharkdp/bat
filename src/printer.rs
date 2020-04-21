@@ -161,7 +161,7 @@ impl<'a> InteractivePrinter<'a> {
             {
                 if config.style_components.changes() {
                     if let InputFile::Ordinary(ofile) = file {
-                        line_changes = get_git_diff(ofile.filename());
+                        line_changes = get_git_diff(ofile.provided_path());
                     }
                 }
             }
@@ -235,7 +235,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 let input = match file {
                     InputFile::Ordinary(ofile) => {
-                        format!("file '{}'", &ofile.filename().to_string_lossy())
+                        format!("file '{}'", &ofile.provided_path().to_string_lossy())
                     }
                     InputFile::StdIn(Some(name)) => name.to_string_lossy().into_owned(),
                     InputFile::StdIn(None) => "STDIN".to_owned(),
@@ -276,7 +276,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let (prefix, name) = match file {
             InputFile::Ordinary(ofile) => (
                 "File: ",
-                Cow::from(ofile.filename().to_string_lossy().to_owned()),
+                Cow::from(ofile.provided_path().to_string_lossy().to_owned()),
             ),
             InputFile::StdIn(Some(name)) => {
                 ("File: ", Cow::from(name.to_string_lossy().to_owned()))
