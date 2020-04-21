@@ -1,5 +1,18 @@
 # Upcoming release
 
+
+## Features
+## Bugfixes
+## Other
+## `bat` as a library
+## New syntaxes
+## New themes
+
+## Packaging
+
+
+# v0.14.0
+
 ## Features
 
 - Added a new `--file-name <name>…` option to overwrite the displayed filename(s)
@@ -13,6 +26,7 @@
 - Performance problems with Makefiles have been fixed, see #750 (@keith-hall)
 - Fig bux when highlighting Ruby files with unindented heredocs, see #914 (@keith-hall)
 - A highlighting problem with Rust source code has been fixed, see #924 (@keith-hall)
+- Windows: short files that do not require paging are displayed and then lost, see #887
 
 ## Other
 
@@ -31,7 +45,7 @@
   `Cargo.toml` should disable this feature to cut out inapplicable heavy dependencies:
   ``` toml
   [dependencies]
-  bat = { version = "0.13", default-features = false }
+  bat = { version = "0.14", default-features = false }
   ```
   Other optional functionality has also been put behind features: `paging` and `git` support.
 - Allow using the library with older syntect, see #896 and #898 (@dtolnay)
@@ -40,11 +54,6 @@
 
 - Rego, see #872 (@patrick-east)
 - Stylo, see #917
-
-## New themes
-
-## Packaging
-
 
 
 # v0.13.0
