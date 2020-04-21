@@ -86,11 +86,16 @@ impl OutputType {
                         // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                         //
                         // See: http://www.greenwoodsoftware.com/less/news.530.html
+                        //
+                        // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
+                        // is not needed anymore.
                         match retrieve_less_version() {
                             None => {
                                 p.arg("--no-init");
                             }
-                            Some(version) if version < 530 => {
+                            Some(version)
+                                if (version < 530 || (cfg!(windows) && version < 558)) =>
+                            {
                                 p.arg("--no-init");
                             }
                             _ => {}
