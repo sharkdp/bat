@@ -8,14 +8,14 @@ use crate::errors::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
-pub struct InputFileReader<'a> {
+pub struct InputReader<'a> {
     inner: Box<dyn BufRead + 'a>,
     pub(crate) first_line: Vec<u8>,
     pub(crate) content_type: Option<ContentType>,
 }
 
-impl<'a> InputFileReader<'a> {
-    fn new<R: BufRead + 'a>(mut reader: R) -> InputFileReader<'a> {
+impl<'a> InputReader<'a> {
+    fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
         let mut first_line = vec![];
         reader.read_until(b'\n', &mut first_line).ok();
 
@@ -29,7 +29,7 @@ impl<'a> InputFileReader<'a> {
             reader.read_until(0x00, &mut first_line).ok();
         }
 
-        InputFileReader {
+        InputReader {
             inner: Box::new(reader),
             first_line,
             content_type,
@@ -77,18 +77,18 @@ impl OrdinaryFile {
     }
 }
 
-pub enum InputFile {
+pub enum Input {
     StdIn(Option<OsString>),
     Ordinary(OrdinaryFile),
     FromReader(Box<dyn Read>, Option<OsString>),
     ThemePreviewFile,
 }
 
-impl InputFile {
-    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputFileReader<'a>> {
+impl Input {
+    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputReader<'a>> {
         match self {
-            InputFile::StdIn(_) => Ok(InputFileReader::new(stdin)),
-            InputFile::Ordinary(ofile) => {
+            Input::StdIn(_) => Ok(InputReader::new(stdin)),
+            Input::Ordinary(ofile) => {
                 let file = File::open(&ofile.path)
                     .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
 
@@ -98,10 +98,10 @@ impl InputFile {
                     );
                 }
 
-                Ok(InputFileReader::new(BufReader::new(file)))
+                Ok(InputReader::new(BufReader::new(file)))
             }
-            InputFile::ThemePreviewFile => Ok(InputFileReader::new(THEME_PREVIEW_FILE)),
-            InputFile::FromReader(reader, _) => unimplemented!(), //Ok(InputFileReader::new(BufReader::new(reader))),
+            Input::ThemePreviewFile => Ok(InputReader::new(THEME_PREVIEW_FILE)),
+            Input::FromReader(_, _) => unimplemented!(), //Ok(InputReader::new(BufReader::new(reader))),
         }
     }
 }
@@ -109,7 +109,7 @@ impl InputFile {
 #[test]
 fn basic() {
     let content = b"#!/bin/bash\necho hello";
-    let mut reader = InputFileReader::new(&content[..]);
+    let mut reader = InputReader::new(&content[..]);
 
     assert_eq!(b"#!/bin/bash\n", &reader.first_line[..]);
 
@@ -138,7 +138,7 @@ fn basic() {
 #[test]
 fn utf16le() {
     let content = b"\xFF\xFE\x73\x00\x0A\x00\x64\x00";
-    let mut reader = InputFileReader::new(&content[..]);
+    let mut reader = InputReader::new(&content[..]);
 
     assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &reader.first_line[..]);
 

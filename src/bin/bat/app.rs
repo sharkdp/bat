@@ -15,8 +15,8 @@ use console::Term;
 
 use bat::{
     config::{
-        Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget,
-        OrdinaryFile, PagingMode, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
+        Config, HighlightedLineRanges, Input, LineRange, LineRanges, MappingTarget, OrdinaryFile,
+        PagingMode, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
     },
     errors::*,
     HighlightingAssets,
@@ -73,7 +73,7 @@ impl App {
         Ok(clap_app::build_app(interactive_output).get_matches_from(args))
     }
 
-    pub fn config(&self, inputs: &[InputFile]) -> Result<Config> {
+    pub fn config(&self, inputs: &[Input]) -> Result<Config> {
         let style_components = self.style_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
@@ -84,7 +84,7 @@ impl App {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
                 } else if inputs.iter().any(|f| {
-                    if let InputFile::StdIn(None) = f {
+                    if let Input::StdIn(None) = f {
                         true
                     } else {
                         false
@@ -226,7 +226,7 @@ impl App {
         })
     }
 
-    pub fn inputs(&self) -> Result<Vec<InputFile>> {
+    pub fn inputs(&self) -> Result<Vec<Input>> {
         // verify equal length of file-names and input FILEs
         match self.matches.values_of("file-name") {
             Some(ref filenames)
@@ -251,7 +251,7 @@ impl App {
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            return Ok(vec![InputFile::StdIn(
+            return Ok(vec![Input::StdIn(
                 filenames_or_none.nth(0).unwrap().map(|f| f.to_owned()),
             )]);
         }
@@ -264,13 +264,13 @@ impl App {
         for (input, name) in files_or_none.zip(filenames_or_none) {
             if let Some(input) = input {
                 if input.to_str().unwrap_or_default() == "-" {
-                    file_input.push(InputFile::StdIn(name.map(|n| n.to_owned())));
+                    file_input.push(Input::StdIn(name.map(|n| n.to_owned())));
                 } else {
                     let mut ofile = OrdinaryFile::from_path(input);
                     if let Some(path) = name {
                         ofile.set_provided_path(path);
                     }
-                    file_input.push(InputFile::Ordinary(ofile))
+                    file_input.push(Input::Ordinary(ofile))
                 }
             }
         }

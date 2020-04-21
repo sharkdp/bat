@@ -5,7 +5,7 @@ use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::errors::*;
-use crate::inputfile::{InputFile, InputFileReader};
+use crate::input::{Input, InputReader};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -20,13 +20,13 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
-    pub fn run(&self, inputs: Vec<InputFile>) -> Result<bool> {
+    pub fn run(&self, inputs: Vec<Input>) -> Result<bool> {
         self.run_with_error_handler(inputs, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
-        inputs: Vec<InputFile>,
+        inputs: Vec<Input>,
         handle_error: impl Fn(&Error),
     ) -> Result<bool> {
         let mut output_type;
@@ -39,7 +39,7 @@ impl<'b> Controller<'b> {
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
                 let call_pager = inputs.iter().any(|file| {
-                    if let InputFile::Ordinary(ofile) = file {
+                    if let Input::Ordinary(ofile) = file {
                         return Path::new(ofile.provided_path()).exists();
                     } else {
                         return true;
@@ -60,8 +60,8 @@ impl<'b> Controller<'b> {
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
-        for input_file in inputs.into_iter() {
-            match input_file.get_reader(io::stdin().lock()) {
+        for input in inputs.into_iter() {
+            match input.get_reader(io::stdin().lock()) {
                 Err(error) => {
                     handle_error(&error);
                     no_errors = false;
@@ -69,15 +69,15 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, &input_file)
+                        self.print_file(reader, &mut printer, writer, &input)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
                             &self.assets,
-                            &input_file,
+                            &input,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, &input_file)
+                        self.print_file(reader, &mut printer, writer, &input)
                     };
 
                     if let Err(error) = result {
@@ -93,13 +93,13 @@ impl<'b> Controller<'b> {
 
     fn print_file<'a, P: Printer>(
         &self,
-        reader: InputFileReader,
+        reader: InputReader,
         printer: &mut P,
         writer: &mut dyn Write,
-        input_file: &InputFile,
+        input: &Input,
     ) -> Result<()> {
         if !reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input_file)?;
+            printer.print_header(writer, input)?;
         }
 
         if !reader.first_line.is_empty() {
@@ -114,7 +114,7 @@ impl<'b> Controller<'b> {
         &self,
         printer: &mut P,
         writer: &mut dyn Write,
-        mut reader: InputFileReader,
+        mut reader: InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
