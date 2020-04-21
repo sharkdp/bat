@@ -244,24 +244,20 @@ impl App {
             }
             None => Box::new(std::iter::repeat(None)),
         };
-        let files: Option<Vec<&str>> = self
-            .matches
-            .values_of_os("FILE")
-            .map(|values| values.map(|fname| fname.to_str()).collect())
-            .unwrap_or(None);
+        let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
             return Ok(vec![InputFile::StdIn(filenames_or_none.nth(0).unwrap())]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
-            Some(ref files) => Box::new(files.into_iter().map(|name| Some(OsStr::new(*name)))),
+            Some(ref files) => Box::new(files.into_iter().map(|name| Some(*name))),
             None => Box::new(std::iter::repeat(None)),
         };
 
         let mut file_input = Vec::new();
         for (input, name) in files_or_none.zip(filenames_or_none) {
             if let Some(input) = input {
-                if input.to_str().unwrap() == "-" {
+                if input.to_str().unwrap_or_default() == "-" {
                     file_input.push(InputFile::StdIn(name));
                 } else {
                     let mut ofile = OrdinaryFile::from_path(input);

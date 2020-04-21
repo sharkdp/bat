@@ -628,6 +628,18 @@ fn filename_multiple_err() {
         .failure();
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+fn file_with_invalid_utf8_filename() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    bat()
+        .arg(OsStr::from_bytes(b"test-invalid-utf8-\xC3(.rs"))
+        .assert()
+        .success();
+}
+
 #[test]
 fn do_not_panic_regression_tests() {
     for filename in &[
