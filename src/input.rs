@@ -7,6 +7,104 @@ use content_inspector::{self, ContentType};
 use crate::errors::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
+#[derive(Debug, Clone, PartialEq)]
+pub struct OrdinaryFile {
+    path: OsString,
+    user_provided_path: Option<OsString>,
+}
+
+impl OrdinaryFile {
+    pub fn from_path(path: &OsStr) -> OrdinaryFile {
+        OrdinaryFile {
+            path: path.to_os_string(),
+            user_provided_path: None,
+        }
+    }
+
+    pub fn set_provided_path(&mut self, user_provided_path: &OsStr) {
+        self.user_provided_path = Some(user_provided_path.to_os_string());
+    }
+
+    pub(crate) fn provided_path<'a>(&'a self) -> &'a OsStr {
+        self.user_provided_path
+            .as_ref()
+            .unwrap_or_else(|| &self.path)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct InputDescription {
+    pub full: String,
+    pub prefix: String,
+    pub name: String,
+}
+
+pub enum Input {
+    StdIn(Option<OsString>),
+    Ordinary(OrdinaryFile),
+    FromReader(Box<dyn Read>, Option<OsString>),
+    ThemePreviewFile,
+}
+
+impl Input {
+    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputReader<'a>> {
+        match self {
+            Input::StdIn(_) => Ok(InputReader::new(stdin)),
+            Input::Ordinary(ofile) => {
+                let file = File::open(&ofile.path)
+                    .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
+
+                if file.metadata()?.is_dir() {
+                    return Err(
+                        format!("'{}' is a directory.", ofile.path.to_string_lossy()).into(),
+                    );
+                }
+
+                Ok(InputReader::new(BufReader::new(file)))
+            }
+            Input::ThemePreviewFile => Ok(InputReader::new(THEME_PREVIEW_FILE)),
+            Input::FromReader(_, _) => unimplemented!(), //Ok(InputReader::new(BufReader::new(reader))),
+        }
+    }
+
+    pub(crate) fn description(&self) -> InputDescription {
+        match self {
+            Input::Ordinary(ofile) => InputDescription {
+                full: format!("file '{}'", &ofile.provided_path().to_string_lossy()),
+                prefix: "File: ".to_owned(),
+                name: ofile.provided_path().to_string_lossy().into_owned(),
+            },
+            Input::StdIn(Some(name)) => InputDescription {
+                full: format!(
+                    "STDIN (with name '{}')",
+                    name.to_string_lossy().into_owned()
+                ),
+                prefix: "File: ".to_owned(),
+                name: name.to_string_lossy().into_owned(),
+            },
+            Input::StdIn(None) => InputDescription {
+                full: "STDIN".to_owned(),
+                prefix: "".to_owned(),
+                name: "STDIN".to_owned(),
+            },
+            Input::ThemePreviewFile => InputDescription {
+                full: "".to_owned(),
+                prefix: "".to_owned(),
+                name: "".to_owned(),
+            },
+            Input::FromReader(_, Some(name)) => InputDescription {
+                full: format!("file '{}'", name.to_string_lossy()),
+                prefix: "File: ".to_owned(),
+                name: name.to_string_lossy().into_owned(),
+            },
+            Input::FromReader(_, None) => InputDescription {
+                full: "reader".to_owned(),
+                prefix: "".to_owned(),
+                name: "READER".into(),
+            },
+        }
+    }
+}
 
 pub struct InputReader<'a> {
     inner: Box<dyn BufRead + 'a>,
@@ -48,60 +146,6 @@ impl<'a> InputReader<'a> {
         } else {
             buf.append(&mut self.first_line);
             Ok(true)
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct OrdinaryFile {
-    path: OsString,
-    user_provided_path: Option<OsString>,
-}
-
-impl OrdinaryFile {
-    pub fn from_path(path: &OsStr) -> OrdinaryFile {
-        OrdinaryFile {
-            path: path.to_os_string(),
-            user_provided_path: None,
-        }
-    }
-
-    pub fn set_provided_path(&mut self, user_provided_path: &OsStr) {
-        self.user_provided_path = Some(user_provided_path.to_os_string());
-    }
-
-    pub(crate) fn provided_path<'a>(&'a self) -> &'a OsStr {
-        self.user_provided_path
-            .as_ref()
-            .unwrap_or_else(|| &self.path)
-    }
-}
-
-pub enum Input {
-    StdIn(Option<OsString>),
-    Ordinary(OrdinaryFile),
-    FromReader(Box<dyn Read>, Option<OsString>),
-    ThemePreviewFile,
-}
-
-impl Input {
-    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputReader<'a>> {
-        match self {
-            Input::StdIn(_) => Ok(InputReader::new(stdin)),
-            Input::Ordinary(ofile) => {
-                let file = File::open(&ofile.path)
-                    .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
-
-                if file.metadata()?.is_dir() {
-                    return Err(
-                        format!("'{}' is a directory.", ofile.path.to_string_lossy()).into(),
-                    );
-                }
-
-                Ok(InputReader::new(BufReader::new(file)))
-            }
-            Input::ThemePreviewFile => Ok(InputReader::new(THEME_PREVIEW_FILE)),
-            Input::FromReader(_, _) => unimplemented!(), //Ok(InputReader::new(BufReader::new(reader))),
         }
     }
 }

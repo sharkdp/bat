@@ -27,14 +27,14 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::errors::*;
-use crate::input::{Input, InputReader};
+use crate::input::{Input, InputDescription, InputReader};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrap::WrappingMode;
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut dyn Write, file: &Input) -> Result<()>;
+    fn print_header(&mut self, handle: &mut dyn Write, input: &InputDescription) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
 
     fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
@@ -57,7 +57,7 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut dyn Write, _file: &Input) -> Result<()> {
+    fn print_header(&mut self, _handle: &mut dyn Write, input: &InputDescription) -> Result<()> {
         Ok(())
     }
 
@@ -101,7 +101,7 @@ impl<'a> InteractivePrinter<'a> {
     pub fn new(
         config: &'a Config,
         assets: &'a HighlightingAssets,
-        file: &Input,
+        input: &Input,
         reader: &mut InputReader,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
@@ -160,14 +160,14 @@ impl<'a> InteractivePrinter<'a> {
             #[cfg(feature = "git")]
             {
                 if config.style_components.changes() {
-                    if let Input::Ordinary(ofile) = file {
+                    if let Input::Ordinary(ofile) = input {
                         line_changes = get_git_diff(ofile.provided_path());
                     }
                 }
             }
 
             // Determine the type of syntax for highlighting
-            let syntax = assets.get_syntax(config.language, file, reader, &config.syntax_mapping);
+            let syntax = assets.get_syntax(config.language, input, reader, &config.syntax_mapping);
             Some(HighlightLines::new(syntax, theme))
         };
 
@@ -230,32 +230,20 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut dyn Write, file: &Input) -> Result<()> {
+    fn print_header(
+        &mut self,
+        handle: &mut dyn Write,
+        description: &InputDescription,
+    ) -> Result<()> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
-                let input = match file {
-                    Input::Ordinary(ofile) => {
-                        format!("file '{}'", &ofile.provided_path().to_string_lossy())
-                    }
-                    Input::StdIn(Some(name)) => format!(
-                        "STDIN (with name '{}')",
-                        name.to_string_lossy().into_owned()
-                    ),
-                    Input::StdIn(None) => "STDIN".to_owned(),
-                    Input::ThemePreviewFile => "".to_owned(),
-                    Input::FromReader(_, Some(name)) => {
-                        format!("file '{}'", name.to_string_lossy())
-                    }
-                    Input::FromReader(_, None) => "READER".to_owned(),
-                };
-
                 writeln!(
                     handle,
                     "{}: Binary content from {} will not be printed to the terminal \
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
                      to show the binary file contents.",
                     Yellow.paint("[bat warning]"),
-                    input
+                    description.full,
                 )?;
             } else {
                 if self.config.style_components.grid() {
@@ -280,20 +268,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
-        let (prefix, name) = match file {
-            Input::Ordinary(ofile) => (
-                "File: ",
-                Cow::from(ofile.provided_path().to_string_lossy().to_owned()),
-            ),
-            Input::StdIn(Some(name)) => ("File: ", Cow::from(name.to_string_lossy().to_owned())),
-            Input::StdIn(None) => ("File: ", Cow::from("STDIN".to_owned())),
-            Input::ThemePreviewFile => ("", Cow::from("")),
-            Input::FromReader(_, Some(name)) => {
-                ("File: ", Cow::from(name.to_string_lossy().to_owned()))
-            }
-            Input::FromReader(_, None) => ("File: ", Cow::from("READER".to_owned())),
-        };
-
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
             Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
@@ -305,8 +279,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
         writeln!(
             handle,
             "{}{}{}",
-            prefix,
-            self.colors.filename.paint(name),
+            description.prefix,
+            self.colors.filename.paint(&description.name),
             mode
         )?;
 

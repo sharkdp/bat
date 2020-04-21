@@ -188,11 +188,11 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
-        file: &Input,
+        input: &Input,
         reader: &mut InputReader,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
-        let syntax = match (language, file) {
+        let syntax = match (language, input) {
             (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
             (None, Input::Ordinary(ofile)) => {
                 let path = Path::new(ofile.provided_path());
@@ -282,12 +282,11 @@ mod tests {
             }
 
             let input = Input::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
-            let syntax = self.assets.get_syntax(
-                None,
-                &input,
-                &mut input.get_reader(io::stdin().lock()).unwrap(),
-                &self.syntax_mapping,
-            );
+            let stdin = io::stdin();
+            let mut reader = input.get_reader(stdin.lock()).unwrap();
+            let syntax = self
+                .assets
+                .get_syntax(None, &input, &mut reader, &self.syntax_mapping);
 
             syntax.name.clone()
         }
