@@ -5,7 +5,7 @@ use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::errors::*;
-use crate::input::{Input, InputReader};
+use crate::input::{Input, InputDescription, InputReader};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -61,6 +61,8 @@ impl<'b> Controller<'b> {
         let mut no_errors: bool = true;
 
         for input in inputs.into_iter() {
+            let description = input.description();
+
             match input.get_reader(io::stdin().lock()) {
                 Err(error) => {
                     handle_error(&error);
@@ -69,7 +71,7 @@ impl<'b> Controller<'b> {
                 Ok(mut reader) => {
                     let result = if self.config.loop_through {
                         let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, &input)
+                        self.print_file(reader, &mut printer, writer, &description)
                     } else {
                         let mut printer = InteractivePrinter::new(
                             &self.config,
@@ -77,7 +79,7 @@ impl<'b> Controller<'b> {
                             &input,
                             &mut reader,
                         );
-                        self.print_file(reader, &mut printer, writer, &input)
+                        self.print_file(reader, &mut printer, writer, &description)
                     };
 
                     if let Err(error) = result {
@@ -96,10 +98,10 @@ impl<'b> Controller<'b> {
         reader: InputReader,
         printer: &mut P,
         writer: &mut dyn Write,
-        input: &Input,
+        input_description: &InputDescription,
     ) -> Result<()> {
         if !reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input)?;
+            printer.print_header(writer, input_description)?;
         }
 
         if !reader.first_line.is_empty() {

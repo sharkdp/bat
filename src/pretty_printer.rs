@@ -1,4 +1,5 @@
 use std::ffi::OsStr;
+use std::io::Read;
 
 use crate::{
     config::{
@@ -49,6 +50,18 @@ impl<'a> PrettyPrinter<'a> {
             self.inputs
                 .push(Input::Ordinary(OrdinaryFile::from_path(path.as_ref())));
         }
+        self
+    }
+
+    /// Add STDIN as an input
+    pub fn input_stdin(&mut self) -> &mut Self {
+        self.inputs.push(Input::StdIn(None));
+        self
+    }
+
+    /// Add STDIN as an input
+    pub fn input_reader(&mut self, reader: impl Read) -> &mut Self {
+        //self.inputs.push(Input::FromReader(Box::new(reader), None));
         self
     }
 
