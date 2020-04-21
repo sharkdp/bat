@@ -1,5 +1,4 @@
 language: rust
-cache: cargo
 
 matrix:
   include:
