@@ -42,8 +42,8 @@ _bat_:run() {
 }
 
 _bat_config_:run() {
-	if [[ -f "$(bat --config-file)" ]]; then 
-		_out_fence cat "$(bat --config-file)"; 
+	if [[ -f "$(bat --config-file)" ]]; then
+		_out_fence cat "$(bat --config-file)";
 	fi
 }
 
@@ -66,8 +66,12 @@ _bat_wrapper_function_:run() {
 				fi ;;
 
 			*bash*|*zsh*)
-				if "$SHELL" --login -i -c "type ${command}" 2>&1 | grep 'function' &>/dev/null; then
+				local type="$("$SHELL" --login -i -c "type ${command}" 2>&1)"
+				if grep 'function' <<< "$type" &>/dev/null; then
 					_out_fence "$SHELL" --login -i -c "declare -f ${command}"
+					return
+				elif grep 'alias' <<< "$type" &>/dev/null; then
+					_out_fence "$SHELL" --login -i -c "type ${command}"
 					return
 				fi ;;
 
@@ -143,7 +147,7 @@ EOF
 	_tput sgr0
 	"_$1_:description"
 	_tput sgr0
-	
+
 	# Print preview.
 	_tput setaf 3
 	printf "\nThe following commands will be run:\n" 1>&2
