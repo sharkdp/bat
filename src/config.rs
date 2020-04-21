@@ -3,7 +3,7 @@ pub use crate::inputfile::OrdinaryFile;
 pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
 pub use crate::style::{StyleComponent, StyleComponents};
 pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
-pub use crate::wrap::OutputWrap;
+pub use crate::wrap::WrappingMode;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg(feature = "paging")]
@@ -23,7 +23,7 @@ impl Default for PagingMode {
 #[derive(Debug, Clone, Default)]
 pub struct Config<'a> {
     /// List of files to print
-    pub files: Vec<InputFile<'a>>,
+    pub files: Vec<InputFile>,
 
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
@@ -50,8 +50,8 @@ pub struct Config<'a> {
     /// Style elements (grid, line numbers, ...)
     pub style_components: StyleComponents,
 
-    /// Text wrapping mode
-    pub output_wrap: OutputWrap,
+    /// If and how text should be wrapped
+    pub wrapping_mode: WrappingMode,
 
     /// Pager or STDOUT
     #[cfg(feature = "paging")]

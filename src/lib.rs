@@ -25,3 +25,4 @@ pub use assets_metadata::AssetsMetadata;
 pub use controller::Controller;
 pub use pretty_printer::PrettyPrinter;
 pub use printer::{InteractivePrinter, Printer, SimplePrinter};
+pub use style::{StyleComponent, StyleComponents};

@@ -16,7 +16,7 @@ use console::Term;
 use bat::{
     config::{
         Config, HighlightedLineRanges, InputFile, LineRange, LineRanges, MappingTarget,
-        OrdinaryFile, OutputWrap, PagingMode, StyleComponent, StyleComponents, SyntaxMapping,
+        OrdinaryFile, PagingMode, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
     },
     errors::*,
     HighlightingAssets,
@@ -143,22 +143,22 @@ impl App {
                 }
             }),
             show_nonprintable: self.matches.is_present("show-all"),
-            output_wrap: if self.interactive_output || maybe_term_width.is_some() {
+            wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 match self.matches.value_of("wrap") {
-                    Some("character") => OutputWrap::Character,
-                    Some("never") => OutputWrap::None,
+                    Some("character") => WrappingMode::Character,
+                    Some("never") => WrappingMode::NoWrapping,
                     Some("auto") | _ => {
                         if style_components.plain() {
-                            OutputWrap::None
+                            WrappingMode::NoWrapping
                         } else {
-                            OutputWrap::Character
+                            WrappingMode::Character
                         }
                     }
                 }
             } else {
                 // We don't have the tty width when piping to another program.
                 // There's no point in wrapping when this is the case.
-                OutputWrap::None
+                WrappingMode::NoWrapping
             },
             colored_output: match self.matches.value_of("color") {
                 Some("always") => true,
@@ -247,7 +247,9 @@ impl App {
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            return Ok(vec![InputFile::StdIn(filenames_or_none.nth(0).unwrap())]);
+            return Ok(vec![InputFile::StdIn(
+                filenames_or_none.nth(0).unwrap().map(|f| f.to_owned()),
+            )]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
             Some(ref files) => Box::new(files.into_iter().map(|name| Some(*name))),
@@ -258,7 +260,7 @@ impl App {
         for (input, name) in files_or_none.zip(filenames_or_none) {
             if let Some(input) = input {
                 if input.to_str().unwrap_or_default() == "-" {
-                    file_input.push(InputFile::StdIn(name));
+                    file_input.push(InputFile::StdIn(name.map(|n| n.to_owned())));
                 } else {
                     let mut ofile = OrdinaryFile::from_path(input);
                     if let Some(path) = name {

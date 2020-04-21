@@ -188,7 +188,7 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
-        file: InputFile,
+        file: &InputFile,
         reader: &mut InputFileReader,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
@@ -216,7 +216,7 @@ impl HighlightingAssets {
                 .ok()
                 .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
             (None, InputFile::StdIn(Some(file_name))) => self
-                .get_extension_syntax(file_name)
+                .get_extension_syntax(&file_name)
                 .or(self.get_first_line_syntax(reader)),
             (_, InputFile::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
         };
@@ -246,16 +246,16 @@ impl HighlightingAssets {
 
 #[cfg(test)]
 mod tests {
-    use std::ffi::OsStr;
+    use super::*;
+
+    use crate::inputfile::OrdinaryFile;
+
+    use std::ffi::{OsStr, OsString};
     use std::fs::File;
     use std::io;
     use std::io::Write;
 
     use tempdir::TempDir;
-
-    use crate::assets::HighlightingAssets;
-    use crate::inputfile::{InputFile, OrdinaryFile};
-    use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
     struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
@@ -283,7 +283,7 @@ mod tests {
             let input_file = InputFile::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
             let syntax = self.assets.get_syntax(
                 None,
-                input_file,
+                &input_file,
                 &mut input_file.get_reader(io::stdin().lock()).unwrap(),
                 &self.syntax_mapping,
             );
@@ -304,10 +304,10 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let input_file = InputFile::StdIn(Some(OsStr::new(file_name)));
+            let input_file = InputFile::StdIn(Some(OsString::from(file_name)));
             let syntax = self.assets.get_syntax(
                 None,
-                input_file,
+                &input_file,
                 &mut input_file.get_reader(content).unwrap(),
                 &self.syntax_mapping,
             );

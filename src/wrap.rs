@@ -1,11 +1,11 @@
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
-pub enum OutputWrap {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WrappingMode {
     Character,
-    None,
+    NoWrapping,
 }
 
-impl Default for OutputWrap {
+impl Default for WrappingMode {
     fn default() -> Self {
-        OutputWrap::None
+        WrappingMode::NoWrapping
     }
 }
