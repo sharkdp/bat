@@ -164,8 +164,8 @@ impl HighlightingAssets {
         self.syntax_set.syntaxes()
     }
 
-    pub fn themes(&self) -> impl Iterator<Item = &String> {
-        self.theme_set.themes.keys()
+    pub fn themes(&self) -> impl Iterator<Item = &str> {
+        self.theme_set.themes.keys().map(|s| s.as_ref())
     }
 
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
