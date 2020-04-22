@@ -19,7 +19,7 @@ mod diff;
 pub mod errors;
 pub mod input;
 mod less;
-pub(crate) mod line_range;
+pub mod line_range;
 mod output;
 mod preprocessor;
 mod pretty_printer;
@@ -29,7 +29,7 @@ pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrap;
 
-pub use line_range::{HighlightedLineRanges, LineRange, LineRanges};
+pub use line_range::LineRange;
 pub use pretty_printer::PrettyPrinter;
 pub use style::{StyleComponent, StyleComponents};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};

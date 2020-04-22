@@ -2,8 +2,13 @@ use std::ffi::OsStr;
 use std::io::Read;
 
 use crate::{
-    assets::HighlightingAssets, config::Config, controller::Controller, errors::Result,
-    input::Input, HighlightedLineRanges, LineRanges, StyleComponents, SyntaxMapping, WrappingMode,
+    assets::HighlightingAssets,
+    config::Config,
+    controller::Controller,
+    errors::Result,
+    input::Input,
+    line_range::{HighlightedLineRanges, LineRanges},
+    LineRange, StyleComponents, SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
@@ -13,6 +18,8 @@ pub struct PrettyPrinter<'a> {
     inputs: Vec<Input<'a>>,
     config: Config<'a>,
     assets: HighlightingAssets,
+
+    highlighted_lines: Vec<LineRange>,
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -26,6 +33,7 @@ impl<'a> PrettyPrinter<'a> {
             inputs: vec![],
             config,
             assets: HighlightingAssets::from_binary(),
+            highlighted_lines: vec![],
         }
     }
 
@@ -132,9 +140,11 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Specify which lines should be highlighted (default: none)
-    pub fn highlighted_lines(&mut self, ranges: HighlightedLineRanges) -> &mut Self {
-        self.config.highlighted_lines = ranges;
+    /// Specify a range of lines that should be highlighted (default: none).
+    /// This can be called multiple times to highlight more than one range
+    /// of lines.
+    pub fn highlight(&mut self, range: LineRange) -> &mut Self {
+        self.highlighted_lines.push(range);
         self
     }
 
@@ -154,6 +164,9 @@ impl<'a> PrettyPrinter<'a> {
     /// If you want to call 'run' multiple times, you have to call the appropriate
     /// input_* methods again.
     pub fn run(&mut self) -> Result<bool> {
+        self.config.highlighted_lines =
+            HighlightedLineRanges(LineRanges::from(self.highlighted_lines.clone()));
+
         let mut inputs: Vec<Input> = vec![];
         std::mem::swap(&mut inputs, &mut self.inputs);
 
