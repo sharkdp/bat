@@ -1,7 +1,7 @@
-pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
-pub use crate::style::{StyleComponent, StyleComponents};
-pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
-pub use crate::wrap::WrappingMode;
+use crate::line_range::{HighlightedLineRanges, LineRanges};
+use crate::style::StyleComponents;
+use crate::syntax_mapping::SyntaxMapping;
+use crate::wrap::WrappingMode;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[cfg(feature = "paging")]

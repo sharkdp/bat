@@ -14,13 +14,9 @@ use clap::ArgMatches;
 use console::Term;
 
 use bat::{
-    config::{
-        Config, HighlightedLineRanges, LineRange, LineRanges, MappingTarget, PagingMode,
-        StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
-    },
-    errors::*,
-    input::Input,
-    HighlightingAssets,
+    assets::HighlightingAssets, config::Config, errors::*, input::Input, HighlightedLineRanges,
+    LineRange, LineRanges, MappingTarget, PagingMode, StyleComponent, StyleComponents,
+    SyntaxMapping, WrappingMode,
 };
 
 fn is_truecolor_terminal() -> bool {

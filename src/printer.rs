@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::io::Write;
 use std::vec::Vec;
 
@@ -27,7 +26,7 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::errors::*;
-use crate::input::{Input, InputDescription, InputKind, InputReader, OpenedInput, OpenedInputKind};
+use crate::input::{OpenedInput, OpenedInputKind};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};

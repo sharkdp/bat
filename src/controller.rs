@@ -5,7 +5,7 @@ use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::errors::*;
-use crate::input::{Input, InputDescription, InputKind, InputReader, OpenedInput};
+use crate::input::{Input, InputKind, InputReader, OpenedInput};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
