@@ -2,8 +2,8 @@ use crate::errors::*;
 
 #[derive(Debug, Clone)]
 pub struct LineRange {
-    pub lower: usize,
-    pub upper: usize,
+    lower: usize,
+    upper: usize,
 }
 
 impl Default for LineRange {
@@ -16,6 +16,13 @@ impl Default for LineRange {
 }
 
 impl LineRange {
+    pub fn new(from: usize, to: usize) -> Self {
+        LineRange {
+            lower: from,
+            upper: to,
+        }
+    }
+
     pub fn from(range_raw: &str) -> Result<LineRange> {
         LineRange::parse_range(range_raw)
     }

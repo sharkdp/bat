@@ -18,8 +18,8 @@ use bat::{
     config::{Config, PagingMode},
     errors::*,
     input::Input,
-    HighlightedLineRanges, LineRange, LineRanges, MappingTarget, StyleComponent, StyleComponents,
-    SyntaxMapping, WrappingMode,
+    line_range::{HighlightedLineRanges, LineRange, LineRanges},
+    MappingTarget, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
 };
 
 fn is_truecolor_terminal() -> bool {
