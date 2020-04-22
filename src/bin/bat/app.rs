@@ -19,7 +19,8 @@ use bat::{
     errors::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
-    MappingTarget, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
+    style::{StyleComponent, StyleComponents},
+    MappingTarget, SyntaxMapping, WrappingMode,
 };
 
 fn is_truecolor_terminal() -> bool {

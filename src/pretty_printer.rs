@@ -10,11 +10,21 @@ use crate::{
     errors::Result,
     input::Input,
     line_range::{HighlightedLineRanges, LineRanges},
-    LineRange, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
+    style::{StyleComponent, StyleComponents},
+    LineRange, SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
+
+#[derive(Default)]
+struct ActiveStyleComponents {
+    header: bool,
+    vcs_modification_markers: bool,
+    grid: bool,
+    line_numbers: bool,
+    snip: bool,
+}
 
 pub struct PrettyPrinter<'a> {
     inputs: Vec<Input<'a>>,
@@ -23,6 +33,7 @@ pub struct PrettyPrinter<'a> {
 
     highlighted_lines: Vec<LineRange>,
     term_width: Option<usize>,
+    active_style_components: ActiveStyleComponents,
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -39,6 +50,7 @@ impl<'a> PrettyPrinter<'a> {
 
             highlighted_lines: vec![],
             term_width: None,
+            active_style_components: ActiveStyleComponents::default(),
         }
     }
 
@@ -107,9 +119,33 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Configure style elements like grid or  line numbers (default: "full" style)
-    pub fn style_components(&mut self, components: &[StyleComponent]) -> &mut Self {
-        self.config.style_components = StyleComponents::new(components);
+    /// Whether to show a header with the file name
+    pub fn header(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.header = yes;
+        self
+    }
+
+    /// Whether to show line numbers
+    pub fn line_numbers(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.line_numbers = yes;
+        self
+    }
+
+    /// Whether to paint a grid, separating line numbers, git changes and the code
+    pub fn grid(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.grid = yes;
+        self
+    }
+
+    /// Whether to show modification markers for VCS changes
+    pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.vcs_modification_markers = yes;
+        self
+    }
+
+    /// Whether to show "snip" markers between visible line ranges (default: no)
+    pub fn snip(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.snip = yes;
         self
     }
 
@@ -174,6 +210,24 @@ impl<'a> PrettyPrinter<'a> {
         self.config.term_width = self
             .term_width
             .unwrap_or_else(|| Term::stdout().size().1 as usize);
+
+        let mut style_components = vec![];
+        if self.active_style_components.grid {
+            style_components.push(StyleComponent::Grid);
+        }
+        if self.active_style_components.header {
+            style_components.push(StyleComponent::Header);
+        }
+        if self.active_style_components.line_numbers {
+            style_components.push(StyleComponent::LineNumbers);
+        }
+        if self.active_style_components.snip {
+            style_components.push(StyleComponent::Snip);
+        }
+        if self.active_style_components.vcs_modification_markers {
+            style_components.push(StyleComponent::Changes);
+        }
+        self.config.style_components = StyleComponents::new(&style_components);
 
         let mut inputs: Vec<Input> = vec![];
         std::mem::swap(&mut inputs, &mut self.inputs);
