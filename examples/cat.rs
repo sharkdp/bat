@@ -9,7 +9,7 @@ fn main() {
         .style_components(&[
             StyleComponent::Header,
             StyleComponent::Grid,
-            StyleComponent::Numbers,
+            StyleComponent::LineNumbers,
         ])
         .input_files(std::env::args_os().skip(1))
         .print()
