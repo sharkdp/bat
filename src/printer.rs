@@ -30,7 +30,7 @@ use crate::input::{OpenedInput, OpenedInputKind};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::wrap::WrappingMode;
+use crate::wrapping::WrappingMode;
 
 pub(crate) trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
