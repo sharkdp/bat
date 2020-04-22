@@ -19,9 +19,8 @@ use bat::{
     error::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
-    paging::PagingMode,
     style::{StyleComponent, StyleComponents},
-    MappingTarget, SyntaxMapping, WrappingMode,
+    MappingTarget, PagingMode, SyntaxMapping, WrappingMode,
 };
 
 fn is_truecolor_terminal() -> bool {
