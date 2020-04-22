@@ -1,10 +1,7 @@
 /// A program that prints its own source code using the bat library
 use bat::{LineRange, PrettyPrinter, WrappingMode};
-use std::ffi::OsStr;
 
 fn main() {
-    let path_to_this_file = OsStr::new(file!());
-
     PrettyPrinter::new()
         .header(true)
         .grid(true)
@@ -14,7 +11,7 @@ fn main() {
         .highlight(LineRange::new(line!() as usize, line!() as usize))
         .theme("1337")
         .wrapping_mode(WrappingMode::Character)
-        .input_file(path_to_this_file)
+        .input_file(file!())
         .print()
         .expect("no errors");
 }
