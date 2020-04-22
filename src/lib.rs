@@ -30,7 +30,7 @@ mod less;
 pub mod line_range;
 mod output;
 #[cfg(feature = "paging")]
-pub mod paging;
+pub(crate) mod paging;
 mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
