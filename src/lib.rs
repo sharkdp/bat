@@ -5,7 +5,8 @@
 //!
 //! If you need more control, you can also use the structs in the submodules
 //! (start with `controller::Controller`), but note that the API of these
-//! internal modules is much more likely to change.
+//! internal modules is much more likely to change. Some or all of these
+//! modules might be removed in the future.
 //!
 //! "Hello world" example:
 //! ```
