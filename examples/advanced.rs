@@ -13,5 +13,5 @@ fn main() {
         .wrapping_mode(WrappingMode::Character)
         .input_file(file!())
         .print()
-        .expect("no errors");
+        .unwrap();
 }
