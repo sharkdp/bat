@@ -7,6 +7,6 @@ fn main() {
 
     PrettyPrinter::new()
         .input_file(path_to_this_file)
-        .run()
+        .print()
         .expect("no errors");
 }

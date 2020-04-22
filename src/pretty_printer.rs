@@ -160,10 +160,10 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Pretty-print all specified inputs. This method will drain all stored inputs.
-    /// If you want to call 'run' multiple times, you have to call the appropriate
+    /// Pretty-print all specified inputs. This method will "use" all stored inputs.
+    /// If you want to call 'print' multiple times, you have to call the appropriate
     /// input_* methods again.
-    pub fn run(&mut self) -> Result<bool> {
+    pub fn print(&mut self) -> Result<bool> {
         self.config.highlighted_lines =
             HighlightedLineRanges(LineRanges::from(self.highlighted_lines.clone()));
 

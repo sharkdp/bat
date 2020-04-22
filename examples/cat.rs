@@ -12,6 +12,6 @@ fn main() {
             StyleComponent::Numbers,
         ]))
         .input_files(std::env::args_os().skip(1))
-        .run()
+        .print()
         .expect("no errors");
 }
