@@ -7,7 +7,7 @@ use crate::directories::PROJECT_DIRS;
 
 use bat::assets::HighlightingAssets;
 use bat::assets_metadata::AssetsMetadata;
-use bat::errors::*;
+use bat::error::*;
 
 pub fn config_dir() -> Cow<'static, str> {
     PROJECT_DIRS.config_dir().to_string_lossy()

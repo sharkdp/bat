@@ -4,7 +4,7 @@ use std::process::Child;
 
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
-use crate::errors::*;
+use crate::error::*;
 #[cfg(feature = "paging")]
 use crate::less::retrieve_less_version;
 

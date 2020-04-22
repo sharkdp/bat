@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::errors::Result;
+use crate::error::Result;
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
 

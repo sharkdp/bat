@@ -16,7 +16,7 @@ use console::Term;
 use bat::{
     assets::HighlightingAssets,
     config::{Config, PagingMode},
-    errors::*,
+    error::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},

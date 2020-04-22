@@ -25,7 +25,7 @@ use crate::decorations::LineChangesDecoration;
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
-use crate::errors::*;
+use crate::error::*;
 use crate::input::{OpenedInput, OpenedInputKind};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};

@@ -29,7 +29,7 @@ use bat::{
     assets::HighlightingAssets,
     config::Config,
     controller::Controller,
-    errors::*,
+    error::*,
     input::Input,
     style::{StyleComponent, StyleComponents},
 };
