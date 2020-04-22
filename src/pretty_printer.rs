@@ -59,7 +59,7 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Add STDIN as an input
+    /// Add a custom reader as an input
     pub fn input_reader(&mut self, reader: impl Read) -> &mut Self {
         //self.inputs.push(Input::FromReader(Box::new(reader), None));
         self
