@@ -180,7 +180,7 @@ apt install bat
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
 ```bash
-sudo dpkg -i bat_0.13.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.14.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
