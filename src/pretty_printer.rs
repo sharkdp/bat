@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::io::Read;
 
 use console::Term;
+use syntect::parsing::SyntaxReference;
 
 use crate::{
     assets::HighlightingAssets,
@@ -199,6 +200,14 @@ impl<'a> PrettyPrinter<'a> {
     pub fn syntax_mapping(&mut self, mapping: SyntaxMapping<'a>) -> &mut Self {
         self.config.syntax_mapping = mapping;
         self
+    }
+
+    pub fn themes(&self) -> impl Iterator<Item = &str> {
+        self.assets.themes()
+    }
+
+    pub fn syntaxes(&self) -> impl Iterator<Item = &SyntaxReference> {
+        self.assets.syntaxes().iter()
     }
 
     /// Pretty-print all specified inputs. This method will "use" all stored inputs.
