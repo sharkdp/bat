@@ -26,8 +26,9 @@ use clap::crate_version;
 use directories::PROJECT_DIRS;
 
 use bat::{
-    config::{Config, Input, OrdinaryFile, StyleComponent, StyleComponents},
+    config::{Config, StyleComponent, StyleComponents},
     errors::*,
+    input::Input,
     Controller, HighlightingAssets,
 };
 
@@ -134,7 +135,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![Input::ThemePreviewFile])
+                .run(vec![Input::theme_preview_file()])
                 .ok();
             writeln!(stdout)?;
         }
@@ -167,9 +168,7 @@ fn run() -> Result<bool> {
                 run_cache_subcommand(cache_matches)?;
                 Ok(true)
             } else {
-                let inputs = vec![Input::Ordinary(OrdinaryFile::from_path(OsStr::new(
-                    "cache",
-                )))];
+                let inputs = vec![Input::ordinary_file(OsStr::new("cache"))];
                 let config = app.config(&inputs)?;
 
                 run_controller(inputs, &config)

@@ -1,5 +1,3 @@
-pub use crate::input::Input;
-pub use crate::input::OrdinaryFile;
 pub use crate::line_range::{HighlightedLineRanges, LineRange, LineRanges};
 pub use crate::style::{StyleComponent, StyleComponents};
 pub use crate::syntax_mapping::{MappingTarget, SyntaxMapping};

@@ -27,15 +27,15 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::errors::*;
-use crate::input::{Input, InputDescription, InputReader};
+use crate::input::{Input, InputDescription, InputKind, InputReader, OpenedInput, OpenedInputKind};
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrap::WrappingMode;
 
 pub trait Printer {
-    fn print_header(&mut self, handle: &mut dyn Write, input: &InputDescription) -> Result<()>;
-    fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()>;
+    fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
+    fn print_footer(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
 
     fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
 
@@ -57,11 +57,11 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut dyn Write, input: &InputDescription) -> Result<()> {
+    fn print_header(&mut self, _handle: &mut dyn Write, _input: &OpenedInput) -> Result<()> {
         Ok(())
     }
 
-    fn print_footer(&mut self, _handle: &mut dyn Write) -> Result<()> {
+    fn print_footer(&mut self, _handle: &mut dyn Write, _input: &OpenedInput) -> Result<()> {
         Ok(())
     }
 
@@ -101,8 +101,7 @@ impl<'a> InteractivePrinter<'a> {
     pub fn new(
         config: &'a Config,
         assets: &'a HighlightingAssets,
-        input: &Input,
-        reader: &mut InputReader,
+        input: &mut OpenedInput,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
@@ -150,7 +149,8 @@ impl<'a> InteractivePrinter<'a> {
         #[cfg(feature = "git")]
         let mut line_changes = None;
 
-        let highlighter = if reader
+        let highlighter = if input
+            .reader
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
         {
@@ -160,14 +160,14 @@ impl<'a> InteractivePrinter<'a> {
             #[cfg(feature = "git")]
             {
                 if config.style_components.changes() {
-                    if let Input::Ordinary(ofile) = input {
-                        line_changes = get_git_diff(ofile.provided_path());
+                    if let OpenedInputKind::OrdinaryFile(ref path) = input.kind {
+                        line_changes = get_git_diff(path);
                     }
                 }
             }
 
             // Determine the type of syntax for highlighting
-            let syntax = assets.get_syntax(config.language, input, reader, &config.syntax_mapping);
+            let syntax = assets.get_syntax(config.language, input, &config.syntax_mapping);
             Some(HighlightLines::new(syntax, theme))
         };
 
@@ -176,7 +176,7 @@ impl<'a> InteractivePrinter<'a> {
             colors,
             config,
             decorations,
-            content_type: reader.content_type,
+            content_type: input.reader.content_type,
             ansi_prefix_sgr: String::new(),
             #[cfg(feature = "git")]
             line_changes,
@@ -230,11 +230,7 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(
-        &mut self,
-        handle: &mut dyn Write,
-        description: &InputDescription,
-    ) -> Result<()> {
+    fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 writeln!(
@@ -243,7 +239,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
                      to show the binary file contents.",
                     Yellow.paint("[bat warning]"),
-                    description.full,
+                    input.description().full,
                 )?;
             } else {
                 if self.config.style_components.grid() {
@@ -276,6 +272,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
             _ => "",
         };
 
+        let description = input.description();
+
         writeln!(
             handle,
             "{}{}{}",
@@ -295,7 +293,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         Ok(())
     }
 
-    fn print_footer(&mut self, handle: &mut dyn Write) -> Result<()> {
+    fn print_footer(&mut self, handle: &mut dyn Write, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
             && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
         {

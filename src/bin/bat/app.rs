@@ -15,10 +15,11 @@ use console::Term;
 
 use bat::{
     config::{
-        Config, HighlightedLineRanges, Input, LineRange, LineRanges, MappingTarget, OrdinaryFile,
-        PagingMode, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
+        Config, HighlightedLineRanges, LineRange, LineRanges, MappingTarget, PagingMode,
+        StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
     },
     errors::*,
+    input::Input,
     HighlightingAssets,
 };
 
@@ -83,13 +84,7 @@ impl App {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
-                } else if inputs.iter().any(|f| {
-                    if let Input::StdIn(None) = f {
-                        true
-                    } else {
-                        false
-                    }
-                }) {
+                } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
@@ -251,9 +246,9 @@ impl App {
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            return Ok(vec![Input::StdIn(
-                filenames_or_none.nth(0).unwrap().map(|f| f.to_owned()),
-            )]);
+            let mut input = Input::stdin();
+            input.set_provided_name(filenames_or_none.nth(0).unwrap_or(None));
+            return Ok(vec![input]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
             Some(ref files) => Box::new(files.into_iter().map(|name| Some(*name))),
@@ -261,16 +256,16 @@ impl App {
         };
 
         let mut file_input = Vec::new();
-        for (input, name) in files_or_none.zip(filenames_or_none) {
-            if let Some(input) = input {
-                if input.to_str().unwrap_or_default() == "-" {
-                    file_input.push(Input::StdIn(name.map(|n| n.to_owned())));
+        for (filepath, provided_name) in files_or_none.zip(filenames_or_none) {
+            if let Some(filepath) = filepath {
+                if filepath.to_str().unwrap_or_default() == "-" {
+                    let mut input = Input::stdin();
+                    input.set_provided_name(provided_name);
+                    file_input.push(input);
                 } else {
-                    let mut ofile = OrdinaryFile::from_path(input);
-                    if let Some(path) = name {
-                        ofile.set_provided_path(path);
-                    }
-                    file_input.push(Input::Ordinary(ofile))
+                    let mut input = Input::ordinary_file(filepath);
+                    input.set_provided_name(provided_name);
+                    file_input.push(input);
                 }
             }
         }

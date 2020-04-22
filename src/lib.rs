@@ -8,7 +8,7 @@ pub(crate) mod controller;
 mod decorations;
 mod diff;
 pub mod errors;
-pub(crate) mod input;
+pub mod input;
 mod less;
 pub(crate) mod line_range;
 mod output;

@@ -3,10 +3,10 @@ use std::io::Read;
 
 use crate::{
     config::{
-        Config, HighlightedLineRanges, Input, LineRanges, OrdinaryFile, StyleComponents,
-        SyntaxMapping, WrappingMode,
+        Config, HighlightedLineRanges, LineRanges, StyleComponents, SyntaxMapping, WrappingMode,
     },
     errors::Result,
+    input::{Input, InputKind, OpenedInput},
     Controller, HighlightingAssets,
 };
 
@@ -35,8 +35,8 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Add a file which should be pretty-printed
     pub fn input_file(&mut self, path: &OsStr) -> &mut Self {
-        self.inputs
-            .push(Input::Ordinary(OrdinaryFile::from_path(path)));
+        // self.inputs
+        //     .push(Input::Ordinary(OrdinaryFile::from_path(path)));
         self
     }
 
@@ -47,15 +47,15 @@ impl<'a> PrettyPrinter<'a> {
         P: AsRef<OsStr>,
     {
         for path in paths {
-            self.inputs
-                .push(Input::Ordinary(OrdinaryFile::from_path(path.as_ref())));
+            // self.inputs
+            //     .push(Input::Ordinary(OrdinaryFile::from_path(path.as_ref())));
         }
         self
     }
 
     /// Add STDIN as an input
     pub fn input_stdin(&mut self) -> &mut Self {
-        self.inputs.push(Input::StdIn(None));
+        // self.inputs.push(Input::StdIn(None));
         self
     }
 
