@@ -24,9 +24,11 @@
 
 - Performance problems with C# source code have been fixed, see #677 (@keith-hall)
 - Performance problems with Makefiles have been fixed, see #750 (@keith-hall)
-- Fig bux when highlighting Ruby files with unindented heredocs, see #914 (@keith-hall)
+- Fix bug when highlighting Ruby files with unindented heredocs, see #914 (@keith-hall)
 - A highlighting problem with Rust source code has been fixed, see #924 (@keith-hall)
 - Windows: short files that do not require paging are displayed and then lost, see #887
+- `--highlight-line` did not work correctly in combination with `--tabs=0` and `--wrap=never`,
+  see #937
 
 ## Other
 
