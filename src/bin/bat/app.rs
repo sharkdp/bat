@@ -246,8 +246,7 @@ impl App {
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            let mut input = Input::stdin();
-            input.set_provided_name(filenames_or_none.nth(0).unwrap_or(None));
+            let input = Input::stdin().with_name(filenames_or_none.nth(0).unwrap_or(None));
             return Ok(vec![input]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
@@ -259,13 +258,9 @@ impl App {
         for (filepath, provided_name) in files_or_none.zip(filenames_or_none) {
             if let Some(filepath) = filepath {
                 if filepath.to_str().unwrap_or_default() == "-" {
-                    let mut input = Input::stdin();
-                    input.set_provided_name(provided_name);
-                    file_input.push(input);
+                    file_input.push(Input::stdin().with_name(provided_name));
                 } else {
-                    let mut input = Input::ordinary_file(filepath);
-                    input.set_provided_name(provided_name);
-                    file_input.push(input);
+                    file_input.push(Input::ordinary_file(filepath).with_name(provided_name));
                 }
             }
         }

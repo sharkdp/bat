@@ -311,8 +311,7 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let mut input = Input::stdin();
-            input.set_provided_name(Some(OsStr::new(file_name)));
+            let input = Input::stdin().with_name(Some(OsStr::new(file_name)));
             let mut opened_input = input.open(content).unwrap();
 
             let syntax = self

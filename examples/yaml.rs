@@ -27,7 +27,9 @@ fn main() {
     PrettyPrinter::new()
         .language("yaml")
         .line_numbers(true)
-        .input_from_bytes(&bytes)
+        .grid(true)
+        .header(true)
+        .input_from_bytes_with_name(&bytes, "person.yaml")
         .print()
         .unwrap();
 }

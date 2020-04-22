@@ -79,14 +79,41 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Use a string as an input
+    /// Add STDIN as an input (with customized name)
+    pub fn input_stdin_with_name(&mut self, name: impl AsRef<OsStr>) -> &mut Self {
+        self.inputs
+            .push(Input::stdin().with_name(Some(name.as_ref())));
+        self
+    }
+
+    /// Add a byte string as an input
     pub fn input_from_bytes(&mut self, content: &'a [u8]) -> &mut Self {
         self.input_from_reader(content)
+    }
+
+    /// Add a byte string as an input (with customized name)
+    pub fn input_from_bytes_with_name(
+        &mut self,
+        content: &'a [u8],
+        name: impl AsRef<OsStr>,
+    ) -> &mut Self {
+        self.input_from_reader_with_name(content, name)
     }
 
     /// Add a custom reader as an input
     pub fn input_from_reader<R: Read + 'a>(&mut self, reader: R) -> &mut Self {
         self.inputs.push(Input::from_reader(Box::new(reader)));
+        self
+    }
+
+    /// Add a custom reader as an input (with customized name)
+    pub fn input_from_reader_with_name<R: Read + 'a>(
+        &mut self,
+        reader: R,
+        name: impl AsRef<OsStr>,
+    ) -> &mut Self {
+        self.inputs
+            .push(Input::from_reader(Box::new(reader)).with_name(Some(name.as_ref())));
         self
     }
 
