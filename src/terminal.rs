@@ -1,15 +1,37 @@
-use ansi_term::Colour::{Fixed, RGB};
+use ansi_term::Color::{self, Fixed, RGB};
 use ansi_term::{self, Style};
 
 use syntect::highlighting::{self, FontStyle};
 
-pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term::Colour {
+pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term::Color {
     if color.a == 0 {
         // Themes can specify one of the user-configurable terminal colors by
         // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
         // to the color palette number. The built-in themes ansi-light,
         // ansi-dark, and base16 use this.
         Fixed(color.r)
+    } else if color.a == 0x0f {
+        match color.r {
+            0x00 => Color::Black,
+            0x01 => Color::Red,
+            0x02 => Color::Green,
+            0x03 => Color::Yellow,
+            0x04 => Color::Blue,
+            0x05 => Color::Purple,
+            0x06 => Color::Cyan,
+            0x07 => Color::White,
+            // TODO: the following should be high-intensity variants of
+            // these colors ("bright black", "bright red", ...).
+            0x08 => Color::Black,
+            0x09 => Color::Red,
+            0x0a => Color::Green,
+            0x0b => Color::Yellow,
+            0x0c => Color::Blue,
+            0x0d => Color::Purple,
+            0x0e => Color::Cyan,
+            0x0f => Color::White,
+            _ => unreachable!("The 0x0f color encoding does not allow for codes higher than 0x0f")
+        }
     } else if true_color {
         RGB(color.r, color.g, color.b)
     } else {
