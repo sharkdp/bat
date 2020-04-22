@@ -7,30 +7,6 @@ use content_inspector::{self, ContentType};
 use crate::errors::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
-#[derive(Debug, Clone, PartialEq)]
-pub struct OrdinaryFile {
-    path: OsString,
-    user_provided_path: Option<OsString>,
-}
-
-impl OrdinaryFile {
-    pub fn from_path(path: &OsStr) -> OrdinaryFile {
-        OrdinaryFile {
-            path: path.to_os_string(),
-            user_provided_path: None,
-        }
-    }
-
-    pub fn set_provided_path(&mut self, user_provided_path: &OsStr) {
-        self.user_provided_path = Some(user_provided_path.to_os_string());
-    }
-
-    pub(crate) fn provided_path<'a>(&'a self) -> &'a OsStr {
-        self.user_provided_path
-            .as_ref()
-            .unwrap_or_else(|| &self.path)
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct InputDescription {
@@ -39,69 +15,134 @@ pub struct InputDescription {
     pub name: String,
 }
 
-pub enum Input {
-    StdIn(Option<OsString>),
-    Ordinary(OrdinaryFile),
-    FromReader(Box<dyn Read>, Option<OsString>),
+pub enum InputKind {
+    OrdinaryFile(OsString),
+    StdIn,
     ThemePreviewFile,
+    CustomReader(Box<dyn BufRead>),
+}
+
+#[derive(Clone, Default)]
+pub struct InputMetadata {
+    pub user_provided_name: Option<OsString>,
+}
+
+pub struct Input {
+    pub kind: InputKind,
+    pub metadata: InputMetadata,
+}
+
+pub enum OpenedInputKind {
+    OrdinaryFile(OsString),
+    StdIn,
+    ThemePreviewFile,
+    CustomReader,
+}
+
+pub struct OpenedInput<'a> {
+    pub kind: OpenedInputKind,
+    pub metadata: InputMetadata,
+    pub reader: InputReader<'a>,
 }
 
 impl Input {
-    pub(crate) fn get_reader<'a, R: BufRead + 'a>(&self, stdin: R) -> Result<InputReader<'a>> {
-        match self {
-            Input::StdIn(_) => Ok(InputReader::new(stdin)),
-            Input::Ordinary(ofile) => {
-                let file = File::open(&ofile.path)
-                    .map_err(|e| format!("'{}': {}", ofile.path.to_string_lossy(), e))?;
-
-                if file.metadata()?.is_dir() {
-                    return Err(
-                        format!("'{}' is a directory.", ofile.path.to_string_lossy()).into(),
-                    );
-                }
-
-                Ok(InputReader::new(BufReader::new(file)))
-            }
-            Input::ThemePreviewFile => Ok(InputReader::new(THEME_PREVIEW_FILE)),
-            Input::FromReader(_, _) => unimplemented!(), //Ok(InputReader::new(BufReader::new(reader))),
+    pub fn ordinary_file(path: &OsStr) -> Self {
+        Input {
+            kind: InputKind::OrdinaryFile(path.to_os_string()),
+            metadata: InputMetadata::default(),
         }
     }
 
-    pub(crate) fn description(&self) -> InputDescription {
-        match self {
-            Input::Ordinary(ofile) => InputDescription {
-                full: format!("file '{}'", &ofile.provided_path().to_string_lossy()),
-                prefix: "File: ".to_owned(),
-                name: ofile.provided_path().to_string_lossy().into_owned(),
-            },
-            Input::StdIn(Some(name)) => InputDescription {
-                full: format!(
-                    "STDIN (with name '{}')",
-                    name.to_string_lossy().into_owned()
-                ),
-                prefix: "File: ".to_owned(),
-                name: name.to_string_lossy().into_owned(),
-            },
-            Input::StdIn(None) => InputDescription {
-                full: "STDIN".to_owned(),
-                prefix: "".to_owned(),
-                name: "STDIN".to_owned(),
-            },
-            Input::ThemePreviewFile => InputDescription {
-                full: "".to_owned(),
-                prefix: "".to_owned(),
-                name: "".to_owned(),
-            },
-            Input::FromReader(_, Some(name)) => InputDescription {
+    pub fn stdin() -> Self {
+        Input {
+            kind: InputKind::StdIn,
+            metadata: InputMetadata::default(),
+        }
+    }
+
+    pub fn theme_preview_file() -> Self {
+        Input {
+            kind: InputKind::ThemePreviewFile,
+            metadata: InputMetadata::default(),
+        }
+    }
+
+    pub fn is_stdin(&self) -> bool {
+        if let InputKind::StdIn = self.kind {
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_provided_name(&mut self, provided_name: Option<&OsStr>) {
+        self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
+    }
+
+    pub fn open<'a, R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
+        match self.kind {
+            InputKind::StdIn => Ok(OpenedInput {
+                kind: OpenedInputKind::StdIn,
+                metadata: self.metadata,
+                reader: InputReader::new(stdin),
+            }),
+            InputKind::OrdinaryFile(path) => Ok(OpenedInput {
+                kind: OpenedInputKind::OrdinaryFile(path.clone()),
+                metadata: self.metadata,
+                reader: {
+                    let file = File::open(&path)
+                        .map_err(|e| format!("'{}': {}", path.to_string_lossy(), e))?;
+                    if file.metadata()?.is_dir() {
+                        return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
+                    }
+                    InputReader::new(BufReader::new(file))
+                },
+            }),
+            InputKind::ThemePreviewFile => Ok(OpenedInput {
+                kind: OpenedInputKind::ThemePreviewFile,
+                metadata: self.metadata,
+                reader: InputReader::new(THEME_PREVIEW_FILE),
+            }),
+            InputKind::CustomReader(reader) => Ok(OpenedInput {
+                kind: OpenedInputKind::CustomReader,
+                metadata: self.metadata,
+                reader: InputReader::new(BufReader::new(reader)),
+            }),
+        }
+    }
+}
+
+impl<'a> OpenedInput<'a> {
+    pub fn description(&self) -> InputDescription {
+        if let Some(ref name) = self.metadata.user_provided_name {
+            InputDescription {
                 full: format!("file '{}'", name.to_string_lossy()),
                 prefix: "File: ".to_owned(),
                 name: name.to_string_lossy().into_owned(),
-            },
-            Input::FromReader(_, None) => InputDescription {
-                full: "reader".to_owned(),
-                prefix: "".to_owned(),
-                name: "READER".into(),
-            },
+            }
+        } else {
+            match self.kind {
+                OpenedInputKind::OrdinaryFile(ref path) => InputDescription {
+                    full: format!("file '{}'", path.to_string_lossy()),
+                    prefix: "File: ".to_owned(),
+                    name: path.to_string_lossy().into_owned(),
+                },
+                OpenedInputKind::StdIn => InputDescription {
+                    full: "STDIN".to_owned(),
+                    prefix: "".to_owned(),
+                    name: "STDIN".to_owned(),
+                },
+                OpenedInputKind::ThemePreviewFile => InputDescription {
+                    full: "".to_owned(),
+                    prefix: "".to_owned(),
+                    name: "".to_owned(),
+                },
+                OpenedInputKind::CustomReader => InputDescription {
+                    full: "reader".to_owned(),
+                    prefix: "".to_owned(),
+                    name: "READER".into(),
+                },
+            }
         }
     }
 }

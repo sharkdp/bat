@@ -5,7 +5,7 @@ use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::errors::*;
-use crate::input::{Input, InputDescription, InputReader};
+use crate::input::{Input, InputDescription, InputKind, InputReader, OpenedInput};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -38,9 +38,9 @@ impl<'b> Controller<'b> {
             // Do not launch the pager if NONE of the input files exist
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
-                let call_pager = inputs.iter().any(|file| {
-                    if let Input::Ordinary(ofile) = file {
-                        return Path::new(ofile.provided_path()).exists();
+                let call_pager = inputs.iter().any(|ref input| {
+                    if let InputKind::OrdinaryFile(ref path) = input.kind {
+                        return Path::new(path).exists();
                     } else {
                         return true;
                     }
@@ -61,26 +61,23 @@ impl<'b> Controller<'b> {
         let mut no_errors: bool = true;
 
         for input in inputs.into_iter() {
-            let description = input.description();
-
-            match input.get_reader(io::stdin().lock()) {
+            match input.open(io::stdin().lock()) {
                 Err(error) => {
                     handle_error(&error);
                     no_errors = false;
                 }
-                Ok(mut reader) => {
-                    let result = if self.config.loop_through {
-                        let mut printer = SimplePrinter::new();
-                        self.print_file(reader, &mut printer, writer, &description)
+                Ok(mut opened_input) => {
+                    let mut printer: Box<dyn Printer> = if self.config.loop_through {
+                        Box::new(SimplePrinter::new())
                     } else {
-                        let mut printer = InteractivePrinter::new(
+                        Box::new(InteractivePrinter::new(
                             &self.config,
                             &self.assets,
-                            &input,
-                            &mut reader,
-                        );
-                        self.print_file(reader, &mut printer, writer, &description)
+                            &mut opened_input,
+                        ))
                     };
+
+                    let result = self.print_file(&mut *printer, writer, &mut opened_input);
 
                     if let Err(error) = result {
                         handle_error(&error);
@@ -93,30 +90,29 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_file<'a, P: Printer>(
+    fn print_file<'a>(
         &self,
-        reader: InputReader,
-        printer: &mut P,
+        printer: &mut dyn Printer,
         writer: &mut dyn Write,
-        input_description: &InputDescription,
+        input: &mut OpenedInput,
     ) -> Result<()> {
-        if !reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input_description)?;
+        if !input.reader.first_line.is_empty() || self.config.style_components.header() {
+            printer.print_header(writer, input)?;
         }
 
-        if !reader.first_line.is_empty() {
-            self.print_file_ranges(printer, writer, reader, &self.config.line_ranges)?;
+        if !input.reader.first_line.is_empty() {
+            self.print_file_ranges(printer, writer, &mut input.reader, &self.config.line_ranges)?;
         }
-        printer.print_footer(writer)?;
+        printer.print_footer(writer, input)?;
 
         Ok(())
     }
 
-    fn print_file_ranges<P: Printer>(
+    fn print_file_ranges(
         &self,
-        printer: &mut P,
+        printer: &mut dyn Printer,
         writer: &mut dyn Write,
-        mut reader: InputReader,
+        reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();

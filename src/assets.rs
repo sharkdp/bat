@@ -10,7 +10,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets_metadata::AssetsMetadata;
 use crate::errors::*;
-use crate::input::{Input, InputReader};
+use crate::input::{Input, InputKind, InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
@@ -188,38 +188,46 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
-        input: &Input,
-        reader: &mut InputReader,
+        input: &mut OpenedInput,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
-        let syntax = match (language, input) {
-            (Some(language), _) => self.syntax_set.find_syntax_by_token(language),
-            (None, Input::Ordinary(ofile)) => {
-                let path = Path::new(ofile.provided_path());
-                let line_syntax = self.get_first_line_syntax(reader);
+        let syntax = if let Some(language) = language {
+            self.syntax_set.find_syntax_by_token(language)
+        } else {
+            match input.kind {
+                OpenedInputKind::OrdinaryFile(ref actual_path) => {
+                    let path_str = input
+                        .metadata
+                        .user_provided_name
+                        .as_ref()
+                        .unwrap_or(actual_path);
+                    let path = Path::new(path_str);
+                    let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
-                let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
-                match mapping.get_syntax_for(absolute_path) {
-                    Some(MappingTarget::MapTo(syntax_name)) => {
-                        // TODO: we should probably return an error here if this syntax can not be
-                        // found. Currently, we just fall back to 'plain'.
-                        self.syntax_set.find_syntax_by_name(syntax_name)
-                    }
-                    Some(MappingTarget::MapToUnknown) => line_syntax,
-                    None => {
-                        let file_name = path.file_name().unwrap_or_default();
-                        self.get_extension_syntax(file_name).or(line_syntax)
+                    let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
+                    match mapping.get_syntax_for(absolute_path) {
+                        Some(MappingTarget::MapTo(syntax_name)) => {
+                            // TODO: we should probably return an error here if this syntax can not be
+                            // found. Currently, we just fall back to 'plain'.
+                            self.syntax_set.find_syntax_by_name(syntax_name)
+                        }
+                        Some(MappingTarget::MapToUnknown) => line_syntax,
+                        None => {
+                            let file_name = path.file_name().unwrap_or_default();
+                            self.get_extension_syntax(file_name).or(line_syntax)
+                        }
                     }
                 }
+                OpenedInputKind::StdIn | OpenedInputKind::CustomReader => {
+                    if let Some(ref name) = input.metadata.user_provided_name {
+                        self.get_extension_syntax(&name)
+                            .or(self.get_first_line_syntax(&mut input.reader))
+                    } else {
+                        self.get_first_line_syntax(&mut input.reader)
+                    }
+                }
+                OpenedInputKind::ThemePreviewFile => self.syntax_set.find_syntax_by_name("Rust"),
             }
-            (None, Input::StdIn(None)) => String::from_utf8(reader.first_line.clone())
-                .ok()
-                .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l)),
-            (None, Input::StdIn(Some(file_name))) => self
-                .get_extension_syntax(&file_name)
-                .or(self.get_first_line_syntax(reader)),
-            (_, Input::ThemePreviewFile) => self.syntax_set.find_syntax_by_name("Rust"),
-            (None, Input::FromReader(_, _)) => unimplemented!(),
         };
 
         syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
@@ -248,8 +256,6 @@ impl HighlightingAssets {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use crate::input::OrdinaryFile;
 
     use std::ffi::{OsStr, OsString};
     use std::fs::File;
@@ -281,12 +287,12 @@ mod tests {
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input = Input::Ordinary(OrdinaryFile::from_path(file_path.as_os_str()));
-            let stdin = io::stdin();
-            let mut reader = input.get_reader(stdin.lock()).unwrap();
+            let input: Input = Input::ordinary_file(file_path.as_os_str());
+            let dummy_stdin: &[u8] = &[];
+            let mut opened_input = input.open(dummy_stdin).unwrap();
             let syntax = self
                 .assets
-                .get_syntax(None, &input, &mut reader, &self.syntax_mapping);
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
 
             syntax.name.clone()
         }
@@ -304,13 +310,13 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let input = Input::StdIn(Some(OsString::from(file_name)));
-            let syntax = self.assets.get_syntax(
-                None,
-                &input,
-                &mut input.get_reader(content).unwrap(),
-                &self.syntax_mapping,
-            );
+            let mut input = Input::stdin();
+            input.set_provided_name(Some(OsStr::new(file_name)));
+            let mut opened_input = input.open(content).unwrap();
+
+            let syntax = self
+                .assets
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
             syntax.name.clone()
         }
     }
