@@ -2,12 +2,12 @@ use std::io::{self, Write};
 
 use crate::assets::HighlightingAssets;
 use crate::config::Config;
-#[cfg(feature = "paging")]
-use crate::config::PagingMode;
 use crate::error::*;
 use crate::input::{Input, InputReader, OpenedInput};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
+#[cfg(feature = "paging")]
+use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 pub struct Controller<'a> {

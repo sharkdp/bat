@@ -2,11 +2,11 @@ use std::io::{self, Write};
 #[cfg(feature = "paging")]
 use std::process::Child;
 
-#[cfg(feature = "paging")]
-use crate::config::PagingMode;
 use crate::error::*;
 #[cfg(feature = "paging")]
 use crate::less::retrieve_less_version;
+#[cfg(feature = "paging")]
+use crate::paging::PagingMode;
 
 #[derive(Debug)]
 pub enum OutputType {
