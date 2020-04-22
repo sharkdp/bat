@@ -30,6 +30,9 @@ impl<'a> SyntaxMapping<'a> {
             .insert("**/.ssh/config", MappingTarget::MapTo("SSH Config"))
             .unwrap();
         mapping
+            .insert("**/bat/config", MappingTarget::MapTo("Bourne Again Shell (bash)"))
+            .unwrap();
+        mapping
             .insert(
                 "/etc/profile",
                 MappingTarget::MapTo("Bourne Again Shell (bash)"),
