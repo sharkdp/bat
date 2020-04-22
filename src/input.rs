@@ -15,11 +15,11 @@ pub struct InputDescription {
     pub name: String,
 }
 
-pub enum InputKind {
+pub enum InputKind<'a> {
     OrdinaryFile(OsString),
     StdIn,
     ThemePreviewFile,
-    CustomReader(Box<dyn BufRead>),
+    CustomReader(Box<dyn Read + 'a>),
 }
 
 #[derive(Clone, Default)]
@@ -27,8 +27,8 @@ pub struct InputMetadata {
     pub user_provided_name: Option<OsString>,
 }
 
-pub struct Input {
-    pub kind: InputKind,
+pub struct Input<'a> {
+    pub kind: InputKind<'a>,
     pub metadata: InputMetadata,
 }
 
@@ -45,7 +45,7 @@ pub struct OpenedInput<'a> {
     pub reader: InputReader<'a>,
 }
 
-impl Input {
+impl<'a> Input<'a> {
     pub fn ordinary_file(path: &OsStr) -> Self {
         Input {
             kind: InputKind::OrdinaryFile(path.to_os_string()),
@@ -67,6 +67,13 @@ impl Input {
         }
     }
 
+    pub fn from_reader(reader: Box<dyn Read + 'a>) -> Self {
+        Input {
+            kind: InputKind::CustomReader(reader),
+            metadata: InputMetadata::default(),
+        }
+    }
+
     pub fn is_stdin(&self) -> bool {
         if let InputKind::StdIn = self.kind {
             true
@@ -79,7 +86,7 @@ impl Input {
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
     }
 
-    pub fn open<'a, R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
+    pub fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
         match self.kind {
             InputKind::StdIn => Ok(OpenedInput {
                 kind: OpenedInputKind::StdIn,

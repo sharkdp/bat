@@ -10,7 +10,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets_metadata::AssetsMetadata;
 use crate::errors::*;
-use crate::input::{Input, InputKind, InputReader, OpenedInput, OpenedInputKind};
+use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
@@ -257,12 +257,13 @@ impl HighlightingAssets {
 mod tests {
     use super::*;
 
-    use std::ffi::{OsStr, OsString};
+    use std::ffi::OsStr;
     use std::fs::File;
-    use std::io;
     use std::io::Write;
 
     use tempdir::TempDir;
+
+    use crate::input::Input;
 
     struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
@@ -287,7 +288,7 @@ mod tests {
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input: Input = Input::ordinary_file(file_path.as_os_str());
+            let input = Input::ordinary_file(file_path.as_os_str());
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin).unwrap();
             let syntax = self

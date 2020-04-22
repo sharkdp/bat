@@ -1,10 +1,18 @@
-// `error_chain!` can recurse deeply
-#![recursion_limit = "1024"]
-
-pub(crate) mod assets;
-pub(crate) mod assets_metadata;
+/// `bat` is a library to print syntax highlighted content.
+///
+/// ```
+/// use bat::PrettyPrinter;
+///
+/// PrettyPrinter::new()
+///     .input_from_bytes(b"<span style=\"color: #ff00cc\">Hello world!</span>\n")
+///     .language("html")
+///     .run()
+///     .expect("no errors");
+/// ```
+pub mod assets;
+pub mod assets_metadata;
 pub mod config;
-pub(crate) mod controller;
+pub mod controller;
 mod decorations;
 mod diff;
 pub mod errors;
@@ -20,9 +28,11 @@ pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrap;
 
-pub use assets::HighlightingAssets;
-pub use assets_metadata::AssetsMetadata;
-pub use controller::Controller;
+pub use line_range::{HighlightedLineRanges, LineRange, LineRanges};
 pub use pretty_printer::PrettyPrinter;
-pub use printer::{InteractivePrinter, Printer, SimplePrinter};
 pub use style::{StyleComponent, StyleComponents};
+pub use syntax_mapping::{MappingTarget, SyntaxMapping};
+pub use wrap::WrappingMode;
+
+#[cfg(feature = "paging")]
+pub use config::PagingMode;

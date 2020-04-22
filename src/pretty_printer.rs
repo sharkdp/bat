@@ -2,19 +2,15 @@ use std::ffi::OsStr;
 use std::io::Read;
 
 use crate::{
-    config::{
-        Config, HighlightedLineRanges, LineRanges, StyleComponents, SyntaxMapping, WrappingMode,
-    },
-    errors::Result,
-    input::{Input, InputKind, OpenedInput},
-    Controller, HighlightingAssets,
+    assets::HighlightingAssets, config::Config, controller::Controller, errors::Result,
+    input::Input, HighlightedLineRanges, LineRanges, StyleComponents, SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 
 pub struct PrettyPrinter<'a> {
-    inputs: Vec<Input>,
+    inputs: Vec<Input<'a>>,
     config: Config<'a>,
     assets: HighlightingAssets,
 }
@@ -35,8 +31,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Add a file which should be pretty-printed
     pub fn input_file(&mut self, path: &OsStr) -> &mut Self {
-        // self.inputs
-        //     .push(Input::Ordinary(OrdinaryFile::from_path(path)));
+        self.inputs.push(Input::ordinary_file(path));
         self
     }
 
@@ -47,21 +42,25 @@ impl<'a> PrettyPrinter<'a> {
         P: AsRef<OsStr>,
     {
         for path in paths {
-            // self.inputs
-            //     .push(Input::Ordinary(OrdinaryFile::from_path(path.as_ref())));
+            self.inputs.push(Input::ordinary_file(path.as_ref()));
         }
         self
     }
 
     /// Add STDIN as an input
     pub fn input_stdin(&mut self) -> &mut Self {
-        // self.inputs.push(Input::StdIn(None));
+        self.inputs.push(Input::stdin());
         self
     }
 
+    /// Use a string as an input
+    pub fn input_from_bytes(&mut self, content: &'a [u8]) -> &mut Self {
+        self.input_from_reader(content)
+    }
+
     /// Add a custom reader as an input
-    pub fn input_reader(&mut self, reader: impl Read) -> &mut Self {
-        //self.inputs.push(Input::FromReader(Box::new(reader), None));
+    pub fn input_from_reader<R: Read + 'a>(&mut self, reader: R) -> &mut Self {
+        self.inputs.push(Input::from_reader(Box::new(reader)));
         self
     }
 

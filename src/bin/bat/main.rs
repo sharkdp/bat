@@ -26,10 +26,8 @@ use clap::crate_version;
 use directories::PROJECT_DIRS;
 
 use bat::{
-    config::{Config, StyleComponent, StyleComponents},
-    errors::*,
-    input::Input,
-    Controller, HighlightingAssets,
+    assets::HighlightingAssets, config::Config, controller::Controller, errors::*, input::Input,
+    StyleComponent, StyleComponents,
 };
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
