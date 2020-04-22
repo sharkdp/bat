@@ -2,8 +2,5 @@
 use bat::PrettyPrinter;
 
 fn main() {
-    PrettyPrinter::new()
-        .input_file(file!())
-        .print()
-        .expect("no errors");
+    PrettyPrinter::new().input_file(file!()).print().unwrap();
 }

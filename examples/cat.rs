@@ -9,5 +9,5 @@ fn main() {
         .line_numbers(true)
         .input_files(std::env::args_os().skip(1))
         .print()
-        .expect("no errors");
+        .unwrap();
 }
