@@ -26,7 +26,7 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
-use crate::input::{OpenedInput, OpenedInputKind};
+use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -158,6 +158,8 @@ impl<'a> InteractivePrinter<'a> {
             // Get the Git modifications
             #[cfg(feature = "git")]
             {
+                use crate::input::OpenedInputKind;
+
                 if config.style_components.changes() {
                     if let OpenedInputKind::OrdinaryFile(ref path) = input.kind {
                         line_changes = get_git_diff(path);

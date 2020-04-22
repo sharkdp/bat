@@ -5,7 +5,7 @@ use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
 use crate::error::*;
-use crate::input::{Input, InputKind, InputReader, OpenedInput};
+use crate::input::{Input, InputReader, OpenedInput};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
@@ -33,6 +33,7 @@ impl<'b> Controller<'b> {
 
         #[cfg(feature = "paging")]
         {
+            use crate::input::InputKind;
             use std::path::Path;
 
             // Do not launch the pager if NONE of the input files exist
