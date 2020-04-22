@@ -4,7 +4,7 @@ use crate::assets::HighlightingAssets;
 use crate::config::Config;
 #[cfg(feature = "paging")]
 use crate::config::PagingMode;
-use crate::errors::*;
+use crate::error::*;
 use crate::input::{Input, InputKind, InputReader, OpenedInput};
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;

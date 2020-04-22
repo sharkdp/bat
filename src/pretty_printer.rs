@@ -7,7 +7,7 @@ use crate::{
     assets::HighlightingAssets,
     config::Config,
     controller::Controller,
-    errors::Result,
+    error::Result,
     input::Input,
     line_range::{HighlightedLineRanges, LineRanges},
     style::{StyleComponent, StyleComponents},

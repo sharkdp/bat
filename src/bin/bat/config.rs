@@ -14,7 +14,7 @@ pub fn config_file() -> PathBuf {
         .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
 }
 
-pub fn generate_config_file() -> bat::errors::Result<()> {
+pub fn generate_config_file() -> bat::error::Result<()> {
     let config_file = config_file();
     if config_file.exists() {
         println!(

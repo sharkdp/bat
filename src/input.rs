@@ -4,7 +4,7 @@ use std::io::{self, BufRead, BufReader, Read};
 
 use content_inspector::{self, ContentType};
 
-use crate::errors::*;
+use crate::error::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 

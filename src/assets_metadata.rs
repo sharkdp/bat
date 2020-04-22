@@ -5,7 +5,7 @@ use std::time::SystemTime;
 use semver::Version;
 use serde::{Deserialize, Serialize};
 
-use crate::errors::*;
+use crate::error::*;
 
 #[derive(Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AssetsMetadata {

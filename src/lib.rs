@@ -15,7 +15,7 @@
 //!     .input_from_bytes(b"<span style=\"color: #ff00cc\">Hello world!</span>\n")
 //!     .language("html")
 //!     .print()
-//!     .expect("no errors");
+//!     .unwrap();
 //! ```
 
 pub mod assets;
@@ -24,7 +24,7 @@ pub mod config;
 pub mod controller;
 mod decorations;
 mod diff;
-pub mod errors;
+pub mod error;
 pub mod input;
 mod less;
 pub mod line_range;

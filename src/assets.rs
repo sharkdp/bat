@@ -9,7 +9,7 @@ use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets_metadata::AssetsMetadata;
-use crate::errors::*;
+use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 

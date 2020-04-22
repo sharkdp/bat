@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
-use crate::errors::*;
+use crate::error::*;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum StyleComponent {
