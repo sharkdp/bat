@@ -35,10 +35,10 @@ pub(crate) mod printer;
 pub(crate) mod style;
 pub(crate) mod syntax_mapping;
 mod terminal;
-pub(crate) mod wrap;
+pub(crate) mod wrapping;
 
 pub use line_range::LineRange;
 pub use pretty_printer::PrettyPrinter;
 pub use style::{StyleComponent, StyleComponents};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
-pub use wrap::WrappingMode;
+pub use wrapping::WrappingMode;
