@@ -1,5 +1,5 @@
 /// A program that prints its own source code using the bat library
-use bat::{LineRange, PrettyPrinter, WrappingMode};
+use bat::{LineRange, PrettyPrinter, WrappingMode, PagingMode};
 
 fn main() {
     PrettyPrinter::new()
@@ -11,6 +11,7 @@ fn main() {
         .highlight(LineRange::new(line!() as usize, line!() as usize))
         .theme("1337")
         .wrapping_mode(WrappingMode::Character)
+        .paging_mode(PagingMode::QuitIfOneScreen)
         .input_file(file!())
         .print()
         .unwrap();
