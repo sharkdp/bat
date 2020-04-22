@@ -41,3 +41,6 @@ pub use line_range::LineRange;
 pub use pretty_printer::PrettyPrinter;
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use wrapping::WrappingMode;
+
+#[cfg(feature = "paging")]
+pub use config::PagingMode;
