@@ -29,6 +29,8 @@ pub mod input;
 mod less;
 pub mod line_range;
 mod output;
+#[cfg(feature = "paging")]
+pub mod paging;
 mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
@@ -42,4 +44,4 @@ pub use syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use wrapping::WrappingMode;
 
 #[cfg(feature = "paging")]
-pub use config::PagingMode;
+pub use paging::PagingMode;

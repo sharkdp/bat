@@ -16,7 +16,7 @@ use crate::{
 };
 
 #[cfg(feature = "paging")]
-use crate::config::PagingMode;
+use crate::paging::PagingMode;
 
 #[derive(Default)]
 struct ActiveStyleComponents {

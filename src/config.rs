@@ -1,22 +1,9 @@
 use crate::line_range::{HighlightedLineRanges, LineRanges};
+#[cfg(feature = "paging")]
+use crate::paging::PagingMode;
 use crate::style::StyleComponents;
 use crate::syntax_mapping::SyntaxMapping;
 use crate::wrapping::WrappingMode;
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg(feature = "paging")]
-pub enum PagingMode {
-    Always,
-    QuitIfOneScreen,
-    Never,
-}
-
-#[cfg(feature = "paging")]
-impl Default for PagingMode {
-    fn default() -> Self {
-        PagingMode::Never
-    }
-}
 
 #[derive(Debug, Clone, Default)]
 pub struct Config<'a> {

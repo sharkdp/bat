@@ -15,10 +15,11 @@ use console::Term;
 
 use bat::{
     assets::HighlightingAssets,
-    config::{Config, PagingMode},
+    config::Config,
     error::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
+    paging::PagingMode,
     style::{StyleComponent, StyleComponents},
     MappingTarget, SyntaxMapping, WrappingMode,
 };
