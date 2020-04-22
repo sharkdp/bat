@@ -1,5 +1,12 @@
 //! `bat` is a library to print syntax highlighted content.
 //!
+//! The main struct is `PrettyPrinter` which can be used to configure and
+//! run the syntax highlighting.
+//! If you need more control, you can also use the structs in the submodules
+//! (start with `controller::Controller`), but note that the API of these
+//! internal modules much more likely to change.
+//!
+//! "Hello world" example:
 //! ```
 //! use bat::PrettyPrinter;
 //!
