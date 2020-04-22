@@ -14,7 +14,7 @@
 //! PrettyPrinter::new()
 //!     .input_from_bytes(b"<span style=\"color: #ff00cc\">Hello world!</span>\n")
 //!     .language("html")
-//!     .run()
+//!     .print()
 //!     .expect("no errors");
 //! ```
 
