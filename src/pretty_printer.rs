@@ -10,9 +10,9 @@ use crate::{
     controller::Controller,
     error::Result,
     input::Input,
-    line_range::{HighlightedLineRanges, LineRanges},
+    line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
-    LineRange, SyntaxMapping, WrappingMode,
+    SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
@@ -209,11 +209,19 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Specify a line that should be highlighted (default: none).
+    /// This can be called multiple times to highlight more than one
+    /// line. See also: highlight_range.
+    pub fn highlight(&mut self, line: usize) -> &mut Self {
+        self.highlighted_lines.push(LineRange::new(line, line));
+        self
+    }
+
     /// Specify a range of lines that should be highlighted (default: none).
     /// This can be called multiple times to highlight more than one range
     /// of lines.
-    pub fn highlight(&mut self, range: LineRange) -> &mut Self {
-        self.highlighted_lines.push(range);
+    pub fn highlight_range(&mut self, from: usize, to: usize) -> &mut Self {
+        self.highlighted_lines.push(LineRange::new(from, to));
         self
     }
 

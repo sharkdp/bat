@@ -37,7 +37,6 @@ pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrapping;
 
-pub use line_range::LineRange;
 pub use pretty_printer::PrettyPrinter;
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use wrapping::WrappingMode;
