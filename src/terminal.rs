@@ -30,7 +30,7 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
             0x0d => Color::Purple,
             0x0e => Color::Cyan,
             0x0f => Color::White,
-            _ => unreachable!("The 0x0f color encoding does not allow for codes higher than 0x0f")
+            _ => unreachable!("The 0x0f color encoding does not allow for codes higher than 0x0f"),
         }
     } else if true_color {
         RGB(color.r, color.g, color.b)
