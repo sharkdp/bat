@@ -82,8 +82,9 @@ impl<'a> Input<'a> {
         }
     }
 
-    pub fn set_provided_name(&mut self, provided_name: Option<&OsStr>) {
+    pub fn with_name(mut self, provided_name: Option<&OsStr>) -> Self {
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
+        self
     }
 
     pub(crate) fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
