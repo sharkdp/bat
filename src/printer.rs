@@ -223,6 +223,7 @@ impl<'a> InteractivePrinter<'a> {
         if self.config.tab_width > 0 {
             expand_tabs(text, self.config.tab_width, cursor)
         } else {
+            *cursor += text.len();
             text.to_string()
         }
     }
