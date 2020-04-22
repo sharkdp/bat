@@ -14,8 +14,11 @@ use clap::ArgMatches;
 use console::Term;
 
 use bat::{
-    assets::HighlightingAssets, config::Config, errors::*, input::Input, HighlightedLineRanges,
-    LineRange, LineRanges, MappingTarget, PagingMode, StyleComponent, StyleComponents,
+    assets::HighlightingAssets,
+    config::{Config, PagingMode},
+    errors::*,
+    input::Input,
+    HighlightedLineRanges, LineRange, LineRanges, MappingTarget, StyleComponent, StyleComponents,
     SyntaxMapping, WrappingMode,
 };
 

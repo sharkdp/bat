@@ -9,13 +9,13 @@ use crate::errors::*;
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
 #[derive(Debug, Clone)]
-pub struct InputDescription {
+pub(crate) struct InputDescription {
     pub full: String,
     pub prefix: String,
     pub name: String,
 }
 
-pub enum InputKind<'a> {
+pub(crate) enum InputKind<'a> {
     OrdinaryFile(OsString),
     StdIn,
     ThemePreviewFile,
@@ -23,26 +23,26 @@ pub enum InputKind<'a> {
 }
 
 #[derive(Clone, Default)]
-pub struct InputMetadata {
-    pub user_provided_name: Option<OsString>,
+pub(crate) struct InputMetadata {
+    pub(crate) user_provided_name: Option<OsString>,
 }
 
 pub struct Input<'a> {
-    pub kind: InputKind<'a>,
-    pub metadata: InputMetadata,
+    pub(crate) kind: InputKind<'a>,
+    pub(crate) metadata: InputMetadata,
 }
 
-pub enum OpenedInputKind {
+pub(crate) enum OpenedInputKind {
     OrdinaryFile(OsString),
     StdIn,
     ThemePreviewFile,
     CustomReader,
 }
 
-pub struct OpenedInput<'a> {
-    pub kind: OpenedInputKind,
-    pub metadata: InputMetadata,
-    pub reader: InputReader<'a>,
+pub(crate) struct OpenedInput<'a> {
+    pub(crate) kind: OpenedInputKind,
+    pub(crate) metadata: InputMetadata,
+    pub(crate) reader: InputReader<'a>,
 }
 
 impl<'a> Input<'a> {
@@ -86,7 +86,7 @@ impl<'a> Input<'a> {
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
     }
 
-    pub fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
+    pub(crate) fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
         match self.kind {
             InputKind::StdIn => Ok(OpenedInput {
                 kind: OpenedInputKind::StdIn,
@@ -154,7 +154,7 @@ impl<'a> OpenedInput<'a> {
     }
 }
 
-pub struct InputReader<'a> {
+pub(crate) struct InputReader<'a> {
     inner: Box<dyn BufRead + 'a>,
     pub(crate) first_line: Vec<u8>,
     pub(crate) content_type: Option<ContentType>,

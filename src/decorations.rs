@@ -4,12 +4,12 @@ use crate::printer::{Colors, InteractivePrinter};
 use ansi_term::Style;
 
 #[derive(Debug, Clone)]
-pub struct DecorationText {
+pub(crate) struct DecorationText {
     pub width: usize,
     pub text: String,
 }
 
-pub trait Decoration {
+pub(crate) trait Decoration {
     fn generate(
         &self,
         line_number: usize,
@@ -19,14 +19,14 @@ pub trait Decoration {
     fn width(&self) -> usize;
 }
 
-pub struct LineNumberDecoration {
+pub(crate) struct LineNumberDecoration {
     color: Style,
     cached_wrap: DecorationText,
     cached_wrap_invalid_at: usize,
 }
 
 impl LineNumberDecoration {
-    pub fn new(colors: &Colors) -> Self {
+    pub(crate) fn new(colors: &Colors) -> Self {
         LineNumberDecoration {
             color: colors.line_number,
             cached_wrap_invalid_at: 10000,
@@ -70,7 +70,7 @@ impl Decoration for LineNumberDecoration {
 }
 
 #[cfg(feature = "git")]
-pub struct LineChangesDecoration {
+pub(crate) struct LineChangesDecoration {
     cached_none: DecorationText,
     cached_added: DecorationText,
     cached_removed_above: DecorationText,
@@ -88,7 +88,7 @@ impl LineChangesDecoration {
         }
     }
 
-    pub fn new(colors: &Colors) -> Self {
+    pub(crate) fn new(colors: &Colors) -> Self {
         LineChangesDecoration {
             cached_none: Self::generate_cached(Style::default(), " "),
             cached_added: Self::generate_cached(colors.git_added, "+"),
@@ -127,12 +127,12 @@ impl Decoration for LineChangesDecoration {
     }
 }
 
-pub struct GridBorderDecoration {
+pub(crate) struct GridBorderDecoration {
     cached: DecorationText,
 }
 
 impl GridBorderDecoration {
-    pub fn new(colors: &Colors) -> Self {
+    pub(crate) fn new(colors: &Colors) -> Self {
         GridBorderDecoration {
             cached: DecorationText {
                 text: colors.grid.paint("│").to_string(),

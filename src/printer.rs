@@ -32,7 +32,7 @@ use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrap::WrappingMode;
 
-pub trait Printer {
+pub(crate) trait Printer {
     fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
 
@@ -82,7 +82,7 @@ impl Printer for SimplePrinter {
     }
 }
 
-pub struct InteractivePrinter<'a> {
+pub(crate) struct InteractivePrinter<'a> {
     colors: Colors,
     config: &'a Config<'a>,
     decorations: Vec<Box<dyn Decoration>>,
@@ -97,7 +97,7 @@ pub struct InteractivePrinter<'a> {
 }
 
 impl<'a> InteractivePrinter<'a> {
-    pub fn new(
+    pub(crate) fn new(
         config: &'a Config,
         assets: &'a HighlightingAssets,
         input: &mut OpenedInput,
