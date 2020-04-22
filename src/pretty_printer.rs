@@ -1,6 +1,8 @@
 use std::ffi::OsStr;
 use std::io::Read;
 
+use console::Term;
+
 use crate::{
     assets::HighlightingAssets,
     config::Config,
@@ -8,7 +10,7 @@ use crate::{
     errors::Result,
     input::Input,
     line_range::{HighlightedLineRanges, LineRanges},
-    LineRange, StyleComponents, SyntaxMapping, WrappingMode,
+    LineRange, StyleComponent, StyleComponents, SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
@@ -20,6 +22,7 @@ pub struct PrettyPrinter<'a> {
     assets: HighlightingAssets,
 
     highlighted_lines: Vec<LineRange>,
+    term_width: Option<usize>,
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -33,7 +36,9 @@ impl<'a> PrettyPrinter<'a> {
             inputs: vec![],
             config,
             assets: HighlightingAssets::from_binary(),
+
             highlighted_lines: vec![],
+            term_width: None,
         }
     }
 
@@ -78,9 +83,9 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// The character width of the terminal (default: unlimited)
+    /// The character width of the terminal (default: autodetect)
     pub fn term_width(&mut self, width: usize) -> &mut Self {
-        self.config.term_width = width;
+        self.term_width = Some(width);
         self
     }
 
@@ -103,8 +108,8 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Configure style elements like grid or  line numbers (default: "full" style)
-    pub fn style_components(&mut self, components: StyleComponents) -> &mut Self {
-        self.config.style_components = components;
+    pub fn style_components(&mut self, components: &[StyleComponent]) -> &mut Self {
+        self.config.style_components = StyleComponents::new(components);
         self
     }
 
@@ -166,6 +171,9 @@ impl<'a> PrettyPrinter<'a> {
     pub fn print(&mut self) -> Result<bool> {
         self.config.highlighted_lines =
             HighlightedLineRanges(LineRanges::from(self.highlighted_lines.clone()));
+        self.config.term_width = self
+            .term_width
+            .unwrap_or_else(|| Term::stdout().size().1 as usize);
 
         let mut inputs: Vec<Input> = vec![];
         std::mem::swap(&mut inputs, &mut self.inputs);
