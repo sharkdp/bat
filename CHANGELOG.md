@@ -40,6 +40,13 @@
 
 ## `bat` as a library
 
+- A completely new "high level" API has been added that is much more convenient
+  to use. See the `examples` folder for the updated code. The older "low level"
+  API is still available (basically everything that is not in the root `bat`
+  module), but has been refactored quite a bit. It is recommended to only use
+  the new "high level" API, if possible. This will be much easier to keep stable.
+  Note that this should still be considered a "beta" release of `bat`-as-a-library.
+  For more details and some screenshots of the example programs, see #936.
 - Stripped out a lot of binary-only dependencies, see #895 and #899 (@dtolnay)
 
   This introduces a `features = ["application"]` which is enabled by default and pulls in
