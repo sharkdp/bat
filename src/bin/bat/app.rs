@@ -277,7 +277,7 @@ impl App {
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
             } else if matches.is_present("number") {
-                [StyleComponent::Numbers].iter().cloned().collect()
+                [StyleComponent::LineNumbers].iter().cloned().collect()
             } else if matches.is_present("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
             } else {

@@ -9,7 +9,7 @@ pub enum StyleComponent {
     Changes,
     Grid,
     Header,
-    Numbers,
+    LineNumbers,
     Snip,
     Full,
     Plain,
@@ -28,13 +28,13 @@ impl StyleComponent {
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Header => &[StyleComponent::Header],
-            StyleComponent::Numbers => &[StyleComponent::Numbers],
+            StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 StyleComponent::Changes,
                 StyleComponent::Grid,
                 StyleComponent::Header,
-                StyleComponent::Numbers,
+                StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
             StyleComponent::Plain => &[],
@@ -51,7 +51,7 @@ impl FromStr for StyleComponent {
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
             "header" => Ok(StyleComponent::Header),
-            "numbers" => Ok(StyleComponent::Numbers),
+            "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
             "plain" => Ok(StyleComponent::Plain),
@@ -82,7 +82,7 @@ impl StyleComponents {
     }
 
     pub fn numbers(&self) -> bool {
-        self.0.contains(&StyleComponent::Numbers)
+        self.0.contains(&StyleComponent::LineNumbers)
     }
 
     pub fn snip(&self) -> bool {
