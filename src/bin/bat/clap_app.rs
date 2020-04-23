@@ -106,6 +106,34 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                             the filename."),
         )
         .arg(
+            Arg::with_name("diff")
+                .long("diff")
+                .help("Only show lines that have been added/removed/modified.")
+                .long_help(
+                    "Only show lines that have been added/removed/modified with respect \
+                     to the Git index. Use --diff-context=N to control how much context you want to see.",
+                ),
+        )
+        .arg(
+            Arg::with_name("diff-context")
+                .long("diff-context")
+                .overrides_with("diff-context")
+                .takes_value(true)
+                .value_name("N")
+                .validator(
+                    |n| {
+                        n.parse::<usize>()
+                            .map_err(|_| "must be a number")
+                            .map(|_| ()) // Convert to Result<(), &str>
+                            .map_err(|e| e.to_string())
+                    }, // Convert to Result<(), String>
+                )
+                .hidden_short_help(true)
+                .long_help(
+                    "Include N lines of context around added/removed/modified lines when using '--diff'.",
+                ),
+        )
+        .arg(
             Arg::with_name("tabs")
                 .long("tabs")
                 .overrides_with("tabs")
@@ -339,6 +367,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true)
                 .number_of_values(1)
                 .value_name("N:M")
+                .conflicts_with("diff")
                 .help("Only print the lines from N to M.")
                 .long_help(
                     "Only print the specified range of lines for each file. \

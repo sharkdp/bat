@@ -24,7 +24,7 @@ use crate::config::Config;
 use crate::decorations::LineChangesDecoration;
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
-use crate::diff::{get_git_diff, LineChanges};
+use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
@@ -90,7 +90,7 @@ pub(crate) struct InteractivePrinter<'a> {
     ansi_prefix_sgr: String,
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
-    pub line_changes: Option<LineChanges>,
+    pub line_changes: &'a Option<LineChanges>,
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
     background_color_highlight: Option<Color>,
@@ -101,6 +101,7 @@ impl<'a> InteractivePrinter<'a> {
         config: &'a Config,
         assets: &'a HighlightingAssets,
         input: &mut OpenedInput,
+        #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
@@ -145,9 +146,6 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        #[cfg(feature = "git")]
-        let mut line_changes = None;
-
         let highlighter = if input
             .reader
             .content_type
@@ -155,18 +153,6 @@ impl<'a> InteractivePrinter<'a> {
         {
             None
         } else {
-            // Get the Git modifications
-            #[cfg(feature = "git")]
-            {
-                use crate::input::OpenedInputKind;
-
-                if config.style_components.changes() {
-                    if let OpenedInputKind::OrdinaryFile(ref path) = input.kind {
-                        line_changes = get_git_diff(path);
-                    }
-                }
-            }
-
             // Determine the type of syntax for highlighting
             let syntax = assets.get_syntax(config.language, input, &config.syntax_mapping);
             Some(HighlightLines::new(syntax, theme))

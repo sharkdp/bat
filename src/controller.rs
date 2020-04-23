@@ -1,9 +1,13 @@
 use std::io::{self, Write};
 
 use crate::assets::HighlightingAssets;
-use crate::config::Config;
+use crate::config::{Config, VisibleLines};
+#[cfg(feature = "git")]
+use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
 use crate::input::{Input, InputReader, OpenedInput};
+#[cfg(feature = "git")]
+use crate::line_range::LineRange;
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 #[cfg(feature = "paging")]
@@ -68,6 +72,32 @@ impl<'b> Controller<'b> {
                     no_errors = false;
                 }
                 Ok(mut opened_input) => {
+                    #[cfg(feature = "git")]
+                    let line_changes = if self.config.visible_lines.diff_context()
+                        || (!self.config.loop_through && self.config.style_components.changes())
+                    {
+                        if let crate::input::OpenedInputKind::OrdinaryFile(ref path) =
+                            opened_input.kind
+                        {
+                            let diff = get_git_diff(path);
+
+                            if self.config.visible_lines.diff_context()
+                                && diff
+                                    .as_ref()
+                                    .map(|changes| changes.is_empty())
+                                    .unwrap_or(false)
+                            {
+                                continue;
+                            }
+
+                            diff
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+
                     let mut printer: Box<dyn Printer> = if self.config.loop_through {
                         Box::new(SimplePrinter::new())
                     } else {
@@ -75,10 +105,18 @@ impl<'b> Controller<'b> {
                             &self.config,
                             &self.assets,
                             &mut opened_input,
+                            #[cfg(feature = "git")]
+                            &line_changes,
                         ))
                     };
 
-                    let result = self.print_file(&mut *printer, writer, &mut opened_input);
+                    let result = self.print_file(
+                        &mut *printer,
+                        writer,
+                        &mut opened_input,
+                        #[cfg(feature = "git")]
+                        &line_changes,
+                    );
 
                     if let Err(error) = result {
                         handle_error(&error);
@@ -96,13 +134,31 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         input: &mut OpenedInput,
+        #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input)?;
         }
 
         if !input.reader.first_line.is_empty() {
-            self.print_file_ranges(printer, writer, &mut input.reader, &self.config.line_ranges)?;
+            let line_ranges = match self.config.visible_lines {
+                VisibleLines::Ranges(ref line_ranges) => line_ranges.clone(),
+                #[cfg(feature = "git")]
+                VisibleLines::DiffContext(context) => {
+                    let mut line_ranges: Vec<LineRange> = vec![];
+
+                    if let Some(line_changes) = line_changes {
+                        for line in line_changes.keys() {
+                            let line = *line as usize;
+                            line_ranges.push(LineRange::new(line - context, line + context));
+                        }
+                    }
+
+                    LineRanges::from(line_ranges)
+                }
+            };
+
+            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
         }
         printer.print_footer(writer, input)?;
 

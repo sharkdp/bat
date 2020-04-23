@@ -5,6 +5,32 @@ use crate::style::StyleComponents;
 use crate::syntax_mapping::SyntaxMapping;
 use crate::wrapping::WrappingMode;
 
+#[derive(Debug, Clone)]
+pub enum VisibleLines {
+    /// Show all lines which are included in the line ranges
+    Ranges(LineRanges),
+
+    #[cfg(feature = "git")]
+    /// Only show lines surrounding added/deleted/modified lines
+    DiffContext(usize),
+}
+
+impl VisibleLines {
+    pub fn diff_context(&self) -> bool {
+        match self {
+            Self::Ranges(_) => false,
+            #[cfg(feature = "git")]
+            Self::DiffContext(_) => true,
+        }
+    }
+}
+
+impl Default for VisibleLines {
+    fn default() -> Self {
+        VisibleLines::Ranges(LineRanges::default())
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Config<'a> {
     /// The explicitly configured language, if any
@@ -39,8 +65,8 @@ pub struct Config<'a> {
     #[cfg(feature = "paging")]
     pub paging_mode: PagingMode,
 
-    /// Specifies the lines that should be printed
-    pub line_ranges: LineRanges,
+    /// Specifies which lines should be printed
+    pub visible_lines: VisibleLines,
 
     /// The syntax highlighting theme
     pub theme: String,
@@ -62,10 +88,7 @@ pub struct Config<'a> {
 fn default_config_should_include_all_lines() {
     use crate::line_range::RangeCheckResult;
 
-    assert_eq!(
-        Config::default().line_ranges.check(17),
-        RangeCheckResult::InRange
-    );
+    assert_eq!(LineRanges::default().check(17), RangeCheckResult::InRange);
 }
 
 #[test]
