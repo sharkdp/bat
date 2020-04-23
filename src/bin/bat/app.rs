@@ -15,7 +15,7 @@ use console::Term;
 
 use bat::{
     assets::HighlightingAssets,
-    config::Config,
+    config::{Config, VisibleLines},
     error::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
@@ -196,13 +196,23 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            line_ranges: self
-                .matches
-                .values_of("line-range")
-                .map(|vs| vs.map(LineRange::from).collect())
-                .transpose()?
-                .map(LineRanges::from)
-                .unwrap_or_default(),
+            visible_lines: if self.matches.is_present("diff") {
+                VisibleLines::DiffContext(
+                    self.matches
+                        .value_of("diff-context")
+                        .and_then(|t| t.parse().ok())
+                        .unwrap_or(2),
+                )
+            } else {
+                VisibleLines::Ranges(
+                    self.matches
+                        .values_of("line-range")
+                        .map(|vs| vs.map(LineRange::from).collect())
+                        .transpose()?
+                        .map(LineRanges::from)
+                        .unwrap_or_default(),
+                )
+            },
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),

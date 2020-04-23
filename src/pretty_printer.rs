@@ -6,7 +6,7 @@ use syntect::parsing::SyntaxReference;
 
 use crate::{
     assets::HighlightingAssets,
-    config::Config,
+    config::{Config, VisibleLines},
     controller::Controller,
     error::Result,
     input::Input,
@@ -205,7 +205,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Specify the lines that should be printed (default: all)
     pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
-        self.config.line_ranges = ranges;
+        self.config.visible_lines = VisibleLines::Ranges(ranges);
         self
     }
 
