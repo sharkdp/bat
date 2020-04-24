@@ -16,7 +16,7 @@ pub enum VisibleLines {
 }
 
 impl VisibleLines {
-    pub fn diff_context(&self) -> bool {
+    pub fn diff_mode(&self) -> bool {
         match self {
             Self::Ranges(_) => false,
             #[cfg(feature = "git")]
