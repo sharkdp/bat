@@ -82,3 +82,4 @@ liquid = { version = "0.20", optional = true }
 
 [profile.release]
 lto = true
+codegen-units = 1
