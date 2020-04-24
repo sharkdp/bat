@@ -12,16 +12,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::fs;
     use std::path::Path;
 
-    use lazy_static::lazy_static;
-
-    static PROJECT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
     // Read environment variables.
-    lazy_static! {
-        static ref PROJECT_NAME: &'static str = option_env!("PROJECT_NAME").unwrap_or("bat");
-        static ref EXECUTABLE_NAME: &'static str =
-            option_env!("PROJECT_EXECUTABLE").unwrap_or(*PROJECT_NAME);
-    }
+    let project_name = option_env!("PROJECT_NAME").unwrap_or("bat");
+    let executable_name = option_env!("PROJECT_EXECUTABLE").unwrap_or(project_name);
+    static PROJECT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
     /// Generates a file from a liquid template.
     fn template(
@@ -38,9 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let variables = liquid::object!({
-        "PROJECT_NAME": PROJECT_NAME.to_owned(),
-        "PROJECT_EXECUTABLE": EXECUTABLE_NAME.to_owned(),
-        "PROJECT_VERSION": PROJECT_VERSION.to_owned(),
+        "PROJECT_NAME": project_name,
+        "PROJECT_EXECUTABLE": executable_name,
+        "PROJECT_VERSION": PROJECT_VERSION,
     });
 
     let out_dir_env = std::env::var_os("OUT_DIR").expect("OUT_DIR to be set in build.rs");
