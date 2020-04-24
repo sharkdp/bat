@@ -80,8 +80,7 @@ impl App {
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
-            // FIXME: `_` will always cover in or patterns
-            Some("auto") | _ => {
+            Some("auto") | None => {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
@@ -100,6 +99,7 @@ impl App {
                     PagingMode::Never
                 }
             }
+            _ => unreachable!("other values for --paging are not allowed"),
         };
 
         let mut syntax_mapping = SyntaxMapping::builtin();
@@ -148,14 +148,14 @@ impl App {
                 match self.matches.value_of("wrap") {
                     Some("character") => WrappingMode::Character,
                     Some("never") => WrappingMode::NoWrapping,
-                    // FIXME: `_` will always cover in or patterns
-                    Some("auto") | _ => {
+                    Some("auto") | None => {
                         if style_components.plain() {
                             WrappingMode::NoWrapping
                         } else {
                             WrappingMode::Character
                         }
                     }
+                    _ => unreachable!("other values for --paging are not allowed"),
                 }
             } else {
                 // We don't have the tty width when piping to another program.
