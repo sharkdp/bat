@@ -138,6 +138,7 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         input: &mut OpenedInput,
+        #[cfg(feature = "git")]
         line_changes: &Option<LineChanges>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
