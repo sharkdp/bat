@@ -36,7 +36,10 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
 fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     let str_from_utf8 = |seq| std::str::from_utf8(seq).ok();
 
-    let decoded = input.get(0..1).and_then(str_from_utf8).map(|c| (c, 1))
+    let decoded = input
+        .get(0..1)
+        .and_then(str_from_utf8)
+        .map(|c| (c, 1))
         .or_else(|| input.get(0..2).and_then(str_from_utf8).map(|c| (c, 2)))
         .or_else(|| input.get(0..3).and_then(str_from_utf8).map(|c| (c, 3)))
         .or_else(|| input.get(0..4).and_then(str_from_utf8).map(|c| (c, 4)));

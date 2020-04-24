@@ -38,7 +38,8 @@ pub fn generate_config_file() -> bat::error::Result<()> {
                 return Err(format!(
                     "Unable to write config file to: {}",
                     config_file.to_string_lossy()
-                ).into());
+                )
+                .into());
             }
         }
     }

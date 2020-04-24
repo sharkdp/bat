@@ -53,5 +53,6 @@ pub fn assets_from_cache_or_binary() -> Result<HighlightingAssets> {
         }
     }
 
-    Ok(HighlightingAssets::from_cache(&cache_dir).unwrap_or_else(|_| HighlightingAssets::from_binary()))
+    Ok(HighlightingAssets::from_cache(&cache_dir)
+        .unwrap_or_else(|_| HighlightingAssets::from_binary()))
 }

@@ -19,7 +19,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Read environment variables.
     lazy_static! {
         static ref PROJECT_NAME: &'static str = option_env!("PROJECT_NAME").unwrap_or("bat");
-        static ref EXECUTABLE_NAME: &'static str = option_env!("PROJECT_EXECUTABLE").unwrap_or(*PROJECT_NAME);
+        static ref EXECUTABLE_NAME: &'static str =
+            option_env!("PROJECT_EXECUTABLE").unwrap_or(*PROJECT_NAME);
     }
 
     /// Generates a file from a liquid template.
