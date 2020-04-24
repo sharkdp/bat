@@ -30,7 +30,7 @@ impl LineRange {
     fn parse_range(range_raw: &str) -> Result<LineRange> {
         let mut new_range = LineRange::default();
 
-        if range_raw.bytes().nth(0).ok_or("Empty line range")? == b':' {
+        if range_raw.bytes().next().ok_or("Empty line range")? == b':' {
             new_range.upper = range_raw[1..].parse()?;
             return Ok(new_range);
         } else if range_raw.bytes().last().ok_or("Empty line range")? == b':' {

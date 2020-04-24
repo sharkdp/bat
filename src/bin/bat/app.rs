@@ -80,6 +80,7 @@ impl App {
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
+            // FIXME: `_` will always cover in or patterns
             Some("auto") | _ => {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
@@ -147,6 +148,7 @@ impl App {
                 match self.matches.value_of("wrap") {
                     Some("character") => WrappingMode::Character,
                     Some("never") => WrappingMode::NoWrapping,
+                    // FIXME: `_` will always cover in or patterns
                     Some("auto") | _ => {
                         if style_components.plain() {
                             WrappingMode::NoWrapping
@@ -239,18 +241,18 @@ impl App {
 
         let mut filenames_or_none: Box<dyn Iterator<Item = _>> = match filenames {
             Some(ref filenames) => {
-                Box::new(filenames.into_iter().map(|name| Some(OsStr::new(*name))))
+                Box::new(filenames.iter().map(|name| Some(OsStr::new(*name))))
             }
             None => Box::new(std::iter::repeat(None)),
         };
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            let input = Input::stdin().with_name(filenames_or_none.nth(0).unwrap_or(None));
+            let input = Input::stdin().with_name(filenames_or_none.next().unwrap_or(None));
             return Ok(vec![input]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
-            Some(ref files) => Box::new(files.into_iter().map(|name| Some(*name))),
+            Some(ref files) => Box::new(files.iter().map(|name| Some(*name))),
             None => Box::new(std::iter::repeat(None)),
         };
 
@@ -264,7 +266,7 @@ impl App {
                 }
             }
         }
-        return Ok(file_input);
+        Ok(file_input)
     }
 
     fn style_components(&self) -> Result<StyleComponents> {

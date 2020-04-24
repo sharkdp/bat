@@ -152,7 +152,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         t.parse::<i32>()
                             .map_err(|_e| "must be an offset or number")
                             .and_then(|v| if v == 0 && !is_offset {
-                                Err("terminal width cannot be zero".into())
+                                Err("terminal width cannot be zero")
                             } else {
                                 Ok(())
                             })
