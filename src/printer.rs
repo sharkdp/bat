@@ -202,7 +202,7 @@ impl<'a> InteractivePrinter<'a> {
             if self.config.style_components.grid() {
                 format!("{} │ ", text_filled)
             } else {
-                format!("{}", text_filled)
+                text_filled
             }
         }
     }
@@ -229,10 +229,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     Yellow.paint("[bat warning]"),
                     input.description().full,
                 )?;
-            } else {
-                if self.config.style_components.grid() {
-                    self.print_horizontal_line(handle, '┬')?;
-                }
+            } else if self.config.style_components.grid() {
+                self.print_horizontal_line(handle, '┬')?;
             }
             return Ok(());
         }
@@ -304,9 +302,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let snip_right =
             " ─".repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
 
-        write!(
+        writeln!(
             handle,
-            "{}\n",
+            "{}",
             self.colors
                 .grid
                 .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))

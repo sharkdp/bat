@@ -35,10 +35,10 @@ pub fn generate_config_file() -> bat::error::Result<()> {
         match config_dir {
             Some(path) => fs::create_dir_all(path)?,
             None => {
-                return Ok(Err(format!(
+                return Err(format!(
                     "Unable to write config file to: {}",
                     config_file.to_string_lossy()
-                ))?)
+                ).into());
             }
         }
     }
@@ -77,7 +77,7 @@ pub fn generate_config_file() -> bat::error::Result<()> {
         config_file.to_string_lossy()
     );
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {

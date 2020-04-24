@@ -45,9 +45,9 @@ impl<'b> Controller<'b> {
             if self.config.paging_mode != PagingMode::Never {
                 let call_pager = inputs.iter().any(|ref input| {
                     if let InputKind::OrdinaryFile(ref path) = input.kind {
-                        return Path::new(path).exists();
+                        Path::new(path).exists()
                     } else {
-                        return true;
+                        true
                     }
                 });
                 if !call_pager {

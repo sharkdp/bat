@@ -13,7 +13,7 @@ pub struct AssetsMetadata {
     creation_time: Option<SystemTime>,
 }
 
-const FILENAME: &'static str = "metadata.yaml";
+const FILENAME: &str = "metadata.yaml";
 
 impl AssetsMetadata {
     pub(crate) fn new(current_version: &str) -> AssetsMetadata {

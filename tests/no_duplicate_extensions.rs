@@ -4,7 +4,7 @@ use bat::assets::HighlightingAssets;
 
 #[test]
 fn no_duplicate_extensions() {
-    const KNOWN_EXCEPTIONS: &[&'static str] = &[
+    const KNOWN_EXCEPTIONS: &[&str] = &[
         // The '.h' extension currently appears in multiple syntaxes: C, C++, Objective C,
         // Objective C++
         "h",

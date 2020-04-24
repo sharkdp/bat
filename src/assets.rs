@@ -180,7 +180,7 @@ impl HighlightingAssets {
                         theme
                     );
                 }
-                &self.theme_set.themes[self.fallback_theme.unwrap_or(Self::default_theme())]
+                &self.theme_set.themes[self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
             }
         }
     }
@@ -204,7 +204,7 @@ impl HighlightingAssets {
                     let path = Path::new(path_str);
                     let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
-                    let absolute_path = path.canonicalize().ok().unwrap_or(path.to_owned());
+                    let absolute_path = path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
                     match mapping.get_syntax_for(absolute_path) {
                         Some(MappingTarget::MapTo(syntax_name)) => {
                             // TODO: we should probably return an error here if this syntax can not be
@@ -221,7 +221,7 @@ impl HighlightingAssets {
                 OpenedInputKind::StdIn | OpenedInputKind::CustomReader => {
                     if let Some(ref name) = input.metadata.user_provided_name {
                         self.get_extension_syntax(&name)
-                            .or(self.get_first_line_syntax(&mut input.reader))
+                            .or_else(|| self.get_first_line_syntax(&mut input.reader))
                     } else {
                         self.get_first_line_syntax(&mut input.reader)
                     }
