@@ -240,9 +240,7 @@ impl App {
             .map(|values| values.collect());
 
         let mut filenames_or_none: Box<dyn Iterator<Item = _>> = match filenames {
-            Some(ref filenames) => {
-                Box::new(filenames.iter().map(|name| Some(OsStr::new(*name))))
-            }
+            Some(ref filenames) => Box::new(filenames.iter().map(|name| Some(OsStr::new(*name)))),
             None => Box::new(std::iter::repeat(None)),
         };
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
