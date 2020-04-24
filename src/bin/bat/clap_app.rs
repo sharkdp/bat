@@ -108,6 +108,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("diff")
                 .long("diff")
+                .short("d")
                 .help("Only show lines that have been added/removed/modified.")
                 .long_help(
                     "Only show lines that have been added/removed/modified with respect \
