@@ -8,7 +8,7 @@ environment:
 
 install:
   - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
-  - rustup-init.exe -y --default-host %TARGET%
+  - rustup-init.exe -y --default-host %TARGET% --profile minimal
   - set PATH=%PATH%;C:\cargo\bin
   - rustc -Vv
   - cargo -V
