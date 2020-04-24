@@ -79,7 +79,6 @@ assert_cmd = "1.0.1"
 [build-dependencies]
 clap = { version = "2.33", optional = true }
 liquid = { version = "0.20", optional = true }
-lazy_static = { version = "1.4", optional = true }
 
 [profile.release]
 lto = true
