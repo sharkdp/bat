@@ -73,26 +73,30 @@ impl<'b> Controller<'b> {
                 }
                 Ok(mut opened_input) => {
                     #[cfg(feature = "git")]
-                    let line_changes = if self.config.visible_lines.diff_context()
+                    let line_changes = if self.config.visible_lines.diff_mode()
                         || (!self.config.loop_through && self.config.style_components.changes())
                     {
-                        if let crate::input::OpenedInputKind::OrdinaryFile(ref path) =
-                            opened_input.kind
-                        {
-                            let diff = get_git_diff(path);
+                        match opened_input.kind {
+                            crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
+                                let diff = get_git_diff(path);
 
-                            if self.config.visible_lines.diff_context()
-                                && diff
-                                    .as_ref()
-                                    .map(|changes| changes.is_empty())
-                                    .unwrap_or(false)
-                            {
+                                // Skip files without Git modifications
+                                if self.config.visible_lines.diff_mode()
+                                    && diff
+                                        .as_ref()
+                                        .map(|changes| changes.is_empty())
+                                        .unwrap_or(false)
+                                {
+                                    continue;
+                                }
+
+                                diff
+                            }
+                            _ if self.config.visible_lines.diff_mode() => {
+                                // Skip non-file inputs in diff mode
                                 continue;
                             }
-
-                            diff
-                        } else {
-                            None
+                            _ => None,
                         }
                     } else {
                         None
@@ -134,7 +138,7 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         input: &mut OpenedInput,
-        #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
+        line_changes: &Option<LineChanges>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input)?;
