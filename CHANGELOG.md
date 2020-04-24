@@ -3,7 +3,7 @@
 
 ## Features
 
-- Add a new `--diff` option that can be used to only show lines surrounding
+- Add a new `--diff`/`-d` option that can be used to only show lines surrounding
   Git changes, i.e. added, removed or modified lines. The amount of additional
   context can be controlled with `--diff-context=N`. See #23 and #940
 
