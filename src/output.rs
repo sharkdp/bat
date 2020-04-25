@@ -125,6 +125,20 @@ impl OutputType {
         OutputType::Stdout(io::stdout())
     }
 
+    #[cfg(feature = "paging")]
+    pub(crate) fn is_pager(&self) -> bool {
+        if let OutputType::Pager(_) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    #[cfg(not(feature = "paging"))]
+    pub(crate) fn is_pager(&self) -> bool {
+        false
+    }
+
     pub fn handle(&mut self) -> Result<&mut dyn Write> {
         Ok(match *self {
             #[cfg(feature = "paging")]
