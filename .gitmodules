@@ -166,9 +166,6 @@
 [submodule "assets/themes/Nord-sublime"]
 	path = assets/themes/Nord-sublime
 	url = https://github.com/crabique/Nord-plist.git
-[submodule "assets/themes/solarized-sublime"]
-	path = assets/themes/solarized-sublime
-	url = https://github.com/paulcpederson/solarized-sublime.git
 [submodule "assets/syntaxes/Vue"]
 	path = assets/syntaxes/02_Extra/Vue
 	url = https://github.com/vuejs/vue-syntax-highlight.git
