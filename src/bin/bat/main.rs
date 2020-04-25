@@ -210,7 +210,8 @@ fn main() {
 
     match result {
         Err(error) => {
-            default_error_handler(&error);
+            let stderr = std::io::stderr();
+            default_error_handler(&error, &mut stderr.lock());
             process::exit(1);
         }
         Ok(false) => {

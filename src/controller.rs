@@ -31,7 +31,7 @@ impl<'b> Controller<'b> {
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
-        handle_error: impl Fn(&Error),
+        handle_error: impl Fn(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
 
@@ -62,13 +62,23 @@ impl<'b> Controller<'b> {
             output_type = OutputType::stdout();
         }
 
+        let attached_to_pager = output_type.is_pager();
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
+
+        let stderr = io::stderr();
+        let print_error = |error: &Error, write: &mut dyn Write| {
+            if attached_to_pager {
+                handle_error(error, write);
+            } else {
+                handle_error(error, &mut stderr.lock());
+            }
+        };
 
         for input in inputs.into_iter() {
             match input.open(io::stdin().lock()) {
                 Err(error) => {
-                    handle_error(&error);
+                    print_error(&error, writer);
                     no_errors = false;
                 }
                 Ok(mut opened_input) => {
@@ -123,7 +133,7 @@ impl<'b> Controller<'b> {
                     );
 
                     if let Err(error) = result {
-                        handle_error(&error);
+                        print_error(&error, writer);
                         no_errors = false;
                     }
                 }
@@ -138,8 +148,7 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         input: &mut OpenedInput,
-        #[cfg(feature = "git")]
-        line_changes: &Option<LineChanges>,
+        #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input)?;
