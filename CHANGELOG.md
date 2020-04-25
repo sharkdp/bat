@@ -21,6 +21,7 @@
 ## Bugfixes
 
 - Error message printed in the middle of the output for another file, see #946
+- Performance improvements when using custom caches (via `bat cache --build`): the `bat` startup time should now be twice as fast (@lzutao).
 
 ## Themes
 
