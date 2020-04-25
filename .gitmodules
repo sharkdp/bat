@@ -176,3 +176,6 @@
 [submodule "assets/syntaxes/02_Extra/Stylus"]
 	path = assets/syntaxes/02_Extra/Stylus
 	url = https://github.com/billymoon/Stylus
+[submodule "assets/themes/Solarized"]
+	path = assets/themes/Solarized
+	url = https://github.com/braver/Solarized
