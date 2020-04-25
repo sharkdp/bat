@@ -2,19 +2,35 @@
 
 
 ## Features
+## Bugfixes
+## Other
+## New syntaxes
+## New themes
+## `bat` as a library
+
+## Packaging
+
+# v0.15.0
+
+## Features
 
 - Add a new `--diff`/`-d` option that can be used to only show lines surrounding
   Git changes, i.e. added, removed or modified lines. The amount of additional
   context can be controlled with `--diff-context=N`. See #23 and #940
 
 ## Bugfixes
-## Other
+
+- Error message printed in the middle of the output for another file, see #946
+
+## Themes
+
+- Updated version of the Solarized dark/light themes, see #941
+
 ## `bat` as a library
-## New syntaxes
-## New themes
 
-## Packaging
-
+- There are a few changes in the "low level" API (the `Config` struct has changed and
+  the error handler needs a new `&mut dyn Write` argument). The high-level API is not
+  affected.
 
 # v0.14.0
 
