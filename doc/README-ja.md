@@ -345,7 +345,7 @@ ansible-galaxy install aeimer.install_bat
 そして `cargo` をビルドに対して使用します:
 
 ```bash
-cargo install bat
+cargo install --locked bat
 ```
 
 一部のプラットフォームでは `llvm` および/または `libclang-dev` のインストールが必要になる場合があります。
@@ -594,11 +594,11 @@ cargo build --bins
 cargo test
 
 # Install (release version)
-cargo install
+cargo install --locked
 
 # Build a bat binary with modified syntaxes and themes
 bash assets/create.sh
-cargo install -f
+cargo install --locked --force
 ```
 
 ## Maintainers

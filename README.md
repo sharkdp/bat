@@ -352,7 +352,7 @@ If you want to build `bat` from source, you need Rust 1.40 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
-cargo install bat
+cargo install --locked bat
 ```
 
 On some platforms, you might need to install `llvm` and/or `libclang-dev`.
@@ -606,11 +606,11 @@ cargo build --bins
 cargo test
 
 # Install (release version)
-cargo install
+cargo install --locked
 
 # Build a bat binary with modified syntaxes and themes
 bash assets/create.sh
-cargo install -f
+cargo install --locked --force
 ```
 
 ## Maintainers
