@@ -179,3 +179,6 @@
 [submodule "assets/themes/Solarized"]
 	path = assets/themes/Solarized
 	url = https://github.com/braver/Solarized
+[submodule "assets/syntaxes/02_Extra/Fortran"]
+	path = assets/syntaxes/02_Extra/Fortran
+	url = https://github.com/315234/SublimeFortran
