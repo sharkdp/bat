@@ -5,9 +5,11 @@
 ## Bugfixes
 ## Other
 ## New syntaxes
+
+- Fortran, see #957
+
 ## New themes
 ## `bat` as a library
-
 ## Packaging
 
 # v0.15.0
