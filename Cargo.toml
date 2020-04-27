@@ -39,7 +39,7 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
 ansi_colours = "^1.0"
-console = "=0.10.0"
+console = "0.11.1"
 dirs = { version = "2.0", optional = true }
 lazy_static = { version = "1.4", optional = true }
 wild = { version = "2.0", optional = true }
