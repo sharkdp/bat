@@ -182,3 +182,6 @@
 [submodule "assets/syntaxes/02_Extra/Fortran"]
 	path = assets/syntaxes/02_Extra/Fortran
 	url = https://github.com/315234/SublimeFortran
+[submodule "assets/syntaxes/02_Extra/Email"]
+	path = assets/syntaxes/02_Extra/Email
+	url = https://github.com/mariozaizar/email.sublime-syntax.git

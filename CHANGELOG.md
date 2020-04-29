@@ -1,12 +1,12 @@
 # Upcoming release
 
-
 ## Features
 ## Bugfixes
 ## Other
 ## New syntaxes
 
 - Fortran, see #957
+- Email (@mariozaizar)
 
 ## New themes
 ## `bat` as a library
@@ -438,7 +438,7 @@ You can see the API documentation here: https://docs.rs/bat/
 ## Bugfixes
 
 - Bat Panics on Haskell Source Code, see #314
-- Disable wrapping when `--style=plain`/`-p` is used, see #289 
+- Disable wrapping when `--style=plain`/`-p` is used, see #289
 
 ## Other
 
@@ -493,7 +493,7 @@ You can see the API documentation here: https://docs.rs/bat/
 ## Bugfixes
 
 - Fixed panic when running `bat --list-languages | head`, see #232 (@mchlrhw)
-- Respect `--color` settings for `--list-themes` and `--list-languages`, see #233 
+- Respect `--color` settings for `--list-themes` and `--list-languages`, see #233
 - Git modifications now work on Windows
 
 ## Other
@@ -523,7 +523,7 @@ You can see the API documentation here: https://docs.rs/bat/
 ## Other
 
 * Extended and cleaned-up `--help` text.
-* Added initial version of a man page, see #52  
+* Added initial version of a man page, see #52
 * New README sections: *Development* and *Troubleshooting*, see #220
 
 # v0.5.0
@@ -538,18 +538,18 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Changes
 
-- The customization of syntax sets and theme sets is now separated. Syntax definitions are now loaded *in addition* to the ones that are stored in the `bat` binary by default. Please refer to these new sections in the README: [Adding new syntaxes](https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions), [Adding new themes](https://github.com/sharkdp/bat#adding-new-themes), also see #172 
+- The customization of syntax sets and theme sets is now separated. Syntax definitions are now loaded *in addition* to the ones that are stored in the `bat` binary by default. Please refer to these new sections in the README: [Adding new syntaxes](https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions), [Adding new themes](https://github.com/sharkdp/bat#adding-new-themes), also see #172
 - The color for the filename is now the default foreground color. The colors for the grid and the line numbers is now determined from the syntax highlighting theme, which now also works for light backgrounds, see #178.
 
 ## Bugfixes
 
 - Escape Sequences get partially stripped, see #182 (@eth-p)
 - Use separate Git repository for snapshot testing, see #165 and #161
-- Markdown breaking on JavaScript, see #183 
+- Markdown breaking on JavaScript, see #183
 
 ## Other
 
-- Binaries for armv7 are now provided, see #196 
+- Binaries for armv7 are now provided, see #196
 - `bat` is now in the official [Arch package repositories](https://www.archlinux.org/packages/community/x86_64/bat/).
 - Optimizations in the RGB => 8-bit conversion (@mina86)
 
@@ -559,7 +559,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Bugfixes
 
-- Fix problem with `cargo test` when `bat` is not checked out in a Git repository, see #161 
+- Fix problem with `cargo test` when `bat` is not checked out in a Git repository, see #161
 
 # v0.4.0
 
