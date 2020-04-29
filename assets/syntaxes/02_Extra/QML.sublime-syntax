@@ -1,0 +1,103 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: QML
+file_extensions:
+  - qml
+  - qmlproject
+scope: source.qml
+contexts:
+  main:
+    - match: /\*(?!/)
+      comment: Block comment.
+      push:
+        - meta_scope: comment.block.documentation.qml
+        - match: \*/
+          pop: true
+    - match: //.*$
+      comment: Line comment.
+      scope: comment.line.double-slash.qml
+    - match: \b(import)\s+
+      comment: import statement.
+      captures:
+        1: keyword.other.import.qml
+      push:
+        - meta_scope: meta.import.qml
+        - match: $
+          pop: true
+        - match: '([\w\d\.]+)\s+(\d+\.\d+)(?:\s+(as)\s+([A-Z][\w\d]*))?'
+          comment: "import Namespace VersionMajor.VersionMinor [as SingletonTypeIdentifier]"
+          scope: meta.import.namespace.qml
+          captures:
+            1: entity.name.class.qml
+            2: constant.numeric.qml
+            3: keyword.other.import.qml
+            4: entity.name.class.qml
+        - match: '(\"[^\"]+\")(?:\s+(as)\s+([A-Z][\w\d]*))?'
+          comment: "import <string> [as Script]"
+          scope: meta.import.dirjs.qml
+          captures:
+            1: string.quoted.double.qml
+            2: keyword.other.import.qml
+            3: entity.name.class.qml
+    - match: '\b[A-Z]\w*\b'
+      comment: Capitalized word (class or enum).
+      scope: support.class.qml
+    - match: '(((^|\{)\s*)|\b)on[A-Z]\w*\b'
+      comment: onSomething - handler.
+      scope: support.class.qml
+    - match: '(?:^|\{)\s*(id)\s*\:\s*([^;\s]+)\b'
+      comment: "id: <something>"
+      scope: meta.id.qml
+      captures:
+        1: keyword.other.qml
+        2: storage.modifier.qml
+    - match: '^\s*(?:(default|readonly)\s+)?(property)\s+(?:(alias)|([\w\<\>]+))\s+(\w+)'
+      comment: property definition.
+      scope: meta.propertydef.qml
+      captures:
+        1: keyword.other.qml
+        2: keyword.other.qml
+        3: keyword.other.qml
+        4: storage.type.qml
+        5: entity.other.attribute-name.qml
+    - match: \b(signal)\s+(\w+)\s*
+      comment: "signal <signalName>[([<type> <parameter>[, ...]])]"
+      captures:
+        1: keyword.other.qml
+        2: support.function.qml
+      push:
+        - meta_scope: meta.signal.qml
+        - match: ;|(?=/)|$
+          pop: true
+        - match: (\w+)\s+(\w+)
+          scope: meta.signal.parameters.qml
+          captures:
+            1: storage.type.qml
+            2: variable.parameter.qml
+    - match: (?:\b|\s+)(?:(true|false|null|undefined)|(var|void)|(on|as|enum|connect|break|case|catch|continue|debugger|default|delete|do|else|finally|for|if|in|instanceof|new|return|switch|this|throw|try|typeof|while|with))\b
+      comment: js keywords.
+      scope: meta.keyword.qml
+      captures:
+        1: constant.language.qml
+        2: storage.type.qml
+        3: keyword.control.qml
+    - match: '\b(function)\s+([\w_]+)\s*(?=\()'
+      comment: function definition.
+      scope: meta.function.qml
+      captures:
+        1: storage.type.qml
+        2: entity.name.function.untitled
+    - match: '\b[\w_]+\s*(?=\()'
+      comment: function call.
+      scope: support.function.qml
+    - match: '(?:^|\{|;)\s*[a-z][\w\.]*\s*(?=\:)'
+      comment: "property  (property: <something>)."
+      scope: entity.other.attribute-name.qml
+    - match: (?<=\.)\b\w*
+      comment: property of the variable (name.property).
+      scope: entity.other.attribute-name.qml
+    - match: '\b([a-z_]\w*)\b'
+      comment: All non colored words are assumed to be variables.
+      scope: variable.parameter
+    - include: scope:source.js

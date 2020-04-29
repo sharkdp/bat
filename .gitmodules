@@ -185,3 +185,6 @@
 [submodule "assets/syntaxes/02_Extra/Email"]
 	path = assets/syntaxes/02_Extra/Email
 	url = https://github.com/mariozaizar/email.sublime-syntax.git
+[submodule "assets/syntaxes/02_Extra/QML"]
+	path = assets/syntaxes/02_Extra/QML
+	url = https://github.com/skozlovf/Sublime-QML

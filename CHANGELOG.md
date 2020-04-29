@@ -7,6 +7,7 @@
 
 - Fortran, see #957
 - Email (@mariozaizar)
+- QML, see #962 (@pylipp)
 
 ## New themes
 ## `bat` as a library
