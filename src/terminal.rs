@@ -7,11 +7,13 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
     if color.a == 0 {
         // Themes can specify one of the user-configurable terminal colors by
         // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
-        // to the color palette number. The built-in themes ansi-light,
+        // to the 8-bit color palette number. The built-in themes ansi-light,
         // ansi-dark, and base16 use this.
-        Fixed(color.r)
-    } else if color.a == 0x0f {
         match color.r {
+            // For the first 8 colors, use the Color enum to produce ANSI escape
+            // sequences using codes 30-37 (foreground) and 40-47 (background).
+            // For example, red foreground is \x1b[31m. This works on terminals
+            // without 256-color support.
             0x00 => Color::Black,
             0x01 => Color::Red,
             0x02 => Color::Green,
@@ -20,17 +22,15 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
             0x05 => Color::Purple,
             0x06 => Color::Cyan,
             0x07 => Color::White,
-            // TODO: the following should be high-intensity variants of
-            // these colors ("bright black", "bright red", ...).
-            0x08 => Color::Black,
-            0x09 => Color::Red,
-            0x0a => Color::Green,
-            0x0b => Color::Yellow,
-            0x0c => Color::Blue,
-            0x0d => Color::Purple,
-            0x0e => Color::Cyan,
-            0x0f => Color::White,
-            _ => unreachable!("The 0x0f color encoding does not allow for codes higher than 0x0f"),
+            // For all other colors, use Fixed to produce escape sequences using
+            // codes 38;5 (foreground) and 48;5 (background). For example,
+            // bright red foreground is \x1b[38;5;9m. This only works on
+            // terminals with 256-color support.
+            //
+            // TODO: When ansi_term adds support for bright variants using codes
+            // 90-97 (foreground) and 100-107 (background), we should use those
+            // for values 0x08 to 0x0f and only use Fixed for 0x10 to 0xff.
+            n => Fixed(n),
         }
     } else if true_color {
         RGB(color.r, color.g, color.b)
