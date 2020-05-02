@@ -7,10 +7,18 @@ set -o pipefail
 export LC_ALL=C
 export LANG=C
 
-if command -v batcat &> /dev/null; then
-	BAT="batcat"
-else
-	BAT="bat"
+BAT="bat"
+if ! command -v bat &>/dev/null; then
+	if command -v batcat &> /dev/null; then
+		BAT="batcat"
+	else
+		tput setaf 1
+		printf "%s\n%s\n" \
+			"Unable to find a bat executable on your PATH." \
+			"Please ensure that 'bat' exists and is not named something else."
+		tput sgr0
+		exit 1
+	fi
 fi
 
 # -----------------------------------------------------------------------------
