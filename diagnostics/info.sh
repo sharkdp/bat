@@ -7,6 +7,12 @@ set -o pipefail
 export LC_ALL=C
 export LANG=C
 
+if command -v batcat &> /dev/null; then
+	BAT="batcat"
+else
+	BAT="bat"
+fi
+
 # -----------------------------------------------------------------------------
 # Modules:
 # -----------------------------------------------------------------------------
@@ -41,33 +47,42 @@ _tool_:description() {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 _bat_:run() {
-	_out bat --version
+	_out "$BAT" --version
 	_out env | grep '^BAT_\|^PAGER='
 
 	local cache_dir="$(bat --cache-dir)"
 	if [[ -f "${cache_dir}/syntaxes.bin" ]]; then
-		_print_command "bat" "--list-languages"
+		_print_command "$BAT" "--list-languages"
 		echo "Found custom syntax set."
 	fi
 
 	if [[ -f "${cache_dir}/themes.bin" ]]; then
-		_print_command "bat" "--list-themes"
+		_print_command "$BAT" "--list-themes"
 		echo "Found custom theme set."
 	fi
 }
 
 _bat_config_:run() {
-	if [[ -f "$(bat --config-file)" ]]; then
-		_out_fence cat "$(bat --config-file)"
+	if [[ -f "$("$BAT" --config-file)" ]]; then
+		_out_fence cat "$("$BAT" --config-file)"
 	fi
 }
 
 _bat_wrapper_:run() {
-	if file "$(which bat)" | grep "text executable" &> /dev/null; then
-		_out_fence cat "$(which bat)"
-		return
+	_bat_wrapper_:detect_wrapper() {
+		local bat="$1"
+		if file "$(which "${bat}")" | grep "text executable" &> /dev/null; then
+			_out_fence cat "$(which "${bat}")"
+			return
+		fi
+
+		printf "\nNo wrapper script for '%s'.\n" "${bat}"
+	}
+
+	_bat_wrapper_:detect_wrapper bat
+	if [[ "$BAT" != "bat" ]]; then
+		_bat_wrapper_:detect_wrapper "$BAT"
 	fi
-	printf "\nNo wrapper script.\n"
 }
 
 _bat_wrapper_function_:run() {
@@ -75,17 +90,17 @@ _bat_wrapper_function_:run() {
 		local command="$1"
 		case "$("$SHELL" --version | head -n 1)" in
 			*fish*)
-				if "$SHELL" --login -i -c "type ${command}" 2>&1 | grep 'function' &>/dev/null; then
+				if "$SHELL" --login -i -c "type ${command}" 2>&1 | grep 'function' &> /dev/null; then
 					_out_fence "$SHELL" --login -i -c "functions ${command}"
 					return
 				fi ;;
 
-			*bash*|*zsh*)
+			*bash* | *zsh*)
 				local type="$("$SHELL" --login -i -c "type ${command}" 2>&1)"
-				if grep 'function' <<< "$type" &>/dev/null; then
+				if grep 'function' <<< "$type" &> /dev/null; then
 					_out_fence "$SHELL" --login -i -c "declare -f ${command}"
 					return
-				elif grep 'alias' <<< "$type" &>/dev/null; then
+				elif grep 'alias' <<< "$type" &> /dev/null; then
 					_out_fence "$SHELL" --login -i -c "type ${command}"
 					return
 				fi ;;
@@ -99,6 +114,9 @@ _bat_wrapper_function_:run() {
 
 	_bat_wrapper_function_:detect_wrapper bat
 	_bat_wrapper_function_:detect_wrapper cat
+	if [[ "$BAT" != "bat" ]]; then
+		_bat_wrapper_function_:detect_wrapper "$BAT"
+	fi
 }
 
 _system_:run() {
@@ -169,7 +187,8 @@ EOF
 	declare -f "_$1_:run" \
 		| sed 's/^ *//; s/;$//' \
 		| grep '^_out[^ ]* ' \
-		| sed 's/^_out[^ ]* //' 1>&2
+		| sed 's/^_out[^ ]* //' \
+		| sed "s/\"\$BAT\"/$BAT/" 1>&2
 
 	# Prompt
 	printf "\n" 1>&2
@@ -195,6 +214,16 @@ _run_module() {
 # -----------------------------------------------------------------------------
 # Functions:
 # -----------------------------------------------------------------------------
+
+# Tell the user if their executable isn't named "bat".
+if [[ "$BAT" != "bat" ]] && [[ "$1" != '-y' ]]; then
+	_tput setaf 1
+	printf "The %s executable on your system is named '%s'.\n%s\n" "bat" "$BAT" \
+		"If your issue is related to installation, please check that this isn't the issue."
+	_tput sgr0
+	printf "Press any key to continue...\n"
+	read -rsn1
+fi
 
 # Ask for consent.
 if [[ "$1" == '-y' ]]; then
