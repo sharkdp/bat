@@ -217,12 +217,17 @@ _run_module() {
 
 # Tell the user if their executable isn't named "bat".
 if [[ "$BAT" != "bat" ]] && [[ "$1" != '-y' ]]; then
+	trap '_tput rmcup; exit 1' INT
+	_tput smcup
+	_tput clear
+	_tput cup 0 0
 	_tput setaf 1
 	printf "The %s executable on your system is named '%s'.\n%s\n" "bat" "$BAT" \
 		"If your issue is related to installation, please check that this isn't the issue."
 	_tput sgr0
 	printf "Press any key to continue...\n"
 	read -rsn1
+	_tput rmcup
 fi
 
 # Ask for consent.
