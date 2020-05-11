@@ -1,21 +1,26 @@
-# Upcoming release
+# unreleased
 
 ## Features
 ## Bugfixes
+## Other
+## New syntaxes
+## New themes
+## `bat` as a library
+## Packaging
 
+# v0.15.1
+
+## Bugfixes
+
+- Fix highlighting of Markdown files, see #963 and #977
 - Fix `base16` theme (was broken since in v0.14), see #972, #934 and #979 (@mk12).
   Users suffering from #865 ("no color for bat in ssh from a Windows client") can use the `ansi-dark` and `ansi-light` themes from now on.
 
-## Other
 ## New syntaxes
 
 - Fortran, see #957
 - Email (@mariozaizar)
 - QML, see #962 (@pylipp)
-
-## New themes
-## `bat` as a library
-## Packaging
 
 # v0.15.0
 

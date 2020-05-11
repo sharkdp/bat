@@ -1,0 +1,168 @@
+diff --git syntaxes/01_Packages/Markdown/Markdown.sublime-syntax syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
+index 19dc685d..6afd87ae 100644
+--- syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
++++ syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
+@@ -24,7 +24,6 @@ variables:
+             )
+             [ \t]*$                          # followed by any number of tabs or spaces, followed by the end of the line
+         )
+-    setext_escape: ^(?=\s{0,3}(?:---+|===+)\s*$)
+     block_quote: (?:[ ]{,3}>(?:.|$))         # between 0 and 3 spaces, followed by a greater than sign, followed by any character or the end of the line
+     atx_heading: (?:[#]{1,6}\s*)             # between 1 and 6 hashes, followed by any amount of whitespace
+     indented_code_block: (?:[ ]{4}|\t)       # 4 spaces or a tab
+@@ -277,69 +276,40 @@ contexts:
+         8: markup.underline.link.markdown
+       push: [link-ref-def, after-link-title, link-title]
+     - match: '^(?=\S)(?![=-]{3,}\s*$)'
+-      branch_point: heading2-branch
+-      branch:
+-        - not-heading2
+-        - heading2
+-
+-  not-paragraph:
+-    - match: |-
+-        (?x)                         # pop out of this context when one of the following conditions are met:
+-        ^(?:
+-            \s*$                     # the line is blank (or only contains whitespace)
+-        |   (?=
+-                {{block_quote}}      # a block quote begins the line
+-            |   [ ]{,3}[*+-][ ]      # an unordered list item begins the line
+-            |   [ ]{,3}1[.][ ]       # an ordered list item with number "1" begins the line
+-            |   \#                   # an ATX heading begins the line
+-            |   [ ]{,3}<(            # all types of HTML blocks except type 7 may interrupt a paragraph
+-                  {{html_tag_block_end_at_close_tag}}   # 1
+-                | !--                                   # 2
+-                | \?                                    # 3
+-                | ![A-Z]                                # 4
+-                | !\[CDATA\[                            # 5
+-                | {{html_tag_block_end_at_blank_line}}  # 6
++      push:
++        - meta_scope: meta.paragraph.markdown
++        - match: |-
++            (?x)                         # pop out of this context when one of the following conditions are met:
++            ^(?:
++                \s*$                     # the line is blank (or only contains whitespace)
++            |   (?=
++                    {{block_quote}}      # a block quote begins the line
++                |   [ ]{,3}[*+-][ ]      # an unordered list item begins the line
++                |   [ ]{,3}1[.][ ]       # an ordered list item with number "1" begins the line
++                |   \#                   # an ATX heading begins the line
++                |   [ ]{,3}<(            # all types of HTML blocks except type 7 may interrupt a paragraph
++                      {{html_tag_block_end_at_close_tag}}   # 1
++                    | !--                                   # 2
++                    | \?                                    # 3
++                    | ![A-Z]                                # 4
++                    | !\[CDATA\[                            # 5
++                    | {{html_tag_block_end_at_blank_line}}  # 6
++                    )
+                 )
+             )
+-        )
+-      pop: true
+-
+-  not-heading2:
+-    - include: not-paragraph
+-    - match: (?=\S)
+-      branch_point: heading1-branch
+-      branch:
+-        - paragraph
+-        - heading1
+-    - match: ''
+-      pop: true
+-
+-  paragraph:
+-      - meta_scope: meta.paragraph.markdown
+-      - match: ^\s{0,3}===+\s*$
+-        fail: heading1-branch
+-      - match: ^\s{0,3}---+\s*$
+-        fail: heading2-branch
+-      - include: not-paragraph
+-      - include: inline-bold-italic-linebreak
+-      - include: scope:text.html.basic
+-
+-  heading1:
+-    - meta_scope: markup.heading.1.markdown
+-    - include: inline-bold-italic-linebreak
+-    - match: '^[ \t]{0,3}(={3,})(?=[ \t]*$)'
+-      captures:
+-        1: markup.heading.1.setext.markdown punctuation.definition.heading.setext.markdown
+-      pop: true
+-
+-  heading2:
+-    - meta_scope: markup.heading.2.markdown
+-    - include: inline-bold-italic-linebreak
+-    - match: '^[ \t]{0,3}(-{3,})(?=[ \t]*$)'
+-      captures:
+-        1: markup.heading.2.setext.markdown punctuation.definition.heading.setext.markdown
+-      pop: true
+-
++          pop: true
++        - include: inline-bold-italic-linebreak
++        - include: scope:text.html.basic
++        - match: '^(={3,})(?=[ \t]*$)'
++          scope: markup.heading.1.setext.markdown
++          captures:
++            1: punctuation.definition.heading.setext.markdown
++          pop: true
++        - match: '^(-{3,})(?=[ \t]*$)'
++          scope: markup.heading.2.setext.markdown
++          captures:
++            1: punctuation.definition.heading.setext.markdown
++          pop: true
+   link-ref-def:
+     - meta_scope: meta.link.reference.def.markdown
+     - match: ''
+@@ -430,8 +400,6 @@ contexts:
+       push:
+         - meta_scope: markup.bold.markdown
+         - meta_content_scope: markup.italic.markdown
+-        - match: '{{setext_escape}}'
+-          pop: true
+         - match: |-
+             (?x)
+                 [ \t]*\*{4,}    # if there are more than 3 its not applicable to be bold or italic
+@@ -446,8 +414,6 @@ contexts:
+           scope: punctuation.definition.bold.end.markdown
+           set:
+             - meta_content_scope: markup.italic.markdown
+-            - match: '{{setext_escape}}'
+-              pop: true
+             - match: |-
+                 (?x)
+                     [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
+@@ -463,8 +429,6 @@ contexts:
+           scope: punctuation.definition.italic.end.markdown
+           set:
+             - meta_content_scope: markup.bold.markdown
+-            - match: '{{setext_escape}}'
+-              pop: true
+             - match: |-
+                 (?x)
+                     [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
+@@ -727,8 +691,6 @@ contexts:
+       scope: punctuation.definition.italic.begin.markdown
+       push:
+         - meta_scope: markup.italic.markdown
+-        - match: '{{setext_escape}}'
+-          pop: true
+         - match: |-
+               (?x)
+                   [ \t]*\*{4,}   # if there are more than 3 its not applicable to be bold or italic
+@@ -745,8 +707,6 @@ contexts:
+       scope: punctuation.definition.italic.begin.markdown
+       push:
+         - meta_scope: markup.italic.markdown
+-        - match: '{{setext_escape}}'
+-          pop: true
+         - match: |-
+               (?x)
+                   [ \t]*_{4,}   # if there are more than 3 its not applicable to be bold or italic
+@@ -773,8 +733,6 @@ contexts:
+         - include: bold-italic-trailing
+   bold-italic-trailing:
+     - include: scope:text.html.basic
+-    - match: '{{setext_escape}}'
+-      pop: true
+     - match: ^\s*$\n?
+       scope: invalid.illegal.non-terminated.bold-italic.markdown
+       pop: true
