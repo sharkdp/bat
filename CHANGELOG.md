@@ -2,6 +2,10 @@
 
 ## Features
 ## Bugfixes
+
+- Fix `base16` theme (was broken since in v0.14), see #972, #934 and #979 (@mk12).
+  Users suffering from #865 ("no color for bat in ssh from a Windows client") can use the `ansi-dark` and `ansi-light` themes from now on.
+
 ## Other
 ## New syntaxes
 
