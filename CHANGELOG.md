@@ -1,4 +1,5 @@
 # unreleased
+- Add padding above headers when no grid, see #968 and #981 (@pt2121)
 
 ## Features
 ## Bugfixes
