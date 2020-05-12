@@ -632,11 +632,11 @@ fn filename_multiple_err() {
 fn header_padding() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=plain")
+        .arg("--style=header")
         .arg("test.txt")
         .arg("single-line.txt")
         .assert()
-        .stdout("hello world\n\nSingle Line\n")
+        .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
         .stderr("");
 }
 
