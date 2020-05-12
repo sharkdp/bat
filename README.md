@@ -188,7 +188,8 @@ clash with another package](https://github.com/sharkdp/bat/issues/982)). You can
 ln -s /usr/bin/batcat ~/.local/bin/bat
 ```
 
-### On Ubuntu
+### On Ubuntu (using most recent `.deb` packages)
+*... and other Debian-based Linux distributions.*
 
 If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
 the most recent release of `bat`, download the latest `.deb` package from the
