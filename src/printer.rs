@@ -33,7 +33,12 @@ use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrapping::WrappingMode;
 
 pub(crate) trait Printer {
-    fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
+    fn print_header(
+        &mut self,
+        handle: &mut dyn Write,
+        input: &OpenedInput,
+        add_header_padding: bool,
+    ) -> Result<()>;
     fn print_footer(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()>;
 
     fn print_snip(&mut self, handle: &mut dyn Write) -> Result<()>;
@@ -56,7 +61,12 @@ impl SimplePrinter {
 }
 
 impl Printer for SimplePrinter {
-    fn print_header(&mut self, _handle: &mut dyn Write, _input: &OpenedInput) -> Result<()> {
+    fn print_header(
+        &mut self,
+        _handle: &mut dyn Write,
+        _input: &OpenedInput,
+        _add_header_padding: bool,
+    ) -> Result<()> {
         Ok(())
     }
 
@@ -219,7 +229,12 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl<'a> Printer for InteractivePrinter<'a> {
-    fn print_header(&mut self, handle: &mut dyn Write, input: &OpenedInput) -> Result<()> {
+    fn print_header(
+        &mut self,
+        handle: &mut dyn Write,
+        input: &OpenedInput,
+        add_header_padding: bool,
+    ) -> Result<()> {
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 writeln!(
@@ -232,6 +247,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 )?;
             } else if self.config.style_components.grid() {
                 self.print_horizontal_line(handle, '┬')?;
+            } else if add_header_padding {
+                writeln!(handle)?;
             }
             return Ok(());
         }
@@ -248,6 +265,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )?;
         } else {
+            if add_header_padding {
+                writeln!(handle)?;
+            }
             write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
