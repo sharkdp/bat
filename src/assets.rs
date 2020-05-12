@@ -218,10 +218,33 @@ impl HighlightingAssets {
                         }
                     }
                 }
-                OpenedInputKind::StdIn | OpenedInputKind::CustomReader => {
+                OpenedInputKind::StdIn => {
                     if let Some(ref name) = input.metadata.user_provided_name {
                         self.get_extension_syntax(&name)
                             .or_else(|| self.get_first_line_syntax(&mut input.reader))
+                    } else {
+                        self.get_first_line_syntax(&mut input.reader)
+                    }
+                }
+                OpenedInputKind::CustomReader => {
+                    if let Some(ref path_str) = input.metadata.user_provided_name {
+                        let path = Path::new(path_str);
+                        let absolute_path =
+                            path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
+                        let line_syntax = self.get_first_line_syntax(&mut input.reader);
+
+                        match mapping.get_syntax_for(path_str) {
+                            Some(MappingTarget::MapTo(syntax_name)) => {
+                                println!("Mapped {:?} as {:?}", path_str, syntax_name);
+                                self.syntax_set.find_syntax_by_name(syntax_name)
+                            }
+                            Some(MappingTarget::MapToUnknown) => line_syntax,
+                            None => {
+                                println!("Test {:?}", path_str);
+                                let file_name = path.file_name().unwrap_or_default();
+                                self.get_extension_syntax(file_name).or(line_syntax)
+                            }
+                        }
                     } else {
                         self.get_first_line_syntax(&mut input.reader)
                     }
