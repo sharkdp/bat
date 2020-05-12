@@ -247,8 +247,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 )?;
             } else if self.config.style_components.grid() {
                 self.print_horizontal_line(handle, '┬')?;
-            } else if add_header_padding {
-                writeln!(handle)?;
             }
             return Ok(());
         }
