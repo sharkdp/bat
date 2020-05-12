@@ -233,14 +233,12 @@ impl HighlightingAssets {
                             path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
                         let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
-                        match mapping.get_syntax_for(path_str) {
+                        match mapping.get_syntax_for(absolute_path) {
                             Some(MappingTarget::MapTo(syntax_name)) => {
-                                println!("Mapped {:?} as {:?}", path_str, syntax_name);
                                 self.syntax_set.find_syntax_by_name(syntax_name)
                             }
                             Some(MappingTarget::MapToUnknown) => line_syntax,
                             None => {
-                                println!("Test {:?}", path_str);
                                 let file_name = path.file_name().unwrap_or_default();
                                 self.get_extension_syntax(file_name).or(line_syntax)
                             }
@@ -281,8 +279,6 @@ mod tests {
     use super::*;
 
     use std::ffi::OsStr;
-    use std::fs::File;
-    use std::io::Write;
 
     use tempdir::TempDir;
 
@@ -306,12 +302,8 @@ mod tests {
 
         fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
             let file_path = self.temp_dir.path().join(file_name);
-            {
-                let mut temp_file = File::create(&file_path).unwrap();
-                writeln!(temp_file, "{}", first_line).unwrap();
-            }
-
-            let input = Input::ordinary_file(file_path.as_os_str());
+            let input = Input::from_reader(Box::new(BufReader::new(first_line.as_bytes())))
+                .with_name(Some(file_path.as_os_str()));
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin).unwrap();
             let syntax = self
