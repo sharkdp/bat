@@ -75,7 +75,7 @@ impl<'b> Controller<'b> {
             }
         };
 
-        for input in inputs.into_iter() {
+        for (index, input) in inputs.into_iter().enumerate() {
             match input.open(io::stdin().lock()) {
                 Err(error) => {
                     print_error(&error, writer);
@@ -128,6 +128,7 @@ impl<'b> Controller<'b> {
                         &mut *printer,
                         writer,
                         &mut opened_input,
+                        index != 0,
                         #[cfg(feature = "git")]
                         &line_changes,
                     );
@@ -148,10 +149,11 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         input: &mut OpenedInput,
+        add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
-            printer.print_header(writer, input)?;
+            printer.print_header(writer, input, add_header_padding)?;
         }
 
         if !input.reader.first_line.is_empty() {

@@ -611,7 +611,7 @@ fn filename_multiple_ok() {
         .arg("--file-name=bar")
         .assert()
         .success()
-        .stdout("File: foo\nFile: bar\n")
+        .stdout("File: foo\n\nFile: bar\n")
         .stderr("");
 }
 
@@ -626,6 +626,18 @@ fn filename_multiple_err() {
         .arg("single-line.txt")
         .assert()
         .failure();
+}
+
+#[test]
+fn header_padding() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout("hello world\n\nSingle Line\n")
+        .stderr("");
 }
 
 #[cfg(target_os = "linux")]
