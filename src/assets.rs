@@ -280,6 +280,8 @@ mod tests {
 
     use std::ffi::OsStr;
 
+    use std::fs::File;
+    use std::io::Write;
     use tempdir::TempDir;
 
     use crate::input::Input;
@@ -298,6 +300,27 @@ mod tests {
                 temp_dir: TempDir::new("bat_syntax_detection_tests")
                     .expect("creation of temporary directory"),
             }
+        }
+
+        fn syntax_for_real_file_with_content_os(
+            &self,
+            file_name: &OsStr,
+            first_line: &str,
+        ) -> String {
+            let file_path = self.temp_dir.path().join(file_name);
+            {
+                let mut temp_file = File::create(&file_path).unwrap();
+                writeln!(temp_file, "{}", first_line).unwrap();
+            }
+
+            let input = Input::ordinary_file(file_path.as_os_str());
+            let dummy_stdin: &[u8] = &[];
+            let mut opened_input = input.open(dummy_stdin).unwrap();
+            let syntax = self
+                .assets
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
+
+            syntax.name.clone()
         }
 
         fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
@@ -334,6 +357,12 @@ mod tests {
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping);
             syntax.name.clone()
         }
+
+        fn syntax_is_same_for_file_and_reader(&self, file_name: &str, content: &str) -> bool {
+            let real = self.syntax_for_real_file_with_content_os(file_name.as_ref(), content);
+            let fake = self.syntax_for_file_with_content_os(file_name.as_ref(), content);
+            return real == fake;
+        }
     }
 
     #[test]
@@ -362,6 +391,27 @@ mod tests {
             test.syntax_for_file_os(OsStr::from_bytes(b"invalid_\xFEutf8_filename.rs")),
             "Rust"
         );
+    }
+
+    #[test]
+    fn syntax_detection_same_for_file_and_string() {
+        let mut test = SyntaxDetectionTest::new();
+
+        test.syntax_mapping
+            .insert("*.myext", MappingTarget::MapTo("C"))
+            .ok();
+        test.syntax_mapping
+            .insert("MY_FILE", MappingTarget::MapTo("Markdown"))
+            .ok();
+
+        assert!(test.syntax_is_same_for_file_and_reader("Test.md", ""));
+        assert!(test.syntax_is_same_for_file_and_reader("Test.txt", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_file_and_reader(".bashrc", ""));
+        assert!(test.syntax_is_same_for_file_and_reader("test.h", ""));
+        assert!(test.syntax_is_same_for_file_and_reader("test.js", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_file_and_reader("test.myext", ""));
+        assert!(test.syntax_is_same_for_file_and_reader("MY_FILE", ""));
+        assert!(test.syntax_is_same_for_file_and_reader("MY_FILE", "<?php"));
     }
 
     #[test]
