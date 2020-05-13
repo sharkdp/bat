@@ -1,8 +1,13 @@
 # unreleased
-- Add padding above headers when no grid, see #968 and #981 (@pt2121)
 
 ## Features
+
+- Add padding above headers when not using a grid, see #968 and #981 (@pt2121)
+
 ## Bugfixes
+
+- bat mishighlights Users that start with digits in SSH config, see #984
+
 ## Other
 ## New syntaxes
 ## New themes
