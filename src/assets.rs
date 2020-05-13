@@ -358,10 +358,20 @@ mod tests {
             syntax.name.clone()
         }
 
-        fn syntax_is_same_for_file_and_reader(&self, file_name: &str, content: &str) -> bool {
-            let real = self.syntax_for_real_file_with_content_os(file_name.as_ref(), content);
-            let fake = self.syntax_for_file_with_content_os(file_name.as_ref(), content);
-            return real == fake;
+        fn syntax_is_same_for_inputkinds(&self, file_name: &str, content: &str) -> bool {
+            let as_file = self.syntax_for_real_file_with_content_os(file_name.as_ref(), content);
+            let as_reader = self.syntax_for_file_with_content_os(file_name.as_ref(), content);
+            let consistent = as_file == as_reader;
+            // TODO: Compare StdIn somehow?
+
+            if !consistent {
+                eprintln!(
+                    "Inconsistent syntax detection:\nFor File: {}\nFor Reader: {}",
+                    as_file, as_reader
+                )
+            }
+
+            consistent
         }
     }
 
@@ -394,7 +404,7 @@ mod tests {
     }
 
     #[test]
-    fn syntax_detection_same_for_file_and_string() {
+    fn syntax_detection_same_for_inputkinds() {
         let mut test = SyntaxDetectionTest::new();
 
         test.syntax_mapping
@@ -404,14 +414,14 @@ mod tests {
             .insert("MY_FILE", MappingTarget::MapTo("Markdown"))
             .ok();
 
-        assert!(test.syntax_is_same_for_file_and_reader("Test.md", ""));
-        assert!(test.syntax_is_same_for_file_and_reader("Test.txt", "#!/bin/bash"));
-        assert!(test.syntax_is_same_for_file_and_reader(".bashrc", ""));
-        assert!(test.syntax_is_same_for_file_and_reader("test.h", ""));
-        assert!(test.syntax_is_same_for_file_and_reader("test.js", "#!/bin/bash"));
-        assert!(test.syntax_is_same_for_file_and_reader("test.myext", ""));
-        assert!(test.syntax_is_same_for_file_and_reader("MY_FILE", ""));
-        assert!(test.syntax_is_same_for_file_and_reader("MY_FILE", "<?php"));
+        assert!(test.syntax_is_same_for_inputkinds("Test.md", ""));
+        assert!(test.syntax_is_same_for_inputkinds("Test.txt", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_inputkinds(".bashrc", ""));
+        assert!(test.syntax_is_same_for_inputkinds("test.h", ""));
+        assert!(test.syntax_is_same_for_inputkinds("test.js", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_inputkinds("test.myext", ""));
+        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", ""));
+        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", "<?php"));
     }
 
     #[test]
