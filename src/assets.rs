@@ -191,63 +191,50 @@ impl HighlightingAssets {
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
-        let syntax = if let Some(language) = language {
+        let syntax = if match input.kind {
+            OpenedInputKind::ThemePreviewFile => true,
+            _ => false,
+        } {
+            // FIXME: replace the above match statement with matches macro when min Rust >= 1.42.0
+            self.syntax_set.find_syntax_by_name("Rust")
+        } else if let Some(language) = language {
             self.syntax_set.find_syntax_by_token(language)
         } else {
-            match input.kind {
-                OpenedInputKind::OrdinaryFile(ref actual_path) => {
-                    let path_str = input
-                        .metadata
-                        .user_provided_name
-                        .as_ref()
-                        .unwrap_or(actual_path);
-                    let path = Path::new(path_str);
-                    let line_syntax = self.get_first_line_syntax(&mut input.reader);
+            let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
-                    let absolute_path = path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
-                    match mapping.get_syntax_for(absolute_path) {
-                        Some(MappingTarget::MapTo(syntax_name)) => {
-                            // TODO: we should probably return an error here if this syntax can not be
-                            // found. Currently, we just fall back to 'plain'.
-                            self.syntax_set.find_syntax_by_name(syntax_name)
-                        }
-                        Some(MappingTarget::MapToUnknown) => line_syntax,
-                        None => {
-                            let file_name = path.file_name().unwrap_or_default();
-                            self.get_extension_syntax(file_name).or(line_syntax)
-                        }
-                    }
-                }
-                OpenedInputKind::StdIn => {
-                    if let Some(ref name) = input.metadata.user_provided_name {
-                        self.get_extension_syntax(&name)
-                            .or_else(|| self.get_first_line_syntax(&mut input.reader))
-                    } else {
-                        self.get_first_line_syntax(&mut input.reader)
-                    }
-                }
-                OpenedInputKind::CustomReader => {
-                    if let Some(ref path_str) = input.metadata.user_provided_name {
-                        let path = Path::new(path_str);
-                        let absolute_path =
-                            path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
-                        let line_syntax = self.get_first_line_syntax(&mut input.reader);
+            // Get the path of the file:
+            // If this was set by the metadata, that will take priority.
+            // If it wasn't, it will use the real file path (if available).
+            let path_str =
+                input
+                    .metadata
+                    .user_provided_name
+                    .as_ref()
+                    .or_else(|| match input.kind {
+                        OpenedInputKind::OrdinaryFile(ref path) => Some(path),
+                        _ => None,
+                    });
 
-                        match mapping.get_syntax_for(absolute_path) {
-                            Some(MappingTarget::MapTo(syntax_name)) => {
-                                self.syntax_set.find_syntax_by_name(syntax_name)
-                            }
-                            Some(MappingTarget::MapToUnknown) => line_syntax,
-                            None => {
-                                let file_name = path.file_name().unwrap_or_default();
-                                self.get_extension_syntax(file_name).or(line_syntax)
-                            }
-                        }
-                    } else {
-                        self.get_first_line_syntax(&mut input.reader)
+            if let Some(path_str) = path_str {
+                // If a path was provided, we try and detect the syntax based on extension mappings.
+                let path = Path::new(path_str);
+                let absolute_path = path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
+
+                match mapping.get_syntax_for(absolute_path) {
+                    Some(MappingTarget::MapToUnknown) => line_syntax,
+                    Some(MappingTarget::MapTo(syntax_name)) => {
+                        // TODO: we should probably return an error here if this syntax can not be
+                        // found. Currently, we just fall back to 'plain'.
+                        self.syntax_set.find_syntax_by_name(syntax_name)
+                    }
+                    None => {
+                        let file_name = path.file_name().unwrap_or_default();
+                        self.get_extension_syntax(file_name).or(line_syntax)
                     }
                 }
-                OpenedInputKind::ThemePreviewFile => self.syntax_set.find_syntax_by_name("Rust"),
+            } else {
+                // If a path wasn't provided, we fall back to the detect first-line syntax.
+                line_syntax
             }
         };
 
