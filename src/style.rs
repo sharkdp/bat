@@ -6,6 +6,7 @@ use crate::error::*;
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum StyleComponent {
     Auto,
+    #[cfg(feature = "git")]
     Changes,
     Grid,
     Header,
@@ -25,12 +26,14 @@ impl StyleComponent {
                     StyleComponent::Plain.components(interactive_terminal)
                 }
             }
+            #[cfg(feature = "git")]
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Header => &[StyleComponent::Header],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
+                #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
                 StyleComponent::Header,
@@ -48,6 +51,7 @@ impl FromStr for StyleComponent {
     fn from_str(s: &str) -> Result<Self> {
         match s {
             "auto" => Ok(StyleComponent::Auto),
+            #[cfg(feature = "git")]
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
             "header" => Ok(StyleComponent::Header),

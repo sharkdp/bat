@@ -270,6 +270,7 @@ impl<'a> PrettyPrinter<'a> {
             style_components.push(StyleComponent::Snip);
         }
         if self.active_style_components.vcs_modification_markers {
+            #[cfg(feature = "git")]
             style_components.push(StyleComponent::Changes);
         }
         self.config.style_components = StyleComponents::new(&style_components);
