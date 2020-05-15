@@ -8,10 +8,17 @@ use crate::error::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
+/// A description for an Input source.
+/// This tells bat how to refer to the input.
 #[derive(Debug, Clone)]
 pub(crate) struct InputDescription {
+    /// The name of the input used when printing warnings.
     pub full: String,
+
+    /// The prefix string for the input when displaying it in the header.
     pub prefix: String,
+
+    /// The name of the input.
     pub name: String,
 }
 
