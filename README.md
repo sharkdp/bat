@@ -168,7 +168,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
 
-### On Ubuntu
+### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
 `bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
@@ -182,12 +182,22 @@ If your Ubuntu/Debian installation is new enough you can simply run:
 apt install bat
 ```
 
+If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
+clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distrutions:
+``` bash
+mkdir -p ~/.local/bin
+ln -s /usr/bin/batcat ~/.local/bin/bat
+```
+
+### On Ubuntu (using most recent `.deb` packages)
+*... and other Debian-based Linux distributions.*
+
 If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
 the most recent release of `bat`, download the latest `.deb` package from the
 [release page](https://github.com/sharkdp/bat/releases) and install it via:
 
 ```bash
-sudo dpkg -i bat_0.15.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.15.1_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
