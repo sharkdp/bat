@@ -6,8 +6,6 @@ use content_inspector::{self, ContentType};
 
 use crate::error::*;
 
-const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
-
 /// A description of an Input source.
 /// This tells bat how to refer to the input.
 #[derive(Clone)]
@@ -62,7 +60,6 @@ impl InputDescription {
 pub(crate) enum InputKind<'a> {
     OrdinaryFile(OsString),
     StdIn,
-    ThemePreviewFile,
     CustomReader(Box<dyn Read + 'a>),
 }
 
@@ -73,7 +70,6 @@ impl<'a> InputKind<'a> {
                 InputDescription::new(path.to_string_lossy()).with_kind(Some("File"))
             }
             InputKind::StdIn => InputDescription::new("STDIN"),
-            InputKind::ThemePreviewFile => InputDescription::new(""),
             InputKind::CustomReader(_) => InputDescription::new("READER"),
         }
     }
@@ -93,17 +89,7 @@ pub struct Input<'a> {
 pub(crate) enum OpenedInputKind {
     OrdinaryFile(OsString),
     StdIn,
-    ThemePreviewFile,
     CustomReader,
-}
-
-impl OpenedInputKind {
-    pub(crate) fn is_theme_preview_file(&self) -> bool {
-        match self {
-            OpenedInputKind::ThemePreviewFile => true,
-            _ => false,
-        }
-    }
 }
 
 pub(crate) struct OpenedInput<'a> {
@@ -125,14 +111,6 @@ impl<'a> Input<'a> {
     pub fn stdin() -> Self {
         Input {
             kind: InputKind::StdIn,
-            metadata: InputMetadata::default(),
-            description: None,
-        }
-    }
-
-    pub fn theme_preview_file() -> Self {
-        Input {
-            kind: InputKind::ThemePreviewFile,
             metadata: InputMetadata::default(),
             description: None,
         }
@@ -195,12 +173,6 @@ impl<'a> Input<'a> {
                     }
                     InputReader::new(BufReader::new(file))
                 },
-            }),
-            InputKind::ThemePreviewFile => Ok(OpenedInput {
-                kind: OpenedInputKind::ThemePreviewFile,
-                description,
-                metadata: self.metadata,
-                reader: InputReader::new(THEME_PREVIEW_FILE),
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,

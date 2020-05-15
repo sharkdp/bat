@@ -193,11 +193,7 @@ impl HighlightingAssets {
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
     ) -> Result<&SyntaxReference> {
-        if input.kind.is_theme_preview_file() {
-            self.syntax_set
-                .find_syntax_by_name("Rust")
-                .ok_or_else(|| ErrorKind::UnknownSyntax("Rust".to_owned()).into())
-        } else if let Some(language) = language {
+        if let Some(language) = language {
             self.syntax_set
                 .find_syntax_by_token(language)
                 .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
