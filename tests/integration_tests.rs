@@ -679,19 +679,16 @@ fn do_not_panic_regression_tests() {
 fn do_not_detect_different_syntax_for_stdin_and_files() {
     let file = "regression_tests/issue_985.js";
 
-    let output_for_file = bat()
+    let cmd_for_file = bat()
         .arg("--color=always")
         .arg("--map-syntax=*.js:Markdown")
         .arg(&format!("--file-name={}", file))
         .arg("--style=plain")
         .arg(file)
         .assert()
-        .success()
-        .get_output()
-        .stdout
-        .clone();
+        .success();
 
-    let output_for_stdin = bat()
+    let cmd_for_stdin = bat()
         .arg("--color=always")
         .arg("--map-syntax=*.js:Markdown")
         .arg("--style=plain")
@@ -699,13 +696,10 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
         .pipe_stdin(Path::new(EXAMPLES_DIR).join(file))
         .unwrap()
         .assert()
-        .success()
-        .get_output()
-        .stdout
-        .clone();
+        .success();
 
     assert_eq!(
-        from_utf8(&output_for_file).unwrap(),
-        from_utf8(&output_for_stdin).unwrap()
+        from_utf8(&cmd_for_file.get_output().stdout).expect("output is valid utf-8"),
+        from_utf8(&cmd_for_stdin.get_output().stdout).expect("output is valid utf-8")
     );
 }
