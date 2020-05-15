@@ -7,6 +7,7 @@
 ## Bugfixes
 
 - bat mishighlights Users that start with digits in SSH config, see #984
+- `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p) 
 
 ## Other
 ## New syntaxes

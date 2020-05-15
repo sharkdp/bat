@@ -1,4 +1,8 @@
 use assert_cmd::Command;
+use std::path::Path;
+use std::str::from_utf8;
+
+const EXAMPLES_DIR: &str = "tests/examples";
 
 fn bat_with_config() -> Command {
     let mut cmd = Command::cargo_bin("bat").unwrap();
@@ -681,4 +685,33 @@ fn do_not_panic_regression_tests() {
             .assert()
             .success();
     }
+}
+
+#[test]
+fn do_not_detect_different_syntax_for_stdin_and_files() {
+    let file = "regression_tests/issue_985.js";
+
+    let cmd_for_file = bat()
+        .arg("--color=always")
+        .arg("--map-syntax=*.js:Markdown")
+        .arg(&format!("--file-name={}", file))
+        .arg("--style=plain")
+        .arg(file)
+        .assert()
+        .success();
+
+    let cmd_for_stdin = bat()
+        .arg("--color=always")
+        .arg("--map-syntax=*.js:Markdown")
+        .arg("--style=plain")
+        .arg(&format!("--file-name={}", file))
+        .pipe_stdin(Path::new(EXAMPLES_DIR).join(file))
+        .unwrap()
+        .assert()
+        .success();
+
+    assert_eq!(
+        from_utf8(&cmd_for_file.get_output().stdout).expect("output is valid utf-8"),
+        from_utf8(&cmd_for_stdin.get_output().stdout).expect("output is valid utf-8")
+    );
 }

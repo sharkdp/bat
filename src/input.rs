@@ -39,6 +39,15 @@ pub(crate) enum OpenedInputKind {
     CustomReader,
 }
 
+impl OpenedInputKind {
+    pub(crate) fn is_theme_preview_file(&self) -> bool {
+        match self {
+            OpenedInputKind::ThemePreviewFile => true,
+            _ => false,
+        }
+    }
+}
+
 pub(crate) struct OpenedInput<'a> {
     pub(crate) kind: OpenedInputKind,
     pub(crate) metadata: InputMetadata,
