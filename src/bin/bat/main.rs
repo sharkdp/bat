@@ -10,7 +10,7 @@ mod directories;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::io;
-use std::io::Write;
+use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
@@ -25,6 +25,7 @@ use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use clap::crate_version;
 use directories::PROJECT_DIRS;
 
+use bat::input::InputDescription;
 use bat::{
     assets::HighlightingAssets,
     config::Config,
@@ -33,6 +34,8 @@ use bat::{
     input::Input,
     style::{StyleComponent, StyleComponents},
 };
+
+const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
@@ -118,6 +121,12 @@ pub fn list_languages(config: &Config) -> Result<()> {
     Ok(())
 }
 
+fn theme_preview_file<'a>() -> Input<'a> {
+    Input::from_reader(Box::new(BufReader::new(THEME_PREVIEW_DATA)))
+        .with_name(Some("theme.rs".as_ref()))
+        .with_description(Some(InputDescription::new("")))
+}
+
 pub fn list_themes(cfg: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary()?;
     let mut config = cfg.clone();
@@ -137,7 +146,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![Input::theme_preview_file()])
+                .run(vec![theme_preview_file()])
                 .ok();
             writeln!(stdout)?;
         }
