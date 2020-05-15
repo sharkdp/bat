@@ -13,6 +13,9 @@
 ## New syntaxes
 ## New themes
 ## `bat` as a library
+
+- `PrettyPrinter::vcs_modification_markers` is no longer available without the `git` feature, see #997 (@eth-p)
+
 ## Packaging
 
 # v0.15.1
