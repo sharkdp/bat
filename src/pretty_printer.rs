@@ -55,6 +55,12 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Add an input which should be pretty-printed
+    pub fn input(&mut self, input: Input<'a>) -> &mut Self {
+        self.inputs.push(input);
+        self
+    }
+
     /// Add a file which should be pretty-printed
     pub fn input_file(&mut self, path: impl AsRef<OsStr>) -> &mut Self {
         self.inputs.push(Input::ordinary_file(path.as_ref()));
