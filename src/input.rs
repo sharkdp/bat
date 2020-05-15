@@ -8,18 +8,55 @@ use crate::error::*;
 
 const THEME_PREVIEW_FILE: &[u8] = include_bytes!("../assets/theme_preview.rs");
 
-/// A description for an Input source.
+/// A description of an Input source.
 /// This tells bat how to refer to the input.
-#[derive(Debug, Clone)]
-pub(crate) struct InputDescription {
-    /// The name of the input used when printing warnings.
-    pub full: String,
+#[derive(Clone)]
+pub struct InputDescription {
+    name: String,
+    kind: Option<String>,
+    summary: Option<String>,
+}
 
-    /// The prefix string for the input when displaying it in the header.
-    pub prefix: String,
+impl InputDescription {
+    /// Creates a description for an input.
+    ///
+    /// The name should uniquely describes where the input came from (e.g. "README.md")
+    pub fn new(name: impl Into<String>) -> Self {
+        InputDescription {
+            name: name.into(),
+            kind: None,
+            summary: None,
+        }
+    }
 
-    /// The name of the input.
-    pub name: String,
+    /// A description for the type of input (e.g. "File")
+    pub fn with_kind(mut self, kind: Option<impl Into<String>>) -> Self {
+        self.kind = kind.map(|kind| kind.into());
+        self
+    }
+
+    /// A summary description of the input.
+    ///
+    /// Defaults to "{kind} '{name}'"
+    pub fn with_summary(mut self, summary: Option<impl Into<String>>) -> Self {
+        self.summary = summary.map(|summary| summary.into());
+        self
+    }
+
+    pub fn name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn kind(&self) -> Option<&String> {
+        self.kind.as_ref()
+    }
+
+    pub fn summary(&self) -> String {
+        self.summary.clone().unwrap_or_else(|| match &self.kind {
+            None => self.name.clone(),
+            Some(kind) => format!("{} '{}'", kind.to_lowercase(), self.name),
+        })
+    }
 }
 
 pub(crate) enum InputKind<'a> {
@@ -27,6 +64,19 @@ pub(crate) enum InputKind<'a> {
     StdIn,
     ThemePreviewFile,
     CustomReader(Box<dyn Read + 'a>),
+}
+
+impl<'a> InputKind<'a> {
+    pub fn description(&self) -> InputDescription {
+        match self {
+            InputKind::OrdinaryFile(ref path) => {
+                InputDescription::new(path.to_string_lossy()).with_kind(Some("File"))
+            }
+            InputKind::StdIn => InputDescription::new("STDIN"),
+            InputKind::ThemePreviewFile => InputDescription::new(""),
+            InputKind::CustomReader(_) => InputDescription::new("READER"),
+        }
+    }
 }
 
 #[derive(Clone, Default)]
@@ -37,6 +87,7 @@ pub(crate) struct InputMetadata {
 pub struct Input<'a> {
     pub(crate) kind: InputKind<'a>,
     pub(crate) metadata: InputMetadata,
+    pub(crate) description: Option<InputDescription>,
 }
 
 pub(crate) enum OpenedInputKind {
@@ -59,6 +110,7 @@ pub(crate) struct OpenedInput<'a> {
     pub(crate) kind: OpenedInputKind,
     pub(crate) metadata: InputMetadata,
     pub(crate) reader: InputReader<'a>,
+    pub(crate) description: InputDescription,
 }
 
 impl<'a> Input<'a> {
@@ -66,6 +118,7 @@ impl<'a> Input<'a> {
         Input {
             kind: InputKind::OrdinaryFile(path.to_os_string()),
             metadata: InputMetadata::default(),
+            description: None,
         }
     }
 
@@ -73,6 +126,7 @@ impl<'a> Input<'a> {
         Input {
             kind: InputKind::StdIn,
             metadata: InputMetadata::default(),
+            description: None,
         }
     }
 
@@ -80,6 +134,7 @@ impl<'a> Input<'a> {
         Input {
             kind: InputKind::ThemePreviewFile,
             metadata: InputMetadata::default(),
+            description: None,
         }
     }
 
@@ -87,6 +142,7 @@ impl<'a> Input<'a> {
         Input {
             kind: InputKind::CustomReader(reader),
             metadata: InputMetadata::default(),
+            description: None,
         }
     }
 
@@ -103,15 +159,33 @@ impl<'a> Input<'a> {
         self
     }
 
+    pub fn with_description(mut self, description: Option<InputDescription>) -> Self {
+        self.description = description;
+        self
+    }
+
+    pub fn description(&self) -> InputDescription {
+        if let Some(ref description) = self.description {
+            description.clone()
+        } else if let Some(ref name) = self.metadata.user_provided_name {
+            InputDescription::new(name.to_string_lossy()).with_kind(Some("File"))
+        } else {
+            self.kind.description()
+        }
+    }
+
     pub(crate) fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
+        let description = self.description().clone();
         match self.kind {
             InputKind::StdIn => Ok(OpenedInput {
                 kind: OpenedInputKind::StdIn,
+                description,
                 metadata: self.metadata,
                 reader: InputReader::new(stdin),
             }),
             InputKind::OrdinaryFile(path) => Ok(OpenedInput {
                 kind: OpenedInputKind::OrdinaryFile(path.clone()),
+                description,
                 metadata: self.metadata,
                 reader: {
                     let file = File::open(&path)
@@ -124,49 +198,16 @@ impl<'a> Input<'a> {
             }),
             InputKind::ThemePreviewFile => Ok(OpenedInput {
                 kind: OpenedInputKind::ThemePreviewFile,
+                description,
                 metadata: self.metadata,
                 reader: InputReader::new(THEME_PREVIEW_FILE),
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
+                description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
                 reader: InputReader::new(BufReader::new(reader)),
             }),
-        }
-    }
-}
-
-impl<'a> OpenedInput<'a> {
-    pub fn description(&self) -> InputDescription {
-        if let Some(ref name) = self.metadata.user_provided_name {
-            InputDescription {
-                full: format!("file '{}'", name.to_string_lossy()),
-                prefix: "File: ".to_owned(),
-                name: name.to_string_lossy().into_owned(),
-            }
-        } else {
-            match self.kind {
-                OpenedInputKind::OrdinaryFile(ref path) => InputDescription {
-                    full: format!("file '{}'", path.to_string_lossy()),
-                    prefix: "File: ".to_owned(),
-                    name: path.to_string_lossy().into_owned(),
-                },
-                OpenedInputKind::StdIn => InputDescription {
-                    full: "STDIN".to_owned(),
-                    prefix: "".to_owned(),
-                    name: "STDIN".to_owned(),
-                },
-                OpenedInputKind::ThemePreviewFile => InputDescription {
-                    full: "".to_owned(),
-                    prefix: "".to_owned(),
-                    name: "".to_owned(),
-                },
-                OpenedInputKind::CustomReader => InputDescription {
-                    full: "reader".to_owned(),
-                    prefix: "".to_owned(),
-                    name: "READER".into(),
-                },
-            }
         }
     }
 }
