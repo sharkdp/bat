@@ -8,7 +8,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         AppSettings::ColorNever
     };
 
-    let app = ClapApp::new(crate_name!())
+    let mut app = ClapApp::new(crate_name!())
         .version(crate_version!())
         .global_setting(clap_color_setting)
         .global_setting(AppSettings::DeriveDisplayOrder)
@@ -44,7 +44,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help(
                     "Show non-printable characters like space, tab or newline. \
                      This option can also be used to print binary files. \
-                     Use '--tabs' to control the width of the tab-placeholders."
+                     Use '--tabs' to control the width of the tab-placeholders.",
                 ),
         )
         .arg(
@@ -90,7 +90,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
-                     '--highlight-line 40:' highlights lines 40 to the end of the file"
+                     '--highlight-line 40:' highlights lines 40 to the end of the file",
                 ),
         )
         .arg(
@@ -101,59 +101,67 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .multiple(true)
                 .value_name("name")
                 .help("Specify the name to display for a file.")
-                .long_help("Specify the name to display for a file. Useful when piping \
+                .long_help(
+                    "Specify the name to display for a file. Useful when piping \
                             data to bat from STDIN when bat does not otherwise know \
-                            the filename."),
-        )
-        .arg(
-            Arg::with_name("diff")
-                .long("diff")
-                .short("d")
-                .help("Only show lines that have been added/removed/modified.")
-                .long_help(
-                    "Only show lines that have been added/removed/modified with respect \
+                            the filename.",
+                ),
+        );
+
+    #[cfg(feature = "git")]
+    {
+        app = app
+                .arg(
+                    Arg::with_name("diff")
+                        .long("diff")
+                        .short("d")
+                        .help("Only show lines that have been added/removed/modified.")
+                        .long_help(
+                            "Only show lines that have been added/removed/modified with respect \
                      to the Git index. Use --diff-context=N to control how much context you want to see.",
-                ),
-        )
-        .arg(
-            Arg::with_name("diff-context")
-                .long("diff-context")
-                .overrides_with("diff-context")
-                .takes_value(true)
-                .value_name("N")
-                .validator(
-                    |n| {
-                        n.parse::<usize>()
-                            .map_err(|_| "must be a number")
-                            .map(|_| ()) // Convert to Result<(), &str>
-                            .map_err(|e| e.to_string())
-                    }, // Convert to Result<(), String>
+                        ),
                 )
-                .hidden_short_help(true)
-                .long_help(
-                    "Include N lines of context around added/removed/modified lines when using '--diff'.",
-                ),
-        )
-        .arg(
-            Arg::with_name("tabs")
-                .long("tabs")
-                .overrides_with("tabs")
-                .takes_value(true)
-                .value_name("T")
-                .validator(
-                    |t| {
-                        t.parse::<u32>()
-                            .map_err(|_t| "must be a number")
-                            .map(|_t| ()) // Convert to Result<(), &str>
-                            .map_err(|e| e.to_string())
-                    }, // Convert to Result<(), String>
+                .arg(
+                    Arg::with_name("diff-context")
+                        .long("diff-context")
+                        .overrides_with("diff-context")
+                        .takes_value(true)
+                        .value_name("N")
+                        .validator(
+                            |n| {
+                                n.parse::<usize>()
+                                    .map_err(|_| "must be a number")
+                                    .map(|_| ()) // Convert to Result<(), &str>
+                                    .map_err(|e| e.to_string())
+                            }, // Convert to Result<(), String>
+                        )
+                        .hidden_short_help(true)
+                        .long_help(
+                            "Include N lines of context around added/removed/modified lines when using '--diff'.",
+                        ),
                 )
-                .help("Set the tab width to T spaces.")
-                .long_help(
-                    "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
+    }
+
+    app = app.arg(
+        Arg::with_name("tabs")
+            .long("tabs")
+            .overrides_with("tabs")
+            .takes_value(true)
+            .value_name("T")
+            .validator(
+                |t| {
+                    t.parse::<u32>()
+                        .map_err(|_t| "must be a number")
+                        .map(|_t| ()) // Convert to Result<(), &str>
+                        .map_err(|e| e.to_string())
+                }, // Convert to Result<(), String>
+            )
+            .help("Set the tab width to T spaces.")
+            .long_help(
+                "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
                      directly",
-                ),
-        )
+            ),
+    )
         .arg(
             Arg::with_name("wrap")
                 .long("wrap")
@@ -334,7 +342,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "changes", "header", "grid", "numbers", "snip"
+                            "auto", "full", "plain", "header", "grid", "numbers", "snip",
+                            #[cfg(feature = "git")]
+                                "changes",
                         ]
                             .contains(style)
                     });

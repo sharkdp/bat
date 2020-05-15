@@ -166,6 +166,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Whether to show modification markers for VCS changes
+    #[cfg(feature = "git")]
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.vcs_modification_markers = yes;
         self
@@ -269,6 +270,7 @@ impl<'a> PrettyPrinter<'a> {
             style_components.push(StyleComponent::Snip);
         }
         if self.active_style_components.vcs_modification_markers {
+            #[cfg(feature = "git")]
             style_components.push(StyleComponent::Changes);
         }
         self.config.style_components = StyleComponents::new(&style_components);

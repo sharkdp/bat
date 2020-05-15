@@ -198,22 +198,23 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            visible_lines: if self.matches.is_present("diff") {
-                VisibleLines::DiffContext(
+            visible_lines: match self.matches.is_present("diff") {
+                #[cfg(feature = "git")]
+                true => VisibleLines::DiffContext(
                     self.matches
                         .value_of("diff-context")
                         .and_then(|t| t.parse().ok())
                         .unwrap_or(2),
-                )
-            } else {
-                VisibleLines::Ranges(
+                ),
+
+                _ => VisibleLines::Ranges(
                     self.matches
                         .values_of("line-range")
                         .map(|vs| vs.map(LineRange::from).collect())
                         .transpose()?
                         .map(LineRanges::from)
                         .unwrap_or_default(),
-                )
+                ),
             },
             style_components,
             syntax_mapping,

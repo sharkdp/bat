@@ -111,8 +111,7 @@ impl<'a> InteractivePrinter<'a> {
         config: &'a Config,
         assets: &'a HighlightingAssets,
         input: &mut OpenedInput,
-        #[cfg(feature = "git")]
-        line_changes: &'a Option<LineChanges>,
+        #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
     ) -> Self {
         let theme = assets.get_theme(&config.theme);
 
