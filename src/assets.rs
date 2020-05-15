@@ -191,11 +191,7 @@ impl HighlightingAssets {
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
     ) -> &SyntaxReference {
-        let syntax = if match input.kind {
-            OpenedInputKind::ThemePreviewFile => true,
-            _ => false,
-        } {
-            // FIXME: replace the above match statement with matches macro when min Rust >= 1.42.0
+        let syntax = if input.kind.is_theme_preview_file() {
             self.syntax_set.find_syntax_by_name("Rust")
         } else if let Some(language) = language {
             self.syntax_set.find_syntax_by_token(language)
