@@ -249,7 +249,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
                      to show the binary file contents.",
                     Yellow.paint("[bat warning]"),
-                    input.description().full,
+                    input.description.summary(),
                 )?;
             } else if self.config.style_components.grid() {
                 self.print_horizontal_line(handle, '┬')?;
@@ -283,13 +283,16 @@ impl<'a> Printer for InteractivePrinter<'a> {
             _ => "",
         };
 
-        let description = input.description();
+        let description = &input.description;
 
         writeln!(
             handle,
             "{}{}{}",
-            description.prefix,
-            self.colors.filename.paint(&description.name),
+            description
+                .kind()
+                .map(|kind| format!("{}: ", kind))
+                .unwrap_or("".into()),
+            self.colors.filename.paint(description.name()),
             mode
         )?;
 
