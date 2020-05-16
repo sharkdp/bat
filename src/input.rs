@@ -18,7 +18,7 @@ pub struct InputDescription {
 impl InputDescription {
     /// Creates a description for an input.
     ///
-    /// The name should uniquely describes where the input came from (e.g. "README.md")
+    /// The name should describe where the input came from (e.g. "README.md")
     pub fn new(name: impl Into<String>) -> Self {
         InputDescription {
             name: name.into(),
