@@ -10,6 +10,17 @@ error_chain! {
         GlobParsingError(::globset::Error);
         SerdeYamlError(::serde_yaml::Error);
     }
+
+    errors {
+        UndetectedSyntax(input: String) {
+            description("unable to detect syntax"),
+            display("unable to detect syntax for {}", input)
+        }
+        UnknownSyntax(name: String) {
+            description("unknown syntax"),
+            display("unknown syntax: '{}'", name)
+        }
+    }
 }
 
 pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
