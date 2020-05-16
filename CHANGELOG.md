@@ -7,11 +7,11 @@
 ## Bugfixes
 
 - bat mishighlights Users that start with digits in SSH config, see #984
-- `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p) 
+- `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p)
 
 ## Other
 
-- bat now prints an error if an invalid syntax is specified (@sharkdp)
+- bat now prints an error if an invalid syntax is specified via `-l` or `--map-syntax`, see #1004 (@eth-p)
 
 ## New syntaxes
 ## New themes
