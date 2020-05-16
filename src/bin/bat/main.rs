@@ -130,6 +130,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
+    config.language = Some("Rust");
     config.style_components = StyleComponents(style);
 
     let stdout = io::stdout();
