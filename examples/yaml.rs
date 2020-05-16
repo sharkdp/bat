@@ -1,5 +1,5 @@
 /// A program that serializes a Rust structure to YAML and pretty-prints the result
-use bat::PrettyPrinter;
+use bat::{Input, PrettyPrinter};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -29,7 +29,7 @@ fn main() {
         .line_numbers(true)
         .grid(true)
         .header(true)
-        .input_from_bytes_with_name(&bytes, "person.yaml")
+        .input(Input::from_bytes(&bytes).name("person.yaml").kind("File"))
         .print()
         .unwrap();
 }
