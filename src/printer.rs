@@ -292,7 +292,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 .kind()
                 .map(|kind| format!("{}: ", kind))
                 .unwrap_or("".into()),
-            self.colors.filename.paint(description.name()),
+            self.colors.filename.paint(description.title()),
             mode
         )?;
 

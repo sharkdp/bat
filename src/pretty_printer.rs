@@ -9,7 +9,7 @@ use crate::{
     config::{Config, VisibleLines},
     controller::Controller,
     error::Result,
-    input::Input,
+    input::Input as BatInput,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
     SyntaxMapping, WrappingMode,
@@ -61,10 +61,17 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Adds multiple inputs which should be pretty-printed
+    pub fn inputs(&mut self, inputs: impl IntoIterator<Item = Input<'a>>) -> &mut Self {
+        for input in inputs {
+            self.inputs.push(input);
+        }
+        self
+    }
+
     /// Add a file which should be pretty-printed
     pub fn input_file(&mut self, path: impl AsRef<OsStr>) -> &mut Self {
-        self.inputs.push(Input::ordinary_file(path.as_ref()));
-        self
+        self.input(Input::from_file(path).kind("File"))
     }
 
     /// Add multiple files which should be pretty-printed
@@ -73,22 +80,20 @@ impl<'a> PrettyPrinter<'a> {
         I: IntoIterator<Item = P>,
         P: AsRef<OsStr>,
     {
-        for path in paths {
-            self.inputs.push(Input::ordinary_file(path.as_ref()));
-        }
-        self
+        self.inputs(paths.into_iter().map(Input::from_file))
     }
 
     /// Add STDIN as an input
     pub fn input_stdin(&mut self) -> &mut Self {
-        self.inputs.push(Input::stdin());
+        self.inputs.push(Input::from_stdin());
         self
     }
 
     /// Add STDIN as an input (with customized name)
+    #[deprecated]
     pub fn input_stdin_with_name(&mut self, name: impl AsRef<OsStr>) -> &mut Self {
         self.inputs
-            .push(Input::stdin().with_name(Some(name.as_ref())));
+            .push(Input::from_stdin().name(name).kind("File"));
         self
     }
 
@@ -98,6 +103,8 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Add a byte string as an input (with customized name)
+    #[deprecated]
+    #[allow(deprecated)]
     pub fn input_from_bytes_with_name(
         &mut self,
         content: &'a [u8],
@@ -108,18 +115,19 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Add a custom reader as an input
     pub fn input_from_reader<R: Read + 'a>(&mut self, reader: R) -> &mut Self {
-        self.inputs.push(Input::from_reader(Box::new(reader)));
+        self.inputs.push(Input::from_reader(reader));
         self
     }
 
     /// Add a custom reader as an input (with customized name)
+    #[deprecated]
     pub fn input_from_reader_with_name<R: Read + 'a>(
         &mut self,
         reader: R,
         name: impl AsRef<OsStr>,
     ) -> &mut Self {
         self.inputs
-            .push(Input::from_reader(Box::new(reader)).with_name(Some(name.as_ref())));
+            .push(Input::from_reader(reader).name(name).kind("File"));
         self
     }
 
@@ -292,10 +300,74 @@ impl<'a> PrettyPrinter<'a> {
         }
         self.config.style_components = StyleComponents::new(&style_components);
 
+        // Collect the inputs to print
         let mut inputs: Vec<Input> = vec![];
         std::mem::swap(&mut inputs, &mut self.inputs);
 
+        // Run the controller
         let controller = Controller::new(&self.config, &self.assets);
-        controller.run(inputs)
+        controller.run(inputs.into_iter().map(|i| i.into()).collect())
+    }
+}
+
+pub struct Input<'a> {
+    input: BatInput<'a>,
+}
+
+impl<'a> Input<'a> {
+    /// A new input from a reader.
+    pub fn from_reader<R: Read + 'a>(reader: R) -> Self {
+        BatInput::from_reader(Box::new(reader)).into()
+    }
+
+    /// A new input from a file.
+    pub fn from_file(path: impl AsRef<OsStr>) -> Self {
+        BatInput::ordinary_file(path.as_ref()).into()
+    }
+
+    /// A new input from bytes.
+    pub fn from_bytes(bytes: &'a [u8]) -> Self {
+        Input::from_reader(bytes).into()
+    }
+
+    /// A new input from STDIN.
+    pub fn from_stdin() -> Self {
+        BatInput::stdin().into()
+    }
+
+    /// The filename of the input.
+    /// This affects syntax detection and changes the default header title.
+    pub fn name(mut self, name: impl AsRef<OsStr>) -> Self {
+        self.input = self.input.with_name(Some(name.as_ref()));
+        self
+    }
+
+    /// The description for the type of input (e.g. "File")
+    /// This defaults to "File" for files, and nothing for other inputs.
+    pub fn kind(mut self, kind: impl Into<String>) -> Self {
+        let kind = kind.into();
+        self.input
+            .description_mut()
+            .set_kind(if kind.is_empty() { None } else { Some(kind) });
+        self
+    }
+
+    /// The title for the input (e.g. "http://example.com/example.txt")
+    /// This defaults to the file name.
+    pub fn title(mut self, title: impl Into<String>) -> Self {
+        self.input.description_mut().set_title(Some(title.into()));
+        self
+    }
+}
+
+impl<'a> Into<Input<'a>> for BatInput<'a> {
+    fn into(self) -> Input<'a> {
+        Input { input: self }
+    }
+}
+
+impl<'a> Into<BatInput<'a>> for Input<'a> {
+    fn into(self) -> BatInput<'a> {
+        self.input
     }
 }
