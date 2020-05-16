@@ -310,6 +310,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// An input source for the pretty printer.
 pub struct Input<'a> {
     input: BatInput<'a>,
 }
@@ -343,7 +344,6 @@ impl<'a> Input<'a> {
     }
 
     /// The description for the type of input (e.g. "File")
-    /// This defaults to "File" for files, and nothing for other inputs.
     pub fn kind(mut self, kind: impl Into<String>) -> Self {
         let kind = kind.into();
         self.input
