@@ -40,7 +40,7 @@ pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrapping;
 
-pub use pretty_printer::PrettyPrinter;
+pub use pretty_printer::{Input, PrettyPrinter};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use wrapping::WrappingMode;
 
