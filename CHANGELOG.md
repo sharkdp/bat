@@ -15,6 +15,7 @@
 ## `bat` as a library
 
 - `PrettyPrinter::vcs_modification_markers` is no longer available without the `git` feature, see #997 (@eth-p)
+- Add `Input::from_string` and `Input::from_bytes` functions (@eth-p)
 
 ## Packaging
 

@@ -83,6 +83,14 @@ impl<'a> Input<'a> {
         }
     }
 
+    pub fn from_string(string: impl Into<&'a str>) -> Self {
+        Input::from_reader(Box::new(BufReader::new(string.into().as_bytes())))
+    }
+
+    pub fn from_bytes(bytes: impl Into<&'a [u8]>) -> Self {
+        Input::from_reader(Box::new(BufReader::new(bytes.into())))
+    }
+
     pub fn is_stdin(&self) -> bool {
         if let InputKind::StdIn = self.kind {
             true
