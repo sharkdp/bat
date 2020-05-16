@@ -10,6 +10,9 @@
 - `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p) 
 
 ## Other
+
+- bat now prints an error if an invalid syntax is specified (@sharkdp)
+
 ## New syntaxes
 ## New themes
 ## `bat` as a library

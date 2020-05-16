@@ -112,7 +112,7 @@ impl<'a> InteractivePrinter<'a> {
         assets: &'a HighlightingAssets,
         input: &mut OpenedInput,
         #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
-    ) -> Self {
+    ) -> Result<Self> {
         let theme = assets.get_theme(&config.theme);
 
         let background_color_highlight = theme.settings.line_highlight;
@@ -164,14 +164,18 @@ impl<'a> InteractivePrinter<'a> {
             None
         } else {
             // Determine the type of syntax for highlighting
-            let syntax = assets
-                .get_syntax(config.language, input, &config.syntax_mapping)
-                .unwrap_or_else(|_| assets.syntax_set.find_syntax_plain_text());
+            let syntax = match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+                Ok(syntax) => syntax,
+                Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
+                    assets.syntax_set.find_syntax_plain_text()
+                }
+                Err(e) => return Err(e),
+            };
 
             Some(HighlightLines::new(syntax, theme))
         };
 
-        InteractivePrinter {
+        Ok(InteractivePrinter {
             panel_width,
             colors,
             config,
@@ -183,7 +187,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter,
             syntax_set: &assets.syntax_set,
             background_color_highlight,
-        }
+        })
     }
 
     fn print_horizontal_line(&mut self, handle: &mut dyn Write, grid_char: char) -> Result<()> {

@@ -121,7 +121,7 @@ impl<'b> Controller<'b> {
                             &mut opened_input,
                             #[cfg(feature = "git")]
                             &line_changes,
-                        ))
+                        )?)
                     };
 
                     let result = self.print_file(
