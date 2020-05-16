@@ -190,11 +190,15 @@ impl HighlightingAssets {
         language: Option<&str>,
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
-    ) -> &SyntaxReference {
-        let syntax = if input.kind.is_theme_preview_file() {
-            self.syntax_set.find_syntax_by_name("Rust")
+    ) -> Result<&SyntaxReference> {
+        if input.kind.is_theme_preview_file() {
+            self.syntax_set
+                .find_syntax_by_name("Rust")
+                .ok_or_else(|| ErrorKind::UnknownSyntax("Rust".to_owned()).into())
         } else if let Some(language) = language {
-            self.syntax_set.find_syntax_by_token(language)
+            self.syntax_set
+                .find_syntax_by_token(language)
+                .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
         } else {
             let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
@@ -217,24 +221,29 @@ impl HighlightingAssets {
                 let absolute_path = path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
 
                 match mapping.get_syntax_for(absolute_path) {
-                    Some(MappingTarget::MapToUnknown) => line_syntax,
-                    Some(MappingTarget::MapTo(syntax_name)) => {
-                        // TODO: we should probably return an error here if this syntax can not be
-                        // found. Currently, we just fall back to 'plain'.
-                        self.syntax_set.find_syntax_by_name(syntax_name)
-                    }
+                    Some(MappingTarget::MapToUnknown) => line_syntax.ok_or_else(|| {
+                        ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
+                    }),
+
+                    Some(MappingTarget::MapTo(syntax_name)) => self
+                        .syntax_set
+                        .find_syntax_by_name(syntax_name)
+                        .ok_or_else(|| ErrorKind::UnknownSyntax(syntax_name.to_owned()).into()),
+
                     None => {
                         let file_name = path.file_name().unwrap_or_default();
-                        self.get_extension_syntax(file_name).or(line_syntax)
+                        self.get_extension_syntax(file_name)
+                            .or(line_syntax)
+                            .ok_or_else(|| {
+                                ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
+                            })
                     }
                 }
             } else {
                 // If a path wasn't provided, we fall back to the detect first-line syntax.
-                line_syntax
+                line_syntax.ok_or_else(|| ErrorKind::UndetectedSyntax("[unknown]".into()).into())
             }
-        };
-
-        syntax.unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
+        }
     }
 
     fn get_extension_syntax(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
@@ -299,11 +308,12 @@ mod tests {
             let input = Input::ordinary_file(file_path.as_os_str());
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin).unwrap();
-            let syntax = self
-                .assets
-                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
 
-            syntax.name.clone()
+            self.assets
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping)
+                .unwrap_or_else(|_| self.assets.syntax_set.find_syntax_plain_text())
+                .name
+                .clone()
         }
 
         fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
@@ -312,11 +322,12 @@ mod tests {
                 .with_name(Some(file_path.as_os_str()));
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin).unwrap();
-            let syntax = self
-                .assets
-                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
 
-            syntax.name.clone()
+            self.assets
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping)
+                .unwrap_or_else(|_| self.assets.syntax_set.find_syntax_plain_text())
+                .name
+                .clone()
         }
 
         fn syntax_for_file_os(&self, file_name: &OsStr) -> String {
@@ -335,10 +346,11 @@ mod tests {
             let input = Input::stdin().with_name(Some(OsStr::new(file_name)));
             let mut opened_input = input.open(content).unwrap();
 
-            let syntax = self
-                .assets
-                .get_syntax(None, &mut opened_input, &self.syntax_mapping);
-            syntax.name.clone()
+            self.assets
+                .get_syntax(None, &mut opened_input, &self.syntax_mapping)
+                .unwrap_or_else(|_| self.assets.syntax_set.find_syntax_plain_text())
+                .name
+                .clone()
         }
 
         fn syntax_is_same_for_inputkinds(&self, file_name: &str, content: &str) -> bool {
