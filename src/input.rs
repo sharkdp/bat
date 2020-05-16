@@ -10,39 +10,48 @@ use crate::error::*;
 /// This tells bat how to refer to the input.
 #[derive(Clone)]
 pub struct InputDescription {
-    name: String,
+    pub(crate) name: String,
+
+    /// The input title.
+    /// This replaces the name if provided.
+    title: Option<String>,
+
+    /// The input kind.
     kind: Option<String>,
+
+    /// A summary description of the input.
+    /// Defaults to "{kind} '{name}'"
     summary: Option<String>,
 }
 
 impl InputDescription {
     /// Creates a description for an input.
-    ///
-    /// The name should describe where the input came from (e.g. "README.md")
     pub fn new(name: impl Into<String>) -> Self {
         InputDescription {
             name: name.into(),
+            title: None,
             kind: None,
             summary: None,
         }
     }
 
-    /// A description for the type of input (e.g. "File")
-    pub fn with_kind(mut self, kind: Option<impl Into<String>>) -> Self {
-        self.kind = kind.map(|kind| kind.into());
-        self
+    pub fn set_kind(&mut self, kind: Option<String>) -> () {
+        self.kind = kind;
     }
 
-    /// A summary description of the input.
-    ///
-    /// Defaults to "{kind} '{name}'"
-    pub fn with_summary(mut self, summary: Option<impl Into<String>>) -> Self {
-        self.summary = summary.map(|summary| summary.into());
-        self
+    pub fn set_summary(&mut self, summary: Option<String>) -> () {
+        self.summary = summary;
     }
 
-    pub fn name(&self) -> &String {
-        &self.name
+    pub fn set_title(&mut self, title: Option<String>) -> () {
+        self.title = title;
+    }
+
+    pub fn title(&self) -> &String {
+        match self.title.as_ref() {
+            Some(ref title) => title,
+            None => &self.name,
+        }
     }
 
     pub fn kind(&self) -> Option<&String> {
@@ -66,9 +75,7 @@ pub(crate) enum InputKind<'a> {
 impl<'a> InputKind<'a> {
     pub fn description(&self) -> InputDescription {
         match self {
-            InputKind::OrdinaryFile(ref path) => {
-                InputDescription::new(path.to_string_lossy()).with_kind(Some("File"))
-            }
+            InputKind::OrdinaryFile(ref path) => InputDescription::new(path.to_string_lossy()),
             InputKind::StdIn => InputDescription::new("STDIN"),
             InputKind::CustomReader(_) => InputDescription::new("READER"),
         }
@@ -83,7 +90,7 @@ pub(crate) struct InputMetadata {
 pub struct Input<'a> {
     pub(crate) kind: InputKind<'a>,
     pub(crate) metadata: InputMetadata,
-    pub(crate) description: Option<InputDescription>,
+    pub(crate) description: InputDescription,
 }
 
 pub(crate) enum OpenedInputKind {
@@ -101,26 +108,29 @@ pub(crate) struct OpenedInput<'a> {
 
 impl<'a> Input<'a> {
     pub fn ordinary_file(path: &OsStr) -> Self {
+        let kind = InputKind::OrdinaryFile(path.to_os_string());
         Input {
-            kind: InputKind::OrdinaryFile(path.to_os_string()),
+            description: kind.description(),
             metadata: InputMetadata::default(),
-            description: None,
+            kind,
         }
     }
 
     pub fn stdin() -> Self {
+        let kind = InputKind::StdIn;
         Input {
-            kind: InputKind::StdIn,
+            description: kind.description(),
             metadata: InputMetadata::default(),
-            description: None,
+            kind,
         }
     }
 
     pub fn from_reader(reader: Box<dyn Read + 'a>) -> Self {
+        let kind = InputKind::CustomReader(reader);
         Input {
-            kind: InputKind::CustomReader(reader),
+            description: kind.description(),
             metadata: InputMetadata::default(),
-            description: None,
+            kind,
         }
     }
 
@@ -133,23 +143,26 @@ impl<'a> Input<'a> {
     }
 
     pub fn with_name(mut self, provided_name: Option<&OsStr>) -> Self {
+        match provided_name {
+            Some(name) => self.description.name = name.to_string_lossy().to_string(),
+            None => {}
+        }
+
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
         self
     }
 
-    pub fn with_description(mut self, description: Option<InputDescription>) -> Self {
-        self.description = description;
-        self
+    pub fn as_file(mut self, provided_name: Option<&OsStr>) -> Self {
+        self.description.kind = Some("File".to_owned());
+        self.with_name(provided_name)
     }
 
-    pub fn description(&self) -> InputDescription {
-        if let Some(ref description) = self.description {
-            description.clone()
-        } else if let Some(ref name) = self.metadata.user_provided_name {
-            InputDescription::new(name.to_string_lossy()).with_kind(Some("File"))
-        } else {
-            self.kind.description()
-        }
+    pub fn description(&self) -> &InputDescription {
+        &self.description
+    }
+
+    pub fn description_mut(&mut self) -> &mut InputDescription {
+        &mut self.description
     }
 
     pub(crate) fn open<R: BufRead + 'a>(self, stdin: R) -> Result<OpenedInput<'a>> {
