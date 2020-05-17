@@ -34,6 +34,7 @@ The following files have been manually modified after converting from a `.tmLang
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
 * `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
 * `Org mode.sublime-syntax` => removed `task` file type.
+* `SML.sublime_syntax` => removed `ml` file type.
 
 ### Non-submodule additions
 
@@ -42,3 +43,8 @@ The following files have been manually modified after converting from a `.tmLang
 * `Rego.sublime-syntax` has been added manually from https://github.com/open-policy-agent/opa/blob/master/misc/syntax/sublime/rego.sublime-syntax
    as it is not kept in a standalone repository. The file is generated from
    https://github.com/open-policy-agent/opa/blob/master/misc/syntax/textmate/Rego.tmLanguage
+* `SML.sublime_syntax` has been added manually from
+   https://github.com/seanjames777/SML-Language-Definitiona as it is not
+   kept in a standalone repository. The file generated is from
+   https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
+
