@@ -1,0 +1,33 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: SML
+file_extensions:
+  - sml
+  - cm
+  - sig
+scope: source.sml
+contexts:
+  main:
+    - match: \b(EQUAL|GREATER|LESS|NONE|SOME|abstraction|abstype|and|andalso|array|as|before|bool|case|char|datatype|do|else|end|eqtype|exception|exn|false|fn|fun|functor|handle|if|in|include|infix|infixr|int|let|list|local|nil|nonfix|not|o|of|op|open|option|orelse|overload|print|raise|real|rec|ref|sharing|sig|signature|string|struct|structure|substring|then|true|type|unit|val|vector|where|while|with|withtype|word)\b
+      comment: SML keywords
+      scope: keyword.source.sml
+    - match: '\b[0-9]+\b'
+      comment: Numeric constants
+      scope: constant.numeric.sml
+    - match: '\b[A-Z]([A-z0-9]*)\b'
+      comment: Built in types
+      scope: support.type.sml
+    - match: '"(\\"|[^"])*"'
+      comment: String constant
+      scope: string.sml
+    - match: \(\*
+      comment: Comment
+      push:
+        - meta_scope: comment.sml
+        - match: \*\)
+          pop: true
+    - match: '(\(\)|=>|::|\[\]|->|:>)'
+      comment: Character
+      scope: constant.character.sml
+
