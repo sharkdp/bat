@@ -14,6 +14,9 @@
 - bat now prints an error if an invalid syntax is specified via `-l` or `--map-syntax`, see #1004 (@eth-p)
 
 ## New syntaxes
+
+- SML, see #1005 (@kopecs)
+
 ## New themes
 ## `bat` as a library
 
