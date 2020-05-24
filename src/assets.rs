@@ -481,4 +481,15 @@ mod tests {
             "Bourne Again Shell (bash)"
         );
     }
+
+    #[test]
+    fn issue_1008() {
+        let test = SyntaxDetectionTest::new();
+
+        assert_eq!(
+            test.syntax_for_file_with_content("bin/rails", "#!/usr/bin/env ruby"),
+            "Ruby"
+        );
+        assert_eq!(test.syntax_for_file("example.rails"), "HTML (Rails)");
+    }
 }
