@@ -20,9 +20,8 @@
 - SML, see #1005 (@kopecs)
 
 ## New themes
-## `bat` as a library
 
-- `PrettyPrinter::vcs_modification_markers` is no longer available without the `git` feature, see #997 (@eth-p)
+## `bat` as a library
 
 ## Packaging
 

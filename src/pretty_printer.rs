@@ -165,10 +165,13 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Whether to show modification markers for VCS changes
-    #[cfg(feature = "git")]
+    /// Whether to show modification markers for VCS changes. This has no effect if
+    /// the `git` feature is not activated.
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
-        self.active_style_components.vcs_modification_markers = yes;
+        #[cfg(feature = "git")]
+        {
+            self.active_style_components.vcs_modification_markers = yes;
+        }
         self
     }
 
