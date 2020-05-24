@@ -365,8 +365,6 @@ higher. You can then use `cargo` to build everything:
 cargo install --locked bat
 ```
 
-On some platforms, you might need to install `llvm` and/or `libclang-dev`.
-
 ## Customization
 
 ### Highlighting theme
