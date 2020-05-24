@@ -51,6 +51,7 @@ globset = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
 semver = "0.9"
+path-absolutize = "1.2.0"
 
 [dependencies.git2]
 version = "0.13"

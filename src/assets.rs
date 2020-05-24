@@ -8,6 +8,8 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
+use path_absolutize::Absolutize;
+
 use crate::assets_metadata::AssetsMetadata;
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
@@ -218,7 +220,7 @@ impl HighlightingAssets {
             if let Some(path_str) = path_str {
                 // If a path was provided, we try and detect the syntax based on extension mappings.
                 let path = Path::new(path_str);
-                let absolute_path = path.canonicalize().ok().unwrap_or_else(|| path.to_owned());
+                let absolute_path = path.absolutize().ok().unwrap_or_else(|| path.to_owned());
 
                 match mapping.get_syntax_for(absolute_path) {
                     Some(MappingTarget::MapToUnknown) => line_syntax.ok_or_else(|| {
@@ -281,7 +283,7 @@ mod tests {
     struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
         pub syntax_mapping: SyntaxMapping<'a>,
-        temp_dir: TempDir,
+        pub temp_dir: TempDir,
     }
 
     impl<'a> SyntaxDetectionTest<'a> {
@@ -482,14 +484,32 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
     #[test]
-    fn issue_1008() {
+    fn syntax_detection_for_symlinked_file() {
+        use std::os::unix::fs::symlink;
+
         let test = SyntaxDetectionTest::new();
+        let file_path = test.temp_dir.path().join("my_ssh_config_filename");
+        {
+            File::create(&file_path).unwrap();
+        }
+        let file_path_symlink = test.temp_dir.path().join(".ssh").join("config");
+
+        std::fs::create_dir(test.temp_dir.path().join(".ssh"))
+            .expect("creation of directory succeeds");
+        symlink(&file_path, &file_path_symlink).expect("creation of symbolic link succeeds");
+
+        let input = Input::ordinary_file(file_path_symlink.as_os_str());
+        let dummy_stdin: &[u8] = &[];
+        let mut opened_input = input.open(dummy_stdin).unwrap();
 
         assert_eq!(
-            test.syntax_for_file_with_content("bin/rails", "#!/usr/bin/env ruby"),
-            "Ruby"
+            test.assets
+                .get_syntax(None, &mut opened_input, &test.syntax_mapping)
+                .unwrap_or_else(|_| test.assets.syntax_set.find_syntax_plain_text())
+                .name,
+            "SSH Config"
         );
-        assert_eq!(test.syntax_for_file("example.rails"), "HTML (Rails)");
     }
 }
