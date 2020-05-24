@@ -9,6 +9,7 @@
 - bat mishighlights Users that start with digits in SSH config, see #984
 - `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p)
 - Fix syntax detection for files called 'rails', see #1008
+- Fix potential errors with syntax detection for symlinked files, see #1001
 
 ## Other
 
