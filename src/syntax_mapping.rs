@@ -42,6 +42,11 @@ impl<'a> SyntaxMapping<'a> {
             )
             .unwrap();
 
+        // See #1008
+        mapping
+            .insert("rails", MappingTarget::MapToUnknown)
+            .unwrap();
+
         mapping
     }
 
