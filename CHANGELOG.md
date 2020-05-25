@@ -23,6 +23,8 @@
 
 ## `bat` as a library
 
+- `PrettyPrinter::vcs_modification_markers` has been marked deprecated when building without the `git` feature, see #997 and #1020 (@eth-p, @sharkdp)
+
 ## Packaging
 
 - Compilation problems with `onig_sys` on various platforms have been resolved by upgrading to `syntect 4.2`, which includes a new `onig` version that allows to build `onig_sys` without the `bindgen` dependency. This removes the need for `libclang(-dev)` to be installed to compile `bat`. Package maintainers might want to remove `clang` as a build dependency. See #650 for more details.

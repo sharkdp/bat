@@ -167,6 +167,14 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Whether to show modification markers for VCS changes. This has no effect if
     /// the `git` feature is not activated.
+    #[cfg_attr(
+        not(feature = "git"),
+        deprecated(
+            note = "Using vcs_modification_markers without the 'git' feature has no effect. \
+                    The function will be removed (for non-'git' use cases) in the future."
+        )
+    )]
+    #[allow(unused_variables)]
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
         #[cfg(feature = "git")]
         {
