@@ -1,0 +1,287 @@
+name: CICD
+
+env:
+  PROJECT_NAME: bat
+  PROJECT_DESC: "A `cat` clone with wings"
+  PROJECT_AUTH: "sharkdp"
+  RUST_MIN_SRV: "1.40.0"
+
+on: [push, pull_request]
+
+jobs:
+  min_version:
+    name: MinSRV # Minimum supported rust version
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install `rust` toolchain (v${{ env.RUST_MIN_SRV }})
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_MIN_SRV }}
+        default: true
+        profile: minimal # minimal component installation (ie, no documentation)
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          # { os, target, cargo-options, features, use-cross, toolchain }
+          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: i586-unknown-linux-gnu      , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: use-cross }
+          - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
+          - { os: macos-latest   , target: x86_64-apple-darwin         }
+          - { os: windows-latest , target: i686-pc-windows-gnu         }
+          - { os: windows-latest , target: i686-pc-windows-msvc        }
+          - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
+          - { os: windows-latest , target: x86_64-pc-windows-msvc      }
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install any prerequisites
+      shell: bash
+      run: |
+        case ${{ matrix.job.target }} in
+          arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
+        esac
+    - name: Initialize workflow variables
+      id: vars
+      shell: bash
+      run: |
+        # toolchain
+        TOOLCHAIN="stable" ## default to "stable" toolchain
+        # * specify alternate TOOLCHAIN for *-pc-windows-gnu targets; gnu targets on Windows are broken for the standard *-pc-windows-msvc toolchain (refs: <https://github.com/rust-lang/rust/issues/47048>, <https://github.com/rust-lang/rust/issues/53454>, <https://github.com/rust-lang/cargo/issues/6754>)
+        case ${{ matrix.job.target }} in *-pc-windows-gnu) TOOLCHAIN="stable-${{ matrix.job.target }}" ;; esac;
+        # * use requested TOOLCHAIN if specified
+        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
+        echo set-output name=TOOLCHAIN::${TOOLCHAIN}
+        echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
+        # staging directory
+        STAGING='_staging'
+        echo set-output name=STAGING::${STAGING}
+        echo ::set-output name=STAGING::${STAGING}
+        # determine EXE suffix
+        EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
+        echo set-output name=EXE_suffix::${EXE_suffix}
+        echo ::set-output name=EXE_suffix::${EXE_suffix}
+        # parse commit reference info
+        REF_NAME=${GITHUB_REF#refs/*/}
+        unset REF_BRANCH ; case ${GITHUB_REF} in refs/heads/*) REF_BRANCH=${GITHUB_REF#refs/heads/} ;; esac;
+        unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
+        REF_SHAS=${GITHUB_SHA:0:8}
+        echo set-output name=REF_NAME::${REF_NAME}
+        echo set-output name=REF_BRANCH::${REF_BRANCH}
+        echo set-output name=REF_TAG::${REF_TAG}
+        echo set-output name=REF_SHAS::${REF_SHAS}
+        echo ::set-output name=REF_NAME::${REF_NAME}
+        echo ::set-output name=REF_BRANCH::${REF_BRANCH}
+        echo ::set-output name=REF_TAG::${REF_TAG}
+        echo ::set-output name=REF_SHAS::${REF_SHAS}
+        # parse target
+        unset TARGET_ARCH ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) TARGET_ARCH=arm ;; i686-*) TARGET_ARCH=i686 ;; x86_64-*) TARGET_ARCH=x86_64 ;; esac;
+        echo set-output name=TARGET_ARCH::${TARGET_ARCH}
+        echo ::set-output name=TARGET_ARCH::${TARGET_ARCH}
+        unset TARGET_OS ; case ${{ matrix.job.target }} in *-linux-*) TARGET_OS=linux ;; *-apple-*) TARGET_OS=macos ;; *-windows-*) TARGET_OS=windows ;; esac;
+        echo set-output name=TARGET_OS::${TARGET_OS}
+        echo ::set-output name=TARGET_OS::${TARGET_OS}
+        # package name
+        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
+        PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
+        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
+        echo set-output name=PKG_suffix::${PKG_suffix}
+        echo set-output name=PKG_BASENAME::${PKG_BASENAME}
+        echo set-output name=PKG_NAME::${PKG_NAME}
+        echo ::set-output name=PKG_suffix::${PKG_suffix}
+        echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
+        echo ::set-output name=PKG_NAME::${PKG_NAME}
+        # deployable tag? (ie, leading "vM" or "M"; M == version number)
+        unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
+        echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
+        echo ::set-output name=DEPLOY::${DEPLOY}
+        # DPKG architecture?
+        unset DPKG_ARCH ; case ${{ matrix.job.target }} in i686-*-linux-*) DPKG_ARCH=i686 ;; x86_64-*-linux-*) DPKG_ARCH=amd64 ;; esac;
+        echo set-output name=DPKG_ARCH::${DPKG_ARCH}
+        echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
+        # DPKG version?
+        unset DPKG_VERSION ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DPKG_VERSION=${REF_TAG/#[vV]/} ; fi
+        echo set-output name=DPKG_VERSION::${DPKG_VERSION}
+        echo ::set-output name=DPKG_VERSION::${DPKG_VERSION}
+        # DPKG base name/conflicts?
+        DPKG_BASENAME=${PROJECT_NAME}
+        DPKG_CONFLICTS=${PROJECT_NAME}-musl
+        case ${{ matrix.job.target }} in *-musl) DPKG_BASENAME=${PROJECT_NAME}-musl ; DPKG_CONFLICTS=${PROJECT_NAME} ;; esac;
+        echo set-output name=DPKG_BASENAME::${DPKG_BASENAME}
+        echo set-output name=DPKG_CONFLICTS::${DPKG_CONFLICTS}
+        echo ::set-output name=DPKG_BASENAME::${DPKG_BASENAME}
+        echo ::set-output name=DPKG_CONFLICTS::${DPKG_CONFLICTS}
+        # DPKG name
+        unset DPKG_NAME;
+        if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
+        echo set-output name=DPKG_NAME::${DPKG_NAME}
+        echo ::set-output name=DPKG_NAME::${DPKG_NAME}
+        # target-specific options
+        # * CARGO_USE_CROSS (truthy)
+        CARGO_USE_CROSS='true' ; case '${{ matrix.job.use-cross }}' in ''|0|f|false|n|no) unset CARGO_USE_CROSS ;; esac;
+        echo set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS:-<empty>/false}
+        echo ::set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS}
+        # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
+        JOB_DO_TESTING="true"
+        case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
+        echo set-output name=JOB_DO_TESTING::${JOB_DO_TESTING:-<empty>/false}
+        echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
+        # # * test only library units tests and binary for arm-type targets
+        unset CARGO_TEST_OPTIONS
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
+        echo set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
+        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
+        # * executable for `strip`?
+        STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
+        echo set-output name=STRIP::${STRIP}
+        echo ::set-output name=STRIP::${STRIP}
+    - name: Create all needed build/work directories
+      shell: bash
+      run: |
+        mkdir -p '${{ steps.vars.outputs.STAGING }}'
+        mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
+        mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
+    - name: rust toolchain ~ install
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
+        target: ${{ matrix.job.target }}
+        override: true
+        profile: minimal # minimal component installation (ie, no documentation)
+    - name: Info
+      shell: bash
+      run: |
+        gcc --version || true
+        rustup -V
+        rustup toolchain list
+        rustup default
+        cargo -V
+        rustc -V
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: build
+        args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: test
+        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
+    - name: Archive executable artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ env.PROJECT_NAME }}-${{ matrix.job.target }}
+        path: target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}
+    - name: Package
+      shell: bash
+      run: |
+        # binary
+        cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        # `strip` binary (if needed)
+        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
+        # README and LICENSE
+        # * spell-checker:ignore EADME ICENSE
+        (shopt -s nullglob; for f in [R]"EADME"{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
+        (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
+        # base compressed package
+        pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
+        case ${{ matrix.job.target }} in
+          *-pc-windows-*) 7z -y a '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* | tail -2 ;;
+          *) tar czf '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* ;;
+        esac;
+        popd >/dev/null
+        # dpkg
+        if [ -n "${{ steps.vars.outputs.DPKG_NAME }}" ]; then
+          DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
+          # binary
+          install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
+          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+          # README and LICENSE
+          (shopt -s nullglob; for f in [R]"EADME"{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
+          (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
+          # control file
+          mkdir -p "${DPKG_DIR}/DEBIAN"
+          printf "Package: ${{ steps.vars.outputs.DPKG_BASENAME }}\nVersion: ${{ steps.vars.outputs.DPKG_VERSION }}\nSection: utils\nPriority: optional\nMaintainer: ${{ env.PROJECT_AUTH }}\nArchitecture: ${{ steps.vars.outputs.DPKG_ARCH }}\nProvides: ${{ env.PROJECT_NAME }}\nConflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}\nDescription: ${{ env.PROJECT_DESC }}\n" > "${DPKG_DIR}/DEBIAN/control"
+          # build dpkg
+          fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
+        fi
+    - name: Publish
+      uses: softprops/action-gh-release@v1
+      if: steps.vars.outputs.DEPLOY
+      with:
+        files: |
+          ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+          ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  coverage:
+    name: Code Coverage
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        # job: [ { os: ubuntu-latest }, { os: macos-latest }, { os: windows-latest } ]
+        job:
+          - { os: ubuntu-latest , toolchain: nightly-2020-04-29 }
+          - { os: macos-latest , toolchain: nightly-2020-04-29 }
+          - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
+    steps:
+    - uses: actions/checkout@v1
+    - name: Initialize workflow variables
+      id: vars
+      shell: bash
+      run: |
+        # toolchain
+        TOOLCHAIN="nightly" ## default to "nightly" toolchain
+        # * use requested TOOLCHAIN if specified
+        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
+        # * use requested TOOLCHAIN if specified
+        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
+        echo set-output name=TOOLCHAIN::${TOOLCHAIN}
+        echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
+        # target-specific options
+        # * CODECOV_FLAGS
+        CODECOV_FLAGS=$( echo "${{ matrix.job.os }}" | sed 's/[^[:alnum:]]/_/g' )
+        echo set-output name=CODECOV_FLAGS::${CODECOV_FLAGS}
+        echo ::set-output name=CODECOV_FLAGS::${CODECOV_FLAGS}
+    - name: rust toolchain ~ install
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
+        override: true
+        profile: minimal # minimal component installation (ie, no documentation)
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --no-fail-fast
+      env:
+        CARGO_INCREMENTAL: '0'
+        RUSTFLAGS: '-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads'
+    - name: Generate coverage data
+      id: coverage
+      uses: actions-rs/grcov@v0.1
+    - name: Upload coverage results (to Codecov.io)
+      uses: codecov/codecov-action@v1
+      with:
+        file: ${{ steps.coverage.outputs.report }}
+        flags: ${{ steps.vars.outputs.CODECOV_FLAGS }}
+        name: codecov-umbrella
+        fail_ci_if_error: false
