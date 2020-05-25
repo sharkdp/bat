@@ -26,8 +26,6 @@
 
 - SML, see #1005 (@kopecs)
 
-## New themes
-
 ## `bat` as a library
 
 - `PrettyPrinter::vcs_modification_markers` has been marked deprecated when building without the `git` feature, see #997 and #1020 (@eth-p, @sharkdp)
