@@ -1,8 +1,14 @@
 # unreleased
 
 ## Features
+## Bugfixes
+## Other
+## New syntaxes
+## New themes
+## `bat` as a library
+## Packaging
 
-- Add padding above headers when not using a grid, see #968 and #981 (@pt2121)
+# v0.15.2
 
 ## Bugfixes
 
@@ -13,6 +19,7 @@
 
 ## Other
 
+- Add padding above headers when not using a grid, see #968 and #981 (@pt2121)
 - bat now prints an error if an invalid syntax is specified via `-l` or `--map-syntax`, see #1004 (@eth-p)
 
 ## New syntaxes
