@@ -8,12 +8,26 @@
 ## `bat` as a library
 ## Packaging
 
+# v0.15.3
+
+## Bugfixes
+
+- Cannot run `bat` with relative paths, see #1022
+- bat mishighlights Users that start with digits in SSH config, see #984
+- `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p)
+
+## New syntaxes
+
+- SML, see #1005 (@kopecs)
+
+## Other
+
+- Some syntaxes and themes have been updated to the latest version
+
 # v0.15.2
 
 ## Bugfixes
 
-- bat mishighlights Users that start with digits in SSH config, see #984
-- `--map-syntax` doesn't work with names provided through `--file-name` (@eth-p)
 - Fix syntax detection for files called 'rails', see #1008
 - Fix potential errors with syntax detection for symlinked files, see #1001
 
@@ -21,10 +35,6 @@
 
 - Add padding above headers when not using a grid, see #968 and #981 (@pt2121)
 - bat now prints an error if an invalid syntax is specified via `-l` or `--map-syntax`, see #1004 (@eth-p)
-
-## New syntaxes
-
-- SML, see #1005 (@kopecs)
 
 ## `bat` as a library
 
