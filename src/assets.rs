@@ -8,7 +8,7 @@ use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 
-use path_absolutize::Absolutize;
+use path_abs::PathAbs;
 
 use crate::assets_metadata::AssetsMetadata;
 use crate::error::*;
@@ -220,7 +220,10 @@ impl HighlightingAssets {
             if let Some(path_str) = path_str {
                 // If a path was provided, we try and detect the syntax based on extension mappings.
                 let path = Path::new(path_str);
-                let absolute_path = path.absolutize().ok().unwrap_or_else(|| path.to_owned());
+                let absolute_path = PathAbs::new(path)
+                    .ok()
+                    .map(|p| p.as_path().to_path_buf())
+                    .unwrap_or_else(|| path.to_owned());
 
                 match mapping.get_syntax_for(absolute_path) {
                     Some(MappingTarget::MapToUnknown) => line_syntax.ok_or_else(|| {
