@@ -107,7 +107,7 @@ dependencies = [
  "globset 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "liquid 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "path-absolutize 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "path_abs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.110 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_yaml 0.8.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -734,20 +734,11 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "path-absolutize"
-version = "1.2.0"
+name = "path_abs"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "path-dedot 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "slash-formatter 2.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "path-dedot"
-version = "1.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "std_prelude 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1053,13 +1044,13 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "slash-formatter"
-version = "2.2.6"
+name = "smallvec"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "smallvec"
-version = "1.3.0"
+name = "std_prelude"
+version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -1413,8 +1404,7 @@ dependencies = [
 "checksum onig 6.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "bd91ccd8a02fce2f7e8a86655aec67bc6c171e6f8e704118a0e8c4b866a05a8a"
 "checksum onig_sys 69.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3814583fad89f3c60ae0701d80e87e1fd3028741723deda72d0d4a0ecf0cb0db"
 "checksum opaque-debug 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
-"checksum path-absolutize 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f75bd79ae25b4cd5c4d4b6d11c11863c2ebee5d1eed4f6d687fcdd232df3a8dc"
-"checksum path-dedot 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4cf32f6a3b529384739d9c11c230ad760aeb553061e7834f58de63a7c507f24f"
+"checksum path_abs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "eb6b8e6dede0bf94e9300e669f335ba92d5fc9fc8be7f4b1ca8a05206489388c"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
 "checksum percent-encoding 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
 "checksum pest 2.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "10f4872ae94d7b90ae48754df22fd42ad52ce740b8f370b03da4835417403e53"
@@ -1452,8 +1442,8 @@ dependencies = [
 "checksum serde_yaml 0.8.12 (registry+https://github.com/rust-lang/crates.io-index)" = "16c7a592a1ec97c9c1c68d75b6e537dcbf60c7618e038e7841e00af1d9ccf0c4"
 "checksum sha-1 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f7d94d0bede923b3cea61f3f1ff57ff8cdfd77b400fb8f9998949e0cf04163df"
 "checksum shell-words 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b6fa3938c99da4914afedd13bf3d79bcb6c277d1b2c398d23257a304d9e1b074"
-"checksum slash-formatter 2.2.6 (registry+https://github.com/rust-lang/crates.io-index)" = "2f7fb98e76e2022054673f3ebc43a4e12890ec6272530629df6237cafbb70569"
 "checksum smallvec 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "05720e22615919e4734f6a99ceae50d00226c3c5aca406e102ebc33298214e0a"
+"checksum std_prelude 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)" = "8207e78455ffdf55661170876f88daf85356e4edd54e0a3dbc79586ca1e50cbe"
 "checksum strsim 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 "checksum syn 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)" = "0df0eb663f387145cab623dea85b09c2c5b4b0aef44e945d928e682fce71bb03"
 "checksum syntect 4.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "83b43a6ca1829ccb0c933b615c9ea83ffc8793ae240cecbd15119b13d741161d"
