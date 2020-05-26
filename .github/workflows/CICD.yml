@@ -42,9 +42,9 @@ jobs:
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: use-cross }
           - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
-          - { os: windows-latest , target: i686-pc-windows-gnu         }
+          # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
           - { os: windows-latest , target: i686-pc-windows-msvc        }
-          - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## note: requires rust >= 1.43.0 to link correctly
+          # - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
     - uses: actions/checkout@v1
@@ -140,7 +140,7 @@ jobs:
         case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
         echo set-output name=JOB_DO_TESTING::${JOB_DO_TESTING:-<empty>/false}
         echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
-        # # * test only library units tests and binary for arm-type targets
+        # # * test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
         echo set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
