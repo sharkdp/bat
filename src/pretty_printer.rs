@@ -9,7 +9,7 @@ use crate::{
     config::{Config, VisibleLines},
     controller::Controller,
     error::Result,
-    input::Input as BatInput,
+    input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
     SyntaxMapping, WrappingMode,
@@ -312,18 +312,18 @@ impl<'a> PrettyPrinter<'a> {
 
 /// An input source for the pretty printer.
 pub struct Input<'a> {
-    input: BatInput<'a>,
+    input: input::Input<'a>,
 }
 
 impl<'a> Input<'a> {
     /// A new input from a reader.
     pub fn from_reader<R: Read + 'a>(reader: R) -> Self {
-        BatInput::from_reader(Box::new(reader)).into()
+        input::Input::from_reader(Box::new(reader)).into()
     }
 
     /// A new input from a file.
     pub fn from_file(path: impl AsRef<OsStr>) -> Self {
-        BatInput::ordinary_file(path.as_ref()).into()
+        input::Input::ordinary_file(path.as_ref()).into()
     }
 
     /// A new input from bytes.
@@ -333,7 +333,7 @@ impl<'a> Input<'a> {
 
     /// A new input from STDIN.
     pub fn from_stdin() -> Self {
-        BatInput::stdin().into()
+        input::Input::stdin().into()
     }
 
     /// The filename of the input.
@@ -360,14 +360,14 @@ impl<'a> Input<'a> {
     }
 }
 
-impl<'a> Into<Input<'a>> for BatInput<'a> {
+impl<'a> Into<Input<'a>> for input::Input<'a> {
     fn into(self) -> Input<'a> {
         Input { input: self }
     }
 }
 
-impl<'a> Into<BatInput<'a>> for Input<'a> {
-    fn into(self) -> BatInput<'a> {
+impl<'a> Into<input::Input<'a>> for Input<'a> {
+    fn into(self) -> input::Input<'a> {
         self.input
     }
 }
