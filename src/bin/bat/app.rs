@@ -13,6 +13,7 @@ use clap::ArgMatches;
 
 use console::Term;
 
+use crate::input::{new_file_input, new_stdin_input};
 use bat::{
     assets::HighlightingAssets,
     config::{Config, VisibleLines},
@@ -257,8 +258,9 @@ impl App {
         let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
 
         if files.is_none() {
-            let input = Input::stdin_as_file(filenames_or_none.next().unwrap_or(None));
-            return Ok(vec![input]);
+            return Ok(vec![new_stdin_input(
+                filenames_or_none.next().unwrap_or(None),
+            )]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
             Some(ref files) => Box::new(files.iter().map(|name| Some(*name))),
@@ -269,9 +271,9 @@ impl App {
         for (filepath, provided_name) in files_or_none.zip(filenames_or_none) {
             if let Some(filepath) = filepath {
                 if filepath.to_str().unwrap_or_default() == "-" {
-                    file_input.push(Input::stdin_as_file(provided_name));
+                    file_input.push(new_stdin_input(provided_name));
                 } else {
-                    file_input.push(Input::ordinary_file(filepath).with_name(provided_name));
+                    file_input.push(new_file_input(filepath, provided_name));
                 }
             }
         }
