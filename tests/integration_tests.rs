@@ -372,30 +372,30 @@ fn do_not_exit_directory() {
 #[test]
 fn pager_basic() {
     bat()
-        .env("PAGER", "echo pager-output")
+        .env("PAGER", "printf pager-output")
         .arg("--paging=always")
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("pager-output\n");
+        .stdout("pager-output");
 }
 
 #[test]
 fn pager_overwrite() {
     bat()
-        .env("PAGER", "echo other-pager")
-        .env("BAT_PAGER", "echo pager-output")
+        .env("PAGER", "printf other-pager")
+        .env("BAT_PAGER", "printf pager-output")
         .arg("--paging=always")
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("pager-output\n");
+        .stdout("pager-output");
 }
 
 #[test]
 fn pager_disable() {
     bat()
-        .env("PAGER", "echo other-pager")
+        .env("PAGER", "printf other-pager")
         .env("BAT_PAGER", "")
         .arg("--paging=always")
         .arg("test.txt")
@@ -421,7 +421,7 @@ fn config_read_arguments_from_file() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("dummy-pager-from-config\n");
+        .stdout("dummy-pager-from-config");
 }
 
 #[test]
