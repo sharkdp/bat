@@ -331,6 +331,7 @@ mod tests {
                 .clone()
         }
 
+        #[cfg(unix)]
         fn syntax_for_file_os(&self, file_name: &OsStr) -> String {
             self.syntax_for_file_with_content_os(file_name, "")
         }
