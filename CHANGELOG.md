@@ -1,6 +1,9 @@
 # unreleased
 
 ## Features
+
+- Added support for the `NO_COLOR` environment variable, see #1021 and #1031 (@eth-p)
+
 ## Bugfixes
 ## Other
 ## New syntaxes

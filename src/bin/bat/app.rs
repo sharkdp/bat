@@ -165,7 +165,7 @@ impl App {
             colored_output: match self.matches.value_of("color") {
                 Some("always") => true,
                 Some("never") => false,
-                Some("auto") | _ => self.interactive_output,
+                Some("auto") | _ => env::var_os("NO_COLOR").is_none() && self.interactive_output,
             },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
