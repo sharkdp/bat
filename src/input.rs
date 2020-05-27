@@ -125,6 +125,17 @@ impl<'a> Input<'a> {
         }
     }
 
+    pub fn stdin_as_file(name: Option<impl AsRef<OsStr>>) -> Self {
+        match name {
+            None => Input::stdin(),
+            Some(name) => {
+                let mut input = Input::stdin().with_name(Some(name.as_ref()));
+                input.description.kind = Some("File".to_owned());
+                input
+            }
+        }
+    }
+
     pub fn from_reader(reader: Box<dyn Read + 'a>) -> Self {
         let kind = InputKind::CustomReader(reader);
         Input {
@@ -150,11 +161,6 @@ impl<'a> Input<'a> {
 
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
         self
-    }
-
-    pub fn as_file(mut self, provided_name: Option<&OsStr>) -> Self {
-        self.description.kind = Some("File".to_owned());
-        self.with_name(provided_name)
     }
 
     pub fn description(&self) -> &InputDescription {
