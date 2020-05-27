@@ -122,7 +122,6 @@ pub fn list_languages(config: &Config) -> Result<()> {
 
 fn theme_preview_file<'a>() -> Input<'a> {
     Input::from_reader(Box::new(BufReader::new(THEME_PREVIEW_DATA)))
-        .with_name(Some("theme.rs".as_ref()))
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
