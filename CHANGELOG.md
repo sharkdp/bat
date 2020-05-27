@@ -12,6 +12,13 @@
 
 ## Bugfixes
 
+- Added missing Solarized themes, see #1027
+- Fixed highlighting bug in Haskell source files, see #1026
+
+# v0.15.3
+
+## Bugfixes
+
 - Cannot run `bat` with relative paths, see #1022
 - bat mishighlights Users that start with digits in SSH config, see #984
 
