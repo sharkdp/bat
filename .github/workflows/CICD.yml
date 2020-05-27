@@ -36,6 +36,7 @@ jobs:
           - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i586-unknown-linux-gnu      , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: i586-unknown-linux-musl     , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
@@ -110,7 +111,13 @@ jobs:
         echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
-        unset DPKG_ARCH ; case ${{ matrix.job.target }} in i686-*-linux-*) DPKG_ARCH=i686 ;; x86_64-*-linux-*) DPKG_ARCH=amd64 ;; esac;
+        unset DPKG_ARCH
+        case ${{ matrix.job.target }} in
+          aarch64-*-linux-*) DPKG_ARCH=arm64 ;;
+          arm-*-linux-*hf) DPKG_ARCH=armhf ;;
+          i686-*-linux-*) DPKG_ARCH=i686 ;;
+          x86_64-*-linux-*) DPKG_ARCH=amd64 ;;
+        esac;
         echo set-output name=DPKG_ARCH::${DPKG_ARCH}
         echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
         # DPKG version?
