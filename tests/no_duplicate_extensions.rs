@@ -8,9 +8,6 @@ fn no_duplicate_extensions() {
         // The '.h' extension currently appears in multiple syntaxes: C, C++, Objective C,
         // Objective C++
         "h",
-        // In addition to the standard Haskell syntax in 'Packages', we also ship the 'Cabal'
-        // syntax which comes with a "Haskell (improved)" syntax.
-        "hs",
         // In addition to the standard JavaScript syntax in 'Packages', we also ship the
         // 'Javascript (Babel)' syntax.
         "js",
