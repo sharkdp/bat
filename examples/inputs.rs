@@ -9,9 +9,9 @@ fn main() {
         .line_numbers(true)
         .inputs(vec![
             Input::from_bytes(b"echo 'Hello World!'")
-                .name("embedded.sh")
-                .title("An embedded shell script.")
-                .kind("Embedded"),
+                .name("embedded.sh") // Dummy name provided to detect the syntax.
+                .kind("Embedded")
+                .title("An embedded shell script."),
             Input::from_stdin().title("Standard Input").kind("FD"),
         ])
         .print()
