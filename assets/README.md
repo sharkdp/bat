@@ -47,4 +47,5 @@ The following files have been manually modified after converting from a `.tmLang
    https://github.com/seanjames777/SML-Language-Definitiona as it is not
    kept in a standalone repository. The file generated is from
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
-
+* `Cabal.sublime_syntax` has been added manually from
+  https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
