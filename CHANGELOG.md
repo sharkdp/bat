@@ -8,7 +8,7 @@
 ## `bat` as a library
 ## Packaging
 
-# v0.15.3
+# v0.15.4
 
 ## Bugfixes
 
