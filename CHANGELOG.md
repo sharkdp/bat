@@ -6,6 +6,13 @@
 ## New syntaxes
 ## New themes
 ## `bat` as a library
+
+- Add APIs to provide `Input` descriptions with `InputDescription` (@eth-p)
+- Add function to directly provide `Input`s to `PrettyPrinter` (@eth-p)
+- <font color="red">`Input::theme_preview_file` is no longer available.</font> (@eth-p)
+
+Changes colored <font color="red">red</font> are breaking changes.
+
 ## Packaging
 
 # v0.15.4
@@ -46,11 +53,6 @@
 ## `bat` as a library
 
 - `PrettyPrinter::vcs_modification_markers` has been marked deprecated when building without the `git` feature, see #997 and #1020 (@eth-p, @sharkdp)
-- Add APIs to provide `Input` descriptions with `InputDescription` (@eth-p)
-- Add function to directly provide `Input`s to `PrettyPrinter` (@eth-p)
-- <font color="red">`Input::theme_preview_file` is no longer available.</font> (@eth-p)
-
-Changes colored <font color="red">red</font> are breaking changes.
 
 ## Packaging
 
