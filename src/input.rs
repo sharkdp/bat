@@ -35,15 +35,15 @@ impl InputDescription {
         }
     }
 
-    pub fn set_kind(&mut self, kind: Option<String>) -> () {
+    pub fn set_kind(&mut self, kind: Option<String>) {
         self.kind = kind;
     }
 
-    pub fn set_summary(&mut self, summary: Option<String>) -> () {
+    pub fn set_summary(&mut self, summary: Option<String>) {
         self.summary = summary;
     }
 
-    pub fn set_title(&mut self, title: Option<String>) -> () {
+    pub fn set_title(&mut self, title: Option<String>) {
         self.title = title;
     }
 
