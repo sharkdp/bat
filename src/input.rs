@@ -125,17 +125,6 @@ impl<'a> Input<'a> {
         }
     }
 
-    pub fn stdin_as_file(name: Option<impl AsRef<OsStr>>) -> Self {
-        match name {
-            None => Input::stdin(),
-            Some(name) => {
-                let mut input = Input::stdin().with_name(Some(name.as_ref()));
-                input.description.kind = Some("File".to_owned());
-                input
-            }
-        }
-    }
-
     pub fn from_reader(reader: Box<dyn Read + 'a>) -> Self {
         let kind = InputKind::CustomReader(reader);
         Input {

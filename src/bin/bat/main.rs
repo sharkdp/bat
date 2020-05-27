@@ -6,6 +6,7 @@ mod assets;
 mod clap_app;
 mod config;
 mod directories;
+mod input;
 
 use std::collections::HashSet;
 use std::ffi::OsStr;
