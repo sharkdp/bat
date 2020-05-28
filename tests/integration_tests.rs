@@ -446,7 +446,7 @@ fn do_not_exit_directory() {
 #[test]
 fn pager_basic() {
     let assert = bat()
-        .env("PAGER", "printf pager-output")
+        .env("PAGER", "echo pager-output")
         .arg("--paging=always")
         .arg("test.txt")
         .assert();
@@ -454,14 +454,14 @@ fn pager_basic() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("pager-output");
+        .stdout("pager-output\n");
 }
 
 #[test]
 fn pager_overwrite() {
     let assert = bat()
-        .env("PAGER", "printf other-pager")
-        .env("BAT_PAGER", "printf pager-output")
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "echo pager-output")
         .arg("--paging=always")
         .arg("test.txt")
         .assert();
@@ -469,13 +469,13 @@ fn pager_overwrite() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("pager-output");
+        .stdout("pager-output\n");
 }
 
 #[test]
 fn pager_disable() {
     let assert = bat()
-        .env("PAGER", "printf other-pager")
+        .env("PAGER", "echo other-pager")
         .env("BAT_PAGER", "")
         .arg("--paging=always")
         .arg("test.txt")
@@ -510,7 +510,7 @@ fn config_read_arguments_from_file() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("dummy-pager-from-config");
+        .stdout("dummy-pager-from-config\n");
 }
 
 #[test]
