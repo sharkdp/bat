@@ -74,8 +74,18 @@ impl OutputType {
 
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
+                #[cfg(windows)]
+                let (pager_path, args) = {
+                    let p = std::env::var("ComSpec").unwrap_or_else(|_| "cmd".to_string());
+                    let mut a = args.to_vec();
+                    a.insert(0, pager_path.to_str().unwrap().to_string());
+                    a.insert(0, "/d/c".to_string());
+                    (p, a)
+                };
+
+                let mut p = Command::new(&pager_path);
+
                 let mut process = if is_less {
-                    let mut p = Command::new(&pager_path);
                     if args.is_empty() || replace_arguments_to_less {
                         p.arg("--RAW-CONTROL-CHARS");
                         if quit_if_one_screen {
@@ -106,7 +116,6 @@ impl OutputType {
                     p.env("LESSCHARSET", "UTF-8");
                     p
                 } else {
-                    let mut p = Command::new(&pager_path);
                     p.args(args);
                     p
                 };
