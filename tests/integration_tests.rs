@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use predicates::{prelude::predicate,str::PredicateStrExt};
 use std::path::Path;
 use std::str::from_utf8;
 
@@ -454,7 +455,7 @@ fn pager_basic() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("pager-output\n");
+        .stdout(predicate::eq("pager-output\n").normalize());
 }
 
 #[test]
@@ -469,7 +470,7 @@ fn pager_overwrite() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("pager-output\n");
+        .stdout(predicate::eq("pager-output\n").normalize());
 }
 
 #[test]
@@ -484,7 +485,7 @@ fn pager_disable() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("hello world\n");
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -510,7 +511,7 @@ fn config_read_arguments_from_file() {
     println!("stdout={:#?}", stdout);
     assert
         .success()
-        .stdout("dummy-pager-from-config\n");
+        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
 #[test]
