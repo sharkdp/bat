@@ -76,6 +76,7 @@ default-features = false
 [dev-dependencies]
 tempdir = "0.3"
 assert_cmd = "1.0.1"
+predicates = "1.0.4"
 
 [build-dependencies]
 clap = { version = "2.33", optional = true }
