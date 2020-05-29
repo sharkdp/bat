@@ -6,7 +6,10 @@
 
 ## Bugfixes
 ## Other
-## New syntaxes
+## Syntaxes
+
+- Update AsciiDoc syntax, see #1034 (@rxt1077)
+
 ## New themes
 ## `bat` as a library
 
