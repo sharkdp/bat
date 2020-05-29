@@ -9,9 +9,7 @@
 
 - Add APIs to provide `Input` descriptions with `InputDescription` (@eth-p)
 - Add function to directly provide `Input`s to `PrettyPrinter` (@eth-p)
-- <font color="red">`Input::theme_preview_file` is no longer available.</font> (@eth-p)
-
-Changes colored <font color="red">red</font> are breaking changes.
+- **Breaking:** `Input::theme_preview_file` is no longer available. (@eth-p)
 
 ## Packaging
 
