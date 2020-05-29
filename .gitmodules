@@ -94,9 +94,6 @@
 [submodule "assets/themes/sublime-snazzy"]
 	path = assets/themes/sublime-snazzy
 	url = https://github.com/greggb/sublime-snazzy
-[submodule "assets/syntaxes/AsciiDoc"]
-	path = assets/syntaxes/02_Extra/AsciiDoc
-	url = https://github.com/SublimeText/AsciiDoc.git
 [submodule "assets/syntaxes/Assembly (ARM)"]
 	path = assets/syntaxes/02_Extra/Assembly (ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
@@ -185,3 +182,6 @@
 [submodule "assets/syntaxes/02_Extra/QML"]
 	path = assets/syntaxes/02_Extra/QML
 	url = https://github.com/skozlovf/Sublime-QML
+[submodule "assets/syntaxes/02_Extra/AsciiDoc"]
+	path = assets/syntaxes/02_Extra/AsciiDoc
+	url = https://github.com/asciidoctor/sublimetext-asciidoc.git
