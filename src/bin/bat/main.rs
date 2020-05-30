@@ -8,7 +8,7 @@ mod config;
 mod directories;
 mod input;
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::ffi::OsStr;
 use std::io;
 use std::io::{BufReader, Write};
@@ -22,9 +22,11 @@ use crate::{
     app::App,
     config::{config_file, generate_config_file},
 };
+
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use clap::crate_version;
 use directories::PROJECT_DIRS;
+use globset::GlobMatcher;
 
 use bat::{
     assets::HighlightingAssets,
@@ -33,6 +35,7 @@ use bat::{
     error::*,
     input::Input,
     style::{StyleComponent, StyleComponents},
+    MappingTarget,
 };
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
@@ -59,14 +62,42 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     Ok(())
 }
 
+fn get_syntax_mapping_to_paths(
+    mappings: Vec<(GlobMatcher, MappingTarget)>,
+) -> HashMap<String, Vec<String>> {
+    let mut map = HashMap::new();
+    for mapping in mappings {
+        match mapping.1 {
+            MappingTarget::MapToUnknown => {}
+            MappingTarget::MapTo(s) => {
+                let globs = map.entry(s.into()).or_insert(Vec::new());
+                globs.push(mapping.0.glob().glob().into());
+            }
+        }
+    }
+    map
+}
+
 pub fn list_languages(config: &Config) -> Result<()> {
     let assets = assets_from_cache_or_binary()?;
     let mut languages = assets
         .syntaxes()
         .iter()
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
+        .cloned()
         .collect::<Vec<_>>();
     languages.sort_by_key(|lang| lang.name.to_uppercase());
+
+    let configured_languages =
+        get_syntax_mapping_to_paths(config.syntax_mapping.mappings().clone());
+
+    for lang in languages.iter_mut() {
+        if configured_languages.contains_key(&lang.name) {
+            let additional_paths = configured_languages.get(&lang.name).unwrap();
+            lang.file_extensions
+                .extend(additional_paths.iter().cloned());
+        }
+    }
 
     let stdout = io::stdout();
     let mut stdout = stdout.lock();

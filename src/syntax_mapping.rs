@@ -59,6 +59,10 @@ impl<'a> SyntaxMapping<'a> {
         Ok(())
     }
 
+    pub fn mappings(&self) -> &Vec<(GlobMatcher, MappingTarget<'a>)> {
+        &self.mappings
+    }
+
     pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         let candidate = Candidate::new(path.as_ref());
         let canddidate_filename = path.as_ref().file_name().map(Candidate::new);
