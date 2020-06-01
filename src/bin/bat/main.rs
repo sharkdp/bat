@@ -63,15 +63,15 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 }
 
 fn get_syntax_mapping_to_paths(
-    mappings: Vec<(GlobMatcher, MappingTarget)>,
+    mappings: &[(GlobMatcher, MappingTarget)],
 ) -> HashMap<String, Vec<String>> {
-    let mut map = HashMap::new();
+    let mut map: HashMap<String, Vec<String>> = HashMap::new();
     for mapping in mappings {
-        match mapping.1 {
-            MappingTarget::MapToUnknown => {}
-            MappingTarget::MapTo(s) => {
-                let globs = map.entry(s.into()).or_insert(Vec::new());
-                globs.push(mapping.0.glob().glob().into());
+        match mapping {
+            (_, MappingTarget::MapToUnknown) => {}
+            (matcher, MappingTarget::MapTo(s)) => {
+                let globs = map.entry((*s).into()).or_insert(Vec::new());
+                globs.push(matcher.glob().glob().into());
             }
         }
     }
@@ -88,14 +88,15 @@ pub fn list_languages(config: &Config) -> Result<()> {
         .collect::<Vec<_>>();
     languages.sort_by_key(|lang| lang.name.to_uppercase());
 
-    let configured_languages =
-        get_syntax_mapping_to_paths(config.syntax_mapping.mappings().clone());
+    let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
 
     for lang in languages.iter_mut() {
-        if configured_languages.contains_key(&lang.name) {
-            let additional_paths = configured_languages.get(&lang.name).unwrap();
-            lang.file_extensions
-                .extend(additional_paths.iter().cloned());
+        match configured_languages.get(&lang.name) {
+            Some(additional_paths) => {
+                lang.file_extensions
+                    .extend(additional_paths.iter().cloned());
+            }
+            None => {}
         }
     }
 
