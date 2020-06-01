@@ -108,7 +108,7 @@ contexts:
     - match: (?<!\.)\belse(\s)+if\b
       comment: else if is a common mistake carried over from other languages. it works if you put in a second end, but it’s never what you want.
       scope: invalid.deprecated.crystal
-    - match: '(?<!\.)\b(BEGIN|alias|as|begin|case|select|abstract|class|END|ensure|for|fun|if|ifdef|in|lib|module|of|out|private|protected|rescue|struct|with|union|enum|macro|then|type|unless|until|while)\b(?![?!])'
+    - match: '(?<!\.)\b(BEGIN|alias|as|begin|case|select|abstract|class|END|ensure|for|fun|if|ifdef|in|lib|module|of|out|private|protected|rescue|struct|with|union|enum|macro|then|unless|until|while)\b(?![?!])|(?<!\.)\btype\b\s*(?=[A-Z])'
       comment: everything being a reserved word, not a value and needing a 'end' is a..
       scope: keyword.control.primary.crystal
     - match: '(?<!\.)\b(when|else|elsif)\b(?![?!])'
@@ -131,7 +131,7 @@ contexts:
       scope: keyword.control.pseudo-method.crystal
     - match: '\b(nil|true|false)\b(?![?!])'
       scope: constant.language.crystal
-    - match: '\b(__(DIR|FILE|LINE|END_LINE)__|self)\b(?![?!])'
+    - match: '\b(__(DIR|FILE|LINE|END_LINE)__|self)\b(?![?!])|self[?]'
       scope: variable.language.crystal
     - match: '\b(initialize|new|loop|include|extend|raise|getter|setter|property|class_getter|class_setter|class_property|describe|context|it|with|delegate|def_hash|def_equals|def_equals_and_hash|forward_missing_to|record|assert_responds_to|spawn|annotation|verbatim)\b[!?]?'
       comment: everything being a method but having a special function is a..
@@ -190,7 +190,7 @@ contexts:
       push:
         - meta_scope: meta.function.method.with-arguments.crystal
         - meta_content_scope: variable.parameter.function.crystal
-        - match: \)\s*$|\)\s*:|\)\s*;
+        - match: \)
           captures:
             0: punctuation.definition.parameters.crystal
           pop: true
@@ -705,6 +705,7 @@ contexts:
             0: punctuation.definition.string.end.crystal
           pop: true
         - include: heredoc
+        - include: scope:text.html.basic
         - include: scope:source.js
         - include: interpolated_crystal
         - include: escaped_char
