@@ -4,112 +4,105 @@
   <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf/branch/master?svg=true"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  A <i>cat(1)</i> clone with syntax highlighting and Git integration.
+  Клон утилиты <i>cat(1)</i> с поддержкой выделения синтаксиса и Git
 </p>
 
 <p align="center">
-  <a href="#syntax-highlighting">Key Features</a> •
-  <a href="#how-to-use">How To Use</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#customization">Customization</a> •
-  <a href="#project-goals-and-alternatives">Project goals, alternatives</a> •
-  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ko.md">Русский</a>]
+  <a href="#syntax-highlighting">Главные преимущества</a> •
+  <a href="#how-to-use">Использование</a> •
+  <a href="#installation">Установка</a> •
+  <a href="#customization">Кастомизация</a> •
+  <a href="#project-goals-and-alternatives">Цели проекта и его альтернативы </a> •
+  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">日本語</a>][<a href="doc/README-ko.md">Русский</a>]
 </p>
 
-### Syntax highlighting
+### Выделение синтаксиса
 
-`bat` supports syntax highlighting for a large number of programming and markup
-languages:
+`bat` поддерживает выделение синтаксиса для огромного количества языков программирования и разметки:
 
-![Syntax highlighting example](https://imgur.com/rGsdnDe.png)
+![Пример выделения синтаксиса](https://i.imgur.com/3FGy5tW.png)
 
-### Git integration
+### Интеграция с Git
+`bat` использует `git` чтобы показать изменения в коде
+(смотрите на левый сайдбар):
 
-`bat` communicates with `git` to show modifications with respect to the index
-(see left side bar):
-
-![Git integration example](https://i.imgur.com/2lSW4RE.png)
+![Пример интеграции с Git](https://i.imgur.com/azUAzdx.png)
 
 ### Show non-printable characters
 
-You can use the `-A`/`--show-all` option to show and highlight non-printable
-characters:
+Вы можете использовать `-A` / `--show-all` флаг чтобы показать символы, которые невозможно напечатать:
 
-![Non-printable character example](https://i.imgur.com/WndGp9H.png)
+![Строка с неотображемыми символами](https://i.imgur.com/X0orYY9.png)
 
-### Automatic paging
+### Автоматическое разделение текста
 
-`bat` can pipe its own output to `less` if the output is too large for one screen.
+`bat` умеет траслировать вывод в `less` если вывод слишком большой, чтобы уместится на экране целиком
 
-### File concatenation
+### Объединение файлов
 
-Oh.. you can also use it to concatenate files :wink:. Whenever
-`bat` detects a non-interactive terminal (i.e. when you pipe into another process
-or into a file), `bat` will act as a drop-in replacement for `cat` and
-fall back to printing the plain file contents.
+О..вы так же можете объединять файлы :wink:. Всегда когда
+`bat` обнаруживает неинтерактивный терминал (например когда вы направляете вывод в файл или процесс), `bat` будет работать как вставная замена `cat` и откатится к выводу это файла как обычного текста
 
-## How to use
+## Как использовать
 
-Display a single file on the terminal
+Вывести единственный файл в терминале
 
 ```bash
 > bat README.md
 ```
 
-Display multiple files at once
+Отобразить сразу несколько файлов в терминале
 
 ```bash
 > bat src/*.rs
 ```
 
-Read from stdin, determine the syntax automatically (note, highlighting will
-only work if the syntax can be determined from the first line of the file,
-usually through a shebang such as `#!/bin/sh`)
+Читаем из stdin и определяем синтаксис автоматически
 
 ```bash
 > curl -s https://sh.rustup.rs | bat
 ```
 
-Read from stdin, specify the language explicitly
+Читает из stdin и указываем что это за язык
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
 ```
 
-Show and highlight non-printable characters:
+Вывести и выделить неотображаемые символы
 ```bash
 > bat -A /etc/hosts
 ```
 
-Use it as a `cat` replacement:
+Использование как замена `cat`
 
 ```bash
-bat > note.md  # quickly create a new file
+bat > note.md  # мгновенно создаем новый файл
 
 bat header.md content.md footer.md > document.md
 
-bat -n main.rs  # show line numbers (only)
+bat -n main.rs  # показываем только количество строк
 
-bat f - g  # output 'f', then stdin, then 'g'.
+bat f - g  # выводит 'f' в stdin, а потом 'g'.
 ```
 
-### Integration with other tools
+### Интеграция с другими утилитами
 
-#### `find` or `fd`
+#### `find` или `fd`
 
-You can use the `-exec` option of `find` to preview all search results with `bat`:
+Вы можете использовать флаг `-exec` в `find` чтобы посмотреть превью всех файлов в `bat`
 ```bash
 find … -exec bat {} +
 ```
 
-If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`/`--exec-batch` option to do the same:
+Если вы используете [`fd`](https://github.com/sharkdp/fd), вы вполне можете использоваль флаг  `-X`/`--exec-batch` чтобы сделать тоже самое:
 ```bash
 fd … -X bat
 ```
 
 #### `ripgrep`
 
-With [`batgrep`](https://github.com/eth-p/bat-extras/blob/master/doc/batgrep.md), `bat` can be used as the printer for [`ripgrep`](https://github.com/BurntSushi/ripgrep) search results.
+С помощью [`batgrep`](https://github.com/eth-p/bat-extras/blob/master/doc/batgrep.md), `bat` может быть использован для вывода результата запроса [`ripgrep`](https://github.com/BurntSushi/ripgrep)
 
 ```bash
 batgrep needle src/
@@ -185,7 +178,7 @@ apt install bat
 ```
 
 If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
-clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
+clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distrutions:
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
