@@ -50,7 +50,7 @@ unicode-width = "0.1.7"
 globset = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
-semver = "0.9"
+semver = "0.10"
 path_abs = { version = "0.5", default-features = false }
 
 [dependencies.git2]
