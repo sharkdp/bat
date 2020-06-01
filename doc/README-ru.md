@@ -110,159 +110,148 @@ batgrep needle src/
 
 #### `tail -f`
 
-`bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
+`bat` может быть использован с  `tail -f` чтобы просматривать файл вместе с выделением синтаксиса
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
-Note that we have to switch off paging in order for this to work. We have also specified the syntax
-explicitly (`-l log`), as it can not be auto-detected in this case.
+Заметье, что мы отключаем пэйджинг чтобы это заработало. Мы так-же указываем синтаксис (`-l log`), так как он не может быть определен в данном случае.
 
 #### `git`
 
-You can combine `bat` with `git show` to view an older version of a given file with proper syntax
-highlighting:
+Вы можете использовать `bat` с `git show` чтобы просмотреть старую версию файла с выделением синтаксиса:
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
 
-Note that syntax highlighting within diffs is currently not supported. If you are looking for this, check out [`delta`](https://github.com/dandavison/delta).
+Обратите внимание, что выделение синтаксиса не работает в `git diff` на данный момент. Если вам это нужно, посмотрите [`delta`](https://github.com/dandavison/delta).
 
 #### `xclip`
 
-The line numbers and Git modification markers in the output of `bat` can make it hard to copy
-the contents of a file. To prevent this, you can call `bat` with the `-p`/`--plain` option or
-simply pipe the output into `xclip`:
+Количество строк и просмотр изменений в `bat` может сделать копирование содержания файла немного сложной. Чтобы предотвратить это, используйте флаг `-p`/`--plain` или просто перевести вывод в `xclip`:
 ```bash
 bat main.cpp | xclip
 ```
-`bat` will detect that the output is being redirected and print the plain file contents.
+`bat` обнаружит, что вывод будет переведен, и выведет обычный текст без выделения синтаксиса.
 
 #### `man`
 
-`bat` can be used as a colorizing pager for `man`, by setting the
-`MANPAGER` environment variable:
+`bat` может быть использован в виде выделения цвета для  `man`, для этого установите переменную окружения
+`MANPAGER`:
 
 ```bash
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
 
-It might also be necessary to set `MANROFFOPT="-c"` if you experience
-formatting problems.
+Возможно вам понадобится также установить `MANROFFOPT="-c"` если у вас есть проблемы с форматированием.
 
-If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
+Если вы хотите сделать этой одной командной, вы можете использовать `batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
-Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+Обратите внимание, что [синтаксис manpage](assets/syntaxes/02_Extra/Manpage.sublime-syntax) разрабатывается в этом репозитории, и все еще находится в разработке.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
-The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
+[`Prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) это скрипт, который форматирует код и выводит его с помощью `bat`.
 
 
-## Installation
+## Установка
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
 
-### On Ubuntu (using `apt`)
-*... and other Debian-based Linux distributions.*
+### Ubuntu (с помощью `apt`)
+*... и другие дистрибутивы основанные на Debian.*
 
-`bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
-[Debian](https://packages.debian.org/sid/bat) package release process, and is available
-for Ubuntu as of Eoan 19.10. On Debian `bat` is currently only available on the unstable
-"Sid" branch.
+`bat` есть в репозиториях [Ubuntu](https://packages.ubuntu.com/eoan/bat) и
+[Debian](https://packages.debian.org/sid/bat), и доступен начиная с Ubuntu Eoan 19.10. На Debian `bat` пока-что доступен только с нестабильной веткой "Sid"
 
-If your Ubuntu/Debian installation is new enough you can simply run:
+Если ваша версия Ubuntu/Debian достаточно новая, вы можете установить `bat` так:
 
 ```bash
 apt install bat
 ```
 
-If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
-clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distrutions:
+Если вы установили `bat` таким образом, то бинарный файл может быть установлен как `batcat` заместо `bat` (из-за [имя конфлиует с другим пакетом](https://github.com/sharkdp/bat/issues/982)). Вы можете сделать симлинк или алиас `bat -> batcat` чтобы предотвратить проблемы которые могут произойти с другими дистрибутивами.
+
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
 ```
 
-### On Ubuntu (using most recent `.deb` packages)
-*... and other Debian-based Linux distributions.*
+### Ubuntu (С помощью самоно нового `.deb` пакета)
+*... и другие дистрибутивы Linux основанные на Debian*
 
-If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
-the most recent release of `bat`, download the latest `.deb` package from the
-[release page](https://github.com/sharkdp/bat/releases) and install it via:
+Если пакет еще не был предоставлен в вашем Ubuntu/Debian или вы хотите самую последнюю версия `bat`, вы можете скачать самый последний `deb` пакет отсюда:
+[release page](https://github.com/sharkdp/bat/releases) и установить так:
 
 ```bash
-sudo dpkg -i bat_0.15.4_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.15.4_amd64.deb  # измените архитектуру и версию
 ```
 
-### On Alpine Linux
+### Alpine Linux
 
-You can install [the `bat` package](https://pkgs.alpinelinux.org/packages?name=bat)
-from the official sources, provided you have the appropriate repository enabled:
+Вы можете установить [`bat`](https://pkgs.alpinelinux.org/packages?name=bat) из оффициальных источников:
 
 ```bash
 apk add bat
 ```
 
-### On Arch Linux
+### Arch Linux
 
-You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
-from the official sources:
+Вы можете установить [`bat`](https://www.archlinux.org/packages/community/x86_64/bat/) из оффициального источника:
 
 ```bash
 pacman -S bat
 ```
 
-### On Fedora
+### Fedora
 
-You can install [the `bat` package](https://koji.fedoraproject.org/koji/packageinfo?packageID=27506) from the official [Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/) repository.
+Вы можете установить [`bat`](https://koji.fedoraproject.org/koji/packageinfo?packageID=27506) из оффициального репозитория [Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/).
 
 ```bash
 dnf install bat
 ```
 
-### On Gentoo Linux
+### Gentoo Linux
 
-You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
-from the official sources:
+Вы можете установить [`bat`](https://packages.gentoo.org/packages/sys-apps/bat) из оффициальных источников:
 
 ```bash
 emerge sys-apps/bat
 ```
 
-### On Void Linux
+### Void Linux
 
-You can install `bat` via xbps-install:
+Вы можете установить `bat` с помощью xbps-install:
 ```bash
 xbps-install -S bat
 ```
 
-### On FreeBSD
+### FreeBSD
 
-You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
+Вы можете установить [`bat`](https://www.freshports.org/textproc/bat) с помощью pkg:
 
 ```bash
 pkg install bat
 ```
 
-or build it on your own from the FreeBSD ports:
+или самому скомпилировать его:
 
 ```bash
 cd /usr/ports/textproc/bat
 make install
 ```
 
-### Via nix
+### С помощью nix
 
-You can install `bat` using the [nix package manager](https://nixos.org/nix):
+Вы можете установить `bat` используя [nix package manager](https://nixos.org/nix):
 
 ```bash
 nix-env -i bat
 ```
 
-### On openSUSE
+### openSUSE
 
-You can install `bat` with zypper:
+Вы можете установить`bat` с помощью zypper:
 
 ```bash
 zypper install bat
@@ -270,13 +259,13 @@ zypper install bat
 
 ### On macOS
 
-You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
+Вы можете установить`bat` с помощью [Homebrew](http://braumeister.org/formula/bat):
 
 ```bash
 brew install bat
 ```
 
-Or install `bat` with [MacPorts](https://ports.macports.org/port/bat/summary):
+Или-же установить его с помощью [MacPorts](https://ports.macports.org/port/bat/summary):
 
 ```bash
 port install bat
@@ -284,51 +273,50 @@ port install bat
 
 ### On Windows
 
-There are a few options to install `bat` on Windows. Once you have installed `bat`,
-take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
+Есть несколько способов установить `bat`. Как только вы установили его, посмотрите на секцию ["Using `bat` on Windows"](#using-bat-on-windows).
 
-#### With Chocolatey
+#### С помощью Chocolatey
 
-You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
+Вы можете установить `bat` с помощью [Chocolatey](https://chocolatey.org/packages/Bat):
 ```bash
 choco install bat
 ```
 
 #### With Scoop
 
-You can install `bat` via [scoop](https://scoop.sh/):
+Вы можете установить `bat` с помощью [scoop](https://scoop.sh/):
 ```bash
 scoop install bat
 ```
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+Для этого у вас должен быть установлен [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
-#### From prebuilt binaries:
+#### Из заранее скомпилированных файлов:
 
-You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
+Их вы можете скачать на [странице релизов](https://github.com/sharkdp/bat/releases),
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+Для этого у вас должен быть установлен [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
 
-### Via Docker
+### С помощью Docker
 
-There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
+Вы можете использовать [Docker image](https://hub.docker.com/r/danlynn/bat/) чтобы запустить `bat` в контейнере:
 ```bash
 docker pull danlynn/bat
 alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
 ```
 
-### Via Ansible
+### С помощью Ansible
 
-You can install `bat` with [Ansible](https://www.ansible.com/):
+Вы можете установить `bat` с [Ansible](https://www.ansible.com/):
 
 ```bash
-# Install role on local machine
+# Устанавливаем роль на устройстве
 ansible-galaxy install aeimer.install_bat
 ```
 
 ```yaml
 ---
-# Playbook to install bat
+# Playbook для установки bat
 - host: all
   roles:
     - aeimer.install_bat
@@ -337,24 +325,22 @@ ansible-galaxy install aeimer.install_bat
 - [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
 - [GitHub](https://github.com/aeimer/ansible-install-bat)
 
-This should work with the following distributions:
+Этот способ должен сработать со следующими дистрибутивами:
 - Debian/Ubuntu
-- ARM (eg. Raspberry PI)
+- ARM (например Raspberry PI)
 - Arch Linux
 - Void Linux
 - FreeBSD
 - MacOS
 
-### From binaries
+### С помощью бинарников
 
-Check out the [Release page](https://github.com/sharkdp/bat/releases) for
-prebuilt versions of `bat` for many different architectures. Statically-linked
-binaries are also available: look for archives with `musl` in the file name.
+Перейдите на [страницу релизов](https://github.com/sharkdp/bat/releases) для
+скомпилированных файлов `bat` для различных платформ. Бинарные файлы со статической связкой так-же доступны - выбирайте архив с `musl` в имени.
 
-### From source
+### Из исходников
 
-If you want to build `bat` from source, you need Rust 1.40 or
-higher. You can then use `cargo` to build everything:
+Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.40 или выше. Далее, вы должны использовать `cargo` чтобы все скомпилировать:
 
 ```bash
 cargo install --locked bat
