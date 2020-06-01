@@ -642,7 +642,7 @@ fn header_padding() {
         .arg("single-line.txt")
         .assert()
         .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
-        .stderr("");
+        .stderr("No newline at end of file\n");
 }
 
 #[cfg(target_os = "linux")]

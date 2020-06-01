@@ -365,6 +365,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         };
 
+        let has_eol = line.bytes().next_back() == Some(b'\n');
+
         let regions = {
             let highlighter = match self.highlighter {
                 Some(ref mut highlighter) => highlighter,
@@ -443,8 +445,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            if line.bytes().next_back() != Some(b'\n') {
+            if !has_eol {
                 writeln!(handle)?;
+                eprintln!("No newline at end of file");
             }
         } else {
             for &(style, region) in regions.iter() {
@@ -582,6 +585,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 )?;
             }
             writeln!(handle)?;
+            if !has_eol {
+                eprintln!("No newline at end of file");
+            }
         }
 
         Ok(())
