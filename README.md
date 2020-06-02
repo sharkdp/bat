@@ -62,7 +62,9 @@ Display multiple files at once
 > bat src/*.rs
 ```
 
-Read from stdin, determine the syntax automatically
+Read from stdin, determine the syntax automatically (note, this will only work
+if the syntax can be determined from the initial line of the file, usually
+through a shebang such as `#!/bin/sh`)
 
 ```bash
 > curl -s https://sh.rustup.rs | bat
