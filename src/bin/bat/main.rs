@@ -70,7 +70,7 @@ fn get_syntax_mapping_to_paths(
         match mapping {
             (_, MappingTarget::MapToUnknown) => {}
             (matcher, MappingTarget::MapTo(s)) => {
-                let globs = map.entry((*s).into()).or_insert(Vec::new());
+                let globs = map.entry((*s).into()).or_insert_with(Vec::new);
                 globs.push(matcher.glob().glob().into());
             }
         }
