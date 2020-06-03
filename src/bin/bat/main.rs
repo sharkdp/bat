@@ -65,12 +65,12 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
 fn get_syntax_mapping_to_paths<'a>(
     mappings: &[(GlobMatcher, MappingTarget<'a>)],
 ) -> HashMap<&'a str, Vec<String>> {
-    let mut map: HashMap<&str, Vec<String>> = HashMap::new();
+    let mut map = HashMap::new();
     for mapping in mappings {
         match mapping {
             (_, MappingTarget::MapToUnknown) => {}
             (matcher, MappingTarget::MapTo(s)) => {
-                let globs = map.entry(s).or_insert_with(Vec::new);
+                let globs = map.entry(*s).or_insert_with(Vec::new);
                 globs.push(matcher.glob().glob().into());
             }
         }
