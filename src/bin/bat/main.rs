@@ -62,15 +62,15 @@ fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     Ok(())
 }
 
-fn get_syntax_mapping_to_paths(
-    mappings: &[(GlobMatcher, MappingTarget)],
-) -> HashMap<String, Vec<String>> {
-    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+fn get_syntax_mapping_to_paths<'a>(
+    mappings: &[(GlobMatcher, MappingTarget<'a>)],
+) -> HashMap<&'a str, Vec<String>> {
+    let mut map: HashMap<&str, Vec<String>> = HashMap::new();
     for mapping in mappings {
         match mapping {
             (_, MappingTarget::MapToUnknown) => {}
             (matcher, MappingTarget::MapTo(s)) => {
-                let globs = map.entry((*s).into()).or_insert_with(Vec::new);
+                let globs = map.entry(s).or_insert_with(Vec::new);
                 globs.push(matcher.glob().glob().into());
             }
         }
@@ -91,7 +91,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
 
     for lang in languages.iter_mut() {
-        if let Some(additional_paths) = configured_languages.get(&lang.name) {
+        if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
             lang.file_extensions
                 .extend(additional_paths.iter().cloned());
         }
