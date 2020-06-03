@@ -8,12 +8,12 @@
 </p>
 
 <p align="center">
-  <a href="#syntax-highlighting">Главные преимущества</a> •
-  <a href="#how-to-use">Использование</a> •
-  <a href="#installation">Установка</a> •
-  <a href="#customization">Кастомизация</a> •
-  <a href="#project-goals-and-alternatives">Цели проекта и его альтернативы </a> •
-  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">Русский</a>]
+  <a href="#выделение-синтаксиса">Ключевые возможности</a> •
+  <a href="#как-использовать">Использование</a> •
+  <a href="#установка">Установка</a> •
+  <a href="#кастомизация">Кастомизация</a> •
+  <a href="#цели-и-альтернативы">Цели и альтернативы </a> •
+  Перевод [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">Русский</a>]
 </p>
 
 ### Выделение синтаксиса
@@ -28,7 +28,7 @@
 
 ![Пример интеграции с Git](https://i.imgur.com/azUAzdx.png)
 
-### Show non-printable characters
+### Показать символы, которые не возможно отобразить
 
 Вы можете использовать `-A` / `--show-all` флаг чтобы показать символы, которые невозможно напечатать:
 
@@ -574,7 +574,7 @@ cargo install --locked --force
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
 
-## Цели и альтернативы проекта
+## Цели и альтернативы
 
 `bat` старается добится:
 
