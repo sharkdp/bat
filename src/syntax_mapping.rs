@@ -59,7 +59,7 @@ impl<'a> SyntaxMapping<'a> {
         Ok(())
     }
 
-    pub fn mappings(&self) -> &Vec<(GlobMatcher, MappingTarget<'a>)> {
+    pub fn mappings(&self) -> &[(GlobMatcher, MappingTarget<'a>)] {
         &self.mappings
     }
 
