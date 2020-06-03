@@ -13,7 +13,7 @@
   <a href="#installation">Установка</a> •
   <a href="#customization">Кастомизация</a> •
   <a href="#project-goals-and-alternatives">Цели проекта и его альтернативы </a> •
-  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">日本語</a>][<a href="doc/README-ko.md">Русский</a>]
+  Translation [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">Русский</a>]
 </p>
 
 ### Выделение синтаксиса
@@ -271,7 +271,7 @@ brew install bat
 port install bat
 ```
 
-### On Windows
+### Windows
 
 Есть несколько способов установить `bat`. Как только вы установили его, посмотрите на секцию ["Using `bat` on Windows"](#using-bat-on-windows).
 
@@ -282,7 +282,7 @@ port install bat
 choco install bat
 ```
 
-#### With Scoop
+#### С помощью Scoop
 
 Вы можете установить `bat` с помощью [scoop](https://scoop.sh/):
 ```bash
@@ -346,122 +346,103 @@ ansible-galaxy install aeimer.install_bat
 cargo install --locked bat
 ```
 
-## Customization
+## Кастомизация
 
-### Highlighting theme
+### Темы для выделения текста
 
-Use `bat --list-themes` to get a list of all available themes for syntax
-highlighting. To select the `TwoDark` theme, call `bat` with the
-`--theme=TwoDark` option or set the `BAT_THEME` environment variable to
-`TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
-make the change permanent. Alternatively, use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+Используйте `bat --list-themes` чтобы вывести список всех доступных тем. Для выбора темы `TwoDark`, используйте `bat` с флагом
+`--theme=TwoDark` или поставьте переменную окружения `BAT_THEME` равной `TwoDark`. Используйте `export BAT_THEME="TwoDark"` в стартап файле вашей оболочки, чтобы изменить ее навсегда. Или же, используйте [конфиг файл](https://github.com/sharkdp/bat#configuration-file) `bat`.
 
-If you want to preview the different themes on a custom file, you can use
-the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
+Если вы хотите просто просмотреть темы, используйте следующую команду (вам понадобится [`fzf`](https://github.com/junegunn/fzf) для этого):
 ```bash
-bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
+bat --list-themes | fzf --preview="bat --theme={} --color=always /путь/к/файлу"
 ```
 
-`bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
-You can also use a custom theme by following the
-['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
+`bat` отлично смотрится на темном фоне. Однако, если ваш терминал использует светлую тему, такие темы как `GitHub` или `OneHalfLight` будут смотрется куда лучше!
+Вы так-же можете использовать новую тему, для этого перейдите [в раздел добавления тем](https://github.com/sharkdp/bat#adding-new-themes).
 
-### Output style
+### Изменение внешнего вывода
 
-You can use the `--style` option to control the appearance of `bat`s output.
-You can use `--style=numbers,changes`, for example, to show only Git changes
-and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
-variable to make these changes permanent or use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+Вы можете использовать флаг `--style` чтобы изменять внешний вид вывода в `bat`.
+Например, вы можете использовать `--style=numbers,changes`, чтобы показать только количество строк и изменений в Git. Установите переменную окружения `BAT_STYLE` чтобы изменить это навсегда, или используйте [конфиг файл](https://github.com/sharkdp/bat#configuration-file) `bat`.
 
-### Adding new syntaxes / language definitions
+### Добавление новых синтаксисов
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
-library for syntax highlighting. `syntect` can read any
-[Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
-and theme. To add new syntax definitions, do the following.
+`bat` использует [`syntect`](https://github.com/trishume/syntect/) для выделения синтаксиса. `syntect` может читать
+[файл `.sublime-syntax`](https://www.sublimetext.com/docs/3/syntax.html)
+и темы. Чтобы добавить новый синтаксис, сделайте следующее:
 
-Create a folder with syntax definition files:
+Создайте каталог с синтаксисом:
 
 ```bash
 mkdir -p "$(bat --config-dir)/syntaxes"
 cd "$(bat --config-dir)/syntaxes"
 
-# Put new '.sublime-syntax' language definition files
-# in this folder (or its subdirectories), for example:
+# Разместите файлы '.sublime-syntax'
+# в каталоге (или субкаталогах), например:
 git clone https://github.com/tellnobody1/sublime-purescript-syntax
 ```
 
-Now use the following command to parse these files into a binary cache:
+Теперь, используйте следующую команду, чтобы превратить эти файлы в бинарный кеш:
 
 ```bash
 bat cache --build
 ```
 
-Finally, use `bat --list-languages` to check if the new languages are available.
+Наконец, используйте `bat --list-languages` чтобы проверить, доступны ли новые языки.
 
-If you ever want to go back to the default settings, call:
+Если когда-нибудь вы заходите вернутся к настройкам по умолчанию, введите
 
 ```bash
 bat cache --clear
 ```
 
-### Adding new themes
+### Добавление новых тем
 
-This works very similar to how we add new syntax definitions.
+Это работает похожим образом, так-же как и добавление новых тем выделения синтаксиса
 
-First, create a folder with the new syntax highlighting themes:
+Во-первых, создайте каталог с новыми темами для синтаксиса:
 ```bash
 mkdir -p "$(bat --config-dir)/themes"
 cd "$(bat --config-dir)/themes"
 
-# Download a theme in '.tmTheme' format, for example:
+# Загрузите тему в формате '.tmTheme':
 git clone https://github.com/greggb/sublime-snazzy
 
-# Update the binary cache
+# Обновите кеш
 bat cache --build
 ```
 
-Finally, use `bat --list-themes` to check if the new themes are available.
+Теперь, используйте `bat --list-themes` чтобы проверить доступность новых тем.
 
-### Using a different pager
+### Использование другого пейджера.
 
-`bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
-set, `less` is used by default. If you want to use a different pager, you can either modify the
-`PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
-`PAGER`.
+`bat` использует пейджер, указанный в переменной окружения `PAGER`. Если она не задана, то используется `less`.
+Если вы желаете использовать другой пейджер, вы можете либо изменить переменную `PAGER`, либо `BAT_PAGER` чтобы перезаписать то, что указано в `PAGER`.
 
-If you want to pass command-line arguments to the pager, you can also set them via the
-`PAGER`/`BAT_PAGER` variables:
+Чтобы передать какие-то аргументы в ваш пейджер, вы так-же можете их поставить в этих переменных:
 
 ```bash
 export BAT_PAGER="less -RF"
 ```
 
-Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
+Так-же вы можете использовать [файл конфигурации](https://github.com/sharkdp/bat#configuration-file) `bat` для изменения. (флаг `--pager`).
 
-**Note**: By default, if the pager is set to `less` (and no command-line options are specified),
-`bat` will pass the following command line options to the pager: `-R`/`--RAW-CONTROL-CHARS`,
-`-F`/`--quit-if-one-screen` and `-X`/`--no-init`. The last option (`-X`) is only used for `less`
-versions older than 530.
+**Внимание**: По умолчанию, `less` является пейджером (без каких либо аргументов),
+`bat` задаст следующие флаги для пейджера:
+ `-R`/`--RAW-CONTROL-CHARS`,
+`-F`/`--quit-if-one-screen` и `-X`/`--no-init`. Последний флаг(`-X`) используется только для `less`, чья версия раньше 530.
 
-The `-R` option is needed to interpret ANSI colors correctly. The second option (`-F`) instructs
-less to exit immediately if the output size is smaller than the vertical size of the terminal.
-This is convenient for small files because you do not have to press `q` to quit the pager. The
-third option (`-X`) is needed to fix a bug with the `--quit-if-one-screen` feature in old versions
-of `less`. Unfortunately, it also breaks mouse-wheel support in `less`.
+Флаг `-R` нужен чтобы корректно воспроизвести ANSI цвета. Второй флаг (`-F`) говорит 
+`less` чтобы тот сразу-же завершился, если размер вывода меньше чем вертикальный размер терминала.
+Это удобно для небольших файлов, т.к вам не надо каждый раз нажимать `q` чтобы выйти из пейджера. Третий флаг (`-X`) нужен чтобы исправить баг с `--quit-if-one-screen` в старых версиях `less`. К сожалению, это так-же блокирует возможность использования там колеса мышки.
 
-If you want to enable mouse-wheel scrolling on older versions of `less`, you can pass just `-R` (as
-in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer,
-it should work out of the box.
+Если вы хотите все же его включить, вы можете добавить флаг `-R`. 
+Для `less` новее чем 530, оно должно работать из коробки.
 
-### Dark mode
+### Темная тема
 
-If you make use of the dark mode feature in macOS, you might want to configure `bat` to use a different
-theme based on the OS theme. The following snippet uses the `default` theme when in the _dark mode_
-and the `GitHub` theme when in the _light mode_.
+Если вы используете темный режим в macOS, возможно вы захотите чтобы `bat` использовал другую тему, основанную на теме вашей ОС. Следующий сниппет использует тему `default`, когда у вас включен темный режим, и тему `GitHub`, когда включен светлый.
 
 ```bash
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
