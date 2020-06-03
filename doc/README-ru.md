@@ -448,74 +448,67 @@ export BAT_PAGER="less -RF"
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 ```
 
-## Configuration file
+## Файл конфигурации
 
-`bat` can also be customized with a configuration file. The location of the file is dependent
-on your operating system. To get the default path for your system, call
+`bat` так-же может быть кастомизирован с помощью файла конфигурации. Его местоположение зависит от вашей ОС, чтобы посмотреть его путь, введите
 ```
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
-non-default location of the configuration file:
+Так-же вы можете установить переменную окружения `BAT_CONFIG_PATH` чтобы изменить путь к файлу конфигурации.
 ```bash
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
-A default configuration file can be created with the `--generate-config-file` option.
+Файл конфигурации по-умолчанию может быть создан с помощью флага `--generate-config-file`.
 ```bash
 bat --generate-config-file
 ```
 
-### Format
+### Формат
 
-The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
+Файл конфигурации - это всего лишь набор аргументов. Введите `bat --help` чтобы просмотреть список всех возможных флагов и аргументов. Так-же, вы можете заккоментировать строчку с помощью `#`.
 
-Example configuration file:
+Пример файла конфигурации:
 ```bash
-# Set the theme to "TwoDark"
+# Устанавливает тему "TwoDark"
 --theme="TwoDark"
 
-# Show line numbers, Git modifications and file header (but no grid)
+# Показывает количество строк, изменений в Git и заголовок файла
 --style="numbers,changes,header"
 
-# Use italic text on the terminal (not supported on all terminals)
+# Использует наклонный текст (не все терминалы поддерживаеются)
 --italic-text=always
 
-# Use C++ syntax for .ino files
+# Использует синтаксис C++ для всех .ino файлов
 --map-syntax "*.ino:C++"
 
-# Use ".gitignore"-style highlighting for ".ignore" files
+# Использует синтаксик Git Ignore для всех файлов .ignore
 --map-syntax ".ignore:Git Ignore"
 ```
 
-## Using `bat` on Windows
+## Использование `bat` в Windows
 
-`bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
+`bat` в основном работает полностью из коробки, но несколько возможностей нуждаются в настройке.
 
-### Paging
+### Пейджинг
 
-Windows only includes a very limited pager in the form of `more`. You can download a Windows binary
-for `less` [from its homepage](http://www.greenwoodsoftware.com/less/download.html) or [through
-Chocolatey](https://chocolatey.org/packages/Less). To use it, place the binary in a directory in
-your `PATH` or [define an environment variable](#using-a-different-pager). The [Chocolatey package](#on-windows) installs `less` automatically.
+Windows поддерживает только очень простой пейджер `more`. Вы можете скачать установщик для `less` [с его сайта](http://www.greenwoodsoftware.com/less/download.html) или [через Chocolatey](https://chocolatey.org/packages/Less). Чтобы его использовать, скопируйте исполняемый файл в ваш `PATH` или [используйте переменную окружения](#using-a-different-pager). [Пакет из Chocolatey](#on-windows) установит все автоматически.
 
-### Colors
+### Цвета
 
-Windows 10 natively supports colors in both `conhost.exe` (Command Prompt) and PowerShell since
-[v1511](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)), as
-well as in newer versions of bash. On earlier versions of Windows, you can use
-[Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
+Windows 10 поддерживает цвета и в`conhost.exe` (Command Prompt) и в PowerShell начиная с версии Windows
+[v1511](https://ru.wikipedia.org/wiki/Windows_10#Обновления и поддержка), так-же как и в bash. На ранних версиях Windows, вы можете использовать 
+[Cmder](http://cmder.net/), в котором есть [ConEmu](https://conemu.github.io/).
 
-**Note:** The Git and MSYS versions of `less` do not correctly interpret colors on Windows. If you
-don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never`
-or by setting `BAT_PAGER` to an empty string.
+**Внимание:** Версия `less` в Git и MSYS2 воспроизводит цвета неккоректно. Если у вас нет других пейджеров, мы можете отключить испольщование пейджеров с помощью флага `--paging=never`
+или установить `BAT_PAGER` равным пустой строке.
 
 ### Cygwin
 
-`bat` on Windows does not natively support Cygwin's unix-style paths (`/cygdrive/*`). When passed an absolute cygwin path as an argument, `bat` will encounter the following error: `The system cannot find the path specified. (os error 3)`
+`bat` не поддерижвает нативно пути в стиле Unix (`/cygdrive/*`). Когда указан абсолютный путь cygwin, `bat` выдаст следующую ошибку: `The system cannot find the path specified. (os error 3)`
 
-This can be solved by creating a wrapper or adding the following function to your `.bash_profile` file:
+Она может быть решена, добавлением следующей функции в `.bash_profile`:
 
 ```bash
 bat() {
@@ -531,78 +524,70 @@ bat() {
 }
 ```
 
-## Troubleshooting
+## Проблемы и их решение
 
-### Terminals & colors
+### Терминалы и цвета
 
-`bat` handles terminals *with* and *without* truecolor support. However, the colors in the syntax
-highlighting themes are not optimized for 8-bit colors and it is therefore strongly recommended
-that you use a terminal with 24-bit truecolor support (`terminator`, `konsole`, `iTerm2`, ...).
-See [this article](https://gist.github.com/XVilka/8346728) for more details and a full list of
-terminals with truecolor support.
+`bat` поддерживает терминалы *с* и *без* поддержки truecolor. Однако,цвета в выделении синтаксиса не оптимизированы к 8-ми битным цветам и рекоментуется использовать терминалы с поддержкой 24-ых битных цветов (`terminator`, `konsole`, `iTerm2`, ...).
+Смотрите [эту статью](https://gist.github.com/XVilka/8346728) для полного списка терминалов.
 
-Make sure that your truecolor terminal sets the `COLORTERM` variable to either `truecolor` or
-`24bit`. Otherwise, `bat` will not be able to determine whether or not 24-bit escape sequences
-are supported (and fall back to 8-bit colors).
+Удостовертесь, что переменная `COLORTERM` равна`truecolor` или
+`24bit`. Иначе, `bat` не сможет определить поддержку 24 битных цветов(и будет использовать 8 битные).
 
-### Line numbers and grid are hardly visible
+### Текст и номера строк плохо видны
 
-Please try a different theme (see `bat --list-themes` for a list). The `OneHalfDark` and
-`OneHalfLight` themes provide grid and line colors that are brighter.
+Используйте другую тему (смотрите `bat --list-themes` чтобы увидеть все тмы). Темы `OneHalfDark` и
+`OneHalfLight` имеют более яркие номера строк и тексты.
 
-### File encodings
+### Кодировки файлов
 
-`bat` natively supports UTF-8 as well as UTF-16. For every other file encoding, you may need to
-convert to UTF-8 first because the encodings can typically not be auto-detected. You can `iconv`
-to do so.
-Example: if you have a PHP file in Latin-1 (ISO-8859-1) encoding, you can call:
+`bat` поддерживает UTF-8 и UTF-16. Для другой кодировки, вам возможно будет нужно перекодировать их, так как кодировка может быть распознана не верно. Используйте `iconv`.
+Пример: у вас есть PHP файл в кодировке Latin-1 (ISO-8859-1):
 ``` bash
 iconv -f ISO-8859-1 -t UTF-8 my-file.php | bat
 ```
-Note: you might have to use the `-l`/`--language` option if the syntax can not be auto-detected
-by `bat`.
+Внимание: вам может понадобится флаг `-l`/`--language` если синтаксис не смог быть авто-определен `bat`.
 
-## Development
+## Разработка
 
 ```bash
-# Recursive clone to retrieve all submodules
+# Рекурсивно клонирует все модули
 git clone --recursive https://github.com/sharkdp/bat
 
-# Build (debug version)
+# Компиляции в режиме разработки
 cd bat
 cargo build --bins
 
-# Run unit tests and integration tests
+# Запуск тестов
 cargo test
 
-# Install (release version)
+# Установка (релизная версия)
 cargo install --locked
 
-# Build a bat binary with modified syntaxes and themes
+#Компилирование исполняего файла bat с другим синтаксисом и темами
 bash assets/create.sh
 cargo install --locked --force
 ```
 
-## Maintainers
+## Разработчики
 
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
 
-## Project goals and alternatives
+## Цели и альтернативы проекта
 
-`bat` tries to achieve the following goals:
+`bat` старается добится:
 
-- Provide beautiful, advanced syntax highlighting
-- Integrate with Git to show file modifications
-- Be a drop-in replacement for (POSIX) `cat`
-- Offer a user-friendly command-line interface
+- Красивый, продвинутый синтаксис.
+- Интеграция с Git
+- Быть заменой `cat`
+- Предлагать дружелюбный интерфейс и аргументы.
 
-There are a lot of alternatives, if you are looking for similar programs. See
-[this document](doc/alternatives.md) for a comparison.
+Есть очень много альтернатив `bat`. Смотрите [этот документ](doc/alternatives.md) для сравнения.
 
-## License
-Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
+## Лицензия
+Copyright (c) 2018-2020 [Разработчики bat](https://github.com/sharkdp/bat).
 
-`bat` is distributed under the terms of both the MIT License and the Apache License 2.0.
+`bat` распостраняется под лицензями MIT License и Apache License 2.0.
 
-See the [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) files for license details.
+Смотрите [LICENSE-APACHE](LICENSE-APACHE) и [LICENSE-MIT](LICENSE-MIT) для более подробного ознакомления.
