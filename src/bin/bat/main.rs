@@ -91,12 +91,9 @@ pub fn list_languages(config: &Config) -> Result<()> {
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
 
     for lang in languages.iter_mut() {
-        match configured_languages.get(&lang.name) {
-            Some(additional_paths) => {
-                lang.file_extensions
-                    .extend(additional_paths.iter().cloned());
-            }
-            None => {}
+        if let Some(additional_paths) = configured_languages.get(&lang.name) {
+            lang.file_extensions
+                .extend(additional_paths.iter().cloned());
         }
     }
 
