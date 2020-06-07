@@ -324,34 +324,6 @@ docker pull danlynn/bat
 alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
 ```
 
-### Via Ansible
-
-You can install `bat` with [Ansible](https://www.ansible.com/):
-
-```bash
-# Install role on local machine
-ansible-galaxy install aeimer.install_bat
-```
-
-```yaml
----
-# Playbook to install bat
-- host: all
-  roles:
-    - aeimer.install_bat
-```
-
-- [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
-- [GitHub](https://github.com/aeimer/ansible-install-bat)
-
-This should work with the following distributions:
-- Debian/Ubuntu
-- ARM (eg. Raspberry PI)
-- Arch Linux
-- Void Linux
-- FreeBSD
-- MacOS
-
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
