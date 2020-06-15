@@ -32,7 +32,7 @@ themes (`bat cache --clear`).
 The following files have been manually modified after converting from a `.tmLanguage` file:
 
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
-* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
+* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, `desktop`, `hook`, `automount`, `device`, `dnssd` `link`, `mount`, `netdev`, `network`, `nspawn`, `path`, `service`, `slice`, `socket`, `swap`, `target`, and `timer` file types.
 * `Org mode.sublime-syntax` => removed `task` file type.
 * `SML.sublime_syntax` => removed `ml` file type.
 
