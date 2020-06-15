@@ -18,6 +18,22 @@ file_extensions:
   - .editorconfig
   - .hgrc
   - hgrc
+  - hook
+  - automount
+  - device
+  - dnssd
+  - link
+  - mount
+  - netdev
+  - network
+  - nspawn
+  - path
+  - service
+  - slice
+  - socket
+  - swap
+  - target
+  - timer
 scope: source.ini
 contexts:
   main:
