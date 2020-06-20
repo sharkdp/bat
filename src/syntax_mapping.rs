@@ -47,6 +47,31 @@ impl<'a> SyntaxMapping<'a> {
             .insert("rails", MappingTarget::MapToUnknown)
             .unwrap();
 
+        for glob in [
+            "**/systemd/**/*.conf",
+            "**/systemd/**/*.example",
+            "*.automount",
+            "*.device",
+            "*.dnssd",
+            "*.link",
+            "*.mount",
+            "*.netdev",
+            "*.network",
+            "*.nspawn",
+            "*.path",
+            "*.service",
+            "*.scope",
+            "*.slice",
+            "*.socket",
+            "*.swap",
+            "*.target",
+            "*.timer",
+        ].iter() {
+            mapping
+                .insert(glob, MappingTarget::MapTo("INI"))
+                .unwrap();
+        }
+
         mapping
     }
 
