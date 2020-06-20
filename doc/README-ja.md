@@ -119,8 +119,7 @@ batgrep needle src/
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
-Note that we have to switch off paging in order for this to work. We have also specified the syntax
-explicitly (`-l log`), as it can not be auto-detected in this case.
+注意事項：`tail -f`と組み合わせるには、ページングをオフにしなければなりません。また、この場合は構文が自動検出されないため、明示的に指定（`-l log`）しています。
 
 #### `git`
 
@@ -168,14 +167,24 @@ man 2 select
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
 
-###  On Ubuntu
+###  On Ubuntu (`apt` を使用)
 *... や他のDebianベースのLinuxディストリビューション*
 
-Ubuntu Eoan 19.10 または Debian 不安定版 sid 以降の [the Ubuntu `bat` package](https://packages.ubuntu.com/eoan/bat) または [the Debian `bat` package](https://packages.debian.org/sid/bat) をインストールできます:
+Ubuntu Eoan 19.10 または Debian 不安定版 sid 以降の [the Ubuntu `bat` package](https://packages.ubuntu.com/eoan/bat) または [the Debian `bat` package](https://packages.debian.org/sid/bat) からインストールできます:
 
 ```bash
 apt install bat
 ```
+
+`apt` を使用して `bat` をインストールした場合、実行可能ファイルの名前が `bat` ではなく `batcat` になることがあります([他のパッケージとの名前衝突のため](https://github.com/sharkdp/bat/issues/982))。`bat -> batcat` のシンボリックリンクまたはエイリアスを設定することで、実行可能ファイル名が異なることによる問題の発生を防ぎ、他のディストリビューションと一貫性を保てます。
+
+``` bash
+mkdir -p ~/.local/bin
+ln -s /usr/bin/batcat ~/.local/bin/bat
+```
+
+### On Ubuntu (最新の `.deb` パッケージを使用)
+*... や他のDebianベースのLinuxディストリビューション
 
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
@@ -233,7 +242,7 @@ pkg を使用してプリコンパイルされた [`bat` package](https://www.fr
 pkg install bat
 ```
 
-または FreeBSD ポートから自分でビルドする:
+または FreeBSD ポートから自分でビルドすることもできます:
 
 ```bash
 cd /usr/ports/textproc/bat
@@ -336,13 +345,13 @@ ansible-galaxy install aeimer.install_bat
 ### From binaries
 
 
-多くの異なるアーキテクチャのためのプレビルドバージョンを[リリースページ](https://github.com/sharkdp/bat/releases)からチェックしてみてください。静的にリンクされている多くのバイナリも利用できます: ファイル名に `musl` を含むアーカイブを探します。
+多くの異なるアーキテクチャのためのプレビルドバージョンを[リリースページ](https://github.com/sharkdp/bat/releases)からチェックしてみてください。静的にリンクされている多くのバイナリも利用できます: ファイル名に `musl` を含むアーカイブを探してみてください。
 
 ### From source
 
 
 `bat` をソースからビルドしたいならば、Rust 1.36 以上の環境が必要です。
-そして `cargo` をビルドに対して使用します:
+`cargo` を使用してビルドすることができます:
 
 ```bash
 cargo install --locked bat
@@ -387,7 +396,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 [Sublime Text の `.sublime-syntax` ファイル](https://www.sublimetext.com/docs/3/syntax.html)
 とテーマを読み取ることができます。新しい構文を定義するために以下の手順を行います。
 
-構文定義ファイルを入れておくためのフォルダを作る:
+構文定義ファイルを入れておくためのフォルダを作ります:
 
 ```bash
 mkdir -p "$(bat --config-dir)/syntaxes"
@@ -428,13 +437,13 @@ git clone https://github.com/greggb/sublime-snazzy
 bat cache --build
 ```
 
-最後に、 `bat --list-themes` で新しいテーマが利用可能がチェックします
+最後に、 `bat --list-themes` で新しいテーマが利用可能かチェックします
 
 ### 異なるページャーの使用
 
 `bat` は環境変数 `PAGER` に使用するページャーを明記します。
 この環境変数が定義されていない場合、デフォルトで `less` が使用されます。
-もし、異なるページャーが使用したい場合は、`PAGER` を修正してください。
+もし、異なるページャーを使用したい場合は、`PAGER` を修正してください。
 または、`PAGER` を上書きする環境変数として `BAT_PAGER` を定義することも可能です。
 
 もし、ページャーにコマンドライン引数を渡したい場合は、
@@ -533,7 +542,7 @@ Windows 10では、`conhost.exe` （コマンドプロンプト）と
 
 Windows上の `bat` は Cygwin のunix風のpath(`/cygdrive/*`)をネイティブサポートしていません。絶対的なcygwinパスを引数として受けたときに、 `bat` は以下のエラーを返すでしょう: `The system cannot find the path specified. (os error 3)`
 
-wrapperを作成するまたは以下の関数を `.bash_profile` に追記することでこの問題を解決することができます:
+wrapperを作成するか、以下の関数を `.bash_profile` に追記することで、この問題を解決することができます:
 
 ```bash
 bat() {
@@ -553,7 +562,7 @@ bat() {
 
 ### ターミナルと色
 
-`bat` はターミナルがトゥルーカラーをサポートしている/していない関係なくサポートします。
+`bat` はターミナルがトゥルーカラーをサポートしている/していないに関係なくサポートします。
 しかし、シンタックスハイライトのテーマの色が8-bitカラーに最適化されていない場合、
 24-bitであるトゥルーカラーをサポートしているターミナルを使用することを強く推奨します（`terminator`, `konsole`, `iTerm2`, ...）。
 この [記事](https://gist.github.com/XVilka/8346728) には
@@ -610,10 +619,10 @@ cargo install --locked --force
 
 `bat` は以下の目標を達成しようと試みています:
 
-- 美しい高度なシンタックスハイライトの提供
+- 美しく高度なシンタックスハイライトの提供
 - ファイルの差分を表示するためのGitとの連携
 -  (POSIX) `cat` との完全互換
-- ユーザーフレンドリーがコマンドラインインターフェースの提供
+- ユーザーフレンドリーなコマンドラインインターフェースの提供
 
 あなたが同様のプログラムを探しているなら、多くの選択肢があります。
 比較については [このドキュメント](alternatives.md) を参照してください。
