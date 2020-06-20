@@ -52,15 +52,17 @@ pub(crate) trait Printer {
     ) -> Result<()>;
 }
 
-pub struct SimplePrinter;
+pub struct SimplePrinter<'a> {
+    config: &'a Config<'a>
+}
 
-impl SimplePrinter {
-    pub fn new() -> Self {
-        SimplePrinter {}
+impl<'a> SimplePrinter<'a> {
+    pub fn new(config: &'a Config) -> Self {
+        SimplePrinter { config }
     }
 }
 
-impl Printer for SimplePrinter {
+impl<'a> Printer for SimplePrinter<'a> {
     fn print_header(
         &mut self,
         _handle: &mut dyn Write,
@@ -86,7 +88,15 @@ impl Printer for SimplePrinter {
         line_buffer: &[u8],
     ) -> Result<()> {
         if !out_of_range {
-            handle.write_all(line_buffer)?;
+            if self.config.show_nonprintable {
+                let line = replace_nonprintable(line_buffer, self.config.tab_width);
+                write!(handle, "{}", line)?;
+                if line_buffer.last() == Some(&b'\n') {
+                    writeln!(handle)?;
+                }
+            } else {
+                handle.write_all(line_buffer)?
+            };
         }
         Ok(())
     }
