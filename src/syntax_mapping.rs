@@ -72,6 +72,9 @@ impl<'a> SyntaxMapping<'a> {
                 .unwrap();
         }
 
+        // pacman hooks
+        mapping.insert("*.hook", MappingTarget::MapTo("INI")).unwrap();
+
         mapping
     }
 
