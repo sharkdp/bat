@@ -185,3 +185,6 @@
 [submodule "assets/syntaxes/02_Extra/AsciiDoc"]
 	path = assets/syntaxes/02_Extra/AsciiDoc
 	url = https://github.com/asciidoctor/sublimetext-asciidoc.git
+[submodule "assets/syntaxes/02_Extra/GLSL"]
+	path = assets/syntaxes/02_Extra/GLSL
+	url = https://github.com/euler0/sublime-glsl
