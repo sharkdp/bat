@@ -11,6 +11,9 @@
 - Update AsciiDoc syntax, see #1034 (@rxt1077)
 
 ## New themes
+
+- Gruvbox, see #1069 (@kyleondy)
+
 ## `bat` as a library
 
 - Add APIs to provide `Input` descriptions with `InputDescription` (@eth-p)
