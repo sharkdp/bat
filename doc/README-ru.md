@@ -63,7 +63,7 @@
 > curl -s https://sh.rustup.rs | bat
 ```
 
-Читаем из stdin и указываем что это за язык
+Прочитать из stdin с явным указанием языка
 
 ```bash
 > yaml2json .travis.yml | json_pp | bat -l json
