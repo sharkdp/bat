@@ -23,6 +23,7 @@ impl<'a> SyntaxMapping<'a> {
     pub fn builtin() -> SyntaxMapping<'a> {
         let mut mapping = Self::empty();
         mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
+        mapping.insert("*.fs", MappingTarget::MapTo("F#")).unwrap();
         mapping
             .insert("build", MappingTarget::MapToUnknown)
             .unwrap();
