@@ -85,6 +85,8 @@ impl App {
                 if self.matches.occurrences_of("plain") > 1 {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
                     PagingMode::Never
+                } else if self.matches.is_present("disable-paging") {
+                    PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive

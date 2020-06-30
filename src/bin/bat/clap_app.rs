@@ -276,6 +276,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("disable-paging")
+                .short("P")
+                .overrides_with("disable-paging")
+                .help("Alias for --paging=never")
+            )
+        .arg(
             Arg::with_name("pager")
                 .long("pager")
                 .overrides_with("pager")
