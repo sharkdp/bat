@@ -106,7 +106,7 @@ dependencies = [
  "git2 0.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "globset 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "liquid 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "liquid 0.20.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "path_abs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "predicates 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -612,7 +612,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "liquid"
-version = "0.20.0"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "doc-comment 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1407,7 +1407,7 @@ dependencies = [
 "checksum libz-sys 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)" = "2eb5e43362e38e2bca2fd5f5134c4d4564a23a5c28e9b95411652021a8675ebe"
 "checksum line-wrap 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f30344350a2a51da54c1d53be93fade8a237e545dbcc4bdbe635413f2117cab9"
 "checksum linked-hash-map 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "ae91b68aebc4ddb91978b11a1b02ddd8602a05ec19002801c5666000e05e0f83"
-"checksum liquid 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)" = "62b5a51d24120bc37da30a3bcd741ede7450f00e9fcb0b8648a1d25f7736bc6e"
+"checksum liquid 0.20.1 (registry+https://github.com/rust-lang/crates.io-index)" = "503b7cd741bf1a6c01bfdf697ba13f67e2c8e152920af25596763bb0dbcd6215"
 "checksum liquid-core 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3a922402825d7fd1965364e1d289f909076bcf580e5ae4a5edaf82af1fe7a9dc"
 "checksum liquid-derive 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e6fcb48d443dbc49c65b3e5aaecc95e6e911a28b20049d6ac2d94527543fa133"
 "checksum liquid-lib 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)" = "0629fbd25a919496d2e621e8a3af892bc438273d0f446eb4f0d66ce45117d15d"
