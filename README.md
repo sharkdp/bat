@@ -316,14 +316,6 @@ You can download prebuilt binaries from the [Release page](https://github.com/sh
 
 You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
 
-### Via Docker
-
-There is a [Docker image](https://hub.docker.com/r/danlynn/bat/) that you can use to run `bat` in a container:
-```bash
-docker pull danlynn/bat
-alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
-```
-
 ### From binaries
 
 Check out the [Release page](https://github.com/sharkdp/bat/releases) for
