@@ -5,6 +5,9 @@
 - Added support for the `NO_COLOR` environment variable, see #1021 and #1031 (@eth-p)
 
 ## Bugfixes
+
+- Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
+
 ## Other
 ## Syntaxes
 

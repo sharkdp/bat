@@ -716,3 +716,13 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
         from_utf8(&cmd_for_stdin.get_output().stdout).expect("output is valid utf-8")
     );
 }
+
+#[test]
+fn show_all_mode() {
+    bat()
+        .arg("--show-all")
+        .arg("nonprintable.txt")
+        .assert()
+        .stdout("hello•world␊\n├──┤␍␀␇␈␛")
+        .stderr("");
+}
