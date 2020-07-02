@@ -29,6 +29,9 @@ fn all_themes_are_present() {
             "ansi-dark",
             "ansi-light",
             "base16",
+            "gruvbox",
+            "gruvbox-light",
+            "gruvbox-white",
             "zenburn"
         ]
     );

@@ -12,6 +12,9 @@
 - GLSL (@caioalonso)
 
 ## New themes
+
+- Gruvbox, see #1069 (@kyleondy)
+
 ## `bat` as a library
 
 - Add APIs to provide `Input` descriptions with `InputDescription` (@eth-p)
