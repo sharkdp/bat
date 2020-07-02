@@ -113,7 +113,7 @@ impl<'b> Controller<'b> {
                     };
 
                     let mut printer: Box<dyn Printer> = if self.config.loop_through {
-                        Box::new(SimplePrinter::new())
+                        Box::new(SimplePrinter::new(&self.config))
                     } else {
                         Box::new(InteractivePrinter::new(
                             &self.config,
