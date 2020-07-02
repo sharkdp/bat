@@ -265,16 +265,23 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .possible_values(&["auto", "never", "always"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify when to use the pager (*auto*, never, always).")
+                .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
                 .long_help(
-                    "Specify when to use the pager. To control which pager \
-                     is used, set the PAGER or BAT_PAGER environment \
-                     variables (the latter takes precedence) or use the '--pager' option. \
-                     To disable the pager permanently, set BAT_PAGER to an empty string \
-                     or set '--paging=never' in the configuration file. \
-                     Possible values: *auto*, never, always.",
+                    "Specify when to use the pager. To disable the pager, use \
+                    --paging=never' or its alias,'-P'. To disable the pager permanently, \
+                    set BAT_PAGER to an empty string. To control which pager is used, see the \
+                    '--pager' option. Possible values: *auto*, never, always."
                 ),
         )
+        .arg(
+            Arg::with_name("no-paging")
+                .short("P")
+                .alias("no-pager")
+                .overrides_with("no-paging")
+                .hidden(true)
+                .hidden_short_help(true)
+                .help("Alias for '--paging=never'")
+            )
         .arg(
             Arg::with_name("pager")
                 .long("pager")
@@ -284,11 +291,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden_short_help(true)
                 .help("Determine which pager to use.")
                 .long_help(
-                    "Determine which pager is used. This option will overwrite \
-                     the PAGER and BAT_PAGER environment variables. The default \
-                     pager is 'less'. To disable the pager completely, use the \
-                     '--paging' option. \
-                     Example: '--pager \"less -RF\"'.",
+                    "Determine which pager is used. This option will override the \
+                    PAGER and BAT_PAGER environment variables. The default pager is 'less'. \
+                    To control when the pager is used, see the '--paging' option. \
+                    Example: '--pager \"less -RF\"'."
                 ),
         )
         .arg(

@@ -52,6 +52,8 @@ complete -c {{PROJECT_EXECUTABLE}} -l paging -xka "auto never always" -d "Specif
 
 complete -c {{PROJECT_EXECUTABLE}} -s p -l plain -d "Only show plain style, no decorations. Alias for '--style=plain'" -n "not __fish_seen_subcommand_from cache"
 
+complete -c {{PROJECT_EXECUTABLE}} -s P -d "Disable paging. Alias for '--paging=never'" -n "not __fish_seen_subcommand_from cache"
+
 complete -c {{PROJECT_EXECUTABLE}} -s A -l show-all -d "Show non-printable characters like space/tab/newline" -n "not __fish_seen_subcommand_from cache"
 
 complete -c {{PROJECT_EXECUTABLE}} -l style -xka "auto full plain changes header grid numbers" -d "Comma-separated list of style elements or presets to display with file contents" -n "not __fish_seen_subcommand_from cache"

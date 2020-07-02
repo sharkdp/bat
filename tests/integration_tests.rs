@@ -406,6 +406,29 @@ fn pager_disable() {
 }
 
 #[test]
+fn alias_pager_disable() {
+    bat()
+        .env("PAGER", "echo other-pager")
+        .arg("-P")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
+fn alias_pager_disable_long_overrides_short() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("-P")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
 fn config_location_test() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")

@@ -89,15 +89,14 @@ values: *auto*, never, always.
 .HP
 \fB\-\-paging\fR <when>
 .IP
-Specify when to use the pager. To control which pager is used, set the PAGER or
-BAT_PAGER environment variables (the latter takes precedence) or use the '\-\-pager'
-option. To disable the pager permanently, set BAT_PAGER to an empty string or set
-\&'\-\-paging=never' in the configuration file. Possible values: *auto*, never, always.
+Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or its alias,
+\fB-P\fR. To disable the pager permanently, set BAT_PAGER to an empty string. To control
+which pager is used, see the '\-\-pager' option. Possible values: *auto*, never, always.
 .HP
 \fB\-\-pager\fR <command>
 .IP
-Determine which pager is used. This option will overwrite the PAGER and BAT_PAGER
-environment variables. The default pager is 'less'. To disable the pager completely, use
+Determine which pager is used. This option will override the PAGER and BAT_PAGER
+environment variables. The default pager is 'less'. To control when the pager is used, see
 the '\-\-paging' option. Example: '\-\-pager "less \fB\-RF\fR"'.
 .HP
 \fB\-m\fR, \fB\-\-map\-syntax\fR <glob-pattern:syntax-name>...
