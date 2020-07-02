@@ -9,6 +9,7 @@
 ## Syntaxes
 
 - Update AsciiDoc syntax, see #1034 (@rxt1077)
+- GLSL (@caioalonso)
 
 ## New themes
 

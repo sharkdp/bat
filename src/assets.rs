@@ -428,6 +428,7 @@ mod tests {
         assert_eq!(test.syntax_for_file("test.h"), "C++");
         assert_eq!(test.syntax_for_file("test.sass"), "Sass");
         assert_eq!(test.syntax_for_file("test.js"), "JavaScript (Babel)");
+        assert_eq!(test.syntax_for_file("test.fs"), "F#");
     }
 
     #[test]
