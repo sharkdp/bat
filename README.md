@@ -294,6 +294,10 @@ port install bat
 There are a few options to install `bat` on Windows. Once you have installed `bat`,
 take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
+#### Prerequisites
+
+You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+
 #### With Chocolatey
 
 You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
@@ -307,8 +311,6 @@ You can install `bat` via [scoop](https://scoop.sh/):
 ```bash
 scoop install bat
 ```
-
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
 
 #### From prebuilt binaries:
 
@@ -496,6 +498,10 @@ Example configuration file:
 ## Using `bat` on Windows
 
 `bat` mostly works out-of-the-box on Windows, but a few features may need extra configuration.
+
+### Prerequisites
+
+You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
 
 ### Paging
 
