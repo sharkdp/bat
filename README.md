@@ -170,6 +170,19 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
 
+### On Linux (using `webi`)
+
+[`webi`](https://webinstall.dev) will download `bat` directly from the Github release and install to `~/.local/bin/bat`,
+using [`pathman`](https://webinstall.dev/pathman) to update `PATH` in `~/.config/envman/PATH.env`.
+
+This does not require`root` or Admin permissions, does not change any system files, and doesn't require any package management.
+
+`webi` will work on any system with `bash`, `curl` (or `wget`), and `tar`:
+
+```bash
+curl -s https://webinstall.dev/bat | bash
+```
+
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
@@ -289,6 +302,12 @@ Or install `bat` with [MacPorts](https://ports.macports.org/port/bat/summary):
 port install bat
 ```
 
+Or directly from the Github release with [`webi`](https://webinstall.dev/bat):
+
+```bash
+curl -s https://webinstall.dev/bat | bash
+```
+
 ### On Windows
 
 There are a few options to install `bat` on Windows. Once you have installed `bat`,
@@ -311,6 +330,16 @@ You can install `bat` via [scoop](https://scoop.sh/):
 ```bash
 scoop install bat
 ```
+
+### With `webi`
+
+On Windows 10 you can install `bat` directly from the Github release using [`webi`](https://webinstall.dev/bat) from `cmd.exe` or PowerShell:
+
+```bash
+curl.exe -sA "MS" https://webinstall.dev/bat | powershell
+```
+
+You do NOT need cygwin or msysgit. `curl.exe` is provided by Windows 10.
 
 #### From prebuilt binaries:
 
