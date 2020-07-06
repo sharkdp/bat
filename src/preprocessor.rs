@@ -60,7 +60,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
 
             match chr {
                 // space
-                ' ' => output.push('•'),
+                ' ' => output.push('·'),
                 // tab
                 '\t' => {
                     if tab_width == 1 {

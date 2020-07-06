@@ -7,7 +7,7 @@ file_extensions:
 scope: whitespace
 contexts:
   main:
-    - match: "•"
+    - match: "·"
       scope: support.function.show-nonprintable.space
     - match: "├─*┤"
       scope: constant.character.escape.show-nonprintable.tab
