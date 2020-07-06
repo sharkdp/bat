@@ -746,6 +746,6 @@ fn show_all_mode() {
         .arg("--show-all")
         .arg("nonprintable.txt")
         .assert()
-        .stdout("hello•world␊\n├──┤␍␀␇␈␛")
+        .stdout("hello·world␊\n├──┤␍␀␇␈␛")
         .stderr("");
 }
