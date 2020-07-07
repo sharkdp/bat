@@ -10,6 +10,8 @@
 - Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
 
 ## Other
+- Switched to "·" (U+00B7) Middle Dot from "•" (U+2022) Bullet for non-printing spaces, see #1056 and #1100 (@LordFlashmeow)
+
 ## Syntaxes
 
 - Update AsciiDoc syntax, see #1034 (@rxt1077)
