@@ -444,6 +444,16 @@ If you want to enable mouse-wheel scrolling on older versions of `less`, you can
 in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer,
 it should work out of the box.
 
+### Indentation
+
+`bat` expands tabs to 4 spaces by itself, not relying on the pager. To change this, simply add the
+`--tabs` argument with the number of spaces you want to be displayed.
+
+**Note**: Defining tab stops for the pager (via the `--pager` argument by `bat`, or via the `LESS`
+environment variable for `less`) won't be taken into account because the pager will already get
+expanded spaces instead of tabs. This behaviour is added to avoid indentation issues caused by the
+sidebar. Calling `bat` with `--tabs=0` will override it and let tabs be consumed by the pager.
+
 ### Dark mode
 
 If you make use of the dark mode feature in macOS, you might want to configure `bat` to use a different
