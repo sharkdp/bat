@@ -63,7 +63,7 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 # Uncomment the following line if you are using less version >= 551 and want to
 # enable mouse scrolling support in `bat` when running inside tmux. This might
 # disable text selection, unless you press shift.
-#--pager="--RAW-CONTROL-CHARS --quit-if-one-screen --mouse"
+#--pager="less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse"
 
 # Syntax mappings: map a certain filename pattern to a language.
 #   Example 1: use the C++ syntax for .ino files
