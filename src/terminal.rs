@@ -8,7 +8,7 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
         // Themes can specify one of the user-configurable terminal colors by
         // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
         // to the 8-bit color palette number. The built-in themes ansi-light,
-        // ansi-dark, and base16 use this.
+        // ansi-dark, base16, and base16-256 use this.
         match color.r {
             // For the first 8 colors, use the Color enum to produce ANSI escape
             // sequences using codes 30-37 (foreground) and 40-47 (background).

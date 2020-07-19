@@ -20,6 +20,7 @@
 ## New themes
 
 - Gruvbox, see #1069 (@kyleondy)
+- base16-256 for [base16-shell](https://github.com/chriskempson/base16-shell) users, see #1111 (@mk12)
 
 ## `bat` as a library
 
