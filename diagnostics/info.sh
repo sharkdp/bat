@@ -58,7 +58,7 @@ _bat_:run() {
 	_out "$BAT" --version
 	_out env | grep '^BAT_\|^PAGER='
 
-	local cache_dir="$(bat --cache-dir)"
+	local cache_dir="$($BAT --cache-dir)"
 	if [[ -f "${cache_dir}/syntaxes.bin" ]]; then
 		_print_command "$BAT" "--list-languages"
 		echo "Found custom syntax set."
