@@ -225,7 +225,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("When to use colors (*auto*, never, always).")
                 .long_help(
                     "Specify when to use colored output. The automatic mode \
-                     only enables colors if an interactive terminal is detected. \
+                     only enables colors if an interactive terminal is detected - \
+                     colors are automatically disabled if the output goes to a pipe.\n\
                      Possible values: *auto*, never, always.",
                 ),
         )
