@@ -102,7 +102,7 @@ dependencies = [
  "content_inspector 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "encoding 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)",
- "error-chain 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "error-chain 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.13.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "globset 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -390,7 +390,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "error-chain"
-version = "0.12.2"
+version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1379,7 +1379,7 @@ dependencies = [
 "checksum encoding-index-singlebyte 1.20141219.5 (registry+https://github.com/rust-lang/crates.io-index)" = "3351d5acffb224af9ca265f435b859c7c01537c0849754d3db3fdf2bfe2ae84a"
 "checksum encoding-index-tradchinese 1.20141219.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fd0e20d5688ce3cab59eb3ef3a2083a5c77bf496cb798dc6fcdb75f323890c18"
 "checksum encoding_index_tests 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
-"checksum error-chain 0.12.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d371106cc88ffdfb1eabd7111e432da544f16f3e2d7bf1dfe8bf575f1df045cd"
+"checksum error-chain 0.12.3 (registry+https://github.com/rust-lang/crates.io-index)" = "be51ed50e75656c17216bdd4326914466db0c91b9b246b12962a00284d06566b"
 "checksum fake-simd 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 "checksum fancy-regex 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "b0e2de1b89ad299d536b7cefc5d177f5c005957fa2266ce58eca4d189e74bff5"
 "checksum flate2 1.0.14 (registry+https://github.com/rust-lang/crates.io-index)" = "2cfff41391129e0a856d6d822600b8d71179d46879e310417eb9c762eb178b42"
