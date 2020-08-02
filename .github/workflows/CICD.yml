@@ -35,8 +35,6 @@ jobs:
           # { os, target, cargo-options, features, use-cross, toolchain }
           - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: i586-unknown-linux-gnu      , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: i586-unknown-linux-musl     , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
