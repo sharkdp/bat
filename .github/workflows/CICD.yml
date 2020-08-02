@@ -308,8 +308,8 @@ jobs:
 
           # README and LICENSE
           install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/README.md"
-          install -Dm644 "LICENCE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENCE-MIT"
-          install -Dm644 "LICENCE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENCE-APACHE"
+          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-MIT"
+          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-APACHE"
 
           cat > "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright" <<EOF
           Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
