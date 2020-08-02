@@ -218,6 +218,12 @@ jobs:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: test
         args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
+    - name: bat test run
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: run
+        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never Cargo.toml src/config.rs
     - name: Upload build artifacts
       uses: actions/upload-artifact@master
       with:
