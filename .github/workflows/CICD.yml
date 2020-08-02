@@ -224,6 +224,30 @@ jobs:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: run
         args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never Cargo.toml src/config.rs
+    - name: Check features regex-onig
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: check
+        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
+    - name: Check features regex-onig,git
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: check
+        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
+    - name: Check features regex-onig,paging
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: check
+        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
+    - name: Check features regex-onig,git,paging
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: check
+        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
     - name: Upload build artifacts
       uses: actions/upload-artifact@master
       with:
