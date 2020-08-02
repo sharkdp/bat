@@ -4,6 +4,7 @@
 name: Robot Framework syntax highlighting.
 file_extensions:
   - robot
+  - ini
 scope: source.robot
 contexts:
   main:
