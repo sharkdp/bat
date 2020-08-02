@@ -3,7 +3,8 @@ name: CICD
 env:
   PROJECT_NAME: bat
   PROJECT_DESC: "A `cat` clone with wings"
-  PROJECT_AUTH: "sharkdp"
+  PROJECT_MAINTAINER: "David Peter <mail@david-peter.de>"
+  PROJECT_HOMEPAGE: "https://github.com/sharkdp/bat"
   MIN_SUPPORTED_RUST_VERSION: "1.40.0"
 
 on: [push, pull_request]
@@ -187,6 +188,7 @@ jobs:
       run: |
         mkdir -p '${{ steps.vars.outputs.STAGING }}'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
+        mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/autocomplete'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
@@ -224,13 +226,22 @@ jobs:
     - name: Package
       shell: bash
       run: |
-        # binary
-        cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        # Binary
+        cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
+
         # `strip` binary (if needed)
-        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
-        # README and LICENSE
-        (shopt -s nullglob; for f in [R]"EADME"{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
-        (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
+        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "$ARCHIVE_DIR/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+
+        # Man page
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
+
+        # README and LICENSE files
+        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "$ARCHIVE_DIR"
+
+        # Autocompletion files
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
+
         # base compressed package
         pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
         case ${{ matrix.job.target }} in
@@ -238,18 +249,82 @@ jobs:
           *) tar czf '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* ;;
         esac;
         popd >/dev/null
-        # dpkg
+
+        # Debian package
         if [ -n "${{ steps.vars.outputs.DPKG_NAME }}" ]; then
           DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
-          # binary
+
+          # Binary
           install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
           if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+
+          # Man page
+          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
+          gzip --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
+
+          # Autocompletion files
+          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
+
           # README and LICENSE
-          (shopt -s nullglob; for f in [R]"EADME"{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
-          (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do install -Dm644 "$f" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/$f" ; done)
+          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/README.md"
+          install -Dm644 "LICENCE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENCE-MIT"
+          install -Dm644 "LICENCE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENCE-APACHE"
+
+          cat > "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright" <<EOF
+          Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+          Upstream-Name: ${{ env.PROJECT_NAME }}
+          Source: ${{ env.PROJECT_HOMEPAGE }}
+
+          Files: *
+          Copyright: ${{ env.PROJECT_MAINTAINER }}
+          License: Apache-2.0 or MIT
+
+          License: Apache-2.0
+           On Debian systems, the complete text of the Apache-2.0 can be found in the
+           file /usr/share/common-licenses/Apache-2.0.
+
+          License: MIT
+           Permission is hereby granted, free of charge, to any
+           person obtaining a copy of this software and associated
+           documentation files (the "Software"), to deal in the
+           Software without restriction, including without
+           limitation the rights to use, copy, modify, merge,
+           publish, distribute, sublicense, and/or sell copies of
+           the Software, and to permit persons to whom the Software
+           is furnished to do so, subject to the following
+           conditions:
+           .
+           The above copyright notice and this permission notice
+           shall be included in all copies or substantial portions
+           of the Software.
+           .
+           THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+           ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+           TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+           PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+           SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+           CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+           OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+           IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+           DEALINGS IN THE SOFTWARE.
+          EOF
+
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
-          printf "Package: ${{ steps.vars.outputs.DPKG_BASENAME }}\nVersion: ${{ steps.vars.outputs.DPKG_VERSION }}\nSection: utils\nPriority: optional\nMaintainer: ${{ env.PROJECT_AUTH }}\nArchitecture: ${{ steps.vars.outputs.DPKG_ARCH }}\nProvides: ${{ env.PROJECT_NAME }}\nConflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}\nDescription: ${{ env.PROJECT_DESC }}\n" > "${DPKG_DIR}/DEBIAN/control"
+          cat > "${DPKG_DIR}/DEBIAN/control" <<EOF
+          Package: ${{ steps.vars.outputs.DPKG_BASENAME }}
+          Version: ${{ steps.vars.outputs.DPKG_VERSION }}
+          Section: utils
+          Priority: optional
+          Maintainer: ${{ env.PROJECT_MAINTAINER }}
+          Homepage: ${{ env.PROJECT_HOMEPAGE }}
+          Architecture: ${{ steps.vars.outputs.DPKG_ARCH }}
+          Provides: ${{ env.PROJECT_NAME }}
+          Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
+          Description: A cat(1) clone with wings.
+           A cat(1) clone with syntax highlighting and Git integration.
+          EOF
+
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
