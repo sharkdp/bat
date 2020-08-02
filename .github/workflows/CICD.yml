@@ -53,6 +53,16 @@ jobs:
       with:
         command: test
         args: --release
+    - name: List of languages
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --release -- --list-languages
+    - name: List of themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --release -- --list-themes
 
   build:
     name: Build
