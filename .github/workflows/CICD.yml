@@ -307,7 +307,7 @@ jobs:
            OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
            IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
            DEALINGS IN THE SOFTWARE.
-          EOF
+        EOF
 
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
@@ -323,7 +323,7 @@ jobs:
           Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
           Description: A cat(1) clone with wings.
            A cat(1) clone with syntax highlighting and Git integration.
-          EOF
+        EOF
 
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
