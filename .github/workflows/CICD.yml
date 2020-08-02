@@ -4,20 +4,20 @@ env:
   PROJECT_NAME: bat
   PROJECT_DESC: "A `cat` clone with wings"
   PROJECT_AUTH: "sharkdp"
-  RUST_MIN_SRV: "1.40.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.40.0"
 
 on: [push, pull_request]
 
 jobs:
   min_version:
-    name: MinSRV # Minimum supported rust version
+    name: Minimum supported rust version
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install `rust` toolchain (v${{ env.RUST_MIN_SRV }})
+    - name: Install `rust` toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ env.RUST_MIN_SRV }}
+        toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
     - name: Test
