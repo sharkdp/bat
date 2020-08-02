@@ -14,7 +14,8 @@ jobs:
     name: Minimum supported rust version
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: Git checkout
+      uses: actions/checkout@v1
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
@@ -223,7 +224,7 @@ jobs:
       with:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: run
-        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never Cargo.toml src/config.rs
+        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always Cargo.toml src/config.rs
     - name: Check features regex-onig
       uses: actions-rs/cargo@v1
       with:
