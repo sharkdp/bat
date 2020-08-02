@@ -46,8 +46,9 @@ jobs:
           # - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
-    - uses: actions/checkout@v1
-    - name: Install any prerequisites
+    - name: Git checkout
+      uses: actions/checkout@v1
+    - name: Install prerequisites
       shell: bash
       run: |
         case ${{ matrix.job.target }} in
@@ -160,7 +161,7 @@ jobs:
         mkdir -p '${{ steps.vars.outputs.STAGING }}'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
         mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
-    - name: rust toolchain ~ install
+    - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
@@ -188,7 +189,7 @@ jobs:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: test
         args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
-    - name: Archive executable artifacts
+    - name: Upload build artifacts
       uses: actions/upload-artifact@master
       with:
         name: ${{ env.PROJECT_NAME }}-${{ matrix.job.target }}
@@ -201,7 +202,6 @@ jobs:
         # `strip` binary (if needed)
         if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' ; fi
         # README and LICENSE
-        # * spell-checker:ignore EADME ICENSE
         (shopt -s nullglob; for f in [R]"EADME"{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
         (shopt -s nullglob; for f in [L]"ICENSE"{-*,}{,.*}; do cp $f '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/' ; done)
         # base compressed package
@@ -226,7 +226,7 @@ jobs:
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
-    - name: Publish
+    - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.vars.outputs.DEPLOY
       with:
