@@ -41,7 +41,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: install
-        args: --locked --release
+        args: --locked
     - name: Rebuild binary assets (syntaxes and themes)
       run: bash assets/create.sh
     - name: Run tests with new syntaxes and themes
