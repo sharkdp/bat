@@ -31,6 +31,8 @@ jobs:
     steps:
     - name: Git checkout
       uses: actions/checkout@v1
+      with:
+        submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
