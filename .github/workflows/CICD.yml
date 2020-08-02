@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install `rust` toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
+    - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
@@ -24,6 +24,31 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
+
+  test_with_new_syntaxes_and_themes:
+    name: Test with new syntaxes and themes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v1
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+    - name: Build and install bat
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: --locked --release
+    - name: Rebuild binary assets (syntaxes and themes)
+      run: bash assets/create.sh
+    - name: Run tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --release
 
   build:
     name: Build
