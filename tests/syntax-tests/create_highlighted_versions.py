@@ -5,6 +5,7 @@ import glob
 import sys
 import os.path as path
 import os
+import argparse
 
 
 BAT_OPTIONS = [
@@ -16,7 +17,7 @@ BAT_OPTIONS = [
 ]
 
 
-def create_highlighted_versions():
+def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
 
     for source in glob.glob(path.join(root, "source", "*", "*")):
@@ -28,7 +29,7 @@ def create_highlighted_versions():
             source_dirname = path.basename(path.dirname(source))
             source_filename = path.basename(source)
 
-            output_dir = path.join(root, "highlighted", source_dirname)
+            output_dir = path.join(output_basepath, source_dirname)
             output_path = path.join(output_dir, source_filename)
 
             os.makedirs(output_dir, exist_ok=True)
@@ -55,4 +56,19 @@ def create_highlighted_versions():
 
 
 if __name__ == "__main__":
-    create_highlighted_versions()
+    parser = argparse.ArgumentParser(
+        description="This script creates syntax-highlighted versions of all "
+        "files in the 'source' directory."
+    )
+    parser.add_argument(
+        "--output",
+        "-O",
+        metavar="PATH",
+        help="Output directory",
+        required=True,
+        type=str,
+    )
+
+    args = parser.parse_args()
+
+    create_highlighted_versions(output_basepath=args.output)
