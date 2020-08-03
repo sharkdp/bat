@@ -53,6 +53,8 @@ jobs:
       with:
         command: test
         args: --release
+    - name: Syntax highlighting regression test
+      run: tests/syntax-tests/regression_test.sh
     - name: List of languages
       uses: actions-rs/cargo@v1
       with:
