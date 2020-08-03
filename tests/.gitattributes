@@ -11,3 +11,4 @@ snapshots/* linguist-vendored
 benchmarks/* linguist-vendored
 benchmarks/test-src/* linguist-vendored
 scripts/* linguist-vendored
+syntax-tests/* linguist-vendored
