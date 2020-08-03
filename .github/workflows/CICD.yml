@@ -48,7 +48,12 @@ jobs:
         args: --locked --path .
     - name: Rebuild binary assets (syntaxes and themes)
       run: bash assets/create.sh
-    - name: Run tests with new syntaxes and themes
+    - name: Build and install bat with updated assets
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: --locked --path .
+    - name: Run unit tests with new syntaxes and themes
       uses: actions-rs/cargo@v1
       with:
         command: test
@@ -56,15 +61,9 @@ jobs:
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
-      uses: actions-rs/cargo@v1
-      with:
-        command: run
-        args: --release -- --list-languages
+      run: bat --list-languages
     - name: List of themes
-      uses: actions-rs/cargo@v1
-      with:
-        command: run
-        args: --release -- --list-themes
+      run: bat --list-themes
 
   build:
     name: Build
