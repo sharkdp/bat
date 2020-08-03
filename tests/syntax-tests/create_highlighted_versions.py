@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess
 import glob
@@ -37,8 +37,7 @@ def create_highlighted_versions(output_basepath):
             with open(output_path, "wb") as output_file:
                 output_file.write(bat_output)
 
-            relative_path = path.relpath(output_path, root)
-            print("Created '{}'".format(relative_path))
+            print("Created '{}'".format(output_path))
         except subprocess.CalledProcessError as err:
             print(
                 "=== Error: Could not highlight source file '{}".format(source),
