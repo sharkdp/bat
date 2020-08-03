@@ -22,8 +22,17 @@ def create_highlighted_versions(output_basepath):
 
     for source in glob.glob(path.join(root, "source", "*", "*")):
         try:
+            env = os.environ.copy()
+            env.pop("PAGER", None)
+            env.pop("BAT_PAGER", None)
+            env.pop("BAT_CONFIG_PATH", None)
+            env.pop("BAT_STYLE", None)
+            env.pop("BAT_THEME", None)
+            env.pop("BAT_TABS", None)
+            env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors
+
             bat_output = subprocess.check_output(
-                ["bat"] + BAT_OPTIONS + [source], stderr=subprocess.PIPE,
+                ["bat"] + BAT_OPTIONS + [source], stderr=subprocess.PIPE, env=env,
             )
 
             source_dirname = path.basename(path.dirname(source))
