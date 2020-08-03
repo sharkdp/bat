@@ -1,0 +1,9 @@
+# A comment
+
+Host example.com
+    User dummy
+    Compression no
+
+Host *.co.uk
+    BatchMode no
+    GlobalKnownHostsFile "/etc/ssh/ssh_known_hosts"
