@@ -38,7 +38,7 @@ characters:
 
 ### Automatic paging
 
-`bat` can pipe its own output to `less` if the output is too large for one screen.
+`bat` can pipe its own output to the defult pager (e.g `less`) if the output is too large for one screen.
 
 ### File concatenation
 
