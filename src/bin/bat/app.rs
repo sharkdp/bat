@@ -221,10 +221,7 @@ impl App {
             },
             style_components,
             syntax_mapping,
-            pager: match self.matches.value_of("pager") {
-                Some(s) => if s == "more" { None } else { Some(s) },
-                _ => None,
-            },
+            pager: self.matches.value_of("pager"),
             use_italic_text: match self.matches.value_of("italic-text") {
                 Some("always") => true,
                 _ => false,

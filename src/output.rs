@@ -59,6 +59,7 @@ impl OutputType {
 
         let pager = pager_from_config
             .or(pager_from_env)
+            .filter(|p| p != "most")
             .unwrap_or_else(|| String::from("less"));
 
         let pagerflags =
