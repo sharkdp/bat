@@ -350,6 +350,7 @@ jobs:
          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
          DEALINGS IN THE SOFTWARE.
         EOF
+          chmod 644 "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright"
 
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
