@@ -363,7 +363,7 @@ jobs:
         Architecture: ${{ steps.vars.outputs.DPKG_ARCH }}
         Provides: ${{ env.PROJECT_NAME }}
         Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
-        Description: A cat(1) clone with wings.
+        Description: cat(1) clone with wings.
          A cat(1) clone with syntax highlighting and Git integration.
         EOF
 
