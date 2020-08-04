@@ -269,6 +269,7 @@ jobs:
       shell: bash
       run: |
         ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
         # Binary
         cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
 
@@ -319,6 +320,7 @@ jobs:
 
         Files: *
         Copyright: ${{ env.PROJECT_MAINTAINER }}
+        Copyright: $COPYRIGHT_YEARS ${{ env.PROJECT_MAINTAINER }}
         License: Apache-2.0 or MIT
 
         License: Apache-2.0
