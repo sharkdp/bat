@@ -301,6 +301,18 @@ jobs:
           install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
           if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
 
+          # Work out shared library dependencies
+          # dpkg-shlibdeps requires debian/control file. Dummy it and clean up
+          mkdir "./debian"
+          touch "./debian/control"
+          case ${{ matrix.job.target }} in
+            aarch64-*-linux-*) DEPENDS="$(dpkg-shlibdeps -l/usr/aarch64-linux-gnu/lib -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
+            arm-*-linux-*hf) DEPENDS="$(dpkg-shlibdeps -l/usr/arm-linux-gnueabihf/lib -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
+            i686-*-linux-*) DEPENDS="$(dpkg-shlibdeps -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
+            x86_64-*-linux-*) DEPENDS="$(dpkg-shlibdeps -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
+          esac;
+          rm -rf "./debian"
+
           # Man page
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
           gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
@@ -366,6 +378,7 @@ jobs:
         Maintainer: ${{ env.PROJECT_MAINTAINER }}
         Homepage: ${{ env.PROJECT_HOMEPAGE }}
         Architecture: ${{ steps.vars.outputs.DPKG_ARCH }}
+        Depends: $DEPENDS
         Provides: ${{ env.PROJECT_NAME }}
         Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
         Description: cat(1) clone with wings.
