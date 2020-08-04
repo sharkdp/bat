@@ -279,8 +279,8 @@ jobs:
         # Man page
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
 
-        # README and LICENSE files
-        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "$ARCHIVE_DIR"
+        # README, LICENSE and CHANGELOG files
+        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
@@ -312,6 +312,8 @@ jobs:
           install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/README.md"
           install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-MIT"
           install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-APACHE"
+          install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/changelog"
+          gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/changelog"
 
           cat > "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright" <<EOF
         Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
