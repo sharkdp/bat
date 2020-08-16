@@ -258,6 +258,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("always-decorations")
+                .short("D")
+                .alias("always-decor")
+                .overrides_with("always-decorations")
+                .hidden(true)
+                .hidden_short_help(true)
+                .help("Alias for '--decorations=always'")
+        )
+        .arg(
             Arg::with_name("paging")
                 .long("paging")
                 .overrides_with("paging")
