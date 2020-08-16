@@ -1,4 +1,5 @@
 # unreleased
+- Handle file extension conflicts in --list-languages, see #1076 and #1135 (@Kienyew)
 
 ## Features
 
