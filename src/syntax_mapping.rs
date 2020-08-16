@@ -48,6 +48,31 @@ impl<'a> SyntaxMapping<'a> {
             .insert("rails", MappingTarget::MapToUnknown)
             .unwrap();
 
+        // Nginx and Apache syntax files both want to style all ".conf" files
+        // see #1131 and #1137
+        mapping
+            .insert("*.conf", MappingTarget::MapToUnknown)
+            .unwrap();
+
+        for glob in &[
+            "/etc/nginx/**/*.conf",
+            "/etc/nginx/sites-*/**/*",
+            "nginx.conf",
+            "mime.types",
+        ] {
+            mapping.insert(glob, MappingTarget::MapTo("nginx")).unwrap();
+        }
+
+        for glob in &[
+            "/etc/apache2/**/*.conf",
+            "/etc/apache2/sites-*/**/*",
+            "httpd.conf",
+        ] {
+            mapping
+                .insert(glob, MappingTarget::MapTo("Apache Conf"))
+                .unwrap();
+        }
+
         for glob in [
             "**/systemd/**/*.conf",
             "**/systemd/**/*.example",
