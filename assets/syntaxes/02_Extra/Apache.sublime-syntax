@@ -3,8 +3,6 @@
 # http://www.sublimetext.com/docs/3/syntax.html
 name: Apache Conf
 file_extensions:
-  - conf
-  - CONF
   - envvars
   - htaccess
   - HTACCESS
