@@ -16,6 +16,7 @@
 
 - Update AsciiDoc syntax, see #1034 (@rxt1077)
 - GLSL (@caioalonso)
+- Add Nginx and Apache config file syntax, see #1137 (@kjmph, @niklasmohrin)
 
 ## New themes
 
