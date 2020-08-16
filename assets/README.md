@@ -31,6 +31,7 @@ themes (`bat cache --clear`).
 
 The following files have been manually modified after converting from a `.tmLanguage` file:
 
+* `Apache.sublime_syntax`=> removed `.conf` and `.CONF` file types.
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
 * `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
 * `Org mode.sublime-syntax` => removed `task` file type.
