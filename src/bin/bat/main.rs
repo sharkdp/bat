@@ -93,7 +93,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
             let test_file = Path::new("test").with_extension(extension);
             match config.syntax_mapping.get_syntax_for(test_file) {
                 Some(MappingTarget::MapTo(primary_lang)) => lang_name == primary_lang,
-                Some(MappingTarget::MapToUnknown) => true,
+                Some(MappingTarget::MapToUnknown) => false,
                 None => true,
             }
         });
