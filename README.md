@@ -643,6 +643,6 @@ There are a lot of alternatives, if you are looking for similar programs. See
 ## License
 Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
 
-`bat` is distributed under the terms of both the MIT License and the Apache License 2.0.
+`bat` is made available under the terms of either the MIT License or the Apache License 2.0, at your option.
 
 See the [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) files for license details.
