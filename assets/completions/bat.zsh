@@ -76,7 +76,9 @@ _bat_main() {
 
 # first positional argument
 if (( ${#words} == 2 )); then
-    _values subcommand cache
+    local -a subcommands
+    subcommands=('cache:Modify the syntax-definition and theme cache')
+    _describe subcommand subcommands
     _bat_main
 else
     case $words[2] in
