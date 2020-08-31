@@ -1,4 +1,7 @@
 # unreleased
+- Added zsh completion script. see #1136 (@Kienyew)
+
+
 
 ## Features
 
