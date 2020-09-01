@@ -288,7 +288,6 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        println!("{:#?}", matches);
         Ok(StyleComponents(
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
