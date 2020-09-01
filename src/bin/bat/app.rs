@@ -165,11 +165,14 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping
             },
-            colored_output: match self.matches.value_of("color") {
-                Some("always") => true,
-                Some("never") => false,
-                Some("auto") | _ => env::var_os("NO_COLOR").is_none() && self.interactive_output,
-            },
+            colored_output: self.matches.is_present("always-decorations")
+                || match self.matches.value_of("color") {
+                    Some("always") => true,
+                    Some("never") => false,
+                    Some("auto") | _ => {
+                        env::var_os("NO_COLOR").is_none() && self.interactive_output
+                    }
+                },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
@@ -285,6 +288,7 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
+        println!("{:#?}", matches);
         Ok(StyleComponents(
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
