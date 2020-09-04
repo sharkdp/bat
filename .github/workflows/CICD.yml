@@ -284,6 +284,7 @@ jobs:
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.zsh"
 
         # base compressed package
         pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
@@ -319,6 +320,7 @@ jobs:
 
           # Autocompletion files
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
+          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/site-functions/_${{ env.PROJECT_NAME }}"
 
           # README and LICENSE
           install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
