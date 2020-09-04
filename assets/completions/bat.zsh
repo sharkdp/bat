@@ -11,7 +11,7 @@ _cache_subcommand() {
         '(-b --build -c --clear)'{-c,--clear}'[Remove the cached syntax definitions and themes]'
         '(--source)'--source='[Use a different directory to load syntaxes and themes from]:directory:_files -/'
         '(--target)'--target='[Use a different directory to store the cached syntax and theme set]:directory:_files -/'
-        '(--blank)'--blank'[Create completely new syntax and theme sets)]'
+        '(--blank)'--blank'[Create completely new syntax and theme sets]'
         '(: -)'{-h,--help}'[Prints help information]'
         '*: :'
     )
