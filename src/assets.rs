@@ -170,6 +170,21 @@ impl HighlightingAssets {
         self.theme_set.themes.keys().map(|s| s.as_ref())
     }
 
+    pub fn syntax_for_file_name(
+        &self,
+        file_name: impl AsRef<Path>,
+        mapping: &SyntaxMapping,
+    ) -> Option<&SyntaxReference> {
+        let file_name = file_name.as_ref();
+        match mapping.get_syntax_for(file_name) {
+            Some(MappingTarget::MapToUnknown) => None,
+            Some(MappingTarget::MapTo(syntax_name)) => {
+                self.syntax_set.find_syntax_by_name(syntax_name)
+            }
+            None => self.get_extension_syntax(file_name.as_os_str()),
+        }
+    }
+
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
