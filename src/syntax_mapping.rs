@@ -25,12 +25,6 @@ impl<'a> SyntaxMapping<'a> {
         mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
         mapping.insert("*.fs", MappingTarget::MapTo("F#")).unwrap();
         mapping
-            .insert("*.js", MappingTarget::MapTo("JavaScript (Babel)"))
-            .unwrap();
-        mapping
-            .insert("*.sass", MappingTarget::MapTo("Sass"))
-            .unwrap();
-        mapping
             .insert("build", MappingTarget::MapToUnknown)
             .unwrap();
         mapping
@@ -73,16 +67,14 @@ impl<'a> SyntaxMapping<'a> {
             "*.swap",
             "*.target",
             "*.timer",
-        ]
-        .iter()
-        {
-            mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
+        ].iter() {
+            mapping
+                .insert(glob, MappingTarget::MapTo("INI"))
+                .unwrap();
         }
 
         // pacman hooks
-        mapping
-            .insert("*.hook", MappingTarget::MapTo("INI"))
-            .unwrap();
+        mapping.insert("*.hook", MappingTarget::MapTo("INI")).unwrap();
 
         mapping
     }
@@ -100,7 +92,7 @@ impl<'a> SyntaxMapping<'a> {
         &self.mappings
     }
 
-    pub fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
+    pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         let candidate = Candidate::new(path.as_ref());
         let canddidate_filename = path.as_ref().file_name().map(Candidate::new);
         for (ref glob, ref syntax) in self.mappings.iter().rev() {

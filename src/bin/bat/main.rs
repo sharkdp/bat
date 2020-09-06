@@ -86,19 +86,6 @@ pub fn list_languages(config: &Config) -> Result<()> {
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
         .cloned()
         .collect::<Vec<_>>();
-
-    for lang in languages.iter_mut() {
-        let lang_name = lang.name.clone();
-        lang.file_extensions.retain(|extension| {
-            let test_file = Path::new("test").with_extension(extension);
-            match config.syntax_mapping.get_syntax_for(test_file) {
-                Some(MappingTarget::MapTo(primary_lang)) => lang_name == primary_lang,
-                Some(MappingTarget::MapToUnknown) => false,
-                None => true,
-            }
-        });
-    }
-
     languages.sort_by_key(|lang| lang.name.to_uppercase());
 
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
