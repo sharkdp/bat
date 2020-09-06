@@ -100,11 +100,8 @@ pub fn list_languages(config: &Config) -> Result<()> {
                 true
             } else {
                 let test_file = Path::new("test").with_extension(extension);
-                if let Some(syntax) = assets.syntax_for_file_name(test_file, &config.syntax_mapping) {
-                    syntax.name == lang_name
-                } else {
-                    false
-                }
+                let syntax = assets.syntax_for_file_name(test_file, &config.syntax_mapping).unwrap();
+                syntax.name == lang_name
             }
         });
     }
