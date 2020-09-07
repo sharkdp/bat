@@ -59,7 +59,7 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "4.2.0"
+version = "4.4.0"
 default-features = false
 features = ["parsing", "yaml-load", "dump-load", "dump-create"]
 
