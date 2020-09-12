@@ -209,6 +209,7 @@ fn run() -> Result<bool> {
             } else {
                 let inputs = vec![Input::ordinary_file(OsStr::new("cache"))];
                 let config = app.config(&inputs)?;
+                println!("{:#?}", config);
 
                 run_controller(inputs, &config)
             }
@@ -216,6 +217,8 @@ fn run() -> Result<bool> {
         _ => {
             let inputs = app.inputs()?;
             let config = app.config(&inputs)?;
+
+            println!("{:#?}", config);
 
             if app.matches.is_present("list-languages") {
                 list_languages(&config)?;

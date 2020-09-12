@@ -165,7 +165,7 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping
             },
-            colored_output: self.matches.is_present("always-decorations")
+            colored_output: self.matches.is_present("force-colorization")
                 || match self.matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
@@ -178,7 +178,7 @@ impl App {
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
                 || (self.matches.value_of("decorations") == Some("always")
-                    || self.matches.is_present("always-decorations"))),
+                    || self.matches.is_present("force-colorization"))),
             tab_width: self
                 .matches
                 .value_of("tabs")
@@ -288,6 +288,7 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
+        println!("{:#?}", matches);
         Ok(StyleComponents(
             if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
