@@ -4,6 +4,8 @@
 
 - Added support for the `NO_COLOR` environment variable, see #1021 and #1031 (@eth-p)
 - Added `-P` short flag to disable paging, revised man page description, see #1075 and #1082 (@LordFlashmeow) 
+- Added `--force-colorization` flag & `-f` short flag to provide an alias for forced colorization/decorization, \
+revised man page description, see #1141 (@alexanderkarlis)
 
 ## Bugfixes
 
