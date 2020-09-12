@@ -87,6 +87,12 @@ Specify when to use the decorations that have been specified via '\-\-style'. Th
 automatic mode only enables decorations if an interactive terminal is detected. Possible
 values: *auto*, never, always.
 .HP
+\fB\-f\fR, \fB\-\-force\-colorization\fR
+.IP
+Alias for '--decorations=always --color=always'. This is useful \
+if the output of bat is piped to another program, but you want \
+to keep the colorization/decorations.
+.HP
 \fB\-\-paging\fR <when>
 .IP
 Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or its alias,
