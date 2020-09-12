@@ -258,13 +258,16 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("always-decorations")
+            Arg::with_name("force-colorization")
+                .long("force-colorization")
                 .short("f")
-                .alias("always-decor")
-                .overrides_with("always-decorations")
-                .hidden(true)
+                .conflicts_with("color")
+                .conflicts_with("decorations")
+                .overrides_with("force-colorization")
                 .hidden_short_help(true)
-                .help("Alias for '--decorations=always --color=always'")
+                .long_help("Alias for '--decorations=always --color=always'. This is useful \
+                        if the output of bat is piped to another program, but you want \
+                        to keep the colorization/decorations.")
         )
         .arg(
             Arg::with_name("paging")
