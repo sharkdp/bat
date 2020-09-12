@@ -38,6 +38,9 @@ def create_highlighted_versions(output_basepath):
             source_dirname = path.basename(path.dirname(source))
             source_filename = path.basename(source)
 
+            if source_filename == "LICENSE.md":
+                continue
+
             output_dir = path.join(output_basepath, source_dirname)
             output_path = path.join(output_dir, source_filename)
 
