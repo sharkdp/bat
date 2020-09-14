@@ -177,8 +177,8 @@ impl App {
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
-                || (self.matches.value_of("decorations") == Some("always")
-                    || self.matches.is_present("force-colorization"))),
+                || self.matches.value_of("decorations") == Some("always")
+                || self.matches.is_present("force-colorization")),
             tab_width: self
                 .matches
                 .value_of("tabs")
