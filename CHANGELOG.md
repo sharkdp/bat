@@ -1,14 +1,11 @@
 # unreleased
-- Added zsh completion script. see #1136 (@Kienyew)
-
 
 
 ## Features
 
 - Added support for the `NO_COLOR` environment variable, see #1021 and #1031 (@eth-p)
-- Added `-P` short flag to disable paging, revised man page description, see #1075 and #1082 (@LordFlashmeow) 
-- Added `--force-colorization` flag & `-f` short flag to provide an alias for forced colorization/decorization, \
-revised man page description, see #1141 (@alexanderkarlis)
+- Added `-P` short flag to disable paging, see #1075 and #1082 (@LordFlashmeow)
+- Added `--force-colorization`/`-f` flag to provide an alias for forced color and decoration output, see #1141 (@alexanderkarlis)
 
 ## Bugfixes
 
@@ -16,6 +13,7 @@ revised man page description, see #1141 (@alexanderkarlis)
 
 ## Other
 - Switched to "·" (U+00B7) Middle Dot from "•" (U+2022) Bullet for non-printing spaces, see #1056 and #1100 (@LordFlashmeow)
+- Added zsh shell completion script, see #1136 (@Kienyew)
 
 ## Syntaxes
 
