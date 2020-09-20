@@ -25,7 +25,6 @@ application = [
     "dirs",
     "git",
     "lazy_static",
-    "liquid",
     "paging",
     "wild",
     "regex-onig",
@@ -80,8 +79,7 @@ predicates = "1.0.5"
 
 [build-dependencies]
 clap = { version = "2.33", optional = true }
-liquid = { version = "0.21", optional = true }
 
-[profile.release]
-lto = true
-codegen-units = 1
+# [profile.release]
+# lto = true
+# codegen-units = 1

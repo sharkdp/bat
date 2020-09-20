@@ -1,4 +1,4 @@
-.TH {{PROJECT_EXECUTABLE | upcase}} "1"
+.TH {{PROJECT_EXECUTABLE_UPPERCASE}} "1"
 .SH NAME
 {{PROJECT_EXECUTABLE}} \- a cat(1) clone with syntax highlighting and Git integration.
 .SH "USAGE"

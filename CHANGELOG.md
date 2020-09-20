@@ -1,5 +1,4 @@
 # unreleased
-- Handle file extension conflicts in --list-languages, see #1076 and #1135 (@Kienyew)
 
 
 ## Features
@@ -11,6 +10,7 @@
 ## Bugfixes
 
 - Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
+- Handle file extension conflicts in --list-languages, see #1076 and #1135 (@Kienyew)
 
 ## Other
 - Switched to "·" (U+00B7) Middle Dot from "•" (U+2022) Bullet for non-printing spaces, see #1056 and #1100 (@LordFlashmeow)
@@ -34,6 +34,8 @@
 - **Breaking:** `Input::theme_preview_file` is no longer available. (@eth-p)
 
 ## Packaging
+
+- Removed build dependency on `liquid` (@sharkdp).
 
 # v0.15.4
 
