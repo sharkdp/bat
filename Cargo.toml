@@ -80,6 +80,6 @@ predicates = "1.0.5"
 [build-dependencies]
 clap = { version = "2.33", optional = true }
 
-# [profile.release]
-# lto = true
-# codegen-units = 1
+[profile.release]
+lto = true
+codegen-units = 1
