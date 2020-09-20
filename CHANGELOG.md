@@ -13,14 +13,17 @@
 - Handle file extension conflicts in --list-languages, see #1076 and #1135 (@Kienyew)
 
 ## Other
+
 - Switched to "·" (U+00B7) Middle Dot from "•" (U+2022) Bullet for non-printing spaces, see #1056 and #1100 (@LordFlashmeow)
 - Added zsh shell completion script, see #1136 (@Kienyew)
+- Improved `--help` text (@sharkdp)
 
 ## Syntaxes
 
 - Update AsciiDoc syntax, see #1034 (@rxt1077)
 - GLSL (@caioalonso)
 - Add Nginx and Apache config file syntax, see #1137 (@kjmph, @niklasmohrin)
+- Use `fstab` syntax for `crypttab` files, see #1073 (@sharkdp)
 
 ## New themes
 
