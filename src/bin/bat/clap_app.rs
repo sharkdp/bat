@@ -359,7 +359,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .overrides_with("style")
                 .overrides_with("plain")
                 .overrides_with("number")
-                // Cannot use clap's built in validation because we have to turn off clap's delimiters
+                // Cannot use claps built in validation because we have to turn off clap's delimiters
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
@@ -387,8 +387,17 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      components to display (e.g. 'numbers,changes,grid') or a \
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
-                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
-                     Possible values: *auto*, full, plain, changes, header, grid, numbers, snip.",
+                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     Possible values:\n\n  \
+                     * full: enables all available components.\n  \
+                     * auto: same as 'full', unless the output is piped (default).\n  \
+                     * plain: disables all available components.\n  \
+                     * changes: show Git modification markers.\n  \
+                     * header: show filenames before the content.\n  \
+                     * grid: vertical/horizontal lines to separate side bar\n          \
+                       and the header from the content.\n  \
+                     * numbers: show line numbers in the side bar.\n  \
+                     * snip: draw separation lines between distinct line ranges.",
                 ),
         )
         .arg(
