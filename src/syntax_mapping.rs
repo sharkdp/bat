@@ -92,14 +92,16 @@ impl<'a> SyntaxMapping<'a> {
             "*.swap",
             "*.target",
             "*.timer",
-        ].iter() {
-            mapping
-                .insert(glob, MappingTarget::MapTo("INI"))
-                .unwrap();
+        ]
+        .iter()
+        {
+            mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
         }
 
         // pacman hooks
-        mapping.insert("*.hook", MappingTarget::MapTo("INI")).unwrap();
+        mapping
+            .insert("*.hook", MappingTarget::MapTo("INI"))
+            .unwrap();
 
         mapping
     }

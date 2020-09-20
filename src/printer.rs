@@ -53,7 +53,7 @@ pub(crate) trait Printer {
 }
 
 pub struct SimplePrinter<'a> {
-    config: &'a Config<'a>
+    config: &'a Config<'a>,
 }
 
 impl<'a> SimplePrinter<'a> {

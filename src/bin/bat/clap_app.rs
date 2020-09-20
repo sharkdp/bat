@@ -104,9 +104,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Specify the name to display for a file.")
                 .long_help(
                     "Specify the name to display for a file. Useful when piping \
-                            data to bat from STDIN when bat does not otherwise know \
-                            the filename. Note that the provided file name is also \
-                            used for syntax detection.",
+                     data to bat from STDIN when bat does not otherwise know \
+                     the filename. Note that the provided file name is also \
+                     used for syntax detection.",
                 ),
         );
 

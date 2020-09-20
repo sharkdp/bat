@@ -1,5 +1,5 @@
 use assert_cmd::Command;
-use predicates::{prelude::predicate,str::PredicateStrExt};
+use predicates::{prelude::predicate, str::PredicateStrExt};
 use std::path::Path;
 use std::str::from_utf8;
 
