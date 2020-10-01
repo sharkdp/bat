@@ -1,5 +1,20 @@
 # unreleased
 
+## Features
+
+## Bugfixes
+
+## Other
+
+## Syntaxes
+
+## New themes
+
+## `bat` as a library
+
+## Packaging
+
+# v0.16.0
 
 ## Features
 
@@ -10,7 +25,7 @@
 ## Bugfixes
 
 - Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
-- Handle file extension conflicts in --list-languages, see #1076 and #1135 (@Kienyew)
+- Handle file extension conflicts in `--list-languages`, see #1076 and #1135 (@Kienyew)
 
 ## Other
 
