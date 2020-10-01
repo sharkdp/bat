@@ -111,8 +111,7 @@ impl<'a> SyntaxMapping<'a> {
                     &git_config_path
                         .join("config")
                         .into_os_string()
-                        .to_str()
-                        .unwrap(),
+                        .to_string_lossy(),
                     MappingTarget::MapTo("Git Config"),
                 )
                 .unwrap();
@@ -122,8 +121,7 @@ impl<'a> SyntaxMapping<'a> {
                     &git_config_path
                         .join("ignore")
                         .into_os_string()
-                        .to_str()
-                        .unwrap(),
+                        .to_string_lossy(),
                     MappingTarget::MapTo("Git Ignore"),
                 )
                 .unwrap();
@@ -133,8 +131,7 @@ impl<'a> SyntaxMapping<'a> {
                     &git_config_path
                         .join("attributes")
                         .into_os_string()
-                        .to_str()
-                        .unwrap(),
+                        .to_string_lossy(),
                     MappingTarget::MapTo("Git Attributes"),
                 )
                 .unwrap();
