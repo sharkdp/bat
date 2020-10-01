@@ -25,6 +25,7 @@
 - GLSL (@caioalonso)
 - Add Nginx and Apache config file syntax, see #1137 (@kjmph, @niklasmohrin)
 - Use `fstab` syntax for `crypttab` files, see #1073 (@sharkdp)
+- Support syntax highlighting for files in `$XDG_CONFIG_HOME/git/`, see #1191 (@ahmedelgabri)
 
 ## New themes
 
