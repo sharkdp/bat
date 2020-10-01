@@ -193,23 +193,6 @@ fn basic() {
 }
 
 #[test]
-fn git_xdg_config_home() {
-    use assert_cmd::Command;
-    let mut cmd = Command::cargo_bin("bat").unwrap();
-    let mut map = SyntaxMapping::builtin();
-
-    cmd.env("XDG_CONFIG_HOME", "/foo/bar");
-
-    map.insert("/foo/bar/git/config", MappingTarget::MapTo("Git Config"))
-        .ok();
-
-    assert_eq!(
-        map.get_syntax_for("/foo/bar/git/config"),
-        Some(MappingTarget::MapTo("Git Config"))
-    );
-}
-
-#[test]
 fn user_can_override_builtin_mappings() {
     let mut map = SyntaxMapping::builtin();
 
