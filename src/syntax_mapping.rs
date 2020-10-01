@@ -114,7 +114,7 @@ impl<'a> SyntaxMapping<'a> {
                         .to_string_lossy(),
                     MappingTarget::MapTo("Git Config"),
                 )
-                .unwrap();
+                .ok();
 
             mapping
                 .insert(
@@ -124,7 +124,7 @@ impl<'a> SyntaxMapping<'a> {
                         .to_string_lossy(),
                     MappingTarget::MapTo("Git Ignore"),
                 )
-                .unwrap();
+                .ok();
 
             mapping
                 .insert(
@@ -134,7 +134,7 @@ impl<'a> SyntaxMapping<'a> {
                         .to_string_lossy(),
                     MappingTarget::MapTo("Git Attributes"),
                 )
-                .unwrap();
+                .ok();
         }
 
         mapping
