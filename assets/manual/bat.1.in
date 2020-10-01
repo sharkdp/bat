@@ -176,3 +176,39 @@ is dependent on your operating system. To get the default path for your system, 
 
 Alternatively, you can use the BAT_CONFIG_PATH environment variable to point bat to a non-default
 location of the configuration file.
+.SH "ADDING CUSTOM LANGUAGES"
+{{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
+customized to add additional languages to your local installation. To do this, add the \fB.sublime-snytax\fR language
+files to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes\fR` and run `\fBbat cache --build\fR`.
+
+\fBExample:\fR
+
+.RS 0.5i
+mkdir -p "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+.br
+cd "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+
+# Put new '.sublime-syntax' language definition files
+.br
+# in this folder (or its subdirectories), for example:
+.br
+git clone https://github.com/tellnobody1/sublime-purescript-syntax
+
+# And then build the cache.
+.br
+{{PROJECT_EXECUTABLE}} cache --build
+.RE
+
+Once the cache is built, the new language will be visible in `\fBbat --list-languages\fR`.
+.br
+If you ever want to remove the custom languages, you can clear the cache with `\fBbat cache --clear\fR`. 
+
+.SH "ADDING CUSTOM THEMES"
+Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
+These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`, and are added to the cache with
+`\fB{{PROJECT_EXECUTABLE}} cache --build`.
+.SH "MORE INFORMATION"
+
+For more information and up-to-date documentation, visit the {{PROJECT_EXECUTABLE}} repo:
+.br
+\fBhttps://github.com/sharkdp/bat\fR
