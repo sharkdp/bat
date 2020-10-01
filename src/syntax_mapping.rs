@@ -108,30 +108,21 @@ impl<'a> SyntaxMapping<'a> {
 
             mapping
                 .insert(
-                    &git_config_path
-                        .join("config")
-                        .into_os_string()
-                        .to_string_lossy(),
+                    &git_config_path.join("config").to_string_lossy(),
                     MappingTarget::MapTo("Git Config"),
                 )
                 .ok();
 
             mapping
                 .insert(
-                    &git_config_path
-                        .join("ignore")
-                        .into_os_string()
-                        .to_string_lossy(),
+                    &git_config_path.join("ignore").to_string_lossy(),
                     MappingTarget::MapTo("Git Ignore"),
                 )
                 .ok();
 
             mapping
                 .insert(
-                    &git_config_path
-                        .join("attributes")
-                        .into_os_string()
-                        .to_string_lossy(),
+                    &git_config_path.join("attributes").to_string_lossy(),
                     MappingTarget::MapTo("Git Attributes"),
                 )
                 .ok();
