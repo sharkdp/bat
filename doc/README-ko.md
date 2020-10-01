@@ -170,7 +170,7 @@ apt install bat
 만약 최근 릴리즈된 bat을 사용을 원하거나 buntu/Debian 예전 버전을 사용하는 경우, [릴리즈 페이지](https://github.com/sharkdp/bat/releases)에서 다음과 같이 `.deb` 패키지를 받아 설치 할 수도 있습니다:
 
 ```bash
-sudo dpkg -i bat_0.15.4_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.16.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
