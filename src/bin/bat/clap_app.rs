@@ -24,6 +24,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             "A cat(1) clone with wings.\n\n\
              Use '--help' instead of '-h' to see a more detailed version of the help text.",
         )
+        .after_help(
+            "Note: `bat -h` prints a short and concise overview while `bat --help` gives all \
+                 details.",
+        )
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
         .arg(
             Arg::with_name("FILE")
