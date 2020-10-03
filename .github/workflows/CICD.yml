@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
@@ -87,7 +87,7 @@ jobs:
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install prerequisites
       shell: bash
       run: |
@@ -412,7 +412,7 @@ jobs:
           - { os: macos-latest , toolchain: nightly-2020-04-29 }
           - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Initialize workflow variables
       id: vars
       shell: bash
