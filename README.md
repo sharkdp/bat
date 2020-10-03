@@ -526,12 +526,19 @@ Example configuration file:
 
 # Use C++ syntax for .ino files
 --map-syntax "*.ino:C++"
+```
+
+### Syntax of a file
+
+`bat` can be configured to change the default syntax of the file using `--map-syntax`. For example not all `.conf` file's have `INI` syntax(some do) so it cannot be default. But you can configure it if you want.
+
+For example:
+```bash
+# Use INI syntax for .conf files
+--map-syntax "*.conf:INI"
 
 # Use ".gitignore"-style highlighting for ".ignore" files
 --map-syntax ".ignore:Git Ignore"
-
-# Use INI syntax for .conf files
---map-syntax "*.conf:INI"
 ```
 
 ## Using `bat` on Windows
