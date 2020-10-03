@@ -154,7 +154,7 @@ man 2 select
 ```
 
 フォーマットの問題が発生した場合は
-`MANROFFOPT = "-c"` を設定する必要もあります。
+`MANROFFOPT="-c"` を設定する必要もあります。
 
 これを新しいコマンドにバンドルしたい場合は [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md) も使用できます。
 
