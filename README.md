@@ -529,6 +529,9 @@ Example configuration file:
 
 # Use ".gitignore"-style highlighting for ".ignore" files
 --map-syntax ".ignore:Git Ignore"
+
+# Use INI syntax for .conf files
+--map-syntax "*.conf:INI"
 ```
 
 ## Using `bat` on Windows
