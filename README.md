@@ -276,6 +276,14 @@ You can install `bat` with zypper:
 zypper install bat
 ```
 
+### On Linux
+
+You can install `bat` with [Homebrew](https://formulae.brew.sh/formula-linux/bat)::
+
+```bash
+brew install bat
+```
+
 ### On macOS
 
 You can install `bat` with [Homebrew](http://braumeister.org/formula/bat):
