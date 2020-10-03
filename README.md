@@ -488,6 +488,19 @@ and the `GitHub` theme when in the _light mode_.
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 ```
 
+### Syntax of a file
+
+You can configure `bat` to change the default syntax of the file using `--map-syntax`.
+
+For example:
+```bash
+# Use INI syntax for .conf files
+--map-syntax "*.conf:INI"
+
+# Use ".gitignore"-style highlighting for ".ignore" files
+--map-syntax ".ignore:Git Ignore"
+```
+
 ## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
@@ -524,19 +537,6 @@ Example configuration file:
 
 # Use C++ syntax for .ino files
 --map-syntax "*.ino:C++"
-```
-
-### Syntax of a file
-
-`bat` can be configured to change the default syntax of the file using `--map-syntax`. For example not all `.conf` file's have `INI` syntax(some do) so it cannot be default. But you can configure it if you want.
-
-For example:
-```bash
-# Use INI syntax for .conf files
---map-syntax "*.conf:INI"
-
-# Use ".gitignore"-style highlighting for ".ignore" files
---map-syntax ".ignore:Git Ignore"
 ```
 
 ## Using `bat` on Windows
