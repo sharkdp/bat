@@ -16,6 +16,17 @@ BAT_OPTIONS = [
     "--italic-text=always",
 ]
 
+SKIP_FILENAMES = [
+    "LICENSE.md",
+    "README.md",
+    "bat_options",
+]
+
+
+def get_extra_options(source):
+    with open(path.join(source, "bat_options"), "r") as f:
+        return list(map(lambda x: x.rstrip(), f.readlines()))
+
 
 def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
@@ -31,15 +42,22 @@ def create_highlighted_versions(output_basepath):
             env.pop("BAT_TABS", None)
             env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors
 
-            bat_output = subprocess.check_output(
-                ["bat"] + BAT_OPTIONS + [source], stderr=subprocess.PIPE, env=env,
-            )
-
-            source_dirname = path.basename(path.dirname(source))
+            source_dirpath = path.dirname(source)
+            source_dirname = path.basename(source_dirpath)
             source_filename = path.basename(source)
 
-            if source_filename == "LICENSE.md":
+            if source_filename in SKIP_FILENAMES:
                 continue
+
+            options = BAT_OPTIONS.copy()
+            # If a directory is empty, `files` could possibly be 0-length
+            if path.exists(path.join(source_dirpath, "bat_options")):
+                options += get_extra_options(source_dirpath)
+
+            bat_output = subprocess.check_output(
+                ["bat"] + options + [source],
+                stderr=subprocess.PIPE, env=env,
+            )
 
             output_dir = path.join(output_basepath, source_dirname)
             output_path = path.join(output_dir, source_filename)
