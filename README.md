@@ -490,7 +490,7 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 ### Syntax of a file
 
-You can configure `bat` to change the default syntax of the file using `--map-syntax`.
+You can configure `bat` to change the default syntax of the file using `--map-syntax`. Use glob pattern to match exact filename.
 
 For example:
 ```bash
