@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 if ! which hyperfine > /dev/null 2>&1; then
     echo "'hyperfine' does not seem to be installed."
     echo "You can get it here: https://github.com/sharkdp/hyperfine"
