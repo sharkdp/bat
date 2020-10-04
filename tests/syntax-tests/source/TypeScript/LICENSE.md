@@ -1,3 +1,5 @@
+The `example.ts` file has been added from https://www.typescriptlang.org/docs/handbook/ under the following license: 
+
 The MIT License (MIT)
 Copyright (c) Microsoft Corporation
 
