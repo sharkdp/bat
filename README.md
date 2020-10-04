@@ -623,11 +623,11 @@ cargo build --bins
 cargo test
 
 # Install (release version)
-cargo install --locked
+cargo install --path . --locked
 
 # Build a bat binary with modified syntaxes and themes
 bash assets/create.sh
-cargo install --locked --force
+cargo install --path . --locked --force
 ```
 
 ## Maintainers
