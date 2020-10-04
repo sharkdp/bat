@@ -1,3 +1,5 @@
+The `ConcurrentEffectLaws.scala` file has been added from https://github.com/typelevel/cats-effect under the following license:
+
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
