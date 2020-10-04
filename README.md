@@ -76,6 +76,7 @@ Read from stdin, specify the language explicitly
 ```
 
 Show and highlight non-printable characters:
+
 ```bash
 > bat -A /etc/hosts
 ```
@@ -97,11 +98,13 @@ bat f - g  # output 'f', then stdin, then 'g'.
 #### `find` or `fd`
 
 You can use the `-exec` option of `find` to preview all search results with `bat`:
+
 ```bash
 find … -exec bat {} +
 ```
 
 If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`/`--exec-batch` option to do the same:
+
 ```bash
 fd … -X bat
 ```
@@ -117,9 +120,11 @@ batgrep needle src/
 #### `tail -f`
 
 `bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
+
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
+
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
@@ -127,6 +132,7 @@ explicitly (`-l log`), as it can not be auto-detected in this case.
 
 You can combine `bat` with `git show` to view an older version of a given file with proper syntax
 highlighting:
+
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
@@ -138,9 +144,11 @@ Note that syntax highlighting within diffs is currently not supported. If you ar
 The line numbers and Git modification markers in the output of `bat` can make it hard to copy
 the contents of a file. To prevent this, you can call `bat` with the `-p`/`--plain` option or
 simply pipe the output into `xclip`:
+
 ```bash
 bat main.cpp | xclip
 ```
+
 `bat` will detect that the output is being redirected and print the plain file contents.
 
 #### `man`
@@ -166,13 +174,13 @@ Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145)
 
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
 
-
 ## Installation
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
 
 ### On Ubuntu (using `apt`)
-*... and other Debian-based Linux distributions.*
+
+_... and other Debian-based Linux distributions._
 
 `bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
 [Debian](https://packages.debian.org/sid/bat) package release process, and is available
@@ -187,13 +195,15 @@ apt install bat
 
 If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
 clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
-``` bash
+
+```bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
 ```
 
 ### On Ubuntu (using most recent `.deb` packages)
-*... and other Debian-based Linux distributions.*
+
+_... and other Debian-based Linux distributions._
 
 If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
 the most recent release of `bat`, download the latest `.deb` package from the
@@ -241,6 +251,7 @@ emerge sys-apps/bat
 ### On Void Linux
 
 You can install `bat` via xbps-install:
+
 ```bash
 xbps-install -S bat
 ```
@@ -304,13 +315,19 @@ You will need to install the [Visual C++ Redistributable](https://support.micros
 #### With Chocolatey
 
 You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
+
 ```bash
 choco install bat
 ```
 
+if you get an error like
+"Access to the path 'C:\ProgramData\chocolatey\lib\Less\legal' is denied."
+then run your comman prompt as administration (https://stackoverflow.com/questions/55600258/fix-chocolatey-access-is-denied)
+
 #### With Scoop
 
 You can install `bat` via [scoop](https://scoop.sh/):
+
 ```bash
 scoop install bat
 ```
@@ -352,6 +369,7 @@ make the change permanent. Alternatively, use `bat`s
 
 If you want to preview the different themes on a custom file, you can use
 the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
+
 ```bash
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
@@ -426,6 +444,7 @@ bat cache --clear
 This works very similar to how we add new syntax definitions.
 
 First, create a folder with the new syntax highlighting themes:
+
 ```bash
 mkdir -p "$(bat --config-dir)/themes"
 cd "$(bat --config-dir)/themes"
@@ -494,17 +513,20 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
 on your operating system. To get the default path for your system, call
+
 ```
 bat --config-file
 ```
 
 Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
 non-default location of the configuration file:
+
 ```bash
 export BAT_CONFIG_PATH="/path/to/bat.conf"
 ```
 
 A default configuration file can be created with the `--generate-config-file` option.
+
 ```bash
 bat --generate-config-file
 ```
@@ -514,6 +536,7 @@ bat --generate-config-file
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
 
 Example configuration file:
+
 ```bash
 # Set the theme to "TwoDark"
 --theme="TwoDark"
@@ -549,7 +572,7 @@ your `PATH` or [define an environment variable](#using-a-different-pager). The [
 ### Colors
 
 Windows 10 natively supports colors in both `conhost.exe` (Command Prompt) and PowerShell since
-[v1511](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)), as
+[v1511](<https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)>), as
 well as in newer versions of bash. On earlier versions of Windows, you can use
 [Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
 
@@ -581,7 +604,7 @@ bat() {
 
 ### Terminals & colors
 
-`bat` handles terminals *with* and *without* truecolor support. However, the colors in most syntax
+`bat` handles terminals _with_ and _without_ truecolor support. However, the colors in most syntax
 highlighting themes are not optimized for 8-bit colors. It is therefore strongly recommended
 that you use a terminal with 24-bit truecolor support (`terminator`, `konsole`, `iTerm2`, ...),
 or use one of the basic [8-bit themes](#8-bit-themes) designed for a restricted set of colors.
@@ -603,9 +626,11 @@ Please try a different theme (see `bat --list-themes` for a list). The `OneHalfD
 convert to UTF-8 first because the encodings can typically not be auto-detected. You can `iconv`
 to do so.
 Example: if you have a PHP file in Latin-1 (ISO-8859-1) encoding, you can call:
-``` bash
+
+```bash
 iconv -f ISO-8859-1 -t UTF-8 my-file.php | bat
 ```
+
 Note: you might have to use the `-l`/`--language` option if the syntax can not be auto-detected
 by `bat`.
 
@@ -648,6 +673,7 @@ There are a lot of alternatives, if you are looking for similar programs. See
 [this document](doc/alternatives.md) for a comparison.
 
 ## License
+
 Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
 
 `bat` is made available under the terms of either the MIT License or the Apache License 2.0, at your option.
