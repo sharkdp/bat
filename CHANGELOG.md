@@ -1,6 +1,6 @@
 # unreleased
 
-- Add support for opening file starting at a given line number. As per #1185 (@Lidenburg)
+- Add support for opening file starting at a given line number. see #1185 (@Lidenburg)
 - Add Note to refer to see detailed help with --help (and vice versa with -h). see #1215 (@henil)
 
 ## Features
