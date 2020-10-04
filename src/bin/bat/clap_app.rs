@@ -112,6 +112,15 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      the filename. Note that the provided file name is also \
                      used for syntax detection.",
                 ),
+        )
+        .arg(
+            Arg::with_name("offset")
+            .long("offset")
+            .takes_value(true)
+            .number_of_values(1)
+            .value_name("N")
+            .multiple(false)
+            .help("Start showing file at line N"),
         );
 
     #[cfg(feature = "git")]

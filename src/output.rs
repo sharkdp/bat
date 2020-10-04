@@ -17,18 +17,18 @@ pub enum OutputType {
 
 impl OutputType {
     #[cfg(feature = "paging")]
-    pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
+    pub fn from_mode(mode: PagingMode, pager: Option<&str>, offset: usize) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match mode {
-            Always => OutputType::try_pager(false, pager)?,
-            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
+            Always => OutputType::try_pager(false, pager, offset)?,
+            QuitIfOneScreen => OutputType::try_pager(true, pager, offset)?,
             _ => OutputType::stdout(),
         })
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
     #[cfg(feature = "paging")]
-    fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
+    fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>, offset_from_config: usize) -> Result<Self> {
         use std::env;
         use std::ffi::OsString;
         use std::path::PathBuf;
@@ -103,6 +103,12 @@ impl OutputType {
                     } else {
                         p.args(args);
                     }
+                    
+                    if offset_from_config > 0 {
+                        // +3 for the `File: filename` header bat prepends
+                        p.arg(format!("+{}", offset_from_config + 3));
+                    }
+
                     p.env("LESSCHARSET", "UTF-8");
                     p
                 } else {

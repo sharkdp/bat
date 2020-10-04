@@ -54,7 +54,7 @@ impl<'b> Controller<'b> {
                     paging_mode = PagingMode::Never;
                 }
             }
-            output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
+            output_type = OutputType::from_mode(paging_mode, self.config.pager, self.config.offset)?;
         }
 
         #[cfg(not(feature = "paging"))]

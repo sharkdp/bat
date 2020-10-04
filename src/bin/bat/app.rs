@@ -238,6 +238,10 @@ impl App {
                 .map(LineRanges::from)
                 .map(|lr| HighlightedLineRanges(lr))
                 .unwrap_or_default(),
+            offset: match self.matches.value_of("offset") {
+                Some(v) => v.parse::<usize>().unwrap_or(0),
+                _ => 0,
+            }
         })
     }
 

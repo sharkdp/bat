@@ -82,6 +82,9 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
+
+    /// Offset to start displaying file from
+    pub offset: usize,
 }
 
 #[test]
