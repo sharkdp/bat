@@ -1,0 +1,158 @@
+message Request {
+  enum ConfigFormat {
+    CURLY = 0;
+    JSON = 1;
+  }
+
+  enum OutputFormat {
+    OutPlain = 0;
+    OutJSON = 1;
+  }
+
+  message Status {
+  }
+
+  message SetupSession {
+    optional string ClientApplication = 1;
+    optional int32 OnBehalfOf = 2;
+  }
+
+  message Set {
+    repeated string Path = 1;
+    optional bool Ephemeral = 3; 
+  }
+
+  message Delete {
+    repeated string Path = 1;
+  }
+
+  message Rename {
+    repeated string EditLevel = 1;
+    required string From = 2;
+    required string To = 3;
+  }
+
+  message Copy {
+    repeated string EditLevel = 1;
+    required string From = 2;
+    required string To = 3;
+  }
+
+  message Comment {
+    repeated string Path = 1;
+    required string Comment = 2;
+  }
+
+  message Commit {
+    optional bool Confirm = 1;
+    optional int32 ConfirmTimeout = 2;
+    optional string Comment = 3;
+  }
+
+  message Rollback {
+    required int32 Revision = 1;
+  }
+
+  message Load {
+    required string Location = 1;
+    optional ConfigFormat format = 2;
+  }
+
+  message Merge {
+    required string Location = 1;
+    optional ConfigFormat format = 2;
+  }
+
+  message Save {
+    required string Location = 1;
+    optional ConfigFormat format = 2;
+  }
+
+  message ShowConfig {
+    repeated string Path = 1;
+    optional ConfigFormat format = 2;
+  }
+
+  message Exists {
+    repeated string Path = 1;
+  }
+
+  message GetValue {
+    repeated string Path = 1;
+    optional OutputFormat output_format = 2;
+  }
+
+  message GetValues {
+    repeated string Path = 1;
+    optional OutputFormat output_format = 2;
+  }
+
+  message ListChildren {
+    repeated string Path = 1;
+    optional OutputFormat output_format = 2;
+  }
+
+  message RunOpMode {
+    repeated string Path = 1;
+    optional OutputFormat output_format = 2;
+  }
+
+  message Confirm {
+  }
+
+  message EnterConfigurationMode {
+    required bool Exclusive = 1;
+    required bool OverrideExclusive = 2;
+  }
+
+  message ExitConfigurationMode {
+  }
+
+  oneof msg {
+    Status status = 1;
+    SetupSession setup_session = 2;
+    Set set = 3;
+    Delete delete = 4;
+    Rename rename = 5;
+    Copy copy = 6;
+    Comment comment = 7;
+    Commit commit = 8;
+    Rollback rollback = 9;
+    Merge merge = 10;
+    Save save = 11;
+    ShowConfig show_config = 12;
+    Exists exists = 13;
+    GetValue get_value = 14;
+    GetValues get_values = 15;
+    ListChildren list_children = 16;
+    RunOpMode run_op_mode = 17;
+    Confirm confirm = 18;
+    EnterConfigurationMode configure = 19;
+    ExitConfigurationMode exit_configure = 20;
+    string teardown = 21;
+  }  
+}
+
+message RequestEnvelope {
+    optional string token = 1;
+    required Request request = 2;
+}
+
+enum Status {
+  SUCCESS = 0;
+  FAIL = 1;
+  INVALID_PATH = 2;
+  INVALID_VALUE = 3;
+  COMMIT_IN_PROGRESS = 4;
+  CONFIGURATION_LOCKED = 5;
+  INTERNAL_ERROR = 6;
+  PERMISSION_DENIED = 7;
+  PATH_ALREADY_EXISTS = 8;
+}
+
+message Response {
+  required Status status = 1;
+  optional string output = 2;
+  optional string error = 3;
+  optional string warning = 4;
+}
