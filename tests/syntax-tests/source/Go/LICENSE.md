@@ -1,3 +1,6 @@
+The `main.go` file has been added from https://github.com/golang/example under
+the following license:
+
 
                                  Apache License
                            Version 2.0, January 2004
