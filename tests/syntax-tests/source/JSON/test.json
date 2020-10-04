@@ -1,0 +1,29 @@
+[
+    {
+        "name": "john",
+        "age": 42,
+        "isCustomer": false,
+        "children": []
+    },
+    {
+        "name": "james",
+        "age": 35,
+        "isCustomer": true,
+        "children": [
+            {
+                "name": "linus",
+                "age": 4
+            },
+            {
+                "name": "sandra",
+                "age": 2
+            }
+        ]
+    },
+    {
+        "name": "jessica",
+        "age": null,
+        "isCustomer": false,
+        "children": []
+    }
+]
