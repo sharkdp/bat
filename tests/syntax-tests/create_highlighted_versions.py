@@ -64,9 +64,6 @@ def create_highlighted_versions(output_basepath):
                 file=sys.stderr,
             )
             sys.exit(1)
-        except FileNotFoundError:
-            print("Error: Could not execute 'bat'. Please make sure that the executable is available on the PATH.")
-            sys.exit(1)
 
 
 if __name__ == "__main__":
