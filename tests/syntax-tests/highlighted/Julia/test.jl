@@ -1,5 +1,3 @@
-[38;2;117;113;94m#[0m[38;2;117;113;94m The `test.jl` file has been adapted from [https://github.com/mitmath/18S191/blob/master/lecture_notebooks/Basic%20Julia%20syntax.jl] and is subject to no license.[0m
-
 [38;2;248;248;242mx [0m[38;2;249;38;114m=[0m[38;2;248;248;242m [0m[38;2;190;132;255m3[0m
 
 [38;2;248;248;242my [0m[38;2;249;38;114m=[0m[38;2;248;248;242m [0m[38;2;190;132;255m2[0m[38;2;248;248;242mx[0m
