@@ -1,5 +1,3 @@
-# The `test.jl` file has been adapted from [https://github.com/mitmath/18S191/blob/master/lecture_notebooks/Basic%20Julia%20syntax.jl] and is subject to no license.
-
 x = 3
 
 y = 2x
