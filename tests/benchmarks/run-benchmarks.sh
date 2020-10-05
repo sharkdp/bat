@@ -13,6 +13,7 @@ for arg in "$@"; do
 		--system)  BAT="bat" ;;
 		--debug)   BAT="../../target/debug/bat" ;;
 		--release) BAT="../../target/release/bat" ;;
+		--bat=*)   BAT="${arg:6}" ;;
 	esac
 done
 
