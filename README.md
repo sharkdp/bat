@@ -634,6 +634,7 @@ cargo install --path . --locked --force
 
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
+- [keith-hall](https://github.com/keith-hall)
 
 ## Project goals and alternatives
 
