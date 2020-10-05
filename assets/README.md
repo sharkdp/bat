@@ -33,7 +33,7 @@ The following files have been manually modified after converting from a `.tmLang
 
 * `Apache.sublime_syntax`=> removed `.conf` and `.CONF` file types.
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
-* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types.
+* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers
 * `Org mode.sublime-syntax` => removed `task` file type.
 * `SML.sublime_syntax` => removed `ml` file type.
 
