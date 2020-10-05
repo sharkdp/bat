@@ -320,9 +320,9 @@ You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
 choco install bat
 ```
 
-if you get an error like
+If you get an error like
 "Access to the path 'C:\ProgramData\chocolatey\lib\Less\legal' is denied."
-then run your comman prompt as administration (https://stackoverflow.com/questions/55600258/fix-chocolatey-access-is-denied)
+then run your command prompt as administrator (https://stackoverflow.com/questions/55600258/fix-chocolatey-access-is-denied)
 
 #### With Scoop
 
