@@ -1,0 +1,18 @@
+--- 
+# Simple example
+id: 3595
+name: Test User
+username: "testuser"
+other_names: ['Bob', 'Bill', 'George']
+enabled: true
+locked: false
+groups: 
+  - administrators
+  - engineering
+  - sfa
+address: >
+  123 Alphabet Way
+  San Francisco, CA
+phone: null
+building_access: yes
+secure_access: no
