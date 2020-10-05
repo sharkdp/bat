@@ -90,7 +90,7 @@ values: *auto*, never, always.
 \fB\-f\fR, \fB\-\-force\-colorization\fR
 .IP
 Alias for '--decorations=always --color=always'. This is useful \
-if the output of bat is piped to another program, but you want \
+if the output of {{PROJECT_EXECUTABLE}} is piped to another program, but you want \
 to keep the colorization/decorations.
 .HP
 \fB\-\-paging\fR <when>
@@ -174,12 +174,12 @@ is dependent on your operating system. To get the default path for your system, 
 
 \fB{{PROJECT_EXECUTABLE}} --config-file\fR
 
-Alternatively, you can use the BAT_CONFIG_PATH environment variable to point bat to a non-default
+Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
 location of the configuration file.
 .SH "ADDING CUSTOM LANGUAGES"
 {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
-customized to add additional languages to your local installation. To do this, add the \fB.sublime-snytax\fR language
-files to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes\fR` and run `\fBbat cache --build\fR`.
+customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
+files to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes\fR` and run `\fB{{PROJECT_EXECUTABLE}} cache --build\fR`.
 
 \fBExample:\fR
 
@@ -199,9 +199,9 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 {{PROJECT_EXECUTABLE}} cache --build
 .RE
 
-Once the cache is built, the new language will be visible in `\fBbat --list-languages\fR`.
+Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
 .br
-If you ever want to remove the custom languages, you can clear the cache with `\fBbat cache --clear\fR`. 
+If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`. 
 
 .SH "ADDING CUSTOM THEMES"
 Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
