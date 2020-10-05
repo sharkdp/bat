@@ -180,7 +180,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 
 ### On Ubuntu (using `apt`)
 
-_... and other Debian-based Linux distributions._
+*... and other Debian-based Linux distributions._
 
 `bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
 [Debian](https://packages.debian.org/sid/bat) package release process, and is available
@@ -203,7 +203,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 
 ### On Ubuntu (using most recent `.deb` packages)
 
-_... and other Debian-based Linux distributions._
+*... and other Debian-based Linux distributions._
 
 If the package has not yet been promoted to your Ubuntu/Debian installation, or you want
 the most recent release of `bat`, download the latest `.deb` package from the
@@ -604,7 +604,7 @@ bat() {
 
 ### Terminals & colors
 
-`bat` handles terminals _with_ and _without_ truecolor support. However, the colors in most syntax
+`bat` handles terminals *with* and *without* truecolor support. However, the colors in most syntax
 highlighting themes are not optimized for 8-bit colors. It is therefore strongly recommended
 that you use a terminal with 24-bit truecolor support (`terminator`, `konsole`, `iTerm2`, ...),
 or use one of the basic [8-bit themes](#8-bit-themes) designed for a restricted set of colors.
