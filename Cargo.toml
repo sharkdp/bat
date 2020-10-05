@@ -33,6 +33,7 @@ git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
 regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
+allocator-jemalloc = ["jemallocator"] # Use jemalloc instead of the system allocator
 
 [dependencies]
 atty = { version = "0.2.14", optional = true }
@@ -51,6 +52,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
 semver = "0.11"
 path_abs = { version = "0.5", default-features = false }
+jemallocator = { version = "0.3.2", optional = true }
 
 [dependencies.git2]
 version = "0.13"

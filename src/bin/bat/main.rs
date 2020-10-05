@@ -1,6 +1,14 @@
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 
+// jemalloc can be faster on certain platforms
+#[cfg(feature = "allocator-jemalloc")]
+use jemallocator::Jemalloc;
+
+#[cfg(feature = "allocator-jemalloc")]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 mod app;
 mod assets;
 mod clap_app;
