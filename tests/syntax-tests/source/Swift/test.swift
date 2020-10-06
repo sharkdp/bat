@@ -22,7 +22,7 @@ class Friend : Comparable {
     }
 }
 func < (lhs: Friend, rhs: Friend) -> Bool {
-    return lhs.age < rhs.age } func > (lhs: Friend, rhs: Friend) -> Bool {
+    return lhs.age < rhs.age }; func > (lhs: Friend, rhs: Friend) -> Bool {
     return lhs.age > rhs.age
 }
 func == (lhs: Friend, rhs: Friend) -> Bool {
@@ -37,7 +37,7 @@ func == (lhs: Friend, rhs: Friend) -> Bool {
   let friend1 = Friend(name: "Sergey", age: 35)
         let friend2 = Friend(name: "Sergey", age: 30)
         
-        print("\Compare Friend object. Same person? (friend1 == friend2)")
+        print("Compare Friend object. Same person? (friend1 == friend2)")
 
 func sayHelloWorld() {
     print("Hello World")
