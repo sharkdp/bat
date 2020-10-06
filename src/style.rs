@@ -9,6 +9,7 @@ pub enum StyleComponent {
     #[cfg(feature = "git")]
     Changes,
     Grid,
+    Rule,
     Header,
     LineNumbers,
     Snip,
@@ -29,6 +30,7 @@ impl StyleComponent {
             #[cfg(feature = "git")]
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
+            StyleComponent::Rule => &[StyleComponent::Rule],
             StyleComponent::Header => &[StyleComponent::Header],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
@@ -54,6 +56,7 @@ impl FromStr for StyleComponent {
             #[cfg(feature = "git")]
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
+            "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
@@ -79,6 +82,10 @@ impl StyleComponents {
 
     pub fn grid(&self) -> bool {
         self.0.contains(&StyleComponent::Grid)
+    }
+
+    pub fn rule(&self) -> bool {
+        self.0.contains(&StyleComponent::Rule)
     }
 
     pub fn header(&self) -> bool {

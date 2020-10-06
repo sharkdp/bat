@@ -367,7 +367,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "grid", "numbers", "snip",
+                            "auto", "full", "plain", "header", "grid", "rule", "numbers", "snip",
                             #[cfg(feature = "git")]
                                 "changes",
                         ]
@@ -382,7 +382,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, numbers, snip).",
+                     (*auto*, full, plain, changes, header, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -400,6 +400,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      * header: show filenames before the content.\n  \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
+                     * rule: horizontal lines to delimit files.\n  \
                      * numbers: show line numbers in the side bar.\n  \
                      * snip: draw separation lines between distinct line ranges.",
                 ),

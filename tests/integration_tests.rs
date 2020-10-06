@@ -571,6 +571,18 @@ fn empty_file_leads_to_empty_output_with_grid_enabled() {
 }
 
 #[test]
+fn empty_file_leads_to_empty_output_with_rule_enabled() {
+    bat()
+        .arg("empty.txt")
+        .arg("--style=rule")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn filename_basic() {
     bat()
         .arg("test.txt")
