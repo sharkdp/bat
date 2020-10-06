@@ -492,7 +492,7 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 ### Syntax of a file
 
-You can change the default syntax highlighting of the file using `--map-syntax` option.
+You can change the default syntax highlighting of the file using the `--map-syntax` option.
 It uses glob pattern matching and is matched on full path and filename.
 
 Use it like this:
@@ -503,7 +503,7 @@ bat --map-syntax='PATTERN:SYNTAX' file-name
 
 For example:
 ```bash
-# Using `INI` file syntax highligting when opening a file with extension `.conf`.
+# Using `INI` file syntax highlighting when opening a file with extension `.conf`.
 bat --map-syntax='*.conf:INI' file.conf
 
 # Using `Git Ignore` file syntax highlighting for ".ignore" files
