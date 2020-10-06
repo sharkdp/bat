@@ -104,9 +104,8 @@ impl OutputType {
                         p.args(args);
                     }
                     
-                    if offset_from_config > 0 {
-                        // +3 for the `File: filename` header bat prepends
-                        p.arg(format!("+{}", offset_from_config + 3));
+                    if offset_from_config > 1 {
+                        p.arg(format!("+{}", offset_from_config));
                     }
 
                     p.env("LESSCHARSET", "UTF-8");

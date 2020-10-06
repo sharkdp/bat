@@ -223,6 +223,12 @@ impl App {
                         .unwrap_or_default(),
                 ),
             },
+            offset: self.matches.value_of("offset").map_or(0, |v|
+                        v.parse::<usize>().unwrap()
+                        + if style_components.header() {1} else {0} // the header is 1 row
+                        + if style_components.grid() {2} else {0}   // the grid is 2 rows
+                        + 1    // add 1 for this to be an _offset_ and not just what row to show
+            ),
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
@@ -237,11 +243,7 @@ impl App {
                 .transpose()?
                 .map(LineRanges::from)
                 .map(|lr| HighlightedLineRanges(lr))
-                .unwrap_or_default(),
-            offset: match self.matches.value_of("offset") {
-                Some(v) => v.parse::<usize>().unwrap_or(0),
-                _ => 0,
-            }
+                .unwrap_or_default()
         })
     }
 

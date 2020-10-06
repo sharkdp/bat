@@ -120,6 +120,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             .number_of_values(1)
             .value_name("N")
             .multiple(false)
+            .validator(
+                |n| {
+                    n.parse::<usize>()
+                        .map_err(|_| "must be a number")
+                        .map(|_| ()) // Convert to Result<(), &str>
+                        .map_err(|e| e.to_string())
+                }, // Convert to Result<(), String>
+                )
             .help("Start showing file at line N"),
         );
 
