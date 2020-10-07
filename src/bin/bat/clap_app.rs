@@ -112,24 +112,32 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      the filename. Note that the provided file name is also \
                      used for syntax detection.",
                 ),
-        )
-        .arg(
-            Arg::with_name("offset")
-            .long("offset")
-            .takes_value(true)
-            .number_of_values(1)
-            .value_name("N")
-            .multiple(false)
-            .validator(
-                |n| {
-                    n.parse::<usize>()
-                        .map_err(|_| "must be a number")
-                        .map(|_| ()) // Convert to Result<(), &str>
-                        .map_err(|e| e.to_string())
-                }, // Convert to Result<(), String>
-                )
-            .help("Start showing file at line N"),
         );
+
+    {
+        app = if let true = env::var("BAT_PAGER").unwrap_or_else(
+                    |_| env::var("PAGER").unwrap_or("less".to_string())) != "less" {
+            app
+        } else {
+            app.arg(
+                Arg::with_name("offset")
+                    .long("offset")
+                    .takes_value(true)
+                    .number_of_values(1)
+                    .value_name("N")
+                    .multiple(false)
+                    .validator(
+                        |n| {
+                            n.parse::<usize>()
+                                .map_err(|_| "must be a number")
+                                .map(|_| ()) // Convert to Result<(), &str>
+                                .map_err(|e| e.to_string())
+                        }, // Convert to Result<(), String>
+                    )
+                    .help("Start showing file at line N (only compatible with less as pager)")
+            )
+        };
+    }
 
     #[cfg(feature = "git")]
     {
