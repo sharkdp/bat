@@ -12,7 +12,7 @@ use crate::wrapping::WrappingMode;
 
 
 #[cfg(feature = "paging")]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum SingleScreenAction {
     Quit,
     Nothing,
@@ -93,11 +93,11 @@ impl OutputType {
                     let mut p = Command::new(&pager_path);
                     if args.is_empty() || replace_arguments_to_less {
                         p.arg("--RAW-CONTROL-CHARS");
-                        if let SingleScreenAction::Quit = single_screen_action {
+                        if single_screen_action == SingleScreenAction::Quit {
                             p.arg("--quit-if-one-screen");
                         }
 
-                        if let WrappingMode::NoWrapping = wrapping_mode {
+                        if wrapping_mode == WrappingMode::NoWrapping {
                             p.arg("--chop-long-lines");
                         }
 
