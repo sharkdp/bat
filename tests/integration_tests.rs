@@ -538,10 +538,34 @@ fn pager_basic() {
 }
 
 #[test]
+fn pager_config() {
+    bat()
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
 fn pager_overwrite() {
     bat()
         .env("PAGER", "echo other-pager")
         .env("BAT_PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_overwrite_overwrite() {
+    bat()
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "echo another-pager")
+        .arg("--pager=echo pager-output")
         .arg("--paging=always")
         .arg("test.txt")
         .assert()
