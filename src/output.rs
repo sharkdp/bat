@@ -7,6 +7,8 @@ use crate::error::*;
 use crate::less::retrieve_less_version;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
+#[cfg(feature = "paging")]
+use crate::wrapping::WrappingMode;
 
 #[derive(Debug)]
 pub enum OutputType {
@@ -17,18 +19,23 @@ pub enum OutputType {
 
 impl OutputType {
     #[cfg(feature = "paging")]
-    pub fn from_mode(mode: PagingMode, pager: Option<&str>) -> Result<Self> {
+    pub fn from_mode(paging_mode: PagingMode, wrapping_mode: WrappingMode, pager: Option<&str>) -> Result<Self> {
         use self::PagingMode::*;
-        Ok(match mode {
-            Always => OutputType::try_pager(false, pager)?,
-            QuitIfOneScreen => OutputType::try_pager(true, pager)?,
+        use self::WrappingMode::*;
+        Ok(match paging_mode {
+            Always => OutputType::try_pager(false, wrapping_mode == Character, pager)?,
+            QuitIfOneScreen => OutputType::try_pager(true, wrapping_mode == Character, pager)?,
             _ => OutputType::stdout(),
         })
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
     #[cfg(feature = "paging")]
-    fn try_pager(quit_if_one_screen: bool, pager_from_config: Option<&str>) -> Result<Self> {
+    fn try_pager(
+        quit_if_one_screen: bool,
+        line_wrap: bool,
+        pager_from_config: Option<&str>
+    ) -> Result<Self> {
         use std::env;
         use std::ffi::OsString;
         use std::path::PathBuf;
@@ -80,6 +87,10 @@ impl OutputType {
                         p.arg("--RAW-CONTROL-CHARS");
                         if quit_if_one_screen {
                             p.arg("--quit-if-one-screen");
+                        }
+
+                        if !line_wrap {
+                            p.arg("-S");
                         }
 
                         // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older

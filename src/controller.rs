@@ -54,7 +54,10 @@ impl<'b> Controller<'b> {
                     paging_mode = PagingMode::Never;
                 }
             }
-            output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
+
+            let wrapping_mode = self.config.wrapping_mode;
+
+            output_type = OutputType::from_mode(paging_mode, wrapping_mode, self.config.pager)?;
         }
 
         #[cfg(not(feature = "paging"))]
