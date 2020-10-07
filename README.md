@@ -492,10 +492,10 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 ### Syntax of a file
 
-You can change the default syntax highlighting of the file using the `--map-syntax` option.
-It uses glob pattern matching and is matched on full path and filename.
+You can change the default syntax association of the file using the `--map-syntax` option.
+It supports glob pattern matching and is matched on full path and filename.
 
-Use it like this:
+You can use it like this:
 
 ```bash
 bat --map-syntax='PATTERN:SYNTAX' file-name
