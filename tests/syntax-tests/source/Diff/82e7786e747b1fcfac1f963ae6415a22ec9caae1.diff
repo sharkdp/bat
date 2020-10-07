@@ -1,0 +1,353 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index ced88213..973eba9a 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,6 +2,11 @@
+ 
+ 
+ ## Features
++
++- Add a new `--diff` option that can be used to only show lines surrounding
++  Git changes, i.e. added, removed or modified lines. The amount of additional
++  context can be controlled with `--diff-context=N`. See #23 and #940
++
+ ## Bugfixes
+ ## Other
+ ## `bat` as a library
+diff --git a/src/bin/bat/app.rs b/src/bin/bat/app.rs
+index e5221455..f0f519ea 100644
+--- a/src/bin/bat/app.rs
++++ b/src/bin/bat/app.rs
+@@ -15,7 +15,7 @@ use console::Term;
+ 
+ use bat::{
+     assets::HighlightingAssets,
+-    config::Config,
++    config::{Config, VisibleLines},
+     error::*,
+     input::Input,
+     line_range::{HighlightedLineRanges, LineRange, LineRanges},
+@@ -196,13 +196,23 @@ impl App {
+                     }
+                 })
+                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+-            line_ranges: self
+-                .matches
+-                .values_of("line-range")
+-                .map(|vs| vs.map(LineRange::from).collect())
+-                .transpose()?
+-                .map(LineRanges::from)
+-                .unwrap_or_default(),
++            visible_lines: if self.matches.is_present("diff") {
++                VisibleLines::DiffContext(
++                    self.matches
++                        .value_of("diff-context")
++                        .and_then(|t| t.parse().ok())
++                        .unwrap_or(2),
++                )
++            } else {
++                VisibleLines::Ranges(
++                    self.matches
++                        .values_of("line-range")
++                        .map(|vs| vs.map(LineRange::from).collect())
++                        .transpose()?
++                        .map(LineRanges::from)
++                        .unwrap_or_default(),
++                )
++            },
+             style_components,
+             syntax_mapping,
+             pager: self.matches.value_of("pager"),
+diff --git a/src/bin/bat/clap_app.rs b/src/bin/bat/clap_app.rs
+index c7344991..85edefde 100644
+--- a/src/bin/bat/clap_app.rs
++++ b/src/bin/bat/clap_app.rs
+@@ -105,6 +105,34 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
+                             data to bat from STDIN when bat does not otherwise know \
+                             the filename."),
+         )
++        .arg(
++            Arg::with_name("diff")
++                .long("diff")
++                .help("Only show lines that have been added/removed/modified.")
++                .long_help(
++                    "Only show lines that have been added/removed/modified with respect \
++                     to the Git index. Use --diff-context=N to control how much context you want to see.",
++                ),
++        )
++        .arg(
++            Arg::with_name("diff-context")
++                .long("diff-context")
++                .overrides_with("diff-context")
++                .takes_value(true)
++                .value_name("N")
++                .validator(
++                    |n| {
++                        n.parse::<usize>()
++                            .map_err(|_| "must be a number")
++                            .map(|_| ()) // Convert to Result<(), &str>
++                            .map_err(|e| e.to_string())
++                    }, // Convert to Result<(), String>
++                )
++                .hidden_short_help(true)
++                .long_help(
++                    "Include N lines of context around added/removed/modified lines when using '--diff'.",
++                ),
++        )
+         .arg(
+             Arg::with_name("tabs")
+                 .long("tabs")
+@@ -339,6 +367,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
+                 .takes_value(true)
+                 .number_of_values(1)
+                 .value_name("N:M")
++                .conflicts_with("diff")
+                 .help("Only print the lines from N to M.")
+                 .long_help(
+                     "Only print the specified range of lines for each file. \
+diff --git a/src/config.rs b/src/config.rs
+index d5df9910..3c24b77f 100644
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -5,6 +5,32 @@ use crate::style::StyleComponents;
+ use crate::syntax_mapping::SyntaxMapping;
+ use crate::wrapping::WrappingMode;
+ 
++#[derive(Debug, Clone)]
++pub enum VisibleLines {
++    /// Show all lines which are included in the line ranges
++    Ranges(LineRanges),
++
++    #[cfg(feature = "git")]
++    /// Only show lines surrounding added/deleted/modified lines
++    DiffContext(usize),
++}
++
++impl VisibleLines {
++    pub fn diff_context(&self) -> bool {
++        match self {
++            Self::Ranges(_) => false,
++            #[cfg(feature = "git")]
++            Self::DiffContext(_) => true,
++        }
++    }
++}
++
++impl Default for VisibleLines {
++    fn default() -> Self {
++        VisibleLines::Ranges(LineRanges::default())
++    }
++}
++
+ #[derive(Debug, Clone, Default)]
+ pub struct Config<'a> {
+     /// The explicitly configured language, if any
+@@ -39,8 +65,8 @@ pub struct Config<'a> {
+     #[cfg(feature = "paging")]
+     pub paging_mode: PagingMode,
+ 
+-    /// Specifies the lines that should be printed
+-    pub line_ranges: LineRanges,
++    /// Specifies which lines should be printed
++    pub visible_lines: VisibleLines,
+ 
+     /// The syntax highlighting theme
+     pub theme: String,
+@@ -62,10 +88,7 @@ pub struct Config<'a> {
+ fn default_config_should_include_all_lines() {
+     use crate::line_range::RangeCheckResult;
+ 
+-    assert_eq!(
+-        Config::default().line_ranges.check(17),
+-        RangeCheckResult::InRange
+-    );
++    assert_eq!(LineRanges::default().check(17), RangeCheckResult::InRange);
+ }
+ 
+ #[test]
+diff --git a/src/controller.rs b/src/controller.rs
+index 09c6ec2a..f636d5fd 100644
+--- a/src/controller.rs
++++ b/src/controller.rs
+@@ -1,9 +1,13 @@
+ use std::io::{self, Write};
+ 
+ use crate::assets::HighlightingAssets;
+-use crate::config::Config;
++use crate::config::{Config, VisibleLines};
++#[cfg(feature = "git")]
++use crate::diff::{get_git_diff, LineChanges};
+ use crate::error::*;
+ use crate::input::{Input, InputReader, OpenedInput};
++#[cfg(feature = "git")]
++use crate::line_range::LineRange;
+ use crate::line_range::{LineRanges, RangeCheckResult};
+ use crate::output::OutputType;
+ #[cfg(feature = "paging")]
+@@ -68,6 +72,32 @@ impl<'b> Controller<'b> {
+                     no_errors = false;
+                 }
+                 Ok(mut opened_input) => {
++                    #[cfg(feature = "git")]
++                    let line_changes = if self.config.visible_lines.diff_context()
++                        || (!self.config.loop_through && self.config.style_components.changes())
++                    {
++                        if let crate::input::OpenedInputKind::OrdinaryFile(ref path) =
++                            opened_input.kind
++                        {
++                            let diff = get_git_diff(path);
++
++                            if self.config.visible_lines.diff_context()
++                                && diff
++                                    .as_ref()
++                                    .map(|changes| changes.is_empty())
++                                    .unwrap_or(false)
++                            {
++                                continue;
++                            }
++
++                            diff
++                        } else {
++                            None
++                        }
++                    } else {
++                        None
++                    };
++
+                     let mut printer: Box<dyn Printer> = if self.config.loop_through {
+                         Box::new(SimplePrinter::new())
+                     } else {
+@@ -75,10 +105,18 @@ impl<'b> Controller<'b> {
+                             &self.config,
+                             &self.assets,
+                             &mut opened_input,
++                            #[cfg(feature = "git")]
++                            &line_changes,
+                         ))
+                     };
+ 
+-                    let result = self.print_file(&mut *printer, writer, &mut opened_input);
++                    let result = self.print_file(
++                        &mut *printer,
++                        writer,
++                        &mut opened_input,
++                        #[cfg(feature = "git")]
++                        &line_changes,
++                    );
+ 
+                     if let Err(error) = result {
+                         handle_error(&error);
+@@ -96,13 +134,31 @@ impl<'b> Controller<'b> {
+         printer: &mut dyn Printer,
+         writer: &mut dyn Write,
+         input: &mut OpenedInput,
++        #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
+     ) -> Result<()> {
+         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
+             printer.print_header(writer, input)?;
+         }
+ 
+         if !input.reader.first_line.is_empty() {
+-            self.print_file_ranges(printer, writer, &mut input.reader, &self.config.line_ranges)?;
++            let line_ranges = match self.config.visible_lines {
++                VisibleLines::Ranges(ref line_ranges) => line_ranges.clone(),
++                #[cfg(feature = "git")]
++                VisibleLines::DiffContext(context) => {
++                    let mut line_ranges: Vec<LineRange> = vec![];
++
++                    if let Some(line_changes) = line_changes {
++                        for line in line_changes.keys() {
++                            let line = *line as usize;
++                            line_ranges.push(LineRange::new(line - context, line + context));
++                        }
++                    }
++
++                    LineRanges::from(line_ranges)
++                }
++            };
++
++            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+         }
+         printer.print_footer(writer, input)?;
+ 
+diff --git a/src/pretty_printer.rs b/src/pretty_printer.rs
+index 0c78ea90..13bd5dbc 100644
+--- a/src/pretty_printer.rs
++++ b/src/pretty_printer.rs
+@@ -6,7 +6,7 @@ use syntect::parsing::SyntaxReference;
+ 
+ use crate::{
+     assets::HighlightingAssets,
+-    config::Config,
++    config::{Config, VisibleLines},
+     controller::Controller,
+     error::Result,
+     input::Input,
+@@ -205,7 +205,7 @@ impl<'a> PrettyPrinter<'a> {
+ 
+     /// Specify the lines that should be printed (default: all)
+     pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
+-        self.config.line_ranges = ranges;
++        self.config.visible_lines = VisibleLines::Ranges(ranges);
+         self
+     }
+ 
+diff --git a/src/printer.rs b/src/printer.rs
+index 5eed437e..2b245cfd 100644
+--- a/src/printer.rs
++++ b/src/printer.rs
+@@ -24,7 +24,7 @@ use crate::config::Config;
+ use crate::decorations::LineChangesDecoration;
+ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
+ #[cfg(feature = "git")]
+-use crate::diff::{get_git_diff, LineChanges};
++use crate::diff::LineChanges;
+ use crate::error::*;
+ use crate::input::OpenedInput;
+ use crate::line_range::RangeCheckResult;
+@@ -90,7 +90,7 @@ pub(crate) struct InteractivePrinter<'a> {
+     ansi_prefix_sgr: String,
+     content_type: Option<ContentType>,
+     #[cfg(feature = "git")]
+-    pub line_changes: Option<LineChanges>,
++    pub line_changes: &'a Option<LineChanges>,
+     highlighter: Option<HighlightLines<'a>>,
+     syntax_set: &'a SyntaxSet,
+     background_color_highlight: Option<Color>,
+@@ -101,6 +101,7 @@ impl<'a> InteractivePrinter<'a> {
+         config: &'a Config,
+         assets: &'a HighlightingAssets,
+         input: &mut OpenedInput,
++        #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
+     ) -> Self {
+         let theme = assets.get_theme(&config.theme);
+ 
+@@ -145,9 +146,6 @@ impl<'a> InteractivePrinter<'a> {
+             panel_width = 0;
+         }
+ 
+-        #[cfg(feature = "git")]
+-        let mut line_changes = None;
+-
+         let highlighter = if input
+             .reader
+             .content_type
+@@ -155,18 +153,6 @@ impl<'a> InteractivePrinter<'a> {
+         {
+             None
+         } else {
+-            // Get the Git modifications
+-            #[cfg(feature = "git")]
+-            {
+-                use crate::input::OpenedInputKind;
+-
+-                if config.style_components.changes() {
+-                    if let OpenedInputKind::OrdinaryFile(ref path) = input.kind {
+-                        line_changes = get_git_diff(path);
+-                    }
+-                }
+-            }
+-
+             // Determine the type of syntax for highlighting
+             let syntax = assets.get_syntax(config.language, input, &config.syntax_mapping);
+             Some(HighlightLines::new(syntax, theme))
