@@ -4,6 +4,8 @@
 
 ## Features
 
+- Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
+
 ## Bugfixes
 
 ## Other
