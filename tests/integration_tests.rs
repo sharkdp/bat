@@ -680,6 +680,26 @@ fn header_padding() {
         .stderr("");
 }
 
+#[test]
+fn header_padding_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "File: test.txt
+hello world
+────────────────────────────────────────────────────────────────────────────────
+File: single-line.txt
+Single Line
+",
+        )
+        .stderr("");
+}
+
 #[cfg(target_os = "linux")]
 #[test]
 fn file_with_invalid_utf8_filename() {
