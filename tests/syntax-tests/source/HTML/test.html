@@ -1,0 +1,115 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html>
+  <!-- Behold my erudite commentary -->
+  <head>
+    <title>Bat Syntax Test</title>
+    <meta charset="utf-8"> 
+    <script>
+      const x = 'world';
+      function logGreeting() {
+        console.log(`Hello, ${x}`);
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <h1>Here find some simple tags</h1>
+      <br />
+      <p center style="color: rebeccapurple;">
+        Lorem <strong>ipsum</strong> dolor sit amet consectetur adipisicing
+        elit. A quo, autem quaerat explicabo impedit mollitia amet molestiae
+        nulla cum architecto ducimus itaque sit blanditiis quasi animi optio ab
+        facilis nihil?
+      </p>
+      <p>
+        Here are some escaped characters: &amp; (ampersand), &agrave; (a with grave), &#8470; (numero sign).
+      </p>
+    </div>
+    <div>
+      <h1>This is a form that demonstrates loose attribute formatting</h1>
+      <form action="POST">
+        <input
+          disabled
+          type="text"
+          name="text input"
+          id="specificTextInput"
+          value="yes"
+        />
+      </form>
+    </div>
+    <div>
+      <h1>A table with normal closing tags</h1>
+      <table>
+        <caption>
+          Pet Features
+        </caption>
+        <colgroup>
+          <col />
+          <col />
+          <col />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Cat</th>
+            <th>Dog</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tail</td>
+            <td>✔</td>
+            <td>✔</td>
+          </tr>
+          <tr>
+            <td>Eyes</td>
+            <td>✔</td>
+            <td>✔</td>
+          </tr>
+          <tr>
+            <td>Ears</td>
+            <td>✔</td>
+            <td>✔</td>
+          </tr>
+          <tr>
+            <td>Barking</td>
+            <td></td>
+            <td>✔</td>
+          </tr>
+          <tr>
+            <td>Litter Box</td>
+            <td>✔</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h1>A table without closing tags</h1>
+      <table>
+        <caption>Pet Features
+        <colgroup><col><col><col>
+        <thead>
+          <tr> <th>Feature    <th>Cat <th>Dog
+        <tbody>
+          <tr> <td>Tail       <td>✔   <td>✔
+          <tr> <td>Eyes       <td>✔   <td>✔
+          <tr> <td>Ears       <td>✔   <td>✔
+          <tr> <td>Barking    <td>    <td>✔
+          <tr> <td>Litter Box <td>✔   <td>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h1>A math section with CDATA</h1>
+      <p>You can add a string to a number, but this stringifies the number:</p>
+      <math>
+        <ms><![CDATA[a / b]]></ms>
+        <mo>-</mo>
+        <mn>7</mn>
+        <mo>=</mo>
+        <ms><![CDATA[a / b - 7]]></ms>
+      </math>
+    </div>
+  </body>
+</html>
