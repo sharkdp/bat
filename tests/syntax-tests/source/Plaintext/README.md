@@ -8,5 +8,5 @@ with open("plaintext.txt", "w"):
         except:
             pass
     f.write("\n")
-    f.write("Here is a line with multiple characters")
+    f.write("Here is a line with multiple characters\n")
 ```
