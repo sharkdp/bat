@@ -23,9 +23,14 @@ SKIP_FILENAMES = [
 ]
 
 
-def get_extra_options(source):
-    with open(path.join(source, "bat_options"), "r") as f:
-        return list(map(lambda x: x.rstrip(), f.readlines()))
+def get_options(source):
+    source_dirpath = path.dirname(source)
+    options = BAT_OPTIONS.copy()
+    if path.exists(path.join(source_dirpath, "bat_options")):
+        with open(path.join(source, "bat_options"), "r") as f:
+            options += list(map(lambda x: x.rstrip(), f.readlines()))
+    return options
+
 
 
 def create_highlighted_versions(output_basepath):
@@ -42,20 +47,14 @@ def create_highlighted_versions(output_basepath):
             env.pop("BAT_TABS", None)
             env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors
 
-            source_dirpath = path.dirname(source)
-            source_dirname = path.basename(source_dirpath)
+            source_dirname = path.basename(path.dirname(source))
             source_filename = path.basename(source)
 
             if source_filename in SKIP_FILENAMES:
                 continue
 
-            options = BAT_OPTIONS.copy()
-            # If a directory is empty, `files` could possibly be 0-length
-            if path.exists(path.join(source_dirpath, "bat_options")):
-                options += get_extra_options(source_dirpath)
-
             bat_output = subprocess.check_output(
-                ["bat"] + options + [source],
+                ["bat"] + get_options(source) + [source],
                 stderr=subprocess.PIPE, env=env,
             )
 
