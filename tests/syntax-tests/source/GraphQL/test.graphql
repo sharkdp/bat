@@ -1,0 +1,145 @@
+# Token::
+#   Punctuator
+#   Name
+#   IntValue
+#   FloatValue
+#   StringValue
+
+# Punctuator:: one of
+#   !	$	(	)	...	:	=	@	[	]	{	|	}
+
+# Name::
+#   /[_A-Za-z][_0-9A-Za-z]*/
+
+# Document :
+#   Definition (list)
+
+# Definition :
+#    ExecutableDefinition
+#    TypeSystemDefinition
+#    TypeSystemExtension
+
+# ExecutableDefinition :
+#   FragmentDefinition
+#   OperationDefintion
+
+# FragmentDefinition
+
+type someType {
+  id: ID
+}
+
+fragment subsriberFields on someType {
+  id
+  name
+  fooInt(int: 1234, negInt: -56789, zero: 0)
+  fooFloat(
+    float: 1.1
+    floatExp: 1.4e10
+    floatExpSign1: 1.4e+10
+    floatExpSign2: 1.5e-40
+    floatExpBigE: 1.5E10
+  )
+  fooBool(x: true, y: false)
+  fooString(str: "hello", strUni: "\u2116", strEscWs: "\t")
+  fooLongStr(
+    lStr: """
+    Hello Reader,
+        This is a long string block.
+    Best,
+    Writer
+    """
+  )
+  fooNull(nullThing: null)
+  fooList(numList: [1, 2, 3], strList: ["a", "b", "c"])
+  fooObj(someObj: { str: "hi", int: 2 })
+}
+
+# OperationDefintion
+
+query _A1 {
+  getThings(strArg: "string") {
+    id # commas here are ignored but valid
+    name
+  }
+}
+
+query _A2($x: String) {
+  someFn(episode: $x) {
+    name
+  }
+}
+
+mutation B1 {
+  changeThings(intArg: 123) {
+    parent {
+      nestedField1
+      nestedField2
+    }
+  }
+}
+
+subscription C1_Hello {
+  subsribePlease(floatArg: 1.4) {
+    id
+    ...subsriberFields
+  }
+}
+
+# TypeSystemDefinition :
+#   SchemaDefinition
+#   TypeDefinition
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Query {
+  """
+  Can provide documentation this way.
+  """
+  scalars: Scalars
+  someList: SomeLists
+  fooBar: FooBar
+}
+
+interface Thing {
+  id: ID!
+}
+
+type Scalars implements Thing {
+  id: ID!
+  int: Int!
+  float: Float!
+  str: String! @deprecated(reason: "Need to test a directive")
+  bool: Boolean
+  type: StringTypes
+}
+
+type SomeLists {
+  ints: [Int!]!
+}
+
+type Foo {
+  fooVal: String
+}
+
+type Bar {
+  barVal: String
+}
+
+union FooBar = Foo | Bar
+
+enum StringTypes {
+  ONE
+  TWO
+}
+
+input Xyz {
+  id: ID!
+}
+
+type Mutation {
+  createXyz(input: xyz!): Xyz!
+}
