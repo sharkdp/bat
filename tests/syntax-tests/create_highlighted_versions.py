@@ -26,8 +26,9 @@ SKIP_FILENAMES = [
 def get_options(source):
     source_dirpath = path.dirname(source)
     options = BAT_OPTIONS.copy()
-    if path.exists(path.join(source_dirpath, "bat_options")):
-        with open(path.join(source, "bat_options"), "r") as f:
+    options_file = path.join(source_dirpath, "bat_options")
+    if path.exists(options_file):
+        with open(options_file, "r") as f:
             options += list(map(lambda x: x.rstrip(), f.readlines()))
     return options
 
