@@ -213,6 +213,7 @@
 
 ## Other
 
+- Allow environment variables to override configuration file, but not command-line flags, see #1152 and #1281 (@jacobmischka)
 - Switched to "·" (U+00B7) Middle Dot from "•" (U+2022) Bullet for non-printing spaces, see #1056 and #1100 (@LordFlashmeow)
 - Added zsh shell completion script, see #1136 (@Kienyew)
 - Improved `--help` text (@sharkdp)
