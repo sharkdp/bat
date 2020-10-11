@@ -439,6 +439,33 @@ bat cache --build
 
 Finally, use `bat --list-themes` to check if the new themes are available.
 
+### Adding or changing file type associations
+
+You can add new (or change existing) file name patterns using the `--map-syntax`
+command line option. The option takes an argument of the form `pattern:syntax` where
+`pattern` is a glob pattern that is matched against the file name and
+the absolute file path. The `syntax` part is the full name of a supported language
+(use `bat --list-languages` for an overview)full .
+
+Note: You probably want to use this option as an entry in `bat`s configuration file instead
+of passing it on the command line (see below).
+
+Example: To use "INI" syntax highlighting for all files with a `.conf` file extension, use
+```bash
+--map-syntax='*.conf:INI'
+```
+
+Example: To open all files called `.ignore` (exact match) with the "Git Ignore" syntax, use:
+```bash
+--map-syntax='.ignore:Git Ignore'
+```
+
+Example: To open all `.conf` files in subfolders of `/etc/apache2` with the "Apache Conf"
+syntax, use (this mapping is already built in):
+```bash
+-map-syntax='/etc/apache2/**/*.conf:Apache Conf'
+```
+
 ### Using a different pager
 
 `bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
@@ -488,32 +515,6 @@ and the `GitHub` theme when in the _light mode_.
 
 ```bash
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
-```
-
-### Adapting file type associations
-
-You can add new (or change existing) file name patterns using the
-`--map-syntax` option. The option takes an argument of the form `pattern:syntax`.
-`pattern` is a glob pattern that is matched against the file name and
-the absolute file path. `syntax` is the *name* of a supported language
-(use `bat --list-languages` for an overview).
-
-This option is most useful in combination with the `bat` configuration file (see below).
-
-Example: To use "INI" syntax highlighting for all files with a `.conf` file extension, use
-```bash
---map-syntax='*.conf:INI'
-```
-
-Example: To open all files called `.ignore` (exact match) with the "Git Ignore" syntax, use:
-```bash
---map-syntax='.ignore:Git Ignore'
-```
-
-Example: To open all `.conf` files in subfolders of `/etc/apache2` with the "Apache Conf"
-syntax, use (this mapping is already built in):
-```bash
--map-syntax='/etc/apache2/**/*.conf:Apache Conf'
 ```
 
 
