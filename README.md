@@ -490,27 +490,32 @@ and the `GitHub` theme when in the _light mode_.
 alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 ```
 
-### Syntax of a file
+### Adapting file type associations
 
-You can change the default syntax association of the file using the `--map-syntax` option.
-It supports glob pattern matching and is matched on full path and filename.
+You can add new (or change existing) file name patterns using the
+`--map-syntax` option. The option takes an argument of the form `pattern:syntax`.
+`pattern` is a glob pattern that is matched against the file name and
+the absolute file path. `syntax` is the *name* of a supported language
+(use `bat --list-languages` for an overview).
 
-You can use it like this:
+This option is most useful in combination with the `bat` configuration file (see below).
 
+Example: To use "INI" syntax highlighting for all files with a `.conf` file extension, use
 ```bash
-bat --map-syntax='PATTERN:SYNTAX' file-name
+--map-syntax='*.conf:INI'
 ```
 
-For example:
+Example: To open all files called `.ignore` (exact match) with the "Git Ignore" syntax, use:
 ```bash
-# Using `INI` file syntax highlighting when opening a file with extension `.conf`.
-bat --map-syntax='*.conf:INI' file.conf
-
-# Using `Git Ignore` file syntax highlighting for ".ignore" files
-bat --map-syntax='.ignore:Git Ignore' .ignore
+--map-syntax='.ignore:Git Ignore'
 ```
 
-You can use `bat --list-languages` to see all the file syntax types available.
+Example: To open all `.conf` files in subfolders of `/etc/apache2` with the "Apache Conf"
+syntax, use (this mapping is already built in):
+```bash
+-map-syntax='/etc/apache2/**/*.conf:Apache Conf'
+```
+
 
 ## Configuration file
 
