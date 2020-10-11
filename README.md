@@ -394,6 +394,7 @@ variable to make these changes permanent or use `bat`s
 To add new syntaxes to your current `bat` installation, the following steps can be performed. 
 
 `bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
+<<<<<<< HEAD
 library for syntax highlighting. `syntect` can read any
 [Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
 and theme. To add new syntax definitions, do the following.
@@ -422,6 +423,13 @@ If you ever want to go back to the default settings, call:
 ```bash
 bat cache --clear
 ```
+=======
+library for syntax highlighting. As a basis, `syntect` uses 
+[Sublime Text](https://www.sublimetext.com/) syntax definitions in the 
+[`.sublime-syntax`](https://www.sublimetext.com/docs/3/syntax.html)
+file format. To add new syntax definitions, read [this document](doc/assets.md) for detailed 
+instructions.
+>>>>>>> 22ef664f643d0ebb152ead19b44e491d712e03f5
 
 4. If you want the syntaxes to be built into the `bat` binary, detailed instructions can be found in [this document](doc/assets.md).
 
