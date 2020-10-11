@@ -33,7 +33,6 @@ def get_options(source):
     return options
 
 
-
 def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
 
@@ -56,7 +55,8 @@ def create_highlighted_versions(output_basepath):
 
             bat_output = subprocess.check_output(
                 ["bat"] + get_options(source) + [source],
-                stderr=subprocess.PIPE, env=env,
+                stderr=subprocess.PIPE,
+                env=env,
             )
 
             output_dir = path.join(output_basepath, source_dirname)
@@ -83,7 +83,10 @@ def create_highlighted_versions(output_basepath):
             )
             sys.exit(1)
         except FileNotFoundError:
-            print("Error: Could not execute 'bat'. Please make sure that the executable is available on the PATH.")
+            print(
+                "Error: Could not execute 'bat'. Please make sure that the executable "
+                "is available on the PATH."
+            )
             sys.exit(1)
 
 
