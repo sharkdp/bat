@@ -30,9 +30,10 @@ def get_options(source):
     options_file = path.join(source_dirpath, "bat_options")
     try:
         with open(options_file, "r") as f:
-            options += list(map(lambda x: x.rstrip(), f.readlines()))
+            options.extend(map(lambda x: x.rstrip(), f.readlines()))
     except FileNotFoundError:
         pass
+
     return options
 
 
