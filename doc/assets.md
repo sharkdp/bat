@@ -13,11 +13,7 @@ Follow these steps to add new syntaxes into the `bat` binary:
    Sublime Text and convert it to a `.sublime-syntax` file via *Tools* -> *Developer* ->
    *New Syntax from XXX.tmLanguage...*. Save the new file in the `assets/syntaxes` folder.
 
-<<<<<<< HEAD
 3. Run the `assets/create.sh` script. It calls `bat cache --build` to parse all available
-=======
-3. Run the `create.sh` script (under `assets`). It calls `bat cache --build` to parse all available
->>>>>>> 22ef664f643d0ebb152ead19b44e491d712e03f5
    `.sublime-syntax` files and serialize them to a `syntaxes.bin` file (in this folder).
 
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
