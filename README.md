@@ -391,12 +391,12 @@ variable to make these changes permanent or use `bat`s
 
 ### Adding new syntaxes / language definitions
 
-To add new syntaxes to your current `bat` installation, the following steps can be performed. 
+Should you find a particular syntax is not available within `bat`, you can follow these instructions to easily add new syntaxes to your current `bat` installation. 
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
+By default, `bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
 library for syntax highlighting. `syntect` can read any
 [Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
-and theme. To add new syntax definitions, do the following.
+and theme. 
 
 1. Create a folder with syntax definition files:
 
@@ -423,8 +423,9 @@ If you ever want to go back to the default settings, call:
 bat cache --clear
 ```
 
-4. If you want the syntaxes to be built into the `bat` binary, detailed instructions can be found in [this document](doc/assets.md).
-
+4. If you think that a specific syntax should be included in `bat` by default, please 
+  consider opening a "syntax request" ticket after reading the policies and 
+  instructions [here](doc/assets.md)
 
 ### Adding new themes
 

@@ -1,10 +1,12 @@
 ## Add New Syntax Highlighting into the bat binary
 
+Should you find a particular syntax is not available within `bat` and think it should be included in `bat` by default, you can follow the instructions and policies outlined below. 
+ 
 `bat` uses the excellent [syntect](https://github.com/trishume/syntect) library to highlight source
 code. As a basis, syntect uses [Sublime Text](https://www.sublimetext.com/) syntax definitions
 in the `.sublime-syntax` format.
 
-Follow these steps to add new syntaxes into the `bat` binary:
+**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#Criteria-for-inclusion-of-new-syntaxes).
 
 1. Find a Sublime Text syntax for the given language, preferably in a separate Git repository
    which can be included as a submodule (under `assets/syntaxes`).
@@ -52,3 +54,7 @@ The following files have been manually modified after converting from a `.tmLang
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
+
+## Criteria for inclusion of new syntaxes
+
+* More than 10,000 downloads on packagecontrol.io/
