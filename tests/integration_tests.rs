@@ -700,6 +700,28 @@ Single Line
         .stderr("");
 }
 
+#[test]
+fn grid_overrides_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "\
+────────────────────────────────────────────────────────────────────────────────
+hello world
+────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
+Single Line
+────────────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n");
+}
+
 #[cfg(target_os = "linux")]
 #[test]
 fn file_with_invalid_utf8_filename() {
