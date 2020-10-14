@@ -404,32 +404,32 @@ syntax:
 
 1. Create a folder with syntax definition files:
 
-```bash
-mkdir -p "$(bat --config-dir)/syntaxes"
-cd "$(bat --config-dir)/syntaxes"
+   ```bash
+   mkdir -p "$(bat --config-dir)/syntaxes"
+   cd "$(bat --config-dir)/syntaxes"
 
-# Put new '.sublime-syntax' language definition files
-# in this folder (or its subdirectories), for example:
-git clone https://github.com/tellnobody1/sublime-purescript-syntax
-```
+   # Put new '.sublime-syntax' language definition files
+   # in this folder (or its subdirectories), for example:
+   git clone https://github.com/tellnobody1/sublime-purescript-syntax
+   ```
 
 2. Now use the following command to parse these files into a binary cache:
 
-```bash
-bat cache --build
-```
+   ```bash
+   bat cache --build
+   ```
 
 3. Finally, use `bat --list-languages` to check if the new languages are available.
 
-If you ever want to go back to the default settings, call:
+   If you ever want to go back to the default settings, call:
 
-```bash
-bat cache --clear
-```
+   ```bash
+   bat cache --clear
+   ```
 
 4. If you think that a specific syntax should be included in `bat` by default, please
-  consider opening a "syntax request" ticket after reading the policies and
-  instructions [here](doc/assets.md): [Open Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
+   consider opening a "syntax request" ticket after reading the policies and
+   instructions [here](doc/assets.md): [Open Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
 
 ### Adding new themes
 
