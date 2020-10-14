@@ -1,0 +1,330 @@
+[38;2;190;132;255mSELECT[0m[38;2;249;38;114m([0m[38;2;230;219;116m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                                             Linux Programmer's Manual                                             [0m[38;2;190;132;255mSELECT[0m[38;2;249;38;114m([0m[38;2;230;219;116m2[0m[38;2;249;38;114m)[0m
+
+[38;2;253;151;31mNAME[0m
+[38;2;248;248;242m       select, pselect, FD_CLR, FD_ISSET, FD_SET, FD_ZERO - synchronous I/O multiplexing[0m
+
+[38;2;253;151;31mSYNOPSIS[0m
+[38;2;190;132;255m       [0m[38;2;249;38;114m#include[0m[38;2;190;132;255m [0m[38;2;230;219;116m<[0m[38;2;230;219;116msys/select.h[0m[38;2;230;219;116m>[0m
+
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[38;2;166;226;46mselect[0m[38;2;248;248;242m([0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mreadfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mwritefds[0m[38;2;248;248;242m,[0m
+[38;2;248;248;242m                  fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mexceptfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[3;38;2;102;217;239mstruct[0m[38;2;248;248;242m timeval [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mtimeout[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mvoid[0m[38;2;248;248;242m [0m[38;2;166;226;46mFD_CLR[0m[38;2;248;248;242m([0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfd[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m  [0m[38;2;166;226;46mFD_ISSET[0m[38;2;248;248;242m([0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfd[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mvoid[0m[38;2;248;248;242m [0m[38;2;166;226;46mFD_SET[0m[38;2;248;248;242m([0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfd[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mvoid[0m[38;2;248;248;242m [0m[38;2;166;226;46mFD_ZERO[0m[38;2;248;248;242m([0m[38;2;248;248;242mfd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m       [0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[38;2;166;226;46mpselect[0m[38;2;248;248;242m([0m[3;38;2;102;217;239mint[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mreadfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mwritefds[0m[38;2;248;248;242m,[0m
+[38;2;248;248;242m                   fd_set [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mexceptfds[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;249;38;114mconst[0m[38;2;248;248;242m [0m[3;38;2;102;217;239mstruct[0m[38;2;248;248;242m timespec [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31mtimeout[0m[38;2;248;248;242m,[0m
+[38;2;248;248;242m                   [0m[38;2;249;38;114mconst[0m[38;2;248;248;242m sigset_t [0m[38;2;249;38;114m*[0m[3;38;2;253;151;31msigmask[0m[38;2;248;248;242m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m   Feature Test Macro Requirements for [0m[38;2;166;226;46mglibc[0m[38;2;248;248;242m [0m[38;2;248;248;242m([0m[38;2;248;248;242msee [0m[38;2;248;248;242mfeature_test_macros[0m[38;2;248;248;242m([0m[38;2;190;132;255m7[0m[38;2;248;248;242m)[0m[38;2;248;248;242m)[0m[38;2;249;38;114m:[0m
+
+[38;2;248;248;242m       [0m[38;2;248;248;242mpselect[0m[38;2;248;248;242m([0m[38;2;248;248;242m)[0m[38;2;249;38;114m:[0m[38;2;248;248;242m _POSIX_C_SOURCE [0m[38;2;249;38;114m>=[0m[38;2;248;248;242m [0m[38;2;190;132;255m200112[0m[3;38;2;102;217;239mL[0m
+
+[38;2;253;151;31mDESCRIPTION[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  allows  a  program  to  monitor  multiple file descriptors, waiting until one or more of the file descriptors become[0m
+[38;2;248;248;242m       "ready" for some class of I/O operation (e.g., input possible).  A file descriptor is considered ready if it  is  possible  to[0m
+[38;2;248;248;242m       perform a corresponding I/O operation (e.g., [0m[38;2;166;226;46mread[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, or a sufficiently small [0m[38;2;166;226;46mwrite[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m) without blocking.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  can monitor only file descriptors numbers that are less than FD_SETSIZE; [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mepoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m do not have this limi‐[0m
+[38;2;248;248;242m       tation.  See BUGS.[0m
+
+[38;2;248;248;242m   File descriptor sets[0m
+[38;2;248;248;242m       The principal arguments of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m are three "sets" of file descriptors (declared with the  type  fd_set),  which  allow  the[0m
+[38;2;248;248;242m       caller  to  wait  for  three  classes of events on the specified set of file descriptors.  Each of the fd_set arguments may be[0m
+[38;2;248;248;242m       specified as NULL if no file descriptors are to be watched for the corresponding class of events.[0m
+
+[38;2;248;248;242m       Note well: Upon return, each of the file descriptor sets is modified in place to indicate which file descriptors are currently[0m
+[38;2;248;248;242m       "ready".   Thus,  if using [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m within a loop, the sets must be reinitialized before each call.  The implementation of the[0m
+[38;2;248;248;242m       fd_set arguments as value-result arguments is a design error that is avoided in [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mepoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       The contents of a file descriptor set can be manipulated using the following macros:[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mFD_ZERO[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m              This macro clears (removes all file descriptors from) set.  It should be employed as the first step in  initializing  a[0m
+[38;2;248;248;242m              file descriptor set.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mFD_SET[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m              This macro adds the file descriptor fd to set.  Adding a file descriptor that is already present in the set is a no-op,[0m
+[38;2;248;248;242m              and does not produce an error.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mFD_CLR[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m              This macro removes the file descriptor fd from set.  Removing a file descriptor that is not present in the set is a no-[0m
+[38;2;248;248;242m              op, and does not produce an error.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mFD_ISSET[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m              [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  modifies the contents of the sets according to the rules described below.  After calling [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m, the FD_IS‐[0m
+[38;2;248;248;242m              [0m[38;2;166;226;46mSET[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m macro can be used to test if a file descriptor is still present in a set.  [0m[38;2;166;226;46mFD_ISSET[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m returns nonzero if the file[0m
+[38;2;248;248;242m              descriptor fd is present in set, and zero if it is not.[0m
+
+[38;2;248;248;242m   Arguments[0m
+[38;2;248;248;242m       The arguments of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m are as follows:[0m
+
+[38;2;248;248;242m       readfds[0m
+[38;2;248;248;242m              The  file  descriptors  in  this  set are watched to see if they are ready for reading.  A file descriptor is ready for[0m
+[38;2;248;248;242m              reading if a read operation will not block; in particular, a file descriptor is also ready on end-of-file.[0m
+
+[38;2;248;248;242m              After [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m has returned, readfds will be cleared of all file descriptors except for those that are ready for  read‐[0m
+[38;2;248;248;242m              ing.[0m
+
+[38;2;248;248;242m       writefds[0m
+[38;2;248;248;242m              The  file  descriptors  in  this  set are watched to see if they are ready for writing.  A file descriptor is ready for[0m
+[38;2;248;248;242m              writing if a write operation will not block.  However, even if a file descriptor indicates as writable, a  large  write[0m
+[38;2;248;248;242m              may still block.[0m
+
+[38;2;248;248;242m              After [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m has returned, writefds will be cleared of all file descriptors except for those that are ready for writ‐[0m
+[38;2;248;248;242m              ing.[0m
+
+[38;2;248;248;242m       exceptfds[0m
+[38;2;248;248;242m              The file descriptors in this set are watched for "exceptional conditions".  For examples  of  some  exceptional  condi‐[0m
+[38;2;248;248;242m              tions, see the discussion of POLLPRI in [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m              After  [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  has  returned,  exceptfds will be cleared of all file descriptors except for those for which an excep‐[0m
+[38;2;248;248;242m              tional condition has occurred.[0m
+
+[38;2;248;248;242m       nfds   This argument should be set to the highest-numbered file descriptor in any of the three sets, plus  1.   The  indicated[0m
+[38;2;248;248;242m              file descriptors in each set are checked, up to this limit (but see BUGS).[0m
+
+[38;2;248;248;242m       timeout[0m
+[38;2;248;248;242m              The  timeout argument is a timeval structure (shown below) that specifies the interval that [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m should block wait‐[0m
+[38;2;248;248;242m              ing for a file descriptor to become ready.  The call will block until either:[0m
+
+[38;2;248;248;242m              • a file descriptor becomes ready;[0m
+
+[38;2;248;248;242m              • the call is interrupted by a signal handler; or[0m
+
+[38;2;248;248;242m              • the timeout expires.[0m
+
+[38;2;248;248;242m              Note that the timeout interval will be rounded up to the system clock granularity, and kernel  scheduling  delays  mean[0m
+[38;2;248;248;242m              that the blocking interval may overrun by a small amount.[0m
+
+[38;2;248;248;242m              If both fields of the timeval structure are zero, then [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m returns immediately.  (This is useful for polling.)[0m
+
+[38;2;248;248;242m              If timeout is specified as NULL, [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m blocks indefinitely waiting for a file descriptor to become ready.[0m
+
+[38;2;248;248;242m   [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m       The  [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m system call allows an application to safely wait until either a file descriptor becomes ready or until a signal[0m
+[38;2;248;248;242m       is caught.[0m
+
+[38;2;248;248;242m       The operation of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is identical, other than these three differences:[0m
+
+[38;2;248;248;242m       • [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m uses a timeout that is a struct timeval (with seconds and microseconds), while [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  uses  a  struct  timespec[0m
+[38;2;248;248;242m         (with seconds and nanoseconds).[0m
+
+[38;2;248;248;242m       • [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m may update the timeout argument to indicate how much time was left.  [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m does not change this argument.[0m
+
+[38;2;248;248;242m       • [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m has no sigmask argument, and behaves as [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m called with NULL sigmask.[0m
+
+[38;2;248;248;242m       sigmask  is a pointer to a signal mask (see [0m[38;2;166;226;46msigprocmask[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m); if it is not NULL, then [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m first replaces the current sig‐[0m
+[38;2;248;248;242m       nal mask by the one pointed to by sigmask, then does the "select" function, and then restores the original signal  mask.   (If[0m
+[38;2;248;248;242m       sigmask is NULL, the signal mask is not modified during the [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m call.)[0m
+
+[38;2;248;248;242m       Other than the difference in the precision of the timeout argument, the following [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m call:[0m
+
+[38;2;248;248;242m           ready = pselect(nfds, &readfds, &writefds, &exceptfds,[0m
+[38;2;248;248;242m                           timeout, &sigmask);[0m
+
+[38;2;248;248;242m       is equivalent to atomically executing the following calls:[0m
+
+[38;2;248;248;242m           sigset_t origmask;[0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46mpthread_sigmask[0m[38;2;249;38;114m([0m[38;2;190;132;255mSIG_SETMASK, &sigmask, &origmask[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m           ready = [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;190;132;255mnfds, &readfds, &writefds, &exceptfds, timeout[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mpthread_sigmask[0m[38;2;249;38;114m([0m[38;2;190;132;255mSIG_SETMASK, &origmask, NULL[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m       The reason that [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is needed is that if one wants to wait for either a signal or for a file descriptor to become ready,[0m
+[38;2;248;248;242m       then an atomic test is needed to prevent race conditions.  (Suppose the signal handler sets a global flag and returns.  Then a[0m
+[38;2;248;248;242m       test  of this global flag followed by a call of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m could hang indefinitely if the signal arrived just after the test but[0m
+[38;2;248;248;242m       just before the call.  By contrast, [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m allows one to first block signals, handle the signals that have  come  in,  then[0m
+[38;2;248;248;242m       call [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m with the desired sigmask, avoiding the race.)[0m
+
+[38;2;248;248;242m   The timeout[0m
+[38;2;248;248;242m       The timeout argument for [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is a structure of the following type:[0m
+
+[38;2;248;248;242m           struct timeval {[0m
+[38;2;248;248;242m               time_t      tv_sec;         /* seconds */[0m
+[38;2;248;248;242m               suseconds_t tv_usec;        /* microseconds */[0m
+[38;2;248;248;242m           };[0m
+
+[38;2;248;248;242m       The corresponding argument for [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m has the following type:[0m
+
+[38;2;248;248;242m           struct timespec {[0m
+[38;2;248;248;242m               time_t      tv_sec;         /* seconds */[0m
+[38;2;248;248;242m               long        tv_nsec;        /* nanoseconds */[0m
+[38;2;248;248;242m           };[0m
+
+[38;2;248;248;242m       On  Linux,  [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  modifies  timeout  to  reflect  the amount of time not slept; most other implementations do not do this.[0m
+[38;2;248;248;242m       (POSIX.1 permits either behavior.)  This causes problems both when Linux code which reads timeout is ported to other operating[0m
+[38;2;248;248;242m       systems, and when code is ported to Linux that reuses a struct timeval for multiple [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242ms in a loop without reinitializing[0m
+[38;2;248;248;242m       it.  Consider timeout to be undefined after [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m returns.[0m
+
+[38;2;253;151;31mRETURN VALUE[0m
+[38;2;248;248;242m       On success, [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m return the number of file descriptors contained in the three returned descriptor sets (that[0m
+[38;2;248;248;242m       is,  the  total number of bits that are set in readfds, writefds, exceptfds).  The return value may be zero if the timeout ex‐[0m
+[38;2;248;248;242m       pired before any file descriptors became ready.[0m
+
+[38;2;248;248;242m       On error, [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m is returned, and errno is set to indicate the error; the file descriptor sets are unmodified, and timeout becomes[0m
+[38;2;248;248;242m       undefined.[0m
+
+[38;2;253;151;31mERRORS[0m
+[38;2;248;248;242m       EBADF  An invalid file descriptor was given in one of the sets.  (Perhaps a file descriptor that was already closed, or one on[0m
+[38;2;248;248;242m              which an error has occurred.)  However, see BUGS.[0m
+
+[38;2;248;248;242m       EINTR  A signal was caught; see [0m[38;2;166;226;46msignal[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       EINVAL nfds is negative or exceeds the RLIMIT_NOFILE resource limit (see [0m[38;2;166;226;46mgetrlimit[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m).[0m
+
+[38;2;248;248;242m       EINVAL The value contained within timeout is invalid.[0m
+
+[38;2;248;248;242m       ENOMEM Unable to allocate memory for internal tables.[0m
+
+[38;2;253;151;31mVERSIONS[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m was added to Linux in kernel 2.6.16.  Prior to this, [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m was emulated in glibc (but see BUGS).[0m
+
+[38;2;253;151;31mCONFORMING TO[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m conforms to POSIX.1-2001, POSIX.1-2008, and 4.4BSD ([0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m first appeared in 4.2BSD).  Generally  portable  to/from[0m
+[38;2;248;248;242m       non-BSD  systems  supporting  clones  of  the BSD socket layer (including System V variants).  However, note that the System V[0m
+[38;2;248;248;242m       variant typically sets the timeout variable before returning, but the BSD variant does not.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is defined in POSIX.1g, and in POSIX.1-2001 and POSIX.1-2008.[0m
+
+[38;2;253;151;31mNOTES[0m
+[38;2;248;248;242m       An fd_set is a fixed size buffer.  Executing [0m[38;2;166;226;46mFD_CLR[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m or [0m[38;2;166;226;46mFD_SET[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m with a value of fd that is negative or is equal to or larger[0m
+[38;2;248;248;242m       than FD_SETSIZE will result in undefined behavior.  Moreover, POSIX requires fd to be a valid file descriptor.[0m
+
+[38;2;248;248;242m       The operation of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is not affected by the O_NONBLOCK flag.[0m
+
+[38;2;248;248;242m       On some other UNIX systems, [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m can fail with the error EAGAIN if the system fails to allocate kernel-internal resources,[0m
+[38;2;248;248;242m       rather than ENOMEM as Linux does.  POSIX specifies this error for [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, but not for [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m.  Portable programs  may  wish[0m
+[38;2;248;248;242m       to check for EAGAIN and loop, just as with EINTR.[0m
+
+[38;2;248;248;242m   The self-pipe trick[0m
+[38;2;248;248;242m       On  systems  that  lack [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m, reliable (and more portable) signal trapping can be achieved using the self-pipe trick.  In[0m
+[38;2;248;248;242m       this technique, a signal handler writes a byte to a pipe whose other end is monitored by [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m in the  main  program.   (To[0m
+[38;2;248;248;242m       avoid  possibly  blocking when writing to a pipe that may be full or reading from a pipe that may be empty, nonblocking I/O is[0m
+[38;2;248;248;242m       used when reading from and writing to the pipe.)[0m
+
+[38;2;248;248;242m   Emulating [0m[38;2;166;226;46musleep[0m[38;2;249;38;114m([0m[38;2;190;132;255m3[0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m       Before the advent of [0m[38;2;166;226;46musleep[0m[38;2;249;38;114m([0m[38;2;190;132;255m3[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, some code employed a call to [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m with all three sets empty, nfds  zero,  and  a  non-NULL[0m
+[38;2;248;248;242m       timeout as a fairly portable way to sleep with subsecond precision.[0m
+
+[38;2;248;248;242m   Correspondence between [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m notifications[0m
+[38;2;248;248;242m       Within  the  Linux  kernel  source,  we  find  the  following  definitions which show the correspondence between the readable,[0m
+[38;2;248;248;242m       writable, and exceptional condition notifications of [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m and the event notifications provided by [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mepoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m:[0m
+
+[38;2;248;248;242m           #define POLLIN_SET  (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN |[0m
+[38;2;248;248;242m                                EPOLLHUP | EPOLLERR)[0m
+[38;2;248;248;242m                              /* Ready for reading */[0m
+[38;2;248;248;242m           #define POLLOUT_SET (EPOLLWRBAND | EPOLLWRNORM | EPOLLOUT |[0m
+[38;2;248;248;242m                                EPOLLERR)[0m
+[38;2;248;248;242m                              /* Ready for writing */[0m
+[38;2;248;248;242m           #define POLLEX_SET  (EPOLLPRI)[0m
+[38;2;248;248;242m                              /* Exceptional condition */[0m
+
+[38;2;248;248;242m   Multithreaded applications[0m
+[38;2;248;248;242m       If a file descriptor being monitored by [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m is closed in another thread, the result is unspecified.  On  some  UNIX  sys‐[0m
+[38;2;248;248;242m       tems,  [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  unblocks  and  returns, with an indication that the file descriptor is ready (a subsequent I/O operation will[0m
+[38;2;248;248;242m       likely fail with an error, unless another process reopens file descriptor between the time [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m returned and the I/O oper‐[0m
+[38;2;248;248;242m       ation  is  performed).   On Linux (and some other systems), closing the file descriptor in another thread has no effect on se‐[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mlect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m.  In summary, any application that relies on a particular behavior in this scenario must be considered buggy.[0m
+
+[38;2;248;248;242m   C library/kernel differences[0m
+[38;2;248;248;242m       The Linux kernel allows file descriptor sets of arbitrary size, determining the length of the sets  to  be  checked  from  the[0m
+[38;2;248;248;242m       value of nfds.  However, in the glibc implementation, the fd_set type is fixed in size.  See also BUGS.[0m
+
+[38;2;248;248;242m       The [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m interface described in this page is implemented by glibc.  The underlying Linux system call is named [0m[38;2;166;226;46mpselect6[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+[38;2;248;248;242m       This system call has somewhat different behavior from the glibc wrapper function.[0m
+
+[38;2;248;248;242m       The Linux [0m[38;2;166;226;46mpselect6[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m system call modifies its timeout argument.  However, the glibc wrapper function hides  this  behavior  by[0m
+[38;2;248;248;242m       using  a  local  variable for the timeout argument that is passed to the system call.  Thus, the glibc [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m function does[0m
+[38;2;248;248;242m       not modify its timeout argument; this is the behavior required by POSIX.1-2001.[0m
+
+[38;2;248;248;242m       The final argument of the [0m[38;2;166;226;46mpselect6[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m system call is not a sigset_t * pointer, but is instead a structure of the form:[0m
+
+[38;2;248;248;242m           struct {[0m
+[38;2;248;248;242m               const kernel_sigset_t *ss;   /* Pointer to signal set */[0m
+[38;2;248;248;242m               size_t ss_len;               /* Size (in bytes) of object[0m
+[38;2;248;248;242m                                               pointed to by 'ss' */[0m
+[38;2;248;248;242m           };[0m
+
+[38;2;248;248;242m       This allows the system call to obtain both a pointer to the signal set and its size, while allowing for the fact that most ar‐[0m
+[38;2;248;248;242m       chitectures  support a maximum of 6 arguments to a system call.  See [0m[38;2;166;226;46msigprocmask[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m for a discussion of the difference between[0m
+[38;2;248;248;242m       the kernel and libc notion of the signal set.[0m
+
+[38;2;248;248;242m   Historical glibc details[0m
+[38;2;248;248;242m       Glibc 2.0 provided an incorrect version of [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m that did not take a sigmask argument.[0m
+
+[38;2;248;248;242m       In glibc versions 2.1 to 2.2.1, one must define _GNU_SOURCE in order to obtain the  declaration  of  [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  from  <sys/se‐[0m
+[38;2;248;248;242m       lect.h>.[0m
+
+[38;2;253;151;31mBUGS[0m
+[38;2;248;248;242m       POSIX allows an implementation to define an upper limit, advertised via the constant FD_SETSIZE, on the range of file descrip‐[0m
+[38;2;248;248;242m       tors that can be specified in a file descriptor set.  The Linux kernel imposes no fixed limit, but  the  glibc  implementation[0m
+[38;2;248;248;242m       makes  fd_set a fixed-size type, with FD_SETSIZE defined as 1024, and the FD_*() macros operating according to that limit.  To[0m
+[38;2;248;248;242m       monitor file descriptors greater than 1023, use [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m or [0m[38;2;166;226;46mepoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m instead.[0m
+
+[38;2;248;248;242m       According to POSIX, [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m should check all specified file descriptors in the three file descriptor sets, up  to  the  limit[0m
+[38;2;248;248;242m       nfds-1.   However,  the current implementation ignores any file descriptor in these sets that is greater than the maximum file[0m
+[38;2;248;248;242m       descriptor number that the process currently has open.  According to POSIX, any such file descriptor that is specified in  one[0m
+[38;2;248;248;242m       of the sets should result in the error EBADF.[0m
+
+[38;2;248;248;242m       Starting  with  version  2.1, glibc provided an emulation of [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m that was implemented using [0m[38;2;166;226;46msigprocmask[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m and [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+[38;2;248;248;242m       This implementation remained vulnerable to the very race condition that [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m was designed to prevent.  Modern versions of[0m
+[38;2;248;248;242m       glibc use the (race-free) [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m system call on kernels where it is provided.[0m
+
+[38;2;248;248;242m       On  Linux,  [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m  may report a socket file descriptor as "ready for reading", while nevertheless a subsequent read blocks.[0m
+[38;2;248;248;242m       This could for example happen when data has arrived but upon examination has the wrong checksum and is discarded.   There  may[0m
+[38;2;248;248;242m       be  other circumstances in which a file descriptor is spuriously reported as ready.  Thus it may be safer to use O_NONBLOCK on[0m
+[38;2;248;248;242m       sockets that should not block.[0m
+
+[38;2;248;248;242m       On Linux, [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m also modifies timeout if the call is interrupted by a signal handler (i.e., the EINTR error return).   This[0m
+[38;2;248;248;242m       is not permitted by POSIX.1.  The Linux [0m[38;2;166;226;46mpselect[0m[38;2;249;38;114m([0m[38;2;249;38;114m)[0m[38;2;248;248;242m system call has the same behavior, but the glibc wrapper hides this behavior[0m
+[38;2;248;248;242m       by internally copying the timeout to a local variable and passing that variable to the system call.[0m
+
+[38;2;253;151;31mEXAMPLES[0m
+[38;2;248;248;242m       #include <stdio.h>[0m
+[38;2;248;248;242m       #include <stdlib.h>[0m
+[38;2;248;248;242m       #include <sys/select.h>[0m
+
+[38;2;248;248;242m       int[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mmain[0m[38;2;249;38;114m([0m[38;2;190;132;255mvoid[0m[38;2;249;38;114m)[0m
+[38;2;248;248;242m       {[0m
+[38;2;248;248;242m           fd_set rfds;[0m
+[38;2;248;248;242m           struct timeval tv;[0m
+[38;2;248;248;242m           int retval;[0m
+
+[38;2;248;248;242m           /* Watch stdin (fd 0) to see when it has input. */[0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46mFD_ZERO[0m[38;2;249;38;114m([0m[38;2;190;132;255m&rfds[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mFD_SET[0m[38;2;249;38;114m([0m[38;2;190;132;255m0, &rfds[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m           /* Wait up to five seconds. */[0m
+
+[38;2;248;248;242m           tv.tv_sec = 5;[0m
+[38;2;248;248;242m           tv.tv_usec = 0;[0m
+
+[38;2;248;248;242m           retval = [0m[38;2;166;226;46mselect[0m[38;2;249;38;114m([0m[38;2;190;132;255m1, &rfds, NULL, NULL, &tv[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m           /* Don't rely on the value of tv now! */[0m
+
+[38;2;248;248;242m           if (retval == [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m)[0m
+[38;2;248;248;242m               [0m[38;2;166;226;46mperror[0m[38;2;249;38;114m([0m[38;2;190;132;255m"select([0m[38;2;249;38;114m)[0m[38;2;248;248;242m");[0m
+[38;2;248;248;242m           else if (retval)[0m
+[38;2;248;248;242m               [0m[38;2;166;226;46mprintf[0m[38;2;249;38;114m([0m[38;2;190;132;255m"Data is available now.\n"[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m               /* [0m[38;2;166;226;46mFD_ISSET[0m[38;2;249;38;114m([0m[38;2;190;132;255m0, &rfds[0m[38;2;249;38;114m)[0m[38;2;248;248;242m will be true. */[0m
+[38;2;248;248;242m           else[0m
+[38;2;248;248;242m               [0m[38;2;166;226;46mprintf[0m[38;2;249;38;114m([0m[38;2;190;132;255m"No data within five seconds.\n"[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46mexit[0m[38;2;249;38;114m([0m[38;2;190;132;255mEXIT_SUCCESS[0m[38;2;249;38;114m)[0m[38;2;248;248;242m;[0m
+[38;2;248;248;242m       }[0m
+
+[38;2;253;151;31mSEE ALSO[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46maccept[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mconnect[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mpoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mread[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mrecv[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mrestart_syscall[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46msend[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46msigprocmask[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mwrite[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mepoll[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46mtime[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m
+
+[38;2;248;248;242m       For a tutorial with discussion and examples, see [0m[38;2;166;226;46mselect_tut[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+
+[38;2;253;151;31mCOLOPHON[0m
+[38;2;248;248;242m       This page is part of release 5.08 of the Linux man-pages project.  A description of the project, information  about  reporting[0m
+[38;2;248;248;242m       bugs, and the latest version of this page, can be found at https://www.kernel.org/doc/man-pages/.[0m
+
+[38;2;253;151;31mLinux                                                         2020-04-11                                                    SELECT(2)[0m
