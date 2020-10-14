@@ -1,10 +1,12 @@
-## Syntax Highlighting in bat
+## Add New Syntax Highlighting into the bat binary
 
-`bat` uses the [syntect](https://github.com/trishume/syntect) library to highlight source
+Should you find a particular syntax is not available within `bat` and think it should be included in `bat` by default, you can follow the instructions and policies outlined below. 
+ 
+`bat` uses the excellent [syntect](https://github.com/trishume/syntect) library to highlight source
 code. As a basis, syntect uses [Sublime Text](https://www.sublimetext.com/) syntax definitions
 in the `.sublime-syntax` format.
 
-In order to add new syntaxes to `bat`, follow these steps:
+**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#Criteria-for-inclusion-of-new-syntaxes).
 
 1. Find a Sublime Text syntax for the given language, preferably in a separate Git repository
    which can be included as a submodule (under `assets/syntaxes`).
@@ -13,13 +15,15 @@ In order to add new syntaxes to `bat`, follow these steps:
    Sublime Text and convert it to a `.sublime-syntax` file via *Tools* -> *Developer* ->
    *New Syntax from XXX.tmLanguage...*. Save the new file in the `assets/syntaxes` folder.
 
-3. Run the `create.sh` script. It calls `bat cache --build` to parse all available
+3. Run the `assets/create.sh` script. It calls `bat cache --build` to parse all available
    `.sublime-syntax` files and serialize them to a `syntaxes.bin` file (in this folder).
 
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
    `bat` binary.
 
-5. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
+5. Use `bat --list-languages` to check if the new languages are available.
+
+6. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
    file. A new binary cache file will be created once before every new release of `bat`.
 
 ### Troubleshooting
@@ -50,3 +54,7 @@ The following files have been manually modified after converting from a `.tmLang
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
+
+## Criteria for inclusion of new syntaxes
+
+* More than 10,000 downloads on packagecontrol.io/

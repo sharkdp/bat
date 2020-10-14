@@ -391,12 +391,14 @@ variable to make these changes permanent or use `bat`s
 
 ### Adding new syntaxes / language definitions
 
-`bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
+Should you find a particular syntax is not available within `bat`, you can follow these instructions to easily add new syntaxes to your current `bat` installation. 
+
+By default, `bat` uses the excellent [`syntect`](https://github.com/trishume/syntect/)
 library for syntax highlighting. `syntect` can read any
 [Sublime Text `.sublime-syntax` file](https://www.sublimetext.com/docs/3/syntax.html)
-and theme. To add new syntax definitions, do the following.
+and theme. 
 
-Create a folder with syntax definition files:
+1. Create a folder with syntax definition files:
 
 ```bash
 mkdir -p "$(bat --config-dir)/syntaxes"
@@ -407,19 +409,23 @@ cd "$(bat --config-dir)/syntaxes"
 git clone https://github.com/tellnobody1/sublime-purescript-syntax
 ```
 
-Now use the following command to parse these files into a binary cache:
+2. Now use the following command to parse these files into a binary cache:
 
 ```bash
 bat cache --build
 ```
 
-Finally, use `bat --list-languages` to check if the new languages are available.
+3. Finally, use `bat --list-languages` to check if the new languages are available.
 
 If you ever want to go back to the default settings, call:
 
 ```bash
 bat cache --clear
 ```
+
+4. If you think that a specific syntax should be included in `bat` by default, please 
+  consider opening a "syntax request" ticket after reading the policies and 
+  instructions [here](doc/assets.md)
 
 ### Adding new themes
 
