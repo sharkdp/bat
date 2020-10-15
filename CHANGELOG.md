@@ -12,6 +12,8 @@
 
 ## Syntaxes
 
+- Manpage syntax highlighting has been improved, see #1315 (@keith-hall)
+
 ## New themes
 
 ## `bat` as a library
