@@ -21,12 +21,34 @@ SYNOPSIS
 #                                                           ^ punctuation.section.brackets.begin
 #                                                            ^^^^^^^^^^^^^^^^ entity.name.command-line-option
 #                                                                            ^ punctuation.section.brackets.end
+                  [-u | --set-upstream] [-o <string> | --push-option=<string>]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^ entity.name.command-line-option
+#                     ^ keyword.operator.logical
+#                       ^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                     ^ punctuation.section.brackets.end
+#                                                      ^^^^^^^^^^^^^ entity.name.command-line-option
+                  [--force-with-lease[=<refname>[:<expect>]]]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                    ^ punctuation.section.brackets.begin
+#                                     ^ keyword.operator
+#                                       ^^^^^^^ variable.parameter
+#                                               ^ punctuation.section.brackets.begin
+#                                                  ^^^^^^ variable.parameter
+#                                                         ^^^ punctuation.section.brackets.end
 
        example --system [options]
 #              ^^^^^^^^ entity.name
 
    COMMON OPTIONS
        [--quiet] [--debug] [--help|-h]  [--version]  [--conf FILE]
+
+        /* According to POSIX.1-2001, POSIX.1-2008 */
+#       ^^ source comment.block punctuation.definition.comment
+       #include <sys/select.h>
+#      ^^^^^^^^ source meta.preprocessor.include keyword.control.import.include
+
 
 DESCRIPTION
        example does something useful in  relation  to the command line options
