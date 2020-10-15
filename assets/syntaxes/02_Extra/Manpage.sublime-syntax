@@ -89,8 +89,9 @@ contexts:
       scope: entity.name.command-line-option.man
     - match: '(\[)(=)'
       captures:
+        1: punctuation.section.brackets.begin.man
         2: keyword.operator.man
-      push: expect-parameter
+      push: [command-line-option-or-pipe, expect-parameter]
     - match: '\['
       push:
         - meta_scope: entity.name.command-line-option.man
@@ -112,13 +113,23 @@ contexts:
   expect-parameter:
     - match: '[A-Za-z0-9-]+'
       scope: variable.parameter.man
+    - match: (?=\s+\|)
+      pop: true
     - match: \|
       scope: keyword.operator.logical.man
+    - match: '\['
+      scope: punctuation.section.brackets.begin.man
+      push:
+        - match: '\]'
+          scope: punctuation.section.brackets.end.man
+          pop: true
+        - include: expect-parameter
     - match: '$|(?=[],]|{{command_line_option}})'
       pop: true
 
   synopsis:
-    #- include: scope:source.c
+    - match: '^(?=\s+(?:#include|/\*))'
+      push: scope:source.c
     - match: \[
       scope: punctuation.section.brackets.begin.man
       push: command-line-option-or-pipe
