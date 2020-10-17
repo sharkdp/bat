@@ -83,6 +83,7 @@ contexts:
         - match: ''
           pop: true
     - include: function-call
+    - include: c-code
 
   expect-command-line-option:
     - match: '[A-Za-z0-9-]+'
@@ -127,9 +128,12 @@ contexts:
     - match: '$|(?=[],]|{{command_line_option}})'
       pop: true
 
-  synopsis:
+  c-code:
     - match: '^(?=\s+(?:#include|/\*))'
       push: scope:source.c
+
+  synopsis:
+    - include: c-code
     - match: \[
       scope: punctuation.section.brackets.begin.man
       push: command-line-option-or-pipe

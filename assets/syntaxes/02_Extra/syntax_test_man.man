@@ -123,3 +123,7 @@ OPTIONS
 #                             ^^^ variable.parameter
 #                                ^^ - variable
               output NUM (default 3) lines of copied context
+
+EXAMPLE
+       #include <stdio.h>
+#      ^^^^^^^^ source meta.preprocessor.include keyword.control.import.include
