@@ -5,7 +5,7 @@ SOMETHING(8)                System Manager's Manual               SOMETHING(8)
 #                                                                   ^^^^^^^ meta.preprocessor
 
 NAME
-#^^^ markup.heading.title
+#^^^ markup.heading.other
        example - do something useful
 
 SYNOPSIS
@@ -45,9 +45,16 @@ SYNOPSIS
        [--quiet] [--debug] [--help|-h]  [--version]  [--conf FILE]
 
         /* According to POSIX.1-2001, POSIX.1-2008 */
-#       ^^ source comment.block punctuation.definition.comment
+#       ^^ source.c comment.block punctuation.definition.comment
        #include <sys/select.h>
-#      ^^^^^^^^ source meta.preprocessor.include keyword.control.import.include
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+           struct timeval {
+#          ^^^^^^ source.c storage.type
+            
+               time_t         tv_sec;     /* seconds */
+               suseconds_t    tv_usec;    /* microseconds */
+           };
+
 
 
 DESCRIPTION
@@ -126,4 +133,19 @@ OPTIONS
 
 EXAMPLE
        #include <stdio.h>
-#      ^^^^^^^^ source meta.preprocessor.include keyword.control.import.include
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+
+    (This is not C code.)
+#   ^^^^^^^^^^^^^^^^^^^^^^ - source.c
+
+           struct timeval {
+               time_t      tv_sec;         /* seconds */
+               suseconds_t tv_usec;        /* microseconds */
+           };
+#           ^ source.c punctuation.terminator
+
+       The corresponding argument for pselect() has the following type:
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - source.c
+           #define POLLIN_SET  (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN |
+                                EPOLLHUP | EPOLLERR)
+#                                                  ^ source.c meta.preprocessor.macro meta.group punctuation.section.group.end
