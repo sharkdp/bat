@@ -43,7 +43,7 @@ contexts:
   body:
     # English, ..., ..., ..., Russian, ...
 
-    - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SK\u0141ADNIA|\u0421\u0418\u041d\u0422\u0410\u041a\u0421\u0418\u0421|\u66f8\u5f0f)'
+    - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SKŁADNIA|СИНТАКСИС|書式)'
       scope: markup.heading.synopsis.man
       embed: synopsis
       escape: '(?={{section_heading}})'
@@ -131,7 +131,6 @@ contexts:
       pop: true
 
   c-code:
-    #- match: '^(\s+)(?=#include\b|#define\b|/\*|struct\s+\w+\s*\{)'
     - match: '^(?=\s+(?:#include\b|#define\b|/\*|struct\s+(\w+\s*)?\{))'
       embed: scope:source.c
       #embed_scope: source.c.embedded.man
