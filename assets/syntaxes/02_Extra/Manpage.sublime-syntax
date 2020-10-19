@@ -34,27 +34,29 @@ contexts:
           scope: markup.heading.title.man
         - match: \s\s
           pop: true
-        - match: '(?=\S)'
+        - match: '(?=\S|$)'
           pop: true
 
     - match: '$'
-      push: body
+      set: body
 
   body:
     # English, ..., ..., ..., Russian, ...
 
-    - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SKŁADNIA|СИНТАКСИС|書式)'
+    - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SK\u0141ADNIA|\u0421\u0418\u041d\u0422\u0410\u041a\u0421\u0418\u0421|\u66f8\u5f0f)'
       scope: markup.heading.synopsis.man
       embed: synopsis
       escape: '(?={{section_heading}})'
 
+    - match: '^(?:USAGE)'
+      scope: markup.heading.synopsis.man
+      embed: synopsis
+      escape: '(?={{section_heading}})'
 
     - match: '{{section_heading}}'
       scope: markup.heading.other.man
       embed: options # some man pages put command line options under the description heading
       escape: '(?={{section_heading}})'
-
-    - include: function-call
 
   function-call:
     - match: '\b([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
@@ -129,8 +131,12 @@ contexts:
       pop: true
 
   c-code:
-    - match: '^(?=\s+(?:#include|/\*))'
-      push: scope:source.c
+    #- match: '^(\s+)(?=#include\b|#define\b|/\*|struct\s+\w+\s*\{)'
+    - match: '^(?=\s+(?:#include\b|#define\b|/\*|struct\s+(\w+\s*)?\{))'
+      embed: scope:source.c
+      #embed_scope: source.c.embedded.man
+      #escape: ^(?!#|\1|\s*(?:$|/\*|#include\b|#define\b))
+      escape: ^(?=\s*(?:\(.*\.\)\s*$|[A-Z](?![A-Z])))
 
   synopsis:
     - include: c-code
@@ -144,6 +150,7 @@ contexts:
       captures:
         1: keyword.operator.logical.man
     #- match: (?={{command_line_option}})
+    - match: \w+-\w+
     - match: (?=-)
       push:
         - match: (?=\s*\|)
