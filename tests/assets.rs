@@ -12,6 +12,8 @@ fn all_themes_are_present() {
         themes,
         vec![
             "1337",
+            "Coldark-Cold",
+            "Coldark-Dark",
             "DarkNeon",
             "Dracula",
             "GitHub",
