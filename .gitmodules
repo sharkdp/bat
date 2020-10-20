@@ -197,3 +197,6 @@
 [submodule "assets/syntaxes/02_Extra/Apache"]
 	path = assets/syntaxes/02_Extra/Apache
 	url = https://github.com/colinta/ApacheConf.tmLanguage
+[submodule "assets/themes/Coldark"]
+	path = assets/themes/Coldark
+	url = https://github.com/ArmandPhilippot/coldark-bat.git
