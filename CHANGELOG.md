@@ -16,6 +16,8 @@
 
 ## New themes
 
+- Coldark, see #1329 (@armandphilippot)
+
 ## `bat` as a library
 
 ## Packaging
