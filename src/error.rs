@@ -20,6 +20,10 @@ error_chain! {
             description("unknown syntax"),
             display("unknown syntax: '{}'", name)
         }
+        InvalidPagerValueBat {
+            description("invalid value `bat` for pager property"),
+            display("Use of bat as a pager is disallowed in order to avoid infinite recursion problems")
+        }
     }
 }
 

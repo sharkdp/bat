@@ -406,6 +406,16 @@ fn pager_disable() {
 }
 
 #[test]
+fn pager_value_bat() {
+    bat()
+        .arg("--pager=bat")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .failure();
+}
+
+#[test]
 fn alias_pager_disable() {
     bat()
         .env("PAGER", "echo other-pager")
