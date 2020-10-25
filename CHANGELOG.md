@@ -1,7 +1,5 @@
 # unreleased
 
-- Add Note to refer to see detailed help with --help (and vice versa with -h). see #1215 (@henil)
-
 ## Features
 
 - Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
@@ -9,6 +7,8 @@
 ## Bugfixes
 
 ## Other
+
+- Add note to refer to see detailed help with `--help` (and vice versa with `-h`), see #1215 (@henil)
 
 ## Syntaxes
 
