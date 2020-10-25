@@ -7,8 +7,6 @@ stdenv.mkDerivation rec {
   version = "0.2.3";
   name = "${pname}-${version}";
 
-  src = ./;
-
   buildInputs = [
     gzip
     bzip2
