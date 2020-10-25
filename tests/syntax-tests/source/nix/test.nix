@@ -9,9 +9,9 @@ stdenv.mkDerivation rec {
 
   src = ./;
 
-  buildInputs = {
+  buildInputs = [
     gzip
     bzip2
     python27
-  };
+  ];
 }
