@@ -8,6 +8,8 @@
 
 ## Bugfixes
 
+- Throws an error when `bat` is being used as `pager`, see #1343 (@adrian-rivera)
+
 ## Other
 
 ## Syntaxes
