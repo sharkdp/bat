@@ -665,6 +665,22 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
+## Contributors
+
+Please don't forget to update `CHANGELOG.md` and describe your changes, this makes the release of a new `bat` version much easier.
+
+Each entry should follow the next format:
+- Short description of the change (one line)
+- Number of the pull request
+- Github's username
+
+See the next examples taken from `CHANGELOG.md`
+```
+- Added support for the `NO_COLOR` environment variable, see #1021 and #1031 (@eth-p)
+- Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
+- Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
+```
+
 ## Maintainers
 
 - [sharkdp](https://github.com/sharkdp)
