@@ -1,5 +1,6 @@
 # unreleased
 
+
 ## Features
 
 - Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
@@ -11,6 +12,7 @@
 ## Other
 
 - Add note to refer to see detailed help with `--help` (and vice versa with `-h`), see #1215 (@henil)
+- Add a `Contributors` section to `README`, see #1348 (@adrian-rivera)
 
 ## Syntaxes
 
