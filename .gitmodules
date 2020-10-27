@@ -200,3 +200,6 @@
 [submodule "assets/syntaxes/02_Extra/Svelte"]
 	path = assets/syntaxes/02_Extra/Svelte
 	url = https://github.com/corneliusio/svelte-sublime
+[submodule "assets/themes/Coldark"]
+	path = assets/themes/Coldark
+	url = https://github.com/ArmandPhilippot/coldark-bat.git

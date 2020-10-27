@@ -1,17 +1,23 @@
 # unreleased
 
-- Add Note to refer to see detailed help with --help (and vice versa with -h). see #1215 (@henil)
-- Add Svelte file syntax, see #1285 (@kjmph)
-
 ## Features
+
+- Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
 
 ## Bugfixes
 
 ## Other
 
+- Add note to refer to see detailed help with `--help` (and vice versa with `-h`), see #1215 (@henil)
+
 ## Syntaxes
 
+- Manpage syntax highlighting has been improved, see #1315 (@keith-hall)
+- Add Svelte file syntax, see #1285 (@kjmph)
+
 ## New themes
+
+- Coldark, see #1329 (@armandphilippot)
 
 ## `bat` as a library
 

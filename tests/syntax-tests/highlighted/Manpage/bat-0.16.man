@@ -1,0 +1,243 @@
+[38;2;190;132;255mBAT[0m[38;2;249;38;114m([0m[38;2;230;219;116m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                      [0m[38;2;253;151;31mGeneral[0m[38;2;253;151;31m [0m[38;2;253;151;31mCommands[0m[38;2;253;151;31m [0m[38;2;253;151;31mManual[0m[38;2;248;248;242m                     [0m[38;2;190;132;255mBAT[0m[38;2;249;38;114m([0m[38;2;230;219;116m1[0m[38;2;249;38;114m)[0m
+
+[38;2;253;151;31mNAME[0m
+[38;2;248;248;242m       bat - a [0m[38;2;166;226;46mcat[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m clone with syntax highlighting and Git integration.[0m
+
+[38;2;253;151;31mUSAGE[0m
+[38;2;248;248;242m       bat [0m[38;2;248;248;242m[[0m[38;2;248;248;242mOPTIONS[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242mFILE[0m[38;2;248;248;242m][0m[38;2;248;248;242m...[0m
+
+[38;2;248;248;242m       bat cache [0m[38;2;248;248;242m[[0m[38;2;248;248;242mCACHE-OPTIONS[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;166;226;46m--build[0m[38;2;249;38;114m|[0m[38;2;166;226;46m--clear[0m[38;2;248;248;242m][0m
+
+[38;2;253;151;31mDESCRIPTION[0m
+[38;2;248;248;242m       bat  prints  the syntax-highlighted content of a collection of FILEs to[0m
+[38;2;248;248;242m       the terminal. If no FILE is specified, or when FILE is  '-',  it  reads[0m
+[38;2;248;248;242m       from standard input.[0m
+
+[38;2;248;248;242m       bat  supports  a  large number of programming and markup languages.  It[0m
+[38;2;248;248;242m       also communicates with [0m[38;2;166;226;46mgit[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m to show modifications with respect to the[0m
+[38;2;248;248;242m       git  index.  bat automatically pipes its output through a pager (by de‐[0m
+[38;2;248;248;242m       fault: less).[0m
+
+[38;2;248;248;242m       Whenever the output of bat goes to  a  non-interactive  terminal,  i.e.[0m
+[38;2;248;248;242m       when  the output is piped into another process or into a file, bat will[0m
+[38;2;248;248;242m       act as a drop-in replacement for [0m[38;2;166;226;46mcat[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m and fall back to  printing  the[0m
+[38;2;248;248;242m       plain file contents.[0m
+
+[38;2;253;151;31mOPTIONS[0m
+[38;2;248;248;242m       General  remarks: Command-line options like '[0m[38;2;166;226;46m-l[0m[38;2;248;248;242m'/'[0m[38;2;166;226;46m--language[0m[38;2;248;248;242m' that take[0m
+[38;2;248;248;242m       values  can  be  specified  as  either  '[0m[38;2;166;226;46m--language[0m[38;2;248;248;242m   value',   '[0m[38;2;166;226;46m--lan[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       guage=value', '[0m[38;2;166;226;46m-l[0m[38;2;248;248;242m value' or '[0m[38;2;166;226;46m-lvalue[0m[38;2;248;248;242m'.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-A[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--show-all[0m
+
+[38;2;248;248;242m              Show  non-printable  characters  like space, tab or newline. Use[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--tabs[0m[38;2;248;248;242m' to control the width of the tab-placeholders.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-p[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--plain[0m
+
+[38;2;248;248;242m              Only show plain style, no decorations.  This  is  an  alias  for[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mplain'[0m[38;2;248;248;242m.  When  '[0m[38;2;166;226;46m-p[0m[38;2;248;248;242m' is used twice ('[0m[38;2;166;226;46m-pp[0m[38;2;248;248;242m'), it also dis‐[0m
+[38;2;248;248;242m              ables    automatic    paging    (alias    for     '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mplain[0m
+[38;2;248;248;242m              [0m[38;2;166;226;46m--pager[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mnever'[0m[38;2;248;248;242m).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-l[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--language[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mlanguage[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Explicitly  set  the  language for syntax highlighting. The lan‐[0m
+[38;2;248;248;242m              guage can be specified as a name (like 'C++' or 'LaTeX') or pos‐[0m
+[38;2;248;248;242m              sible   file   extension   (like  'cpp',  'hpp'  or  'md').  Use[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--list-languages[0m[38;2;248;248;242m' to show all supported language names and file[0m
+[38;2;248;248;242m              extensions.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-H[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m <N:M>...[0m
+
+[38;2;248;248;242m              Highlight  the specified line ranges with a different background[0m
+[38;2;248;248;242m              color For example:[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m 40[0m
+[38;2;248;248;242m                     highlights line 40[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m 30:40[0m
+[38;2;248;248;242m                     highlights lines 30 to 40[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m :40[0m
+[38;2;248;248;242m                     highlights lines 1 to 40[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m 40:[0m
+[38;2;248;248;242m                     highlights lines 40 to the end of the file[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--tabs[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mT[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Set the tab width to T spaces. Use a width of  0  to  pass  tabs[0m
+[38;2;248;248;242m              through directly[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--wrap[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mmode[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Specify  the  text-wrapping mode (*auto*, never, character). The[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--terminal-width[0m[38;2;248;248;242m' option can be used in addition to control the[0m
+[38;2;248;248;242m              output width.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--terminal-width[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Explicitly  set the width of the terminal instead of determining[0m
+[38;2;248;248;242m              it automatically. If prefixed with '+' or '-', the value will be[0m
+[38;2;248;248;242m              treated  as  an  offset  to the actual terminal width. See also:[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--wrap[0m[38;2;248;248;242m'.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-n[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--number[0m
+
+[38;2;248;248;242m              Only show line numbers, no other decorations. This is  an  alias[0m
+[38;2;248;248;242m              for '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mnumbers'[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--color[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Specify  when to use colored output. The automatic mode only en‐[0m
+[38;2;248;248;242m              ables colors if an interactive terminal  is  detected.  Possible[0m
+[38;2;248;248;242m              values: *auto*, never, always.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--italic-text[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Specify  when  to use ANSI sequences for italic text in the out‐[0m
+[38;2;248;248;242m              put. Possible values: always, *never*.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--decorations[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Specify when to use the decorations that have been specified via[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--style[0m[38;2;248;248;242m'. The automatic mode only enables decorations if an in‐[0m
+[38;2;248;248;242m              teractive terminal is detected. Possible values: *auto*,  never,[0m
+[38;2;248;248;242m              always.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-f[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--force-colorization[0m
+
+[38;2;248;248;242m              Alias  for '[0m[38;2;166;226;46m--decorations[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31malways[0m[38;2;248;248;242m [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31malways'[0m[38;2;248;248;242m. This is useful[0m
+[38;2;248;248;242m              if the output of bat is piped to another program, but  you  want[0m
+[38;2;248;248;242m              to keep the colorization/decorations.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--paging[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Specify when to use the pager. To disable the pager, use '[0m[38;2;166;226;46m--pag[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m              ing=never' or its alias, [0m[38;2;166;226;46m-P[0m[38;2;248;248;242m. To disable the  pager  permanently,[0m
+[38;2;248;248;242m              set  BAT_PAGER  to  an  empty  string. To control which pager is[0m
+[38;2;248;248;242m              used, see the '[0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m' option. Possible values: *auto*,  never,[0m
+[38;2;248;248;242m              always.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Determine  which  pager  is  used. This option will override the[0m
+[38;2;248;248;242m              PAGER and BAT_PAGER environment variables. The default pager  is[0m
+[38;2;248;248;242m              'less'.  To  control  when the pager is used, see the '[0m[38;2;166;226;46m--paging[0m[38;2;248;248;242m'[0m
+[38;2;248;248;242m              option. Example: '[0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m "less [0m[38;2;166;226;46m-RF[0m[38;2;248;248;242m"'.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-m[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--map-syntax[0m[38;2;248;248;242m <glob-pattern:syntax-name>...[0m
+
+[38;2;248;248;242m              Map a glob pattern to an existing syntax name. The glob  pattern[0m
+[38;2;248;248;242m              is  matched  on  the full path and the filename. For example, to[0m
+[38;2;248;248;242m              highlight  *.build  files  with  the  Python  syntax,   use   [0m[38;2;166;226;46m-m[0m
+[38;2;248;248;242m              '*.build:Python'.  To highlight files named '.myignore' with the[0m
+[38;2;248;248;242m              Git Ignore syntax, use [0m[38;2;166;226;46m-m[0m[38;2;248;248;242m '.myignore:Git Ignore'.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--theme[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mtheme[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Set the theme for syntax highlighting.  Use  '[0m[38;2;166;226;46m--list-themes[0m[38;2;248;248;242m'  to[0m
+[38;2;248;248;242m              see  all  available  themes.   To  set  a default theme, add the[0m
+[38;2;248;248;242m              '[0m[38;2;166;226;46m--theme[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m"[0m[38;2;248;248;242m..."' option to the configuration file or  export  the[0m
+[38;2;248;248;242m              BAT_THEME environment variable (e.g.: export BAT_THEME="...").[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--list-themes[0m
+
+[38;2;248;248;242m              Display a list of supported themes for syntax highlighting.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--style[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mstyle-components[0m[38;2;248;248;242m>[0m
+
+[38;2;248;248;242m              Configure  which elements (line numbers, file headers, grid bor‐[0m
+[38;2;248;248;242m              ders, Git modifications, ..) to display in addition to the  file[0m
+[38;2;248;248;242m              contents.  The  argument is a comma-separated list of components[0m
+[38;2;248;248;242m              to display (e.g. 'numbers,changes,grid') or a pre-defined  style[0m
+[38;2;248;248;242m              ('full').  To set a default style, add the '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m"[0m[38;2;248;248;242m.."' option[0m
+[38;2;248;248;242m              to the configuration file or export  the  BAT_STYLE  environment[0m
+[38;2;248;248;242m              variable (e.g.: export BAT_STYLE=".."). Possible values: *auto*,[0m
+[38;2;248;248;242m              full, plain, changes, header, grid, numbers, snip.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-r[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--line-range[0m[38;2;248;248;242m <N:M>...[0m
+
+[38;2;248;248;242m              Only print the specified range of lines for each file. For exam‐[0m
+[38;2;248;248;242m              ple:[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--line-range[0m[38;2;248;248;242m 30:40[0m
+[38;2;248;248;242m                     prints lines 30 to 40[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--line-range[0m[38;2;248;248;242m :40[0m
+[38;2;248;248;242m                     prints lines 1 to 40[0m
+
+[38;2;248;248;242m              [0m[38;2;166;226;46m--line-range[0m[38;2;248;248;242m 40:[0m
+[38;2;248;248;242m                     prints lines 40 to the end of the file[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-L[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--list-languages[0m
+
+[38;2;248;248;242m              Display a list of supported languages for syntax highlighting.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-u[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--unbuffered[0m
+
+[38;2;248;248;242m              This option exists for POSIX-compliance reasons ('u' is for 'un‐[0m
+[38;2;248;248;242m              buffered'). The output is always unbuffered  -  this  option  is[0m
+[38;2;248;248;242m              simply ignored.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-h[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--help[0m
+
+[38;2;248;248;242m              Print this help message.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-V[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--version[0m
+
+[38;2;248;248;242m              Show version information.[0m
+
+[38;2;253;151;31mPOSITIONAL ARGUMENTS[0m
+[38;2;248;248;242m       <FILE>...[0m
+
+[38;2;248;248;242m              Files  to print and concatenate. Use a dash ('-') or no argument[0m
+[38;2;248;248;242m              at all to read from standard input.[0m
+
+[38;2;253;151;31mSUBCOMMANDS[0m
+[38;2;248;248;242m       cache - Modify the syntax-definition and theme cache.[0m
+
+[38;2;253;151;31mFILES[0m
+[38;2;248;248;242m       bat can also be customized with a configuration file. The  location  of[0m
+[38;2;248;248;242m       the file is dependent on your operating system. To get the default path[0m
+[38;2;248;248;242m       for your system, call:[0m
+
+[38;2;248;248;242m       bat [0m[38;2;166;226;46m--config-file[0m
+
+[38;2;248;248;242m       Alternatively, you can use the BAT_CONFIG_PATH environment variable  to[0m
+[38;2;248;248;242m       point bat to a non-default location of the configuration file.[0m
+
+[38;2;253;151;31mADDING CUSTOM LANGUAGES[0m
+[38;2;248;248;242m       bat  supports  Sublime  Text .sublime-syntax language files, and can be[0m
+[38;2;248;248;242m       customized to add additional languages to your local  installation.  To[0m
+[38;2;248;248;242m       do  this,  add  the  .sublime-snytax language files to `$(bat [0m[38;2;166;226;46m--config-[0m
+[38;2;248;248;242m       dir)/syntaxes` and run `bat cache [0m[38;2;166;226;46m--build[0m[38;2;248;248;242m`.[0m
+
+[38;2;248;248;242m       Example:[0m
+
+[38;2;248;248;242m            mkdir [0m[38;2;166;226;46m-p[0m[38;2;248;248;242m "$(bat [0m[38;2;166;226;46m--config-dir[0m[38;2;248;248;242m)/syntaxes"[0m
+[38;2;248;248;242m            cd "$(bat [0m[38;2;166;226;46m--config-dir[0m[38;2;248;248;242m)/syntaxes"[0m
+
+[38;2;248;248;242m            # Put new '.sublime-syntax' language definition files[0m
+[38;2;248;248;242m            # in this folder (or its subdirectories), for example:[0m
+[38;2;248;248;242m            git clone https://github.com/tellnobody1/sublime-purescript-syntax[0m
+
+[38;2;248;248;242m            # And then build the cache.[0m
+[38;2;248;248;242m            bat cache [0m[38;2;166;226;46m--build[0m
+
+[38;2;248;248;242m       Once the cache is built, the new  language  will  be  visible  in  `bat[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--list-languages[0m[38;2;248;248;242m`.[0m
+[38;2;248;248;242m       If  you  ever  want  to  remove the custom languages, you can clear the[0m
+[38;2;248;248;242m       cache with `bat cache [0m[38;2;166;226;46m--clear[0m[38;2;248;248;242m`.[0m
+
+[38;2;253;151;31mADDING CUSTOM THEMES[0m
+[38;2;248;248;242m       Similarly to custom  languages,  bat  supports  Sublime  Text  .tmTheme[0m
+[38;2;248;248;242m       themes.   These  can  be installed to `$(bat [0m[38;2;166;226;46m--config-dir[0m[38;2;248;248;242m)/themes`, and[0m
+[38;2;248;248;242m       are added to the cache with `bat cache [0m[38;2;166;226;46m--build[0m[38;2;248;248;242m`.[0m
+
+[38;2;253;151;31mMORE INFORMATION[0m
+[38;2;248;248;242m       For more information and up-to-date documentation, visit the bat repo:[0m
+[38;2;248;248;242m       https://github.com/sharkdp/bat[0m
+
+[38;2;248;248;242m                                                                        [0m[38;2;166;226;46mBAT[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m

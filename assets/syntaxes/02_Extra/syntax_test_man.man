@@ -1,0 +1,151 @@
+# SYNTAX TEST "Manpage.sublime-syntax"
+SOMETHING(8)                System Manager's Manual               SOMETHING(8)
+# ^^^^^ meta.preprocessor
+#                           ^^^^^^^^^^^^^^^^^^^^^^^ markup.heading.title
+#                                                                   ^^^^^^^ meta.preprocessor
+
+NAME
+#^^^ markup.heading.other
+       example - do something useful
+
+SYNOPSIS
+       example  [options]  [--home  DIR]  [--shell  SHELL]  [--no-create-home]
+#                          ^ punctuation.section.brackets.begin
+#                           ^^^^^^ entity.name.command-line-option
+#                                   ^^^ variable.parameter
+#                                      ^ punctuation.section.brackets.end
+#                                         ^ punctuation.section.brackets.begin
+#                                          ^^^^^^^ entity.name.command-line-option
+#                                                   ^^^^^ variable.parameter
+#                                                        ^ punctuation.section.brackets.end
+#                                                           ^ punctuation.section.brackets.begin
+#                                                            ^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                                                            ^ punctuation.section.brackets.end
+                  [-u | --set-upstream] [-o <string> | --push-option=<string>]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^ entity.name.command-line-option
+#                     ^ keyword.operator.logical
+#                       ^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                     ^ punctuation.section.brackets.end
+#                                                      ^^^^^^^^^^^^^ entity.name.command-line-option
+                  [--force-with-lease[=<refname>[:<expect>]]]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                    ^ punctuation.section.brackets.begin
+#                                     ^ keyword.operator
+#                                       ^^^^^^^ variable.parameter
+#                                               ^ punctuation.section.brackets.begin
+#                                                  ^^^^^^ variable.parameter
+#                                                         ^^^ punctuation.section.brackets.end
+
+       example --system [options]
+#              ^^^^^^^^ entity.name
+
+   COMMON OPTIONS
+       [--quiet] [--debug] [--help|-h]  [--version]  [--conf FILE]
+
+        /* According to POSIX.1-2001, POSIX.1-2008 */
+#       ^^ source.c comment.block punctuation.definition.comment
+       #include <sys/select.h>
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+           struct timeval {
+#          ^^^^^^ source.c storage.type
+            
+               time_t         tv_sec;     /* seconds */
+               suseconds_t    tv_usec;    /* microseconds */
+           };
+
+
+
+DESCRIPTION
+       example does something useful in  relation  to the command line options
+       and configuration information in /etc/example.conf.
+
+OPTIONS
+       --conf FILE
+#      ^^^^^^ entity.name.command-line-option
+#^^^^^^ - variable - entity - markup
+#             ^^^^ variable.parameter
+              Use FILE instead of /etc/example.conf.
+#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+
+       --disabled-login
+              Do  not  run passwd to set the password.  The user won't be able
+              to use her account until the password is set.
+
+       --disabled-password
+              Like --disabled-login, but logins are still possible (for  exam-
+#                  ^^^^^^^^^^^^^^^^ entity.name
+#^^^^^^^^^^^^^^^^^^ - entity - variable - markup
+#                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - entity - variable - markup
+              ple using SSH RSA keys) but not using password authentication.
+
+       --help Display brief instructions.
+#      ^^^^^^ entity.name.command-line-option
+#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable.parameter
+
+       --home DIR
+#      ^^^^^^ entity.name.command-line-option
+#             ^^^ variable.parameter
+#                ^ - variable - entity - markup
+              Use DIR as the user's home directory, rather  than  the  default
+              specified  by the configuration file.  If the directory does not
+              exist, it is created and skeleton files are copied.
+
+       --[no-]signed, --signed=(true|false|if-asked)
+#      ^^^^^^^^^^^^^ entity.name.command-line-option
+#                   ^ punctuation.separator
+#                     ^^^^^^^^ entity.name.command-line-option
+#                             ^ keyword.operator
+#                              ^ - variable
+#                               ^^^^ variable.parameter
+#                                   ^ keyword.operator.logical
+#                                    ^^^^^ variable.parameter
+#                                         ^ keyword.operator.logical
+#                                          ^^^^^^^^ variable.parameter
+#                                                  ^ - variable
+       --no-recurse-submodules, --recurse-submodules=check|on-demand|only|no
+#      ^^^^^^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                             ^ punctuation.separator
+#                               ^^^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                                   ^ keyword.operator
+#                                                    ^^^^^ variable.parameter
+#                                                         ^ keyword.operator.logical
+#                                                          ^^^^^^^^^ variable.parameter
+#                                                                   ^ keyword.operator.logical
+#                                                                    ^^^^ variable.parameter
+#                                                                        ^ keyword.operator.logical
+#                                                                         ^^ variable.parameter
+           May be used to make sure all submodule commits used by the
+
+       -c, -C NUM, --context[=NUM]
+#      ^^ entity.name.command-line-option
+#        ^ punctuation.separator
+#          ^^ entity.name.command-line-option
+#             ^^^ variable.parameter
+#                ^ punctuation.separator
+#                  ^^^^^^^^^ entity.name.command-line-option
+#                           ^^^^^^^ - entity.name
+#                            ^ keyword.operator
+#                             ^^^ variable.parameter
+#                                ^^ - variable
+              output NUM (default 3) lines of copied context
+
+EXAMPLE
+       #include <stdio.h>
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+
+    (This is not C code.)
+#   ^^^^^^^^^^^^^^^^^^^^^^ - source.c
+
+           struct timeval {
+               time_t      tv_sec;         /* seconds */
+               suseconds_t tv_usec;        /* microseconds */
+           };
+#           ^ source.c punctuation.terminator
+
+       The corresponding argument for pselect() has the following type:
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - source.c
+           #define POLLIN_SET  (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN |
+                                EPOLLHUP | EPOLLERR)
+#                                                  ^ source.c meta.preprocessor.macro meta.group punctuation.section.group.end

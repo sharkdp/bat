@@ -1,0 +1,76 @@
+@import "fonts"
+
+$theme_dark: (
+  "background-color": null
+)
+
+$theme_main: (
+  "text-size": 3em
+  "text-color": black
+  "text-shadow": #36ad 0px 0px 3px
+  "card-background": #d6f
+  "card-shadow": #11121212 0px 0px 2px 1px
+  "card-padding": 1rem
+  "card-margin": 0.5in
+  "image-width": 600px
+  "image-height": 100vh
+  "background-color": #dedbef
+  "i-ran-out-of-placeholders-for-units": (
+    1vw 100% 60pt
+  )
+)
+
+$current_theme: $theme_main
+
+@mixin themed()
+  $current_theme: $theme_main !global
+  @content
+
+  @media (prefers-color-scheme: dark)
+    $current_theme: $theme_dark !global
+    @content
+
+  .#{"dark"} &
+    $current_theme: $theme_dark !global
+    @content
+
+@function theme($variable)
+  @if map-has_key($current_theme, $variable)
+    @return map-get($current_theme, $variable)
+  @else
+    @error "Unknown theme variable: #{$variable}"
+
+body
+  @include themed
+    background-color: theme("background-color")
+    background-image: url("https://github.com/sharkdp/bat/raw/master/doc/logo-header.svg")
+
+
+  header[data-selectable="false"]
+    -webkit-user-select: none
+    -moz-user-select: none
+    -ms-user-select: /* CSS comment */ none
+    cursor: default !important // Sass comment
+
+
+  > div
+    border: #04f 1px solid
+
+    &::after
+      content: "Pseudo"
+      color: #2f5f7f
+      box-sizing: border-box
+
+@keyframes rotate
+  0%
+    transform: rotate(0deg)
+  50%
+    transform: rotate(180deg)
+  100%
+    transform: rotate(0rad)
+
+@font-face
+  font-family: "Example Font"
+  src: url(example.ttf) format("ttf")
+  src: local("Comic Sans MS")
+
