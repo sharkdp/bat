@@ -665,9 +665,9 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
-## Contributors
+## Contributing
 
-Take a look to this [guide](CONTRIBUTORS.md)
+Take a look to this [guide](CONTRIBUTING.md)
 
 ## Maintainers
 
