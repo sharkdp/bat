@@ -21,3 +21,21 @@ Entries follow this format:
 ```
 Here, `#123` is the number of the original issue and/or your pull request.
 Please replace `@user` by your GitHub username.
+
+
+## Development
+
+Please check out the [Development](https://github.com/sharkdp/bat#development)
+section in the README.
+
+
+## Adding new syntaxes/languages or themes
+
+Before you make a pull request that adds a new syntax or theme, please read
+the [Customization](https://github.com/sharkdp/bat#customization) section
+in the README first.
+
+If you really think that a particular syntax or theme should be added for all
+users, please read the corresponding
+[documentation](https://github.com/sharkdp/bat/blob/master/doc/assets.md)
+first.
