@@ -29,6 +29,13 @@ Please check out the [Development](https://github.com/sharkdp/bat#development)
 section in the README.
 
 
+## Adding a new feature
+
+Please consider opening a
+[feature request ticket](https://github.com/sharkdp/bat/issues/new?assignees=&labels=feature-request&template=feature_request.md)
+first in order to give us a chance to discuss the feature first.
+
+
 ## Adding new syntaxes/languages or themes
 
 Before you make a pull request that adds a new syntax or theme, please read
