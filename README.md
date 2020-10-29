@@ -667,7 +667,7 @@ cargo install --path . --locked --force
 
 ## Contributing
 
-Take a look to this [guide](CONTRIBUTING.md)
+Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 
 ## Maintainers
 
