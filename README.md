@@ -139,6 +139,8 @@ highlighting:
 git diff --name-only --diff-filter=d | xargs bat --diff
 ```
 
+If you are looking for more support for git and diff operations, check out [`delta`](https://github.com/dandavison/delta).
+
 #### `xclip`
 
 The line numbers and Git modification markers in the output of `bat` can make it hard to copy
