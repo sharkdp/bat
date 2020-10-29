@@ -13,6 +13,7 @@
 ## Syntaxes
 
 - Manpage syntax highlighting has been improved, see #1315 (@keith-hall)
+- Add Svelte file syntax, see #1285 (@kjmph)
 
 ## New themes
 
