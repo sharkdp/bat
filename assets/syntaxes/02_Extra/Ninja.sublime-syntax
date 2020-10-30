@@ -1,0 +1,52 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Ninja
+file_extensions:
+  - ninja
+scope: source.ninja
+contexts:
+  main:
+    - match: (#).*$\n?
+      comment: Comment line.
+      scope: comment.line.number-sign.ninja
+      captures:
+        1: punctuation.definition.comment.ninja
+    - match: ^(rule)\b
+      comment: Rule keyword and keywords for a rule.
+      captures:
+        1: keyword.other.ninja
+      push:
+        - match: ^(?=\S)
+          pop: true
+        - include: main
+        - match: \b(?:command|deps|depfile|description|generator|pool|restat|rspfile|rspfile_content)\b
+          scope: keyword.other.ninja
+    - match: ^(pool)\b
+      comment: Pool keyword and keywords for a pool.
+      captures:
+        1: keyword.other.ninja
+      push:
+        - match: ^(?=\S)
+          pop: true
+        - include: main
+        - match: \b(?:depth)\b
+          scope: keyword.other.ninja
+    - match: ^(?:build|rule|default|include|subninja)\b
+      comment: Other Keywords.
+      scope: keyword.other.ninja
+    - match: '(?:[=:]|\|{1,2})(?=\s)'
+      comment: Operators for variable assignment (=), rule definition (:), implicit (|) and order only (||) dependencies.
+      scope: keyword.operator.ninja
+    - match: \$$
+      comment: Line wrap.
+      scope: keyword.operator.ninja
+    - match: \$\$
+      comment: Dollar literal.
+      scope: keyword.operator.ninja
+    - match: '\$[[:alnum:]_-]+'
+      comment: Simple variables, e.g. $var.
+      scope: variable.other.ninja
+    - match: '\${[[:alnum:]_.-]+}'
+      comment: "Variables, e.g. ${some.var.name}."
+      scope: variable.other.ninja
