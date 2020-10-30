@@ -147,7 +147,7 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_file<'a>(
+    fn print_file(
         &self,
         printer: &mut dyn Printer,
         writer: &mut dyn Write,

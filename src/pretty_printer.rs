@@ -37,8 +37,8 @@ pub struct PrettyPrinter<'a> {
     active_style_components: ActiveStyleComponents,
 }
 
-impl<'a> PrettyPrinter<'a> {
-    pub fn new() -> Self {
+impl<'a> Default for PrettyPrinter<'a> {
+    fn default() -> Self {
         let mut config = Config::default();
 
         config.colored_output = true;
@@ -53,6 +53,12 @@ impl<'a> PrettyPrinter<'a> {
             term_width: None,
             active_style_components: ActiveStyleComponents::default(),
         }
+    }
+}
+
+impl<'a> PrettyPrinter<'a> {
+    pub fn new() -> Self {
+        PrettyPrinter::default()
     }
 
     /// Add an input which should be pretty-printed
@@ -328,7 +334,7 @@ impl<'a> Input<'a> {
 
     /// A new input from bytes.
     pub fn from_bytes(bytes: &'a [u8]) -> Self {
-        Input::from_reader(bytes).into()
+        Input::from_reader(bytes)
     }
 
     /// A new input from STDIN.

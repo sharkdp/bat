@@ -82,10 +82,9 @@ impl App {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
-                if self.matches.occurrences_of("plain") > 1 {
+                if self.matches.occurrences_of("plain") > 1
+                    || self.matches.is_present("no-paging") {
                     // If we have -pp as an option when in auto mode, the pager should be disabled.
-                    PagingMode::Never
-                } else if self.matches.is_present("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
@@ -169,7 +168,7 @@ impl App {
                 || match self.matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") | _ => {
+                    _ => {
                         env::var_os("NO_COLOR").is_none() && self.interactive_output
                     }
                 },
@@ -226,17 +225,14 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
-            use_italic_text: match self.matches.value_of("italic-text") {
-                Some("always") => true,
-                _ => false,
-            },
+            use_italic_text: matches!(self.matches.value_of("italic-text"), Some("always")),
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
                 .map(|ws| ws.map(LineRange::from).collect())
                 .transpose()?
                 .map(LineRanges::from)
-                .map(|lr| HighlightedLineRanges(lr))
+                .map(HighlightedLineRanges)
                 .unwrap_or_default(),
         })
     }
