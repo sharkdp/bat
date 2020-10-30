@@ -131,7 +131,18 @@ highlighting:
 git show v0.6.0:src/main.rs | bat -l rs
 ```
 
-Note that syntax highlighting within diffs is currently not supported. If you are looking for this, check out [`delta`](https://github.com/dandavison/delta).
+#### `git diff`
+
+You can combine `bat` with `git diff` to view lines around code changes with proper syntax
+highlighting:
+```bash
+batdiff() {
+    git diff --name-only --diff-filter=d | xargs bat --diff
+}
+```
+If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
+
+If you are looking for more support for git and diff operations, check out [`delta`](https://github.com/dandavison/delta).
 
 #### `xclip`
 
@@ -664,6 +675,10 @@ cargo install --path . --locked
 bash assets/create.sh
 cargo install --path . --locked --force
 ```
+
+## Contributing
+
+Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 
 ## Maintainers
 

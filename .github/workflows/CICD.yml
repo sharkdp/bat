@@ -58,6 +58,11 @@ jobs:
       with:
         command: test
         args: --release
+    - name: Run ignored-by-default unit tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages

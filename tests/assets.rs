@@ -1,7 +1,9 @@
 use bat::assets::HighlightingAssets;
 
 /// This test ensures that we are not accidentally removing themes due to submodule updates.
+/// It is 'ignore'd by default because it requires themes.bin to be up-to-date.
 #[test]
+#[ignore]
 fn all_themes_are_present() {
     let assets = HighlightingAssets::from_binary();
 
@@ -12,6 +14,8 @@ fn all_themes_are_present() {
         themes,
         vec![
             "1337",
+            "Coldark-Cold",
+            "Coldark-Dark",
             "DarkNeon",
             "Dracula",
             "GitHub",

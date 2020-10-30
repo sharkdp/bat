@@ -1,6 +1,5 @@
 # unreleased
 
-- Add Note to refer to see detailed help with --help (and vice versa with -h). see #1215 (@henil)
 
 ## Features
 
@@ -8,13 +7,21 @@
 
 ## Bugfixes
 
+- Throws an error when `bat` is being used as `pager`, see #1343 (@adrian-rivera)
+
 ## Other
+
+- Add note to refer to see detailed help with `--help` (and vice versa with `-h`), see #1215 (@henil)
+- Add a `Contributors` section to `README`, see #1348 (@adrian-rivera)
 
 ## Syntaxes
 
 - Manpage syntax highlighting has been improved, see #1315 (@keith-hall)
+- Add Svelte file syntax, see #1285 (@kjmph)
 
 ## New themes
+
+- Coldark, see #1329 (@armandphilippot)
 
 ## `bat` as a library
 
