@@ -4,6 +4,7 @@
 ## Features
 
 - Adjust pager configuration to comply with `--wrap=never`, see #1255 (@gahag)
+- Added a new `--style` value, `rule`, which adds a simple horizontal ruled line between files, see #1276 (@tommilligan)
 
 ## Bugfixes
 

@@ -581,6 +581,18 @@ fn empty_file_leads_to_empty_output_with_grid_enabled() {
 }
 
 #[test]
+fn empty_file_leads_to_empty_output_with_rule_enabled() {
+    bat()
+        .arg("empty.txt")
+        .arg("--style=rule")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn filename_basic() {
     bat()
         .arg("test.txt")
@@ -676,6 +688,48 @@ fn header_padding() {
         .assert()
         .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
         .stderr("");
+}
+
+#[test]
+fn header_padding_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "File: test.txt
+hello world
+────────────────────────────────────────────────────────────────────────────────
+File: single-line.txt
+Single Line
+",
+        )
+        .stderr("");
+}
+
+#[test]
+fn grid_overrides_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "\
+────────────────────────────────────────────────────────────────────────────────
+hello world
+────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
+Single Line
+────────────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n");
 }
 
 #[cfg(target_os = "linux")]

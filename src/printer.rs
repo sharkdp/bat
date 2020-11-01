@@ -200,13 +200,18 @@ impl<'a> InteractivePrinter<'a> {
         })
     }
 
+    fn print_horizontal_line_term(&mut self, handle: &mut dyn Write, style: Style) -> Result<()> {
+        writeln!(
+            handle,
+            "{}",
+            style.paint("─".repeat(self.config.term_width))
+        )?;
+        Ok(())
+    }
+
     fn print_horizontal_line(&mut self, handle: &mut dyn Write, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
-            writeln!(
-                handle,
-                "{}",
-                self.colors.grid.paint("─".repeat(self.config.term_width))
-            )?;
+            self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
@@ -251,6 +256,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
+        if add_header_padding && self.config.style_components.rule() {
+            self.print_horizontal_line_term(handle, self.colors.rule)?;
+        }
+
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 writeln!(
@@ -279,7 +288,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )?;
         } else {
-            if add_header_padding {
+            // Only pad space between files, if we haven't already drawn a horizontal rule
+            if add_header_padding && !self.config.style_components.rule() {
                 writeln!(handle)?;
             }
             write!(handle, "{}", " ".repeat(self.panel_width))?;
@@ -603,6 +613,7 @@ const DEFAULT_GUTTER_COLOR: u8 = 238;
 #[derive(Debug, Default)]
 pub struct Colors {
     pub grid: Style,
+    pub rule: Style,
     pub filename: Style,
     pub git_added: Style,
     pub git_removed: Style,
@@ -624,6 +635,7 @@ impl Colors {
 
         Colors {
             grid: gutter_color.normal(),
+            rule: gutter_color.normal(),
             filename: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
