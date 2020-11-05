@@ -169,9 +169,7 @@ impl App {
                 || match self.matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") | _ => {
-                        env::var_os("NO_COLOR").is_none() && self.interactive_output
-                    }
+                    _ => env::var_os("NO_COLOR").is_none() && self.interactive_output,
                 },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
@@ -226,17 +224,14 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
-            use_italic_text: match self.matches.value_of("italic-text") {
-                Some("always") => true,
-                _ => false,
-            },
+            use_italic_text: matches!(self.matches.value_of("italic-text"), Some("always")),
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
                 .map(|ws| ws.map(LineRange::from).collect())
                 .transpose()?
                 .map(LineRanges::from)
-                .map(|lr| HighlightedLineRanges(lr))
+                .map(HighlightedLineRanges)
                 .unwrap_or_default(),
         })
     }

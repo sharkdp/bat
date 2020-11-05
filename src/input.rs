@@ -137,17 +137,12 @@ impl<'a> Input<'a> {
     }
 
     pub fn is_stdin(&self) -> bool {
-        if let InputKind::StdIn = self.kind {
-            true
-        } else {
-            false
-        }
+        matches!(self.kind, InputKind::StdIn)
     }
 
     pub fn with_name(mut self, provided_name: Option<&OsStr>) -> Self {
-        match provided_name {
-            Some(name) => self.description.name = name.to_string_lossy().to_string(),
-            None => {}
+        if let Some(name) = provided_name {
+            self.description.name = name.to_string_lossy().to_string()
         }
 
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
