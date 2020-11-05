@@ -338,7 +338,7 @@ impl<'a> Input<'a> {
 
     /// A new input from bytes.
     pub fn from_bytes(bytes: &'a [u8]) -> Self {
-        Input::from_reader(bytes).into()
+        Input::from_reader(bytes)
     }
 
     /// A new input from STDIN.

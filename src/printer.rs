@@ -311,7 +311,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             description
                 .kind()
                 .map(|kind| format!("{}: ", kind))
-                .unwrap_or("".into()),
+                .unwrap_or_else(|| "".into()),
             self.colors.filename.paint(description.title()),
             mode
         )?;
