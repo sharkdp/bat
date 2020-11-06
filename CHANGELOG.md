@@ -10,6 +10,7 @@
 
 - Throws an error when `bat` is being used as `pager`, see #1343 (@adrian-rivera)
 - Bash syntax highlighting not selected for `*.ebuild` and `*.eclass` files, see #1292 (@sharkdp)
+- Fix `zsh` completion when using `-p`, see #1320 (@xzfc)
 
 ## Other
 
