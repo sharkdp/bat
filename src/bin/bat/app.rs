@@ -224,7 +224,7 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
-            use_italic_text: matches!(self.matches.value_of("italic-text"), Some("always")),
+            use_italic_text: self.matches.value_of("italic-text") == Some("always"),
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
