@@ -1,6 +1,8 @@
+use std::convert::TryFrom;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
+use std::path::Path;
 
 use content_inspector::{self, ContentType};
 
@@ -188,6 +190,18 @@ impl<'a> Input<'a> {
                 metadata: self.metadata,
                 reader: InputReader::new(BufReader::new(reader)),
             }),
+        }
+    }
+}
+
+impl TryFrom<&'_ Input<'_>> for clircle::Identifier {
+    type Error = ();
+
+    fn try_from(input: &Input) -> std::result::Result<clircle::Identifier, ()> {
+        match input.kind {
+            InputKind::OrdinaryFile(ref path) => Self::try_from(Path::new(path)).map_err(|_| ()),
+            InputKind::StdIn => Self::try_from(clircle::Stdio::Stdin).map_err(|_| ()),
+            InputKind::CustomReader(_) => Err(()),
         }
     }
 }
