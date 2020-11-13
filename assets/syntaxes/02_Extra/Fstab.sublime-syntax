@@ -4,6 +4,7 @@
 name: fstab
 file_extensions:
   - fstab
+  - crypttab
 scope: source.fstab
 
 contexts:

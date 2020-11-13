@@ -25,12 +25,13 @@ contexts:
       scope: comment.line.semicolon.ini
       captures:
         1: punctuation.definition.comment.ini
-    - match: '^\s*(\[)(.*?)(\])'
+    - match: '^\s*(\[)(.*?)(\])\s*(;.*)?$\n?'
       scope: meta.tag.section.ini
       captures:
         1: punctuation.definition.section.ini
         2: entity.section.ini
         3: punctuation.definition.section.ini
+        4: comment.definition.section.ini
     - match: '^(\s*(["'']?)(.+?)(\2)\s*(=))?\s*((["'']?)(.*?)(\7))\s*(;.*)?$\n?'
       scope: meta.declaration.ini
       captures:

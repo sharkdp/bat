@@ -165,16 +165,20 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping
             },
-            colored_output: match self.matches.value_of("color") {
-                Some("always") => true,
-                Some("never") => false,
-                Some("auto") | _ => env::var_os("NO_COLOR").is_none() && self.interactive_output,
-            },
+            colored_output: self.matches.is_present("force-colorization")
+                || match self.matches.value_of("color") {
+                    Some("always") => true,
+                    Some("never") => false,
+                    Some("auto") | _ => {
+                        env::var_os("NO_COLOR").is_none() && self.interactive_output
+                    }
+                },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.value_of("color") == Some("always")
-                || self.matches.value_of("decorations") == Some("always")),
+                || self.matches.value_of("decorations") == Some("always")
+                || self.matches.is_present("force-colorization")),
             tab_width: self
                 .matches
                 .value_of("tabs")
@@ -284,8 +288,8 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        Ok(StyleComponents(
-            if matches.value_of("decorations") == Some("never") {
+        let mut styled_components =
+            StyleComponents(if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
             } else if matches.is_present("number") {
                 [StyleComponent::LineNumbers].iter().cloned().collect()
@@ -319,7 +323,17 @@ impl App {
                         acc.extend(components.iter().cloned());
                         acc
                     })
-            },
-        ))
+            });
+
+        // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
+        if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
+            use ansi_term::Colour::Yellow;
+            eprintln!(
+                "{}: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.",
+                Yellow.paint("[bat warning]"),
+            );
+        }
+
+        Ok(styled_components)
     }
 }

@@ -39,13 +39,13 @@
 
 ### 自動ページング
 
-出力が1つの画面に対して大きすぎる場合、`bat` は自身の出力を `less` にパイプで繋げることが可能です。
+出力が1つの画面に対して大きすぎる場合、`bat` は自身の出力をページャー(例えば `less`) にパイプで繋げます。
 
 ### ファイルの連結
 
 あなたはさらにファイルを連結させるために使うことも可能です:wink:。
-`bat` は非対話型のターミナルを検出すると、
-いつでも `cat` の完全互換として振る舞い、
+`bat` は非対話型のターミナルを検出すると(すなわち他のプロセスにパイプしたりファイル出力していると)、
+`bat` は `cat` の完全互換として振る舞い、
 プレーンなファイルを表示します。
 
 ## 使い方
@@ -62,7 +62,9 @@
 > bat src/*.rs
 ```
 
-標準入力から自動的に構文を決定させたい場合
+標準入力から自動的に構文を決定させたい場合(ハイライトされるのは、
+たいていは `#!/bin/sh` のようなシバンを利用して、
+ファイルの一行目から構文を決定できる場合のみです)
 
 ```bash
 > curl -s https://sh.rustup.rs | bat
@@ -152,7 +154,7 @@ man 2 select
 ```
 
 フォーマットの問題が発生した場合は
-`MANROFFOPT = "-c"` を設定する必要もあります。
+`MANROFFOPT="-c"` を設定する必要もあります。
 
 これを新しいコマンドにバンドルしたい場合は [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md) も使用できます。
 
@@ -189,7 +191,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
 ```bash
-sudo dpkg -i bat_0.15.4_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.16.0_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux

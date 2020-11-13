@@ -86,6 +86,28 @@ pub fn list_languages(config: &Config) -> Result<()> {
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
         .cloned()
         .collect::<Vec<_>>();
+
+    // Handling of file-extension conflicts, see issue #1076
+    for lang in languages.iter_mut() {
+        let lang_name = lang.name.clone();
+        lang.file_extensions.retain(|extension| {
+            // The 'extension' variable is not certainly a real extension.
+            //
+            // Skip if 'extension' starts with '.', likely a hidden file like '.vimrc'
+            // Also skip if the 'extension' contains another real extension, likely
+            // that is a full match file name like 'CMakeLists.txt' and 'Cargo.lock'
+            if extension.starts_with('.') || Path::new(extension).extension().is_some() {
+                true
+            } else {
+                let test_file = Path::new("test").with_extension(extension);
+                match assets.syntax_for_file_name(test_file, &config.syntax_mapping) {
+                    Some(syntax) => syntax.name == lang_name,
+                    None => false,
+                }
+            }
+        });
+    }
+
     languages.sort_by_key(|lang| lang.name.to_uppercase());
 
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
@@ -183,6 +205,14 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             writeln!(stdout, "{}", theme)?;
         }
     }
+    writeln!(
+        stdout,
+        "Further themes can be installed to '{}', \
+        and are added to the cache with `bat cache --build`. \
+        For more information, see:\n\n  \
+        https://github.com/sharkdp/bat#adding-new-themes",
+        config_file().join("themes").to_string_lossy()
+    )?;
 
     Ok(())
 }

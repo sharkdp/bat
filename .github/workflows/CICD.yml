@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
       with:
         submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
@@ -58,6 +58,11 @@ jobs:
       with:
         command: test
         args: --release
+    - name: Run ignored-by-default unit tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
@@ -87,7 +92,7 @@ jobs:
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
     - name: Git checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install prerequisites
       shell: bash
       run: |
@@ -284,6 +289,7 @@ jobs:
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.zsh"
 
         # base compressed package
         pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
@@ -319,6 +325,7 @@ jobs:
 
           # Autocompletion files
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
+          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 
           # README and LICENSE
           install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
@@ -410,7 +417,7 @@ jobs:
           - { os: macos-latest , toolchain: nightly-2020-04-29 }
           - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Initialize workflow variables
       id: vars
       shell: bash

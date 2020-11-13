@@ -44,8 +44,7 @@ pub fn generate_config_file() -> bat::error::Result<()> {
         }
     }
 
-    let default_config =
-        r#"# This is `bat`s configuration file. Each line either contains a comment or
+    let default_config = r#"# This is `bat`s configuration file. Each line either contains a comment or
 # a command-line option that you want to pass to `bat` by default. You can
 # run `bat --help` to get a list of all possible configuration options.
 

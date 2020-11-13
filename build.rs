@@ -8,6 +8,7 @@ fn main() {}
 
 #[cfg(feature = "application")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use std::collections::HashMap;
     use std::error::Error;
     use std::fs;
     use std::path::Path;
@@ -15,27 +16,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Read environment variables.
     let project_name = option_env!("PROJECT_NAME").unwrap_or("bat");
     let executable_name = option_env!("PROJECT_EXECUTABLE").unwrap_or(project_name);
+    let executable_name_uppercase = executable_name.to_uppercase();
     static PROJECT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-    /// Generates a file from a liquid template.
+    /// Generates a file from a template.
     fn template(
-        variables: &liquid::Object,
+        variables: &HashMap<&str, &str>,
         in_file: &str,
         out_file: impl AsRef<Path>,
     ) -> Result<(), Box<dyn Error>> {
-        let template = liquid::ParserBuilder::with_stdlib()
-            .build()?
-            .parse(&fs::read_to_string(in_file)?)?;
+        let mut content = fs::read_to_string(in_file)?;
 
-        fs::write(out_file, template.render(variables)?)?;
+        for (variable_name, value) in variables {
+            // Replace {{variable_name}} by the value
+            let pattern = format!("{{{{{variable_name}}}}}", variable_name = variable_name);
+            content = content.replace(&pattern, value);
+        }
+
+        fs::write(out_file, content)?;
         Ok(())
     }
 
-    let variables = liquid::object!({
-        "PROJECT_NAME": project_name,
-        "PROJECT_EXECUTABLE": executable_name,
-        "PROJECT_VERSION": PROJECT_VERSION,
-    });
+    let mut variables = HashMap::new();
+    variables.insert("PROJECT_NAME", project_name);
+    variables.insert("PROJECT_EXECUTABLE", executable_name);
+    variables.insert("PROJECT_EXECUTABLE_UPPERCASE", &executable_name_uppercase);
+    variables.insert("PROJECT_VERSION", PROJECT_VERSION);
 
     let out_dir_env = std::env::var_os("OUT_DIR").expect("OUT_DIR to be set in build.rs");
     let out_dir = Path::new(&out_dir_env);
@@ -52,6 +58,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &variables,
         "assets/completions/bat.fish.in",
         out_dir.join("assets/completions/bat.fish"),
+    )?;
+    template(
+        &variables,
+        "assets/completions/bat.zsh.in",
+        out_dir.join("assets/completions/bat.zsh"),
     )?;
 
     Ok(())

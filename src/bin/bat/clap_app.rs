@@ -24,6 +24,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             "A cat(1) clone with wings.\n\n\
              Use '--help' instead of '-h' to see a more detailed version of the help text.",
         )
+        .after_help(
+            "Note: `bat -h` prints a short and concise overview while `bat --help` gives all \
+                 details.",
+        )
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
         .arg(
             Arg::with_name("FILE")
@@ -104,8 +108,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Specify the name to display for a file.")
                 .long_help(
                     "Specify the name to display for a file. Useful when piping \
-                            data to bat from STDIN when bat does not otherwise know \
-                            the filename.",
+                     data to bat from STDIN when bat does not otherwise know \
+                     the filename. Note that the provided file name is also \
+                     used for syntax detection.",
                 ),
         );
 
@@ -258,6 +263,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("force-colorization")
+                .long("force-colorization")
+                .short("f")
+                .conflicts_with("color")
+                .conflicts_with("decorations")
+                .overrides_with("force-colorization")
+                .hidden_short_help(true)
+                .long_help("Alias for '--decorations=always --color=always'. This is useful \
+                        if the output of bat is piped to another program, but you want \
+                        to keep the colorization/decorations.")
+        )
+        .arg(
             Arg::with_name("paging")
                 .long("paging")
                 .overrides_with("paging")
@@ -346,11 +363,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .overrides_with("style")
                 .overrides_with("plain")
                 .overrides_with("number")
-                // Cannot use clap's built in validation because we have to turn off clap's delimiters
+                // Cannot use claps built in validation because we have to turn off clap's delimiters
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "grid", "numbers", "snip",
+                            "auto", "full", "plain", "header", "grid", "rule", "numbers", "snip",
                             #[cfg(feature = "git")]
                                 "changes",
                         ]
@@ -365,7 +382,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, numbers, snip).",
+                     (*auto*, full, plain, changes, header, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -374,8 +391,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      components to display (e.g. 'numbers,changes,grid') or a \
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
-                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\"). \
-                     Possible values: *auto*, full, plain, changes, header, grid, numbers, snip.",
+                     BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     Possible values:\n\n  \
+                     * full: enables all available components.\n  \
+                     * auto: same as 'full', unless the output is piped (default).\n  \
+                     * plain: disables all available components.\n  \
+                     * changes: show Git modification markers.\n  \
+                     * header: show filenames before the content.\n  \
+                     * grid: vertical/horizontal lines to separate side bar\n          \
+                       and the header from the content.\n  \
+                     * rule: horizontal lines to delimit files.\n  \
+                     * numbers: show line numbers in the side bar.\n  \
+                     * snip: draw separation lines between distinct line ranges.",
                 ),
         )
         .arg(

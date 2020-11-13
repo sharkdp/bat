@@ -1,0 +1,353 @@
+[38;2;248;248;242mdiff --git a/CHANGELOG.md b/CHANGELOG.md[0m
+[38;2;248;248;242mindex ced88213..973eba9a 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/CHANGELOG.md[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/CHANGELOG.md[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-2,6 +2,11[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m ## Features[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m- Add a new `--diff` option that can be used to only show lines surrounding[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m  Git changes, i.e. added, removed or modified lines. The amount of additional[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m  context can be controlled with `--diff-context=N`. See #23 and #940[0m
+[38;2;166;226;46m+[0m
+[38;2;248;248;242m ## Bugfixes[0m
+[38;2;248;248;242m ## Other[0m
+[38;2;248;248;242m ## `bat` as a library[0m
+[38;2;248;248;242mdiff --git a/src/bin/bat/app.rs b/src/bin/bat/app.rs[0m
+[38;2;248;248;242mindex e5221455..f0f519ea 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/bin/bat/app.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/bin/bat/app.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-15,7 +15,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46muse console::Term;[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m use bat::{[0m
+[38;2;248;248;242m     assets::HighlightingAssets,[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    config::Config,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    config::{Config, VisibleLines},[0m
+[38;2;248;248;242m     error::*,[0m
+[38;2;248;248;242m     input::Input,[0m
+[38;2;248;248;242m     line_range::{HighlightedLineRanges, LineRange, LineRanges},[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-196,13 +196,23[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl App {[0m
+[38;2;248;248;242m                     }[0m
+[38;2;248;248;242m                 })[0m
+[38;2;248;248;242m                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            line_ranges: self[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .matches[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .values_of("line-range")[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .map(|vs| vs.map(LineRange::from).collect())[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .transpose()?[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .map(LineRanges::from)[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                .unwrap_or_default(),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            visible_lines: if self.matches.is_present("diff") {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                VisibleLines::DiffContext([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    self.matches[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .value_of("diff-context")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .and_then(|t| t.parse().ok())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .unwrap_or(2),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                )[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            } else {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                VisibleLines::Ranges([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    self.matches[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .values_of("line-range")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .map(|vs| vs.map(LineRange::from).collect())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .transpose()?[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .map(LineRanges::from)[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        .unwrap_or_default(),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                )[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            },[0m
+[38;2;248;248;242m             style_components,[0m
+[38;2;248;248;242m             syntax_mapping,[0m
+[38;2;248;248;242m             pager: self.matches.value_of("pager"),[0m
+[38;2;248;248;242mdiff --git a/src/bin/bat/clap_app.rs b/src/bin/bat/clap_app.rs[0m
+[38;2;248;248;242mindex c7344991..85edefde 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/bin/bat/clap_app.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/bin/bat/clap_app.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-105,6 +105,34[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mpub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {[0m
+[38;2;248;248;242m                             data to bat from STDIN when bat does not otherwise know \[0m
+[38;2;248;248;242m                             the filename."),[0m
+[38;2;248;248;242m         )[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        .arg([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            Arg::with_name("diff")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .long("diff")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .help("Only show lines that have been added/removed/modified.")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .long_help([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    "Only show lines that have been added/removed/modified with respect \[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                     to the Git index. Use --diff-context=N to control how much context you want to see.",[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                ),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        )[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        .arg([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            Arg::with_name("diff-context")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .long("diff-context")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .overrides_with("diff-context")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .takes_value(true)[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .value_name("N")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .validator([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    |n| {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        n.parse::<usize>()[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            .map_err(|_| "must be a number")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            .map(|_| ()) // Convert to Result<(), &str>[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            .map_err(|e| e.to_string())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    }, // Convert to Result<(), String>[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                )[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .hidden_short_help(true)[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .long_help([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    "Include N lines of context around added/removed/modified lines when using '--diff'.",[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                ),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        )[0m
+[38;2;248;248;242m         .arg([0m
+[38;2;248;248;242m             Arg::with_name("tabs")[0m
+[38;2;248;248;242m                 .long("tabs")[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-339,6 +367,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mpub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {[0m
+[38;2;248;248;242m                 .takes_value(true)[0m
+[38;2;248;248;242m                 .number_of_values(1)[0m
+[38;2;248;248;242m                 .value_name("N:M")[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                .conflicts_with("diff")[0m
+[38;2;248;248;242m                 .help("Only print the lines from N to M.")[0m
+[38;2;248;248;242m                 .long_help([0m
+[38;2;248;248;242m                     "Only print the specified range of lines for each file. \[0m
+[38;2;248;248;242mdiff --git a/src/config.rs b/src/config.rs[0m
+[38;2;248;248;242mindex d5df9910..3c24b77f 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/config.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/config.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-5,6 +5,32[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46muse crate::style::StyleComponents;[0m
+[38;2;248;248;242m use crate::syntax_mapping::SyntaxMapping;[0m
+[38;2;248;248;242m use crate::wrapping::WrappingMode;[0m
+[38;2;248;248;242m [0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m#[derive(Debug, Clone)][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46mpub enum VisibleLines {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    /// Show all lines which are included in the line ranges[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    Ranges(LineRanges),[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    /// Only show lines surrounding added/deleted/modified lines[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    DiffContext(usize),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m}[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46mimpl VisibleLines {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    pub fn diff_context(&self) -> bool {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        match self {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            Self::Ranges(_) => false,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            Self::DiffContext(_) => true,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m}[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46mimpl Default for VisibleLines {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    fn default() -> Self {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        VisibleLines::Ranges(LineRanges::default())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m}[0m
+[38;2;166;226;46m+[0m
+[38;2;248;248;242m #[derive(Debug, Clone, Default)][0m
+[38;2;248;248;242m pub struct Config<'a> {[0m
+[38;2;248;248;242m     /// The explicitly configured language, if any[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-39,8 +65,8[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mpub struct Config<'a> {[0m
+[38;2;248;248;242m     #[cfg(feature = "paging")][0m
+[38;2;248;248;242m     pub paging_mode: PagingMode,[0m
+[38;2;248;248;242m [0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    /// Specifies the lines that should be printed[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    pub line_ranges: LineRanges,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    /// Specifies which lines should be printed[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    pub visible_lines: VisibleLines,[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m     /// The syntax highlighting theme[0m
+[38;2;248;248;242m     pub theme: String,[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-62,10 +88,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mpub struct Config<'a> {[0m
+[38;2;248;248;242m fn default_config_should_include_all_lines() {[0m
+[38;2;248;248;242m     use crate::line_range::RangeCheckResult;[0m
+[38;2;248;248;242m [0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    assert_eq!([0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m        Config::default().line_ranges.check(17),[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m        RangeCheckResult::InRange[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    );[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    assert_eq!(LineRanges::default().check(17), RangeCheckResult::InRange);[0m
+[38;2;248;248;242m }[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m #[test][0m
+[38;2;248;248;242mdiff --git a/src/controller.rs b/src/controller.rs[0m
+[38;2;248;248;242mindex 09c6ec2a..f636d5fd 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/controller.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/controller.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-1,9 +1,13[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m
+[38;2;248;248;242m use std::io::{self, Write};[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m use crate::assets::HighlightingAssets;[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114muse crate::config::Config;[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46muse crate::config::{Config, VisibleLines};[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m#[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46muse crate::diff::{get_git_diff, LineChanges};[0m
+[38;2;248;248;242m use crate::error::*;[0m
+[38;2;248;248;242m use crate::input::{Input, InputReader, OpenedInput};[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m#[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46muse crate::line_range::LineRange;[0m
+[38;2;248;248;242m use crate::line_range::{LineRanges, RangeCheckResult};[0m
+[38;2;248;248;242m use crate::output::OutputType;[0m
+[38;2;248;248;242m #[cfg(feature = "paging")][0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-68,6 +72,32[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'b> Controller<'b> {[0m
+[38;2;248;248;242m                     no_errors = false;[0m
+[38;2;248;248;242m                 }[0m
+[38;2;248;248;242m                 Ok(mut opened_input) => {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    let line_changes = if self.config.visible_lines.diff_context()[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        || (!self.config.loop_through && self.config.style_components.changes())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        if let crate::input::OpenedInputKind::OrdinaryFile(ref path) =[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            opened_input.kind[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            let diff = get_git_diff(path);[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            if self.config.visible_lines.diff_context()[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                                && diff[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                                    .as_ref()[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                                    .map(|changes| changes.is_empty())[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                                    .unwrap_or(false)[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                                continue;[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            }[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            diff[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        } else {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            None[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    } else {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        None[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    };[0m
+[38;2;166;226;46m+[0m
+[38;2;248;248;242m                     let mut printer: Box<dyn Printer> = if self.config.loop_through {[0m
+[38;2;248;248;242m                         Box::new(SimplePrinter::new())[0m
+[38;2;248;248;242m                     } else {[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-75,10 +105,18[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'b> Controller<'b> {[0m
+[38;2;248;248;242m                             &self.config,[0m
+[38;2;248;248;242m                             &self.assets,[0m
+[38;2;248;248;242m                             &mut opened_input,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            &line_changes,[0m
+[38;2;248;248;242m                         ))[0m
+[38;2;248;248;242m                     };[0m
+[38;2;248;248;242m [0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                    let result = self.print_file(&mut *printer, writer, &mut opened_input);[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    let result = self.print_file([0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        &mut *printer,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        writer,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        &mut opened_input,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        &line_changes,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    );[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m                     if let Err(error) = result {[0m
+[38;2;248;248;242m                         handle_error(&error);[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-96,13 +134,31[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'b> Controller<'b> {[0m
+[38;2;248;248;242m         printer: &mut dyn Printer,[0m
+[38;2;248;248;242m         writer: &mut dyn Write,[0m
+[38;2;248;248;242m         input: &mut OpenedInput,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        #[cfg(feature = "git")] line_changes: &Option<LineChanges>,[0m
+[38;2;248;248;242m     ) -> Result<()> {[0m
+[38;2;248;248;242m         if !input.reader.first_line.is_empty() || self.config.style_components.header() {[0m
+[38;2;248;248;242m             printer.print_header(writer, input)?;[0m
+[38;2;248;248;242m         }[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m         if !input.reader.first_line.is_empty() {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            self.print_file_ranges(printer, writer, &mut input.reader, &self.config.line_ranges)?;[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            let line_ranges = match self.config.visible_lines {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                VisibleLines::Ranges(ref line_ranges) => line_ranges.clone(),[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                #[cfg(feature = "git")][0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                VisibleLines::DiffContext(context) => {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    let mut line_ranges: Vec<LineRange> = vec![];[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    if let Some(line_changes) = line_changes {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        for line in line_changes.keys() {[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            let line = *line as usize;[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                            line_ranges.push(LineRange::new(line - context, line + context));[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                        }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    }[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                    LineRanges::from(line_ranges)[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m                }[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            };[0m
+[38;2;166;226;46m+[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;[0m
+[38;2;248;248;242m         }[0m
+[38;2;248;248;242m         printer.print_footer(writer, input)?;[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242mdiff --git a/src/pretty_printer.rs b/src/pretty_printer.rs[0m
+[38;2;248;248;242mindex 0c78ea90..13bd5dbc 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/pretty_printer.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/pretty_printer.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-6,7 +6,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46muse syntect::parsing::SyntaxReference;[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m use crate::{[0m
+[38;2;248;248;242m     assets::HighlightingAssets,[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    config::Config,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    config::{Config, VisibleLines},[0m
+[38;2;248;248;242m     controller::Controller,[0m
+[38;2;248;248;242m     error::Result,[0m
+[38;2;248;248;242m     input::Input,[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-205,7 +205,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'a> PrettyPrinter<'a> {[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242m     /// Specify the lines that should be printed (default: all)[0m
+[38;2;248;248;242m     pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m        self.config.line_ranges = ranges;[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        self.config.visible_lines = VisibleLines::Ranges(ranges);[0m
+[38;2;248;248;242m         self[0m
+[38;2;248;248;242m     }[0m
+[38;2;248;248;242m [0m
+[38;2;248;248;242mdiff --git a/src/printer.rs b/src/printer.rs[0m
+[38;2;248;248;242mindex 5eed437e..2b245cfd 100644[0m
+[38;2;117;113;94m---[0m[38;2;117;113;94m a/src/printer.rs[0m
+[38;2;117;113;94m+++[0m[38;2;117;113;94m b/src/printer.rs[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-24,7 +24,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46muse crate::config::Config;[0m
+[38;2;248;248;242m use crate::decorations::LineChangesDecoration;[0m
+[38;2;248;248;242m use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};[0m
+[38;2;248;248;242m #[cfg(feature = "git")][0m
+[38;2;249;38;114m-[0m[38;2;249;38;114muse crate::diff::{get_git_diff, LineChanges};[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46muse crate::diff::LineChanges;[0m
+[38;2;248;248;242m use crate::error::*;[0m
+[38;2;248;248;242m use crate::input::OpenedInput;[0m
+[38;2;248;248;242m use crate::line_range::RangeCheckResult;[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-90,7 +90,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mpub(crate) struct InteractivePrinter<'a> {[0m
+[38;2;248;248;242m     ansi_prefix_sgr: String,[0m
+[38;2;248;248;242m     content_type: Option<ContentType>,[0m
+[38;2;248;248;242m     #[cfg(feature = "git")][0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m    pub line_changes: Option<LineChanges>,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m    pub line_changes: &'a Option<LineChanges>,[0m
+[38;2;248;248;242m     highlighter: Option<HighlightLines<'a>>,[0m
+[38;2;248;248;242m     syntax_set: &'a SyntaxSet,[0m
+[38;2;248;248;242m     background_color_highlight: Option<Color>,[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-101,6 +101,7[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'a> InteractivePrinter<'a> {[0m
+[38;2;248;248;242m         config: &'a Config,[0m
+[38;2;248;248;242m         assets: &'a HighlightingAssets,[0m
+[38;2;248;248;242m         input: &mut OpenedInput,[0m
+[38;2;166;226;46m+[0m[38;2;166;226;46m        #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,[0m
+[38;2;248;248;242m     ) -> Self {[0m
+[38;2;248;248;242m         let theme = assets.get_theme(&config.theme);[0m
+[38;2;248;248;242m [0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-145,9 +146,6[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'a> InteractivePrinter<'a> {[0m
+[38;2;248;248;242m             panel_width = 0;[0m
+[38;2;248;248;242m         }[0m
+[38;2;248;248;242m [0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m        #[cfg(feature = "git")][0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m        let mut line_changes = None;[0m
+[38;2;249;38;114m-[0m
+[38;2;248;248;242m         let highlighter = if input[0m
+[38;2;248;248;242m             .reader[0m
+[38;2;248;248;242m             .content_type[0m
+[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;59;192;240m-155,18 +153,6[0m[38;2;59;192;240m [0m[38;2;59;192;240m@@[0m[38;2;59;192;240m [0m[38;2;166;226;46mimpl<'a> InteractivePrinter<'a> {[0m
+[38;2;248;248;242m         {[0m
+[38;2;248;248;242m             None[0m
+[38;2;248;248;242m         } else {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            // Get the Git modifications[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            #[cfg(feature = "git")][0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                use crate::input::OpenedInputKind;[0m
+[38;2;249;38;114m-[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                if config.style_components.changes() {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                    if let OpenedInputKind::OrdinaryFile(ref path) = input.kind {[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                        line_changes = get_git_diff(path);[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                    }[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m                }[0m
+[38;2;249;38;114m-[0m[38;2;249;38;114m            }[0m
+[38;2;249;38;114m-[0m
+[38;2;248;248;242m             // Determine the type of syntax for highlighting[0m
+[38;2;248;248;242m             let syntax = assets.get_syntax(config.language, input, &config.syntax_mapping);[0m
+[38;2;248;248;242m             Some(HighlightLines::new(syntax, theme))[0m

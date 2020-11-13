@@ -7,7 +7,7 @@ import shutil
 
 
 def generate_snapshots():
-    single_styles = ["changes", "grid", "header", "numbers"]
+    single_styles = ["changes", "grid", "header", "numbers", "rule"]
     collective_styles = ["full", "plain"]
 
     for num in range(len(single_styles)):

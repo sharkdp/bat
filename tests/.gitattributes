@@ -1,10 +1,8 @@
 # force LF EOLs for test fixtures
 examples/** text=auto eol=lf
 snapshots/** text=auto eol=lf
-
-# BAT/CMD files always need CRLF EOLs
-*.[Bb][Aa][Tt] text eol=crlf
-*.[Cc][Mm][Dd] text eol=crlf
+syntax-tests/source/** text=auto eol=lf
+syntax-tests/highlighted/** text=auto eol=lf
 
 examples/* linguist-vendored
 snapshots/* linguist-vendored

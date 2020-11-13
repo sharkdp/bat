@@ -1,0 +1,45 @@
+[38;2;248;248;242mprocessor    : 0[0m
+[38;2;248;248;242mmodel name    : ARMv7 Processor rev 3 (v7l)[0m
+[38;2;248;248;242mBogoMIPS    : 270.00[0m
+[38;2;248;248;242mFeatures    : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm crc32[0m
+[38;2;248;248;242mCPU implementer    : 0x41[0m
+[38;2;248;248;242mCPU architecture: 7[0m
+[38;2;248;248;242mCPU variant    : 0x0[0m
+[38;2;248;248;242mCPU part    : 0xd08[0m
+[38;2;248;248;242mCPU revision    : 3[0m
+
+[38;2;248;248;242mprocessor    : 1[0m
+[38;2;248;248;242mmodel name    : ARMv7 Processor rev 3 (v7l)[0m
+[38;2;248;248;242mBogoMIPS    : 270.00[0m
+[38;2;248;248;242mFeatures    : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm crc32[0m
+[38;2;248;248;242mCPU implementer    : 0x41[0m
+[38;2;248;248;242mCPU architecture: 7[0m
+[38;2;248;248;242mCPU variant    : 0x0[0m
+[38;2;248;248;242mCPU part    : 0xd08[0m
+[38;2;248;248;242mCPU revision    : 3[0m
+
+[38;2;248;248;242mprocessor    : 2[0m
+[38;2;248;248;242mmodel name    : ARMv7 Processor rev 3 (v7l)[0m
+[38;2;248;248;242mBogoMIPS    : 270.00[0m
+[38;2;248;248;242mFeatures    : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm crc32[0m
+[38;2;248;248;242mCPU implementer    : 0x41[0m
+[38;2;248;248;242mCPU architecture: 7[0m
+[38;2;248;248;242mCPU variant    : 0x0[0m
+[38;2;248;248;242mCPU part    : 0xd08[0m
+[38;2;248;248;242mCPU revision    : 3[0m
+
+[38;2;248;248;242mprocessor    : 3[0m
+[38;2;248;248;242mmodel name    : ARMv7 Processor rev 3 (v7l)[0m
+[38;2;248;248;242mBogoMIPS    : 270.00[0m
+[38;2;248;248;242mFeatures    : half thumb fastmult vfp edsp neon vfpv3 tls vfpv4 idiva idivt vfpd32 lpae evtstrm crc32[0m
+[38;2;248;248;242mCPU implementer    : 0x41[0m
+[38;2;248;248;242mCPU architecture: 7[0m
+[38;2;248;248;242mCPU variant    : 0x0[0m
+[38;2;248;248;242mCPU part    : 0xd08[0m
+[38;2;248;248;242mCPU revision    : 3[0m
+
+[38;2;248;248;242mHardware    : BCM2711[0m
+[38;2;248;248;242mRevision    : b03111[0m
+[38;2;248;248;242mSerial        : 1000000095fd9fc5[0m
+[38;2;248;248;242mModel        : Raspberry Pi 4 Model B Rev 1.1[0m
+

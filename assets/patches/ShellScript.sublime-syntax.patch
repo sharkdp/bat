@@ -1,0 +1,15 @@
+diff --git syntaxes/01_Packages/ShellScript/Bash.sublime-syntax syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
+index e973e319..a703cef8 100644
+--- syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
++++ syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
+@@ -30,8 +30,8 @@ file_extensions:
+   - .zshenv
+   - .zshrc
+   - PKGBUILD  # https://jlk.fjfi.cvut.cz/arch/manpages/man/PKGBUILD.5
+-  - .ebuild
+-  - .eclass
++  - ebuild
++  - eclass
+ 
+ first_line_match: |
+   (?x)

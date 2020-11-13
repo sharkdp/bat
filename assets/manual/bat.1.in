@@ -1,4 +1,4 @@
-.TH {{PROJECT_EXECUTABLE | upcase}} "1"
+.TH {{PROJECT_EXECUTABLE_UPPERCASE}} "1"
 .SH NAME
 {{PROJECT_EXECUTABLE}} \- a cat(1) clone with syntax highlighting and Git integration.
 .SH "USAGE"
@@ -87,6 +87,12 @@ Specify when to use the decorations that have been specified via '\-\-style'. Th
 automatic mode only enables decorations if an interactive terminal is detected. Possible
 values: *auto*, never, always.
 .HP
+\fB\-f\fR, \fB\-\-force\-colorization\fR
+.IP
+Alias for '--decorations=always --color=always'. This is useful \
+if the output of {{PROJECT_EXECUTABLE}} is piped to another program, but you want \
+to keep the colorization/decorations.
+.HP
 \fB\-\-paging\fR <when>
 .IP
 Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or its alias,
@@ -123,7 +129,7 @@ Configure which elements (line numbers, file headers, grid borders, Git modifica
 of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
 To set a default style, add the '\-\-style=".."' option to the configuration file or
 export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
-values: *auto*, full, plain, changes, header, grid, numbers, snip.
+values: *auto*, full, plain, changes, header, grid, rule, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
@@ -168,5 +174,41 @@ is dependent on your operating system. To get the default path for your system, 
 
 \fB{{PROJECT_EXECUTABLE}} --config-file\fR
 
-Alternatively, you can use the BAT_CONFIG_PATH environment variable to point bat to a non-default
+Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
 location of the configuration file.
+.SH "ADDING CUSTOM LANGUAGES"
+{{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
+customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
+files to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes\fR` and run `\fB{{PROJECT_EXECUTABLE}} cache --build\fR`.
+
+\fBExample:\fR
+
+.RS 0.5i
+mkdir -p "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+.br
+cd "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+
+# Put new '.sublime-syntax' language definition files
+.br
+# in this folder (or its subdirectories), for example:
+.br
+git clone https://github.com/tellnobody1/sublime-purescript-syntax
+
+# And then build the cache.
+.br
+{{PROJECT_EXECUTABLE}} cache --build
+.RE
+
+Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
+.br
+If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`. 
+
+.SH "ADDING CUSTOM THEMES"
+Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
+These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`, and are added to the cache with
+`\fB{{PROJECT_EXECUTABLE}} cache --build`.
+.SH "MORE INFORMATION"
+
+For more information and up-to-date documentation, visit the {{PROJECT_EXECUTABLE}} repo:
+.br
+\fBhttps://github.com/sharkdp/bat\fR

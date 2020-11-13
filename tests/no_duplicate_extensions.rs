@@ -14,7 +14,8 @@ fn no_duplicate_extensions() {
         // The "Ruby Haml" syntax also comes with a '.sass' extension. However, we make sure
         // that 'sass' is mapped to the 'Sass' syntax.
         "sass",
-        // The '.fs' extension appears in F# and GLSL. We default to F#.
+        // The '.fs' extension appears in F# and GLSL.
+        // We default to F#.
         "fs",
     ];
 

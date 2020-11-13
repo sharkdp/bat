@@ -3084,6 +3084,13 @@ contexts:
           captures:
             0: meta.brace.square.ts
           pop: true
+        - match: \.\.\.
+          scope: keyword.operator.rest.ts
+        - match: '(?<![_$[:alnum:]])(?:(?<=\.\.\.)|(?<!\.))([_$[:alpha:]][_$[:alnum:]]*)\s*(\?)?\s*(:)'
+          captures:
+            1: entity.name.label.ts
+            2: keyword.operator.optional.ts
+            3: punctuation.separator.label.ts
         - include: type
         - include: punctuation-comma
   typeof-operator:

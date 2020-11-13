@@ -23,6 +23,7 @@ struct ActiveStyleComponents {
     header: bool,
     vcs_modification_markers: bool,
     grid: bool,
+    rule: bool,
     line_numbers: bool,
     snip: bool,
 }
@@ -179,6 +180,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to paint a horizontal rule to delimit files
+    pub fn rule(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.rule = yes;
+        self
+    }
+
     /// Whether to show modification markers for VCS changes. This has no effect if
     /// the `git` feature is not activated.
     #[cfg_attr(
@@ -284,6 +291,9 @@ impl<'a> PrettyPrinter<'a> {
         let mut style_components = vec![];
         if self.active_style_components.grid {
             style_components.push(StyleComponent::Grid);
+        }
+        if self.active_style_components.rule {
+            style_components.push(StyleComponent::Rule);
         }
         if self.active_style_components.header {
             style_components.push(StyleComponent::Header);

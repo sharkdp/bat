@@ -1,0 +1,53 @@
+[38;2;248;248;242mMemTotal:        1004892 kB[0m
+[38;2;248;248;242mMemFree:          109424 kB[0m
+[38;2;248;248;242mMemAvailable:     498032 kB[0m
+[38;2;248;248;242mBuffers:           66360 kB[0m
+[38;2;248;248;242mCached:           448344 kB[0m
+[38;2;248;248;242mSwapCached:            0 kB[0m
+[38;2;248;248;242mActive:           547076 kB[0m
+[38;2;248;248;242mInactive:         196864 kB[0m
+[38;2;248;248;242mActive(anon):     249956 kB[0m
+[38;2;248;248;242mInactive(anon):     7328 kB[0m
+[38;2;248;248;242mActive(file):     297120 kB[0m
+[38;2;248;248;242mInactive(file):   189536 kB[0m
+[38;2;248;248;242mUnevictable:       18516 kB[0m
+[38;2;248;248;242mMlocked:           18516 kB[0m
+[38;2;248;248;242mSwapTotal:             0 kB[0m
+[38;2;248;248;242mSwapFree:              0 kB[0m
+[38;2;248;248;242mDirty:               276 kB[0m
+[38;2;248;248;242mWriteback:             0 kB[0m
+[38;2;248;248;242mAnonPages:        247780 kB[0m
+[38;2;248;248;242mMapped:           168472 kB[0m
+[38;2;248;248;242mShmem:             19860 kB[0m
+[38;2;248;248;242mKReclaimable:      59128 kB[0m
+[38;2;248;248;242mSlab:             108616 kB[0m
+[38;2;248;248;242mSReclaimable:      59128 kB[0m
+[38;2;248;248;242mSUnreclaim:        49488 kB[0m
+[38;2;248;248;242mKernelStack:        2060 kB[0m
+[38;2;248;248;242mPageTables:         4232 kB[0m
+[38;2;248;248;242mNFS_Unstable:          0 kB[0m
+[38;2;248;248;242mBounce:                0 kB[0m
+[38;2;248;248;242mWritebackTmp:          0 kB[0m
+[38;2;248;248;242mCommitLimit:      502444 kB[0m
+[38;2;248;248;242mCommitted_AS:     678300 kB[0m
+[38;2;248;248;242mVmallocTotal:   34359738367 kB[0m
+[38;2;248;248;242mVmallocUsed:       10756 kB[0m
+[38;2;248;248;242mVmallocChunk:          0 kB[0m
+[38;2;248;248;242mPercpu:              784 kB[0m
+[38;2;248;248;242mHardwareCorrupted:     0 kB[0m
+[38;2;248;248;242mAnonHugePages:         0 kB[0m
+[38;2;248;248;242mShmemHugePages:        0 kB[0m
+[38;2;248;248;242mShmemPmdMapped:        0 kB[0m
+[38;2;248;248;242mFileHugePages:         0 kB[0m
+[38;2;248;248;242mFilePmdMapped:         0 kB[0m
+[38;2;248;248;242mCmaTotal:              0 kB[0m
+[38;2;248;248;242mCmaFree:               0 kB[0m
+[38;2;248;248;242mHugePages_Total:       0[0m
+[38;2;248;248;242mHugePages_Free:        0[0m
+[38;2;248;248;242mHugePages_Rsvd:        0[0m
+[38;2;248;248;242mHugePages_Surp:        0[0m
+[38;2;248;248;242mHugepagesize:       2048 kB[0m
+[38;2;248;248;242mHugetlb:               0 kB[0m
+[38;2;248;248;242mDirectMap4k:      118764 kB[0m
+[38;2;248;248;242mDirectMap2M:      929792 kB[0m
+[38;2;248;248;242mDirectMap1G:           0 kB[0m

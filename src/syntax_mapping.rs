@@ -48,6 +48,31 @@ impl<'a> SyntaxMapping<'a> {
             .insert("rails", MappingTarget::MapToUnknown)
             .unwrap();
 
+        // Nginx and Apache syntax files both want to style all ".conf" files
+        // see #1131 and #1137
+        mapping
+            .insert("*.conf", MappingTarget::MapToUnknown)
+            .unwrap();
+
+        for glob in &[
+            "/etc/nginx/**/*.conf",
+            "/etc/nginx/sites-*/**/*",
+            "nginx.conf",
+            "mime.types",
+        ] {
+            mapping.insert(glob, MappingTarget::MapTo("nginx")).unwrap();
+        }
+
+        for glob in &[
+            "/etc/apache2/**/*.conf",
+            "/etc/apache2/sites-*/**/*",
+            "httpd.conf",
+        ] {
+            mapping
+                .insert(glob, MappingTarget::MapTo("Apache Conf"))
+                .unwrap();
+        }
+
         for glob in [
             "**/systemd/**/*.conf",
             "**/systemd/**/*.example",
@@ -67,14 +92,41 @@ impl<'a> SyntaxMapping<'a> {
             "*.swap",
             "*.target",
             "*.timer",
-        ].iter() {
-            mapping
-                .insert(glob, MappingTarget::MapTo("INI"))
-                .unwrap();
+        ]
+        .iter()
+        {
+            mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
         }
 
         // pacman hooks
-        mapping.insert("*.hook", MappingTarget::MapTo("INI")).unwrap();
+        mapping
+            .insert("*.hook", MappingTarget::MapTo("INI"))
+            .unwrap();
+
+        if let Some(xdg_config_home) = std::env::var_os("XDG_CONFIG_HOME") {
+            let git_config_path = Path::new(&xdg_config_home).join("git");
+
+            mapping
+                .insert(
+                    &git_config_path.join("config").to_string_lossy(),
+                    MappingTarget::MapTo("Git Config"),
+                )
+                .ok();
+
+            mapping
+                .insert(
+                    &git_config_path.join("ignore").to_string_lossy(),
+                    MappingTarget::MapTo("Git Ignore"),
+                )
+                .ok();
+
+            mapping
+                .insert(
+                    &git_config_path.join("attributes").to_string_lossy(),
+                    MappingTarget::MapTo("Git Attributes"),
+                )
+                .ok();
+        }
 
         mapping
     }

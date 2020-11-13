@@ -16,11 +16,32 @@ BAT_OPTIONS = [
     "--italic-text=always",
 ]
 
+SKIP_FILENAMES = [
+    "LICENSE.md",
+    "README.md",
+    "bat_options",
+]
+
+
+def get_options(source):
+    options = BAT_OPTIONS.copy()
+
+    source_dirpath = path.dirname(source)
+    options_file = path.join(source_dirpath, "bat_options")
+    try:
+        with open(options_file, "r") as f:
+            options.extend(map(lambda x: x.rstrip(), f.readlines()))
+    except FileNotFoundError:
+        pass
+
+    return options
+
 
 def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
+    sources = path.join(root, "source", "*")
 
-    for source in glob.glob(path.join(root, "source", "*", "*")):
+    for source in glob.glob(path.join(sources, "*")) + glob.glob(path.join(sources, ".*")):
         try:
             env = os.environ.copy()
             env.pop("PAGER", None)
@@ -31,12 +52,17 @@ def create_highlighted_versions(output_basepath):
             env.pop("BAT_TABS", None)
             env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors
 
-            bat_output = subprocess.check_output(
-                ["bat"] + BAT_OPTIONS + [source], stderr=subprocess.PIPE, env=env,
-            )
-
             source_dirname = path.basename(path.dirname(source))
             source_filename = path.basename(source)
+
+            if source_filename in SKIP_FILENAMES:
+                continue
+
+            bat_output = subprocess.check_output(
+                ["bat"] + get_options(source) + [source],
+                stderr=subprocess.PIPE,
+                env=env,
+            )
 
             output_dir = path.join(output_basepath, source_dirname)
             output_path = path.join(output_dir, source_filename)
@@ -59,6 +85,12 @@ def create_highlighted_versions(output_basepath):
             print(
                 "=== bat stderr:\n{}".format(err.stderr.decode("utf-8")),
                 file=sys.stderr,
+            )
+            sys.exit(1)
+        except FileNotFoundError:
+            print(
+                "Error: Could not execute 'bat'. Please make sure that the executable "
+                "is available on the PATH."
             )
             sys.exit(1)
 
