@@ -1,7 +1,7 @@
 %YAML 1.2
 ---
 # http://www.sublimetext.com/docs/3/syntax.html
-name: Robot Framework syntax highlighting.
+name: Robot Framework
 file_extensions:
   - robot
 scope: source.robot

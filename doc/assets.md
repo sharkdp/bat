@@ -44,6 +44,7 @@ The following files have been manually modified after converting from a `.tmLang
 * `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers
 * `Org mode.sublime-syntax` => removed `task` file type.
 * `SML.sublime_syntax` => removed `ml` file type.
+* `Robot.sublime_syntax` => changed name to "Robot Framework"
 
 ### Non-submodule additions
 
