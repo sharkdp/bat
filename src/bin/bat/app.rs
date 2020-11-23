@@ -76,7 +76,8 @@ impl App {
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
-        let style_components = self.style_components()?;
+        let single_file = inputs.len() == 1;
+        let style_components = self.style_components(single_file)?;
 
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
@@ -282,7 +283,7 @@ impl App {
         Ok(file_input)
     }
 
-    fn style_components(&self) -> Result<StyleComponents> {
+    fn style_components(&self, single_file: bool) -> Result<StyleComponents> {
         let matches = &self.matches;
         let mut styled_components =
             StyleComponents(if matches.value_of("decorations") == Some("never") {
@@ -328,6 +329,10 @@ impl App {
                 "{}: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.",
                 Yellow.paint("[bat warning]"),
             );
+        }
+
+        if single_file && matches.is_present("no-single-file-header") {
+            styled_components.0.remove(&StyleComponent::Header);
         }
 
         Ok(styled_components)

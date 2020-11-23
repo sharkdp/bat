@@ -406,6 +406,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
+            Arg::with_name("no-single-file-header")
+                .long("no-single-file-header")
+                .help("If set, no header will be shown if only a single file is displayed."),
+        )
+        .arg(
             Arg::with_name("line-range")
                 .long("line-range")
                 .short("r")
