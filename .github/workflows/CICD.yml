@@ -328,13 +328,13 @@ jobs:
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 
           # README and LICENSE
-          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
-          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-MIT"
-          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-APACHE"
-          install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
-          gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
+          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/README.md"
+          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-MIT"
+          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-APACHE"
+          install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/changelog"
+          gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/changelog"
 
-          cat > "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright" <<EOF
+          cat > "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright" <<EOF
         Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
         Upstream-Name: ${{ env.PROJECT_NAME }}
         Source: ${{ env.PROJECT_HOMEPAGE }}
@@ -373,7 +373,7 @@ jobs:
          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
          DEALINGS IN THE SOFTWARE.
         EOF
-          chmod 644 "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright"
+          chmod 644 "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright"
 
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
