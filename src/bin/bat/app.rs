@@ -169,7 +169,8 @@ impl App {
                 || match self.matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
-                    _ => env::var_os("NO_COLOR").is_none() && self.interactive_output,
+                    Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
+                    _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
