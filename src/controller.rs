@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::io::{self, Write};
 
 use crate::assets::HighlightingAssets;
@@ -66,6 +67,14 @@ impl<'b> Controller<'b> {
         }
 
         let attached_to_pager = output_type.is_pager();
+        let rw_cycle_detected = !attached_to_pager && {
+            let identifiers: Vec<_> = inputs
+                .iter()
+                .flat_map(clircle::Identifier::try_from)
+                .collect();
+            clircle::stdout_among_inputs(&identifiers)
+        };
+
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
@@ -77,6 +86,11 @@ impl<'b> Controller<'b> {
                 handle_error(error, &mut stderr.lock());
             }
         };
+
+        if rw_cycle_detected {
+            print_error(&"The output file is also an input!".into(), writer);
+            return Ok(false);
+        }
 
         for (index, input) in inputs.into_iter().enumerate() {
             match input.open(io::stdin().lock()) {
