@@ -15,6 +15,11 @@
 
 ## Packaging
 
+# v0.17.1
+
+## Bugfixes
+
+- Running `bat` without arguments fails ("output file is also an input"), see #1396
 
 # v0.17.0
 
