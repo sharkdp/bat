@@ -92,7 +92,7 @@ checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
 
 [[package]]
 name = "bat"
-version = "0.17.0"
+version = "0.17.1"
 dependencies = [
  "ansi_colours",
  "ansi_term 0.12.1",
