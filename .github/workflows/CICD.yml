@@ -152,6 +152,8 @@ jobs:
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
         unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
+        # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
+        if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
         echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
