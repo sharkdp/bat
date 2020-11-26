@@ -21,6 +21,10 @@
 
 - Running `bat` without arguments fails ("output file is also an input"), see #1396
 
+## Packaging
+
+- `bat` is now available on snapstore with package name called `batwing`, see #1400 (@purveshpatel511)
+
 # v0.17.0
 
 ## Features
