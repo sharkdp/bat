@@ -48,37 +48,12 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
     ) -> Result<Self> {
-        use std::env;
         use std::ffi::OsString;
         use std::path::PathBuf;
         use std::process::{Command, Stdio};
+        use crate::pager::*;
 
-        let mut replace_arguments_to_less = false;
-
-        let pager_from_env = match (env::var("BAT_PAGER"), env::var("PAGER")) {
-            (Ok(bat_pager), _) => Some(bat_pager),
-            (_, Ok(pager)) => {
-                // less needs to be called with the '-R' option in order to properly interpret the
-                // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
-                // therefore need to overwrite the arguments and add '-R'.
-                //
-                // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
-                // or bats '--pager' command line option.
-                replace_arguments_to_less = true;
-                Some(pager)
-            }
-            _ => None,
-        };
-
-        let pager_from_config = pager_from_config.map(|p| p.to_string());
-
-        if pager_from_config.is_some() {
-            replace_arguments_to_less = false;
-        }
-
-        let pager = pager_from_config
-            .or(pager_from_env)
-            .unwrap_or_else(|| String::from("less"));
+        let Pager { pager, source } = get_pager(pager_from_config);
 
         let pagerflags =
             shell_words::split(&pager).chain_err(|| "Could not parse pager command.")?;
@@ -94,6 +69,14 @@ impl OutputType {
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
                 let mut process = if is_less {
+                    // less needs to be called with the '-R' option in order to properly interpret the
+                    // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
+                    // therefore need to overwrite the arguments and add '-R'.
+                    //
+                    // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
+                    // or bats '--pager' command line option.
+                    let replace_arguments_to_less = source == PagerSource::PagerEnvVar;
+
                     let mut p = Command::new(&pager_path);
                     if args.is_empty() || replace_arguments_to_less {
                         p.arg("--RAW-CONTROL-CHARS");
