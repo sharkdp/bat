@@ -294,6 +294,15 @@ You can install `bat` with zypper:
 zypper install bat
 ```
 
+### Via snap package
+
+```
+sudo snap install batwing
+```
+
+[Get it from the Snap Store](https://snapcraft.io/batwing)
+
+
 ### On macOS (or Linux) via Homebrew
 
 You can install `bat` with [Homebrew on MacOS](https://formulae.brew.sh/formula/bat) or [Homebrew on Linux](https://formulae.brew.sh/formula-linux/bat):
