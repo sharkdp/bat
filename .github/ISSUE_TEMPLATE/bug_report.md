@@ -9,7 +9,14 @@ assignees: ''
 
 <!--
 Hey there, thanks for creating an issue! 
-Please make sure to fill out these few questions so we can help you as fast as possible :)
+
+In order to reproduce your issue, we might need to know a little bit more about the environment which you're running `bat`.
+
+Unix-like (Linux or MacOS):
+  Run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and paste the output at the bottom.
+
+Windows:
+  Add your Windows Version (e.g. "Windows 10 1908") at the bottom.
 -->
 
 **What version of `bat` are you using?**
@@ -26,11 +33,5 @@ Please make sure to fill out these few questions so we can help you as fast as p
 
 ---
 
-**Please tell us about the environment in which you are running `bat`:**
-<!--
-Unix-like (Linux or MacOS):
-  Run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and paste the output below.
-
-Windows:
-  Add your Windows Version (e.g. "Windows 10 1908").
--->
+**Evironment**
+<!-- Diagnostic information -->
