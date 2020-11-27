@@ -36,6 +36,7 @@ use bat::{
     input::Input,
     style::{StyleComponent, StyleComponents},
     MappingTarget,
+    PagingMode,
 };
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
@@ -248,9 +249,13 @@ fn run() -> Result<bool> {
 
             if app.matches.is_present("list-languages") {
                 let languages: String = get_languages(&config)?;
-                let inputs: Vec<Input> = vec!(Input::from_reader(Box::new(languages.as_bytes())));
-                let config = app.config(&inputs)?;
-                run_controller(inputs, &config)
+                let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
+                let plain_config = Config {
+                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+                    paging_mode: PagingMode::QuitIfOneScreen,
+                    ..Default::default()
+                };
+                run_controller(inputs, &plain_config)
             } else if app.matches.is_present("list-themes") {
                 list_themes(&config)?;
                 Ok(true)
