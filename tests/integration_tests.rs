@@ -416,6 +416,30 @@ fn pager_value_bat() {
 }
 
 #[test]
+fn pager_most() {
+    bat()
+        .env("PAGER", "most")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stderr(predicate::eq("WARNING: Ignoring PAGER=\"most\": Coloring not supported. Override with BAT_PAGER=\"most\" or --pager \"most\"\n").normalize())
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
+fn pager_most_with_arg() {
+    bat()
+        .env("PAGER", "most -w")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stderr(predicate::eq("WARNING: Ignoring PAGER=\"most -w\": Coloring not supported. Override with BAT_PAGER=\"most -w\" or --pager \"most -w\"\n").normalize())
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
 fn alias_pager_disable() {
     bat()
         .env("PAGER", "echo other-pager")

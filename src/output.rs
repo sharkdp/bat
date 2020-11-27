@@ -66,6 +66,11 @@ impl OutputType {
                     return Err(ErrorKind::InvalidPagerValueBat.into());
                 }
 
+                if pager_path.file_stem() == Some(&OsString::from("most")) && source == PagerSource::PagerEnvVar {
+                    eprintln!("WARNING: Ignoring PAGER=\"{}\": Coloring not supported. Override with BAT_PAGER=\"{}\" or --pager \"{}\"", pager, pager, pager);
+                    return Ok(OutputType::stdout());
+                }
+
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
 
                 let mut process = if is_less {

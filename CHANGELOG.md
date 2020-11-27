@@ -5,6 +5,8 @@
 
 ## Bugfixes
 
+- Ignore PAGER=most by default with a warning to stderr, but allow override with BAT_PAGER or --config, see #1063 (@Enselic)
+
 ## Other
 
 ## Syntaxes
