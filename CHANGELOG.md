@@ -2,6 +2,7 @@
 
 
 ## Features
+- make `bat -L` use built-in pager 
 
 ## Bugfixes
 
