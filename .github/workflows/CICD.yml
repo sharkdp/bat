@@ -22,6 +22,12 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
+        components: clippy
+    - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-targets --all-features -- --deny warnings --allow clippy::new-without-default --allow clippy::match-bool --allow clippy::if_same_then_else
     - name: Test
       uses: actions-rs/cargo@v1
       with:
