@@ -256,6 +256,13 @@ You can install `bat` via xbps-install:
 xbps-install -S bat
 ```
 
+### On Termux
+
+You can install `bat` via pkg:
+```bash
+pkg install bat
+```
+
 ### On FreeBSD
 
 You can install a precompiled [`bat` package](https://www.freshports.org/textproc/bat) with pkg:
