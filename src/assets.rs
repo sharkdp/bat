@@ -189,6 +189,15 @@ impl HighlightingAssets {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
             None => {
+                if theme == "ansi-light" || theme == "ansi-dark" {
+                    use ansi_term::Colour::Yellow;
+                    eprintln!(
+                        "{}: Theme '{}' is deprecated, using 'ansi' instead.",
+                        Yellow.paint("[bat warning]"),
+                        theme
+                    );
+                    return self.get_theme("ansi");
+                }
                 if theme != "" {
                     use ansi_term::Colour::Yellow;
                     eprintln!(

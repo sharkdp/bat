@@ -3,14 +3,14 @@
 <plist version="1.0">
     <dict>
         <!--
-        The colors in this theme are encoded as #RRGGBBAA where RR is an ANSI
-        palette number from 00 to 0f, and AA is the special value 00 to indicate
-        that this encoding is being used.
+        The colors in this theme are encoded as #RRGGBBAA where:
+        * If AA is 00, then RR is an ANSI palette number from 00 to 07.
+        * If AA is 01, the terminal's default fg/bg color is used.
         -->
         <key>author</key>
         <string>Template: Chris Kempson, Scheme: Mitchell Kember</string>
         <key>name</key>
-        <string>ANSI Light</string>
+        <string>ANSI</string>
         <key>colorSpaceName</key>
         <string>sRGB</string>
         <key>settings</key>
@@ -19,32 +19,17 @@
                 <key>settings</key>
                 <dict>
                     <key>background</key>
-                    <string>#07000000</string>
-                    <key>caret</key>
-                    <string>#00000000</string>
+                    <string>#00000001</string>
                     <key>foreground</key>
-                    <string>#00000000</string>
-                    <key>invisibles</key>
-                    <string>#00000000</string>
-                    <key>lineHighlight</key>
-                    <string>#00000000</string>
-                    <key>selection</key>
-                    <string>#00000000</string>
+                    <string>#00000001</string>
+                    <!--
+                    Explicitly set the gutter color since bat falls back to a
+                    hardcoded DEFAULT_GUTTER_COLOR otherwise.
+                    -->
                     <key>gutter</key>
-                    <string>#07000000</string>
+                    <string>#00000001</string>
                     <key>gutterForeground</key>
-                    <string>#00000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
-                <string>Text</string>
-                <key>scope</key>
-                <string>variable.parameter.function</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
+                    <string>#00000001</string>
                 </dict>
             </dict>
             <dict>
@@ -60,39 +45,6 @@
             </dict>
             <dict>
                 <key>name</key>
-                <string>Punctuation</string>
-                <key>scope</key>
-                <string>punctuation.definition.string, punctuation.definition.variable, punctuation.definition.string, punctuation.definition.parameters, punctuation.definition.string, punctuation.definition.array</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
-                <string>Delimiters</string>
-                <key>scope</key>
-                <string>none</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
-                <string>Operators</string>
-                <key>scope</key>
-                <string>keyword.operator</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
                 <string>Keywords</string>
                 <key>scope</key>
                 <string>keyword</string>
@@ -100,17 +52,6 @@
                 <dict>
                     <key>foreground</key>
                     <string>#05000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
-                <string>Variables</string>
-                <key>scope</key>
-                <string>variable</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
                 </dict>
             </dict>
             <dict>
@@ -144,17 +85,6 @@
                 <dict>
                     <key>foreground</key>
                     <string>#03000000</string>
-                </dict>
-            </dict>
-            <dict>
-                <key>name</key>
-                <string>Classes</string>
-                <key>scope</key>
-                <string>meta.class</string>
-                <key>settings</key>
-                <dict>
-                    <key>foreground</key>
-                    <string>#00000000</string>
                 </dict>
             </dict>
             <dict>
@@ -480,8 +410,6 @@
                 <dict>
                     <key>background</key>
                     <string>#01000000</string>
-                    <key>foreground</key>
-                    <string>#00000000</string>
                 </dict>
             </dict>
             <dict>
@@ -493,8 +421,6 @@
                 <dict>
                     <key>background</key>
                     <string>#03000000</string>
-                    <key>foreground</key>
-                    <string>#07000000</string>
                 </dict>
             </dict>
         </array>

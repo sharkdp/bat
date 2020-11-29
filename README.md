@@ -390,12 +390,11 @@ You can also use a custom theme by following the
 
 ### 8-bit themes
 
-`bat` has four themes that always use [8-bit colors](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors),
+`bat` has three themes that always use [8-bit colors](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors),
 even when truecolor support is available:
 
-- `ansi-dark` looks decent on any terminal with a dark background. It uses 3-bit colors: black, red,
-  green, yellow, blue, magenta, cyan, and white.
-- `ansi-light` is like `ansi-dark`, but for terminals with a light background.
+- `ansi` looks decent on any terminal. It uses 3-bit colors: black, red, green,
+  yellow, blue, magenta, cyan, and white.
 - `base16` is designed for [base16](https://github.com/chriskempson/base16) terminal themes. It uses
   4-bit colors (3-bit colors plus bright variants) in accordance with the
   [base16 styling guidelines](https://github.com/chriskempson/base16/blob/master/styling.md).
