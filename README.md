@@ -290,10 +290,10 @@ zypper install bat
 ### Via snap package
 
 ```
-sudo snap install batwing
+sudo snap install batcat
 ```
 
-[Get it from the Snap Store](https://snapcraft.io/batwing)
+[Get it from the Snap Store](https://snapcraft.io/batcat)
 
 
 ### On macOS (or Linux) via Homebrew
