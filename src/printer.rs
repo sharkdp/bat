@@ -451,7 +451,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 if text.len() != text_trimmed.len() {
                     if let Some(background_color) = background_color {
                         let mut ansi_style = Style::default();
-                        ansi_style.background = Some(to_ansi_color(background_color, true_color));
+                        ansi_style.background = to_ansi_color(background_color, true_color);
                         let width = if cursor_total <= cursor_max {
                             cursor_max - cursor_total + 1
                         } else {
@@ -592,8 +592,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             if let Some(background_color) = background_color {
                 let mut ansi_style = Style::default();
-                ansi_style.background =
-                    Some(to_ansi_color(background_color, self.config.true_color));
+                ansi_style.background = to_ansi_color(background_color, self.config.true_color);
 
                 write!(
                     handle,
@@ -627,20 +626,27 @@ impl Colors {
     }
 
     fn colored(theme: &Theme, true_color: bool) -> Self {
-        let gutter_color = theme
-            .settings
-            .gutter_foreground
-            .map(|c| to_ansi_color(c, true_color))
-            .unwrap_or(Fixed(DEFAULT_GUTTER_COLOR));
+        let gutter_style = Style {
+            foreground: match theme.settings.gutter_foreground {
+                // If the theme provides a gutter foreground color, use it.
+                // Note: It might be the special value #00000001, in which case
+                // to_ansi_color returns None and we use an empty Style
+                // (resulting in the terminal's default foreground color).
+                Some(c) => to_ansi_color(c, true_color),
+                // Otherwise, use a specific fallback color.
+                None => Some(Fixed(DEFAULT_GUTTER_COLOR)),
+            },
+            ..Style::default()
+        };
 
         Colors {
-            grid: gutter_color.normal(),
-            rule: gutter_color.normal(),
+            grid: gutter_style,
+            rule: gutter_style,
             filename: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
-            line_number: gutter_color.normal(),
+            line_number: gutter_style,
         }
     }
 }
