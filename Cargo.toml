@@ -74,7 +74,7 @@ default-features = false
 
 [dev-dependencies]
 tempdir = "0.3"
-assert_cmd = "1.0.1"
+assert_cmd = "1.0.2"
 predicates = "1.0.5"
 
 [build-dependencies]
