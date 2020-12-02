@@ -83,3 +83,4 @@ clap = { version = "2.33", optional = true }
 [profile.release]
 lto = true
 codegen-units = 1
+# debug = true
