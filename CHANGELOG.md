@@ -61,6 +61,7 @@
 ## New themes
 
 - Coldark, see #1329 (@armandphilippot)
+- Gruvbox, see #1291 (@j0hnmeow)
 
 
 # v0.16.0
