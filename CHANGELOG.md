@@ -5,6 +5,8 @@
 
 ## Bugfixes
 
+- If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
+
 ## Other
 
 ## Syntaxes

@@ -460,7 +460,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            if line.bytes().next_back() != Some(b'\n') {
+            if !self.config.style_components.plain() && line.bytes().next_back() != Some(b'\n') {
                 writeln!(handle)?;
             }
         } else {
