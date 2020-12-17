@@ -99,7 +99,7 @@ pub struct Config<'a> {
     pub set_terminal_title: bool,
 
     /// The maximum number of consecutive empty lines to display
-    pub squeeze_lines: usize,
+    pub squeeze_lines: Option<usize>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
