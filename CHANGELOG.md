@@ -3,6 +3,9 @@
 
 ## Features
 
+- `bat --squeeze`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p)
+- `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze`, see #1441 (@eth-p)
+
 ## Bugfixes
 
 ## Other
@@ -12,6 +15,8 @@
 ## New themes
 
 ## `bat` as a library
+
+- `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p)
 
 ## Packaging
 
