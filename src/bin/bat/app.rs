@@ -235,9 +235,14 @@ impl App {
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             squeeze_lines: if self.matches.is_present("squeeze") {
-                1
+                Some(
+                    self.matches
+                        .value_of("squeeze-limit")
+                        .and_then(|s| s.parse::<usize>().ok())
+                        .unwrap_or(1),
+                )
             } else {
-                0
+                None
             },
         })
     }

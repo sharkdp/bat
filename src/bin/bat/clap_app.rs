@@ -360,6 +360,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help("Squeeze consecutive empty lines into a single empty line.")
         )
         .arg(
+            Arg::with_name("squeeze-limit")
+                .long("squeeze-limit")
+                .takes_value(true)
+                .validator(|s| s.parse::<usize>().map(|_| ()).map_err(|_| "Requires a non-negative number".to_owned()))
+                .help("The maximum number of consecutive empty lines.")
+                .long_help("Set the maximum number of consecutive empty lines to be printed.")
+        )
+        .arg(
             Arg::with_name("style")
                 .long("style")
                 .value_name("components")

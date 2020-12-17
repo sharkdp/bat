@@ -398,10 +398,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         // Skip squeezed lines.
-        if self.config.squeeze_lines > 0 {
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
             if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
                 self.consecutive_empty_lines += 1;
-                if self.consecutive_empty_lines > self.config.squeeze_lines {
+                if self.consecutive_empty_lines > squeeze_limit {
                     return Ok(());
                 }
             } else {

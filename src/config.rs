@@ -84,7 +84,7 @@ pub struct Config<'a> {
     pub highlighted_lines: HighlightedLineRanges,
 
     /// The maximum number of consecutive empty lines to display
-    pub squeeze_lines: usize,
+    pub squeeze_lines: Option<usize>,
 }
 
 #[test]

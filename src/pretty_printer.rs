@@ -259,8 +259,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Specify the maximum number of consecutive empty lines to print.
-    /// If set to `0`, all empty lines will be shown.
-    pub fn squeeze_empty_lines(&mut self, maximum: usize) -> &mut Self {
+    pub fn squeeze_empty_lines(&mut self, maximum: Option<usize>) -> &mut Self {
         self.config.squeeze_lines = maximum;
         self
     }
