@@ -234,6 +234,11 @@ impl App {
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
+            squeeze_lines: if self.matches.is_present("squeeze") {
+                1
+            } else {
+                0
+            },
         })
     }
 

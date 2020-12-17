@@ -82,6 +82,9 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
+
+    /// The maximum number of consecutive empty lines to display
+    pub squeeze_lines: usize,
 }
 
 #[test]
