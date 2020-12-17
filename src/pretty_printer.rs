@@ -258,6 +258,13 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Specify the maximum number of consecutive empty lines to print.
+    /// If set to `0`, all empty lines will be shown.
+    pub fn squeeze_empty_lines(&mut self, maximum: usize) -> &mut Self {
+        self.config.squeeze_lines = maximum;
+        self
+    }
+
     /// Specify the highlighting theme
     pub fn theme(&mut self, theme: impl AsRef<str>) -> &mut Self {
         self.config.theme = theme.as_ref().to_owned();
