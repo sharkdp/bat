@@ -388,6 +388,14 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
+            Arg::new("squeeze")
+                .long("squeeze")
+                .short('s')
+                .action(ArgAction::SetTrue)
+                .help("Squeeze consecutive empty lines.")
+                .long_help("Squeeze consecutive empty lines into a single empty line.")
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .value_name("components")

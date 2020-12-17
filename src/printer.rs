@@ -187,6 +187,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -272,6 +273,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            consecutive_empty_lines: 0,
         })
     }
 
@@ -575,6 +577,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
+        }
+
+        // Skip squeezed lines.
+        if self.config.squeeze_lines > 0 {
+            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > self.config.squeeze_lines {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
         }
 
         let mut cursor: usize = 0;

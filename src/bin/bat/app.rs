@@ -290,6 +290,11 @@ impl App {
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
             set_terminal_title: self.matches.get_flag("set-terminal-title"),
+            squeeze_lines: if self.matches.get_flag("squeeze") {
+                1
+            } else {
+                0
+            },
         })
     }
 
