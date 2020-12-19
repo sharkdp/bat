@@ -91,9 +91,6 @@ impl<'a> Printer for SimplePrinter<'a> {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(line_buffer, self.config.tab_width);
                 write!(handle, "{}", line)?;
-                if line_buffer.last() == Some(&b'\n') {
-                    writeln!(handle)?;
-                }
             } else {
                 handle.write_all(line_buffer)?
             };
