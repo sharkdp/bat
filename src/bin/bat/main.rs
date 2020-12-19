@@ -200,19 +200,19 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
                 .ok();
             writeln!(stdout)?;
         }
+        writeln!(
+            stdout,
+            "Further themes can be installed to '{}', \
+            and are added to the cache with `bat cache --build`. \
+            For more information, see:\n\n  \
+            https://github.com/sharkdp/bat#adding-new-themes",
+            config_file().join("themes").to_string_lossy()
+        )?;
     } else {
         for theme in assets.themes() {
             writeln!(stdout, "{}", theme)?;
         }
     }
-    writeln!(
-        stdout,
-        "Further themes can be installed to '{}', \
-        and are added to the cache with `bat cache --build`. \
-        For more information, see:\n\n  \
-        https://github.com/sharkdp/bat#adding-new-themes",
-        config_file().join("themes").to_string_lossy()
-    )?;
 
     Ok(())
 }

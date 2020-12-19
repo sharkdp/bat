@@ -5,6 +5,8 @@
 
 ## Bugfixes
 
+- only print themes hint in interactive mode (`bat --list-themes`), see #1439 (@rsteube)
+
 ## Other
 
 ## Syntaxes
