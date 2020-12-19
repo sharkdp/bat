@@ -5,6 +5,8 @@
 
 ## Bugfixes
 
+- Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
+
 ## Other
 
 ## Syntaxes
