@@ -91,9 +91,6 @@ impl<'a> Printer for SimplePrinter<'a> {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(line_buffer, self.config.tab_width);
                 write!(handle, "{}", line)?;
-                if line_buffer.last() == Some(&b'\n') {
-                    writeln!(handle)?;
-                }
             } else {
                 handle.write_all(line_buffer)?
             };
@@ -463,7 +460,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            if line.bytes().next_back() != Some(b'\n') {
+            if !self.config.style_components.plain() && line.bytes().next_back() != Some(b'\n') {
                 writeln!(handle)?;
             }
         } else {
