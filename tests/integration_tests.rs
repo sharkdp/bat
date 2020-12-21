@@ -827,3 +827,27 @@ fn plain_mode_does_not_add_nonexisting_newline() {
         .stdout("Single Line");
 }
 
+// Regression test for https://github.com/sharkdp/bat/issues/299
+#[test]
+fn grid_for_file_without_newline() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=full")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: single-line.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ Single Line
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("");
+}
