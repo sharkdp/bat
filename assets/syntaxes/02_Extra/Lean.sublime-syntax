@@ -1,0 +1,125 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Lean
+file_extensions:
+  - lean
+scope: source.lean
+contexts:
+  main:
+    - include: comments
+    - match: '\b(?<!\.)(inductive|coinductive|structure|theorem|axiom|axioms|abbreviation|lemma|definition|def|instance|class|constant)\b\s+(\{[^}]*\})?'
+      captures:
+        1: keyword.other.definitioncommand.lean
+      push:
+        - meta_scope: meta.definitioncommand.lean
+        - match: '(?=\bwith\b|\bextends\b|[:\|\(\[\{⦃<>])'
+          pop: true
+        - include: comments
+        - include: definitionName
+        - match: ","
+    - match: \b(Prop|Type|Sort)\b
+      scope: storage.type.lean
+    - match: '\battribute\b\s*\[[^\]]*\]'
+      scope: storage.modifier.lean
+    - match: '@\[[^\]]*\]'
+      scope: storage.modifier.lean
+    - match: \b(?<!\.)(private|meta|mutual|protected|noncomputable)\b
+      scope: keyword.control.definition.modifier.lean
+    - match: \b(sorry)\b
+      scope: invalid.illegal.lean
+    - match: '#print\s+(def|definition|inductive|instance|structure|axiom|axioms|class)\b'
+      scope: keyword.other.command.lean
+    - match: '#(print|eval|reduce|check|help|exit|find|where)\b'
+      scope: keyword.other.command.lean
+    - match: \b(?<!\.)(import|export|prelude|theory|definition|def|abbreviation|instance|renaming|hiding|exposing|parameter|parameters|begin|constant|constants|lemma|variable|variables|theorem|example|open|axiom|inductive|coinductive|with|structure|universe|universes|alias|precedence|reserve|postfix|prefix|infix|infixl|infixr|notation|end|using|namespace|section|local|set_option|extends|include|omit|class|classes|instances|raw|run_cmd|restate_axiom)(?!\.)\b
+      scope: keyword.other.lean
+    - match: \b(?<!\.)(calc|have|this|match|do|suffices|show|by|in|at|let|forall|fun|exists|assume|from|obtain|haveI|λ)(?!\.)\b
+      scope: keyword.other.lean
+    - match: «
+      push:
+        - meta_content_scope: entity.name.lean
+        - match: »
+          pop: true
+    - match: \b(?<!\.)(if|then|else)\b
+      scope: keyword.control.lean
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.lean
+      push:
+        - meta_scope: string.quoted.double.lean
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.lean
+          pop: true
+        - match: '\\[\\"nt'']'
+          scope: constant.character.escape.lean
+        - match: '\\x[0-9A-Fa-f][0-9A-Fa-f]'
+          scope: constant.character.escape.lean
+        - match: '\\u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'
+          scope: constant.character.escape.lean
+    - match: '''[^\\'']'''
+      scope: string.quoted.single.lean
+    - match: '''(\\(x..|u....|.))'''
+      scope: string.quoted.single.lean
+      captures:
+        1: constant.character.escape.lean
+    - match: '`+[^\[(]\S+'
+      scope: entity.name.lean
+    - match: '\b([0-9]+|0([xX][0-9a-fA-F]+))\b'
+      scope: constant.numeric.lean
+  blockComment:
+    - match: /-
+      push:
+        - meta_scope: comment.block.lean
+        - match: "-/"
+          pop: true
+        - include: scope:source.lean.markdown
+        - include: blockComment
+  comments:
+    - include: dashComment
+    - include: docComment
+    - include: stringBlock
+    - include: modDocComment
+    - include: blockComment
+  dashComment:
+    - match: (--)
+      captures:
+        0: punctuation.definition.comment.lean
+      push:
+        - meta_scope: comment.line.double-dash.lean
+        - match: $
+          pop: true
+        - include: scope:source.lean.markdown
+  definitionName:
+    - match: '\b[^:«»\(\)\{\}[:space:]=→λ∀?][^:«»\(\)\{\}[:space:]]*'
+      scope: entity.name.function.lean
+    - match: «
+      push:
+        - meta_content_scope: entity.name.function.lean
+        - match: »
+          pop: true
+  docComment:
+    - match: /--
+      push:
+        - meta_scope: comment.block.documentation.lean
+        - match: "-/"
+          pop: true
+        - include: scope:source.lean.markdown
+        - include: blockComment
+  modDocComment:
+    - match: /-!
+      push:
+        - meta_scope: comment.block.documentation.lean
+        - match: "-/"
+          pop: true
+        - include: scope:source.lean.markdown
+        - include: blockComment
+  stringBlock:
+    - match: /-"
+      push:
+        - meta_scope: comment.block.string.lean
+        - match: '"-/'
+          pop: true
+        - include: scope:source.lean.markdown
+        - include: blockComment

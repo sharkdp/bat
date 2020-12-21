@@ -59,3 +59,4 @@ The following files have been manually modified after converting from a `.tmLang
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
+* `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean/blob/master/syntaxes/lean.json via conversion.
