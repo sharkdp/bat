@@ -12,6 +12,8 @@
 
 ## Other
 
+- Performance improvements, see #1421 (@LovecraftianHorror)
+
 ## Syntaxes
 
 ## New themes
