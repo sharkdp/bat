@@ -19,7 +19,7 @@
 ## New themes
 
 - `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12)
-- Gruvbox, see #1291 (@j0hnmeow)
+- The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously usuing `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
 
 ## `bat` as a library
 
