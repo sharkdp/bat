@@ -19,6 +19,7 @@
 ## New themes
 
 - `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12)
+- Gruvbox, see #1291 (@j0hnmeow)
 
 ## `bat` as a library
 
@@ -61,7 +62,6 @@
 ## New themes
 
 - Coldark, see #1329 (@armandphilippot)
-- Gruvbox, see #1291 (@j0hnmeow)
 
 
 # v0.16.0
