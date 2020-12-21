@@ -2,7 +2,7 @@
 
 
 ## Features
-- make `bat -L` use built-in pager 
+- Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
 ## Bugfixes
 
