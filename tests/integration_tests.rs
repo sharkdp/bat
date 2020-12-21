@@ -813,3 +813,17 @@ fn show_all_mode() {
         .stdout("hello·world␊\n├──┤␍␀␇␈␛")
         .stderr("");
 }
+
+#[test]
+fn plain_mode_does_not_add_nonexisting_newline() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
