@@ -6,6 +6,8 @@
 ## Bugfixes
 
 - If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
+- Only print themes hint in interactive mode (`bat --list-themes`), see #1439 (@rsteube)
+- Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
 
 ## Other
 
