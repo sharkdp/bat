@@ -19,6 +19,8 @@
 //!     .unwrap();
 //! ```
 
+mod macros;
+
 pub mod assets;
 pub mod assets_metadata;
 pub mod config;

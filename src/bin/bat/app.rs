@@ -16,6 +16,7 @@ use console::Term;
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
     assets::HighlightingAssets,
+    bat_warning,
     config::{Config, VisibleLines},
     error::*,
     input::Input,
@@ -322,11 +323,7 @@ impl App {
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
-            use ansi_term::Colour::Yellow;
-            eprintln!(
-                "{}: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.",
-                Yellow.paint("[bat warning]"),
-            );
+            bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
         }
 
         Ok(styled_components)
