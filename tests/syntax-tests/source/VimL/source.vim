@@ -69,6 +69,12 @@ echo "Hello" is "Hello2"
 echo "Hello" isnot "Hello2"
 echo "Hello" =~ "Hello2"
 echo "Hello" !~ "Hello2"
+echo "Hello" !~ "Hello2"
+
+echo "/This/should/not/be/a/regex"
+
+" Error case from issue #1604 (https://github.com/sharkdp/bat/issues/1064)
+set runtimepath=~/foo/bar
 
 let g:dict = {}
 let g:dict.item = ['l1', 'l2']
