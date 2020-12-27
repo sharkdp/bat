@@ -11,6 +11,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 use path_abs::PathAbs;
 
 use crate::assets_metadata::AssetsMetadata;
+use crate::bat_warning;
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
@@ -190,21 +191,11 @@ impl HighlightingAssets {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
-                    use ansi_term::Colour::Yellow;
-                    eprintln!(
-                        "{}: Theme '{}' is deprecated, using 'ansi' instead.",
-                        Yellow.paint("[bat warning]"),
-                        theme
-                    );
+                    bat_warning!("Theme '{}' is deprecated, using 'ansi' instead.", theme);
                     return self.get_theme("ansi");
                 }
                 if theme != "" {
-                    use ansi_term::Colour::Yellow;
-                    eprintln!(
-                        "{}: Unknown theme '{}', using default.",
-                        Yellow.paint("[bat warning]"),
-                        theme
-                    );
+                    bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 &self.theme_set.themes[self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
             }
