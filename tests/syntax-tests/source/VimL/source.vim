@@ -53,6 +53,7 @@ imap <C-h> <C-r>=HelloWorld("World")<CR>
 
 command! -nargs=? Echo :call EchoFunc(<args>)
 
+" TODO test stuff
 let g:global = "global var"
 let s:script_var = "script var"
 let w:window_var = "window war"
@@ -67,7 +68,7 @@ echo "Hello" ==? "Hello2"
 echo "Hello" == "Hello2"
 echo "Hello" is "Hello2"
 echo "Hello" isnot "Hello2"
-echo "Hello" =~ "Hello2"
+echo "Hello" =~ 'xx*'
 echo "Hello" !~ "Hello2"
 echo "Hello" !~ "Hello2"
 
@@ -76,10 +77,16 @@ echo "/This/should/not/be/a/regex"
 " Error case from issue #1604 (https://github.com/sharkdp/bat/issues/1064)
 set runtimepath=~/foo/bar
 
+silent g/Aap/p
+
 let g:dict = {}
 let g:dict.item = ['l1', 'l2']
 
 let g:dict2 = {'dict_item': ['l1', 'l2'], 'di2': 'x'}
+
+silent g/regex/
+silent v/regex/
+silent %s/regex/not_regex/
 
 filetype plugin indent on
 syntax enable

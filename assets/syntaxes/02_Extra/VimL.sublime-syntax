@@ -75,10 +75,10 @@ contexts:
     - match: '''(''''|\n[^\S\n]*\\|[^\n''])*'''
       scope: string.quoted.single.viml
   string_regex:
-    - match: '/(\\\\|\\/|\n[^\S\n]*\\|[^\n/])*/'
+    - match: '[gvs]{1}/(\\\\|\\/|\n[^\S\n]*\\|[^\n/])*/'
       scope: string.regexp.viml
   support_function:
-    - match: \b(set(local|global)?|let|command|filetype|colorscheme|\w*map|\w*a(b|brev)?|syn|exe(c|cute)?|ec(ho|)?|au(tocmd|)?)\b
+    - match: \b(set(local|global)?|let|command|filetype|syntax|colorscheme|\w*map|\w*a(b|brev)?|syn|exe(c|cute)?|ec(ho|)?|au(tocmd|)?)\b
       scope: support.function.viml
   support_type:
     - match: <.*?>
