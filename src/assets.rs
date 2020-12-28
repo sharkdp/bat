@@ -38,9 +38,16 @@ impl HighlightingAssets {
         };
 
         let theme_dir = source_dir.join("themes");
-
-        let res = theme_set.add_from_folder(&theme_dir);
-        if res.is_err() {
+        if theme_dir.exists() {
+            let res = theme_set.add_from_folder(&theme_dir);
+            if let Err(err) = res {
+                println!(
+                    "Failed to load one or more themes from '{}' (reason: '{}')",
+                    theme_dir.to_string_lossy(),
+                    err,
+                );
+            }
+        } else {
             println!(
                 "No themes were found in '{}', using the default set",
                 theme_dir.to_string_lossy()
