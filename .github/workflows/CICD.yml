@@ -27,7 +27,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features
+        args: --all-targets --all-features -- --allow clippy::style
     - name: Test
       uses: actions-rs/cargo@v1
       with:
