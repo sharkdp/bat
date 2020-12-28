@@ -27,7 +27,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features -- --deny warnings --allow clippy::new-without-default --allow clippy::match-bool --allow clippy::if_same_then_else
+        args: --all-targets --all-features
     - name: Test
       uses: actions-rs/cargo@v1
       with:
