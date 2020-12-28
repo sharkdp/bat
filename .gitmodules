@@ -185,9 +185,6 @@
 [submodule "assets/syntaxes/02_Extra/AsciiDoc"]
 	path = assets/syntaxes/02_Extra/AsciiDoc
 	url = https://github.com/asciidoctor/sublimetext-asciidoc.git
-[submodule "assets/themes/gruvbox"]
-	path = assets/themes/gruvbox
-	url = https://github.com/peaceant/gruvbox.git
 [submodule "assets/syntaxes/02_Extra/GLSL"]
 	path = assets/syntaxes/02_Extra/GLSL
 	url = https://github.com/euler0/sublime-glsl
@@ -206,3 +203,7 @@
 [submodule "assets/themes/Coldark"]
 	path = assets/themes/Coldark
 	url = https://github.com/ArmandPhilippot/coldark-bat.git
+[submodule "assets/themes/gruvbox"]
+	path = assets/themes/gruvbox
+	url = https://github.com/subnut/gruvbox-tmTheme.git
+	branch = bat-source

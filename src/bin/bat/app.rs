@@ -16,6 +16,7 @@ use console::Term;
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
     assets::HighlightingAssets,
+    bat_warning,
     config::{Config, VisibleLines},
     error::*,
     input::Input,
@@ -82,10 +83,9 @@ impl App {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
-                if self.matches.occurrences_of("plain") > 1 {
-                    // If we have -pp as an option when in auto mode, the pager should be disabled.
-                    PagingMode::Never
-                } else if self.matches.is_present("no-paging") {
+                // If we have -pp as an option when in auto mode, the pager should be disabled.
+                let extra_plain = self.matches.occurrences_of("plain") > 1;
+                if extra_plain || self.matches.is_present("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
@@ -323,11 +323,7 @@ impl App {
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
-            use ansi_term::Colour::Yellow;
-            eprintln!(
-                "{}: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.",
-                Yellow.paint("[bat warning]"),
-            );
+            bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
         }
 
         Ok(styled_components)

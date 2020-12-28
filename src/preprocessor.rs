@@ -72,7 +72,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                     }
                 }
                 // line feed
-                '\x0A' => output.push('␊'),
+                '\x0A' => output.push_str("␊\x0A"),
                 // carriage return
                 '\x0D' => output.push('␍'),
                 // null

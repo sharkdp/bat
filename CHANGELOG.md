@@ -2,26 +2,40 @@
 
 
 ## Features
+- Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
 ## Bugfixes
 
+- If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
+- Only print themes hint in interactive mode (`bat --list-themes`), see #1439 (@rsteube)
+- Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
+- VimL syntax highlighting fix, see #1450 (@esensar)
 - Ignore PAGER=most by default with a warning to stderr, but allow override with BAT_PAGER or --config, see #1063 (@Enselic)
 
 ## Other
+
+- Performance improvements, see #1421 (@LovecraftianHorror)
 
 ## Syntaxes
 
 ## New themes
 
+- `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12)
+- The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously usuing `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
+
 ## `bat` as a library
 
 ## Packaging
+
+- `bat` is now available on snapstore with package name called `batcat`, see #1401 (@purveshpatel511)
+
 
 # v0.17.1
 
 ## Bugfixes
 
 - Running `bat` without arguments fails ("output file is also an input"), see #1396
+
 
 # v0.17.0
 

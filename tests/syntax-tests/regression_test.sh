@@ -4,7 +4,7 @@ set -eou pipefail
 
 script_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-output_directory=$(mktemp -d --suffix=.bat-syntax-regression-test)
+output_directory=$(mktemp -d)
 
 "$script_directory"/create_highlighted_versions.py --output="$output_directory"
 

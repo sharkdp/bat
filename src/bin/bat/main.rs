@@ -36,6 +36,7 @@ use bat::{
     input::Input,
     style::{StyleComponent, StyleComponents},
     MappingTarget,
+    PagingMode,
 };
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
@@ -78,7 +79,9 @@ fn get_syntax_mapping_to_paths<'a>(
     map
 }
 
-pub fn list_languages(config: &Config) -> Result<()> {
+pub fn get_languages(config: &Config) -> Result<String> {
+    let mut result: String = String::new();
+
     let assets = assets_from_cache_or_binary()?;
     let mut languages = assets
         .syntaxes()
@@ -119,12 +122,9 @@ pub fn list_languages(config: &Config) -> Result<()> {
         }
     }
 
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
-
     if config.loop_through {
         for lang in languages {
-            writeln!(stdout, "{}:{}", lang.name, lang.file_extensions.join(","))?;
+            result += &format!("{}:{}\n", lang.name, lang.file_extensions.join(","));
         }
     } else {
         let longest = languages
@@ -145,7 +145,7 @@ pub fn list_languages(config: &Config) -> Result<()> {
         };
 
         for lang in languages {
-            write!(stdout, "{:width$}{}", lang.name, separator, width = longest)?;
+            result += &format!("{:width$}{}", lang.name, separator, width = longest);
 
             // Number of characters on this line so far, wrap before `desired_width`
             let mut num_chars = 0;
@@ -156,20 +156,20 @@ pub fn list_languages(config: &Config) -> Result<()> {
                 let new_chars = word.len() + comma_separator.len();
                 if num_chars + new_chars >= desired_width {
                     num_chars = 0;
-                    write!(stdout, "\n{:width$}{}", "", separator, width = longest)?;
+                    result += &format!("\n{:width$}{}", "", separator, width = longest);
                 }
 
                 num_chars += new_chars;
-                write!(stdout, "{}", style.paint(&word[..]))?;
+                result += &format!("{}", style.paint(&word[..]));
                 if extension.peek().is_some() {
-                    write!(stdout, "{}", comma_separator)?;
+                    result += comma_separator;
                 }
             }
-            writeln!(stdout)?;
+            result += "\n";
         }
     }
 
-    Ok(())
+    Ok(result)
 }
 
 fn theme_preview_file<'a>() -> Input<'a> {
@@ -200,19 +200,19 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
                 .ok();
             writeln!(stdout)?;
         }
+        writeln!(
+            stdout,
+            "Further themes can be installed to '{}', \
+            and are added to the cache with `bat cache --build`. \
+            For more information, see:\n\n  \
+            https://github.com/sharkdp/bat#adding-new-themes",
+            config_file().join("themes").to_string_lossy()
+        )?;
     } else {
         for theme in assets.themes() {
             writeln!(stdout, "{}", theme)?;
         }
     }
-    writeln!(
-        stdout,
-        "Further themes can be installed to '{}', \
-        and are added to the cache with `bat cache --build`. \
-        For more information, see:\n\n  \
-        https://github.com/sharkdp/bat#adding-new-themes",
-        config_file().join("themes").to_string_lossy()
-    )?;
 
     Ok(())
 }
@@ -248,8 +248,14 @@ fn run() -> Result<bool> {
             let config = app.config(&inputs)?;
 
             if app.matches.is_present("list-languages") {
-                list_languages(&config)?;
-                Ok(true)
+                let languages: String = get_languages(&config)?;
+                let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
+                let plain_config = Config {
+                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+                    paging_mode: PagingMode::QuitIfOneScreen,
+                    ..Default::default()
+                };
+                run_controller(inputs, &plain_config)
             } else if app.matches.is_present("list-themes") {
                 list_themes(&config)?;
                 Ok(true)

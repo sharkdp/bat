@@ -22,6 +22,12 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
+        components: clippy
+    - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-targets --all-features
     - name: Test
       uses: actions-rs/cargo@v1
       with:
@@ -152,6 +158,8 @@ jobs:
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
         unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
+        # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
+        if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
         echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
@@ -274,6 +282,7 @@ jobs:
       shell: bash
       run: |
         ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
         # Binary
         cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
 
@@ -283,8 +292,8 @@ jobs:
         # Man page
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
 
-        # README and LICENSE files
-        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "$ARCHIVE_DIR"
+        # README, LICENSE and CHANGELOG files
+        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
@@ -308,24 +317,27 @@ jobs:
 
           # Man page
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
-          gzip --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
+          gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
 
           # Autocompletion files
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 
           # README and LICENSE
-          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/README.md"
-          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-MIT"
-          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/LICENSE-APACHE"
+          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
+          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-MIT"
+          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-APACHE"
+          install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
+          gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
 
-          cat > "${DPKG_DIR}/usr/share/doc/${{ env.PROJECT_NAME }}/copyright" <<EOF
+          cat > "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright" <<EOF
         Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
         Upstream-Name: ${{ env.PROJECT_NAME }}
         Source: ${{ env.PROJECT_HOMEPAGE }}
 
         Files: *
         Copyright: ${{ env.PROJECT_MAINTAINER }}
+        Copyright: $COPYRIGHT_YEARS ${{ env.PROJECT_MAINTAINER }}
         License: Apache-2.0 or MIT
 
         License: Apache-2.0
@@ -357,6 +369,7 @@ jobs:
          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
          DEALINGS IN THE SOFTWARE.
         EOF
+          chmod 644 "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright"
 
           # control file
           mkdir -p "${DPKG_DIR}/DEBIAN"
@@ -370,7 +383,7 @@ jobs:
         Architecture: ${{ steps.vars.outputs.DPKG_ARCH }}
         Provides: ${{ env.PROJECT_NAME }}
         Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
-        Description: A cat(1) clone with wings.
+        Description: cat(1) clone with wings.
          A cat(1) clone with syntax highlighting and Git integration.
         EOF
 

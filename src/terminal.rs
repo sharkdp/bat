@@ -3,13 +3,13 @@ use ansi_term::{self, Style};
 
 use syntect::highlighting::{self, FontStyle};
 
-pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term::Color {
+pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<ansi_term::Color> {
     if color.a == 0 {
         // Themes can specify one of the user-configurable terminal colors by
         // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
-        // to the 8-bit color palette number. The built-in themes ansi-light,
-        // ansi-dark, base16, and base16-256 use this.
-        match color.r {
+        // to the 8-bit color palette number. The built-in themes ansi, base16,
+        // and base16-256 use this.
+        Some(match color.r {
             // For the first 8 colors, use the Color enum to produce ANSI escape
             // sequences using codes 30-37 (foreground) and 40-47 (background).
             // For example, red foreground is \x1b[31m. This works on terminals
@@ -31,11 +31,18 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> ansi_term:
             // 90-97 (foreground) and 100-107 (background), we should use those
             // for values 0x08 to 0x0f and only use Fixed for 0x10 to 0xff.
             n => Fixed(n),
-        }
+        })
+    } else if color.a == 1 {
+        // Themes can specify the terminal's default foreground/background color
+        // (i.e. no escape sequence) using the encoding #RRGGBBAA with AA set to
+        // 01. The built-in theme ansi uses this.
+        None
     } else if true_color {
-        RGB(color.r, color.g, color.b)
+        Some(RGB(color.r, color.g, color.b))
     } else {
-        Fixed(ansi_colours::ansi256_from_rgb((color.r, color.g, color.b)))
+        Some(Fixed(ansi_colours::ansi256_from_rgb((
+            color.r, color.g, color.b,
+        ))))
     }
 }
 
@@ -54,7 +61,10 @@ pub fn as_terminal_escaped(
     let mut style = if !colored {
         Style::default()
     } else {
-        let mut color = Style::from(to_ansi_color(style.foreground, true_color));
+        let mut color = Style {
+            foreground: to_ansi_color(style.foreground, true_color),
+            ..Style::default()
+        };
         if style.font_style.contains(FontStyle::BOLD) {
             color = color.bold();
         }
@@ -67,6 +77,6 @@ pub fn as_terminal_escaped(
         color
     };
 
-    style.background = background_color.map(|c| to_ansi_color(c, true_color));
+    style.background = background_color.and_then(|c| to_ansi_color(c, true_color));
     style.paint(text).to_string()
 }

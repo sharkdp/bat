@@ -5,7 +5,6 @@ description="A cat(1) clone with wings."
 homepage = "https://github.com/sharkdp/bat"
 license = "MIT/Apache-2.0"
 name = "bat"
-readme = "README.md"
 repository = "https://github.com/sharkdp/bat"
 version = "0.17.1"
 exclude = [
@@ -74,7 +73,7 @@ default-features = false
 
 [dev-dependencies]
 tempdir = "0.3"
-assert_cmd = "1.0.1"
+assert_cmd = "1.0.2"
 predicates = "1.0.5"
 
 [build-dependencies]
