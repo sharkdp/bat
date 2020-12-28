@@ -52,6 +52,7 @@ impl OutputType {
         use std::path::PathBuf;
         use std::process::{Command, Stdio};
         use crate::pager::*;
+        use crate::bat_warning;
 
         let Pager { pager, source } = get_pager(pager_from_config);
 
@@ -67,7 +68,7 @@ impl OutputType {
                 }
 
                 if pager_path.file_stem() == Some(&OsString::from("most")) && source == PagerSource::PagerEnvVar {
-                    eprintln!("WARNING: Ignoring PAGER=\"{}\": Coloring not supported. Override with BAT_PAGER=\"{}\" or --pager \"{}\"", pager, pager, pager);
+                    bat_warning!("Ignoring PAGER=\"{}\": Coloring not supported. Override with BAT_PAGER=\"{}\" or --pager \"{}\"", pager, pager, pager);
                     return Ok(OutputType::stdout());
                 }
 

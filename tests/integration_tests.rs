@@ -423,7 +423,7 @@ fn pager_most() {
         .arg("test.txt")
         .assert()
         .success()
-        .stderr(predicate::eq("WARNING: Ignoring PAGER=\"most\": Coloring not supported. Override with BAT_PAGER=\"most\" or --pager \"most\"\n").normalize())
+        .stderr(predicate::eq("\x1b[33m[bat warning]\x1b[0m: Ignoring PAGER=\"most\": Coloring not supported. Override with BAT_PAGER=\"most\" or --pager \"most\"\n").normalize())
         .stdout(predicate::eq("hello world\n").normalize());
 }
 
@@ -435,7 +435,7 @@ fn pager_most_with_arg() {
         .arg("test.txt")
         .assert()
         .success()
-        .stderr(predicate::eq("WARNING: Ignoring PAGER=\"most -w\": Coloring not supported. Override with BAT_PAGER=\"most -w\" or --pager \"most -w\"\n").normalize())
+        .stderr(predicate::eq("\x1b[33m[bat warning]\x1b[0m: Ignoring PAGER=\"most -w\": Coloring not supported. Override with BAT_PAGER=\"most -w\" or --pager \"most -w\"\n").normalize())
         .stdout(predicate::eq("hello world\n").normalize());
 }
 
