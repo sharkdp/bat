@@ -207,3 +207,6 @@
 	path = assets/themes/gruvbox
 	url = https://github.com/subnut/gruvbox-tmTheme.git
 	branch = bat-source
+[submodule "assets/syntaxes/02_Extra/Lean"]
+	path = assets/syntaxes/02_Extra/Lean
+	url = https://github.com/leanprover/vscode-lean.git
