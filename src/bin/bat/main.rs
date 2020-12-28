@@ -162,7 +162,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
                 num_chars += new_chars;
                 result += &format!("{}", style.paint(&word[..]));
                 if extension.peek().is_some() {
-                    result += &format!("{}", comma_separator);
+                    result += comma_separator;
                 }
             }
             result += "\n";
