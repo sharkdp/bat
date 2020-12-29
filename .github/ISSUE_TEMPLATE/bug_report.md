@@ -10,7 +10,7 @@ assignees: ''
 <!--
 Hey there, thanks for creating an issue! 
 
-In order to reproduce your issue, we might need to know a little bit more about the environment which you're running `bat`.
+In order to reproduce your issue, we might need some information about the environment in which you're running `bat`.
 
 Unix-like (Linux or MacOS):
   Run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and paste the output at the bottom.
