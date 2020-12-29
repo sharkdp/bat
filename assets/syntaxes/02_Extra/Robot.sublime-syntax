@@ -4,6 +4,7 @@
 name: Robot Framework
 file_extensions:
   - robot
+  - resource
 scope: source.robot
 contexts:
   main:
