@@ -1,18 +1,35 @@
 #!/usr/bin/env bash
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
+# Check that Hyperfine is installed.
 if ! which hyperfine > /dev/null 2>&1; then
-    echo "'hyperfine' does not seem to be installed."
-    echo "You can get it here: https://github.com/sharkdp/hyperfine"
+    echo "'hyperfine' does not seem to be installed." 1>&2
+    echo "You can get it here: https://github.com/sharkdp/hyperfine" 1>&2
     exit 1
 fi
 
+# Determine the target directories.
+get_target_dir() {
+	if [[ -f "$HOME/.cargo/config" ]]; then
+		grep 'target-dir[[:space:]]*=' "$HOME/.cargo/config" \
+			| sed 's/^[[:space:]]*target-dir[[:space:]]*=//; s/^[[:space:]]*"//; s/"[[:space:]]*$//' \
+			&& return 0
+	fi
+	
+	echo "../../target"
+}
+
+TARGET_DIR="$(get_target_dir)"
+TARGET_DEBUG="${TARGET_DIR}/debug/bat"
+TARGET_RELEASE="${TARGET_DIR}/release/bat"
+
+# Determine which target to benchmark.
 BAT=''
 for arg in "$@"; do
 	case "$arg" in
 		--system)  BAT="bat" ;;
-		--debug)   BAT="../../target/debug/bat" ;;
-		--release) BAT="../../target/release/bat" ;;
+		--debug)   BAT="$TARGET_DEBUG" ;;
+		--release) BAT="$TARGET_RELEASE" ;;
 		--bat=*)   BAT="${arg:6}" ;;
 	esac
 done
@@ -23,16 +40,18 @@ if [[ -z "$BAT" ]]; then
 	exit 1
 fi
 
+# Ensure that the target is built.
 if ! command -v "$BAT" &>/dev/null; then
 	echo "Could not find the build of bat to benchmark."
 	case "$BAT" in
-		"bat")                        echo "Make you sure to symlink 'batcat' as 'bat'." ;;
-		"../../target/debug/debug")   echo "Make you sure to 'cargo build' first." ;;
-		"../../target/debug/release") echo "Make you sure to 'cargo build --release' first." ;;
+		"bat")             echo "Make you sure to symlink 'batcat' as 'bat'." ;;
+		"$TARGET_DEBUG")   echo "Make you sure to 'cargo build' first." ;;
+		"$TARGET_RELEASE") echo "Make you sure to 'cargo build --release' first." ;;
 	esac
 	exit 1
 fi
 
+# Run the benchmark.
 echo "### Startup time"
 echo
 
