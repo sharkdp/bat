@@ -10,13 +10,13 @@ assignees: ''
 <!--
 Hey there, thanks for creating an issue! 
 
-In order to reproduce your issue, we might need some information about the environment in which you're running `bat`.
+In order to reproduce your issue, please add some information about the environment in which you're running `bat` at the bottom of the report.
 
-Unix-like (Linux or MacOS):
-  Run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and paste the output at the bottom.
+Linux and MacOS:
+  Paste the output of https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh
 
 Windows:
-  Add your Windows Version (e.g. "Windows 10 1908") at the bottom.
+  Add your Windows Version (e.g. "Windows 10 1908")
 -->
 
 **What version of `bat` are you using?**
