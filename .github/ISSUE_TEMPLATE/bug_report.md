@@ -10,7 +10,8 @@ assignees: ''
 <!--
 Hey there, thanks for creating an issue! 
 
-In order to reproduce your issue, please add some information about the environment in which you're running `bat` at the bottom of the report.
+In order to reproduce your issue, please add some information about the environment
+in which you're running bat at the bottom of the report.
 
 Linux and MacOS:
   Paste the output of https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh
@@ -29,7 +30,7 @@ Windows:
 ...
 
 **How did you install `bat`?**
-<!-- apt-get, homebrew, GitHub release, etc.  -->
+<!-- apt-get, homebrew, GitHub release, etc. -->
 
 ---
 
