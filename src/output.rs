@@ -48,90 +48,71 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
     ) -> Result<Self> {
-        use std::ffi::OsString;
-        use std::path::PathBuf;
+        use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
-        use crate::pager::*;
 
-        let Pager { pager, source } = get_pager(pager_from_config);
+        let pager_opt =
+            pager::get_pager(pager_from_config).chain_err(|| "Could not parse pager command.")?;
 
-        let pagerflags =
-            shell_words::split(&pager).chain_err(|| "Could not parse pager command.")?;
+        let pager = match pager_opt {
+            Some(pager) => pager,
+            None => return Ok(OutputType::stdout()),
+        };
 
-        match pagerflags.split_first() {
-            Some((pager_name, pager_args)) => {
-                let mut pager_path = PathBuf::from(pager_name);
-                let mut args = pager_args;
-                let empty_args = vec![];
-
-                if pager_path.file_stem() == Some(&OsString::from("bat")) {
-                    return Err(ErrorKind::InvalidPagerValueBat.into());
-                }
-
-                if pager_path.file_stem() == Some(&OsString::from("most")) && source == PagerSource::PagerEnvVar {
-                    pager_path = PathBuf::from("less");
-                    args = &empty_args;
-                }
-
-                let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
-
-                let mut process = if is_less {
-                    // less needs to be called with the '-R' option in order to properly interpret the
-                    // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
-                    // therefore need to overwrite the arguments and add '-R'.
-                    //
-                    // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
-                    // or bats '--pager' command line option.
-                    let replace_arguments_to_less = source == PagerSource::PagerEnvVar;
-
-                    let mut p = Command::new(&pager_path);
-                    if args.is_empty() || replace_arguments_to_less {
-                        p.arg("--RAW-CONTROL-CHARS");
-                        if single_screen_action == SingleScreenAction::Quit {
-                            p.arg("--quit-if-one-screen");
-                        }
-
-                        if wrapping_mode == WrappingMode::NoWrapping {
-                            p.arg("--chop-long-lines");
-                        }
-
-                        // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
-                        // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
-                        //
-                        // See: http://www.greenwoodsoftware.com/less/news.530.html
-                        //
-                        // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
-                        // is not needed anymore.
-                        match retrieve_less_version() {
-                            None => {
-                                p.arg("--no-init");
-                            }
-                            Some(version)
-                                if (version < 530 || (cfg!(windows) && version < 558)) =>
-                            {
-                                p.arg("--no-init");
-                            }
-                            _ => {}
-                        }
-                    } else {
-                        p.args(args);
-                    }
-                    p.env("LESSCHARSET", "UTF-8");
-                    p
-                } else {
-                    let mut p = Command::new(&pager_path);
-                    p.args(args);
-                    p
-                };
-
-                Ok(process
-                    .stdin(Stdio::piped())
-                    .spawn()
-                    .map(OutputType::Pager)
-                    .unwrap_or_else(|_| OutputType::stdout()))
-            }
-            None => Ok(OutputType::stdout()),
+        if pager.kind == PagerKind::Bat {
+            return Err(ErrorKind::InvalidPagerValueBat.into());
         }
+
+        let mut p = Command::new(pager.bin);
+        let args = pager.args;
+
+        if pager.kind == PagerKind::Less {
+            // less needs to be called with the '-R' option in order to properly interpret the
+            // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
+            // therefore need to overwrite the arguments and add '-R'.
+            //
+            // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
+            // or bats '--pager' command line option.
+            let replace_arguments_to_less = pager.source == PagerSource::PagerEnvVar;
+
+            if args.is_empty() || replace_arguments_to_less {
+                p.arg("--RAW-CONTROL-CHARS");
+                if single_screen_action == SingleScreenAction::Quit {
+                    p.arg("--quit-if-one-screen");
+                }
+
+                if wrapping_mode == WrappingMode::NoWrapping {
+                    p.arg("--chop-long-lines");
+                }
+
+                // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
+                // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
+                //
+                // See: http://www.greenwoodsoftware.com/less/news.530.html
+                //
+                // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
+                // is not needed anymore.
+                match retrieve_less_version() {
+                    None => {
+                        p.arg("--no-init");
+                    }
+                    Some(version) if (version < 530 || (cfg!(windows) && version < 558)) => {
+                        p.arg("--no-init");
+                    }
+                    _ => {}
+                }
+            } else {
+                p.args(args);
+            }
+            p.env("LESSCHARSET", "UTF-8");
+        } else {
+            p.args(args);
+        };
+
+        Ok(p.stdin(Stdio::piped())
+            .spawn()
+            .map(OutputType::Pager)
+            .unwrap_or_else(|_| OutputType::stdout()))
     }
 
     pub(crate) fn stdout() -> Self {
