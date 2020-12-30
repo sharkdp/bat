@@ -11,7 +11,7 @@
 - Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
 - VimL syntax highlighting fix, see #1450 (@esensar)
 - Print an 'Invalid syntax theme settings' error message if a custom theme is broken, see #614 (@Enselic)
-- Ignore PAGER=most with a warning to stderr, but allow override with BAT_PAGER or --config, see #1063 (@Enselic)
+- If `PAGER=most` (but not `BAT_PAGER` or `--pager`), silently use `less` instead since `most` does not support colors, see #1063 (@Enselic)
 
 ## Other
 

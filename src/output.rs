@@ -52,7 +52,6 @@ impl OutputType {
         use std::path::PathBuf;
         use std::process::{Command, Stdio};
         use crate::pager::*;
-        use crate::bat_warning;
 
         let Pager { pager, source } = get_pager(pager_from_config);
 
@@ -60,16 +59,18 @@ impl OutputType {
             shell_words::split(&pager).chain_err(|| "Could not parse pager command.")?;
 
         match pagerflags.split_first() {
-            Some((pager_name, args)) => {
-                let pager_path = PathBuf::from(pager_name);
+            Some((pager_name, pager_args)) => {
+                let mut pager_path = PathBuf::from(pager_name);
+                let mut args = pager_args;
+                let empty_args = vec![];
 
                 if pager_path.file_stem() == Some(&OsString::from("bat")) {
                     return Err(ErrorKind::InvalidPagerValueBat.into());
                 }
 
                 if pager_path.file_stem() == Some(&OsString::from("most")) && source == PagerSource::PagerEnvVar {
-                    bat_warning!("Ignoring PAGER=\"{}\": Coloring not supported. Override with BAT_PAGER=\"{}\" or --pager \"{}\"", pager, pager, pager);
-                    return Ok(OutputType::stdout());
+                    pager_path = PathBuf::from("less");
+                    args = &empty_args;
                 }
 
                 let is_less = pager_path.file_stem() == Some(&OsString::from("less"));
