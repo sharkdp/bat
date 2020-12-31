@@ -477,6 +477,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden(true)
                 .help("Show bat's cache directory."),
         )
+        .arg(
+            Arg::with_name("diagnostic")
+                .long("diagnostic")
+                .hidden_short_help(true)
+                .help("Show diagnostic information for bug reports.")
+        )
         .help_message("Print this help message.")
         .version_message("Show version information.");
 
