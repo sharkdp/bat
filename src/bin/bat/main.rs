@@ -35,8 +35,7 @@ use bat::{
     error::*,
     input::Input,
     style::{StyleComponent, StyleComponents},
-    MappingTarget,
-    PagingMode,
+    MappingTarget, PagingMode,
 };
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
@@ -227,6 +226,27 @@ fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
 /// `Ok(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
     let app = App::new()?;
+
+    if app.matches.is_present("diagnostic") {
+        use bugreport::{bugreport, collectors::*};
+
+        bugreport!()
+            .info(SoftwareVersion::default())
+            .info(OperatingSystem::default())
+            .info(CommandLine::default())
+            .info(EnvironmentVariables::list(&[
+                "SHELL",
+                "PAGER",
+                "BAT_PAGER",
+                "BAT_CONFIG_PATH",
+                "BAT_STYLE",
+                "BAT_THEME",
+                "BAT_TABS",
+            ]))
+            .print_markdown();
+
+        return Ok(true);
+    }
 
     match app.matches.subcommand() {
         ("cache", Some(cache_matches)) => {
