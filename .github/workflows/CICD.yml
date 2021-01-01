@@ -226,7 +226,13 @@ jobs:
       with:
         use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
         command: run
-        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi-dark Cargo.toml src/config.rs
+        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
+    - name: bat diagnostics output
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        command: run
+        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
     - name: Check features regex-onig
       uses: actions-rs/cargo@v1
       with:
