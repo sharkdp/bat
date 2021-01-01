@@ -51,7 +51,7 @@ serde_yaml = "0.8"
 semver = "0.11"
 path_abs = { version = "0.5", default-features = false }
 clircle = "0.2.0"
-bugreport = "0.1"
+bugreport = "0.2"
 
 [dependencies.git2]
 version = "0.13"

@@ -243,6 +243,9 @@ fn run() -> Result<bool> {
                 "BAT_THEME",
                 "BAT_TABS",
             ]))
+            .info(FileContent::new("Config file", config_file()))
+            .info(CompileTimeInformation::default())
+            .info(CommandOutput::new("Less version", "less", &["--version"]))
             .print_markdown();
 
         return Ok(true);
