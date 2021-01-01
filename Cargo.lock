@@ -197,8 +197,6 @@ dependencies = [
 [[package]]
 name = "bugreport"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "824268bc0fcb3b94da597b81fa9dd52175cfde5522f4892a0cff3932802ff805"
 dependencies = [
  "snailquote",
  "sys-info",
