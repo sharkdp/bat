@@ -16,7 +16,7 @@ in the `.sublime-syntax` format.
    *New Syntax from XXX.tmLanguage...*. Save the new file in the `assets/syntaxes` folder.
 
 3. Run the `assets/create.sh` script. It calls `bat cache --build` to parse all available
-   `.sublime-syntax` files and serialize them to a `syntaxes.bin` file (in this folder).
+   `.sublime-syntax` files and serialize them to a `syntaxes.bin` file.
 
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
    `bat` binary.
@@ -38,7 +38,8 @@ to `regex` incompatibilities between `syntect` and Sublime Text).
 In order to add a new test file, please follow these steps (let's take "Ruby" as an example):
 
 1. Make sure that you are running the **latest version of `bat`** and that `bat` is available on
-   the path.
+   the path. If you are creating a syntax test for a new builtin syntax (see above), make sure that
+   your version of `bat` already has the new syntax builtin.
 2. Find an example Ruby source file or write one yourself. If possible, the file should aim to be
    "comprehensive" (i.e. include a lot of the possible syntax), but this is not strictly necessary.
    A simple file is better than none at all. Also, the files shouldn't be gigantic.
