@@ -18,6 +18,7 @@
 
 ## Syntaxes
 
+- Added Lean syntax, see #1446 (@Julian)
 - Added `.resource` extension for Robot Framework files, see #1386
 
 ## New themes
