@@ -91,9 +91,6 @@ impl<'a> Printer for SimplePrinter<'a> {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(line_buffer, self.config.tab_width);
                 write!(handle, "{}", line)?;
-                if line_buffer.last() == Some(&b'\n') {
-                    writeln!(handle)?;
-                }
             } else {
                 handle.write_all(line_buffer)?
             };
@@ -200,13 +197,18 @@ impl<'a> InteractivePrinter<'a> {
         })
     }
 
+    fn print_horizontal_line_term(&mut self, handle: &mut dyn Write, style: Style) -> Result<()> {
+        writeln!(
+            handle,
+            "{}",
+            style.paint("─".repeat(self.config.term_width))
+        )?;
+        Ok(())
+    }
+
     fn print_horizontal_line(&mut self, handle: &mut dyn Write, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
-            writeln!(
-                handle,
-                "{}",
-                self.colors.grid.paint("─".repeat(self.config.term_width))
-            )?;
+            self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
@@ -251,6 +253,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
+        if add_header_padding && self.config.style_components.rule() {
+            self.print_horizontal_line_term(handle, self.colors.rule)?;
+        }
+
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
                 writeln!(
@@ -279,7 +285,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )?;
         } else {
-            if add_header_padding {
+            // Only pad space between files, if we haven't already drawn a horizontal rule
+            if add_header_padding && !self.config.style_components.rule() {
                 writeln!(handle)?;
             }
             write!(handle, "{}", " ".repeat(self.panel_width))?;
@@ -301,7 +308,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             description
                 .kind()
                 .map(|kind| format!("{}: ", kind))
-                .unwrap_or("".into()),
+                .unwrap_or_else(|| "".into()),
             self.colors.filename.paint(description.title()),
             mode
         )?;
@@ -441,7 +448,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 if text.len() != text_trimmed.len() {
                     if let Some(background_color) = background_color {
                         let mut ansi_style = Style::default();
-                        ansi_style.background = Some(to_ansi_color(background_color, true_color));
+                        ansi_style.background = to_ansi_color(background_color, true_color);
                         let width = if cursor_total <= cursor_max {
                             cursor_max - cursor_total + 1
                         } else {
@@ -453,7 +460,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 }
             }
 
-            if line.bytes().next_back() != Some(b'\n') {
+            if !self.config.style_components.plain() && line.bytes().next_back() != Some(b'\n') {
                 writeln!(handle)?;
             }
         } else {
@@ -582,8 +589,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             if let Some(background_color) = background_color {
                 let mut ansi_style = Style::default();
-                ansi_style.background =
-                    Some(to_ansi_color(background_color, self.config.true_color));
+                ansi_style.background = to_ansi_color(background_color, self.config.true_color);
 
                 write!(
                     handle,
@@ -603,6 +609,7 @@ const DEFAULT_GUTTER_COLOR: u8 = 238;
 #[derive(Debug, Default)]
 pub struct Colors {
     pub grid: Style,
+    pub rule: Style,
     pub filename: Style,
     pub git_added: Style,
     pub git_removed: Style,
@@ -616,19 +623,27 @@ impl Colors {
     }
 
     fn colored(theme: &Theme, true_color: bool) -> Self {
-        let gutter_color = theme
-            .settings
-            .gutter_foreground
-            .map(|c| to_ansi_color(c, true_color))
-            .unwrap_or(Fixed(DEFAULT_GUTTER_COLOR));
+        let gutter_style = Style {
+            foreground: match theme.settings.gutter_foreground {
+                // If the theme provides a gutter foreground color, use it.
+                // Note: It might be the special value #00000001, in which case
+                // to_ansi_color returns None and we use an empty Style
+                // (resulting in the terminal's default foreground color).
+                Some(c) => to_ansi_color(c, true_color),
+                // Otherwise, use a specific fallback color.
+                None => Some(Fixed(DEFAULT_GUTTER_COLOR)),
+            },
+            ..Style::default()
+        };
 
         Colors {
-            grid: gutter_color.normal(),
+            grid: gutter_style,
+            rule: gutter_style,
             filename: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
-            line_number: gutter_color.normal(),
+            line_number: gutter_style,
         }
     }
 }

@@ -1,20 +1,74 @@
 # unreleased
 
-- Add Note to refer to see detailed help with --help (and vice versa with -h). see #1215 (@henil)
 
 ## Features
+- Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
 ## Bugfixes
 
+- If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
+- Only print themes hint in interactive mode (`bat --list-themes`), see #1439 (@rsteube)
+- Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
+- VimL syntax highlighting fix, see #1450 (@esensar)
+- Print an 'Invalid syntax theme settings' error message if a custom theme is broken, see #614 (@Enselic)
+
 ## Other
+
+- Performance improvements, see #1421 (@LovecraftianHorror)
 
 ## Syntaxes
 
+- Added Zig syntax, see #1470 (@paulsmith)
+- Added Lean syntax, see #1446 (@Julian)
+- Added `.resource` extension for Robot Framework files, see #1386
+
 ## New themes
+
+- `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12)
+- The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously usuing `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
 
 ## `bat` as a library
 
 ## Packaging
+
+- `bat` is now available on snapstore with package name called `batcat`, see #1401 (@purveshpatel511)
+
+
+# v0.17.1
+
+## Bugfixes
+
+- Running `bat` without arguments fails ("output file is also an input"), see #1396
+
+
+# v0.17.0
+
+## Features
+
+- Added a new `--style` value, `rule`, which adds a simple horizontal ruled line between files, see #1276 (@tommilligan)
+- Pass `-S` ("chop long lines") to `less` if `--wrap=never` is set in `bat`, see #1255 (@gahag)
+
+## Bugfixes
+
+- Detect infinite loop when input and output are the same, see #1193 and #1197 (@niklasmohrin)
+- Throw an error when `bat` is being used as `pager`, see #1343 (@adrian-rivera)
+- Bash syntax highlighting not selected for `*.ebuild` and `*.eclass` files, see #1292 (@sharkdp)
+- Fix `zsh` completion when using `-p`, see #1320 (@xzfc)
+
+## Other
+
+- Add note to refer to see detailed help with `--help` (and vice versa with `-h`), see #1215 (@henil)
+- Add a `Contributors` section to `README`, see #1348 (@adrian-rivera)
+
+## Syntaxes
+
+- Manpage syntax highlighting has been improved, see #1315 (@keith-hall)
+- Add Svelte file syntax, see #1285 (@kjmph)
+
+## New themes
+
+- Coldark, see #1329 (@armandphilippot)
+
 
 # v0.16.0
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 
 # Check that Hyperfine is installed.
-if ! which hyperfine > /dev/null 2>&1; then
-    echo "'hyperfine' does not seem to be installed." 1>&2
-    echo "You can get it here: https://github.com/sharkdp/hyperfine" 1>&2
+if ! command -v hyperfine > /dev/null 2>&1; then
+    echo "'hyperfine' does not seem to be installed."
+    echo "You can get it here: https://github.com/sharkdp/hyperfine"
     exit 1
 fi
 

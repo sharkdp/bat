@@ -22,6 +22,12 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
+        components: clippy
+    - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all-targets --all-features -- --allow clippy::style
     - name: Test
       uses: actions-rs/cargo@v1
       with:
@@ -58,6 +64,11 @@ jobs:
       with:
         command: test
         args: --release
+    - name: Run ignored-by-default unit tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
@@ -147,6 +158,8 @@ jobs:
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
         unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
+        # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
+        if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
         echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
@@ -302,18 +315,6 @@ jobs:
           install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
           if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
 
-          # Work out shared library dependencies
-          # dpkg-shlibdeps requires debian/control file. Dummy it and clean up
-          mkdir "./debian"
-          touch "./debian/control"
-          case ${{ matrix.job.target }} in
-            aarch64-*-linux-*) DEPENDS="$(dpkg-shlibdeps -l/usr/aarch64-linux-gnu/lib -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
-            arm-*-linux-*hf) DEPENDS="$(dpkg-shlibdeps -l/usr/arm-linux-gnueabihf/lib -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
-            i686-*-linux-*) DEPENDS="$(dpkg-shlibdeps -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
-            x86_64-*-linux-*) DEPENDS="$(dpkg-shlibdeps -O "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}" 2> /dev/null | sed 's/^shlibs:Depends=//')" ;;
-          esac;
-          rm -rf "./debian"
-
           # Man page
           install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
           gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
@@ -380,7 +381,6 @@ jobs:
         Maintainer: ${{ env.PROJECT_MAINTAINER }}
         Homepage: ${{ env.PROJECT_HOMEPAGE }}
         Architecture: ${{ steps.vars.outputs.DPKG_ARCH }}
-        Depends: $DEPENDS
         Provides: ${{ env.PROJECT_NAME }}
         Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
         Description: cat(1) clone with wings.

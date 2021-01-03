@@ -28,11 +28,11 @@ If you're on Windows:
 **Describe the bug you encountered:**
 ...
 
-**Describe what you expected to happen?**
+**What did you expect to happen instead?**
 ...
 
 **How did you install `bat`?**
-apt-get, homebrew, GitHub release, etc.
+<!-- apt-get, homebrew, GitHub release, etc. -->
 
 ---
 

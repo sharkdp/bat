@@ -1,0 +1,8 @@
+#this is a sample requirements.txt file
+
+django==11.2.0
+pywheels>=12.4 #a whitespace followed by comments
+Nuitka<0.6.8.4
+wxPython>=1.0, <=2.1
+
+#this is another comment

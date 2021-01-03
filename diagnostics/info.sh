@@ -58,7 +58,8 @@ _bat_:run() {
 	_out "$BAT" --version
 	_out env | grep '^BAT_\|^PAGER='
 
-	local cache_dir="$($BAT --cache-dir)"
+	local cache_dir
+	cache_dir="$($BAT --cache-dir)"
 	if [[ -f "${cache_dir}/syntaxes.bin" ]]; then
 		_print_command "$BAT" "--list-languages"
 		echo "Found custom syntax set."
@@ -79,8 +80,8 @@ _bat_config_:run() {
 _bat_wrapper_:run() {
 	_bat_wrapper_:detect_wrapper() {
 		local bat="$1"
-		if file "$(which "${bat}")" | grep "text executable" &> /dev/null; then
-			_out_fence cat "$(which "${bat}")"
+		if file "$(command -v "${bat}")" | grep "text executable" &> /dev/null; then
+			_out_fence cat "$(command -v "${bat}")"
 			return
 		fi
 
@@ -104,7 +105,8 @@ _bat_wrapper_function_:run() {
 				fi ;;
 
 			*bash* | *zsh*)
-				local type="$("$SHELL" --login -i -c "type ${command}" 2>&1)"
+				local type
+				type="$("$SHELL" --login -i -c "type ${command}" 2>&1)"
 				if grep 'function' <<< "$type" &> /dev/null; then
 					_out_fence "$SHELL" --login -i -c "declare -f ${command}"
 					return

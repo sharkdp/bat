@@ -16,6 +16,7 @@ use console::Term;
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
     assets::HighlightingAssets,
+    bat_warning,
     config::{Config, VisibleLines},
     error::*,
     input::Input,
@@ -82,10 +83,9 @@ impl App {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
-                if self.matches.occurrences_of("plain") > 1 {
-                    // If we have -pp as an option when in auto mode, the pager should be disabled.
-                    PagingMode::Never
-                } else if self.matches.is_present("no-paging") {
+                // If we have -pp as an option when in auto mode, the pager should be disabled.
+                let extra_plain = self.matches.occurrences_of("plain") > 1;
+                if extra_plain || self.matches.is_present("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
@@ -169,9 +169,8 @@ impl App {
                 || match self.matches.value_of("color") {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") | _ => {
-                        env::var_os("NO_COLOR").is_none() && self.interactive_output
-                    }
+                    Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
+                    _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
@@ -226,17 +225,14 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
-            use_italic_text: match self.matches.value_of("italic-text") {
-                Some("always") => true,
-                _ => false,
-            },
+            use_italic_text: self.matches.value_of("italic-text") == Some("always"),
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
                 .map(|ws| ws.map(LineRange::from).collect())
                 .transpose()?
                 .map(LineRanges::from)
-                .map(|lr| HighlightedLineRanges(lr))
+                .map(HighlightedLineRanges)
                 .unwrap_or_default(),
         })
     }
@@ -288,8 +284,8 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        Ok(StyleComponents(
-            if matches.value_of("decorations") == Some("never") {
+        let mut styled_components =
+            StyleComponents(if matches.value_of("decorations") == Some("never") {
                 HashSet::new()
             } else if matches.is_present("number") {
                 [StyleComponent::LineNumbers].iter().cloned().collect()
@@ -323,7 +319,13 @@ impl App {
                         acc.extend(components.iter().cloned());
                         acc
                     })
-            },
-        ))
+            });
+
+        // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
+        if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
+            bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
+        }
+
+        Ok(styled_components)
     }
 }

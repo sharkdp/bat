@@ -11,6 +11,7 @@ use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
 use path_abs::PathAbs;
 
 use crate::assets_metadata::AssetsMetadata;
+use crate::bat_warning;
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
@@ -37,9 +38,16 @@ impl HighlightingAssets {
         };
 
         let theme_dir = source_dir.join("themes");
-
-        let res = theme_set.add_from_folder(&theme_dir);
-        if res.is_err() {
+        if theme_dir.exists() {
+            let res = theme_set.add_from_folder(&theme_dir);
+            if let Err(err) = res {
+                println!(
+                    "Failed to load one or more themes from '{}' (reason: '{}')",
+                    theme_dir.to_string_lossy(),
+                    err,
+                );
+            }
+        } else {
             println!(
                 "No themes were found in '{}', using the default set",
                 theme_dir.to_string_lossy()
@@ -189,13 +197,12 @@ impl HighlightingAssets {
         match self.theme_set.themes.get(theme) {
             Some(theme) => theme,
             None => {
+                if theme == "ansi-light" || theme == "ansi-dark" {
+                    bat_warning!("Theme '{}' is deprecated, using 'ansi' instead.", theme);
+                    return self.get_theme("ansi");
+                }
                 if theme != "" {
-                    use ansi_term::Colour::Yellow;
-                    eprintln!(
-                        "{}: Unknown theme '{}', using default.",
-                        Yellow.paint("[bat warning]"),
-                        theme
-                    );
+                    bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 &self.theme_set.themes[self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
             }

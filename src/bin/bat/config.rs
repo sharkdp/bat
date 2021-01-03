@@ -44,8 +44,7 @@ pub fn generate_config_file() -> bat::error::Result<()> {
         }
     }
 
-    let default_config =
-        r#"# This is `bat`s configuration file. Each line either contains a comment or
+    let default_config = r#"# This is `bat`s configuration file. Each line either contains a comment or
 # a command-line option that you want to pass to `bat` by default. You can
 # run `bat --help` to get a list of all possible configuration options.
 
@@ -86,7 +85,7 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
         .ok()
         .map(|content| get_args_from_str(&content))
         .transpose()?
-        .unwrap_or_else(|| vec![]))
+        .unwrap_or_else(Vec::new))
 }
 
 pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {

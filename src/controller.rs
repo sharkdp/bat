@@ -54,7 +54,10 @@ impl<'b> Controller<'b> {
                     paging_mode = PagingMode::Never;
                 }
             }
-            output_type = OutputType::from_mode(paging_mode, self.config.pager)?;
+
+            let wrapping_mode = self.config.wrapping_mode;
+
+            output_type = OutputType::from_mode(paging_mode, wrapping_mode, self.config.pager)?;
         }
 
         #[cfg(not(feature = "paging"))]
@@ -144,7 +147,7 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_file<'a>(
+    fn print_file(
         &self,
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
@@ -194,6 +197,8 @@ impl<'b> Controller<'b> {
         let mut first_range: bool = true;
         let mut mid_range: bool = false;
 
+        let style_snip = self.config.style_components.snip();
+
         while reader.read_line(&mut line_buffer)? {
             match line_ranges.check(line_number) {
                 RangeCheckResult::BeforeOrBetweenRanges => {
@@ -204,7 +209,7 @@ impl<'b> Controller<'b> {
                 }
 
                 RangeCheckResult::InRange => {
-                    if self.config.style_components.snip() {
+                    if style_snip {
                         if first_range {
                             first_range = false;
                             mid_range = true;

@@ -406,6 +406,16 @@ fn pager_disable() {
 }
 
 #[test]
+fn pager_value_bat() {
+    bat()
+        .arg("--pager=bat")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .failure();
+}
+
+#[test]
 fn alias_pager_disable() {
     bat()
         .env("PAGER", "echo other-pager")
@@ -571,6 +581,18 @@ fn empty_file_leads_to_empty_output_with_grid_enabled() {
 }
 
 #[test]
+fn empty_file_leads_to_empty_output_with_rule_enabled() {
+    bat()
+        .arg("empty.txt")
+        .arg("--style=rule")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn filename_basic() {
     bat()
         .arg("test.txt")
@@ -668,6 +690,48 @@ fn header_padding() {
         .stderr("");
 }
 
+#[test]
+fn header_padding_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "File: test.txt
+hello world
+────────────────────────────────────────────────────────────────────────────────
+File: single-line.txt
+Single Line
+",
+        )
+        .stderr("");
+}
+
+#[test]
+fn grid_overrides_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "\
+────────────────────────────────────────────────────────────────────────────────
+hello world
+────────────────────────────────────────────────────────────────────────────────
+────────────────────────────────────────────────────────────────────────────────
+Single Line
+────────────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n");
+}
+
 #[cfg(target_os = "linux")]
 #[test]
 fn file_with_invalid_utf8_filename() {
@@ -747,5 +811,43 @@ fn show_all_mode() {
         .arg("nonprintable.txt")
         .assert()
         .stdout("hello·world␊\n├──┤␍␀␇␈␛")
+        .stderr("");
+}
+
+#[test]
+fn plain_mode_does_not_add_nonexisting_newline() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/299
+#[test]
+fn grid_for_file_without_newline() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=full")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: single-line.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ Single Line
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        )
         .stderr("");
 }
