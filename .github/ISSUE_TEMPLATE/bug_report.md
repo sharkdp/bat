@@ -36,8 +36,11 @@ In order to reproduce your issue, please add some information about the environm
 in which you're running bat.
 
 Linux and MacOS:
-  Please run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh (Click "Raw" to
-  get the actual source code) and paste the Markdown output here.
+  Please run the script at
+
+    https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh
+
+  (click "Raw" to get the actual source code) and paste the Markdown output here.
 
 Windows:
   Please add your Windows Version (e.g. "Windows 10 1908")
