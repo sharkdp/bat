@@ -1,5 +1,6 @@
 use assert_cmd::Command;
 use predicates::{prelude::predicate, str::PredicateStrExt};
+use serial_test::serial;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::str::from_utf8;
@@ -474,6 +475,7 @@ fn pager_value_bat() {
 /// We shall use less instead of most if PAGER is used since PAGER
 /// is a generic env var
 #[test]
+#[serial] // Because of PATH
 fn pager_most_from_pager_env_var() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         // If the output is not "I am most\n" then we know 'most' is not used
@@ -490,6 +492,7 @@ fn pager_most_from_pager_env_var() {
 /// If the bat-specific BAT_PAGER is used, obey the wish of the user
 /// and allow 'most'
 #[test]
+#[serial] // Because of PATH
 fn pager_most_from_bat_pager_env_var() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
@@ -504,6 +507,7 @@ fn pager_most_from_bat_pager_env_var() {
 
 /// Same reasoning with --pager as with BAT_PAGER
 #[test]
+#[serial] // Because of PATH
 fn pager_most_from_pager_arg() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
@@ -518,6 +522,7 @@ fn pager_most_from_pager_arg() {
 
 /// Make sure the logic for 'most' applies even if an argument is passed
 #[test]
+#[serial] // Because of PATH
 fn pager_most_with_arg() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
@@ -532,6 +537,7 @@ fn pager_most_with_arg() {
 
 /// Sanity check that 'more' is treated like 'most'
 #[test]
+#[serial] // Because of PATH
 fn pager_more() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
