@@ -34,6 +34,18 @@ fn get_mocked_pagers_dir() -> PathBuf {
         .join("mocked-pagers")
 }
 
+/// On Unix: 'most' -> 'most'
+/// On Windows: 'most' -> 'most.bat'
+fn mocked_pager(base: &str) -> String {
+    if cfg!(windows) {
+        let mut str = String::from(base);
+        str.push_str(".bat");
+        str
+    } else {
+        String::from(base)
+    }
+}
+
 /// Prepends a directory to the PATH environment variable
 /// Returns the original value for later restoration
 fn prepend_dir_to_path_env_var(dir: PathBuf) -> String {
@@ -64,14 +76,14 @@ fn with_mocked_versions_of_more_and_most_in_path(actual_test: fn()) {
     let original_path = prepend_dir_to_path_env_var(get_mocked_pagers_dir());
 
     // Make sure our own variants of 'more' and 'most' is used
-    Command::new("more")
+    Command::new(mocked_pager("more"))
         .assert()
         .success()
-        .stdout("I am more\n");
-    Command::new("most")
+        .stdout(predicate::str::contains("I am more"));
+    Command::new(mocked_pager("most"))
         .assert()
         .success()
-        .stdout("I am most\n");
+        .stdout(predicate::str::contains("I am most"));
 
     // Now run the actual test
     actual_test();
@@ -478,9 +490,9 @@ fn pager_value_bat() {
 #[serial] // Because of PATH
 fn pager_most_from_pager_env_var() {
     with_mocked_versions_of_more_and_most_in_path(|| {
-        // If the output is not "I am most\n" then we know 'most' is not used
+        // If the output is not "I am most" then we know 'most' is not used
         bat()
-            .env("PAGER", "most")
+            .env("PAGER", mocked_pager("most"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
@@ -496,12 +508,12 @@ fn pager_most_from_pager_env_var() {
 fn pager_most_from_bat_pager_env_var() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("BAT_PAGER", "most")
+            .env("BAT_PAGER", mocked_pager("most"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("I am most\n").normalize());
+            .stdout(predicate::str::contains("I am most"));
     });
 }
 
@@ -512,11 +524,11 @@ fn pager_most_from_pager_arg() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
             .arg("--paging=always")
-            .arg("--pager=most")
+            .arg(format!("--pager={}", mocked_pager("most")))
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("I am most\n").normalize());
+            .stdout(predicate::str::contains("I am most"));
     });
 }
 
@@ -526,7 +538,7 @@ fn pager_most_from_pager_arg() {
 fn pager_most_with_arg() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("PAGER", "most -w")
+            .env("PAGER", format!("{} -w", mocked_pager("most")))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
@@ -541,7 +553,7 @@ fn pager_most_with_arg() {
 fn pager_more() {
     with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("PAGER", "more")
+            .env("PAGER", mocked_pager("more"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
