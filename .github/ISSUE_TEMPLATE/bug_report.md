@@ -7,33 +7,41 @@ assignees: ''
 
 ---
 
-<!--
-Hey there, thanks for creating an issue!
-
-In order to reproduce your issue, we might need to know a little bit more about the environment
-which you're running `bat` on.
-
-If you're on Linux or MacOS:
-  Please run the script at https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh and
-  paste the output at the bottom of the bug report.
-
-If you're on Windows:
-  Please tell us about your Windows Version (e.g. "Windows 10 1908") at the
-  bottom of the bug report.
--->
+<!-- Hey there, thank you for creating an issue! -->
 
 **What version of `bat` are you using?**
-[paste the output of `bat --version` here]
+
+<!-- Output of `bat --version` -->
+
 
 **Describe the bug you encountered:**
+
 ...
 
 **What did you expect to happen instead?**
+
 ...
 
+
 **How did you install `bat`?**
+
 <!-- apt-get, homebrew, GitHub release, etc. -->
 
 ---
 
-[paste the output of `info.sh` here]
+**Evironment**
+
+<!--
+In order to reproduce your issue, please add some information about the environment
+in which you're running bat.
+
+Linux and MacOS:
+  Please run the script at
+
+    https://github.com/sharkdp/bat/blob/master/diagnostics/info.sh
+
+  (click "Raw" to get the actual source code) and paste the Markdown output here.
+
+Windows:
+  Please add your Windows Version (e.g. "Windows 10 1908")
+-->
