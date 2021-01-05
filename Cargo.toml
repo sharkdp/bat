@@ -76,6 +76,7 @@ default-features = false
 tempdir = "0.3"
 assert_cmd = "1.0.2"
 predicates = "1.0.6"
+wait-timeout = "0.2.0"
 
 [build-dependencies]
 clap = { version = "2.33", optional = true }

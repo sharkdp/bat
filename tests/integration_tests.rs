@@ -5,8 +5,11 @@ use std::fs::File;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
+use std::time::Duration;
 
 const EXAMPLES_DIR: &str = "tests/examples";
+const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
+const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
 
 fn bat_raw_command() -> Command {
     let mut cmd = Command::cargo_bin("bat").unwrap();
@@ -218,6 +221,56 @@ fn stdin_to_stdout_cycle() {
         .stdout(file_out)
         .assert()
         .failure();
+}
+
+#[cfg(unix)]
+#[test]
+fn no_args_doesnt_break() {
+    use std::io::Write;
+    use std::os::unix::io::FromRawFd;
+    use std::thread;
+
+    use clircle::nix::pty::{openpty, OpenptyResult};
+    use wait_timeout::ChildExt;
+
+    // To simulate bat getting started from the shell, a process is created with stdin and stdout
+    // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
+    // not exit, because in this case it is safe to read and write to the same fd, which is why
+    // this test exists.
+    let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
+    let mut master = unsafe { File::from_raw_fd(master) };
+    let stdin = unsafe { Stdio::from_raw_fd(slave) };
+    let stdout = unsafe { Stdio::from_raw_fd(slave) };
+
+    let mut child = bat_raw_command()
+        .stdin(stdin)
+        .stdout(stdout)
+        .spawn()
+        .expect("Failed to start.");
+
+    // Some time for the child process to start and to make sure, that we can poll the exit status.
+    // Although this waiting period is not necessary, it is best to keep it in and be absolutely
+    // sure, that the try_wait does not error later.
+    thread::sleep(SAFE_CHILD_PROCESS_CREATION_TIME);
+
+    // The child process should be running and waiting for input,
+    // therefore no exit status should be available.
+    let exit_status = child
+        .try_wait()
+        .expect("Error polling exit status, this should never happen.");
+    assert!(exit_status.is_none());
+
+    // Write Ctrl-D (end of transmission) to the pty.
+    master
+        .write_all(&[0x04])
+        .expect("Couldn't write EOT character to master end.");
+
+    let exit_status = child
+        .wait_timeout(CHILD_WAIT_TIMEOUT)
+        .expect("Error polling exit status, this should never happen.")
+        .expect("Exit status not set, but the child should have exited already.");
+
+    assert!(exit_status.success());
 }
 
 #[test]

@@ -117,6 +117,7 @@ dependencies = [
  "syntect",
  "tempdir",
  "unicode-width",
+ "wait-timeout",
  "wild",
 ]
 
