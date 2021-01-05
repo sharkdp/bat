@@ -1,11 +1,14 @@
-use assert_cmd::Command;
+use assert_cmd::assert::OutputAssertExt;
+use assert_cmd::cargo::CommandCargoExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
+use std::fs::File;
 use std::path::Path;
+use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
-fn bat_with_config() -> Command {
+fn bat_raw_command() -> Command {
     let mut cmd = Command::cargo_bin("bat").unwrap();
     cmd.current_dir("tests/examples");
     cmd.env_remove("PAGER");
@@ -17,7 +20,11 @@ fn bat_with_config() -> Command {
     cmd
 }
 
-fn bat() -> Command {
+fn bat_with_config() -> assert_cmd::Command {
+    assert_cmd::Command::from_std(bat_raw_command())
+}
+
+fn bat() -> assert_cmd::Command {
     let mut cmd = bat_with_config();
     cmd.arg("--no-config");
     cmd
@@ -187,6 +194,30 @@ fn line_range_multiple() {
         .assert()
         .success()
         .stdout("line 1\nline 2\nline 4\n");
+}
+
+#[test]
+fn basic_io_cycle() {
+    let file_out = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
+    bat_raw_command()
+        .arg("test.txt")
+        .arg("cycle.txt")
+        .stdout(file_out)
+        .assert()
+        .failure();
+}
+
+#[test]
+fn stdin_to_stdout_cycle() {
+    let file_out = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
+    let file_in = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
+    bat_raw_command()
+        .stdin(file_in)
+        .arg("test.txt")
+        .arg("-")
+        .stdout(file_out)
+        .assert()
+        .failure();
 }
 
 #[test]
