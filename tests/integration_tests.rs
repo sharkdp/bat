@@ -5,6 +5,8 @@ use std::fs::File;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
+
+#[cfg(unix)]
 use std::time::Duration;
 
 const EXAMPLES_DIR: &str = "tests/examples";
