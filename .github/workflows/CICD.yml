@@ -92,9 +92,9 @@ jobs:
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: use-cross }
           - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
-          # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
+          # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
           - { os: windows-latest , target: i686-pc-windows-msvc        }
-          # - { os: windows-latest , target: x86_64-pc-windows-gnu       }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
+          - { os: windows-latest , target: x86_64-pc-windows-gnu       }
           - { os: windows-latest , target: x86_64-pc-windows-msvc      }
     steps:
     - name: Git checkout
@@ -112,8 +112,6 @@ jobs:
       run: |
         # toolchain
         TOOLCHAIN="stable" ## default to "stable" toolchain
-        # * specify alternate TOOLCHAIN for *-pc-windows-gnu targets; gnu targets on Windows are broken for the standard *-pc-windows-msvc toolchain (refs: <https://github.com/rust-lang/rust/issues/47048>, <https://github.com/rust-lang/rust/issues/53454>, <https://github.com/rust-lang/cargo/issues/6754>)
-        case ${{ matrix.job.target }} in *-pc-windows-gnu) TOOLCHAIN="stable-${{ matrix.job.target }}" ;; esac;
         # * use requested TOOLCHAIN if specified
         if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
         echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
