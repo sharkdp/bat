@@ -83,7 +83,7 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # { os, target, cargo-options, features, use-cross, toolchain }
+          # { os, target, cargo-options, features, use-cross }
           - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
@@ -110,11 +110,6 @@ jobs:
       id: vars
       shell: bash
       run: |
-        # toolchain
-        TOOLCHAIN="stable" ## default to "stable" toolchain
-        # * use requested TOOLCHAIN if specified
-        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
-        echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
         # staging directory
         STAGING='_staging'
         echo ::set-output name=STAGING::${STAGING}
@@ -194,7 +189,7 @@ jobs:
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
+        toolchain: stable
         target: ${{ matrix.job.target }}
         override: true
         profile: minimal # minimal component installation (ie, no documentation)
