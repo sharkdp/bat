@@ -116,43 +116,31 @@ jobs:
         case ${{ matrix.job.target }} in *-pc-windows-gnu) TOOLCHAIN="stable-${{ matrix.job.target }}" ;; esac;
         # * use requested TOOLCHAIN if specified
         if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
-        echo set-output name=TOOLCHAIN::${TOOLCHAIN}
         echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
         # staging directory
         STAGING='_staging'
-        echo set-output name=STAGING::${STAGING}
         echo ::set-output name=STAGING::${STAGING}
         # determine EXE suffix
         EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
-        echo set-output name=EXE_suffix::${EXE_suffix}
         echo ::set-output name=EXE_suffix::${EXE_suffix}
         # parse commit reference info
         REF_NAME=${GITHUB_REF#refs/*/}
         unset REF_BRANCH ; case ${GITHUB_REF} in refs/heads/*) REF_BRANCH=${GITHUB_REF#refs/heads/} ;; esac;
         unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
         REF_SHAS=${GITHUB_SHA:0:8}
-        echo set-output name=REF_NAME::${REF_NAME}
-        echo set-output name=REF_BRANCH::${REF_BRANCH}
-        echo set-output name=REF_TAG::${REF_TAG}
-        echo set-output name=REF_SHAS::${REF_SHAS}
         echo ::set-output name=REF_NAME::${REF_NAME}
         echo ::set-output name=REF_BRANCH::${REF_BRANCH}
         echo ::set-output name=REF_TAG::${REF_TAG}
         echo ::set-output name=REF_SHAS::${REF_SHAS}
         # parse target
         unset TARGET_ARCH ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) TARGET_ARCH=arm ;; i686-*) TARGET_ARCH=i686 ;; x86_64-*) TARGET_ARCH=x86_64 ;; esac;
-        echo set-output name=TARGET_ARCH::${TARGET_ARCH}
         echo ::set-output name=TARGET_ARCH::${TARGET_ARCH}
         unset TARGET_OS ; case ${{ matrix.job.target }} in *-linux-*) TARGET_OS=linux ;; *-apple-*) TARGET_OS=macos ;; *-windows-*) TARGET_OS=windows ;; esac;
-        echo set-output name=TARGET_OS::${TARGET_OS}
         echo ::set-output name=TARGET_OS::${TARGET_OS}
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo set-output name=PKG_suffix::${PKG_suffix}
-        echo set-output name=PKG_BASENAME::${PKG_BASENAME}
-        echo set-output name=PKG_NAME::${PKG_NAME}
         echo ::set-output name=PKG_suffix::${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
@@ -160,7 +148,6 @@ jobs:
         unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
         # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
         if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
-        echo set-output name=DEPLOY::${DEPLOY:-<empty>/false}
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
         unset DPKG_ARCH
@@ -170,43 +157,34 @@ jobs:
           i686-*-linux-*) DPKG_ARCH=i686 ;;
           x86_64-*-linux-*) DPKG_ARCH=amd64 ;;
         esac;
-        echo set-output name=DPKG_ARCH::${DPKG_ARCH}
         echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
         # DPKG version?
         unset DPKG_VERSION ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DPKG_VERSION=${REF_TAG/#[vV]/} ; fi
-        echo set-output name=DPKG_VERSION::${DPKG_VERSION}
         echo ::set-output name=DPKG_VERSION::${DPKG_VERSION}
         # DPKG base name/conflicts?
         DPKG_BASENAME=${PROJECT_NAME}
         DPKG_CONFLICTS=${PROJECT_NAME}-musl
         case ${{ matrix.job.target }} in *-musl) DPKG_BASENAME=${PROJECT_NAME}-musl ; DPKG_CONFLICTS=${PROJECT_NAME} ;; esac;
-        echo set-output name=DPKG_BASENAME::${DPKG_BASENAME}
-        echo set-output name=DPKG_CONFLICTS::${DPKG_CONFLICTS}
         echo ::set-output name=DPKG_BASENAME::${DPKG_BASENAME}
         echo ::set-output name=DPKG_CONFLICTS::${DPKG_CONFLICTS}
         # DPKG name
         unset DPKG_NAME;
         if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
-        echo set-output name=DPKG_NAME::${DPKG_NAME}
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
         # * CARGO_USE_CROSS (truthy)
         CARGO_USE_CROSS='true' ; case '${{ matrix.job.use-cross }}' in ''|0|f|false|n|no) unset CARGO_USE_CROSS ;; esac;
-        echo set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS:-<empty>/false}
         echo ::set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS}
         # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
         JOB_DO_TESTING="true"
         case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
-        echo set-output name=JOB_DO_TESTING::${JOB_DO_TESTING:-<empty>/false}
         echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
         # # * test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
-        echo set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
         # * executable for `strip`?
         STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
-        echo set-output name=STRIP::${STRIP}
         echo ::set-output name=STRIP::${STRIP}
     - name: Create all needed build/work directories
       shell: bash
@@ -420,7 +398,6 @@ jobs:
         # target-specific options
         # * CODECOV_FLAGS
         CODECOV_FLAGS=$( echo "${{ matrix.job.os }}" | sed 's/[^[:alnum:]]/_/g' )
-        echo set-output name=CODECOV_FLAGS::${CODECOV_FLAGS}
         echo ::set-output name=CODECOV_FLAGS::${CODECOV_FLAGS}
     - name: rust toolchain ~ install
       uses: actions-rs/toolchain@v1
