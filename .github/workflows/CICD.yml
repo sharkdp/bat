@@ -395,13 +395,6 @@ jobs:
       id: vars
       shell: bash
       run: |
-        # toolchain
-        TOOLCHAIN="nightly" ## default to "nightly" toolchain
-        # * use requested TOOLCHAIN if specified
-        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
-        # * use requested TOOLCHAIN if specified
-        if [ -n "${{ matrix.job.toolchain }}" ]; then TOOLCHAIN="${{ matrix.job.toolchain }}" ; fi
-        echo ::set-output name=TOOLCHAIN::${TOOLCHAIN}
         # target-specific options
         # * CODECOV_FLAGS
         CODECOV_FLAGS=$( echo "${{ matrix.job.os }}" | sed 's/[^[:alnum:]]/_/g' )
@@ -409,7 +402,7 @@ jobs:
     - name: rust toolchain ~ install
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ steps.vars.outputs.TOOLCHAIN }}
+        toolchain: ${{ matrix.job.toolchain }}
         override: true
         profile: minimal # minimal component installation (ie, no documentation)
     - name: Test
