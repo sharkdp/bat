@@ -99,6 +99,7 @@ dependencies = [
  "assert_cmd",
  "atty",
  "clap",
+ "clircle",
  "console",
  "content_inspector",
  "dirs",
@@ -117,6 +118,7 @@ dependencies = [
  "syntect",
  "tempdir",
  "unicode-width",
+ "wait-timeout",
  "wild",
 ]
 
@@ -249,6 +251,18 @@ dependencies = [
  "textwrap",
  "unicode-width",
  "vec_map",
+]
+
+[[package]]
+name = "clircle"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e27a01e782190a8314e65cc94274d9bbcd52e05a9d15b437fe2b31259b854b0d"
+dependencies = [
+ "cfg-if 1.0.0",
+ "nix",
+ "serde",
+ "winapi",
 ]
 
 [[package]]
@@ -689,6 +703,18 @@ checksum = "c60c0dfe32c10b43a144bad8fc83538c52f58302c92300ea7ec7bf7b38d5a7b9"
 dependencies = [
  "adler",
  "autocfg",
+]
+
+[[package]]
+name = "nix"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2ccba0cfe4fdf15982d1674c69b1fd80bad427d293849982668dfe454bd61f2"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if 1.0.0",
+ "libc",
 ]
 
 [[package]]
