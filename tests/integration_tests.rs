@@ -8,7 +8,11 @@ use std::str::from_utf8;
 use std::time::Duration;
 
 const EXAMPLES_DIR: &str = "tests/examples";
+
+#[cfg(unix)]
 const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
+
+#[cfg(unix)]
 const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
 
 fn bat_raw_command() -> Command {
