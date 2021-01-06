@@ -88,9 +88,9 @@ jobs:
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: use-cross }
-          - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    , use-cross: use-cross }
+          - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
           # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; linker errors (missing '_imp____acrt_iob_func')
           - { os: windows-latest , target: i686-pc-windows-msvc        }
