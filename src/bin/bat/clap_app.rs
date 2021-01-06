@@ -480,6 +480,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("diagnostic")
                 .long("diagnostic")
+                .alias("diagnostics")
                 .hidden_short_help(true)
                 .help("Show diagnostic information for bug reports.")
         )
