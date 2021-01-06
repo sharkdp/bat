@@ -111,6 +111,7 @@ pub(crate) struct InteractivePrinter<'a> {
     highlighter: Option<HighlightLines<'a>>,
     syntax_set: &'a SyntaxSet,
     background_color_highlight: Option<Color>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -194,6 +195,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter,
             syntax_set: &assets.syntax_set,
             background_color_highlight,
+            consecutive_empty_lines: 0,
         })
     }
 
@@ -392,6 +394,19 @@ impl<'a> Printer for InteractivePrinter<'a> {
             highlighter.highlight(line.as_ref(), self.syntax_set)
         };
 
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
+        }
+
+        // Skip lines that are out of range.
         if out_of_range {
             return Ok(());
         }

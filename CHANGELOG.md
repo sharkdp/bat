@@ -4,6 +4,9 @@
 ## Features
 - Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
+- `bat --squeeze`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p)
+- `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze`, see #1441 (@eth-p)
+
 ## Bugfixes
 
 - If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
@@ -28,6 +31,8 @@
 - The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously usuing `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
 
 ## `bat` as a library
+
+- `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p)
 
 ## Packaging
 
