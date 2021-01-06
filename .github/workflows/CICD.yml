@@ -380,6 +380,7 @@ jobs:
 
   coverage:
     name: Code Coverage
+    if: "false"
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: true
