@@ -228,7 +228,7 @@ fn run() -> Result<bool> {
     let app = App::new()?;
 
     if app.matches.is_present("diagnostic") {
-        use bugreport::{bugreport, collectors::*};
+        use bugreport::{bugreport, collector::*, format::Markdown};
 
         bugreport!()
             .info(SoftwareVersion::default())
@@ -252,7 +252,7 @@ fn run() -> Result<bool> {
             .info(FileContent::new("Config file", config_file()))
             .info(CompileTimeInformation::default())
             .info(CommandOutput::new("Less version", "less", &["--version"]))
-            .print_markdown();
+            .print::<Markdown>();
 
         return Ok(true);
     }
