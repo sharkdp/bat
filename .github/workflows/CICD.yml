@@ -380,7 +380,7 @@ jobs:
 
   coverage:
     name: Code Coverage
-    if: "false"
+    if: "false" # Temporarily disabled until made functional again, see https://github.com/sharkdp/bat/pull/1484
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: true
