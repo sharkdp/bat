@@ -2,6 +2,7 @@
 
 
 ## Features
+
 - Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
 ## Bugfixes
@@ -16,6 +17,7 @@
 ## Other
 
 - Performance improvements, see #1421 (@LovecraftianHorror)
+- Added a new `--diagnostic` option to collect information for bug reports, see #1459 (@sharkdp)
 
 ## Syntaxes
 

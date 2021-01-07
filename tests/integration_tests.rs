@@ -7,10 +7,16 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
+
+#[cfg(unix)]
 use std::time::Duration;
 
 const EXAMPLES_DIR: &str = "tests/examples";
+
+#[cfg(unix)]
 const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
+
+#[cfg(unix)]
 const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
 
 fn bat_raw_command() -> Command {
@@ -667,6 +673,17 @@ fn alias_pager_disable_long_overrides_short() {
         .assert()
         .success()
         .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_failed_to_parse() {
+    bat()
+        .env("BAT_PAGER", "mismatched-quotes 'a")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Could not parse pager command"));
 }
 
 #[test]
