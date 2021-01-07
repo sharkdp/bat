@@ -119,11 +119,6 @@ jobs:
         # parse commit reference info
         unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
         REF_SHAS=${GITHUB_SHA:0:8}
-        # parse target
-        unset TARGET_ARCH ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) TARGET_ARCH=arm ;; i686-*) TARGET_ARCH=i686 ;; x86_64-*) TARGET_ARCH=x86_64 ;; esac;
-        echo ::set-output name=TARGET_ARCH::${TARGET_ARCH}
-        unset TARGET_OS ; case ${{ matrix.job.target }} in *-linux-*) TARGET_OS=linux ;; *-apple-*) TARGET_OS=macos ;; *-windows-*) TARGET_OS=windows ;; esac;
-        echo ::set-output name=TARGET_OS::${TARGET_OS}
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
