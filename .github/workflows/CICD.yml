@@ -123,7 +123,6 @@ jobs:
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_suffix::${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
