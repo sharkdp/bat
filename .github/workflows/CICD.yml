@@ -84,12 +84,12 @@ jobs:
       matrix:
         job:
           # { os, target, cargo-options, features, use-cross }
-          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: use-cross }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: use-cross }
+          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
+          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: use-cross }
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
           - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
           # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
@@ -165,9 +165,6 @@ jobs:
         if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
-        # * CARGO_USE_CROSS (truthy)
-        CARGO_USE_CROSS='true' ; case '${{ matrix.job.use-cross }}' in ''|0|f|false|n|no) unset CARGO_USE_CROSS ;; esac;
-        echo ::set-output name=CARGO_USE_CROSS::${CARGO_USE_CROSS}
         # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
         JOB_DO_TESTING="true"
         case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
@@ -205,49 +202,49 @@ jobs:
     - name: Build
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
     - name: Test
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: test
         args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
     - name: bat test run
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: run
         args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
     - name: bat diagnostics output
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: run
         args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
     - name: Check features regex-onig
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
     - name: Check features regex-onig,git
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
     - name: Check features regex-onig,paging
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
     - name: Check features regex-onig,git,paging
       uses: actions-rs/cargo@v1
       with:
-        use-cross: ${{ steps.vars.outputs.CARGO_USE_CROSS }}
+        use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
     - name: Upload build artifacts
