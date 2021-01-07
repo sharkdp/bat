@@ -153,10 +153,6 @@ jobs:
         if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
-        # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
-        JOB_DO_TESTING="true"
-        case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
-        echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
         # # * test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
