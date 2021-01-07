@@ -150,10 +150,10 @@ impl App {
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 match self.matches.value_of("wrap") {
                     Some("character") => WrappingMode::Character,
-                    Some("never") => WrappingMode::NoWrapping,
+                    Some("never") => WrappingMode::NoWrapping(true),
                     Some("auto") | None => {
                         if style_components.plain() {
-                            WrappingMode::NoWrapping
+                            WrappingMode::NoWrapping(false)
                         } else {
                             WrappingMode::Character
                         }
@@ -163,7 +163,7 @@ impl App {
             } else {
                 // We don't have the tty width when piping to another program.
                 // There's no point in wrapping when this is the case.
-                WrappingMode::NoWrapping
+                WrappingMode::NoWrapping(false)
             },
             colored_output: self.matches.is_present("force-colorization")
                 || match self.matches.value_of("color") {

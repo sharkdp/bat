@@ -424,7 +424,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         // Line contents.
-        if self.config.wrapping_mode == WrappingMode::NoWrapping {
+        if self.config.wrapping_mode == WrappingMode::NoWrapping(false)
+            || self.config.wrapping_mode == WrappingMode::NoWrapping(true)
+        {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;

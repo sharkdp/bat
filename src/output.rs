@@ -101,7 +101,7 @@ impl OutputType {
                             p.arg("--quit-if-one-screen");
                         }
 
-                        if wrapping_mode == WrappingMode::NoWrapping {
+                        if wrapping_mode == WrappingMode::NoWrapping(true) {
                             p.arg("--chop-long-lines");
                         }
 
