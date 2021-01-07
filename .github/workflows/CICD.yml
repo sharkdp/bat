@@ -83,12 +83,11 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # { os, target, cargo-options, features, use-cross }
           - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true }
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu                      , disable-deploy: true }  ## deployed from ubuntu-16.04
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
           - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
@@ -127,8 +126,6 @@ jobs:
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
         unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
-        # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
-        if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
         unset DPKG_ARCH
@@ -350,7 +347,7 @@ jobs:
         fi
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.DEPLOY
+      if: steps.vars.outputs.DEPLOY && !matrix.job.disable-deploy
       with:
         files: |
           ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
