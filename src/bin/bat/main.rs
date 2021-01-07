@@ -205,7 +205,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             and are added to the cache with `bat cache --build`. \
             For more information, see:\n\n  \
             https://github.com/sharkdp/bat#adding-new-themes",
-            config_file().join("themes").to_string_lossy()
+            PROJECT_DIRS.config_dir().join("themes").to_string_lossy()
         )?;
     } else {
         for theme in assets.themes() {
