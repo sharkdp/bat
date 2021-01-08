@@ -87,9 +87,8 @@ jobs:
           - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
           - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu                      , disable-deploy: true }  ## deployed from ubuntu-16.04
+          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
           - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
           - { os: macos-latest   , target: x86_64-apple-darwin         }
           # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
           - { os: windows-latest , target: i686-pc-windows-msvc        }
@@ -347,7 +346,7 @@ jobs:
         fi
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.DEPLOY && !matrix.job.disable-deploy
+      if: steps.vars.outputs.DEPLOY
       with:
         files: |
           ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
