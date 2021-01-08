@@ -1,5 +1,6 @@
 # unreleased
 
+
 ## Features
 
 - Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
@@ -17,6 +18,7 @@
 
 - Performance improvements, see #1421 (@LovecraftianHorror)
 - Added a new `--diagnostic` option to collect information for bug reports, see #1459 (@sharkdp)
+- Upped min required Rust version to 1.42
 
 ## Syntaxes
 
@@ -35,11 +37,13 @@
 
 - `bat` is now available on snapstore with package name called `batcat`, see #1401 (@purveshpatel511)
 
+
 # v0.17.1
 
 ## Bugfixes
 
 - Running `bat` without arguments fails ("output file is also an input"), see #1396
+
 
 # v0.17.0
 
@@ -68,6 +72,7 @@
 ## New themes
 
 - Coldark, see #1329 (@armandphilippot)
+
 
 # v0.16.0
 
@@ -233,20 +238,18 @@
   This introduces a `features = ["application"]` which is enabled by default and pulls in
   everything required by `bat` the application. When depending on bat as a library, downstream
   `Cargo.toml` should disable this feature to cut out inapplicable heavy dependencies:
-
-  ```toml
+  ``` toml
   [dependencies]
   bat = { version = "0.14", default-features = false }
   ```
-
   Other optional functionality has also been put behind features: `paging` and `git` support.
-
 - Allow using the library with older syntect, see #896 and #898 (@dtolnay)
 
 ## New syntaxes
 
 - Rego, see #872 (@patrick-east)
 - Stylo, see #917
+
 
 # v0.13.0
 
@@ -273,7 +276,6 @@ You can see the API documentation here: https://docs.rs/bat/
   present.
 
   The option now works like this:
-
   ```bash
   --map-syntax <glob-pattern>:<syntax-name>
   ```
@@ -281,9 +283,8 @@ You can see the API documentation here: https://docs.rs/bat/
   For more information, see the `--help` text, the man page or the README.
 
   This new feature allows us to properly highlight files like:
-
-  - `/etc/profile`
-  - `~/.ssh/config`
+  * `/etc/profile`
+  * `~/.ssh/config`
 
 - `--highlight-line` now accepts line ranges, see #809 (@lkalir)
 - Proper wrapping support for output with wide Unicode characters, see #811 #787 and #815 (@Kogia-sima)
@@ -351,7 +352,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Bugfixes
 
-- Fixes a bug for older Windows versions (_"The procedure entry point `CreateFile2` could not be located"_), see #643 (@rivy)
+- Fixes a bug for older Windows versions (*"The procedure entry point `CreateFile2` could not be located"*), see #643 (@rivy)
 
 # v0.12.0
 
@@ -488,14 +489,14 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Changes
 
-- Use of italics is now _disabled by default_ (see #389 for details). They can be
+- Use of italics is now *disabled by default* (see #389 for details). They can be
   re-enabled by adding `--italic-text=always` to your configuration file.
 
 - The default tab-width has been set to 4.
 
 - Added new "Sublime Snazzy" theme.
 
-- Shell completions are currently _not_ shipped anymore, see #372 for details.
+- Shell completions are currently *not* shipped anymore, see #372 for details.
 
 ## Bugfixes
 
@@ -544,7 +545,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
   This allows users to (re)map certain file extensions or file names to an existing syntax:
 
-  ```bash
+  ``` bash
   bat --map-syntax .config:json ...
   ```
 
@@ -673,19 +674,19 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Changes
 
-- New themes in `$BAT_CONFIG_DIR/themes` are now loaded _in addition_ to
+- New themes in `$BAT_CONFIG_DIR/themes` are now loaded *in addition* to
   the default themes (they may also override), see #172
 - The `Default.tmTheme` symlink is not necessary anymore.
 
 ## Bugfixes
 
-- Using `bat cache --init` leads to duplicated syntaxes, see #206
+* Using `bat cache --init` leads to duplicated syntaxes, see #206
 
 ## Other
 
-- Extended and cleaned-up `--help` text.
-- Added initial version of a man page, see #52
-- New README sections: _Development_ and _Troubleshooting_, see #220
+* Extended and cleaned-up `--help` text.
+* Added initial version of a man page, see #52
+* New README sections: *Development* and *Troubleshooting*, see #220
 
 # v0.5.0
 
@@ -699,7 +700,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Changes
 
-- The customization of syntax sets and theme sets is now separated. Syntax definitions are now loaded _in addition_ to the ones that are stored in the `bat` binary by default. Please refer to these new sections in the README: [Adding new syntaxes](https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions), [Adding new themes](https://github.com/sharkdp/bat#adding-new-themes), also see #172
+- The customization of syntax sets and theme sets is now separated. Syntax definitions are now loaded *in addition* to the ones that are stored in the `bat` binary by default. Please refer to these new sections in the README: [Adding new syntaxes](https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions), [Adding new themes](https://github.com/sharkdp/bat#adding-new-themes), also see #172
 - The color for the filename is now the default foreground color. The colors for the grid and the line numbers is now determined from the syntax highlighting theme, which now also works for light backgrounds, see #178.
 
 ## Bugfixes
@@ -726,23 +727,23 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Features
 
-- Support for line-wrapping, see #54 and #102 (@eth-p)
-- New and updated `--style` parameter, see #74 and README (@pitkley)
-- Added `--theme` and `--list-themes` options, see #89 (@rleungx)
-- Added syntax highlighting for: Julia (@iamed2), Dockerfiles, VimL, CMake, INI, Less
-- Added a few popular Sublime Text highlighting themes, see #133
-- Support for bold, italic and underline font styles, see #96
-- Support for 32bit systems is now available, see #84
-- Added `-u` and `-n` options, see #134
-- ANSI color support on Windows 10
+* Support for line-wrapping, see #54 and #102 (@eth-p)
+* New and updated `--style` parameter, see #74 and README (@pitkley)
+* Added `--theme` and `--list-themes` options, see #89 (@rleungx)
+* Added syntax highlighting for: Julia (@iamed2), Dockerfiles, VimL, CMake, INI, Less
+* Added a few popular Sublime Text highlighting themes, see #133
+* Support for bold, italic and underline font styles, see #96
+* Support for 32bit systems is now available, see #84
+* Added `-u` and `-n` options, see #134
+* ANSI color support on Windows 10
 
 ## Changes
 
-- The customization folder for own syntaxes has been renamed from `syntax` to `syntaxes`, see README.
-- Changed Markdown syntax to the default Sublime Text syntax, see #157
-- Sorted language listing (@rleungx)
-- Command line arguments like `--theme` or `--color` can now override themselves.
-- Improved `--help` text.
+* The customization folder for own syntaxes has been renamed from `syntax` to `syntaxes`, see README.
+* Changed Markdown syntax to the default Sublime Text syntax, see #157
+* Sorted language listing (@rleungx)
+* Command line arguments like `--theme` or `--color` can now override themselves.
+* Improved `--help` text.
 
 ## Bugfixes
 
@@ -764,24 +765,24 @@ You can see the API documentation here: https://docs.rs/bat/
 
 ## Features
 
-- Automatic paging by integrating with `less`, see #29 (@BrainMaestro)
-- Added support for reading from standard input, see #2
-- Added support for writing to non-interactive terminals (pipes, files, ..); new
+* Automatic paging by integrating with `less`, see #29 (@BrainMaestro)
+* Added support for reading from standard input, see #2
+* Added support for writing to non-interactive terminals (pipes, files, ..); new
   `--color=auto/always/never` option, see #26 (@BrainMaestro)
-- Added `--list-languages` option to print all available syntaxes, see #69 (@connorkuehl)
-- New option to specify the syntax via `-l`/`--language`, see #19 (@BrainMaestro)
-- New option to control the output style (`--style`), see #5 (@nakulcg)
-- Added syntax highlighting support for TOML files, see #37
+* Added `--list-languages` option to print all available syntaxes, see #69 (@connorkuehl)
+* New option to specify the syntax via `-l`/`--language`, see #19 (@BrainMaestro)
+* New option to control the output style (`--style`), see #5 (@nakulcg)
+* Added syntax highlighting support for TOML files, see #37
 
 ## Changes
 
-- The `init-cache` sub-command has been removed. The cache can now be controlled via
+* The `init-cache` sub-command has been removed. The cache can now be controlled via
   `bat cache`. See `bat cache -h` for all available commands.
 
 ## Bug fixes
 
-- Get git repository from file path instead of current directory, see #22 (@nakulcg)
-- Process substitution can now be used with bat (`bat <(echo a) <(echo b)`), see #80
+* Get git repository from file path instead of current directory, see #22 (@nakulcg)
+* Process substitution can now be used with bat (`bat <(echo a) <(echo b)`), see #80
 
 ## Thanks
 

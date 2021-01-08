@@ -1,7 +1,8 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WrappingMode {
     Character,
-    NoWrapping(bool), // explicitly opted in or not
+    // The bool specifies whether wrapping has been explicitly disabled by the user via --wrap=never
+    NoWrapping(bool),
 }
 
 impl Default for WrappingMode {
