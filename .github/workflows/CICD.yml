@@ -5,7 +5,7 @@ env:
   PROJECT_DESC: "A `cat` clone with wings"
   PROJECT_MAINTAINER: "David Peter <mail@david-peter.de>"
   PROJECT_HOMEPAGE: "https://github.com/sharkdp/bat"
-  MIN_SUPPORTED_RUST_VERSION: "1.40.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.42.0"
 
 on: [push, pull_request]
 
