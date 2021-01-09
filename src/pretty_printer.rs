@@ -320,6 +320,12 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+impl Default for PrettyPrinter<'_> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// An input source for the pretty printer.
 pub struct Input<'a> {
     input: input::Input<'a>,
