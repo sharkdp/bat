@@ -124,7 +124,7 @@ jobs:
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
         # deployable tag? (ie, leading "vM" or "M"; M == version number)
-        unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
+        unset DEPLOY ; if [[ $REF_TAG =~ ^v[0-9].* ]]; then DEPLOY='true' ; fi
         echo ::set-output name=DEPLOY::${DEPLOY}
         # DPKG architecture?
         unset DPKG_ARCH
