@@ -227,11 +227,6 @@ jobs:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@master
-      with:
-        name: ${{ env.PROJECT_NAME }}-${{ matrix.job.target }}
-        path: target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}
     - name: Package
       shell: bash
       run: |
@@ -344,6 +339,11 @@ jobs:
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ steps.vars.outputs.PKG_NAME }}
+        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.vars.outputs.DEPLOY
