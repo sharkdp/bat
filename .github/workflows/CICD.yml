@@ -115,17 +115,14 @@ jobs:
         # determine EXE suffix
         EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
         echo ::set-output name=EXE_suffix::${EXE_suffix}
-        # parse commit reference info
-        unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
-        # deployable tag? (ie, leading "vM" or "M"; M == version number)
-        unset DEPLOY ; if [[ $REF_TAG =~ ^v[0-9].* ]]; then DEPLOY='true' ; fi
-        echo ::set-output name=DEPLOY::${DEPLOY}
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # DPKG architecture?
         unset DPKG_ARCH
         case ${{ matrix.job.target }} in
@@ -351,7 +348,7 @@ jobs:
         path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.DEPLOY
+      if: steps.vars.outputs.IS_RELEASE
       with:
         files: |
           ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
