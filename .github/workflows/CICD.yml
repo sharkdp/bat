@@ -135,8 +135,7 @@ jobs:
           x86_64-*-linux-*) DPKG_ARCH=amd64 ;;
         esac;
         echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
-        # DPKG version?
-        unset DPKG_VERSION ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DPKG_VERSION=${REF_TAG/#[vV]/} ; fi
+        DPKG_VERSION=${PROJECT_VERSION}
         echo ::set-output name=DPKG_VERSION::${DPKG_VERSION}
         # DPKG base name/conflicts?
         DPKG_BASENAME=${PROJECT_NAME}
@@ -339,11 +338,17 @@ jobs:
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
-    - name: Upload build artifacts
+    - name: Upload package artifact
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.vars.outputs.PKG_NAME }}
         path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+    - name: Upload Debian package artifact
+      uses: actions/upload-artifact@master
+      if: steps.vars.outputs.DPKG_NAME
+      with:
+        name: ${{ steps.vars.outputs.DPKG_NAME }}
+        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.vars.outputs.DEPLOY
