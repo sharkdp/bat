@@ -700,6 +700,7 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
 - [keith-hall](https://github.com/keith-hall)
+- [Enselic](https://github.com/Enselic)
 
 ## Project goals and alternatives
 
