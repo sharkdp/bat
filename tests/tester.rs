@@ -19,23 +19,6 @@ pub struct BatTester {
 }
 
 impl BatTester {
-    pub fn new() -> Self {
-        let temp_dir = create_sample_directory().expect("sample directory");
-
-        let root = env::current_exe()
-            .expect("tests executable")
-            .parent()
-            .expect("tests executable directory")
-            .parent()
-            .expect("bat executable directory")
-            .to_path_buf();
-
-        let exe_name = if cfg!(windows) { "bat.exe" } else { "bat" };
-        let exe = root.join(exe_name);
-
-        BatTester { temp_dir, exe }
-    }
-
     pub fn test_snapshot(&self, name: &str, style: &str) {
         let output = Command::new(&self.exe)
             .current_dir(self.temp_dir.path())
@@ -63,6 +46,25 @@ impl BatTester {
             .expect("could not read snapshot file");
 
         assert_eq!(expected, actual);
+    }
+}
+
+impl Default for BatTester {
+    fn default() -> Self {
+        let temp_dir = create_sample_directory().expect("sample directory");
+
+        let root = env::current_exe()
+            .expect("tests executable")
+            .parent()
+            .expect("tests executable directory")
+            .parent()
+            .expect("bat executable directory")
+            .to_path_buf();
+
+        let exe_name = if cfg!(windows) { "bat.exe" } else { "bat" };
+        let exe = root.join(exe_name);
+
+        BatTester { temp_dir, exe }
     }
 }
 
