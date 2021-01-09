@@ -150,11 +150,7 @@ impl OutputType {
 
     #[cfg(feature = "paging")]
     pub(crate) fn is_pager(&self) -> bool {
-        if let OutputType::Pager(_) = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, OutputType::Pager(_))
     }
 
     #[cfg(not(feature = "paging"))]
