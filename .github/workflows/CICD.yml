@@ -2,6 +2,7 @@ name: CICD
 
 env:
   PROJECT_NAME: bat
+  PROJECT_VERSION: "0.17.1"
   PROJECT_DESC: "A `cat` clone with wings"
   PROJECT_MAINTAINER: "David Peter <mail@david-peter.de>"
   PROJECT_HOMEPAGE: "https://github.com/sharkdp/bat"
@@ -116,10 +117,9 @@ jobs:
         echo ::set-output name=EXE_suffix::${EXE_suffix}
         # parse commit reference info
         unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
-        REF_SHAS=${GITHUB_SHA:0:8}
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
-        PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
+        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
