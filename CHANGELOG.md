@@ -25,6 +25,7 @@
 - Added Zig syntax, see #1470 (@paulsmith)
 - Added Lean syntax, see #1446 (@Julian)
 - Added `.resource` extension for Robot Framework files, see #1386
+- Added `gnuplot` syntax, see #1431 (@sharkdp)
 
 ## New themes
 
