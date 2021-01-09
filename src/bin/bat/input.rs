@@ -2,7 +2,7 @@ use bat::input::Input;
 use std::ffi::OsStr;
 
 pub fn new_file_input<'a>(file: &'a OsStr, name: Option<&'a OsStr>) -> Input<'a> {
-    named(Input::ordinary_file(file), name.or_else(|| Some(file)))
+    named(Input::ordinary_file(file), name.or(Some(file)))
 }
 
 pub fn new_stdin_input(name: Option<&OsStr>) -> Input {
