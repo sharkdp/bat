@@ -1,6 +1,7 @@
 use assert_cmd::assert::OutputAssertExt;
 use assert_cmd::cargo::CommandCargoExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
+use serial_test::serial;
 use std::fs::File;
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -8,6 +9,9 @@ use std::str::from_utf8;
 
 #[cfg(unix)]
 use std::time::Duration;
+
+mod utils;
+use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
@@ -503,6 +507,84 @@ fn pager_value_bat() {
         .arg("test.txt")
         .assert()
         .failure();
+}
+
+/// We shall use less instead of most if PAGER is used since PAGER
+/// is a generic env var
+#[test]
+#[serial] // Because of PATH
+fn pager_most_from_pager_env_var() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        // If the output is not "I am most" then we know 'most' is not used
+        bat()
+            .env("PAGER", mocked_pagers::from("most"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::eq("hello world\n").normalize());
+    });
+}
+
+/// If the bat-specific BAT_PAGER is used, obey the wish of the user
+/// and allow 'most'
+#[test]
+#[serial] // Because of PATH
+fn pager_most_from_bat_pager_env_var() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("BAT_PAGER", mocked_pagers::from("most"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("I am most"));
+    });
+}
+
+/// Same reasoning with --pager as with BAT_PAGER
+#[test]
+#[serial] // Because of PATH
+fn pager_most_from_pager_arg() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--paging=always")
+            .arg(format!("--pager={}", mocked_pagers::from("most")))
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("I am most"));
+    });
+}
+
+/// Make sure the logic for 'most' applies even if an argument is passed
+#[test]
+#[serial] // Because of PATH
+fn pager_most_with_arg() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", format!("{} -w", mocked_pagers::from("most")))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::eq("hello world\n").normalize());
+    });
+}
+
+/// Sanity check that 'more' is treated like 'most'
+#[test]
+#[serial] // Because of PATH
+fn pager_more() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("more"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::eq("hello world\n").normalize());
+    });
 }
 
 #[test]
