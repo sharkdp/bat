@@ -163,6 +163,7 @@ bat main.cpp | xclip
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
+(replace `bat` by `batcat` if you are on Debian or Ubuntu)
 
 It might also be necessary to set `MANROFFOPT="-c"` if you experience
 formatting problems.
