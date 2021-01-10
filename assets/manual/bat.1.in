@@ -40,7 +40,7 @@ language names and file extensions.
 .HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
-Highlight the specified line ranges with a different background color For example:
+Highlight the specified line ranges with a different background color. For example:
 .RS
 .IP "\-\-highlight\-line 40"
 highlights line 40
@@ -51,6 +51,18 @@ highlights lines 1 to 40
 .IP "\-\-highlight\-line 40:"
 highlights lines 40 to the end of the file
 .RE
+.HP
+\fB\-\-file\-name\fR <name>...
+.IP
+Specify the name to display for a file. Useful when piping data to {{PROJECT_EXECUTABLE}} from STDIN when {{PROJECT_EXECUTABLE}} does not otherwise know the filename. Note that the provided file name is also used for syntax detection.
+.HP
+\fB\-d\fR, \fB\-\-diff\fR
+.IP
+Only show lines that have been added/removed/modified with respect to the Git index. Use '\-\-diff\-context=N' to control how much context you want to see.
+.HP
+\fB\-\-diff\-context\fR <N>...
+.IP
+Include N lines of context around added/removed/modified lines when using '\-\-diff'.
 .HP
 \fB\-\-tabs\fR <T>
 .IP
