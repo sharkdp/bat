@@ -20,7 +20,7 @@ pub(crate) enum PagerSource {
 /// We know about some pagers, for example 'less'. This is a list of all pagers we know about
 #[derive(Debug, PartialEq)]
 pub(crate) enum PagerKind {
-    /// The pager is ourselves
+    /// bat
     Bat,
 
     /// less
@@ -62,16 +62,16 @@ impl PagerKind {
 /// A pager such as 'less', and from where we got it.
 #[derive(Debug)]
 pub(crate) struct Pager {
-    // The pager binary
+    /// The pager binary
     pub bin: String,
 
-    // The pager binary arguments (that we might tweak)
+    /// The pager binary arguments (that we might tweak)
     pub args: Vec<String>,
 
-    // What pager this is
+    /// What pager this is
     pub kind: PagerKind,
 
-    // From where this pager comes
+    /// From where this pager comes
     pub source: PagerSource,
 }
 
@@ -103,7 +103,7 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
         Some((bin, args)) => {
             let kind = PagerKind::from_bin(bin);
 
-            // 'more' and 'most' does not supports colors; automatically use 'less' instead
+            // 'more' and 'most' do not supports colors; automatically use 'less' instead
             // if the problematic pager came from the generic PAGER env var
             let no_color_support = kind == PagerKind::More || kind == PagerKind::Most;
             let use_less_instead = no_color_support && source == PagerSource::EnvVarPager;

@@ -91,7 +91,7 @@ fn restore_path(original_path: String) {
 fn with_mocked_versions_of_more_and_most_in_path(actual_test: fn()) {
     let original_path = prepend_dir_to_path_env_var(get_mocked_pagers_dir());
 
-    // Make sure our own variants of 'more' and 'most' is used
+    // Make sure our own variants of 'more' and 'most' are used
     Command::new(mocked_pager("more"))
         .assert()
         .success()
