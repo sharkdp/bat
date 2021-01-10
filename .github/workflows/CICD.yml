@@ -105,6 +105,7 @@ jobs:
       with:
         crate: cargo-get
         version: latest
+        use-tool-cache: true
     - name: Extract crate information
       shell: bash
       run: |
