@@ -38,23 +38,18 @@ pub(crate) enum PagerKind {
 
 impl PagerKind {
     fn from_bin(bin: &str) -> PagerKind {
-        use std::ffi::OsStr;
         use std::path::Path;
 
-        let stem = Path::new(bin)
+        match Path::new(bin)
             .file_stem()
-            .unwrap_or_else(|| OsStr::new("unknown"));
-
-        if stem == OsStr::new("bat") {
-            PagerKind::Bat
-        } else if stem == OsStr::new("less") {
-            PagerKind::Less
-        } else if stem == OsStr::new("more") {
-            PagerKind::More
-        } else if stem == OsStr::new("most") {
-            PagerKind::Most
-        } else {
-            PagerKind::Unknown
+            .map(|s| s.to_string_lossy())
+            .as_deref()
+        {
+            Some("bat") => PagerKind::Bat,
+            Some("less") => PagerKind::Less,
+            Some("more") => PagerKind::More,
+            Some("most") => PagerKind::Most,
+            _ => PagerKind::Unknown,
         }
     }
 }
