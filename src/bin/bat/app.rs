@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 use std::env;
 use std::ffi::OsStr;
-use std::str::FromStr;
 
 use atty::{self, Stream};
 
@@ -9,7 +8,7 @@ use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_var},
 };
-use clap::ArgMatches;
+use clap::{AppSettings, ArgMatches};
 
 use console::Term;
 
@@ -50,30 +49,47 @@ impl App {
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
-        let args = if wild::args_os().nth(1) == Some("cache".into())
+        let app = clap_app::build_app(interactive_output);
+        if wild::args_os().nth(1) == Some("cache".into())
             || wild::args_os().any(|arg| arg == "--no-config")
         {
             // Skip the arguments in bats config file
-
-            wild::args_os().collect::<Vec<_>>()
+            Ok(app.get_matches_from(wild::args_os()))
         } else {
-            let mut cli_args = wild::args_os();
-
             // Read arguments from bats config file
-            let mut args = get_args_from_env_var()
+            let config_args = get_args_from_env_var()
                 .unwrap_or_else(get_args_from_config_file)
                 .chain_err(|| "Could not parse configuration file")?;
 
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
+            let mut config_matches = app
+                .clone()
+                .setting(AppSettings::NoBinaryName)
+                .get_matches_from(config_args);
 
-            // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
+            let mut args_matches = app.get_matches_from(wild::args_os());
 
-            args
-        };
+            for (name, arg) in config_matches
+                .args
+                .drain()
+                // There are two cases when `occurs` and `vals.len()` don't match up,
+                // when there are defaults present, and when an environment variable is
+                // present.
+                // In both of those cases we want to disregard the config matches.
+                .filter(|(_, arg)| arg.occurs > 0 && arg.occurs == arg.vals.len() as u64)
+            {
+                args_matches
+                    .args
+                    .entry(&name)
+                    .and_modify(|matched_arg| {
+                        if matched_arg.occurs == 0 {
+                            *matched_arg = arg.clone();
+                        }
+                    })
+                    .or_insert(arg);
+            }
 
-        Ok(clap_app::build_app(interactive_output).get_matches_from(args))
+            Ok(args_matches)
+        }
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
@@ -182,7 +198,6 @@ impl App {
                 .matches
                 .value_of("tabs")
                 .map(String::from)
-                .or_else(|| env::var("BAT_TABS").ok())
                 .and_then(|t| t.parse().ok())
                 .unwrap_or(
                     if style_components.plain() && paging_mode == PagingMode::Never {
@@ -195,7 +210,6 @@ impl App {
                 .matches
                 .value_of("theme")
                 .map(String::from)
-                .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
                     if s == "default" {
                         String::from(HighlightingAssets::default_theme())
@@ -292,16 +306,6 @@ impl App {
             } else if matches.is_present("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
             } else {
-                let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
-                    .ok()
-                    .map(|style_str| {
-                        style_str
-                            .split(',')
-                            .map(|x| StyleComponent::from_str(&x))
-                            .collect::<Result<Vec<StyleComponent>>>()
-                    })
-                    .transpose()?;
-
                 matches
                     .value_of("style")
                     .map(|styles| {
@@ -311,7 +315,6 @@ impl App {
                             .filter_map(|style| style.ok())
                             .collect::<Vec<_>>()
                     })
-                    .or(env_style_components)
                     .unwrap_or_else(|| vec![StyleComponent::Full])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))

@@ -53,28 +53,16 @@ impl OutputType {
         use std::path::PathBuf;
         use std::process::{Command, Stdio};
 
-        let mut replace_arguments_to_less = false;
-
-        let pager_from_env = match (env::var("BAT_PAGER"), env::var("PAGER")) {
-            (Ok(bat_pager), _) => Some(bat_pager),
-            (_, Ok(pager)) => {
-                // less needs to be called with the '-R' option in order to properly interpret the
-                // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
-                // therefore need to overwrite the arguments and add '-R'.
-                //
-                // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
-                // or bats '--pager' command line option.
-                replace_arguments_to_less = true;
-                Some(pager)
-            }
-            _ => None,
-        };
-
+        let pager_from_env = env::var("PAGER").ok();
         let pager_from_config = pager_from_config.map(|p| p.to_string());
 
-        if pager_from_config.is_some() {
-            replace_arguments_to_less = false;
-        }
+        // less needs to be called with the '-R' option in order to properly interpret the
+        // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
+        // therefore need to overwrite the arguments and add '-R'.
+        //
+        // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
+        // or bats '--pager' command line option.
+        let replace_arguments_to_less = pager_from_config.is_none() && pager_from_env.is_some();
 
         let pager = pager_from_config
             .or(pager_from_env)
