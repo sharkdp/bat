@@ -63,7 +63,7 @@ impl OutputType {
             return Err(ErrorKind::InvalidPagerValueBat.into());
         }
 
-        let mut p = Command::new(pager.bin);
+        let mut p = Command::new(&pager.bin);
         let args = pager.args;
 
         if pager.kind == PagerKind::Less {
@@ -92,7 +92,7 @@ impl OutputType {
                 //
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
-                match retrieve_less_version() {
+                match retrieve_less_version(&pager.bin) {
                     None => {
                         p.arg("--no-init");
                     }
