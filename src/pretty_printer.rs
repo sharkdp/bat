@@ -90,45 +90,14 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Add STDIN as an input (with customized name)
-    #[deprecated]
-    pub fn input_stdin_with_name(&mut self, name: impl AsRef<OsStr>) -> &mut Self {
-        self.inputs
-            .push(Input::from_stdin().name(name).kind("File"));
-        self
-    }
-
     /// Add a byte string as an input
     pub fn input_from_bytes(&mut self, content: &'a [u8]) -> &mut Self {
         self.input_from_reader(content)
     }
 
-    /// Add a byte string as an input (with customized name)
-    #[deprecated]
-    #[allow(deprecated)]
-    pub fn input_from_bytes_with_name(
-        &mut self,
-        content: &'a [u8],
-        name: impl AsRef<OsStr>,
-    ) -> &mut Self {
-        self.input_from_reader_with_name(content, name)
-    }
-
     /// Add a custom reader as an input
     pub fn input_from_reader<R: Read + 'a>(&mut self, reader: R) -> &mut Self {
         self.inputs.push(Input::from_reader(reader));
-        self
-    }
-
-    /// Add a custom reader as an input (with customized name)
-    #[deprecated]
-    pub fn input_from_reader_with_name<R: Read + 'a>(
-        &mut self,
-        reader: R,
-        name: impl AsRef<OsStr>,
-    ) -> &mut Self {
-        self.inputs
-            .push(Input::from_reader(reader).name(name).kind("File"));
         self
     }
 
@@ -188,19 +157,9 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Whether to show modification markers for VCS changes. This has no effect if
     /// the `git` feature is not activated.
-    #[cfg_attr(
-        not(feature = "git"),
-        deprecated(
-            note = "Using vcs_modification_markers without the 'git' feature has no effect. \
-                    The function will be removed (for non-'git' use cases) in the future."
-        )
-    )]
-    #[allow(unused_variables)]
+    #[cfg(feature = "git")]
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
-        #[cfg(feature = "git")]
-        {
-            self.active_style_components.vcs_modification_markers = yes;
-        }
+        self.active_style_components.vcs_modification_markers = yes;
         self
     }
 

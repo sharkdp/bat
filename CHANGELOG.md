@@ -35,6 +35,12 @@
 
 ## `bat` as a library
 
+- The following `PrettyPrinter` methods have been removed (they were previously deprecated):
+   - `input_stdin_with_name`
+   - `input_from_bytes_with_name`
+   - `input_from_reader_with_name`
+   - `vcs_modification_markers` (if the `git` feature is not enabled)
+
 ## Packaging
 
 - `bat` is now available on snapstore with package name called `batcat`, see #1401 (@purveshpatel511)
