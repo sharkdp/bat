@@ -3,7 +3,7 @@ use std::env;
 
 /// If we use a pager, this enum tells us from where we were told to use it.
 #[derive(Debug, PartialEq)]
-pub enum PagerSource {
+pub(crate) enum PagerSource {
     /// From --config
     Config,
 
@@ -19,7 +19,7 @@ pub enum PagerSource {
 
 /// We know about some pagers, for example 'less'. This is a list of all pagers we know about
 #[derive(Debug, PartialEq)]
-pub enum PagerKind {
+pub(crate) enum PagerKind {
     /// The pager is ourselves
     Bat,
 
@@ -61,7 +61,7 @@ impl PagerKind {
 
 /// A pager such as 'less', and from where we got it.
 #[derive(Debug)]
-pub struct Pager {
+pub(crate) struct Pager {
     // The pager binary
     pub bin: String,
 
@@ -87,7 +87,7 @@ impl Pager {
 }
 
 /// Returns what pager to use, after looking at both config and environment variables.
-pub fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, ParseError> {
+pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, ParseError> {
     let bat_pager = env::var("BAT_PAGER");
     let pager = env::var("PAGER");
 
