@@ -2,14 +2,16 @@ use assert_cmd::assert::OutputAssertExt;
 use assert_cmd::cargo::CommandCargoExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
-use std::env;
 use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
 #[cfg(unix)]
 use std::time::Duration;
+
+mod utils;
+use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
@@ -39,71 +41,6 @@ fn bat() -> assert_cmd::Command {
     let mut cmd = bat_with_config();
     cmd.arg("--no-config");
     cmd
-}
-
-/// For some tests we want mocked versions of some pagers
-/// This fn returns the absolute path to the directory with these mocked pagers
-fn get_mocked_pagers_dir() -> PathBuf {
-    let cargo_manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("Missing CARGO_MANIFEST_DIR");
-    Path::new(&cargo_manifest_dir)
-        .join("tests")
-        .join("mocked-pagers")
-}
-
-/// On Unix: 'most' -> 'most'
-/// On Windows: 'most' -> 'most.bat'
-fn mocked_pager(base: &str) -> String {
-    if cfg!(windows) {
-        format!("{}.bat", base)
-    } else {
-        String::from(base)
-    }
-}
-
-/// Prepends a directory to the PATH environment variable
-/// Returns the original value for later restoration
-fn prepend_dir_to_path_env_var(dir: PathBuf) -> String {
-    // Get current PATH
-    let original_path = env::var("PATH").expect("No PATH?!");
-
-    // Add the new dir first
-    let mut split_paths = env::split_paths(&original_path).collect::<Vec<_>>();
-    split_paths.insert(0, dir);
-
-    // Set PATH with the new dir
-    let new_path = env::join_paths(split_paths).expect("Failed to join paths");
-    env::set_var("PATH", new_path);
-
-    // Return the original value for later restoration of it
-    original_path
-}
-
-/// Helper to restore the value of PATH
-fn restore_path(original_path: String) {
-    env::set_var("PATH", original_path);
-}
-
-/// Allows test to run that require our mocked versions of 'more' and 'most'
-/// in PATH. Temporarily changes PATH while the test code runs, and then restore it
-/// to avoid pollution of global state
-fn with_mocked_versions_of_more_and_most_in_path(actual_test: fn()) {
-    let original_path = prepend_dir_to_path_env_var(get_mocked_pagers_dir());
-
-    // Make sure our own variants of 'more' and 'most' are used
-    Command::new(mocked_pager("more"))
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("I am more"));
-    Command::new(mocked_pager("most"))
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("I am most"));
-
-    // Now run the actual test
-    actual_test();
-
-    // Make sure to restore PATH since it is global state
-    restore_path(original_path);
 }
 
 #[test]
@@ -577,10 +514,10 @@ fn pager_value_bat() {
 #[test]
 #[serial] // Because of PATH
 fn pager_most_from_pager_env_var() {
-    with_mocked_versions_of_more_and_most_in_path(|| {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         // If the output is not "I am most" then we know 'most' is not used
         bat()
-            .env("PAGER", mocked_pager("most"))
+            .env("PAGER", mocked_pagers::from("most"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
@@ -594,9 +531,9 @@ fn pager_most_from_pager_env_var() {
 #[test]
 #[serial] // Because of PATH
 fn pager_most_from_bat_pager_env_var() {
-    with_mocked_versions_of_more_and_most_in_path(|| {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("BAT_PAGER", mocked_pager("most"))
+            .env("BAT_PAGER", mocked_pagers::from("most"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
@@ -609,10 +546,10 @@ fn pager_most_from_bat_pager_env_var() {
 #[test]
 #[serial] // Because of PATH
 fn pager_most_from_pager_arg() {
-    with_mocked_versions_of_more_and_most_in_path(|| {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
             .arg("--paging=always")
-            .arg(format!("--pager={}", mocked_pager("most")))
+            .arg(format!("--pager={}", mocked_pagers::from("most")))
             .arg("test.txt")
             .assert()
             .success()
@@ -624,9 +561,9 @@ fn pager_most_from_pager_arg() {
 #[test]
 #[serial] // Because of PATH
 fn pager_most_with_arg() {
-    with_mocked_versions_of_more_and_most_in_path(|| {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("PAGER", format!("{} -w", mocked_pager("most")))
+            .env("PAGER", format!("{} -w", mocked_pagers::from("most")))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
@@ -639,9 +576,9 @@ fn pager_most_with_arg() {
 #[test]
 #[serial] // Because of PATH
 fn pager_more() {
-    with_mocked_versions_of_more_and_most_in_path(|| {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            .env("PAGER", mocked_pager("more"))
+            .env("PAGER", mocked_pagers::from("more"))
             .arg("--paging=always")
             .arg("test.txt")
             .assert()
