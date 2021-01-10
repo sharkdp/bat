@@ -481,7 +481,7 @@ You can add new (or change existing) file name patterns using the `--map-syntax`
 command line option. The option takes an argument of the form `pattern:syntax` where
 `pattern` is a glob pattern that is matched against the file name and
 the absolute file path. The `syntax` part is the full name of a supported language
-(use `bat --list-languages` for an overview)full .
+(use `bat --list-languages` for an overview).
 
 Note: You probably want to use this option as an entry in `bat`s configuration file instead
 of passing it on the command line (see below).
@@ -499,7 +499,7 @@ Example: To open all files called `.ignore` (exact match) with the "Git Ignore" 
 Example: To open all `.conf` files in subfolders of `/etc/apache2` with the "Apache Conf"
 syntax, use (this mapping is already built in):
 ```bash
--map-syntax='/etc/apache2/**/*.conf:Apache Conf'
+--map-syntax='/etc/apache2/**/*.conf:Apache Conf'
 ```
 
 ### Using a different pager
