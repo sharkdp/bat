@@ -1,11 +1,6 @@
 name: CICD
 
 env:
-  PROJECT_NAME: bat
-  PROJECT_VERSION: "0.17.1"
-  PROJECT_DESC: "A `cat` clone with wings"
-  PROJECT_MAINTAINER: "David Peter <mail@david-peter.de>"
-  PROJECT_HOMEPAGE: "https://github.com/sharkdp/bat"
   MIN_SUPPORTED_RUST_VERSION: "1.42.0"
 
 on: [push, pull_request]
@@ -105,6 +100,18 @@ jobs:
           arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
+    - name: Install 'cargo get'
+      uses: actions-rs/install@v0.1
+      with:
+        crate: cargo-get
+        version: latest
+    - name: Extract crate information
+      shell: bash
+      run: |
+        echo "PROJECT_NAME=$(cargo get --name)" >> $GITHUB_ENV
+        echo "PROJECT_VERSION=$(cargo get version --full)" >> $GITHUB_ENV
+        echo "PROJECT_MAINTAINER=$(cargo get --authors)" >> $GITHUB_ENV
+        echo "PROJECT_HOMEPAGE=$(cargo get --homepage)" >> $GITHUB_ENV
     - name: Initialize workflow variables
       id: vars
       shell: bash
