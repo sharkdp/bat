@@ -692,6 +692,11 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
+If you want to build an application that uses `bat`s pretty-printing
+features as a library, check out the [the API documentation](https://docs.rs/bat/).
+Note that you have to use either `regex-onig` or `regex-fancy` as a feature
+when you depend on `bat` as a library.
+
 ## Contributing
 
 Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
