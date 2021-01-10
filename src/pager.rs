@@ -98,10 +98,20 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
         Some((bin, args)) => {
             let kind = PagerKind::from_bin(bin);
 
-            // 'more' and 'most' do not supports colors; automatically use 'less' instead
-            // if the problematic pager came from the generic PAGER env var
-            let no_color_support = kind == PagerKind::More || kind == PagerKind::Most;
-            let use_less_instead = no_color_support && source == PagerSource::EnvVarPager;
+            let use_less_instead = match source {
+                PagerSource::EnvVarPager => {
+                    // 'more' and 'most' do not supports colors; automatically use 'less' instead
+                    // if the problematic pager came from the generic PAGER env var
+                    let no_color_support = kind == PagerKind::More || kind == PagerKind::Most;
+
+                    // If PAGER=bat, silently use 'less' instead to prevent recursion ...
+                    let is_self = kind == PagerKind::Bat;
+
+                    no_color_support || is_self
+                },
+                // Never silently replace with less if bat-specific means to set a pager is used
+                _ => false
+            } ;
 
             Ok(Some(if use_less_instead {
                 let no_args = vec![];
