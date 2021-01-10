@@ -12,7 +12,7 @@ on: [push, pull_request]
 jobs:
   min_version:
     name: Minimum supported rust version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
 
   test_with_new_syntaxes_and_themes:
     name: Test with new syntaxes and themes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -83,17 +83,17 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: macos-latest   , target: x86_64-apple-darwin         }
-          # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
-          - { os: windows-latest , target: i686-pc-windows-msvc        }
-          - { os: windows-latest , target: x86_64-pc-windows-gnu       }
-          - { os: windows-latest , target: x86_64-pc-windows-msvc      }
+          - { os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true }
+          - { os: ubuntu-18.04 , target: i686-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04 , target: i686-unknown-linux-musl     , use-cross: true }
+          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-gnu    }
+          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true }
+          - { os: macos-10.15  , target: x86_64-apple-darwin         }
+          # - { os: windows-2019 , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
+          - { os: windows-2019 , target: i686-pc-windows-msvc        }
+          - { os: windows-2019 , target: x86_64-pc-windows-gnu       }
+          - { os: windows-2019 , target: x86_64-pc-windows-msvc      }
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -361,11 +361,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # job: [ { os: ubuntu-latest }, { os: macos-latest }, { os: windows-latest } ]
         job:
-          - { os: ubuntu-latest , toolchain: nightly-2020-04-29 }
-          - { os: macos-latest , toolchain: nightly-2020-04-29 }
-          - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
+          - { os: ubuntu-18.04 , toolchain: nightly-2020-04-29 }
+          - { os: macos-10.15  , toolchain: nightly-2020-04-29 }
+          - { os: windows-2019 , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
     steps:
     - uses: actions/checkout@v2
     - name: Initialize workflow variables
