@@ -500,13 +500,36 @@ fn pager_disable() {
 }
 
 #[test]
+fn env_var_pager_value_bat() {
+    bat()
+        .env("PAGER", "bat")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
+fn env_var_bat_pager_value_bat() {
+    bat()
+        .env("BAT_PAGER", "bat")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("bat as a pager is disallowed"));
+}
+
+#[test]
 fn pager_value_bat() {
     bat()
         .arg("--pager=bat")
         .arg("--paging=always")
         .arg("test.txt")
         .assert()
-        .failure();
+        .failure()
+        .stderr(predicate::str::contains("bat as a pager is disallowed"));
 }
 
 /// We shall use less instead of most if PAGER is used since PAGER
