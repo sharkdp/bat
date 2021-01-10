@@ -14,6 +14,7 @@
 - Print an 'Invalid syntax theme settings' error message if a custom theme is broken, see #614 (@Enselic)
 - If plain mode is set and wrap is not explicitly opted in, long lines will no be truncated, see #1426
 - If `PAGER` (but not `BAT_PAGER` or `--pager`) is `more` or `most`, silently use `less` instead to ensure support for colors, see #1063 (@Enselic)
+- If `PAGER` is `bat`, silently use `less` to prevent recursion. For `BAT_PAGER` or `--pager`, exit with error, see #1413 (@Enselic)
 
 ## Other
 
