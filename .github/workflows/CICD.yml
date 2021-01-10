@@ -2,17 +2,18 @@ name: CICD
 
 env:
   PROJECT_NAME: bat
+  PROJECT_VERSION: "0.17.1"
   PROJECT_DESC: "A `cat` clone with wings"
   PROJECT_MAINTAINER: "David Peter <mail@david-peter.de>"
   PROJECT_HOMEPAGE: "https://github.com/sharkdp/bat"
-  MIN_SUPPORTED_RUST_VERSION: "1.40.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.42.0"
 
 on: [push, pull_request]
 
 jobs:
   min_version:
     name: Minimum supported rust version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -27,7 +28,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features -- --allow clippy::style
+        args: --all-targets --all-features
     - name: Test
       uses: actions-rs/cargo@v1
       with:
@@ -35,7 +36,7 @@ jobs:
 
   test_with_new_syntaxes_and_themes:
     name: Test with new syntaxes and themes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -83,19 +84,17 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          # { os, target, cargo-options, features, use-cross }
-          - { os: ubuntu-latest  , target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-18.04   , target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04   , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04   , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: ubuntu-16.04   , target: x86_64-unknown-linux-gnu    }
-          - { os: macos-latest   , target: x86_64-apple-darwin         }
-          # - { os: windows-latest , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
-          - { os: windows-latest , target: i686-pc-windows-msvc        }
-          - { os: windows-latest , target: x86_64-pc-windows-gnu       }
-          - { os: windows-latest , target: x86_64-pc-windows-msvc      }
+          - { os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true }
+          - { os: ubuntu-18.04 , target: i686-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04 , target: i686-unknown-linux-musl     , use-cross: true }
+          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-gnu    }
+          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true }
+          - { os: macos-10.15  , target: x86_64-apple-darwin         }
+          # - { os: windows-2019 , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
+          - { os: windows-2019 , target: i686-pc-windows-msvc        }
+          - { os: windows-2019 , target: x86_64-pc-windows-gnu       }
+          - { os: windows-2019 , target: x86_64-pc-windows-msvc      }
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -116,26 +115,14 @@ jobs:
         # determine EXE suffix
         EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
         echo ::set-output name=EXE_suffix::${EXE_suffix}
-        # parse commit reference info
-        unset REF_TAG ; case ${GITHUB_REF} in refs/tags/*) REF_TAG=${GITHUB_REF#refs/tags/} ;; esac;
-        REF_SHAS=${GITHUB_SHA:0:8}
-        # parse target
-        unset TARGET_ARCH ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) TARGET_ARCH=arm ;; i686-*) TARGET_ARCH=i686 ;; x86_64-*) TARGET_ARCH=x86_64 ;; esac;
-        echo ::set-output name=TARGET_ARCH::${TARGET_ARCH}
-        unset TARGET_OS ; case ${{ matrix.job.target }} in *-linux-*) TARGET_OS=linux ;; *-apple-*) TARGET_OS=macos ;; *-windows-*) TARGET_OS=windows ;; esac;
-        echo ::set-output name=TARGET_OS::${TARGET_OS}
         # package name
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
-        PKG_BASENAME=${PROJECT_NAME}-${REF_TAG:-$REF_SHAS}-${{ matrix.job.target }}
+        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_suffix::${PKG_suffix}
         echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
-        # deployable tag? (ie, leading "vM" or "M"; M == version number)
-        unset DEPLOY ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DEPLOY='true' ; fi
-        # unset deploy on ubuntu-18.04 x64 - we will deploy the tarball/deb built on ubuntu-16.04 x64
-        if [ "${{ matrix.job.os }}" = "ubuntu-18.04" ] && [ "${{ matrix.job.target }}" = "x86_64-unknown-linux-gnu" ]; then unset DEPLOY; fi
-        echo ::set-output name=DEPLOY::${DEPLOY}
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # DPKG architecture?
         unset DPKG_ARCH
         case ${{ matrix.job.target }} in
@@ -145,8 +132,7 @@ jobs:
           x86_64-*-linux-*) DPKG_ARCH=amd64 ;;
         esac;
         echo ::set-output name=DPKG_ARCH::${DPKG_ARCH}
-        # DPKG version?
-        unset DPKG_VERSION ; if [[ $REF_TAG =~ ^[vV]?[0-9].* ]]; then DPKG_VERSION=${REF_TAG/#[vV]/} ; fi
+        DPKG_VERSION=${PROJECT_VERSION}
         echo ::set-output name=DPKG_VERSION::${DPKG_VERSION}
         # DPKG base name/conflicts?
         DPKG_BASENAME=${PROJECT_NAME}
@@ -159,10 +145,6 @@ jobs:
         if [[ -n $DPKG_ARCH && -n $DPKG_VERSION ]]; then DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb" ; fi
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
         # target-specific options
-        # # * `arm` cannot be tested on ubuntu-* hosts (b/c testing is currently primarily done via comparison of target outputs with built-in outputs and the `arm` target is not executable on the host)
-        JOB_DO_TESTING="true"
-        case ${{ matrix.job.target }} in arm-*) unset JOB_DO_TESTING ;; esac;
-        echo ::set-output name=JOB_DO_TESTING::${JOB_DO_TESTING}
         # # * test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
@@ -241,11 +223,6 @@ jobs:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@master
-      with:
-        name: ${{ env.PROJECT_NAME }}-${{ matrix.job.target }}
-        path: target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}
     - name: Package
       shell: bash
       run: |
@@ -358,9 +335,20 @@ jobs:
           # build dpkg
           fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
         fi
+    - name: Upload package artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ steps.vars.outputs.PKG_NAME }}
+        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+    - name: Upload Debian package artifact
+      uses: actions/upload-artifact@master
+      if: steps.vars.outputs.DPKG_NAME
+      with:
+        name: ${{ steps.vars.outputs.DPKG_NAME }}
+        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.DEPLOY
+      if: steps.vars.outputs.IS_RELEASE
       with:
         files: |
           ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
@@ -375,11 +363,10 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # job: [ { os: ubuntu-latest }, { os: macos-latest }, { os: windows-latest } ]
         job:
-          - { os: ubuntu-latest , toolchain: nightly-2020-04-29 }
-          - { os: macos-latest , toolchain: nightly-2020-04-29 }
-          - { os: windows-latest , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
+          - { os: ubuntu-18.04 , toolchain: nightly-2020-04-29 }
+          - { os: macos-10.15  , toolchain: nightly-2020-04-29 }
+          - { os: windows-2019 , toolchain: nightly-2020-04-29-x86_64-pc-windows-gnu }
     steps:
     - uses: actions/checkout@v2
     - name: Initialize workflow variables

@@ -23,7 +23,7 @@ in the `.sublime-syntax` format.
 
 5. Use `bat --list-languages` to check if the new languages are available.
 
-6. Add a syntax test for the new language. See [#Syntax-tests](below) for details.
+6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
 
 7. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
    file. A new binary cache file will be created once before every new release of `bat`.

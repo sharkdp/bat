@@ -137,11 +137,7 @@ impl<'a> Input<'a> {
     }
 
     pub fn is_stdin(&self) -> bool {
-        if let InputKind::StdIn = self.kind {
-            true
-        } else {
-            false
-        }
+        matches!(self.kind, InputKind::StdIn)
     }
 
     pub fn with_name(mut self, provided_name: Option<&OsStr>) -> Self {

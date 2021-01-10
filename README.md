@@ -356,7 +356,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.40 or
+If you want to build `bat` from source, you need Rust 1.42 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
@@ -700,6 +700,7 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
 - [keith-hall](https://github.com/keith-hall)
+- [Enselic](https://github.com/Enselic)
 
 ## Project goals and alternatives
 

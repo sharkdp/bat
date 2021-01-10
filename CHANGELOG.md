@@ -12,23 +12,26 @@
 - Make ./tests/syntax-tests/regression_test.sh work on recent versions of macOS, see #1443 (@Enselic)
 - VimL syntax highlighting fix, see #1450 (@esensar)
 - Print an 'Invalid syntax theme settings' error message if a custom theme is broken, see #614 (@Enselic)
+- If plain mode is set and wrap is not explicitly opted in, long lines will no be truncated, see #1426
 - If `PAGER` (but not `BAT_PAGER` or `--pager`) is `more` or `most`, silently use `less` instead to ensure support for colors, see #1063 (@Enselic)
 
 ## Other
 
 - Performance improvements, see #1421 (@LovecraftianHorror)
 - Added a new `--diagnostic` option to collect information for bug reports, see #1459 (@sharkdp)
+- Upped min required Rust version to 1.42
 
 ## Syntaxes
 
 - Added Zig syntax, see #1470 (@paulsmith)
 - Added Lean syntax, see #1446 (@Julian)
 - Added `.resource` extension for Robot Framework files, see #1386
+- Added `gnuplot` syntax, see #1431 (@sharkdp)
 
 ## New themes
 
-- `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12)
-- The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously usuing `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
+- `ansi` replaces `ansi-dark` and `ansi-light`, see #1104 and #1412 (@mk12). **Breaking change:** users that were previously using one of the `ansi-*` themes should switch to `ansi`.
+- The Gruvbox theme has been updated, see #1291 (@j0hnmeow). **Breaking change:** users that were previously using `gruvbox` or `gruvbox-white` should update and use `gruvbox-dark`/`gruvbox-light` instead.
 
 ## `bat` as a library
 

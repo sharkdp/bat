@@ -205,7 +205,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
             and are added to the cache with `bat cache --build`. \
             For more information, see:\n\n  \
             https://github.com/sharkdp/bat#adding-new-themes",
-            config_file().join("themes").to_string_lossy()
+            PROJECT_DIRS.config_dir().join("themes").to_string_lossy()
         )?;
     } else {
         for theme in assets.themes() {
@@ -237,10 +237,10 @@ fn run() -> Result<bool> {
             .info(EnvironmentVariables::list(&[
                 "SHELL",
                 "PAGER",
+                "BAT_PAGER",
                 "BAT_CACHE_PATH",
                 "BAT_CONFIG_PATH",
                 "BAT_OPTS",
-                "BAT_PAGER",
                 "BAT_STYLE",
                 "BAT_TABS",
                 "BAT_THEME",
@@ -248,6 +248,7 @@ fn run() -> Result<bool> {
                 "XDG_CACHE_HOME",
                 "COLORTERM",
                 "NO_COLOR",
+                "MANPAGER",
             ]))
             .info(FileContent::new("Config file", config_file()))
             .info(CompileTimeInformation::default())

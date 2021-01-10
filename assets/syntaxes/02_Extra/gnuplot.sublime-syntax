@@ -1,0 +1,182 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: gnuplot
+file_extensions:
+  - gp
+  - gpl
+  - gnuplot
+  - gnu
+  - plot
+  - plt
+scope: source.gnuplot
+contexts:
+  main:
+    - include: number
+    - include: string_single
+    - include: string_double
+    - match: '\b(for)\b\s*(\[)'
+      comment: |
+        gnuplot iteration statement.
+                    There are two forms:
+                        numeric [n = 1:2{:inc}]
+                        string based [str in "x y z"]
+                        but both can also iterate over lists etc, so this is kept loose.
+      captures:
+        1: keyword.other.iteration.gnuplot
+        2: punctuation.definition.range.begin.gnuplot
+      push:
+        - meta_scope: meta.structure.iteration.gnuplot
+        - match: '\]'
+          captures:
+            0: punctuation.definition.range.end.gnuplot
+          pop: true
+        - include: number
+        - include: operator
+        - include: string_double
+        - include: string_single
+        - match: ":"
+          scope: punctuation.separator.range.gnuplot
+        - match: '\b([a-zA-Z]\w*)\b\s*(=|in)'
+          scope: variable-assignment.range.gnuplot
+        - match: '(?i:[^\s(pi|e)\]])'
+          scope: invalid.illegal.expected-range-separator.gnuplot
+    - match: '\['
+      comment: "gnuplot range statement [a:b]. Lots of things are legal, still more make no sense!"
+      captures:
+        0: punctuation.definition.range.begin.gnuplot
+      push:
+        - meta_scope: meta.structure.range.gnuplot
+        - match: '\]'
+          captures:
+            0: punctuation.definition.range.end.gnuplot
+          pop: true
+        - include: number
+        - include: operator
+        - match: ":"
+          scope: punctuation.separator.range.gnuplot
+        - match: '(?i:[^\s(pi|e)\]])'
+          scope: invalid.illegal.expected-range-separator.gnuplot
+    - match: \\.
+      scope: constant.character.escape.gnuplot
+    - match: '(?<!\$)(#)(?!\{).*$\n?'
+      scope: comment.line.number-sign.gnuplot
+      captures:
+        1: punctuation.definition.comment.gnuplot
+    - match: for
+      comment: introduce in gnuplot 4.3.
+      scope: keyword.other.iteration.gnuplot
+    - match: \b(angles|arrow|autoscale|bars|border|boxwidth|clabel|clip|cntrparam|colorbox|contour|decimalsign|dgrid3d|dummy|encoding|fit|format|grid|hidden3d|historysize|isosamples|key|label|locale|logscale|macros|bmargin|lmargin|rmargin|tmargin|mapping|mouse|multiplot|offsets|origin|output|palette|parametric|pm3d|pointsize|polar|print|rrange|trange|urange|vrange|samples|size|style|surface|tics|ticscale|ticslevel|timestamp|timefmt|title|view|xyplane|x2data|xdata|y2data|ydata|z2data|zdata|x2label|xlabel|y2label|ylabel|z2label|zlabel|x2range|xrange|y2range|yrange|z2range|zrange|mx2tics|mxtics|my2tics|mytics|mz2tics|mztics|nomx2tics|nomxtics|nomy2tics|nomytics|nomz2tics|nomztics|nox2tics|noxtics|noy2tics|noytics|noz2tics|noztics|x2tics|xtics|y2tics|ytics|z2tics|ztics|x2dtics|x2mtics|xdtics|xmtics|y2dtics|y2mtics|ydtics|ymtics|z2dtics|z2mtics|zdtics|zmtics|x2zeroaxis|xzeroaxis|y2zeroaxis|yzeroaxis|z2zeroaxis|zeroaxis|zzeroaxis|zero|)\b
+      scope: keyword.other.setting.gnuplot
+    - match: \b(cd|call|clear|exit|plot|splot|help|load|pause|quit|fit|replot|if|FIT_LIMIT|FIT_MAXITER|FIT_START_LAMBDA|FIT_LAMBDA_FACTOR|FIT_LOG|FIT_SCRIPT|print|pwd|reread|reset|save|show|test|!|functions|var)\b
+      comment: missuse of scopes alert! Just for pretty colours
+      scope: keyword.other.command.gnuplot
+    - match: \b(abs|acos|acosh|arg|asin|asinh|atan|atan2|atanh|besj0|besj1|besy0|besy1|ceil|cos|cosh|erf|erfc|exp|floor|gamma|ibeta|igamma|imag|int|inverf|invnorm|lambertw|lgamma|log|log10|norm|rand|real|sgn|sin|sinh|sqrt|tan|tanh)\b
+      scope: support.function.gnuplot
+    - match: \b(gprintf|sprintf|strlen|strstrt|substr|system|word|words)\b
+      scope: support.function.string.gnuplot
+    - match: \b(on|off|default|inside|outside|lmargin|rmargin|tmargin|bmargin|at|left|right|center|top|bottom|center|vertical|horizontal|Left|Right|noreverse|noinvert|samplen|spacing|width|height|noautotitle|columnheader|title|noenhanced|nobox|linestyle|ls|linetype|lt|linewidth|lw)\b
+      scope: constant.other.type.gnuplot
+    - match: \b(aed512|aed767|aifm|aqua|bitgraph|cgm|corel|dumb|dxf|eepic|emf|emtex|epslatex|epson_180dpi|epson_60dpi|epson_lx800|fig|gif|gpic|hp2623A|hp2648|hp500c|hpdj|hpgl|hpljii|hppj|imagen|jpeg|kc_tek40xx|km_tek40xx|latex|mf|mif|mp|nec_cp6|okidata|pbm|pcl5|pdf|png|postscript|pslatex|pstex|pstricks|qms|regis|selanar|starc|svg|tandy_60dpi|tek40xx|tek410x|texdraw|tgif|tkcanvas|tpic|unknown|vttek)\b
+      scope: constant.other.terminal.gnuplot
+    - match: \b(u(sing)?|t(it(le)?)?|notit(le)?|w(i(th)?)?|steps|fs(teps)?|notitle|l(i(nes)?)?|linespoints|via)\b
+      scope: keyword.modifier.gnuplot
+    - match: |-
+        (?x:
+          \b # Start with a word boundary
+          (?=\b[\w$]*(\(|.*=))  # Look-ahead for a bracket or equals
+          (?![^(]*\)) # negative look ahead for a closing bracket without an opening one. This stops a from matching in f(a)
+          (         # Group variable name
+            [A-Za-z]      # A letter
+            [\w$]*      # Any word chars or $
+          )         # That is it for the name.
+        )
+      comment: user defined function / variable
+      scope: variable.other.gnuplot
+    - match: \b(if)\b
+      scope: keyword.control.gnuplot
+    - match: \b(show)\b
+      captures:
+        0: keyword.other.command.gnuplot
+      push:
+        - meta_scope: keyword.line.show.gnuplot
+        - meta_content_scope: keyword.line.show.gnuplot
+        - match: (?!\#)($\n?)
+          pop: true
+        - include: main
+    - match: \b(set)\b\s*\b(terminal|term)\b
+      captures:
+        1: keyword.other.command.gnuplot
+        2: keyword.other.setting.gnuplot
+      push:
+        - meta_scope: keyword.line.set.terminal.gnuplot
+        - match: (?!\#)($\n?)
+          pop: true
+        - include: main
+    - match: \b(set)\b\s*\b(key)\b
+      captures:
+        1: keyword.other.command.gnuplot
+        2: keyword.other.setting.gnuplot
+      push:
+        - meta_scope: keyword.line.set.key.gnuplot
+        - match: (?!\#)($\n?)
+          pop: true
+        - include: main
+    - match: \b(set|unset)\b\s*(?!\b(terminal|key|for)\b)
+      captures:
+        1: keyword.other.command.gnuplot
+        2: keyword.other.setting.gnuplot
+      push:
+        - meta_scope: keyword.line.set.gnuplot
+        - meta_content_scope: keyword.line.set.gnuplot
+        - match: (?!\#)($\n?)
+          pop: true
+        - include: main
+  number:
+    - match: |-
+        (?x:         # turn on extended mode
+            -?         # an optional minus
+            (?:
+              0        # a zero
+              |        # ...or...
+              [1-9]    # a 1-9 character
+              \d*      # followed by zero or more digits
+            )
+            (?:
+              \.       # a period
+              \d+      # followed by one or more digits
+              (?:
+                [eE]   # an e character
+                [+-]?  # followed by an option +/-
+                \d+    # followed by one or more digits
+              )?       # make exponent optional
+            )?         # make decimal portion optional
+        )
+      comment: borrowed from textmate book
+      scope: constant.numeric.gnuplot
+  operator:
+    - match: \s*(==|~=|>|>=|<|<=|&|&&|:|\||\|\||\+|-|\*|\.\*|/|\./|\\|\.\\|\^|\.\^)\s*
+      comment: Operator symbols
+      scope: keyword.operator.symbols.matlab
+  string_double:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.gnuplot
+      push:
+        - meta_scope: string.quoted.double.gnuplot
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.gnuplot
+          pop: true
+        - match: '\\[\$`"\\\n]'
+          scope: constant.character.escape.gnuplot
+  string_single:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.gnuplot
+      push:
+        - meta_scope: string.quoted.single.gnuplot
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.gnuplot
+          pop: true
