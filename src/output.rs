@@ -73,7 +73,7 @@ impl OutputType {
             //
             // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
             // or bats '--pager' command line option.
-            let replace_arguments_to_less = pager.source == PagerSource::PagerEnvVar;
+            let replace_arguments_to_less = pager.source == PagerSource::EnvVarPager;
 
             if args.is_empty() || replace_arguments_to_less {
                 p.arg("--RAW-CONTROL-CHARS");

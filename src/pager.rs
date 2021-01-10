@@ -8,10 +8,10 @@ pub(crate) enum PagerSource {
     Config,
 
     /// From the env var BAT_PAGER
-    BatPagerEnvVar,
+    EnvVarBatPager,
 
     /// From the env var PAGER
-    PagerEnvVar,
+    EnvVarPager,
 
     /// No pager was specified, default is used
     Default,
@@ -93,8 +93,8 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
 
     let (cmd, source) = match (config_pager, &bat_pager, &pager) {
         (Some(config_pager), _, _) => (config_pager, PagerSource::Config),
-        (_, Ok(bat_pager), _) => (bat_pager.as_str(), PagerSource::BatPagerEnvVar),
-        (_, _, Ok(pager)) => (pager.as_str(), PagerSource::PagerEnvVar),
+        (_, Ok(bat_pager), _) => (bat_pager.as_str(), PagerSource::EnvVarBatPager),
+        (_, _, Ok(pager)) => (pager.as_str(), PagerSource::EnvVarPager),
         _ => ("less", PagerSource::Default),
     };
 
@@ -106,11 +106,11 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
             // 'more' and 'most' does not supports colors; automatically use 'less' instead
             // if the problematic pager came from the generic PAGER env var
             let no_color_support = kind == PagerKind::More || kind == PagerKind::Most;
-            let use_less_instead = no_color_support && source == PagerSource::PagerEnvVar;
+            let use_less_instead = no_color_support && source == PagerSource::EnvVarPager;
 
             Ok(Some(if use_less_instead {
                 let no_args = vec![];
-                Pager::new("less", &no_args, PagerKind::Less, PagerSource::PagerEnvVar)
+                Pager::new("less", &no_args, PagerKind::Less, PagerSource::EnvVarPager)
             } else {
                 Pager::new(bin, args, kind, source)
             }))
