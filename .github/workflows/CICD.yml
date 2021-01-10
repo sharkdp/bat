@@ -231,7 +231,6 @@ jobs:
       shell: bash
       run: |
         ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
-        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
         # Binary
         cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
 
@@ -255,31 +254,33 @@ jobs:
           *) tar czf '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* ;;
         esac;
         popd >/dev/null
+    - name: Debian package
+      shell: bash
+      if: steps.vars.outputs.DPKG_NAME
+      run: |
+        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
+        DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
 
-        # Debian package
-        if [ -n "${{ steps.vars.outputs.DPKG_NAME }}" ]; then
-          DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
+        # Binary
+        install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
+        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
 
-          # Binary
-          install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
-          if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+        # Man page
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
+        gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
 
-          # Man page
-          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
-          gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
+        # Autocompletion files
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 
-          # Autocompletion files
-          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
-          install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
+        # README and LICENSE
+        install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
+        install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-MIT"
+        install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-APACHE"
+        install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
+        gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
 
-          # README and LICENSE
-          install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/README.md"
-          install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-MIT"
-          install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/LICENSE-APACHE"
-          install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
-          gzip -n --best "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/changelog"
-
-          cat > "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright" <<EOF
+        cat > "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright" <<EOF
         Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
         Upstream-Name: ${{ env.PROJECT_NAME }}
         Source: ${{ env.PROJECT_HOMEPAGE }}
@@ -290,33 +291,33 @@ jobs:
         License: Apache-2.0 or MIT
 
         License: Apache-2.0
-         On Debian systems, the complete text of the Apache-2.0 can be found in the
-         file /usr/share/common-licenses/Apache-2.0.
+          On Debian systems, the complete text of the Apache-2.0 can be found in the
+          file /usr/share/common-licenses/Apache-2.0.
 
         License: MIT
-         Permission is hereby granted, free of charge, to any
-         person obtaining a copy of this software and associated
-         documentation files (the "Software"), to deal in the
-         Software without restriction, including without
-         limitation the rights to use, copy, modify, merge,
-         publish, distribute, sublicense, and/or sell copies of
-         the Software, and to permit persons to whom the Software
-         is furnished to do so, subject to the following
-         conditions:
-         .
-         The above copyright notice and this permission notice
-         shall be included in all copies or substantial portions
-         of the Software.
-         .
-         THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
-         ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
-         TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-         PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
-         SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-         CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-         OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-         IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-         DEALINGS IN THE SOFTWARE.
+          Permission is hereby granted, free of charge, to any
+          person obtaining a copy of this software and associated
+          documentation files (the "Software"), to deal in the
+          Software without restriction, including without
+          limitation the rights to use, copy, modify, merge,
+          publish, distribute, sublicense, and/or sell copies of
+          the Software, and to permit persons to whom the Software
+          is furnished to do so, subject to the following
+          conditions:
+          .
+          The above copyright notice and this permission notice
+          shall be included in all copies or substantial portions
+          of the Software.
+          .
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+          ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+          TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+          PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+          SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+          CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+          OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+          DEALINGS IN THE SOFTWARE.
         EOF
           chmod 644 "${DPKG_DIR}/usr/share/doc/${{ steps.vars.outputs.DPKG_BASENAME }}/copyright"
 
@@ -333,12 +334,11 @@ jobs:
         Provides: ${{ env.PROJECT_NAME }}
         Conflicts: ${{ steps.vars.outputs.DPKG_CONFLICTS }}
         Description: cat(1) clone with wings.
-         A cat(1) clone with syntax highlighting and Git integration.
+          A cat(1) clone with syntax highlighting and Git integration.
         EOF
 
-          # build dpkg
-          fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
-        fi
+        # build dpkg
+        fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.DPKG_NAME }}"
     - name: Upload package artifact
       uses: actions/upload-artifact@master
       with:
