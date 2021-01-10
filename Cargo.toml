@@ -30,6 +30,8 @@ application = [
 ]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
+
+# You need to use one of these if you depend on bat as a library:
 regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
