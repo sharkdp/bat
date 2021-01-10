@@ -84,6 +84,15 @@ pub struct Config<'a> {
     pub highlighted_lines: HighlightedLineRanges,
 }
 
+#[cfg(all(feature = "application", feature = "paging"))]
+pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
+    if let Ok(Some(pager)) = crate::pager::get_pager(config_pager) {
+        Some(pager.bin)
+    } else {
+        None
+    }
+}
+
 #[test]
 fn default_config_should_include_all_lines() {
     use crate::line_range::RangeCheckResult;
