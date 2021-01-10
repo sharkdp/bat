@@ -54,9 +54,7 @@ fn get_mocked_pagers_dir() -> PathBuf {
 /// On Windows: 'most' -> 'most.bat'
 fn mocked_pager(base: &str) -> String {
     if cfg!(windows) {
-        let mut str = String::from(base);
-        str.push_str(".bat");
-        str
+        format!("{}.bat", base)
     } else {
         String::from(base)
     }
