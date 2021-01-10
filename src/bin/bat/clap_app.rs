@@ -328,7 +328,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                     "Map a glob pattern to an existing syntax name. The glob pattern is matched \
                      on the full path and the filename. For example, to highlight *.build files \
                      with the Python syntax, use -m '*.build:Python'. To highlight files named \
-                     '.myignore' with the Git Ignore syntax, use -m '.myignore:Git Ignore'.",
+                     '.myignore' with the Git Ignore syntax, use -m '.myignore:Git Ignore'. Note \
+                     that the right-hand side is the *name* of the syntax, not a file extension.",
                 )
                 .takes_value(true),
         )
