@@ -100,19 +100,13 @@ jobs:
           arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
-    - name: Install 'cargo get'
-      uses: actions-rs/install@v0.1
-      with:
-        crate: cargo-get
-        version: latest
-        use-tool-cache: true
     - name: Extract crate information
       shell: bash
       run: |
-        echo "PROJECT_NAME=$(cargo get --name)" >> $GITHUB_ENV
-        echo "PROJECT_VERSION=$(cargo get version --full)" >> $GITHUB_ENV
-        echo "PROJECT_MAINTAINER=$(cargo get --authors)" >> $GITHUB_ENV
-        echo "PROJECT_HOMEPAGE=$(cargo get --homepage)" >> $GITHUB_ENV
+        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
+        echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
     - name: Initialize workflow variables
       id: vars
       shell: bash
