@@ -59,12 +59,19 @@ contexts:
       escape: '(?={{section_heading}})'
 
   function-call:
-    - match: '\b([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
+    - match: '\b([A-Za-z0-9_\-]+\.)?([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
       captures:
         1: entity.name.function.man
-        2: keyword.operator.man
-        3: constant.numeric.man
-        4: keyword.operator.man
+        2: entity.name.function.man
+        3: keyword.operator.man
+        4: constant.numeric.man
+        5: keyword.operator.man
+
+  env-var:
+    - match: '(\$)(?!\d)(\w+)\b'
+      captures:
+        1: punctuation.definition.variable.man
+        2: constant.other.man
 
   options:
     # command-line options like --option=value, --some-flag, or -x
@@ -86,6 +93,7 @@ contexts:
           pop: true
     - include: function-call
     - include: c-code
+    - include: env-var
 
   expect-command-line-option:
     - match: '[A-Za-z0-9-]+'

@@ -149,3 +149,14 @@ EXAMPLE
            #define POLLIN_SET  (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN |
                                 EPOLLHUP | EPOLLERR)
 #                                                  ^ source.c meta.preprocessor.macro meta.group punctuation.section.group.end
+
+ENVIRONMENT
+       $SYSTEMD_LOG_LEVEL
+#      ^ punctuation.definition.variable
+#       ^^^^^^^^^^^^^^^^^ constant.other
+           systemd reads the log level from this environment variable. This
+           can be overridden with --log-level=.
+
+SEE ALSO
+       The systemd Homepage[11], systemd-system.conf(5), locale.conf(5)
+#                                ^^^^^^^^^^^^^^^^^^^ entity.name.function
