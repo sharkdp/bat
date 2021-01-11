@@ -156,13 +156,6 @@ jobs:
         # * executable for `strip`?
         STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
         echo ::set-output name=STRIP::${STRIP}
-    - name: Create all needed build/work directories
-      shell: bash
-      run: |
-        mkdir -p '${{ steps.vars.outputs.STAGING }}'
-        mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}'
-        mkdir -p '${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/autocomplete'
-        mkdir -p '${{ steps.vars.outputs.STAGING }}/dpkg'
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -231,6 +224,9 @@ jobs:
       shell: bash
       run: |
         ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        mkdir -p "${ARCHIVE_DIR}"
+        mkdir -p "${ARCHIVE_DIR}/autocomplete"
+
         # Binary
         cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
 
@@ -260,6 +256,7 @@ jobs:
       run: |
         COPYRIGHT_YEARS="2018 - "$(date "+%Y")
         DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
+        mkdir -p "${DPKG_DIR}/dpkg"
 
         # Binary
         install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
