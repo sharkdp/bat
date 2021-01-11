@@ -119,12 +119,6 @@ jobs:
         # determine EXE suffix
         EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
         echo ::set-output name=EXE_suffix::${EXE_suffix}
-        # package name
-        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
-        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
-        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_BASENAME::${PKG_BASENAME}
-        echo ::set-output name=PKG_NAME::${PKG_NAME}
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
         echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # target-specific options
@@ -200,9 +194,15 @@ jobs:
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
     - name: Package
+      id: package
       shell: bash
       run: |
-        ARCHIVE_DIR='${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_BASENAME }}/'
+        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
+        PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
+        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
+        echo ::set-output name=PKG_NAME::${PKG_NAME}
+
+        ARCHIVE_DIR="${{ steps.vars.outputs.STAGING }}/${PKG_BASENAME}/"
         mkdir -p "${ARCHIVE_DIR}"
         mkdir -p "${ARCHIVE_DIR}/autocomplete"
 
@@ -225,8 +225,8 @@ jobs:
         # base compressed package
         pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
         case ${{ matrix.job.target }} in
-          *-pc-windows-*) 7z -y a '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* | tail -2 ;;
-          *) tar czf '${{ steps.vars.outputs.PKG_NAME }}' '${{ steps.vars.outputs.PKG_BASENAME }}'/* ;;
+          *-pc-windows-*) 7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2 ;;
+          *) tar czf "${PKG_NAME}" "${PKG_BASENAME}"/* ;;
         esac;
         popd >/dev/null
     - name: Debian package
@@ -336,8 +336,8 @@ jobs:
     - name: Upload package artifact
       uses: actions/upload-artifact@master
       with:
-        name: ${{ steps.vars.outputs.PKG_NAME }}
-        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+        name: ${{ steps.package.outputs.PKG_NAME }}
+        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.package.outputs.PKG_NAME }}
     - name: Upload Debian package artifact
       uses: actions/upload-artifact@master
       if: steps.debian-package.outputs.DPKG_NAME
@@ -349,7 +349,7 @@ jobs:
       if: steps.vars.outputs.IS_RELEASE
       with:
         files: |
-          ${{ steps.vars.outputs.STAGING }}/${{ steps.vars.outputs.PKG_NAME }}
+          ${{ steps.vars.outputs.STAGING }}/${{ steps.package.outputs.PKG_NAME }}
           ${{ steps.vars.outputs.STAGING }}/${{ steps.debian-package.outputs.DPKG_NAME }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
