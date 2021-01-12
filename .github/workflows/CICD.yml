@@ -116,9 +116,6 @@ jobs:
         # staging directory
         STAGING='_staging'
         echo ::set-output name=STAGING::${STAGING}
-        # determine EXE suffix
-        EXE_suffix="" ; case ${{ matrix.job.target }} in *-pc-windows-*) EXE_suffix=".exe" ;; esac;
-        echo ::set-output name=EXE_suffix::${EXE_suffix}
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
         echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # target-specific options
@@ -126,9 +123,6 @@ jobs:
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
-        # * executable for `strip`?
-        STRIP="strip" ; case ${{ matrix.job.target }} in arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;; aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;; *-pc-windows-msvc) STRIP="" ;; esac;
-        echo ::set-output name=STRIP::${STRIP}
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -151,6 +145,41 @@ jobs:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
+    - name: Strip release bin
+      id: strip
+      shell: bash
+      run: |
+        # Figure out suffix of binary
+        EXE_suffix=""
+        case ${{ matrix.job.target }} in
+          *-pc-windows-*) EXE_suffix=".exe" ;;
+        esac;
+
+        # Figure out what strip tool to use if any
+        STRIP="strip"
+        case ${{ matrix.job.target }} in
+          arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;;
+          aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
+          *-pc-windows-msvc) STRIP="" ;;
+        esac;
+
+        # Setup paths
+        BIN_DIR="_cicd-intermediates/stripped-release-bin/"
+        mkdir -p "${BIN_DIR}"
+        BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
+        BIN_PATH="${BIN_DIR}/${BIN_NAME}"
+
+        # Copy the release build binary to the result location
+        cp "target/${{ matrix.job.target }}/release/${BIN_NAME}" "${BIN_DIR}"
+
+        # Also strip if possible
+        if [ -n "${STRIP}" ]; then
+          "${STRIP}" "${BIN_PATH}"
+        fi
+
+        # Let subsequent steps know where to find the (stripped) bin
+        echo ::set-output name=BIN_PATH::${BIN_PATH}
+        echo ::set-output name=BIN_NAME::${BIN_NAME}
     - name: Test
       uses: actions-rs/cargo@v1
       with:
@@ -207,10 +236,7 @@ jobs:
         mkdir -p "${ARCHIVE_DIR}/autocomplete"
 
         # Binary
-        cp 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "$ARCHIVE_DIR"
-
-        # `strip` binary (if needed)
-        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "$ARCHIVE_DIR/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+        cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
 
         # Man page
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
@@ -256,8 +282,7 @@ jobs:
         echo ::set-output name=DPKG_NAME::${DPKG_NAME}
 
         # Binary
-        install -Dm755 'target/${{ matrix.job.target }}/release/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}' "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}"
-        if [ -n "${{ steps.vars.outputs.STRIP }}" ]; then "${{ steps.vars.outputs.STRIP }}" "${DPKG_DIR}/usr/bin/${{ env.PROJECT_NAME }}${{ steps.vars.outputs.EXE_suffix }}" ; fi
+        install -Dm755 "${{ steps.strip.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.strip.outputs.BIN_NAME }}"
 
         # Man page
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
