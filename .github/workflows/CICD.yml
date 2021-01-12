@@ -2,6 +2,7 @@ name: CICD
 
 env:
   MIN_SUPPORTED_RUST_VERSION: "1.42.0"
+  CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on: [push, pull_request]
 
@@ -113,9 +114,6 @@ jobs:
       id: vars
       shell: bash
       run: |
-        # staging directory
-        STAGING='_staging'
-        echo ::set-output name=STAGING::${STAGING}
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
         echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # target-specific options
@@ -164,7 +162,7 @@ jobs:
         esac;
 
         # Setup paths
-        BIN_DIR="_cicd-intermediates/stripped-release-bin/"
+        BIN_DIR="${{ env.CICD_INTERMEDIATES_DIR }}/stripped-release-bin/"
         mkdir -p "${BIN_DIR}"
         BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
         BIN_PATH="${BIN_DIR}/${BIN_NAME}"
@@ -231,7 +229,8 @@ jobs:
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
         echo ::set-output name=PKG_NAME::${PKG_NAME}
 
-        ARCHIVE_DIR="${{ steps.vars.outputs.STAGING }}/${PKG_BASENAME}/"
+        PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
+        ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
         mkdir -p "${ARCHIVE_DIR}"
         mkdir -p "${ARCHIVE_DIR}/autocomplete"
 
@@ -249,19 +248,23 @@ jobs:
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.zsh"
 
         # base compressed package
-        pushd '${{ steps.vars.outputs.STAGING }}/' >/dev/null
+        pushd "${PKG_STAGING}/" >/dev/null
         case ${{ matrix.job.target }} in
           *-pc-windows-*) 7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2 ;;
           *) tar czf "${PKG_NAME}" "${PKG_BASENAME}"/* ;;
         esac;
         popd >/dev/null
+
+        # Let subsequent steps know where to find the compressed package
+        echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
     - name: Debian package
       id: debian-package
       shell: bash
       if: startsWith(matrix.job.os, 'ubuntu')
       run: |
         COPYRIGHT_YEARS="2018 - "$(date "+%Y")
-        DPKG_DIR="${{ steps.vars.outputs.STAGING }}/dpkg"
+        DPKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/debian-package"
+        DPKG_DIR="${DPKG_STAGING}/dpkg"
         mkdir -p "${DPKG_DIR}"
 
         DPKG_BASENAME=${PROJECT_NAME}
@@ -356,26 +359,30 @@ jobs:
           A cat(1) clone with syntax highlighting and Git integration.
         EOF
 
+        DPKG_PATH="${DPKG_STAGING}/${DPKG_NAME}"
+        echo ::set-output name=DPKG_PATH::${DPKG_PATH}
+
         # build dpkg
-        fakeroot dpkg-deb --build "${DPKG_DIR}" "${{ steps.vars.outputs.STAGING }}/${DPKG_NAME}"
+        fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
+
     - name: Upload package artifact
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.package.outputs.PKG_NAME }}
-        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.package.outputs.PKG_NAME }}
+        path: ${{ steps.package.outputs.PKG_PATH }}
     - name: Upload Debian package artifact
       uses: actions/upload-artifact@master
       if: steps.debian-package.outputs.DPKG_NAME
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
-        path: ${{ steps.vars.outputs.STAGING }}/${{ steps.debian-package.outputs.DPKG_NAME }}
+        path: ${{ steps.debian-package.outputs.DPKG_PATH }}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.vars.outputs.IS_RELEASE
       with:
         files: |
-          ${{ steps.vars.outputs.STAGING }}/${{ steps.package.outputs.PKG_NAME }}
-          ${{ steps.vars.outputs.STAGING }}/${{ steps.debian-package.outputs.DPKG_NAME }}
+          ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_PATH }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
