@@ -946,9 +946,9 @@ fn file_with_invalid_utf8_filename() {
     use std::io::Write;
     use std::os::unix::ffi::OsStrExt;
 
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
-    let tmp_dir = TempDir::new("bat_test").expect("can create temporary directory");
+    let tmp_dir = TempDir::new().expect("can create temporary directory");
     let file_path = tmp_dir
         .path()
         .join(OsStr::from_bytes(b"test-invalid-utf8-\xC3(.rs"));
