@@ -42,10 +42,6 @@
    - `input_from_reader_with_name`
    - `vcs_modification_markers` (if the `git` feature is not enabled)
 
-## Packaging
-
-- `bat` is now available on snapstore with package name called `batcat`, see #1401 (@purveshpatel511)
-
 
 # v0.17.1
 

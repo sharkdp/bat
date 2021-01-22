@@ -297,11 +297,7 @@ zypper install bat
 
 ### Via snap package
 
-```
-sudo snap install batcat
-```
-
-[Get it from the Snap Store](https://snapcraft.io/batcat)
+There is currently no recommended snap package available. Be aware that existing ones might be [buggy](https://github.com/sharkdp/bat/issues/1519).
 
 
 ### On macOS (or Linux) via Homebrew
