@@ -297,8 +297,8 @@ zypper install bat
 
 ### Via snap package
 
-There is currently no recommended snap package available. Be aware that existing ones might be [buggy](https://github.com/sharkdp/bat/issues/1519).
-
+There is currently no recommended snap package available.
+Existing packages may be available, but are not officially supported and may contain [issues](https://github.com/sharkdp/bat/issues/1519).
 
 ### On macOS (or Linux) via Homebrew
 
