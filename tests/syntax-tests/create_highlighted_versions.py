@@ -12,7 +12,7 @@ BAT_OPTIONS = [
     "--no-config",
     "--style=plain",
     "--color=always",
-    "--theme='1337'",
+    "--theme=default",
     "--italic-text=always",
 ]
 
@@ -41,7 +41,9 @@ def create_highlighted_versions(output_basepath):
     root = os.path.dirname(os.path.abspath(__file__))
     sources = path.join(root, "source", "*")
 
-    for source in glob.glob(path.join(sources, "*")) + glob.glob(path.join(sources, ".*")):
+    for source in glob.glob(path.join(sources, "*")) + glob.glob(
+        path.join(sources, ".*")
+    ):
         try:
             env = os.environ.copy()
             env.pop("PAGER", None)
