@@ -230,7 +230,7 @@ fn run() -> Result<bool> {
     if app.matches.is_present("diagnostic") {
         use bugreport::{bugreport, collector::*, format::Markdown};
         let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
-            .unwrap_or("less".to_owned()); // FIXME: Avoid non-canonical path to "less".
+            .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
 
         bugreport!()
             .info(SoftwareVersion::default())
