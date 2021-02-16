@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use tempdir::TempDir;
+use tempfile::TempDir;
 
 use git2::build::CheckoutBuilder;
 use git2::Repository;
@@ -70,7 +70,7 @@ impl Default for BatTester {
 
 fn create_sample_directory() -> Result<TempDir, git2::Error> {
     // Create temp directory and initialize repository
-    let temp_dir = TempDir::new("bat-tests").expect("Temp directory");
+    let temp_dir = TempDir::new().expect("Temp directory");
     let repo = Repository::init(&temp_dir)?;
 
     // Copy over `sample.rs`

@@ -297,7 +297,7 @@ mod tests {
 
     use std::fs::File;
     use std::io::Write;
-    use tempdir::TempDir;
+    use tempfile::TempDir;
 
     use crate::input::Input;
 
@@ -312,8 +312,7 @@ mod tests {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
                 syntax_mapping: SyntaxMapping::builtin(),
-                temp_dir: TempDir::new("bat_syntax_detection_tests")
-                    .expect("creation of temporary directory"),
+                temp_dir: TempDir::new().expect("creation of temporary directory"),
             }
         }
 
