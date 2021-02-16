@@ -54,6 +54,11 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.conf", MappingTarget::MapToUnknown)
             .unwrap();
 
+        // Re-insert a mapping for resolv.conf, see #1510
+        mapping
+            .insert("resolv.conf", MappingTarget::MapTo("resolv"))
+            .unwrap();
+
         for glob in &[
             "/etc/nginx/**/*.conf",
             "/etc/nginx/sites-*/**/*",
