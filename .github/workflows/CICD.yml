@@ -142,7 +142,7 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
-        args: --release --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }}
+        args: --release --target=${{ matrix.job.target }}
     - name: Strip release bin
       id: strip
       shell: bash
@@ -183,19 +183,19 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}} ${{ matrix.job.cargo-options }}
+        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}}
     - name: bat test run
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
+        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
     - name: bat diagnostics output
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} ${{ matrix.job.cargo-options }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
+        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
     - name: Check features regex-onig
       uses: actions-rs/cargo@v1
       with:
