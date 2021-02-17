@@ -110,15 +110,6 @@ jobs:
         echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
-    - name: Initialize workflow variables
-      id: vars
-      shell: bash
-      run: |
-        # target-specific options
-        # # * test only library unit tests and binary for arm-type targets
-        unset CARGO_TEST_OPTIONS
-        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
-        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -176,12 +167,20 @@ jobs:
         # Let subsequent steps know where to find the (stripped) bin
         echo ::set-output name=BIN_PATH::${BIN_PATH}
         echo ::set-output name=BIN_NAME::${BIN_NAME}
+    - name: Calculate test options
+      id: test-options
+      shell: bash
+      run: |
+        # test only library unit tests and binary for arm-type targets
+        unset CARGO_TEST_OPTIONS
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
+        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
     - name: Test
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.vars.outputs.CARGO_TEST_OPTIONS}}
+        args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
     - name: bat test run
       uses: actions-rs/cargo@v1
       with:
