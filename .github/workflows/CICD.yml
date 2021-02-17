@@ -114,8 +114,6 @@ jobs:
       id: vars
       shell: bash
       run: |
-        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
-        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
         # target-specific options
         # # * test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
@@ -376,9 +374,15 @@ jobs:
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
         path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+    - name: Check is release
+      id: is-release
+      shell: bash
+      run: |
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
-      if: steps.vars.outputs.IS_RELEASE
+      if: steps.is-release.outputs.IS_RELEASE
       with:
         files: |
           ${{ steps.package.outputs.PKG_PATH }}
