@@ -373,7 +373,7 @@ jobs:
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
         path: ${{ steps.debian-package.outputs.DPKG_PATH }}
-    - name: Check is release
+    - name: Check for release
       id: is-release
       shell: bash
       run: |
