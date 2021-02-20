@@ -76,7 +76,7 @@ jobs:
       run: bat --list-themes
 
   build:
-    name: Build
+    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
