@@ -4,7 +4,13 @@ env:
   MIN_SUPPORTED_RUST_VERSION: "1.42.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   min_version:
