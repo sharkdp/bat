@@ -27,13 +27,13 @@ jobs:
         # clippy::match_bool is allowed by default from Rust 1.45.0, see
         # https://github.com/rust-lang/rust-clippy/commit/e1d13c34b0beaea9a5fbf13687672ef85e779d9f
         args: --all-targets --all-features -- --allow clippy::match_bool
-    - name: Test
+    - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
 
   test_with_new_syntaxes_and_themes:
-    name: Test with new syntaxes and themes
+    name: Run tests with updated syntaxes and themes
     runs-on: ubuntu-18.04
     steps:
     - name: Git checkout
@@ -94,8 +94,9 @@ jobs:
           - { os: windows-2019 , target: x86_64-pc-windows-gnu       }
           - { os: windows-2019 , target: x86_64-pc-windows-msvc      }
     steps:
-    - name: Git checkout
+    - name: Checkout source code
       uses: actions/checkout@v2
+
     - name: Install prerequisites
       shell: bash
       run: |
@@ -103,6 +104,7 @@ jobs:
           arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
+
     - name: Extract crate information
       shell: bash
       run: |
@@ -110,6 +112,7 @@ jobs:
         echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -117,7 +120,8 @@ jobs:
         target: ${{ matrix.job.target }}
         override: true
         profile: minimal # minimal component installation (ie, no documentation)
-    - name: Info
+
+    - name: Show version information (Rust, cargo, GCC)
       shell: bash
       run: |
         gcc --version || true
@@ -126,13 +130,15 @@ jobs:
         rustup default
         cargo -V
         rustc -V
+
     - name: Build
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
         args: --release --target=${{ matrix.job.target }}
-    - name: Strip release bin
+
+    - name: Strip debug information from executable
       id: strip
       shell: bash
       run: |
@@ -167,7 +173,8 @@ jobs:
         # Let subsequent steps know where to find the (stripped) bin
         echo ::set-output name=BIN_PATH::${BIN_PATH}
         echo ::set-output name=BIN_NAME::${BIN_NAME}
-    - name: Calculate test options
+
+    - name: Set testing options
       id: test-options
       shell: bash
       run: |
@@ -175,49 +182,57 @@ jobs:
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
         echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
-    - name: Test
+
+    - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
         args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
-    - name: bat test run
+
+    - name: Run bat
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
         args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
-    - name: bat diagnostics output
+
+    - name: Show diagnostics (bat --diagnostic)
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
         args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
-    - name: Check features regex-onig
+
+    - name: "Feature check: regex-onig"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
-    - name: Check features regex-onig,git
+
+    - name: "Feature check: regex-onig,git"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
-    - name: Check features regex-onig,paging
+
+    - name: "Feature check: regex-onig,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
-    - name: Check features regex-onig,git,paging
+
+    - name: "Feature check: regex-onig,git,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
         args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
-    - name: Package
+
+    - name: Create tarball
       id: package
       shell: bash
       run: |
@@ -254,7 +269,8 @@ jobs:
 
         # Let subsequent steps know where to find the compressed package
         echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
-    - name: Debian package
+
+    - name: Create Debian package
       id: debian-package
       shell: bash
       if: startsWith(matrix.job.os, 'ubuntu')
@@ -362,23 +378,26 @@ jobs:
         # build dpkg
         fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
 
-    - name: Upload package artifact
+    - name: "Artifact upload: tarball"
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.package.outputs.PKG_NAME }}
         path: ${{ steps.package.outputs.PKG_PATH }}
-    - name: Upload Debian package artifact
+
+    - name: "Artifact upload: Debian package"
       uses: actions/upload-artifact@master
       if: steps.debian-package.outputs.DPKG_NAME
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
         path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+
     - name: Check for release
       id: is-release
       shell: bash
       run: |
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
         echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.is-release.outputs.IS_RELEASE
