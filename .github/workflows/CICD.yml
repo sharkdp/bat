@@ -5,6 +5,7 @@ env:
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
