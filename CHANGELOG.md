@@ -16,6 +16,7 @@
 - If `PAGER` (but not `BAT_PAGER` or `--pager`) is `more` or `most`, silently use `less` instead to ensure support for colors, see #1063 (@Enselic)
 - If `PAGER` is `bat`, silently use `less` to prevent recursion. For `BAT_PAGER` or `--pager`, exit with error, see #1413 (@Enselic)
 - Manpage highlighting fix, see #1511 (@keith-hall)
+- `BAT_CONFIG_PATH` ignored by `bat` if non-existent, see #1550 (@sharkdp)
 
 ## Other
 

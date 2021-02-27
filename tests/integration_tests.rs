@@ -652,6 +652,13 @@ fn config_location_test() {
         .assert()
         .success()
         .stdout("bat.conf\n");
+
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "not-existing.conf")
+        .arg("--config-file")
+        .assert()
+        .success()
+        .stdout("not-existing.conf\n");
 }
 
 #[test]

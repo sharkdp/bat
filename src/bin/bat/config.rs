@@ -10,13 +10,12 @@ pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
         .ok()
         .map(PathBuf::from)
-        .filter(|config_path| config_path.is_file())
         .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
 }
 
 pub fn generate_config_file() -> bat::error::Result<()> {
     let config_file = config_file();
-    if config_file.exists() {
+    if config_file.is_file() {
         println!(
             "A config file already exists at: {}",
             config_file.to_string_lossy()
@@ -71,7 +70,14 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 #--map-syntax ".ignore:Git Ignore"
 "#;
 
-    fs::write(&config_file, default_config)?;
+    fs::write(&config_file, default_config).map_err(|e| {
+        format!(
+            "Failed to create config file at '{}': {}",
+            config_file.to_string_lossy(),
+            e
+        )
+    })?;
+
     println!(
         "Success! Config file written to {}",
         config_file.to_string_lossy()
