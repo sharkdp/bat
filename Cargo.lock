@@ -98,6 +98,7 @@ dependencies = [
  "git2",
  "globset",
  "lazy_static",
+ "nix",
  "path_abs",
  "predicates",
  "semver",
@@ -213,12 +214,12 @@ dependencies = [
 
 [[package]]
 name = "clircle"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e27a01e782190a8314e65cc94274d9bbcd52e05a9d15b437fe2b31259b854b0d"
+checksum = "e68bbd985a63de680ab4d1ad77b6306611a8f961b282c8b5ab513e6de934e396"
 dependencies = [
  "cfg-if",
- "nix",
+ "libc",
  "serde",
  "winapi",
 ]
