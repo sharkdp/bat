@@ -1,28 +1,37 @@
-use assert_cmd::assert::OutputAssertExt;
 use assert_cmd::cargo::CommandCargoExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
-use std::fs::File;
 use std::path::Path;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::str::from_utf8;
 use tempfile::tempdir;
 
 #[cfg(unix)]
-use std::time::Duration;
+mod unix {
+    pub use std::fs::File;
+    pub use std::io::{self, Write};
+    pub use std::os::unix::io::FromRawFd;
+    pub use std::path::PathBuf;
+    pub use std::process::Stdio;
+    pub use std::thread;
+    pub use std::time::Duration;
+
+    pub use assert_cmd::assert::OutputAssertExt;
+    pub use nix::pty::{openpty, OpenptyResult};
+    pub use wait_timeout::ChildExt;
+
+    pub const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
+    pub const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
+}
+#[cfg(unix)]
+use unix::*;
 
 mod utils;
 use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
-#[cfg(unix)]
-const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
-
-#[cfg(unix)]
-const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
-
-fn bat_raw_command() -> Command {
+fn bat_raw_command_with_config() -> Command {
     let mut cmd = Command::cargo_bin("bat").unwrap();
     cmd.current_dir("tests/examples");
     cmd.env_remove("PAGER");
@@ -34,14 +43,18 @@ fn bat_raw_command() -> Command {
     cmd
 }
 
+fn bat_raw_command() -> Command {
+    let mut cmd = bat_raw_command_with_config();
+    cmd.arg("--no-config");
+    cmd
+}
+
 fn bat_with_config() -> assert_cmd::Command {
-    assert_cmd::Command::from_std(bat_raw_command())
+    assert_cmd::Command::from_std(bat_raw_command_with_config())
 }
 
 fn bat() -> assert_cmd::Command {
-    let mut cmd = bat_with_config();
-    cmd.arg("--no-config");
-    cmd
+    assert_cmd::Command::from_std(bat_raw_command())
 }
 
 #[test]
@@ -210,40 +223,82 @@ fn line_range_multiple() {
         .stdout("line 1\nline 2\nline 4\n");
 }
 
-#[test]
-fn basic_io_cycle() {
-    let file_out = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
-    bat_raw_command()
-        .arg("test.txt")
-        .arg("cycle.txt")
-        .stdout(file_out)
-        .assert()
-        .failure();
+#[cfg(unix)]
+fn setup_temp_file(content: &[u8]) -> io::Result<(PathBuf, tempfile::TempDir)> {
+    let dir = tempfile::tempdir().expect("Couldn't create tempdir");
+    let path = dir.path().join("temp_file");
+    File::create(&path)?.write_all(content)?;
+    Ok((path, dir))
 }
 
+#[cfg(unix)]
 #[test]
-fn stdin_to_stdout_cycle() {
-    let file_out = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
-    let file_in = Stdio::from(File::open("tests/examples/cycle.txt").unwrap());
-    bat_raw_command()
-        .stdin(file_in)
+fn basic_io_cycle() -> io::Result<()> {
+    let (filename, dir) = setup_temp_file(b"I am not empty")?;
+
+    let file_out = Stdio::from(File::create(&filename)?);
+    let res = bat_raw_command()
+        .arg("test.txt")
+        .arg(&filename)
+        .stdout(file_out)
+        .assert();
+    drop(dir);
+    res.failure();
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn first_file_cyclic_is_ok() -> io::Result<()> {
+    let (filename, dir) = setup_temp_file(b"I am not empty")?;
+
+    let file_out = Stdio::from(File::create(&filename)?);
+    let res = bat_raw_command()
+        .arg(&filename)
+        .arg("test.txt")
+        .stdout(file_out)
+        .assert();
+    drop(dir);
+    res.success();
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn empty_file_cycle_is_ok() -> io::Result<()> {
+    let (filename, dir) = setup_temp_file(b"I am not empty")?;
+
+    let file_out = Stdio::from(File::create(&filename)?);
+    let res = bat_raw_command()
+        .arg("empty.txt")
+        .arg(&filename)
+        .stdout(file_out)
+        .assert();
+    drop(dir);
+    res.success();
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn stdin_to_stdout_cycle() -> io::Result<()> {
+    let (filename, dir) = setup_temp_file(b"I am not empty")?;
+    let file_in = Stdio::from(File::open(&filename)?);
+    let file_out = Stdio::from(File::create(&filename)?);
+    let res = bat_raw_command()
         .arg("test.txt")
         .arg("-")
+        .stdin(file_in)
         .stdout(file_out)
-        .assert()
-        .failure();
+        .assert();
+    drop(dir);
+    res.failure();
+    Ok(())
 }
 
 #[cfg(unix)]
 #[test]
 fn no_args_doesnt_break() {
-    use std::io::Write;
-    use std::os::unix::io::FromRawFd;
-    use std::thread;
-
-    use clircle::nix::pty::{openpty, OpenptyResult};
-    use wait_timeout::ChildExt;
-
     // To simulate bat getting started from the shell, a process is created with stdin and stdout
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
     // not exit, because in this case it is safe to read and write to the same fd, which is why
