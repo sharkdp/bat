@@ -1,0 +1,18 @@
+diff --git themes/sublime-monokai-extended/Monokai\ Extended.tmTheme themes/sublime-monokai-extended/Monokai\ Extended.tmTheme
+index 9c2aa3e..180cbbf 100644
+--- themes/sublime-monokai-extended/Monokai Extended.tmTheme	
++++ themes/sublime-monokai-extended/Monokai Extended.tmTheme	
+@@ -810,11 +810,11 @@
+       <key>name</key>
+       <string>JSON String</string>
+       <key>scope</key>
+-      <string>meta.structure.dictionary.json string.quoted.double.json</string>
++      <string>meta.mapping.key.json string.quoted.double.json</string>
+       <key>settings</key>
+       <dict>
+         <key>foreground</key>
+-        <string>#cfcfc2</string>
++        <string>#fd971f</string>
+       </dict>
+     </dict>
+     <dict>
