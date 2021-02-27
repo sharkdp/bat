@@ -94,6 +94,16 @@ bat f - g  # output 'f', then stdin, then 'g'.
 
 ### Integration with other tools
 
+#### `fzf`
+
+You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
+use `bat`s `--color=always` option to force colorized output. You can also use `--line-range`
+option to restrict the load times for long files:
+```bash
+fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+```
+For more information, see [`fzf`s `README`](https://github.com/junegunn/fzf#preview-window).
+
 #### `find` or `fd`
 
 You can use the `-exec` option of `find` to preview all search results with `bat`:
