@@ -1,5 +1,20 @@
 # unreleased
 
+## Features
+
+## Bugfixes
+
+## Other
+
+## Syntaxes
+
+## New themes
+
+## `bat` as a library
+
+
+
+# v0.18.0
 
 ## Features
 
