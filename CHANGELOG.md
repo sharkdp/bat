@@ -21,6 +21,7 @@
 
 - Performance improvements, see #1421 (@LovecraftianHorror)
 - Added a new `--diagnostic` option to collect information for bug reports, see #1459 (@sharkdp)
+- Modified default theme colors to differentiate between a JSON key and a string value, see #1400 (@keith-hall)
 - Upped min required Rust version to 1.42
 
 ## Syntaxes
