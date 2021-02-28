@@ -662,6 +662,30 @@ fn config_location_test() {
 }
 
 #[test]
+fn config_location_when_generating() {
+    let tmp_config_path = std::path::PathBuf::from("/tmp/should-be-created.conf");
+
+    // Make sure the file does not exist before the test is run
+    // If this fails, run the following before running tests:
+    // rm /tmp/should-be-created.conf
+    assert!(!tmp_config_path.exists());
+
+    // Create the file with bat
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("--generate-config-file")
+        .assert()
+        .success()
+        .stdout("Success! Config file written to /tmp/should-be-created.conf\n");
+
+    // Now we expect the file to exist. If it exists, we assume contents are correct
+    assert!(tmp_config_path.exists());
+
+    // Cleanup
+    std::fs::remove_file(tmp_config_path).unwrap();
+}
+
+#[test]
 fn config_read_arguments_from_file() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
