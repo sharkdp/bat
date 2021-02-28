@@ -6,6 +6,7 @@ use std::fs::File;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::str::from_utf8;
+use tempfile::tempdir;
 
 #[cfg(unix)]
 use std::time::Duration;
@@ -663,12 +664,8 @@ fn config_location_test() {
 
 #[test]
 fn config_location_when_generating() {
-    let tmp_config_path = std::path::PathBuf::from("/tmp/should-be-created.conf");
-
-    // Make sure the file does not exist before the test is run
-    // If this fails, run the following before running tests:
-    // rm /tmp/should-be-created.conf
-    assert!(!tmp_config_path.exists());
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("should-be-created.conf");
 
     // Create the file with bat
     bat_with_config()
@@ -676,13 +673,13 @@ fn config_location_when_generating() {
         .arg("--generate-config-file")
         .assert()
         .success()
-        .stdout("Success! Config file written to /tmp/should-be-created.conf\n");
+        .stdout(
+            predicate::str::is_match("Success! Config file written to .*should-be-created.conf\n")
+                .unwrap(),
+        );
 
     // Now we expect the file to exist. If it exists, we assume contents are correct
     assert!(tmp_config_path.exists());
-
-    // Cleanup
-    std::fs::remove_file(tmp_config_path).unwrap();
 }
 
 #[test]
@@ -977,9 +974,7 @@ fn file_with_invalid_utf8_filename() {
     use std::io::Write;
     use std::os::unix::ffi::OsStrExt;
 
-    use tempfile::TempDir;
-
-    let tmp_dir = TempDir::new().expect("can create temporary directory");
+    let tmp_dir = tempdir().expect("can create temporary directory");
     let file_path = tmp_dir
         .path()
         .join(OsStr::from_bytes(b"test-invalid-utf8-\xC3(.rs"));
