@@ -714,9 +714,9 @@ dependencies = [
 
 [[package]]
 name = "path_abs"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb6b8e6dede0bf94e9300e669f335ba92d5fc9fc8be7f4b1ca8a05206489388c"
+checksum = "05ef02f6342ac01d8a93b65f96db53fe68a92a15f41144f97fb00a9e669633c3"
 dependencies = [
  "std_prelude",
 ]
