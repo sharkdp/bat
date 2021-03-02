@@ -9,7 +9,6 @@ mod directories;
 mod input;
 
 use std::collections::{HashMap, HashSet};
-use std::ffi::OsStr;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
@@ -269,7 +268,7 @@ fn run() -> Result<bool> {
                 run_cache_subcommand(cache_matches)?;
                 Ok(true)
             } else {
-                let inputs = vec![Input::ordinary_file(OsStr::new("cache"))];
+                let inputs = vec![Input::ordinary_file("cache")];
                 let config = app.config(&inputs)?;
 
                 run_controller(inputs, &config)

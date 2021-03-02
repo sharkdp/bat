@@ -6,6 +6,8 @@
 
 ## Other
 
+- `Input::ordinary_file` and `Input::with_name` now accept `Path` rather than `OsStr` see #1571 (@matklad)
+
 ## Syntaxes
 
 ## New themes

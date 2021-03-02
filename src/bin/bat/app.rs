@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::env;
-use std::ffi::OsStr;
+use std::path::Path;
 use std::str::FromStr;
 
 use atty::{self, Stream};
@@ -248,16 +248,19 @@ impl App {
             }
             _ => {}
         }
-        let filenames: Option<Vec<&str>> = self
+        let filenames: Option<Vec<&Path>> = self
             .matches
-            .values_of("file-name")
-            .map(|values| values.collect());
+            .values_of_os("file-name")
+            .map(|values| values.map(Path::new).collect());
 
-        let mut filenames_or_none: Box<dyn Iterator<Item = _>> = match filenames {
-            Some(ref filenames) => Box::new(filenames.iter().map(|name| Some(OsStr::new(*name)))),
+        let mut filenames_or_none: Box<dyn Iterator<Item = Option<&Path>>> = match filenames {
+            Some(filenames) => Box::new(filenames.into_iter().map(Some)),
             None => Box::new(std::iter::repeat(None)),
         };
-        let files: Option<Vec<&OsStr>> = self.matches.values_of_os("FILE").map(|vs| vs.collect());
+        let files: Option<Vec<&Path>> = self
+            .matches
+            .values_of_os("FILE")
+            .map(|vs| vs.map(Path::new).collect());
 
         if files.is_none() {
             return Ok(vec![new_stdin_input(

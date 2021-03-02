@@ -327,7 +327,7 @@ mod tests {
                 writeln!(temp_file, "{}", first_line).unwrap();
             }
 
-            let input = Input::ordinary_file(file_path.as_os_str());
+            let input = Input::ordinary_file(&file_path);
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
@@ -341,7 +341,7 @@ mod tests {
         fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             let input = Input::from_reader(Box::new(BufReader::new(first_line.as_bytes())))
-                .with_name(Some(file_path.as_os_str()));
+                .with_name(Some(&file_path));
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
@@ -366,7 +366,7 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let input = Input::stdin().with_name(Some(OsStr::new(file_name)));
+            let input = Input::stdin().with_name(Some(file_name));
             let mut opened_input = input.open(content, None).unwrap();
 
             self.assets
@@ -521,7 +521,7 @@ mod tests {
             .expect("creation of directory succeeds");
         symlink(&file_path, &file_path_symlink).expect("creation of symbolic link succeeds");
 
-        let input = Input::ordinary_file(file_path_symlink.as_os_str());
+        let input = Input::ordinary_file(&file_path_symlink);
         let dummy_stdin: &[u8] = &[];
         let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
