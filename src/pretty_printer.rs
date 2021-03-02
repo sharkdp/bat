@@ -1,5 +1,5 @@
-use std::ffi::OsStr;
 use std::io::Read;
+use std::path::Path;
 
 use console::Term;
 use syntect::parsing::SyntaxReference;
@@ -71,7 +71,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Add a file which should be pretty-printed
-    pub fn input_file(&mut self, path: impl AsRef<OsStr>) -> &mut Self {
+    pub fn input_file(&mut self, path: impl AsRef<Path>) -> &mut Self {
         self.input(Input::from_file(path).kind("File"))
     }
 
@@ -79,7 +79,7 @@ impl<'a> PrettyPrinter<'a> {
     pub fn input_files<I, P>(&mut self, paths: I) -> &mut Self
     where
         I: IntoIterator<Item = P>,
-        P: AsRef<OsStr>,
+        P: AsRef<Path>,
     {
         self.inputs(paths.into_iter().map(Input::from_file))
     }
@@ -297,8 +297,8 @@ impl<'a> Input<'a> {
     }
 
     /// A new input from a file.
-    pub fn from_file(path: impl AsRef<OsStr>) -> Self {
-        input::Input::ordinary_file(path.as_ref()).into()
+    pub fn from_file(path: impl AsRef<Path>) -> Self {
+        input::Input::ordinary_file(path).into()
     }
 
     /// A new input from bytes.
@@ -313,8 +313,8 @@ impl<'a> Input<'a> {
 
     /// The filename of the input.
     /// This affects syntax detection and changes the default header title.
-    pub fn name(mut self, name: impl AsRef<OsStr>) -> Self {
-        self.input = self.input.with_name(Some(name.as_ref()));
+    pub fn name(mut self, name: impl AsRef<Path>) -> Self {
+        self.input = self.input.with_name(Some(name));
         self
     }
 

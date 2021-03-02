@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
-use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
+use std::path::{Path, PathBuf};
 
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
@@ -69,7 +69,7 @@ impl InputDescription {
 }
 
 pub(crate) enum InputKind<'a> {
-    OrdinaryFile(OsString),
+    OrdinaryFile(PathBuf),
     StdIn,
     CustomReader(Box<dyn Read + 'a>),
 }
@@ -86,7 +86,7 @@ impl<'a> InputKind<'a> {
 
 #[derive(Clone, Default)]
 pub(crate) struct InputMetadata {
-    pub(crate) user_provided_name: Option<OsString>,
+    pub(crate) user_provided_name: Option<PathBuf>,
 }
 
 pub struct Input<'a> {
@@ -96,7 +96,7 @@ pub struct Input<'a> {
 }
 
 pub(crate) enum OpenedInputKind {
-    OrdinaryFile(OsString),
+    OrdinaryFile(PathBuf),
     StdIn,
     CustomReader,
 }
@@ -109,8 +109,11 @@ pub(crate) struct OpenedInput<'a> {
 }
 
 impl<'a> Input<'a> {
-    pub fn ordinary_file(path: &OsStr) -> Self {
-        let kind = InputKind::OrdinaryFile(path.to_os_string());
+    pub fn ordinary_file(path: impl AsRef<Path>) -> Self {
+        Self::_ordinary_file(path.as_ref())
+    }
+    fn _ordinary_file(path: &Path) -> Self {
+        let kind = InputKind::OrdinaryFile(path.to_path_buf());
         Input {
             description: kind.description(),
             metadata: InputMetadata::default(),
@@ -140,7 +143,10 @@ impl<'a> Input<'a> {
         matches!(self.kind, InputKind::StdIn)
     }
 
-    pub fn with_name(mut self, provided_name: Option<&OsStr>) -> Self {
+    pub fn with_name(mut self, provided_name: Option<impl AsRef<Path>>) -> Self {
+        self._with_name(provided_name.as_ref().map(|it| it.as_ref()))
+    }
+    pub fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
         if let Some(name) = provided_name {
             self.description.name = name.to_string_lossy().to_string()
         }

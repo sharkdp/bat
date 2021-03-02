@@ -1,7 +1,6 @@
 #![cfg(feature = "git")]
 
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
@@ -17,7 +16,7 @@ pub enum LineChange {
 
 pub type LineChanges = HashMap<u32, LineChange>;
 
-pub fn get_git_diff(filename: &OsStr) -> Option<LineChanges> {
+pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
     let repo = Repository::discover(&filename).ok()?;
 
     let repo_path_absolute = fs::canonicalize(repo.workdir()?).ok()?;
