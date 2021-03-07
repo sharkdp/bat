@@ -31,9 +31,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        # clippy::match_bool is allowed by default from Rust 1.45.0, see
-        # https://github.com/rust-lang/rust-clippy/commit/e1d13c34b0beaea9a5fbf13687672ef85e779d9f
-        args: --all-targets --all-features -- --allow clippy::match_bool
+        args: --all-targets --all-features
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
