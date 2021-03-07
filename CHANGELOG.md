@@ -7,6 +7,7 @@
 ## Other
 
 - `Input::ordinary_file` and `Input::with_name` now accept `Path` rather than `OsStr` see #1571 (@matklad)
+- Increased min. required Rust version to 1.45
 
 ## Syntaxes
 
