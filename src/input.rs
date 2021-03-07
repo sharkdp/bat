@@ -112,6 +112,7 @@ impl<'a> Input<'a> {
     pub fn ordinary_file(path: impl AsRef<Path>) -> Self {
         Self::_ordinary_file(path.as_ref())
     }
+
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
         Input {
@@ -143,10 +144,11 @@ impl<'a> Input<'a> {
         matches!(self.kind, InputKind::StdIn)
     }
 
-    pub fn with_name(mut self, provided_name: Option<impl AsRef<Path>>) -> Self {
+    pub fn with_name(self, provided_name: Option<impl AsRef<Path>>) -> Self {
         self._with_name(provided_name.as_ref().map(|it| it.as_ref()))
     }
-    pub fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
+
+    fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
         if let Some(name) = provided_name {
             self.description.name = name.to_string_lossy().to_string()
         }
