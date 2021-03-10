@@ -553,7 +553,7 @@ cargo install --locked --force
 비슷한 프로그램들을 찾고 있다면, 많은 대안들이 있습니다. 비교는 [이 문서]((doc/alternatives.md))를 참조해주세요. 
 
 ## 라이센스
-Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
+Copyright (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat).
 
 `bat`는 MIT 라이센스 및 Apache 라이센스 2.0의 조건에 따라 배포됩니다.  
 

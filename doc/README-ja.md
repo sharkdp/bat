@@ -630,7 +630,7 @@ cargo install --locked --force
 比較については [このドキュメント](alternatives.md) を参照してください。
 
 ## ライセンス
-Copyright (c) 2018-2020 [bat-developers](https://github.com/sharkdp/bat).
+Copyright (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat).
 
 `bat` は MIT License 及び Apache License 2.0 の両方の条件の下で配布されています。
 
