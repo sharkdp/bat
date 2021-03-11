@@ -216,3 +216,6 @@
 [submodule "assets/syntaxes/02_Extra/gnuplot"]
 	path = assets/syntaxes/02_Extra/gnuplot
 	url = https://github.com/hesstobi/sublime_gnuplot
+[submodule "assets/syntaxes/02_Extra/SystemVerilog"]
+	path = assets/syntaxes/02_Extra/SystemVerilog
+	url = git@github.com:TheClams/SystemVerilog.git
