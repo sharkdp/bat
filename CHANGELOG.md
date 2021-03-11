@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Add SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
 
 ## Bugfixes
 

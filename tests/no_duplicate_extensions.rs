@@ -17,6 +17,9 @@ fn no_duplicate_extensions() {
         // The '.fs' extension appears in F# and GLSL.
         // We default to F#.
         "fs",
+        // SystemVerilog and Verilog both use .v files.
+        // We default to Verilog.
+        "v",
     ];
 
     let assets = HighlightingAssets::from_binary();
