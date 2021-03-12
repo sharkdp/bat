@@ -9,6 +9,7 @@ use lazy_static::lazy_static;
 pub struct BatProjectDirs {
     cache_dir: PathBuf,
     config_dir: PathBuf,
+    system_config_dir: Option<PathBuf>,
 }
 
 impl BatProjectDirs {
@@ -26,9 +27,16 @@ impl BatProjectDirs {
 
         let config_dir = config_dir_op.map(|d| d.join("bat"))?;
 
+        #[cfg(target_family = "unix")]
+        let system_config_dir = Some(PathBuf::from("/etc/bat"));
+
+        #[cfg(target_family = "windows")]
+        let system_config_dir = None;
+
         Some(BatProjectDirs {
             cache_dir,
             config_dir,
+            system_config_dir,
         })
     }
 
@@ -57,6 +65,10 @@ impl BatProjectDirs {
 
     pub fn config_dir(&self) -> &Path {
         &self.config_dir
+    }
+
+    pub fn system_config_dir(&self) -> Option<&PathBuf> {
+        self.system_config_dir.as_ref()
     }
 }
 

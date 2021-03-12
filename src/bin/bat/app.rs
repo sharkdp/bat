@@ -7,7 +7,7 @@ use atty::{self, Stream};
 
 use crate::{
     clap_app,
-    config::{get_args_from_config_file, get_args_from_env_var},
+    config::{get_args_from_config_files, get_args_from_env_var},
 };
 use clap::ArgMatches;
 
@@ -61,7 +61,7 @@ impl App {
 
             // Read arguments from bats config file
             let mut args = get_args_from_env_var()
-                .unwrap_or_else(get_args_from_config_file)
+                .unwrap_or_else(get_args_from_config_files)
                 .chain_err(|| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first

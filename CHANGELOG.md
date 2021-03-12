@@ -2,6 +2,8 @@
 
 ## Features
 
+- Support a system wide configuration file on unix platforms `/etc/bat/config` (@akinnane)
+
 ## Bugfixes
 
 ## Other

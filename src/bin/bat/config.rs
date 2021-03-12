@@ -13,6 +13,12 @@ pub fn config_file() -> PathBuf {
         .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
 }
 
+pub fn system_config_file() -> Option<PathBuf> {
+    PROJECT_DIRS
+        .system_config_dir()
+        .map(|path| path.join("config"))
+}
+
 pub fn generate_config_file() -> bat::error::Result<()> {
     let config_file = config_file();
     if config_file.is_file() {
@@ -86,12 +92,16 @@ pub fn generate_config_file() -> bat::error::Result<()> {
     Ok(())
 }
 
-pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    Ok(fs::read_to_string(config_file())
-        .ok()
-        .map(|content| get_args_from_str(&content))
-        .transpose()?
-        .unwrap_or_else(Vec::new))
+pub fn get_args_from_config_files() -> Result<Vec<OsString>, shell_words::ParseError> {
+    let system_config = system_config_file().and_then(|path| fs::read_to_string(path).ok());
+    let user_config = fs::read_to_string(config_file()).ok();
+
+    Ok(system_config
+        .iter()
+        .chain(user_config.iter())
+        .filter_map(|content| get_args_from_str(&content).ok())
+        .flatten()
+        .collect())
 }
 
 pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
