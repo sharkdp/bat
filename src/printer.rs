@@ -431,33 +431,49 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in regions.iter() {
-                let text = &*self.preprocess(region, &mut cursor_total);
-                let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
-                write!(
-                    handle,
-                    "{}",
-                    as_terminal_escaped(
-                        style,
-                        text_trimmed,
-                        true_color,
-                        colored_output,
-                        italics,
-                        background_color
-                    )
-                )?;
+                let ansi_iterator = AnsiCodeIterator::new(region);
+                for chunk in ansi_iterator {
+                    match chunk {
+                        // ANSI escape passthrough.
+                        (ansi, true) => {
+                            self.ansi_style.update(ansi);
+                            write!(handle, "{}", ansi)?;
+                        }
 
-                if text.len() != text_trimmed.len() {
-                    if let Some(background_color) = background_color {
-                        let mut ansi_style = Style::default();
-                        ansi_style.background = to_ansi_color(background_color, true_color);
-                        let width = if cursor_total <= cursor_max {
-                            cursor_max - cursor_total + 1
-                        } else {
-                            0
-                        };
-                        write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                        // Regular text.
+                        (text, false) => {
+                            let text = &*self.preprocess(text, &mut cursor_total);
+                            let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+
+                            write!(
+                                handle,
+                                "{}",
+                                as_terminal_escaped(
+                                    style,
+                                    &format!("{}{}", self.ansi_style, text_trimmed),
+                                    true_color,
+                                    colored_output,
+                                    italics,
+                                    background_color
+                                )
+                            )?;
+
+                            if text.len() != text_trimmed.len() {
+                                if let Some(background_color) = background_color {
+                                    let mut ansi_style = Style::default();
+                                    ansi_style.background =
+                                        to_ansi_color(background_color, true_color);
+                                    let width = if cursor_total <= cursor_max {
+                                        cursor_max - cursor_total + 1
+                                    } else {
+                                        0
+                                    };
+                                    write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                                }
+                                write!(handle, "{}", &text[text_trimmed.len()..])?;
+                            }
+                        }
                     }
-                    write!(handle, "{}", &text[text_trimmed.len()..])?;
                 }
             }
 
