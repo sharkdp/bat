@@ -219,3 +219,6 @@
 [submodule "assets/syntaxes/02_Extra/SystemVerilog"]
 	path = assets/syntaxes/02_Extra/SystemVerilog
 	url = git@github.com:TheClams/SystemVerilog.git
+[submodule "assets/themes/visual-studio-dark-plus"]
+	path = assets/themes/visual-studio-dark-plus
+	url = https://github.com/vidann1/visual-studio-dark-plus.git
