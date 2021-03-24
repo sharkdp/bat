@@ -116,6 +116,7 @@ impl<'a> InputKind<'a> {
 #[derive(Clone, Default)]
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
+    pub(crate) original_name: Option<PathBuf>,
 }
 
 pub struct Input<'a> {
@@ -179,6 +180,17 @@ impl<'a> OpenedInput<'a> {
     pub fn close(mut self) -> std::result::Result<(), Vec<Error>> {
         self.close_handles()
     }
+
+    pub(crate) fn original_name(&self) -> Option<&Path> {
+        if let Some(original_name) = &self.metadata.original_name {
+            Some(original_name.as_path())
+        } else {
+            match &self.kind {
+                OpenedInputKind::OrdinaryFile(path) => Some(path),
+                _ => None,
+            }
+        }
+    }
 }
 
 impl<'a> Input<'a> {
@@ -235,12 +247,14 @@ impl<'a> Input<'a> {
     pub(crate) fn preprocessed_from(mut self, input: &Input<'a>) -> Self {
         self.description.clone_from(&input.description);
         self.description.preprocessed = true;
-        self.metadata.user_provided_name = input
+
+        self.metadata.user_provided_name = input.metadata.user_provided_name.clone();
+        self.metadata.original_name = input
             .metadata
-            .user_provided_name
+            .original_name
             .as_ref()
             .cloned()
-            .or(input.path().map(ToOwned::to_owned));
+            .or_else(|| input.path().map(ToOwned::to_owned));
 
         self
     }

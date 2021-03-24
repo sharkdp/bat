@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
@@ -13,7 +13,7 @@ use path_abs::PathAbs;
 use crate::assets_metadata::AssetsMetadata;
 use crate::bat_warning;
 use crate::error::*;
-use crate::input::{InputReader, OpenedInput, OpenedInputKind};
+use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
@@ -225,19 +225,15 @@ impl HighlightingAssets {
             // Get the path of the file:
             // If this was set by the metadata, that will take priority.
             // If it wasn't, it will use the real file path (if available).
-            let path_str =
-                input
-                    .metadata
-                    .user_provided_name
-                    .as_ref()
-                    .or_else(|| match input.kind {
-                        OpenedInputKind::OrdinaryFile(ref path) => Some(path),
-                        _ => None,
-                    });
+            let path_str: Option<PathBuf> = input
+                .metadata
+                .user_provided_name
+                .as_ref()
+                .cloned()
+                .or_else(|| input.original_name().map(Into::<PathBuf>::into));
 
-            if let Some(path_str) = path_str {
+            if let Some(ref path) = path_str {
                 // If a path was provided, we try and detect the syntax based on extension mappings.
-                let path = Path::new(path_str);
                 let absolute_path = PathAbs::new(path)
                     .ok()
                     .map(|p| p.as_path().to_path_buf())

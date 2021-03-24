@@ -130,27 +130,26 @@ impl<'b> Controller<'b> {
                     let line_changes = if self.config.visible_lines.diff_mode()
                         || (!self.config.loop_through && self.config.style_components.changes())
                     {
-                        match opened_input.kind {
-                            crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
-                                let diff = get_git_diff(path);
+                        let path = opened_input.original_name();
+                        if let Some(path) = path {
+                            let diff = get_git_diff(path);
 
-                                // Skip files without Git modifications
-                                if self.config.visible_lines.diff_mode()
-                                    && diff
-                                        .as_ref()
-                                        .map(|changes| changes.is_empty())
-                                        .unwrap_or(false)
-                                {
-                                    continue;
-                                }
-
-                                diff
-                            }
-                            _ if self.config.visible_lines.diff_mode() => {
-                                // Skip non-file inputs in diff mode
+                            // Skip files without Git modifications
+                            if self.config.visible_lines.diff_mode()
+                                && diff
+                                    .as_ref()
+                                    .map(|changes| changes.is_empty())
+                                    .unwrap_or(false)
+                            {
                                 continue;
                             }
-                            _ => None,
+
+                            diff
+                        } else if self.config.visible_lines.diff_mode() {
+                            // Skip non-file inputs in diff mode
+                            continue;
+                        } else {
+                            None
                         }
                     } else {
                         None
