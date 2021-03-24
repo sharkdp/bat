@@ -189,6 +189,16 @@ Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145)
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
 
 
+#### `lesspipe.sh`
+
+Starting from version `0.19.0`, `bat` has opt-in support for file preprocessing using the `LESSOPEN` and `LESSCLOSE` environment variables.
+This can be used with [lesspipe.sh](https://github.com/wofr06/lesspipe) to enable viewing of compressed files, PDFs, and much more.
+
+To enable preprocessing, you need to either pass the `--preprocessor=lessopen` argument through the command line, or add it to bat's [configuration file](https://github.com/sharkdp/bat#configuration-file).
+
+For more information on how to use `LESSOPEN` and `LESSCLOSE`, please check the [Input Preprocessor section of `man less(1)`](https://linux.die.net/man/1/less#~#Input%20Preprocessor#:~:text=You%20may%20define%20an%20%22input%20preprocessor%22%20for%20less.).
+
+
 ## Installation
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg)](https://repology.org/project/bat-cat/versions)
