@@ -27,6 +27,9 @@ use clap::crate_version;
 use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
+#[cfg(feature = "preprocessor")]
+use bat::preprocessor::Preprocessor;
+
 use bat::{
     assets::HighlightingAssets,
     config::Config,
@@ -215,9 +218,27 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     Ok(())
 }
 
-fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
+#[cfg_attr(not(feature = "preprocessor"), allow(unused_variables))]
+fn run_controller<'a>(inputs: Vec<Input<'a>>, config: &'a Config, app: &App) -> Result<bool> {
     let assets = assets_from_cache_or_binary()?;
     let controller = Controller::new(&config, &assets);
+
+    #[cfg(feature = "preprocessor")]
+    let mut preprocessor: Option<Preprocessor> = None;
+
+    #[cfg(feature = "preprocessor-lessopen")]
+    if app.matches.value_of("preprocessor") == Some("lessopen") {
+        preprocessor = std::env::var("LESSOPEN").ok().and_then(|lessopen| {
+            bat::preprocessor::lessopen(lessopen, std::env::var("LESSCLOSE").ok())
+        });
+    }
+
+    #[cfg(feature = "preprocessor")]
+    let controller = match preprocessor {
+        Some(preprocessor) => controller.with_preprocessor(preprocessor),
+        None => controller,
+    };
+
     controller.run(inputs)
 }
 
@@ -271,7 +292,7 @@ fn run() -> Result<bool> {
                 let inputs = vec![Input::ordinary_file("cache")];
                 let config = app.config(&inputs)?;
 
-                run_controller(inputs, &config)
+                run_controller(inputs, &config, &app)
             }
         }
         _ => {
@@ -286,7 +307,7 @@ fn run() -> Result<bool> {
                     paging_mode: PagingMode::QuitIfOneScreen,
                     ..Default::default()
                 };
-                run_controller(inputs, &plain_config)
+                run_controller(inputs, &plain_config, &app)
             } else if app.matches.is_present("list-themes") {
                 list_themes(&config)?;
                 Ok(true)
@@ -303,7 +324,7 @@ fn run() -> Result<bool> {
                 writeln!(io::stdout(), "{}", cache_dir())?;
                 Ok(true)
             } else {
-                run_controller(inputs, &config)
+                run_controller(inputs, &config, &app)
             }
         }
     }

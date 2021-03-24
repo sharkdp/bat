@@ -292,15 +292,24 @@ impl<'a> Printer for InteractivePrinter<'a> {
             write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
-        let mode = match self.content_type {
+        let description = &input.description;
+        let mode = String::from(match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
             Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
             Some(ContentType::UTF_16BE) => "   <UTF-16BE>",
             None => "   <EMPTY>",
             _ => "",
-        };
+        });
 
-        let description = &input.description;
+        #[cfg(feature = "preprocessor")]
+        let mode = if description.preprocessed() {
+            match mode.as_str() {
+                "" => "    <PP>".to_owned(),
+                mode => format!("{} <PP>", mode),
+            }
+        } else {
+            mode
+        };
 
         writeln!(
             handle,

@@ -1,7 +1,8 @@
 use std::convert::TryFrom;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read};
+use std::io::{self, stdin, BufRead, BufReader, Read, Stdin};
 use std::path::{Path, PathBuf};
+use std::pin::Pin;
 
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
@@ -24,6 +25,9 @@ pub struct InputDescription {
     /// A summary description of the input.
     /// Defaults to "{kind} '{name}'"
     summary: Option<String>,
+
+    #[cfg(feature = "preprocessor")]
+    preprocessed: bool,
 }
 
 impl InputDescription {
@@ -34,6 +38,9 @@ impl InputDescription {
             title: None,
             kind: None,
             summary: None,
+
+            #[cfg(feature = "preprocessor")]
+            preprocessed: false,
         }
     }
 
@@ -63,14 +70,36 @@ impl InputDescription {
     pub fn summary(&self) -> String {
         self.summary.clone().unwrap_or_else(|| match &self.kind {
             None => self.name.clone(),
-            Some(kind) => format!("{} '{}'", kind.to_lowercase(), self.name),
+            Some(kind) => {
+                #[cfg(feature = "preprocessor")]
+                if self.preprocessed() {
+                    return format!("{} '{}' <PP>", kind.to_lowercase(), self.name);
+                }
+
+                format!("{} '{}'", kind.to_lowercase(), self.name)
+            }
         })
     }
+
+    #[cfg(feature = "preprocessor")]
+    pub(crate) fn preprocessed(&self) -> bool {
+        self.preprocessed
+    }
+
+    #[cfg(feature = "preprocessor")]
+    pub fn set_preprocessed(&mut self, preprocessed: bool) {
+        self.preprocessed = preprocessed;
+    }
+}
+
+#[cfg(feature = "preprocessor")]
+pub(crate) trait InputPreprocessor<'a> {
+    fn open(&self, input: Input<'a>, handle: &InputHandle) -> Result<OpenedInput<'a>>;
 }
 
 pub(crate) enum InputKind<'a> {
     OrdinaryFile(PathBuf),
-    StdIn,
+    StdIn(Option<Box<dyn BufRead + 'a>>),
     CustomReader(Box<dyn Read + 'a>),
 }
 
@@ -78,7 +107,7 @@ impl<'a> InputKind<'a> {
     pub fn description(&self) -> InputDescription {
         match self {
             InputKind::OrdinaryFile(ref path) => InputDescription::new(path.to_string_lossy()),
-            InputKind::StdIn => InputDescription::new("STDIN"),
+            InputKind::StdIn(_) => InputDescription::new("STDIN"),
             InputKind::CustomReader(_) => InputDescription::new("READER"),
         }
     }
@@ -95,6 +124,14 @@ pub struct Input<'a> {
     pub(crate) description: InputDescription,
 }
 
+pub(crate) struct InputHandle {
+    pub(crate) stdout_identifier: Option<Identifier>,
+}
+
+pub(crate) trait OpenedInputHandle {
+    fn close(&mut self) -> Result<()>;
+}
+
 pub(crate) enum OpenedInputKind {
     OrdinaryFile(PathBuf),
     StdIn,
@@ -106,6 +143,42 @@ pub(crate) struct OpenedInput<'a> {
     pub(crate) metadata: InputMetadata,
     pub(crate) reader: InputReader<'a>,
     pub(crate) description: InputDescription,
+    pub(crate) warnings: Vec<Error>,
+    pub(crate) handles: Vec<Box<dyn OpenedInputHandle + 'a>>,
+}
+
+impl<'a> Drop for OpenedInput<'a> {
+    fn drop(&mut self) {
+        match self.close_handles() {
+            Ok(()) => (),
+            Err(errors) => {
+                panic!("Error while closing input handle: {}", &errors[0])
+            }
+        }
+    }
+}
+
+impl<'a> OpenedInput<'a> {
+    fn close_handles(&mut self) -> std::result::Result<(), Vec<Error>> {
+        let mut handles: Vec<Box<dyn OpenedInputHandle>> = Vec::new();
+        std::mem::swap(&mut handles, &mut self.handles);
+
+        let errors: Vec<Error> = handles
+            .into_iter()
+            .map(|mut handle| handle.close())
+            .filter_map(Result::err)
+            .collect();
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+
+    pub fn close(mut self) -> std::result::Result<(), Vec<Error>> {
+        self.close_handles()
+    }
 }
 
 impl<'a> Input<'a> {
@@ -123,7 +196,17 @@ impl<'a> Input<'a> {
     }
 
     pub fn stdin() -> Self {
-        let kind = InputKind::StdIn;
+        let kind = InputKind::StdIn(None);
+        Input {
+            description: kind.description(),
+            metadata: InputMetadata::default(),
+            kind,
+        }
+    }
+
+    #[cfg(test)]
+    pub(crate) fn stdin_with_contents(contents: impl BufRead + 'a) -> Self {
+        let kind = InputKind::StdIn(Some(Box::new(contents)));
         Input {
             description: kind.description(),
             metadata: InputMetadata::default(),
@@ -141,11 +224,25 @@ impl<'a> Input<'a> {
     }
 
     pub fn is_stdin(&self) -> bool {
-        matches!(self.kind, InputKind::StdIn)
+        matches!(self.kind, InputKind::StdIn(_))
     }
 
     pub fn with_name(self, provided_name: Option<impl AsRef<Path>>) -> Self {
         self._with_name(provided_name.as_ref().map(|it| it.as_ref()))
+    }
+
+    #[cfg(feature = "preprocessor")]
+    pub(crate) fn preprocessed_from(mut self, input: &Input<'a>) -> Self {
+        self.description.clone_from(&input.description);
+        self.description.preprocessed = true;
+        self.metadata.user_provided_name = input
+            .metadata
+            .user_provided_name
+            .as_ref()
+            .cloned()
+            .or(input.path().map(ToOwned::to_owned));
+
+        self
     }
 
     fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
@@ -165,15 +262,18 @@ impl<'a> Input<'a> {
         &mut self.description
     }
 
-    pub(crate) fn open<R: BufRead + 'a>(
-        self,
-        stdin: R,
-        stdout_identifier: Option<&Identifier>,
-    ) -> Result<OpenedInput<'a>> {
+    pub fn path(&self) -> Option<&Path> {
+        match &self.kind {
+            InputKind::OrdinaryFile(path) => Some(path),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn open(self, handle: &InputHandle) -> Result<OpenedInput<'a>> {
         let description = self.description().clone();
         match self.kind {
-            InputKind::StdIn => {
-                if let Some(stdout) = stdout_identifier {
+            InputKind::StdIn(stdin_contents) => {
+                if let Some(stdout) = &handle.stdout_identifier {
                     let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
                         .map_err(|e| format!("Stdin: Error identifying file: {}", e))?;
                     if stdout.surely_conflicts_with(&input_identifier) {
@@ -181,18 +281,34 @@ impl<'a> Input<'a> {
                     }
                 }
 
-                Ok(OpenedInput {
-                    kind: OpenedInputKind::StdIn,
-                    description,
-                    metadata: self.metadata,
-                    reader: InputReader::new(stdin),
-                })
+                if let Some(stdin_contents) = stdin_contents {
+                    Ok(OpenedInput {
+                        kind: OpenedInputKind::StdIn,
+                        description,
+                        metadata: self.metadata,
+                        warnings: Vec::new(),
+                        reader: InputReader::new(stdin_contents),
+                        handles: Vec::new(),
+                    })
+                } else {
+                    let handle = Box::new(OpenedStdinInputHandle::new());
+                    Ok(OpenedInput {
+                        kind: OpenedInputKind::StdIn,
+                        description,
+                        metadata: self.metadata,
+                        warnings: Vec::new(),
+                        reader: unsafe { handle.reader() },
+                        handles: vec![handle],
+                    })
+                }
             }
 
             InputKind::OrdinaryFile(path) => Ok(OpenedInput {
                 kind: OpenedInputKind::OrdinaryFile(path.clone()),
                 description,
                 metadata: self.metadata,
+                warnings: Vec::new(),
+                handles: Vec::new(),
                 reader: {
                     let mut file = File::open(&path)
                         .map_err(|e| format!("'{}': {}", path.to_string_lossy(), e))?;
@@ -200,7 +316,7 @@ impl<'a> Input<'a> {
                         return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
                     }
 
-                    if let Some(stdout) = stdout_identifier {
+                    if let Some(stdout) = &handle.stdout_identifier {
                         let input_identifier = Identifier::try_from(file).map_err(|e| {
                             format!("{}: Error identifying file: {}", path.to_string_lossy(), e)
                         })?;
@@ -217,11 +333,14 @@ impl<'a> Input<'a> {
                     InputReader::new(BufReader::new(file))
                 },
             }),
+
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
                 reader: InputReader::new(BufReader::new(reader)),
+                warnings: Vec::new(),
+                handles: Vec::new(),
             }),
         }
     }
@@ -268,6 +387,38 @@ impl<'a> InputReader<'a> {
             buf.append(&mut self.first_line);
             Ok(true)
         }
+    }
+}
+
+/// A OpenedInputHandle that stores a locked Stdin reader.
+///
+/// SAFETY NOTES:
+/// - The reader **MUST NOT** be accessed after the handle is closed.
+/// - If the handle is never closed, memory will be leaked.
+///
+/// IMPLEMENTATION NOTES:
+/// - The unsafeness is fine as long as the handle is added to the `OpenedInput.handles` vector.
+///   That will ensure that this lives long enough to where stdin() no longer needs to be read from.
+///
+struct OpenedStdinInputHandle {
+    stdin: Pin<Box<Stdin>>,
+}
+
+impl OpenedStdinInputHandle {
+    fn new() -> Self {
+        OpenedStdinInputHandle {
+            stdin: Box::pin(stdin()),
+        }
+    }
+
+    unsafe fn reader<'a>(&'a self) -> InputReader<'static> {
+        InputReader::new(std::mem::transmute::<&'a Stdin, &'static Stdin>(&self.stdin).lock())
+    }
+}
+
+impl OpenedInputHandle for OpenedStdinInputHandle {
+    fn close(&mut self) -> Result<()> {
+        Ok(()) // This is fine. The `stdin` field will be dropped when this handle gets dropped.
     }
 }
 

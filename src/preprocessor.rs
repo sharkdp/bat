@@ -1,7 +1,10 @@
 use console::AnsiCodeIterator;
 
+#[cfg(feature = "preprocessor")]
+pub struct Preprocessor<'a>(pub(crate) Box<dyn crate::input::InputPreprocessor<'a> + 'a>);
+
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
+pub(crate) fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
 
     for chunk in AnsiCodeIterator::new(line) {
@@ -47,7 +50,7 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
 }
 
-pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
+pub(crate) fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
     let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
@@ -100,6 +103,267 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
     }
 
     output
+}
+
+#[cfg(feature = "preprocessor-lessopen")]
+pub(crate) mod __feature_preprocessor_lessopen {
+    use crate::error::{Error, ErrorKind, Result};
+    use crate::input::{Input, InputHandle, InputPreprocessor, OpenedInput, OpenedInputHandle};
+    use os_str_bytes::OsStrBytes;
+    use shell_words::split;
+    use std::ffi::OsString;
+    use std::io::{BufRead, BufReader};
+    use std::path::{Path, PathBuf};
+    use std::process::{Child, Command, Stdio};
+
+    /// A preprocessor that follows the LESSOPEN and LESSCLOSE specification.
+    pub struct LessPreprocessor {
+        lessopen_template: Vec<String>,
+        lessclose_template: Option<Vec<String>>,
+        kind: LessPreprocessorKind,
+    }
+
+    enum LessPreprocessorKind {
+        Piped,  // Data is read directly from stdout.
+        Staged, // Data is read from a temporary file.
+    }
+
+    struct LessPreprocessorHandle {
+        cleanup: Option<Vec<OsString>>,
+        process: Option<Child>,
+    }
+
+    impl OpenedInputHandle for LessPreprocessorHandle {
+        fn close(&mut self) -> Result<()> {
+            let results = vec![self.handle_process(), self.handle_cleanup()];
+
+            match results.into_iter().find(|p| p.is_err()) {
+                Some(Err(err)) => Err(Error::from_kind(ErrorKind::Preprocessor(
+                    "lessclose".to_owned(),
+                    Box::new(err),
+                ))),
+                _ => Ok(()),
+            }
+        }
+    }
+
+    impl LessPreprocessorHandle {
+        fn handle_process(&mut self) -> Result<()> {
+            if let Some(child) = &mut self.process {
+                // Kill the child process.
+                if let Err(error) = child.kill() {
+                    if error.kind() != std::io::ErrorKind::InvalidInput {
+                        let _ = child.wait();
+                        return Err(error.into());
+                    }
+                }
+
+                // Wait for the child process.
+                child.wait()?;
+            }
+
+            Ok(())
+        }
+
+        fn handle_cleanup(&mut self) -> Result<()> {
+            if let Some(args) = &self.cleanup {
+                // Run the LESSCLOSE cleanup command.
+                Command::new(&args[0])
+                    .args(args.iter().skip(1))
+                    .spawn()?
+                    .wait()?;
+            }
+
+            Ok(())
+        }
+    }
+
+    impl<'a> InputPreprocessor<'a> for LessPreprocessor {
+        fn open(&self, input: Input<'a>, handle: &InputHandle) -> Result<OpenedInput<'a>> {
+            let input_path = match input.path() {
+                Some(path) => path,
+                None => return input.open(handle),
+            };
+
+            fn passthrough_with_warning(
+                input: Result<OpenedInput>,
+                error: Error,
+            ) -> Result<OpenedInput> {
+                match input {
+                    Err(error) => Err(error),
+                    Ok(mut opened) => {
+                        opened
+                            .warnings
+                            .push(Error::from_kind(ErrorKind::Preprocessor(
+                                "lessopen".to_owned(),
+                                Box::new(error),
+                            )));
+
+                        Ok(opened)
+                    }
+                }
+            }
+
+            // Spawn the preprocessor executable.
+            let command_args = Self::argsub(&self.lessopen_template, vec![input_path]);
+            let mut command = Command::new(&command_args[0]);
+            command
+                .args(command_args.iter().skip(1))
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .stdin(Stdio::null());
+
+            let mut child: Child = match command.spawn() {
+                Err(error) => return passthrough_with_warning(input.open(handle), error.into()),
+                Ok(child) => child,
+            };
+
+            // Create a new reader, depending on what kind of preprocessor is being used.
+            let child_stdout = child.stdout.take().expect("Piped preprocessor stdout");
+            Ok(match self.kind {
+                // Pipe preprocessor.
+                LessPreprocessorKind::Piped => {
+                    // Turn the preprocessor's standard output into a reader.
+                    let pp_input =
+                        Input::from_reader(Box::new(child_stdout)).preprocessed_from(&input);
+
+                    // Open the preprocessor's reader.
+                    let mut pp_opened = match pp_input.open(handle) {
+                        Err(error) => return passthrough_with_warning(input.open(handle), error),
+                        Ok(opened) => opened,
+                    };
+
+                    // If the preprocessor didn't output anything, use the original reader.
+                    if pp_opened.reader.first_line.is_empty() {
+                        let _ = child.wait();
+                        return input.open(handle);
+                    }
+
+                    // Add a handle to cleanup the preprocessor data.
+                    pp_opened.handles.push(Box::new(LessPreprocessorHandle {
+                        process: Some(child),
+                        cleanup: self
+                            .lessclose_template
+                            .as_ref()
+                            .map(|args| Self::argsub(&args, vec![input_path, Path::new("-")])),
+                    }));
+
+                    pp_opened
+                }
+
+                // Temporary file preprocessor.
+                LessPreprocessorKind::Staged => {
+                    let mut reader = BufReader::new(child_stdout);
+                    let mut buffer = vec![];
+
+                    // Read the first line, which will contain the temporary file name.
+                    let read = match reader.read_until(b'\n', &mut buffer) {
+                        Ok(read) => read,
+                        Err(error) => {
+                            return passthrough_with_warning(input.open(handle), error.into())
+                        }
+                    };
+
+                    // If the preprocessor didn't write anything, use the original reader.
+                    if read == 0 {
+                        let _ = child.wait();
+                        return input.open(handle);
+                    }
+
+                    // Turn the first line into a PathBuf, and create a new reader from it.
+                    let pp_file = PathBuf::from(OsStrBytes::from_raw_bytes(&buffer[0..read - 1])?);
+                    let pp_input = Input::ordinary_file(pp_file).preprocessed_from(&input);
+
+                    // Open the new reader.
+                    let mut pp_opened = match pp_input.open(handle) {
+                        Err(error) => return passthrough_with_warning(input.open(handle), error),
+                        Ok(opened) => opened,
+                    };
+
+                    // Add a handle to cleanup the preprocessor data.
+                    pp_opened.handles.push(Box::new(LessPreprocessorHandle {
+                        process: None,
+                        cleanup: self
+                            .lessclose_template
+                            .as_ref()
+                            .map(|args| Self::argsub(&args, vec![input_path, Path::new("-")])),
+                    }));
+
+                    pp_opened
+                }
+            })
+        }
+    }
+
+    impl LessPreprocessor {
+        pub fn new(
+            lessopen: String,
+            lessclose: Option<String>,
+        ) -> std::result::Result<Option<Self>, shell_words::ParseError> {
+            let (lessopen, kind) = if lessopen.starts_with('|') {
+                (
+                    lessopen
+                        .chars()
+                        .skip(1)
+                        .skip_while(|c| c.is_whitespace())
+                        .collect::<String>(),
+                    LessPreprocessorKind::Piped,
+                )
+            } else {
+                (lessopen, LessPreprocessorKind::Staged)
+            };
+
+            let lessopen_template = match split(&lessopen) {
+                Ok(args) => args,
+                Err(error) => return Err(error),
+            };
+
+            let lessclose_template = match lessclose.map(|lessclose| split(&lessclose)) {
+                Some(Err(error)) => return Err(error),
+                Some(Ok(args)) => Some(args),
+                None => None,
+            };
+
+            Ok(Some(LessPreprocessor {
+                lessopen_template,
+                lessclose_template,
+                kind,
+            }))
+        }
+
+        /// Substitutes occurrences of "%s".
+        pub fn argsub(
+            template: &Vec<String>,
+            substitutions: Vec<impl AsRef<Path>>,
+        ) -> Vec<OsString> {
+            let mut i = 0;
+            template
+                .iter()
+                .map(|arg| {
+                    if arg == "%s" {
+                        let replaced = substitutions
+                            .get(i)
+                            .map(|replacement| OsString::from(replacement.as_ref()))
+                            .unwrap_or(OsString::from("%s"));
+
+                        i += 1;
+                        replaced
+                    } else {
+                        OsString::from(arg)
+                    }
+                })
+                .collect()
+        }
+    }
+}
+
+#[cfg(feature = "preprocessor-lessopen")]
+pub fn lessopen<'a>(lessopen: String, lessclose: Option<String>) -> Option<Preprocessor<'a>> {
+    match __feature_preprocessor_lessopen::LessPreprocessor::new(lessopen, lessclose) {
+        Err(_) => None, // Silently ignore errors like with the pager.
+        Ok(None) => None,
+        Ok(Some(preprocessor)) => Some(Preprocessor(Box::new(preprocessor))),
+    }
 }
 
 #[test]

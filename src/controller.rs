@@ -5,34 +5,52 @@ use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
-use crate::input::{Input, InputReader, OpenedInput};
+#[cfg(feature = "preprocessor")]
+use crate::input::InputPreprocessor;
+use crate::input::{Input, InputHandle, InputReader, OpenedInput};
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
 use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
+#[cfg(feature = "preprocessor")]
+use crate::preprocessor::Preprocessor;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
-
 use clircle::Clircle;
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
+
+    #[cfg(feature = "preprocessor")]
+    preprocessor: Option<Box<dyn InputPreprocessor<'a> + 'a>>,
 }
 
 impl<'b> Controller<'b> {
     pub fn new<'a>(config: &'a Config, assets: &'a HighlightingAssets) -> Controller<'a> {
-        Controller { config, assets }
+        Controller {
+            config,
+            assets,
+
+            #[cfg(feature = "preprocessor")]
+            preprocessor: None,
+        }
     }
 
-    pub fn run(&self, inputs: Vec<Input>) -> Result<bool> {
+    #[cfg(feature = "preprocessor")]
+    pub fn with_preprocessor(mut self, preprocessor: Preprocessor<'b>) -> Self {
+        self.preprocessor = Some(preprocessor.0);
+        self
+    }
+
+    pub fn run(&self, inputs: Vec<Input<'b>>) -> Result<bool> {
         self.run_with_error_handler(inputs, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
-        inputs: Vec<Input>,
+        inputs: Vec<Input<'b>>,
         handle_error: impl Fn(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -74,6 +92,8 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
+        let input_handle = InputHandle { stdout_identifier };
+
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
 
@@ -87,7 +107,20 @@ impl<'b> Controller<'b> {
         };
 
         for (index, input) in inputs.into_iter().enumerate() {
-            match input.open(io::stdin().lock(), stdout_identifier.as_ref()) {
+            // Open the input.
+            let input = {
+                #[cfg(feature = "preprocessor")]
+                if let Some(preprocessor) = &self.preprocessor {
+                    preprocessor.open(input, &input_handle)
+                } else {
+                    input.open(&input_handle)
+                }
+
+                #[cfg(not(feature = "preprocessor"))]
+                input.open(&input_handle)
+            };
+
+            match input {
                 Err(error) => {
                     print_error(&error, writer);
                     no_errors = false;
@@ -123,6 +156,7 @@ impl<'b> Controller<'b> {
                         None
                     };
 
+                    // Print the input.
                     let mut printer: Box<dyn Printer> = if self.config.loop_through {
                         Box::new(SimplePrinter::new(&self.config))
                     } else {
@@ -144,9 +178,21 @@ impl<'b> Controller<'b> {
                         &line_changes,
                     );
 
+                    // Print preprocessor errors.
+                    opened_input
+                        .warnings
+                        .iter()
+                        .for_each(|error| print_error(&error, writer));
+
+                    // Print printing error.
                     if let Err(error) = result {
                         print_error(&error, writer);
                         no_errors = false;
+                    }
+
+                    // Close the input (if it has a handle to close).
+                    if let Err(errors) = opened_input.close() {
+                        errors.iter().for_each(|error| print_error(&error, writer));
                     }
                 }
             }

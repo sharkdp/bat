@@ -148,6 +148,26 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 )
     }
 
+    #[cfg(feature = "preprocessor")]
+    {
+        let mut preprocessors: Vec<&'static str> = vec!["none"];
+
+        #[cfg(feature = "preprocessor-lessopen")]
+        preprocessors.push("lessopen");
+
+        app = app.arg(
+            Arg::with_name("preprocessor")
+                .long("preprocessor")
+                .overrides_with("preprocessor")
+                .takes_value(true)
+                .value_name("preprocessor")
+                .possible_values(&preprocessors)
+                .default_value("none")
+                .hide_default_value(true)
+                .help("Specify the preprocessor to use on input files."),
+        )
+    }
+
     app = app.arg(
         Arg::with_name("tabs")
             .long("tabs")
