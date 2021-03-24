@@ -55,6 +55,10 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 # terminal emulators (like tmux, by default):
 #--italic-text=always
 
+# Uncomment the following line to enable LESSOPEN/LESSCLOSE preprocessing.
+# You can disable preprocessing on the command line with `--preprocessor=none`.
+#--preprocessor=lessopen
+
 # Uncomment the following line to disable automatic paging:
 #--paging=never
 
