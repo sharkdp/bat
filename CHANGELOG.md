@@ -12,6 +12,8 @@
 
 ## Syntaxes
 
+- Replaced "Advanced CSV" with a custom CSV syntax definition written especially for `bat`; see #1574 (@keith-hall)
+
 ## New themes
 
 ## `bat` as a library
