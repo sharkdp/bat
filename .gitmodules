@@ -216,3 +216,6 @@
 [submodule "assets/syntaxes/02_Extra/SystemVerilog"]
 	path = assets/syntaxes/02_Extra/SystemVerilog
 	url = https://github.com/TheClams/SystemVerilog.git
+[submodule "assets/syntaxes/02_Extra/SublimeEthereum"]
+	path = assets/syntaxes/02_Extra/SublimeEthereum
+	url = https://github.com/davidhq/SublimeEthereum.git
