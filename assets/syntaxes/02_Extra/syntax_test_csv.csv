@@ -8,19 +8,21 @@ Forename,Surname,House No.,Street,City,Postcode
 #                         ^ punctuation.separator.sequence
 #                          ^^^^^^ meta.field-4
 #                                ^ punctuation.separator.sequence
-#                                 ^^^^ meta.field-5
+#                                 ^^^^ meta.field-1
 #                                     ^ punctuation.separator.sequence
-#                                      ^^^^^^^^ meta.field-1
-John,Doe,87,Citiville,TU43 6GH
+#                                      ^^^^^^^^ meta.field-2
+John,Doe,87,Logon Road,Citiville,TU43 6GH
 #^^^ meta.field-1
 #   ^ punctuation.separator.sequence
 #    ^^^ meta.field-2
 #       ^ punctuation.separator.sequence
 #        ^^ meta.field-3
 #          ^ punctuation.separator.sequence
-#           ^^^^^^^^^ meta.field-4
-#                    ^ punctuation.separator.sequence
-#                     ^^^^^^^^ meta.field-5
+#           ^^^^^^^^^^ meta.field-4
+#                     ^ punctuation.separator.sequence
+#                      ^^^^^^^^^ meta.field-1
+#                               ^ punctuation.separator.sequence
+#                                ^^^^^^^^ meta.field-2
 Jane,Doe,22,"""Fun"" Street","The City, County",FA90 1XA
 #^^^ meta.field-1
 #   ^ punctuation.separator.sequence
@@ -32,11 +34,11 @@ Jane,Doe,22,"""Fun"" Street","The City, County",FA90 1XA
 #            ^^ constant.character.escape
 #                 ^^ constant.character.escape
 #                           ^ punctuation.separator.sequence
-#                            ^ meta.field-5 string.quoted.double punctuation.definition.string.begin
-#                             ^^^^^^^^^^^^^^^^^ meta.field-5 string.quoted.double
-#                                             ^ meta.field-5 string.quoted.double punctuation.definition.string.end
+#                            ^ meta.field-1 string.quoted.double punctuation.definition.string.begin
+#                             ^^^^^^^^^^^^^^^^^ meta.field-1 string.quoted.double
+#                                             ^ meta.field-1 string.quoted.double punctuation.definition.string.end
 #                                              ^ punctuation.separator.sequence
-#                                               ^^^^^^^^ meta.field-1
+#                                               ^^^^^^^^ meta.field-2
 Fred,Bloggs,"19","Street
 #^^^ meta.field-1
 #   ^ punctuation.separator.sequence
@@ -53,6 +55,6 @@ Lines",Citee,P0stc0d3
 #^^^^^ meta.field-4 string.quoted.double
 #    ^ meta.field-4 punctuation.definition.string.end
 #     ^ punctuation.separator.sequence
-#      ^^^^^ meta.field-5
+#      ^^^^^ meta.field-1
 #           ^ punctuation.separator.sequence
-#            ^^^^^^^^ meta.field-1
+#            ^^^^^^^^ meta.field-2

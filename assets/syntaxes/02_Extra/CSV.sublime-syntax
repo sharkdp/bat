@@ -17,8 +17,6 @@ contexts:
     - match: ''
       push:
         - field_or_record_separator
-        - field5
-        - field_or_record_separator
         - field4
         - field_or_record_separator
         - field3
@@ -70,15 +68,11 @@ contexts:
   field3:
     - match: ''
       set:
-        - meta_content_scope: meta.field-3.csv variable.other
+        - meta_content_scope: meta.field-3.csv constant.numeric
         - include: field_contents
   field4:
     - match: ''
       set:
-        - meta_content_scope: meta.field-4.csv constant.numeric
+        - meta_content_scope: meta.field-4.csv keyword.operator
         - include: field_contents
-  field5:
-    - match: ''
-      set:
-        - meta_content_scope: meta.field-5.csv keyword.operator
-        - include: field_contents
+
