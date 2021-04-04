@@ -12,6 +12,8 @@
 
 ## Syntaxes
 
+- Improved the Syslog syntax highlighting, see #1606 (@keith-hall)
+
 ## New themes
 
 ## `bat` as a library

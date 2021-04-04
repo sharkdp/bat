@@ -1,0 +1,70 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: syslog
+file_extensions:
+  - syslog
+scope: text.syslog
+contexts:
+  main:
+    - match: '^\w+\s+\d+\s+\d{2}:\d{2}:\d{2}'
+      scope: meta.datetime.syslog constant.numeric.syslog
+      push: loghost
+  loghost:
+    - match: '[\w-]+'
+      scope: entity.other.attribute-name.loghost.syslog
+      set: process
+  process:
+    - match: ([\w-]+)(?:(\[)(\d+)(\]))?(:)
+      captures:
+        1: support.function.process.syslog
+        2: punctuation.separator.pid.begin.syslog
+        3: meta.pid.syslog meta.number.integer.syslog constant.numeric.value.syslog
+        4: punctuation.separator.mapping.syslog
+      set: structured-data
+  structured-data:
+    - match: '\['
+      scope: punctuation.section.mapping.begin.syslog
+      push:
+        - match: \]
+          scope: punctuation.section.mapping.end.syslog
+          pop: true
+        - match: \w+
+          scope: variable.parameter.syslog
+        - match: =
+          scope: keyword.operator.assignment.syslog
+          push:
+            - match: '[^\s\]]+'
+              scope: constant.other.syslog
+              pop: true
+            - match: (?=\])
+              pop: true
+    - match: (?=\S)
+      set: text
+  text:
+    - match: (\w+)(=)
+      captures:
+        1: variable.parameter.syslog
+        2: keyword.operator.assignment.syslog
+    - match: (')([^']*)(')
+      scope: string.quoted.single.syslog
+      captures:
+        1: punctuation.definition.string.begin.syslog
+        3: punctuation.definition.string.end.syslog
+    - match: (")([^"]*)(")
+      scope: string.quoted.double.syslog
+      captures:
+        1: punctuation.definition.string.begin.syslog
+        3: punctuation.definition.string.end.syslog
+    - match: \d+
+      scope: meta.number.integer.syslog constant.numeric.value.syslog
+    - match: \b(CMD)\b\s+(\()
+      captures:
+        1: entity.name.label.syslog
+        2: punctuation.section.block.begin.syslog
+      embed: scope:source.shell.bash
+      escape: \)
+      escape_captures:
+        0: punctuation.section.block.end.syslog
+    - match: $
+      pop: true
