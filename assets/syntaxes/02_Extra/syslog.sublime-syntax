@@ -5,10 +5,15 @@ name: syslog
 file_extensions:
   - syslog
 scope: text.syslog
+variables:
+  ipv4_part: (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
 contexts:
   main:
-    - match: '^\w+\s+\d+\s+\d{2}:\d{2}:\d{2}'
+    - match: ^(\w+\s+\d+)\s+(\d{2}:\d{2}:\d{2})
       scope: meta.datetime.syslog constant.numeric.syslog
+      captures:
+        1: meta.date.syslog
+        2: meta.time.syslog
       push: loghost
   loghost:
     - match: '[\w-]+'
@@ -20,7 +25,8 @@ contexts:
         1: support.function.process.syslog
         2: punctuation.separator.pid.begin.syslog
         3: meta.pid.syslog meta.number.integer.syslog constant.numeric.value.syslog
-        4: punctuation.separator.mapping.syslog
+        4: punctuation.separator.pid.end.syslog
+        5: punctuation.separator.mapping.syslog
       set: structured-data
   structured-data:
     - match: '\['
@@ -56,15 +62,50 @@ contexts:
       captures:
         1: punctuation.definition.string.begin.syslog
         3: punctuation.definition.string.end.syslog
-    - match: \d+
-      scope: meta.number.integer.syslog constant.numeric.value.syslog
+    - include: numbers
     - match: \b(CMD)\b\s+(\()
       captures:
         1: entity.name.label.syslog
         2: punctuation.section.block.begin.syslog
       embed: scope:source.shell.bash
-      escape: \)
+      escape: \)$
       escape_captures:
         0: punctuation.section.block.end.syslog
+    - match: '<\w+>'
+      scope: constant.language.syslog
+    - match: (?i:fail(?:ure|ed)?|error)
+      scope: invalid.illegal.error.syslog
     - match: $
       pop: true
+  numbers:
+    - match: (?=(?:{{ipv4_part}}\.){3}{{ipv4_part}})
+      push:
+        - meta_scope: meta.ipaddress.v4.syslog meta.number.integer.decimal.syslog
+        - match: \d+
+          scope: constant.numeric.value.syslog
+        - match: \.
+          scope: punctuation.separator.sequence.syslog
+        - match: ''
+          pop: true
+    - match: (?=(?:\h{0,4}:){2,6}\h{1,4})
+      push:
+        - meta_scope: meta.ipaddress.v6.syslog meta.number.integer.hexadecimal.syslog
+        - match: \h{1,4}
+          scope: constant.numeric.value.syslog
+        - match: ':'
+          scope: punctuation.separator.sequence.syslog
+        - match: ''
+          pop: true
+    - match: (0x)(\h+)(?:(\.)(\h+))?
+      scope: meta.number.float.hexadecimal.syslog
+      captures:
+        1: constant.numeric.base.syslog
+        2: constant.numeric.value.syslog
+        3: constant.numeric.value.syslog punctuation.separator.decimal.syslog
+        4: constant.numeric.value.syslog
+    - match: \b\d+(\.)\d+\b
+      scope: meta.number.float.syslog constant.numeric.value.syslog
+      captures:
+        1: punctuation.separator.decimal.syslog
+    - match: \b\d+\b
+      scope: meta.number.integer.syslog constant.numeric.value.syslog
