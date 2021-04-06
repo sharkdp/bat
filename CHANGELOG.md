@@ -8,6 +8,7 @@
 ## Other
 
 - `Input::ordinary_file` and `Input::with_name` now accept `Path` rather than `OsStr` see #1571 (@matklad)
+- The `LESS` environment variable is now included in `bat --diagnostic`, see #1589 (@Enselic)
 - Increased min. required Rust version to 1.45
 
 ## Syntaxes
