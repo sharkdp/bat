@@ -25,7 +25,7 @@ contexts:
     - include: dates
     - include: ip_addresses
     - include: numbers
-    - match: \b(?i:fail(?:ure|ed)?|error)\b
+    - match: \b(?i:fail(?:ure|ed)?|error|exception)\b
       scope: invalid.illegal.error.log
     #- include: scope:text.html.markdown#autolink-inet
     - match: \b\w+:/{2,3}
@@ -41,7 +41,7 @@ contexts:
       captures:
         1: punctuation.separator.decimal.log
   ip_addresses:
-    - match: (?=(?:{{ipv4_part}}\.){3}{{ipv4_part}})
+    - match: \b(?=(?:{{ipv4_part}}\.){3}{{ipv4_part}}\b)
       push:
         - meta_scope: meta.ipaddress.v4.log meta.number.integer.decimal.log
         - match: \d+
@@ -50,7 +50,7 @@ contexts:
           scope: punctuation.separator.sequence.log
         - match: ''
           pop: true
-    - match: (?=(?:\h{0,4}:){2,6}\h{1,4})
+    - match: (?=(?:\h{0,4}:){2,6}\h{1,4}\b)
       push:
         - meta_scope: meta.ipaddress.v6.log meta.number.integer.hexadecimal.log
         - match: \h{1,4}
@@ -60,7 +60,7 @@ contexts:
         - match: ''
           pop: true
   numbers:
-    - match: (0x)(\h+)(?:(\.)(\h+))?
+    - match: \b(0x)(\h+)(?:(\.)(\h+))?\b
       scope: meta.number.float.hexadecimal.log
       captures:
         1: constant.numeric.base.log
