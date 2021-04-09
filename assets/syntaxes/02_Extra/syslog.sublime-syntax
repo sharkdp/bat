@@ -4,7 +4,7 @@
 name: syslog
 file_extensions:
   - syslog
-scope: text.syslog
+scope: text.log.syslog
 contexts:
   main:
     - match: ^(\w+\s+\d+)\s+(\d{2}:\d{2}:\d{2})

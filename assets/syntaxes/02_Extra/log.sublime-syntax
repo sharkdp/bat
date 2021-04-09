@@ -26,7 +26,9 @@ contexts:
     - include: ip_addresses
     - include: numbers
     - match: \b(?i:fail(?:ure|ed)?|error|exception)\b
-      scope: invalid.illegal.error.log
+      scope: markup.error.log
+    - match: \b(?i:warn(?:ing)?)\b
+      scope: markup.warning.log
     #- include: scope:text.html.markdown#autolink-inet
     - match: \b\w+:/{2,3}
       scope: markup.underline.link.scheme.log
