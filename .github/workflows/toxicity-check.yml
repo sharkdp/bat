@@ -10,7 +10,7 @@ on:
     types: ['opened', 'edited', 'closed', 'reopened', 'locked', 'unlocked']
 
 jobs:
-  hello_world_job:
+  toxicity-check-job:
     runs-on: ubuntu-latest
     name: Toxicity check job
     steps:
