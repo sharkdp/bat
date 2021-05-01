@@ -75,7 +75,7 @@ default-features = false
 [dev-dependencies]
 assert_cmd = "1.0.2"
 serial_test = "0.5.1"
-predicates = "1.0.7"
+predicates = "1.0.8"
 wait-timeout = "0.2.0"
 tempfile = "3.2.0"
 
