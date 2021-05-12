@@ -1,0 +1,116 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - log
+scope: text.log
+variables:
+  ipv4_part: (?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)
+contexts:
+  main:
+    - match: (\w+)(=)
+      captures:
+        1: variable.parameter.log
+        2: keyword.operator.assignment.log
+    - match: (')([^']*)(')
+      scope: string.quoted.single.log
+      captures:
+        1: punctuation.definition.string.begin.log
+        3: punctuation.definition.string.end.log
+    - match: (")([^"]*)(")
+      scope: string.quoted.double.log
+      captures:
+        1: punctuation.definition.string.begin.log
+        3: punctuation.definition.string.end.log
+    - include: dates
+    - include: ip_addresses
+    - include: numbers
+    - match: \b(?i:fail(?:ure|ed)?|error|exception)\b
+      scope: markup.error.log
+    - match: \b(?i:warn(?:ing)?)\b
+      scope: markup.warning.log
+    #- include: scope:text.html.markdown#autolink-inet
+    - match: \b\w+:/{2,3}
+      scope: markup.underline.link.scheme.log
+      push: url-host
+  dates:
+    - match: \b\d{4}-\d{2}-\d{2}\b
+      scope: meta.date.log meta.number.integer.decimal.log constant.numeric.value.log
+    - match: \b\d{4}/\d{2}/\d{2}\b
+      scope: meta.date.log meta.number.integer.decimal.log constant.numeric.value.log
+    - match: \b(?:[01]\d|2[0-3]):(?:[0-5]\d):(?:[0-5]\d)(?:(\.)\d{3})?\b
+      scope: meta.time.log meta.number.integer.decimal.log constant.numeric.value.log
+      captures:
+        1: punctuation.separator.decimal.log
+  ip_addresses:
+    - match: \b(?=(?:{{ipv4_part}}\.){3}{{ipv4_part}}\b)
+      push:
+        - meta_scope: meta.ipaddress.v4.log meta.number.integer.decimal.log
+        - match: \d+
+          scope: constant.numeric.value.log
+        - match: \.
+          scope: punctuation.separator.sequence.log
+        - match: ''
+          pop: true
+    - match: (?=(?:\h{0,4}:){2,6}\h{1,4}\b)
+      push:
+        - meta_scope: meta.ipaddress.v6.log meta.number.integer.hexadecimal.log
+        - match: \h{1,4}
+          scope: constant.numeric.value.log
+        - match: ':'
+          scope: punctuation.separator.sequence.log
+        - match: ''
+          pop: true
+  numbers:
+    - match: \b(0x)(\h+)(?:(\.)(\h+))?\b
+      scope: meta.number.float.hexadecimal.log
+      captures:
+        1: constant.numeric.base.log
+        2: constant.numeric.value.log
+        3: constant.numeric.value.log punctuation.separator.decimal.log
+        4: constant.numeric.value.log
+    - match: \b\d+(\.)\d+\b
+      scope: meta.number.float.log constant.numeric.value.log
+      captures:
+        1: punctuation.separator.decimal.log
+    - match: \b\d+\b
+      scope: meta.number.integer.log constant.numeric.value.log
+  url-host:
+    - meta_content_scope: markup.underline.link.host.log
+    - match: \[
+      scope: punctuation.section.brackets.begin.log
+      push:
+        - match: \]
+          scope: punctuation.section.brackets.end.log
+          pop: true
+        - include: ip_addresses
+    - match: '[^:/\s]+'
+    - match: ''
+      set: url-after-host
+  url-after-host:
+    - match: (:)(\d+)
+      scope: markup.underline.link.port.log
+      captures:
+        1: punctuation.separator.mapping.port.log
+        2: constant.numeric.value.log
+    #- include: scope:text.html.markdown#url-escaped-chars
+    - match: (%)\h{2}
+      scope: markup.underline.link.path.log constant.character.escape.url.log
+      captures:
+        1: punctuation.definition.escape.log
+    # After a valid domain, zero or more non-space non-< characters may follow
+    - match: (?=[?!.,:*_~]*[\s<]) # Trailing punctuation (specifically, ?, !, ., ,, :, *, _, and ~) will not be considered part of the autolink, though they may be included in the interior of the link
+      pop: true
+    - match: \( # When an autolink ends in ), we scan the entire autolink for the total number of parentheses. If there is a greater number of closing parentheses than opening ones, we don’t consider the last character part of the autolink, in order to facilitate including an autolink inside a parenthesis
+      push:
+        - meta_scope: markup.underline.link.path.log
+        - match: (?=[?!.,:*_~]*[\s<])
+          pop: true
+        - match: \)
+          pop: true
+    - match: (?=\)[?!.,:*_~]*[\s<])
+      pop: true
+    - match: '[^?!.,:*_~\s<&()%]+|\S'
+      scope: markup.underline.link.path.log
+    - match: ''
+      pop: true
