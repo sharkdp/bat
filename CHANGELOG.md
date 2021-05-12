@@ -13,6 +13,7 @@
 
 ## Syntaxes
 
+- Improved the Syslog syntax highlighting, see #1606 (@keith-hall)
 - Replaced "Advanced CSV" with a custom CSV syntax definition written especially for `bat`; see #1574 (@keith-hall)
 
 ## New themes

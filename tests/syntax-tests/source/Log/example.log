@@ -1,0 +1,2 @@
+2021-03-06 23:22:21.392 https://[2001:db8:4006:812::200e]:8080/path/the%20page.html
+2021-03-06 23:22:21 https://example.com:8080/path/the%20page(with_parens).html
