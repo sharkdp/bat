@@ -2,6 +2,7 @@
 
 ## Features
 - Add SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
+- Add `--preprocessor=lessopen` support, see #1597 (@eth-p) 
 
 ## Bugfixes
 

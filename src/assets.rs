@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
@@ -13,7 +13,7 @@ use path_abs::PathAbs;
 use crate::assets_metadata::AssetsMetadata;
 use crate::bat_warning;
 use crate::error::*;
-use crate::input::{InputReader, OpenedInput, OpenedInputKind};
+use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
@@ -225,19 +225,15 @@ impl HighlightingAssets {
             // Get the path of the file:
             // If this was set by the metadata, that will take priority.
             // If it wasn't, it will use the real file path (if available).
-            let path_str =
-                input
-                    .metadata
-                    .user_provided_name
-                    .as_ref()
-                    .or_else(|| match input.kind {
-                        OpenedInputKind::OrdinaryFile(ref path) => Some(path),
-                        _ => None,
-                    });
+            let path_str: Option<PathBuf> = input
+                .metadata
+                .user_provided_name
+                .as_ref()
+                .cloned()
+                .or_else(|| input.original_name().map(Into::<PathBuf>::into));
 
-            if let Some(path_str) = path_str {
+            if let Some(ref path) = path_str {
                 // If a path was provided, we try and detect the syntax based on extension mappings.
-                let path = Path::new(path_str);
                 let absolute_path = PathAbs::new(path)
                     .ok()
                     .map(|p| p.as_path().to_path_buf())
@@ -299,7 +295,7 @@ mod tests {
     use std::io::Write;
     use tempfile::TempDir;
 
-    use crate::input::Input;
+    use crate::input::{Input, InputHandle};
 
     struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
@@ -328,8 +324,11 @@ mod tests {
             }
 
             let input = Input::ordinary_file(&file_path);
-            let dummy_stdin: &[u8] = &[];
-            let mut opened_input = input.open(dummy_stdin, None).unwrap();
+            let input_handle = InputHandle {
+                stdout_identifier: None,
+            };
+
+            let mut opened_input = input.open(&input_handle).unwrap();
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
@@ -342,8 +341,10 @@ mod tests {
             let file_path = self.temp_dir.path().join(file_name);
             let input = Input::from_reader(Box::new(BufReader::new(first_line.as_bytes())))
                 .with_name(Some(&file_path));
-            let dummy_stdin: &[u8] = &[];
-            let mut opened_input = input.open(dummy_stdin, None).unwrap();
+            let input_handle = InputHandle {
+                stdout_identifier: None,
+            };
+            let mut opened_input = input.open(&input_handle).unwrap();
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
@@ -366,8 +367,11 @@ mod tests {
         }
 
         fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
-            let input = Input::stdin().with_name(Some(file_name));
-            let mut opened_input = input.open(content, None).unwrap();
+            let input = Input::stdin_with_contents(content).with_name(Some(file_name));
+            let input_handle = InputHandle {
+                stdout_identifier: None,
+            };
+            let mut opened_input = input.open(&input_handle).unwrap();
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
@@ -523,8 +527,10 @@ mod tests {
         symlink(&file_path, &file_path_symlink).expect("creation of symbolic link succeeds");
 
         let input = Input::ordinary_file(&file_path_symlink);
-        let dummy_stdin: &[u8] = &[];
-        let mut opened_input = input.open(dummy_stdin, None).unwrap();
+        let input_handle = InputHandle {
+            stdout_identifier: None,
+        };
+        let mut opened_input = input.open(&input_handle).unwrap();
 
         assert_eq!(
             test.assets

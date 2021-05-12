@@ -99,6 +99,7 @@ dependencies = [
  "globset",
  "lazy_static",
  "nix",
+ "os_str_bytes",
  "path_abs",
  "predicates",
  "semver",
@@ -686,6 +687,12 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
+
+[[package]]
+name = "os_str_bytes"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e293568965aea261bdf010db17df7030e3c9a275c415d51d6112f7cf9b7af012"
 
 [[package]]
 name = "parking_lot"
