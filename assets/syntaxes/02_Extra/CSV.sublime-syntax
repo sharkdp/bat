@@ -1,46 +1,78 @@
 %YAML 1.2
 ---
-# http://www.sublimetext.com/docs/3/syntax.html
-name: Advanced CSV
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: Comma Separated Values
 file_extensions:
   - csv
   - tsv
-scope: text.advanced_csv
+scope: text.csv
+variables:
+  field_separator: (?:[,;\t])
+  record_separator: (?:$\n?)
 contexts:
+  prototype:
+    - match: (?={{record_separator}})
+      pop: true
+  fields:
+    - match: ''
+      push:
+        - field_or_record_separator
+        - field4
+        - field_or_record_separator
+        - field3
+        - field_or_record_separator
+        - field2
+        - field_or_record_separator
+        - field1
   main:
-    - match: (\")
-      captures:
-        1: string.quoted.double.advanced_csv
-      push:
-        - meta_scope: meta.quoted.advanced_csv
-        - match: (\")
-          captures:
-            1: string.quoted.double.advanced_csv
-          pop: true
-        - include: main
-    - match: '(\[([+-]?\d*)(\:)?([+-]?\d*)(\,)?([+-]?\d*)(\:)?([+-]?\d*)\])?\s*([<>v^])?\s*(=)'
-      captures:
-        1: keyword.operator.advanced_csv
-        2: constant.numeric.formula.advanced_csv
-        4: constant.numeric.formula.advanced_csv
-        6: constant.numeric.formula.advanced_csv
-        8: constant.numeric.formula.advanced_csv
-        9: keyword.operator.advanced_csv
-        10: keyword.operator.advanced_csv
-      push:
-        - meta_scope: meta.range.advanced_csv
-        - match: (?=(\")|$)
-          pop: true
-        - include: scope:source.python
-    - match: '(?<=^|,|\s|\")([0-9.eE+-]+)(?=$|,|\s|\")'
-      scope: meta.number.advanced_csv
-      captures:
-        1: constant.numeric.advanced_csv
-    - match: '(?<=^|,|\s|\")([^, \t\"]+)(?=$|,|\s|\")'
-      scope: meta.nonnumber.advanced_csv
-      captures:
-        1: storage.type.advanced_csv
-    - match: (\,)
-      scope: meta.delimiter.advanced_csv
-      captures:
-        1: keyword.operator.advanced_csv
+    - meta_include_prototype: false
+    - match: '^'
+      set: fields
+
+  field_or_record_separator:
+    - meta_include_prototype: false
+    - match: '{{record_separator}}'
+      scope: punctuation.terminator.record.csv
+      pop: true
+    - match: '{{field_separator}}'
+      scope: punctuation.separator.sequence.csv
+      pop: true
+
+  field_contents:
+    - match: '"'
+      scope: punctuation.definition.string.begin.csv
+      push: double_quoted_string
+
+    - match: (?={{field_separator}}|{{record_separator}})
+      pop: true
+
+  double_quoted_string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.csv
+    - match: '""'
+      scope: constant.character.escape.csv
+    - match: '"'
+      scope: punctuation.definition.string.end.csv
+      pop: true
+
+  field1:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-1.csv support.type
+        - include: field_contents
+  field2:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-2.csv support.function
+        - include: field_contents
+  field3:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-3.csv constant.numeric
+        - include: field_contents
+  field4:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-4.csv keyword.operator
+        - include: field_contents
+
