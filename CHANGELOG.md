@@ -1,9 +1,11 @@
 # unreleased
 
 ## Features
-- Add SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
+
 
 ## Bugfixes
+
+- Mouse support and screen clearing broken for `less` versions with minor version number (581.2), see #1629 and #1639 (@aswild)
 
 ## Other
 
@@ -15,8 +17,12 @@
 
 - Improved the Syslog syntax highlighting, see #1606 (@keith-hall)
 - Replaced "Advanced CSV" with a custom CSV syntax definition written especially for `bat`; see #1574 (@keith-hall)
+- Added SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
+- Added Solidity and Vyper syntax, see #1602 (@Ersikan)
 
 ## New themes
+
+- Dark+ VS Code theme, see #1588 and #1598 (@PatriotRossii)
 
 ## `bat` as a library
 
