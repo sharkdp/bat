@@ -238,6 +238,7 @@ fn run() -> Result<bool> {
             .info(EnvironmentVariables::list(&[
                 "SHELL",
                 "PAGER",
+                "LESS",
                 "BAT_PAGER",
                 "BAT_CACHE_PATH",
                 "BAT_CONFIG_PATH",

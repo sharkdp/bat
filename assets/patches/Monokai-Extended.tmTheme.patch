@@ -7,7 +7,7 @@ index 9c2aa3e..180cbbf 100644
        <string>JSON String</string>
        <key>scope</key>
 -      <string>meta.structure.dictionary.json string.quoted.double.json</string>
-+      <string>meta.mapping.key.json string.quoted.double.json</string>
++      <string>meta.mapping.key.json string.quoted.double.json, punctuation.separator.sequence.csv</string>
        <key>settings</key>
        <dict>
          <key>foreground</key>

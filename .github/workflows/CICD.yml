@@ -79,6 +79,13 @@ jobs:
       run: bat --list-languages
     - name: List of themes
       run: bat --list-themes
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+        args: --no-deps --document-private-items --all-features
 
   build:
     name: ${{ matrix.job.os }} (${{ matrix.job.target }})
