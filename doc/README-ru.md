@@ -185,7 +185,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 [release page](https://github.com/sharkdp/bat/releases) и установить так:
 
 ```bash
-sudo dpkg -i bat_0.18.0_amd64.deb  # измените архитектуру и версию
+sudo dpkg -i bat_0.18.1_amd64.deb  # измените архитектуру и версию
 ```
 
 ### Alpine Linux
