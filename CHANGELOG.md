@@ -5,6 +5,25 @@
 
 ## Bugfixes
 
+
+## Other
+
+
+## Syntaxes
+
+
+## New themes
+
+
+## `bat` as a library
+
+
+
+
+# v0.18.1
+
+## Bugfixes
+
 - Mouse support and screen clearing broken for `less` versions with minor version number (581.2), see #1629 and #1639 (@aswild)
 
 ## Other
@@ -23,8 +42,6 @@
 ## New themes
 
 - Dark+ VS Code theme, see #1588 and #1598 (@PatriotRossii)
-
-## `bat` as a library
 
 
 
