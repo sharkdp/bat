@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="../doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
@@ -12,7 +12,7 @@
   <a href="#설치">설치</a> •
   <a href="#사용자화">사용자화</a> •
   <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a> •
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="doc/README-ja.md">日本語</a>] [<a href="doc/README-ko.md">한국어</a>] [<a href="doc/README-ru.md">Русский</a>]
+  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="../doc/README-ja.md">日本語</a>] [<a href="../doc/README-ko.md">한국어</a>] [<a href="../doc/README-ru.md">Русский</a>]
 </p>
 
 ### 문법 강조
@@ -815,5 +815,5 @@ Copyright (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat).
 `bat`는 여러분의 선택에 따라 MIT 라이센스 또는 Apache 라이센스 2.0의 조건에 따라
 배포됩니다.
 
-라이센스의 세부사항은 [LICENSE-APACHE](LICENSE-APACHE)와
-[LICENSE-MIT](LICENSE-MIT)를 참조하세요.
+라이센스의 세부사항은 [LICENSE-APACHE](../LICENSE-APACHE)와
+[LICENSE-MIT](../LICENSE-MIT)를 참조하세요.
