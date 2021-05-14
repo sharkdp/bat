@@ -11,6 +11,8 @@
 
 ## Syntaxes
 
+- Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
+
 
 ## New themes
 
