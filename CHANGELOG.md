@@ -11,6 +11,7 @@
 
 ## Syntaxes
 
+- Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
 - Added support for `XAML` syntax, see #1590 and #1655 (@mohamed-abdelnour)
 
 

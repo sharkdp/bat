@@ -1,8 +1,8 @@
 diff --git syntaxes/01_Packages/ShellScript/Bash.sublime-syntax syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
-index e973e319..a703cef8 100644
+index e973e319..07c170a7 100644
 --- syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
 +++ syntaxes/01_Packages/ShellScript/Bash.sublime-syntax
-@@ -30,8 +30,8 @@ file_extensions:
+@@ -30,12 +30,12 @@ file_extensions:
    - .zshenv
    - .zshrc
    - PKGBUILD  # https://jlk.fjfi.cvut.cz/arch/manpages/man/PKGBUILD.5
@@ -13,3 +13,8 @@ index e973e319..a703cef8 100644
  
  first_line_match: |
    (?x)
+-    ^\#! .* \b(bash|zsh|sh|tcsh|ash)\b
++    ^\#! .* \b(bash|zsh|sh|tcsh|ash|dash)\b
+   | ^\# \s* -\*- [^*]* mode: \s* shell-script [^*]* -\*-
+ 
+ #-------------------------------------------------------------------------------
