@@ -393,7 +393,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 ### 新しい構文の追加 / 言語の定義
 
-`bat` はシンタックスハイライトのための [`syntext`](https://github.com/trishume/syntect/)
+`bat` はシンタックスハイライトのための [`syntect`](https://github.com/trishume/syntect/)
 という素晴らしいライブラリを使用しています。`syntect` は、
 [Sublime Text の `.sublime-syntax` ファイル](https://www.sublimetext.com/docs/3/syntax.html)
 とテーマを読み取ることができます。新しい構文を定義するために以下の手順を行います。
