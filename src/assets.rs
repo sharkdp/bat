@@ -201,7 +201,7 @@ impl HighlightingAssets {
                     bat_warning!("Theme '{}' is deprecated, using 'ansi' instead.", theme);
                     return self.get_theme("ansi");
                 }
-                if theme != "" {
+                if !theme.is_empty() {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 &self.theme_set.themes[self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
