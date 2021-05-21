@@ -8,6 +8,8 @@
 
 ## Other
 
+- Fix Clippy lints, see #1661 (@mohamed-abdelnour)
+
 
 ## Syntaxes
 
