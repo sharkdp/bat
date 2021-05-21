@@ -336,14 +336,14 @@ impl<'a> Input<'a> {
     }
 }
 
-impl<'a> Into<Input<'a>> for input::Input<'a> {
-    fn into(self) -> Input<'a> {
-        Input { input: self }
+impl<'a> From<input::Input<'a>> for Input<'a> {
+    fn from(input: input::Input<'a>) -> Self {
+        Self { input }
     }
 }
 
-impl<'a> Into<input::Input<'a>> for Input<'a> {
-    fn into(self) -> input::Input<'a> {
-        self.input
+impl<'a> From<Input<'a>> for input::Input<'a> {
+    fn from(Input { input }: Input<'a>) -> Self {
+        input
     }
 }
