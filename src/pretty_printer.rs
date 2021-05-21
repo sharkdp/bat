@@ -40,10 +40,11 @@ pub struct PrettyPrinter<'a> {
 
 impl<'a> PrettyPrinter<'a> {
     pub fn new() -> Self {
-        let mut config = Config::default();
-
-        config.colored_output = true;
-        config.true_color = true;
+        let config = Config {
+            colored_output: true,
+            true_color: true,
+            ..Default::default()
+        };
 
         PrettyPrinter {
             inputs: vec![],
