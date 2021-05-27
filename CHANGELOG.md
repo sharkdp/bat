@@ -2,6 +2,7 @@
 
 ## Features
 
+- Add file type guessing using libmagic (#1545)
 
 ## Bugfixes
 
