@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Paraesthesia.Tools.NAntTasks" default="all" verbose="false">
+	<!-- === ENVIRONMENT SETUP === -->
+	<property name="nant.settings.currentframework" value="net-2.0"/>
+	<tstamp />
+	<sysinfo />
+	<property name="build.config" value="Release" />
+	<property name="build.version" value="2.0.0.0" />
+	<property name="build.name" value="Paraesthesia.Tools.NAntTasks" />
+	<property name="build.dir" value="${project::get-base-directory()}\build" />
+	<property name="build.bin.dir" value="${build.dir}\bin" />
+	<property name="build.doc.dir" value="${build.dir}\doc" />
+	<property name="build.install.dir" value="${build.dir}\install" />
+	<property name="build.log.dir" value="${build.dir}\log" />
+	
+	<!-- === STANDARD TARGETS === -->
+	<target name="all" depends="build-tasks test" description="Builds all custom NAnt task projects."/>
+
+	<target name="clean" description="Remove all compiled output folders.">
+		<echo message="Removing build output folder..."/>
+		<delete dir="${build.dir}" failonerror="false" verbose="false"/>
+		<echo message="Removing compilation artifact folders..."/>
+		<delete failonerror="false" verbose="false">
+			<fileset>
+				<exclude name="lib" />
+				<exclude name="lib\**" />
+				<include name="**\obj\**" />
+				<include name="**\bin\**" />
+			</fileset>
+		</delete>
+		<echo message="Clean complete."/>
+	</target>
+
+	<target name="test" description="Run unit tests on this project." depends="build-tests">
+		<!-- TODO: Run the unit tests -->
+	</target>
+
+	<target name="doc" description="Generates NDoc documentation." depends="build-tasks">
+		<ndoc>
+			<assemblies basedir="${build.bin.dir}">
+				<include name="Paraesthesia.Tools.*.dll"/>
+			</assemblies>
+			<summaries>
+				<include name="NamespaceSummary.xml"/>
+			</summaries>
+			<documenters>
+				<documenter name="MSDN">
+					<property name="AutoDocumentConstructors" value="True" />
+					<property name="AutoPropertyBackerSummaries" value="True" />
+					<property name="CollectionNamespace" value="${build.name} v${build.version}" />
+					<property name="CopyrightHref" value="http://www.paraesthesia.com" />
+					<property name="CopyrightText" value="Copyright 2007 Travis Illig" />
+					<property name="DefaultTOC" value="Empty" />
+					<property name="DeleteCHM" value="False" />
+					<property name="DocumentEmptyNamespaces" value="False" />
+					<property name="DocumentInternals" value="False" />
+					<property name="DocumentPrivates" value="False" />
+					<property name="DocumentProtected" value="True" />
+					<property name="GenerateCollectionFiles" value="True" />
+					<property name="HtmlHelpCompilerFilename" value="hhc.exe" />
+					<property name="HtmlHelpName" value="${build.name} v${build.version}" />
+					<property name="IncludeAssemblyVersion" value="True" />
+					<property name="IncludeFavorites" value="True" />
+					<property name="IncludeHeirarchy" value="True" />
+					<property name="LinkToSdkDocVersion" value="SDK_v1_1" />
+					<property name="OmitObjectTags" value="False" />
+					<property name="OutputDirectory" value="${build.doc.dir}" />
+					<property name="PlugInNamespace" value="ms.vscc" />
+					<property name="RootPageContainsNamespaces" value="True" />
+					<property name="ShowMissingParams" value="True" />
+					<property name="ShowMissingRemarks" value="False" />
+					<property name="ShowMissingReturns" value="True" />
+					<property name="ShowMissingSummaries" value="True" />
+					<property name="ShowMissingValues" value="True" />
+					<property name="ShowVisualBasic" value="False" />
+					<property name="SortTOCByNamespace" value="True" />
+					<property name="SplitTOCs" value="False" />
+					<property name="Title" value="${build.name} v${build.version}" />
+				</documenter>
+			</documenters>
+		</ndoc>
+		<delete>
+			<fileset basedir="${build.doc.dir}">
+				<include name="**/**" />
+				<exclude name="*.chm" />
+			</fileset>
+		</delete>
+	</target>
+	
+	<target name="install" description="Creates distribution packages." depends="all">
+		<mkdir dir="${build.install.dir}" />
+		<zip verbose="true"
+			zipfile="${build.install.dir}/${build.name}_${build.version}.zip"
+			ziplevel="9">
+			<fileset basedir="${build.dir}">
+				<include name="**" />
+				<exclude name="${build.install.dir}/**" />
+				<exclude name="${build.log.dir}/**" />
+			</fileset>
+			<fileset basedir=".">
+				<include name="readme.txt" />
+			</fileset>
+		</zip>
+		<zip verbose="true"
+			zipfile="${build.install.dir}/${build.name}_${build.version}_src.zip"
+			ziplevel="9">
+			<fileset basedir=".">
+				<include name="**" />
+				<exclude name="**/*.suo" />
+				<exclude name="**/*.user" />
+				<exclude name="**/*.cache" />
+				<exclude name="**/bin/**" />
+				<exclude name="**/build/**" />
+				<exclude name="**/lib/*.dll" />
+				<exclude name="**/obj/**" />
+			</fileset>
+		</zip>
+	</target>
+	
+	<target name="production" description="Executes the production build." depends="clean set-version all test doc cleanup-build-output install">
+		<echo message="Completed production build." />
+	</target>
+
+
+	
+	<!-- === PREREQUISITE TASKS === -->
+	<target name="build-tasks" description="Builds the custom NAnt task solution.">
+		<!-- solution configuration="${build.config}" outputdir="${build.bin.dir}" solutionfile="Paraesthesia.Tools.NAntTasks.sln" / -->
+		<exec program="MSBuild.exe">
+			<arg value="Paraesthesia.Tools.NAntTasks.sln" />
+			<arg line="/p:Configuration=${build.config}" />
+			<arg line="/p:OutDir=&quot;${build.bin.dir}\\&quot;" />
+		</exec>
+	</target>
+	
+	<target name="build-tests" description="Builds the unit tests for the project.">
+		<!-- TODO: When there are unit tests, build them. -->
+	</target>
+
+	<target name="cleanup-build-output" description="Cleans up the build output for archival.">
+		<echo message="Cleaning up build output..." />
+		<delete>
+			<fileset basedir="${build.bin.dir}">
+				<include name="*" />
+				<exclude name="Paraesthesia.Tools.*" />
+			</fileset>
+		</delete>
+		<echo message="Build output cleaned up.  Only project output files remain." />
+	</target>
+
+	<target name="set-version" description="Updates the build assembly version.">
+		<asminfo output="AssemblyVersion.cs" language="CSharp">
+			<imports>
+				<import namespace="System.Reflection" />
+			</imports>
+			<attributes>
+				<attribute type="AssemblyVersionAttribute" value="${build.version}"/>
+				<attribute type="AssemblyCompanyAttribute" value="Paraesthesia" />
+				<attribute type="AssemblyCopyrightAttribute" value="(c) 2007 - ${datetime::get-year(datetime::now())} Travis Illig" />
+			</attributes>
+			<references>
+				<include name="System.dll" />
+			</references>
+		</asminfo>
+	</target>
+
+</project>
