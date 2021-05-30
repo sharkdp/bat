@@ -9,6 +9,7 @@
 ## Other
 
 - Fix Clippy lints, see #1661 (@mohamed-abdelnour)
+- Add syntax highlighting test files, see #1213 and #1668 (@mohamed-abdelnour)
 
 
 ## Syntaxes
