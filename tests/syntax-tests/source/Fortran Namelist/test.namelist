@@ -1,0 +1,5 @@
+&TEST
+FOO=0,
+BAR=1.0,
+BAZ='Hello, World!'
+/
