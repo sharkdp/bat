@@ -1,0 +1,86 @@
+# Interface to test varlink implementations against.
+# First you write a varlink client calling:
+# Start, Test01, Test02, …, Test09, End
+# The return value of the previous call should be the argument of the next call.
+# Then you test this client against well known servers like python or rust from
+# https://github.com/varlink/
+#
+# Next you write a varlink server providing the same service as the well known ones.
+# Now run your client against it and run well known clients like python or rust
+# from https://github.com/varlink/ against your server. If all works out, then
+# your new language bindings should be varlink certified.
+interface org.varlink.certification
+
+type Interface (
+  foo: ?[]?[string](foo, bar, baz),
+  anon: (foo: bool, bar: bool)
+)
+
+type MyType (
+  object: object,
+  enum: (one, two, three),
+  struct: (first: int, second: string),
+  array: []string,
+  dictionary: [string]string,
+  stringset: [string](),
+  nullable: ?string,
+  nullable_array_struct: ?[](first: int, second: string),
+  interface: Interface
+)
+
+method Start() -> (client_id: string)
+
+method Test01(client_id: string) -> (bool: bool)
+
+method Test02(client_id: string, bool: bool) -> (int: int)
+
+method Test03(client_id: string, int: int) -> (float: float)
+
+method Test04(client_id: string, float: float) -> (string: string)
+
+method Test05(client_id: string, string: string) -> (
+  bool: bool,
+  int: int,
+  float: float,
+  string: string
+)
+
+method Test06(
+  client_id: string,
+  bool: bool,
+  int: int,
+  float: float,
+  string: string
+) -> (
+  struct: (
+    bool: bool,
+    int: int,
+    float: float,
+    string: string
+  )
+)
+
+method Test07(
+  client_id: string,
+  struct: (
+    bool: bool,
+    int: int,
+    float: float,
+    string: string
+  )
+) -> (map: [string]string)
+
+method Test08(client_id: string, map: [string]string) -> (set: [string]())
+
+method Test09(client_id: string, set: [string]()) -> (mytype: MyType)
+
+# returns more than one reply with "continues"
+method Test10(client_id: string, mytype: MyType) -> (string: string)
+
+# must be called as "oneway"
+method Test11(client_id: string, last_more_replies: []string) -> ()
+
+method End(client_id: string) -> (all_ok: bool)
+
+error ClientIdError ()
+error CertificationError (wants: object, got: object)
