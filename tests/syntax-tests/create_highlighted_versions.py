@@ -18,6 +18,7 @@ BAT_OPTIONS = [
 
 SKIP_FILENAMES = [
     "LICENSE.md",
+    "NOTICE",
     "README.md",
     "bat_options",
 ]
