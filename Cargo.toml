@@ -80,7 +80,7 @@ wait-timeout = "0.2.0"
 tempfile = "3.2.0"
 
 [target.'cfg(unix)'.dev-dependencies]
-nix = "0.20.0"
+nix = "0.21.0"
 
 [build-dependencies]
 clap = { version = "2.33", optional = true }
