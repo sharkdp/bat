@@ -98,6 +98,9 @@ dependencies = [
  "git2",
  "globset",
  "lazy_static",
+ "magic",
+ "mime",
+ "mime_guess",
  "nix",
  "path_abs",
  "predicates",
@@ -136,6 +139,12 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
+
+[[package]]
+name = "bitflags"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
 
 [[package]]
 name = "bitflags"
@@ -204,7 +213,7 @@ checksum = "37e58ac78573c40708d45522f0d80fa2f01cc4f9b4e2bf749807255454312002"
 dependencies = [
  "ansi_term 0.11.0",
  "atty",
- "bitflags",
+ "bitflags 1.2.1",
  "strsim",
  "term_size",
  "textwrap",
@@ -461,7 +470,7 @@ version = "0.13.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17929de7239dea9f68aa14f94b2ab4974e7b24c1314275ffcc12a7758172fa18"
 dependencies = [
- "bitflags",
+ "bitflags 1.2.1",
  "libc",
  "libgit2-sys",
  "log",
@@ -623,6 +632,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "magic"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96f74caec41a12630bb8fd9546530a41addb720eb0c10593855f59ce96a779aa"
+dependencies = [
+ "bitflags 0.7.0",
+ "libc",
+ "magic-sys",
+]
+
+[[package]]
+name = "magic-sys"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8845491e44b9c377c9c361668c111c0655ebb75e10a8f06175a645f225f79661"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "matches"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -633,6 +662,22 @@ name = "memchr"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
+
+[[package]]
+name = "mime"
+version = "0.3.16"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
+
+[[package]]
+name = "mime_guess"
+version = "2.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2684d4c2e97d99848d30b324b00c8fcc7e5c897b7cbb5819b09e7c90e8baf212"
+dependencies = [
+ "mime",
+ "unicase",
+]
 
 [[package]]
 name = "miniz_oxide"
@@ -650,7 +695,7 @@ version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa9b4819da1bc61c0ea48b63b7bc8604064dd43013e7cc325df098d49cd7c18a"
 dependencies = [
- "bitflags",
+ "bitflags 1.2.1",
  "cc",
  "cfg-if",
  "libc",
@@ -687,7 +732,7 @@ version = "6.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30b46fd9edbc018f0be4e366c24c46db44fac49cd01c039ae85308088b089dd5"
 dependencies = [
- "bitflags",
+ "bitflags 1.2.1",
  "lazy_static",
  "libc",
  "onig_sys",
@@ -877,7 +922,7 @@ version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "742739e41cd49414de871ea5e549afb7e2a3ac77b589bcbebe8c82fab37147fc"
 dependencies = [
- "bitflags",
+ "bitflags 1.2.1",
 ]
 
 [[package]]
@@ -1083,7 +1128,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2bfac2b23b4d049dc9a89353b4e06bbc85a8f42020cccbe5409a115cf19031e5"
 dependencies = [
  "bincode",
- "bitflags",
+ "bitflags 1.2.1",
  "fancy-regex",
  "flate2",
  "fnv",
@@ -1179,6 +1224,15 @@ name = "ucd-trie"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56dee185309b50d1f11bfedef0fe6d036842e3fb77413abef29f8f8d1c5d4c1c"
+
+[[package]]
+name = "unicase"
+version = "2.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50f37be617794602aabbeee0be4f259dc1778fabe05e2d67ee8f79326d5cb4f6"
+dependencies = [
+ "version_check",
+]
 
 [[package]]
 name = "unicode-bidi"

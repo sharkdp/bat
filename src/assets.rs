@@ -4,6 +4,9 @@ use std::fs::{self, File};
 use std::io::BufReader;
 use std::path::Path;
 
+#[cfg(feature = "guess-mimetype")]
+use std::str::FromStr;
+
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet, SyntaxSetBuilder};
@@ -220,6 +223,31 @@ impl HighlightingAssets {
                 .find_syntax_by_token(language)
                 .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
         } else {
+            #[cfg(all(feature = "guess-mimetype", target_os = "linux"))]
+            {
+                if let Some(user_provided_name) = input.metadata.user_provided_name.as_mut() {
+                    if user_provided_name.extension().is_none() {
+                        thread_local! {
+                            static COOKIE: magic::Cookie = {
+                                let cookie = magic::Cookie::open(magic::flags::MIME_TYPE).unwrap();
+                                cookie.load(&["/usr/share/file/misc/magic.mgc"]).ok();
+                                cookie
+                            };
+                        }
+                        let first_line = &input.reader.first_line;
+                        user_provided_name.set_extension(&COOKIE.with(|cookie| {
+                            cookie
+                                .buffer(&first_line)
+                                .ok()
+                                .and_then(|mimestr| mime::Mime::from_str(&mimestr).ok())
+                                .filter(|mime| *mime != mime::TEXT_PLAIN)
+                                .and_then(|mime| mime_guess::get_mime_extensions(&mime)?.get(0))
+                                .unwrap_or(&"")
+                        }));
+                    }
+                }
+            }
+
             let line_syntax = self.get_first_line_syntax(&mut input.reader);
 
             // Get the path of the file:
