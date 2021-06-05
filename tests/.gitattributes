@@ -4,9 +4,9 @@ snapshots/** text=auto eol=lf
 syntax-tests/source/** text=auto eol=lf
 syntax-tests/highlighted/** text=auto eol=lf
 
-examples/* linguist-vendored
-snapshots/* linguist-vendored
-benchmarks/* linguist-vendored
-benchmarks/test-src/* linguist-vendored
-scripts/* linguist-vendored
-syntax-tests/* linguist-vendored
+# Linguist overrides
+benchmarks/** linguist-vendored
+examples/** linguist-vendored
+snapshots/** linguist-vendored
+syntax-tests/highlighted/** linguist-vendored
+syntax-tests/source/** linguist-vendored
