@@ -516,6 +516,8 @@ set, `less` is used by default. If you want to use a different pager, you can ei
 `PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
 `PAGER`.
 
+**Note**: If `PAGER` is `more` or `most`, `bat` will silently use `less` instead to ensure support for colors.
+
 If you want to pass command-line arguments to the pager, you can also set them via the
 `PAGER`/`BAT_PAGER` variables:
 
