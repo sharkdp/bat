@@ -409,10 +409,11 @@ even when truecolor support is available:
   It replaces certain bright colors with 8-bit colors from 16 to 21. **Do not** use this simply
   because you have a 256-color terminal but are not using base16-shell.
 
-Although these themes are more restricted, they have two advantages over truecolor themes:
+Although these themes are more restricted, they have three advantages over truecolor themes. They:
 
-- They harmonize better with other terminal software using 3-bit or 4-bit colors.
-- When you change your terminal theme, `bat` output already on the screen will update to match.
+- Enjoy maximum compatibility. Some terminal utilities do not support more than 3-bit colors.
+- Adapt to terminal theme changes. Even for already printed output.
+- Visually harmonize better with other terminal software.
 
 ### Output style
 
