@@ -211,7 +211,7 @@ impl<'a> Input<'a> {
                             )
                             .into());
                         }
-                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happended...");
+                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
                     InputReader::new(BufReader::new(file))

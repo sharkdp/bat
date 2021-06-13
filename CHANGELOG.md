@@ -542,7 +542,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
 - Added `BAT_CONFIG_PATH` environment variable to set a non-default path for `bat`s configuration file, see #375 (@deg4uss3r)
 
-- Allow for multiple occurences of `--style` to allow for the configuration
+- Allow for multiple occurrences of `--style` to allow for the configuration
   of styles from the config file, see #367 (@sindreij)
 
 - Allow for multiple `--line-range` arguments, see #23
