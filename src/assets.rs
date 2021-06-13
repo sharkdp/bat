@@ -23,6 +23,17 @@ pub struct HighlightingAssets {
     fallback_theme: Option<&'static str>,
 }
 
+const IGNORED_SUFFIXES: [&str; 10] = [
+    // Editor etc backups
+    "~", ".bak", ".old", ".orig",
+    // Debian and derivatives apt/dpkg backups
+    ".dpkg-dist", ".dpkg-old",
+    // Red Hat and derivatives rpm backups
+    ".rpmnew", ".rpmorig", ".rpmsave",
+    // Build system input/template files
+    ".in",
+];
+
 impl HighlightingAssets {
     pub fn default_theme() -> &'static str {
         "Monokai Extended"
@@ -273,12 +284,26 @@ impl HighlightingAssets {
         self.syntax_set
             .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
             .or_else(|| {
+                let file_path = Path::new(file_name);
                 self.syntax_set.find_syntax_by_extension(
-                    Path::new(file_name)
+                    file_path
                         .extension()
                         .and_then(|x| x.to_str())
                         .unwrap_or_default(),
-                )
+                ).or_else(|| {
+                    let file_str = file_path.to_str().unwrap_or_default();
+                    for suffix in IGNORED_SUFFIXES.iter() {
+                        if file_str.ends_with(suffix) {
+                            return self.get_extension_syntax(
+                                OsStr::new(
+                                    file_str
+                                        .strip_suffix(suffix)
+                                        .unwrap_or_default()
+                                ));
+                        }
+                    }
+                    None
+                })
             })
     }
 
