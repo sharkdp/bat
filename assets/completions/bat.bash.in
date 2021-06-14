@@ -1,29 +1,32 @@
 # shellcheck disable=SC2207
 
+# Requires https://github.com/scop/bash-completion
+
 _bat() {
-	if [[ ${COMP_WORDS[1]-} == cache ]]; then
-		case $3 in
+	local cur prev words cword split
+	_init_completion -s || return 0
+
+	if [[ ${words[1]-} == cache ]]; then
+		case $prev in
 		--source | --target)
-			local IFS=$'\n'
-			COMPREPLY=($(compgen -d -- "$2"))
-			compopt -o filenames
+			_filedir -d
 			return 0
 			;;
 		esac
 		COMPREPLY=($(compgen -W "
 			--build --clear --source --target --blank --help
-		" -- "$2"))
+		" -- "$cur"))
 		return 0
 	fi
 
-	case $3 in
+	case $prev in
 	-l | --language)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$(
 			"$1" --list-languages | while IFS=: read -r lang _; do
 				printf "%s\n" "$lang"
 			done
-		)" -- "$2"))
+		)" -- "$cur"))
 		compopt -o filenames  # for escaping
 		return 0
 		;;
@@ -35,36 +38,36 @@ _bat() {
 		return 0
 		;;
 	--file-name)
-		local IFS=$'\n'
-		COMPREPLY=($(compgen -f -- "$2"))
-		compopt -o filenames
+		_filedir
 		return 0
 		;;
 	--wrap)
-		COMPREPLY=($(compgen -W "auto never character" -- "$2"))
+		COMPREPLY=($(compgen -W "auto never character" -- "$cur"))
 		return 0
 		;;
 	--color | --decorations | --paging)
-		COMPREPLY=($(compgen -W "auto never always" -- "$2"))
+		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
 	--italic-text)
-		COMPREPLY=($(compgen -W "always never" -- "$2"))
+		COMPREPLY=($(compgen -W "always never" -- "$cur"))
 		return 0
 		;;
 	--pager)
-		COMPREPLY=($(compgen -c -- "$2"))
+		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
 		;;
 	--theme)
 		local IFS=$'\n'
-		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$2"))
+		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
 		compopt -o filenames  # for escaping
 		return 0
 		;;
 	esac
 
-	if [[ $2 == -* ]]; then
+	$split && return 0
+
+	if [[ $cur == -* ]]; then
 		COMPREPLY=($(compgen -W "
 			--show-all --plain --language --highlight-line
 			--file-name --diff --diff-context --tabs --wrap
@@ -72,13 +75,11 @@ _bat() {
 			--decorations --paging --pager --map-syntax --theme
 			--list-themes --style --line-range --list-languages
 			--help --version
-		" -- "$2"))
+		" -- "$cur"))
 		return 0
 	fi
 
-	local IFS=$'\n'
-	COMPREPLY=($(compgen -f -- "$2"))
-	compopt -o filenames
-	((COMP_CWORD == 1)) && COMPREPLY+=($(compgen -W cache -- "$2"))
+	_filedir
+	((cword == 1)) && COMPREPLY+=($(compgen -W cache -- "$cur"))
 
 } && complete -F _bat {{PROJECT_EXECUTABLE}}
