@@ -59,7 +59,7 @@ _bat() {
 	--theme)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$2"))
-		compopt -o filenames
+		compopt -o filenames  # for escaping
 		return 0
 		;;
 	esac
