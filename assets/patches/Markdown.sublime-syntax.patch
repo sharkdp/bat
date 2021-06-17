@@ -1,5 +1,5 @@
 diff --git syntaxes/01_Packages/Markdown/Markdown.sublime-syntax syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-index 19dc685d..6afd87ae 100644
+index 19dc685d..44440c7f 100644
 --- syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 +++ syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 @@ -24,7 +24,6 @@ variables:
@@ -166,3 +166,12 @@ index 19dc685d..6afd87ae 100644
      - match: ^\s*$\n?
        scope: invalid.illegal.non-terminated.bold-italic.markdown
        pop: true
+@@ -1152,7 +1110,7 @@ contexts:
+     - match: |-
+          (?x)
+           {{fenced_code_block_start}}
+-          ((?i:rust))
++          ((?i:rust|rs))
+           {{fenced_code_block_trailing_infostring_characters}}
+       captures:
+         0: meta.code-fence.definition.begin.rust.markdown-gfm
