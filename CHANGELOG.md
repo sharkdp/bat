@@ -17,6 +17,7 @@
 - Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
 - Added support for `XAML` syntax, see #1590 and #1655 (@mohamed-abdelnour)
 - Apply `DotENV` syntax also for `.env.default` and `.env.defaults` files, see #1669
+- Added support for `slim` syntax, see #1693 (@mfinelli)
 
 
 ## New themes
