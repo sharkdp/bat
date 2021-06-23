@@ -189,6 +189,10 @@ is dependent on your operating system. To get the default path for your system, 
 
 Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
 location of the configuration file.
+
+To generate a default configuration file, call:
+
+\fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR
 .SH "ADDING CUSTOM LANGUAGES"
 {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
 customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
