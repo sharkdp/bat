@@ -328,7 +328,7 @@ impl<'a> Input<'a> {
         self
     }
 
-    /// The title for the input (e.g. "http://example.com/example.txt")
+    /// The title for the input (e.g. "Descriptive title")
     /// This defaults to the file name.
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.input.description_mut().set_title(Some(title.into()));
