@@ -32,8 +32,9 @@ _bat() {
 		;;
 	-H | --highlight-line | --diff-context | --tabs | --terminal-width | \
 	-m | --map-syntax | --style | --line-range | -h | --help | -V | \
-	--version)
-		# argument required but no completion available, or argument
+	--version | --diagnostic | --config-file | --config-dir | \
+	--cache-dir | --generate-config-file)
+		# argument required but no completion available, or option
 		# causes an exit
 		return 0
 		;;
@@ -74,7 +75,9 @@ _bat() {
 			--terminal-width --number --color --italic-text
 			--decorations --paging --pager --map-syntax --theme
 			--list-themes --style --line-range --list-languages
-			--help --version
+			--help --version --force-colorization --unbuffered
+			--diagnostic --config-file --config-dir --cache-dir
+			--generate-config-file
 		" -- "$cur"))
 		return 0
 	fi
