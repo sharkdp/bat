@@ -18,8 +18,9 @@ jobs:
     name: Minimum supported rust version
     runs-on: ubuntu-18.04
     steps:
-    - name: Git checkout
+    - name: Checkout source code
       uses: actions/checkout@v2
+
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
@@ -94,17 +95,17 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-18.04 , target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04 , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: macos-10.15  , target: x86_64-apple-darwin         }
-          # - { os: windows-2019 , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
-          - { os: windows-2019 , target: i686-pc-windows-msvc        }
-          - { os: windows-2019 , target: x86_64-pc-windows-gnu       }
-          - { os: windows-2019 , target: x86_64-pc-windows-msvc      }
+          - { os: ubuntu-18.04, target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-18.04, target: aarch64-unknown-linux-gnu   , use-cross: true }
+          - { os: ubuntu-18.04, target: i686-unknown-linux-gnu      , use-cross: true }
+          - { os: ubuntu-18.04, target: i686-unknown-linux-musl     , use-cross: true }
+          - { os: ubuntu-18.04, target: x86_64-unknown-linux-gnu    }
+          - { os: ubuntu-18.04, target: x86_64-unknown-linux-musl   , use-cross: true }
+          - { os: macos-10.15 , target: x86_64-apple-darwin         }
+          # - { os: windows-2019, target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
+          - { os: windows-2019, target: i686-pc-windows-msvc        }
+          - { os: windows-2019, target: x86_64-pc-windows-gnu       }
+          - { os: windows-2019, target: x86_64-pc-windows-msvc      }
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -120,7 +121,7 @@ jobs:
     - name: Extract crate information
       shell: bash
       run: |
-        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
