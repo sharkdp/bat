@@ -291,10 +291,11 @@ impl HighlightingAssets {
                         .and_then(|x| x.to_str())
                         .unwrap_or_default(),
                 ).or_else(|| {
-                    let file_str = file_path.to_str().unwrap_or_default();
-                    for suffix in IGNORED_SUFFIXES.iter() {
-                        if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                            return self.get_extension_syntax(OsStr::new(stripped_filename));
+                    if let Some(file_str) = file_path.to_str() {
+                        for suffix in IGNORED_SUFFIXES.iter() {
+                            if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
+                                return self.get_extension_syntax(OsStr::new(stripped_filename));
+                            }
                         }
                     }
                     None
