@@ -2,6 +2,7 @@
 
 ## Features
 
+- Ignore known backup/template filename suffixes when selecting the syntax, see #1687 (@scop)
 
 ## Bugfixes
 
