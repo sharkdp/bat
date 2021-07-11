@@ -218,3 +218,6 @@
 [submodule "assets/syntaxes/02_Extra/SublimeEthereum"]
 	path = assets/syntaxes/02_Extra/SublimeEthereum
 	url = https://github.com/davidhq/SublimeEthereum.git
+[submodule "assets/syntaxes/02_Extra/Slim"]
+	path = assets/syntaxes/02_Extra/Slim
+	url = https://github.com/slim-template/ruby-slim.tmbundle.git
