@@ -202,7 +202,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
 ```bash
-sudo dpkg -i bat_0.18.1_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.18.2_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux

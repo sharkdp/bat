@@ -2,6 +2,28 @@
 
 ## Features
 
+
+## Bugfixes
+
+
+## Other
+
+
+## Syntaxes
+
+
+## New themes
+
+
+## `bat` as a library
+
+
+
+
+# v0.18.2
+
+## Features
+
 - Ignore known backup/template filename suffixes when selecting the syntax, see #1687 (@scop)
 
 ## Bugfixes
@@ -13,20 +35,11 @@
 - Add syntax highlighting test files, see #1213 and #1668 (@mohamed-abdelnour)
 - Add bash completion, see #1678 (@scop)
 
-
 ## Syntaxes
 
 - Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
 - Added support for `XAML` syntax, see #1590 and #1655 (@mohamed-abdelnour)
 - Apply `DotENV` syntax also for `.env.default` and `.env.defaults` files, see #1669
-
-
-## New themes
-
-
-## `bat` as a library
-
-
 
 
 # v0.18.1
