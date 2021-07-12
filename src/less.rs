@@ -4,7 +4,9 @@ use std::ffi::OsStr;
 use std::process::Command;
 
 pub fn retrieve_less_version(less_path: &dyn AsRef<OsStr>) -> Option<usize> {
-    let cmd = Command::new(less_path).arg("--version").output().ok()?;
+    let resolved_path = grep_cli::resolve_binary(less_path.as_ref()).ok()?;
+
+    let cmd = Command::new(resolved_path).arg("--version").output().ok()?;
     parse_less_version(&cmd.stdout)
 }
 

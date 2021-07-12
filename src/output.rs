@@ -63,7 +63,14 @@ impl OutputType {
             return Err(ErrorKind::InvalidPagerValueBat.into());
         }
 
-        let mut p = Command::new(&pager.bin);
+        let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
+            Ok(path) => path,
+            Err(_) => {
+                return Ok(OutputType::stdout());
+            }
+        };
+
+        let mut p = Command::new(resolved_path);
         let args = pager.args;
 
         if pager.kind == PagerKind::Less {
