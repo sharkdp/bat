@@ -231,7 +231,7 @@ fn run() -> Result<bool> {
         let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
             .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
 
-        bugreport!()
+        let report = bugreport!()
             .info(SoftwareVersion::default())
             .info(OperatingSystem::default())
             .info(CommandLine::default())
@@ -253,9 +253,19 @@ fn run() -> Result<bool> {
                 "MANPAGER",
             ]))
             .info(FileContent::new("Config file", config_file()))
-            .info(CompileTimeInformation::default())
-            .info(CommandOutput::new("Less version", pager, &["--version"]))
-            .print::<Markdown>();
+            .info(CompileTimeInformation::default());
+
+        let mut report = if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
+            report.info(CommandOutput::new(
+                "Less version",
+                resolved_path,
+                &["--version"],
+            ))
+        } else {
+            report
+        };
+
+        report.print::<Markdown>();
 
         return Ok(true);
     }
