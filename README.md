@@ -719,7 +719,7 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 
 ## Security vulnerabilities
 
-Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnarability in `bat`.
+Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnerability in `bat`.
 
 ## Project goals and alternatives
 
