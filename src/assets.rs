@@ -25,11 +25,17 @@ pub struct HighlightingAssets {
 
 const IGNORED_SUFFIXES: [&str; 10] = [
     // Editor etc backups
-    "~", ".bak", ".old", ".orig",
+    "~",
+    ".bak",
+    ".old",
+    ".orig",
     // Debian and derivatives apt/dpkg backups
-    ".dpkg-dist", ".dpkg-old",
+    ".dpkg-dist",
+    ".dpkg-old",
     // Red Hat and derivatives rpm backups
-    ".rpmnew", ".rpmorig", ".rpmsave",
+    ".rpmnew",
+    ".rpmorig",
+    ".rpmsave",
     // Build system input/template files
     ".in",
 ];
@@ -285,21 +291,24 @@ impl HighlightingAssets {
             .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
             .or_else(|| {
                 let file_path = Path::new(file_name);
-                self.syntax_set.find_syntax_by_extension(
-                    file_path
-                        .extension()
-                        .and_then(|x| x.to_str())
-                        .unwrap_or_default(),
-                ).or_else(|| {
-                    if let Some(file_str) = file_path.to_str() {
-                        for suffix in IGNORED_SUFFIXES.iter() {
-                            if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                                return self.get_extension_syntax(OsStr::new(stripped_filename));
+                self.syntax_set
+                    .find_syntax_by_extension(
+                        file_path
+                            .extension()
+                            .and_then(|x| x.to_str())
+                            .unwrap_or_default(),
+                    )
+                    .or_else(|| {
+                        if let Some(file_str) = file_path.to_str() {
+                            for suffix in IGNORED_SUFFIXES.iter() {
+                                if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
+                                    return self
+                                        .get_extension_syntax(OsStr::new(stripped_filename));
+                                }
                             }
                         }
-                    }
-                    None
-                })
+                        None
+                    })
             })
     }
 
