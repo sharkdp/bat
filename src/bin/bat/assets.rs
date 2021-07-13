@@ -18,21 +18,9 @@ pub fn cache_dir() -> Cow<'static, str> {
 }
 
 pub fn clear_assets() {
-    let theme_set_path = PROJECT_DIRS.cache_dir().join("themes.bin");
-    let syntax_set_path = PROJECT_DIRS.cache_dir().join("syntaxes.bin");
-    let metadata_file = PROJECT_DIRS.cache_dir().join("metadata.yaml");
-
-    print!("Clearing theme set cache ... ");
-    fs::remove_file(theme_set_path).ok();
-    println!("okay");
-
-    print!("Clearing syntax set cache ... ");
-    fs::remove_file(syntax_set_path).ok();
-    println!("okay");
-
-    print!("Clearing metadata file ... ");
-    fs::remove_file(metadata_file).ok();
-    println!("okay");
+    clear_asset("themes.bin", "theme set cache");
+    clear_asset("syntaxes.bin", "syntax set cache");
+    clear_asset("metadata.yaml", "metadata file");
 }
 
 pub fn assets_from_cache_or_binary() -> Result<HighlightingAssets> {
@@ -55,4 +43,10 @@ pub fn assets_from_cache_or_binary() -> Result<HighlightingAssets> {
 
     Ok(HighlightingAssets::from_cache(&cache_dir)
         .unwrap_or_else(|_| HighlightingAssets::from_binary()))
+}
+
+fn clear_asset(filename: &str, description: &str) {
+    print!("Clearing {} ... ", description);
+    fs::remove_file(PROJECT_DIRS.cache_dir().join(filename)).ok();
+    println!("okay");
 }
