@@ -97,30 +97,9 @@ impl HighlightingAssets {
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
-        let syntax_set_path = cache_path.join("syntaxes.bin");
-        let theme_set_path = cache_path.join("themes.bin");
-
-        let syntax_set_file = File::open(&syntax_set_path).chain_err(|| {
-            format!(
-                "Could not load cached syntax set '{}'",
-                syntax_set_path.to_string_lossy()
-            )
-        })?;
-        let syntax_set: SyntaxSet = from_reader(BufReader::new(syntax_set_file))
-            .chain_err(|| "Could not parse cached syntax set")?;
-
-        let theme_set_file = File::open(&theme_set_path).chain_err(|| {
-            format!(
-                "Could not load cached theme set '{}'",
-                theme_set_path.to_string_lossy()
-            )
-        })?;
-        let theme_set: ThemeSet = from_reader(BufReader::new(theme_set_file))
-            .chain_err(|| "Could not parse cached theme set")?;
-
         Ok(HighlightingAssets {
-            syntax_set,
-            theme_set,
+            syntax_set: asset_from_cache(&cache_path.join("syntaxes.bin"), "syntax set")?,
+            theme_set: asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
             fallback_theme: None,
         })
     }
@@ -146,32 +125,12 @@ impl HighlightingAssets {
 
     pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
-        let theme_set_path = target_dir.join("themes.bin");
-        let syntax_set_path = target_dir.join("syntaxes.bin");
-
-        print!(
-            "Writing theme set to {} ... ",
-            theme_set_path.to_string_lossy()
-        );
-        dump_to_file(&self.theme_set, &theme_set_path).chain_err(|| {
-            format!(
-                "Could not save theme set to {}",
-                theme_set_path.to_string_lossy()
-            )
-        })?;
-        println!("okay");
-
-        print!(
-            "Writing syntax set to {} ... ",
-            syntax_set_path.to_string_lossy()
-        );
-        dump_to_file(&self.syntax_set, &syntax_set_path).chain_err(|| {
-            format!(
-                "Could not save syntax set to {}",
-                syntax_set_path.to_string_lossy()
-            )
-        })?;
-        println!("okay");
+        asset_to_cache(&self.theme_set, &target_dir.join("themes.bin"), "theme set")?;
+        asset_to_cache(
+            &self.syntax_set,
+            &target_dir.join("syntaxes.bin"),
+            "syntax set",
+        )?;
 
         print!(
             "Writing metadata to folder {} ... ",
@@ -317,6 +276,31 @@ impl HighlightingAssets {
             .ok()
             .and_then(|l| self.syntax_set.find_syntax_by_first_line(&l))
     }
+}
+
+fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
+    print!("Writing {} to {} ... ", description, path.to_string_lossy());
+    dump_to_file(asset, &path).chain_err(|| {
+        format!(
+            "Could not save {} to {}",
+            description,
+            path.to_string_lossy()
+        )
+    })?;
+    println!("okay");
+    Ok(())
+}
+
+fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &str) -> Result<T> {
+    let asset_file = File::open(&path).chain_err(|| {
+        format!(
+            "Could not load cached {} '{}'",
+            description,
+            path.to_string_lossy()
+        )
+    })?;
+    from_reader(BufReader::new(asset_file))
+        .chain_err(|| format!("Could not parse cached {}", description))
 }
 
 #[cfg(test)]
