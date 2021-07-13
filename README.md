@@ -717,6 +717,10 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 - [keith-hall](https://github.com/keith-hall)
 - [Enselic](https://github.com/Enselic)
 
+## Security vulnerabilities
+
+Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnarability in `bat`.
+
 ## Project goals and alternatives
 
 `bat` tries to achieve the following goals:
