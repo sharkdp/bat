@@ -28,15 +28,17 @@
 
 ## Bugfixes
 
+- Fix for a security vulnerability on Windows. Prior to this release, `bat` would execute programs called `less`/`less.exe` from the current working directory (instead of the one from `PATH`) with priority. An attacker might be able to use this by placing a malicious program in a shared directory where the user would execute `bat`. `bat` users on Windows are advised to upgrade to this version. See #1724 and #1472 (@Ry0taK).
 
 ## Other
 
+- Add bash completion, see #1678 (@scop)
 - Fix Clippy lints, see #1661 (@mohamed-abdelnour)
 - Add syntax highlighting test files, see #1213 and #1668 (@mohamed-abdelnour)
-- Add bash completion, see #1678 (@scop)
 
 ## Syntaxes
 
+- Upgraded Julia syntax to fix a highlighting bug, see #1692
 - Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
 - Added support for `XAML` syntax, see #1590 and #1655 (@mohamed-abdelnour)
 - Apply `DotENV` syntax also for `.env.default` and `.env.defaults` files, see #1669
