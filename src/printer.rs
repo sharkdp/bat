@@ -174,7 +174,7 @@ impl<'a> InteractivePrinter<'a> {
             let syntax = match assets.get_syntax(config.language, input, &config.syntax_mapping) {
                 Ok(syntax) => syntax,
                 Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
-                    assets.syntax_set.find_syntax_plain_text()
+                    assets.get_syntax_set().find_syntax_plain_text()
                 }
                 Err(e) => return Err(e),
             };
@@ -192,7 +192,7 @@ impl<'a> InteractivePrinter<'a> {
             #[cfg(feature = "git")]
             line_changes,
             highlighter,
-            syntax_set: &assets.syntax_set,
+            syntax_set: assets.get_syntax_set(),
             background_color_highlight,
         })
     }
