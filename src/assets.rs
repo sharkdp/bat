@@ -41,6 +41,14 @@ const IGNORED_SUFFIXES: [&str; 10] = [
 ];
 
 impl HighlightingAssets {
+    fn new(syntax_set: SyntaxSet, theme_set: ThemeSet) -> Self {
+        HighlightingAssets {
+            syntax_set,
+            theme_set,
+            fallback_theme: None,
+        }
+    }
+
     pub fn default_theme() -> &'static str {
         "Monokai Extended"
     }
@@ -89,19 +97,17 @@ impl HighlightingAssets {
             );
         }
 
-        Ok(HighlightingAssets {
-            syntax_set: syntax_set_builder.build(),
+        Ok(HighlightingAssets::new(
+            syntax_set_builder.build(),
             theme_set,
-            fallback_theme: None,
-        })
+        ))
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
-        Ok(HighlightingAssets {
-            syntax_set: asset_from_cache(&cache_path.join("syntaxes.bin"), "syntax set")?,
-            theme_set: asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
-            fallback_theme: None,
-        })
+        Ok(HighlightingAssets::new(
+            asset_from_cache(&cache_path.join("syntaxes.bin"), "syntax set")?,
+            asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
+        ))
     }
 
     fn get_integrated_syntaxset() -> SyntaxSet {
@@ -113,14 +119,10 @@ impl HighlightingAssets {
     }
 
     pub fn from_binary() -> Self {
-        let syntax_set = Self::get_integrated_syntaxset();
-        let theme_set = Self::get_integrated_themeset();
-
-        HighlightingAssets {
-            syntax_set,
-            theme_set,
-            fallback_theme: None,
-        }
+        HighlightingAssets::new(
+            Self::get_integrated_syntaxset(),
+            Self::get_integrated_themeset(),
+        )
     }
 
     pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
