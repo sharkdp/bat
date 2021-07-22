@@ -54,7 +54,7 @@ impl HighlightingAssets {
 
     pub fn from_files(source_dir: &Path, include_integrated_assets: bool) -> Result<Self> {
         let mut theme_set = if include_integrated_assets {
-            Self::get_integrated_themeset()
+            get_integrated_themeset()
         } else {
             ThemeSet {
                 themes: BTreeMap::new(),
@@ -83,7 +83,7 @@ impl HighlightingAssets {
             builder.add_plain_text_syntax();
             builder
         } else {
-            Self::get_integrated_syntaxset().into_builder()
+            get_integrated_syntaxset().into_builder()
         };
 
         let syntax_dir = source_dir.join("syntaxes");
@@ -109,19 +109,8 @@ impl HighlightingAssets {
         ))
     }
 
-    fn get_integrated_syntaxset() -> SyntaxSet {
-        from_binary(include_bytes!("../assets/syntaxes.bin"))
-    }
-
-    fn get_integrated_themeset() -> ThemeSet {
-        from_binary(include_bytes!("../assets/themes.bin"))
-    }
-
     pub fn from_binary() -> Self {
-        HighlightingAssets::new(
-            Self::get_integrated_syntaxset(),
-            Self::get_integrated_themeset(),
-        )
+        HighlightingAssets::new(get_integrated_syntaxset(), get_integrated_themeset())
     }
 
     pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
@@ -325,6 +314,14 @@ impl HighlightingAssets {
             .ok()
             .and_then(|l| syntax_set.find_syntax_by_first_line(&l)))
     }
+}
+
+fn get_integrated_syntaxset() -> SyntaxSet {
+    from_binary(include_bytes!("../assets/syntaxes.bin"))
+}
+
+fn get_integrated_themeset() -> ThemeSet {
+    from_binary(include_bytes!("../assets/themes.bin"))
 }
 
 fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
