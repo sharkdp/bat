@@ -1,7 +1,9 @@
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+use lazycell::LazyCell;
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
@@ -17,7 +19,8 @@ use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    syntax_set: SyntaxSet,
+    syntax_set_cell: LazyCell<SyntaxSet>,
+    serialized_syntax_set: Option<SerializedSyntaxSet>,
     pub(crate) theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
@@ -40,9 +43,21 @@ const IGNORED_SUFFIXES: [&str; 10] = [
 ];
 
 impl HighlightingAssets {
-    fn new(syntax_set: SyntaxSet, theme_set: ThemeSet) -> Self {
+    fn new(
+        syntax_set: Option<SyntaxSet>,
+        serialized_syntax_set: Option<SerializedSyntaxSet>,
+        theme_set: ThemeSet,
+    ) -> Self {
+        assert!(syntax_set.is_some() || serialized_syntax_set.is_some());
+
+        let syntax_set_cell = LazyCell::new();
+        if let Some(syntax_set) = syntax_set {
+            syntax_set_cell.fill(syntax_set).expect("can never fail");
+        }
+
         HighlightingAssets {
-            syntax_set,
+            syntax_set_cell,
+            serialized_syntax_set,
             theme_set,
             fallback_theme: None,
         }
@@ -97,20 +112,30 @@ impl HighlightingAssets {
         }
 
         Ok(HighlightingAssets::new(
-            syntax_set_builder.build(),
+            Some(syntax_set_builder.build()),
+            None,
             theme_set,
         ))
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
-            asset_from_cache(&cache_path.join("syntaxes.bin"), "syntax set")?,
+            None,
+            Some(SerializedSyntaxSet::FromFile(
+                cache_path.join("syntaxes.bin"),
+            )),
             asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
         ))
     }
 
     pub fn from_binary() -> Self {
-        HighlightingAssets::new(get_integrated_syntaxset(), get_integrated_themeset())
+        HighlightingAssets::new(
+            None,
+            Some(SerializedSyntaxSet::FromBinary(
+                get_serialized_integrated_syntaxset(),
+            )),
+            get_integrated_themeset(),
+        )
     }
 
     pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
@@ -137,7 +162,17 @@ impl HighlightingAssets {
     }
 
     pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
-        Ok(&self.syntax_set)
+        if !self.syntax_set_cell.filled() {
+            self.syntax_set_cell.fill(
+                self.serialized_syntax_set
+                .as_ref()
+                .expect("a dev forgot to setup serialized_syntax_set, please report to https://github.com/sharkdp/bat/issues")
+                .deserialize()?
+             ).unwrap();
+        }
+
+        // It is safe to .unwrap() because we just made sure it was .filled()
+        Ok(self.syntax_set_cell.borrow().unwrap())
     }
 
     /// Use [Self::get_syntaxes] instead
@@ -316,8 +351,32 @@ impl HighlightingAssets {
     }
 }
 
+/// A SyntaxSet in serialized form, i.e. bincoded and flate2 compressed.
+/// We keep it in this format since we want to load it lazily.
+#[derive(Debug)]
+enum SerializedSyntaxSet {
+    /// The data comes from a user-generated cache file.
+    FromFile(PathBuf),
+
+    /// The data to use is embedded into the bat binary.
+    FromBinary(&'static [u8]),
+}
+
+impl SerializedSyntaxSet {
+    fn deserialize(&self) -> Result<SyntaxSet> {
+        match self {
+            SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data)),
+            SerializedSyntaxSet::FromFile(ref path) => asset_from_cache(&path, "syntax set"),
+        }
+    }
+}
+
+fn get_serialized_integrated_syntaxset() -> &'static [u8] {
+    include_bytes!("../assets/syntaxes.bin")
+}
+
 fn get_integrated_syntaxset() -> SyntaxSet {
-    from_binary(include_bytes!("../assets/syntaxes.bin"))
+    from_binary(get_serialized_integrated_syntaxset())
 }
 
 fn get_integrated_themeset() -> ThemeSet {

@@ -101,6 +101,7 @@ dependencies = [
  "globset",
  "grep-cli",
  "lazy_static",
+ "lazycell",
  "nix",
  "path_abs",
  "predicates",
