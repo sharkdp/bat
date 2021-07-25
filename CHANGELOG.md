@@ -11,6 +11,7 @@
 
 ## Syntaxes
 
+- Groff, see #1685 (@scop)
 
 ## New themes
 
