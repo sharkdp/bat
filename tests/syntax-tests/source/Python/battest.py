@@ -8,7 +8,7 @@ from time import *
 h2 = 4  # this is a comment
 """this is also a comment"""
 
-# Import testt
+# Import test
 
 # class test
 
@@ -16,14 +16,19 @@ h2 = 4  # this is a comment
 class Hello:
     def __init__(self, x):
         self.name = x
-
+        
     def selfprint(self):
         print("hello my name is ", self.name)
 
     def testprint(self):
         print(1*2, 2+3, 4 % 5, 8-4, 9/4, 23//4)
 
-
+# Decorators test
+class Decorators:
+    @classmethod
+    def decoratorsTest(self):
+        pass
+    
 H1 = Hello("john")
 H1.selfprint()
 H1.testprint()
@@ -37,8 +42,8 @@ print(a[:4])
 print(a[2])
 print(a[2:])
 
-# dictioary test
-# copied from w3school example
+# dictionary test
+# copied from w3schools example
 
 myfamily = {
     "child1": {
@@ -55,7 +60,7 @@ myfamily = {
     }
 }
 
-# touple test
+# tuple test
 
 testTuple = ("one", 2, "3")
 print(testTuple)
@@ -70,7 +75,7 @@ bye"""
 
 formattest = "teststring is ={}".format(5)
 
-# lamda test
+# lambda test
 
 
 def x2(n):
