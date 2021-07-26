@@ -8,6 +8,8 @@
 
 ## Other
 
+- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
+
 
 ## Syntaxes
 

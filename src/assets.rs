@@ -1,7 +1,6 @@
 use std::collections::BTreeMap;
 use std::ffi::OsStr;
-use std::fs::{self, File};
-use std::io::BufReader;
+use std::fs;
 use std::path::Path;
 
 use syntect::dumps::{dump_to_file, from_binary, from_reader};
@@ -298,15 +297,14 @@ fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &str) -> Result<T> {
-    let asset_file = File::open(&path).chain_err(|| {
+    let contents = fs::read(path).chain_err(|| {
         format!(
             "Could not load cached {} '{}'",
             description,
             path.to_string_lossy()
         )
     })?;
-    from_reader(BufReader::new(asset_file))
-        .chain_err(|| format!("Could not parse cached {}", description))
+    from_reader(&contents[..]).chain_err(|| format!("Could not parse cached {}", description))
 }
 
 #[cfg(test)]
@@ -316,7 +314,7 @@ mod tests {
     use std::ffi::OsStr;
 
     use std::fs::File;
-    use std::io::Write;
+    use std::io::{BufReader, Write};
     use tempfile::TempDir;
 
     use crate::input::Input;
