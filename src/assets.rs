@@ -251,29 +251,42 @@ impl HighlightingAssets {
     }
 
     fn get_extension_syntax(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
+        self.find_syntax_by_file_name(file_name).or_else(|| {
+            self.find_syntax_by_file_name_extension(file_name)
+                .or_else(|| self.get_extension_syntax_with_stripped_suffix(file_name))
+        })
+    }
+
+    fn find_syntax_by_file_name(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
         self.get_syntax_set()
             .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
-            .or_else(|| {
-                let file_path = Path::new(file_name);
-                self.get_syntax_set()
-                    .find_syntax_by_extension(
-                        file_path
-                            .extension()
-                            .and_then(|x| x.to_str())
-                            .unwrap_or_default(),
-                    )
-                    .or_else(|| {
-                        if let Some(file_str) = file_path.to_str() {
-                            for suffix in IGNORED_SUFFIXES.iter() {
-                                if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                                    return self
-                                        .get_extension_syntax(OsStr::new(stripped_filename));
-                                }
-                            }
-                        }
-                        None
-                    })
-            })
+    }
+
+    fn find_syntax_by_file_name_extension(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
+        let file_path = Path::new(file_name);
+        self.get_syntax_set().find_syntax_by_extension(
+            file_path
+                .extension()
+                .and_then(|x| x.to_str())
+                .unwrap_or_default(),
+        )
+    }
+
+    /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
+    /// then try again to find a syntax without it. Note that we do this recursively.
+    fn get_extension_syntax_with_stripped_suffix(
+        &self,
+        file_name: &OsStr,
+    ) -> Option<&SyntaxReference> {
+        let file_path = Path::new(file_name);
+        if let Some(file_str) = file_path.to_str() {
+            for suffix in IGNORED_SUFFIXES.iter() {
+                if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
+                    return self.get_extension_syntax(OsStr::new(stripped_filename));
+                }
+            }
+        }
+        None
     }
 
     fn get_first_line_syntax(&self, reader: &mut InputReader) -> Option<&SyntaxReference> {
