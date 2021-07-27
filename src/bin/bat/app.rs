@@ -234,6 +234,7 @@ impl App {
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
+            use_custom_assets: !self.matches.is_present("no-custom-assets"),
         })
     }
 

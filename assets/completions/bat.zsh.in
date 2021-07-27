@@ -45,6 +45,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(-r --line-range)'{-r+,--line-range=}'[Only print the lines from N to M]:<N\:M>...'
         '(: --list-themes --list-languages -L)'{-L,--list-languages}'[Display all supported languages]'
         '(: --no-config)'--no-config'[Do not use the configuration file]'
+        '(: --no-custom-assets)'--no-custom-assets'[Do not load custom assets]'
         '(: --config-dir)'--config-dir'[Show bat'"'"'s configuration directory]'
         '(: --config-file)'--config-file'[Show path to the configuration file]'
         '(: --generate-config-file)'--generate-config-file'[Generates a default configuration file]'

@@ -796,6 +796,17 @@ fn does_not_print_unwanted_file_named_cache() {
 }
 
 #[test]
+fn accepts_no_custom_assets_arg() {
+    // Just make sure --no-custom-assets is considered a valid arg
+    // Don't bother to actually verify that it works
+    bat()
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success();
+}
+
+#[test]
 fn unicode_wrap() {
     bat_with_config()
         .arg("unicode-wrap.txt")
