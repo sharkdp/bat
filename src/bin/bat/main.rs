@@ -82,7 +82,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
 
     let assets = assets_from_cache_or_binary()?;
     let mut languages = assets
-        .syntaxes()
+        .get_syntaxes()?
         .iter()
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
         .cloned()
@@ -101,7 +101,10 @@ pub fn get_languages(config: &Config) -> Result<String> {
                 true
             } else {
                 let test_file = Path::new("test").with_extension(extension);
-                match assets.syntax_for_file_name(test_file, &config.syntax_mapping) {
+                let syntax = assets
+                    .get_syntax_for_file_name(test_file, &config.syntax_mapping)
+                    .unwrap(); // safe since .get_syntaxes() above worked
+                match syntax {
                     Some(syntax) => syntax.name == lang_name,
                     None => false,
                 }
