@@ -451,6 +451,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Do not use the configuration file"),
         )
         .arg(
+            Arg::with_name("no-custom-assets")
+                .long("no-custom-assets")
+                .hidden(true)
+                .help("Do not load custom assets"),
+        )
+        .arg(
             Arg::with_name("config-file")
                 .long("config-file")
                 .conflicts_with("list-languages")
