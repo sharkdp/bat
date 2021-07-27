@@ -20,6 +20,7 @@
 
 ## `bat` as a library
 
+- Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_file_name()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. See #1747 and #1755 (@Enselic)
 
 
 

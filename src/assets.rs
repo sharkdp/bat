@@ -128,7 +128,7 @@ impl HighlightingAssets {
         let _ = fs::create_dir_all(target_dir);
         asset_to_cache(&self.theme_set, &target_dir.join("themes.bin"), "theme set")?;
         asset_to_cache(
-            self.get_syntax_set(),
+            self.get_syntax_set()?,
             &target_dir.join("syntaxes.bin"),
             "syntax set",
         )?;
@@ -147,31 +147,51 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    pub(crate) fn get_syntax_set(&self) -> &SyntaxSet {
-        &self.syntax_set
+    pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+        Ok(&self.syntax_set)
     }
 
+    /// Use [Self::get_syntaxes] instead
+    #[deprecated]
     pub fn syntaxes(&self) -> &[SyntaxReference] {
-        self.get_syntax_set().syntaxes()
+        self.get_syntax_set()
+            .expect(".syntaxes() is deprecated, use .get_syntaxes() instead")
+            .syntaxes()
+    }
+
+    pub fn get_syntaxes(&self) -> Result<&[SyntaxReference]> {
+        Ok(self.get_syntax_set()?.syntaxes())
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
         self.theme_set.themes.keys().map(|s| s.as_ref())
     }
 
+    /// Use [Self::get_syntax_for_file_name] instead
+    #[deprecated]
     pub fn syntax_for_file_name(
         &self,
         file_name: impl AsRef<Path>,
         mapping: &SyntaxMapping,
     ) -> Option<&SyntaxReference> {
+        self.get_syntax_for_file_name(file_name, mapping).expect(
+            ".syntax_for_file_name() is deprecated, use .get_syntax_for_file_name() instead",
+        )
+    }
+
+    pub fn get_syntax_for_file_name(
+        &self,
+        file_name: impl AsRef<Path>,
+        mapping: &SyntaxMapping,
+    ) -> Result<Option<&SyntaxReference>> {
         let file_name = file_name.as_ref();
-        match mapping.get_syntax_for(file_name) {
+        Ok(match mapping.get_syntax_for(file_name) {
             Some(MappingTarget::MapToUnknown) => None,
             Some(MappingTarget::MapTo(syntax_name)) => {
-                self.get_syntax_set().find_syntax_by_name(syntax_name)
+                self.get_syntax_set()?.find_syntax_by_name(syntax_name)
             }
-            None => self.get_extension_syntax(file_name.as_os_str()),
-        }
+            None => self.get_extension_syntax(file_name.as_os_str())?,
+        })
     }
 
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
@@ -197,11 +217,11 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<&SyntaxReference> {
         if let Some(language) = language {
-            self.get_syntax_set()
+            self.get_syntax_set()?
                 .find_syntax_by_token(language)
                 .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
         } else {
-            let line_syntax = self.get_first_line_syntax(&mut input.reader);
+            let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
 
             // Get the path of the file:
             // If this was set by the metadata, that will take priority.
@@ -230,13 +250,13 @@ impl HighlightingAssets {
                     }),
 
                     Some(MappingTarget::MapTo(syntax_name)) => self
-                        .get_syntax_set()
+                        .get_syntax_set()?
                         .find_syntax_by_name(syntax_name)
                         .ok_or_else(|| ErrorKind::UnknownSyntax(syntax_name.to_owned()).into()),
 
                     None => {
                         let file_name = path.file_name().unwrap_or_default();
-                        self.get_extension_syntax(file_name)
+                        self.get_extension_syntax(file_name)?
                             .or(line_syntax)
                             .ok_or_else(|| {
                                 ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
@@ -250,26 +270,34 @@ impl HighlightingAssets {
         }
     }
 
-    fn get_extension_syntax(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
-        self.find_syntax_by_file_name(file_name).or_else(|| {
-            self.find_syntax_by_file_name_extension(file_name)
-                .or_else(|| self.get_extension_syntax_with_stripped_suffix(file_name))
-        })
+    fn get_extension_syntax(&self, file_name: &OsStr) -> Result<Option<&SyntaxReference>> {
+        let mut syntax = self.find_syntax_by_file_name(file_name)?;
+        if syntax.is_none() {
+            syntax = self.find_syntax_by_file_name_extension(file_name)?;
+        }
+        if syntax.is_none() {
+            syntax = self.get_extension_syntax_with_stripped_suffix(file_name)?;
+        }
+        Ok(syntax)
     }
 
-    fn find_syntax_by_file_name(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
-        self.get_syntax_set()
-            .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
+    fn find_syntax_by_file_name(&self, file_name: &OsStr) -> Result<Option<&SyntaxReference>> {
+        Ok(self
+            .get_syntax_set()?
+            .find_syntax_by_extension(file_name.to_str().unwrap_or_default()))
     }
 
-    fn find_syntax_by_file_name_extension(&self, file_name: &OsStr) -> Option<&SyntaxReference> {
+    fn find_syntax_by_file_name_extension(
+        &self,
+        file_name: &OsStr,
+    ) -> Result<Option<&SyntaxReference>> {
         let file_path = Path::new(file_name);
-        self.get_syntax_set().find_syntax_by_extension(
+        Ok(self.get_syntax_set()?.find_syntax_by_extension(
             file_path
                 .extension()
                 .and_then(|x| x.to_str())
                 .unwrap_or_default(),
-        )
+        ))
     }
 
     /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
@@ -277,22 +305,25 @@ impl HighlightingAssets {
     fn get_extension_syntax_with_stripped_suffix(
         &self,
         file_name: &OsStr,
-    ) -> Option<&SyntaxReference> {
+    ) -> Result<Option<&SyntaxReference>> {
         let file_path = Path::new(file_name);
+        let mut syntax = None;
         if let Some(file_str) = file_path.to_str() {
             for suffix in IGNORED_SUFFIXES.iter() {
                 if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                    return self.get_extension_syntax(OsStr::new(stripped_filename));
+                    syntax = self.get_extension_syntax(OsStr::new(stripped_filename))?;
+                    break;
                 }
             }
         }
-        None
+        Ok(syntax)
     }
 
-    fn get_first_line_syntax(&self, reader: &mut InputReader) -> Option<&SyntaxReference> {
-        String::from_utf8(reader.first_line.clone())
+    fn get_first_line_syntax(&self, reader: &mut InputReader) -> Result<Option<&SyntaxReference>> {
+        let syntax_set = self.get_syntax_set()?;
+        Ok(String::from_utf8(reader.first_line.clone())
             .ok()
-            .and_then(|l| self.get_syntax_set().find_syntax_by_first_line(&l))
+            .and_then(|l| syntax_set.find_syntax_by_first_line(&l)))
     }
 }
 
@@ -364,7 +395,12 @@ mod tests {
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
-                .unwrap_or_else(|_| self.assets.get_syntax_set().find_syntax_plain_text())
+                .unwrap_or_else(|_| {
+                    self.assets
+                        .get_syntax_set()
+                        .expect("this is mod tests")
+                        .find_syntax_plain_text()
+                })
                 .name
                 .clone()
         }
@@ -378,7 +414,12 @@ mod tests {
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
-                .unwrap_or_else(|_| self.assets.get_syntax_set().find_syntax_plain_text())
+                .unwrap_or_else(|_| {
+                    self.assets
+                        .get_syntax_set()
+                        .expect("this is mod tests")
+                        .find_syntax_plain_text()
+                })
                 .name
                 .clone()
         }
@@ -402,7 +443,12 @@ mod tests {
 
             self.assets
                 .get_syntax(None, &mut opened_input, &self.syntax_mapping)
-                .unwrap_or_else(|_| self.assets.get_syntax_set().find_syntax_plain_text())
+                .unwrap_or_else(|_| {
+                    self.assets
+                        .get_syntax_set()
+                        .expect("this is mod tests")
+                        .find_syntax_plain_text()
+                })
                 .name
                 .clone()
         }
@@ -560,7 +606,11 @@ mod tests {
         assert_eq!(
             test.assets
                 .get_syntax(None, &mut opened_input, &test.syntax_mapping)
-                .unwrap_or_else(|_| test.assets.get_syntax_set().find_syntax_plain_text())
+                .unwrap_or_else(|_| test
+                    .assets
+                    .get_syntax_set()
+                    .expect("this is mod tests")
+                    .find_syntax_plain_text())
                 .name,
             "SSH Config"
         );
