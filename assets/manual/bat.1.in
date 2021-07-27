@@ -229,3 +229,6 @@ These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`,
 For more information and up-to-date documentation, visit the {{PROJECT_EXECUTABLE}} repo:
 .br
 \fBhttps://github.com/sharkdp/bat\fR
+.PP
+Rob Pike, \(lqUNIX Style, or cat -v Considered Harmful\(rq,
+.I USENIX Summer Conference Proceedings, 1983.
