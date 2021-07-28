@@ -221,3 +221,6 @@
 [submodule "assets/syntaxes/02_Extra/Groff"]
 	path = assets/syntaxes/02_Extra/Groff
 	url = https://github.com/carsonoid/sublime_man_page_support
+[submodule "assets/syntaxes/02_Extra/http-request-response"]
+	path = assets/syntaxes/02_Extra/http-request-response
+	url = https://github.com/keith-hall/http-request-response-syntax.git

@@ -15,6 +15,7 @@
 ## Syntaxes
 
 - Groff, see #1685 (@scop)
+- HTTP Requests and Responses, see #1748 (@keith-hall)
 
 ## New themes
 

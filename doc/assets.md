@@ -9,7 +9,9 @@ in the `.sublime-syntax` format.
 **Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#Criteria-for-inclusion-of-new-syntaxes).
 
 1. Find a Sublime Text syntax for the given language, preferably in a separate Git repository
-   which can be included as a submodule (under `assets/syntaxes`).
+   which can be included as a submodule (under `assets/syntaxes`) using
+   `git submodule add <https github link> ./assets/syntaxes/02_Extra/<repo name>`, replacing
+   the contents of the angle brackets as appropriate.
 
 2. If the Sublime Text syntax is only available as a `.tmLanguage` file, open the file in
    Sublime Text and convert it to a `.sublime-syntax` file via *Tools* -> *Developer* ->
@@ -26,7 +28,8 @@ in the `.sublime-syntax` format.
 6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
 
 7. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
-   file. A new binary cache file will be created once before every new release of `bat`.
+   file. A new binary cache file will be created once before every new release of `bat`. This
+   avoids bloating the repository size unnecessarily.
 
 ### Syntax tests
 
