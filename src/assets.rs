@@ -21,7 +21,7 @@ use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
     serialized_syntax_set: Option<SerializedSyntaxSet>,
-    pub(crate) theme_set: ThemeSet,
+    theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -140,7 +140,11 @@ impl HighlightingAssets {
 
     pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
         let _ = fs::create_dir_all(target_dir);
-        asset_to_cache(&self.theme_set, &target_dir.join("themes.bin"), "theme set")?;
+        asset_to_cache(
+            self.get_theme_set(),
+            &target_dir.join("themes.bin"),
+            "theme set",
+        )?;
         asset_to_cache(
             self.get_syntax_set()?,
             &target_dir.join("syntaxes.bin"),
@@ -187,8 +191,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
+    fn get_theme_set(&self) -> &ThemeSet {
+        &self.theme_set
+    }
+
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.theme_set.themes.keys().map(|s| s.as_ref())
+        self.get_theme_set().themes.keys().map(|s| s.as_ref())
     }
 
     /// Use [Self::get_syntax_for_file_name] instead
@@ -219,7 +227,7 @@ impl HighlightingAssets {
     }
 
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
-        match self.theme_set.themes.get(theme) {
+        match self.get_theme_set().themes.get(theme) {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
@@ -229,7 +237,8 @@ impl HighlightingAssets {
                 if !theme.is_empty() {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
-                &self.theme_set.themes[self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
+                &self.get_theme_set().themes
+                    [self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
             }
         }
     }
