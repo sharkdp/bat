@@ -75,7 +75,7 @@ version = "0.12"
 default-features = false
 
 [dev-dependencies]
-assert_cmd = "1.0.5"
+assert_cmd = "1.0.8"
 serial_test = "0.5.1"
 predicates = "2.0.1"
 wait-timeout = "0.2.0"
