@@ -111,6 +111,12 @@ impl HighlightingAssets {
             );
         }
 
+        if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
+            // To trigger this code, run:
+            // BAT_PRINT_SYNTAX_DEPENDENCIES=1 cargo run -- cache --build --source assets --blank --target /tmp
+            crate::syntax_dependencies::print_syntax_dependencies(&syntax_set_builder);
+        }
+
         let syntax_set = syntax_set_builder.build();
         let missing_contexts = syntax_set.find_unlinked_contexts();
         if !missing_contexts.is_empty() {
