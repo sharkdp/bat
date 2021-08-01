@@ -111,8 +111,17 @@ impl HighlightingAssets {
             );
         }
 
+        let syntax_set = syntax_set_builder.build();
+        let missing_contexts = syntax_set.find_unlinked_contexts();
+        if !missing_contexts.is_empty() {
+            println!("Some referenced contexts could not be found!");
+            for context in missing_contexts {
+                println!("- {}", context);
+            }
+        }
+
         Ok(HighlightingAssets::new(
-            Some(syntax_set_builder.build()),
+            Some(syntax_set),
             None,
             theme_set,
         ))
