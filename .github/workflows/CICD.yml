@@ -32,11 +32,12 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features
+        args: --locked --all-targets --all-features
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
+        args: --locked
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
@@ -68,12 +69,12 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --release
+        args: --locked --release
     - name: Run ignored-by-default unit tests with new syntaxes and themes
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --release -- --ignored
+        args: --locked --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
@@ -86,7 +87,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: doc
-        args: --no-deps --document-private-items --all-features
+        args: --locked --no-deps --document-private-items --all-features
 
   build:
     name: ${{ matrix.job.os }} (${{ matrix.job.target }})
@@ -149,7 +150,7 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
-        args: --release --target=${{ matrix.job.target }}
+        args: --locked --release --target=${{ matrix.job.target }}
 
     - name: Strip debug information from executable
       id: strip
@@ -201,49 +202,49 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
     - name: Run bat
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
+        args: --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
 
     - name: Show diagnostics (bat --diagnostic)
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
+        args: --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
 
     - name: "Feature check: regex-onig"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
 
     - name: "Feature check: regex-onig,git"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
 
     - name: "Feature check: regex-onig,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
 
     - name: "Feature check: regex-onig,git,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
 
     - name: Create tarball
       id: package
