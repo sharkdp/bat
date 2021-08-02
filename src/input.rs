@@ -282,21 +282,21 @@ fn basic() {
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"#!/bin/bash\n", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"echo hello", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(false, res.unwrap());
+    assert!(!res.unwrap());
     assert!(buffer.is_empty());
 }
 
@@ -311,20 +311,20 @@ fn utf16le() {
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"\x64\x00", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(false, res.unwrap());
+    assert!(!res.unwrap());
     assert!(buffer.is_empty());
 }
