@@ -25,6 +25,12 @@ pub struct HighlightingAssets {
     fallback_theme: Option<&'static str>,
 }
 
+#[derive(Debug)]
+pub struct SyntaxReferenceInSet<'a> {
+    pub syntax: &'a SyntaxReference,
+    pub syntax_set: &'a SyntaxSet,
+}
+
 const IGNORED_SUFFIXES: [&str; 10] = [
     // Editor etc backups
     "~",
@@ -120,11 +126,7 @@ impl HighlightingAssets {
             }
         }
 
-        Ok(HighlightingAssets::new(
-            Some(syntax_set),
-            None,
-            theme_set,
-        ))
+        Ok(HighlightingAssets::new(Some(syntax_set), None, theme_set))
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
@@ -215,21 +217,26 @@ impl HighlightingAssets {
         file_name: impl AsRef<Path>,
         mapping: &SyntaxMapping,
     ) -> Option<&SyntaxReference> {
-        self.get_syntax_for_file_name(file_name, mapping).expect(
-            ".syntax_for_file_name() is deprecated, use .get_syntax_for_file_name() instead",
-        )
+        self.get_syntax_for_file_name(file_name, mapping)
+            .expect(
+                ".syntax_for_file_name() is deprecated, use .get_syntax_for_file_name() instead",
+            )
+            .map(|syntax_in_set| syntax_in_set.syntax)
     }
 
     pub fn get_syntax_for_file_name(
         &self,
         file_name: impl AsRef<Path>,
         mapping: &SyntaxMapping,
-    ) -> Result<Option<&SyntaxReference>> {
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let file_name = file_name.as_ref();
         Ok(match mapping.get_syntax_for(file_name) {
             Some(MappingTarget::MapToUnknown) => None,
             Some(MappingTarget::MapTo(syntax_name)) => {
-                self.get_syntax_set()?.find_syntax_by_name(syntax_name)
+                let syntax_set = self.get_syntax_set()?;
+                syntax_set
+                    .find_syntax_by_name(syntax_name)
+                    .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
             }
             None => self.get_extension_syntax(file_name.as_os_str())?,
         })
@@ -257,10 +264,12 @@ impl HighlightingAssets {
         language: Option<&str>,
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
-    ) -> Result<&SyntaxReference> {
+    ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
-            self.get_syntax_set()?
+            let syntax_set = self.get_syntax_set()?;
+            syntax_set
                 .find_syntax_by_token(language)
+                .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
                 .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
         } else {
             let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
@@ -291,10 +300,13 @@ impl HighlightingAssets {
                         ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
                     }),
 
-                    Some(MappingTarget::MapTo(syntax_name)) => self
-                        .get_syntax_set()?
-                        .find_syntax_by_name(syntax_name)
-                        .ok_or_else(|| ErrorKind::UnknownSyntax(syntax_name.to_owned()).into()),
+                    Some(MappingTarget::MapTo(syntax_name)) => {
+                        let syntax_set = self.get_syntax_set()?;
+                        syntax_set
+                            .find_syntax_by_name(syntax_name)
+                            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
+                            .ok_or_else(|| ErrorKind::UnknownSyntax(syntax_name.to_owned()).into())
+                    }
 
                     None => {
                         let file_name = path.file_name().unwrap_or_default();
@@ -312,7 +324,7 @@ impl HighlightingAssets {
         }
     }
 
-    fn get_extension_syntax(&self, file_name: &OsStr) -> Result<Option<&SyntaxReference>> {
+    fn get_extension_syntax(&self, file_name: &OsStr) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_file_name(file_name)?;
         if syntax.is_none() {
             syntax = self.find_syntax_by_file_name_extension(file_name)?;
@@ -323,23 +335,27 @@ impl HighlightingAssets {
         Ok(syntax)
     }
 
-    fn find_syntax_by_file_name(&self, file_name: &OsStr) -> Result<Option<&SyntaxReference>> {
-        Ok(self
-            .get_syntax_set()?
-            .find_syntax_by_extension(file_name.to_str().unwrap_or_default()))
+    fn find_syntax_by_file_name(&self, file_name: &OsStr) -> Result<Option<SyntaxReferenceInSet>> {
+        let syntax_set = self.get_syntax_set()?;
+        Ok(syntax_set
+            .find_syntax_by_extension(file_name.to_str().unwrap_or_default())
+            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
     fn find_syntax_by_file_name_extension(
         &self,
         file_name: &OsStr,
-    ) -> Result<Option<&SyntaxReference>> {
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let file_path = Path::new(file_name);
-        Ok(self.get_syntax_set()?.find_syntax_by_extension(
-            file_path
-                .extension()
-                .and_then(|x| x.to_str())
-                .unwrap_or_default(),
-        ))
+        let syntax_set = self.get_syntax_set()?;
+        Ok(syntax_set
+            .find_syntax_by_extension(
+                file_path
+                    .extension()
+                    .and_then(|x| x.to_str())
+                    .unwrap_or_default(),
+            )
+            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
     /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
@@ -347,7 +363,7 @@ impl HighlightingAssets {
     fn get_extension_syntax_with_stripped_suffix(
         &self,
         file_name: &OsStr,
-    ) -> Result<Option<&SyntaxReference>> {
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let file_path = Path::new(file_name);
         let mut syntax = None;
         if let Some(file_str) = file_path.to_str() {
@@ -361,11 +377,15 @@ impl HighlightingAssets {
         Ok(syntax)
     }
 
-    fn get_first_line_syntax(&self, reader: &mut InputReader) -> Result<Option<&SyntaxReference>> {
+    fn get_first_line_syntax(
+        &self,
+        reader: &mut InputReader,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let syntax_set = self.get_syntax_set()?;
         Ok(String::from_utf8(reader.first_line.clone())
             .ok()
-            .and_then(|l| syntax_set.find_syntax_by_first_line(&l)))
+            .and_then(|l| syntax_set.find_syntax_by_first_line(&l))
+            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 }
 
@@ -460,7 +480,7 @@ mod tests {
         ) -> String {
             self.assets
                 .get_syntax(language, input, mapping)
-                .map(|syntax| syntax.name.clone())
+                .map(|syntax_in_set| syntax_in_set.syntax.name.clone())
                 .unwrap_or_else(|_| "!no syntax!".to_owned())
         }
 

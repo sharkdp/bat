@@ -101,11 +101,11 @@ pub fn get_languages(config: &Config) -> Result<String> {
                 true
             } else {
                 let test_file = Path::new("test").with_extension(extension);
-                let syntax = assets
+                let syntax_in_set = assets
                     .get_syntax_for_file_name(test_file, &config.syntax_mapping)
                     .unwrap(); // safe since .get_syntaxes() above worked
-                match syntax {
-                    Some(syntax) => syntax.name == lang_name,
+                match syntax_in_set {
+                    Some(syntax_in_set) => syntax_in_set.syntax.name == lang_name,
                     None => false,
                 }
             }

@@ -18,7 +18,7 @@ use encoding::{DecoderTrap, Encoding};
 
 use unicode_width::UnicodeWidthChar;
 
-use crate::assets::HighlightingAssets;
+use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
@@ -163,23 +163,29 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter = if input
+        let highlighter_and_syntax_set = if input
             .reader
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
         {
-            None
+            (None, assets.get_syntax_set()?)
         } else {
             // Determine the type of syntax for highlighting
-            let syntax = match assets.get_syntax(config.language, input, &config.syntax_mapping) {
-                Ok(syntax) => syntax,
-                Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
-                    assets.get_syntax_set()?.find_syntax_plain_text()
-                }
-                Err(e) => return Err(e),
-            };
+            let syntax_in_set =
+                match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+                    Ok(syntax_in_set) => syntax_in_set,
+                    Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
+                        let syntax_set = assets.get_syntax_set()?;
+                        let syntax = syntax_set.find_syntax_plain_text();
+                        SyntaxReferenceInSet { syntax, syntax_set }
+                    }
+                    Err(e) => return Err(e),
+                };
 
-            Some(HighlightLines::new(syntax, theme))
+            (
+                Some(HighlightLines::new(syntax_in_set.syntax, theme)),
+                syntax_in_set.syntax_set,
+            )
         };
 
         Ok(InteractivePrinter {
@@ -191,8 +197,8 @@ impl<'a> InteractivePrinter<'a> {
             ansi_prefix_sgr: String::new(),
             #[cfg(feature = "git")]
             line_changes,
-            highlighter,
-            syntax_set: assets.get_syntax_set()?,
+            highlighter: highlighter_and_syntax_set.0,
+            syntax_set: highlighter_and_syntax_set.1,
             background_color_highlight,
         })
     }
