@@ -1,0 +1,40 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: LLVM
+file_extensions:
+  - ll
+scope: source.llvm
+contexts:
+  main:
+    - match: \b(add|alloca|and|ashr|atomic|atomicrmw|bitcast|br|call|cmpxchg|eq|exact|extractelement|extractvalue|fadd|fcmp|fdiv|fence|fmul|fpext|fptosi|fptoui|fptrunc|frem|fsub|getelementptr|icmp|inbounds|indirectbr|insertelement|insertvalue|inttoptr|invoke|landingpad|load|lshr|mul|ne|nsw|nuw|oeq|oge|ogt|ole|olt|one|or|ord|phi|ptrtoint|resume|ret|sdiv|select|sext|sge|sgt|shl|shufflevector|sitofp|sle|slt|srem|store|sub|switch|to|trunc|udiv|ueq|uge|uge|ugt|ugt|uitofp|ule|ule|ult|ult|une|uno|unreachable|unwind|urem|va_arg|xor|zext)\b(?!\s*:)
+      comment: llvm instructions
+      scope: keyword.instruction.llvm
+    - match: \b(acq_rel|acquire|addrspace|alias|align|alignstack|alwaysinline|appending|argmemonly|attributes|asm|blockaddress|byval|c|cc|ccc|coldcc|common|constant|convergent|datalayout|declare|default|define|deplibs|dereferenceable|dereferenceable_or_null|dllexport|dllimport|except|extern_weak|external|false|fastcc|gc|global|hidden|inalloca|inaccessiblememonly|inaccessiblemem_or_argmemonly|inlinehint|inreg|internal|jumptable|linkonce|linkonce_odr|local_unnamed_addr|metadata|minsize|module|monotonic|naked|nest|noalias|nobuiltin|noduplicate|nonnull|nocapture|noimplicitfloat|noinline|nonlazybind|noredzone|noreturn|norecurse|nounwind|null|opaque|optnone|optsize|personality|prefix|prologue|private|protected|ptx_device|ptx_kernel|readnone|readonly|release|returned|returns_twice|safestack|sanitize_address|sanitize_memory|sanitize_thread|section|seq_cst|sideeffect|signext|sret|ssp|sspreq|sspstrong|swiftself|swifterror|tail|target|thread_local|triple|true|type|undef|unnamed_addr|unordered|uwtable|volatile|weak|weak_odr|writeonly|x86_fastcallcc|x86_stdcallcc|zeroext|zeroinitializer)\b(?!\s*:)
+      comment: llvm keywords
+      scope: storage.modifier.llvm
+    - match: '([%@][-a-zA-Z$._][-a-zA-Z$._0-9]*(\s*\*)+)'
+      scope: storage.type.llvm
+    - match: \b(void|i\d+\**|half|float|double|fp128|x86_fp80|ppc_fp128|x86mmx|label|metadata)
+      scope: storage.type.language.llvm
+    - match: '([%@][-a-zA-Z$._][-a-zA-Z$._0-9]*)'
+      scope: variable.language.llvm
+    - match: '([%]\d+)'
+      scope: variable.language.llvm
+    - match: (!\d+)
+      scope: variable.metadata.llvm
+    - match: '(![-a-zA-Z$._][-a-zA-Z$._0-9]*)'
+      scope: variable.metadata.llvm
+    - match: ;.*$
+      scope: comment.llvm
+    - match: \b\d+\.\d+(e-?\d+)\b
+      scope: constant.numeric.float.llvm
+    - match: '\b(\d+|0(x|X)[a-fA-F0-9]+)\b'
+      scope: constant.numeric.integer.llvm
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.llvm
+        - match: '"'
+          pop: true
+        - match: \\..
+          scope: constant.character.escape.lvvm
