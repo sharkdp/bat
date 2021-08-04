@@ -394,8 +394,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * full: enables all available components.\n  \
-                     * auto: same as 'full', unless the output is piped (default).\n  \
+                     * full: enables all available components (default).\n  \
+                     * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: show filenames before the content.\n  \
