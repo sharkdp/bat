@@ -224,3 +224,6 @@
 [submodule "assets/syntaxes/02_Extra/http-request-response"]
 	path = assets/syntaxes/02_Extra/http-request-response
 	url = https://github.com/keith-hall/http-request-response-syntax.git
+[submodule "assets/syntaxes/02_Extra/LLVM"]
+	path = assets/syntaxes/02_Extra/LLVM
+	url = https://github.com/ioncodes/LLVM.tmBundle
