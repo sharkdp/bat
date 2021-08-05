@@ -120,11 +120,7 @@ impl HighlightingAssets {
             }
         }
 
-        Ok(HighlightingAssets::new(
-            Some(syntax_set),
-            None,
-            theme_set,
-        ))
+        Ok(HighlightingAssets::new(Some(syntax_set), None, theme_set))
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
