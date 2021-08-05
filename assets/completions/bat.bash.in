@@ -6,6 +6,7 @@ _bat() {
 	local cur prev words cword split
 	_init_completion -s || return 0
 
+	# TODO: Adapt to new CLI
 	if [[ ${words[1]-} == cache ]]; then
 		case $prev in
 		--source | --target)

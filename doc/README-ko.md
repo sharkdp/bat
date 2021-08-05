@@ -502,7 +502,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 2. 이제 다음 명령어를 통해 파일들을 파싱(parse)하여 바이너리 캐시를 만듭니다.
 
   ```bash
-  bat cache --build
+  bat --custom-assets-build
   ```
 
 3. 마지막으로, `bat --list-languages`로 새로 추가한 언어가 사용 가능한지
@@ -511,7 +511,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
   만약 기본 설정으로 돌아갈 일이 생긴다면, 다음 명령어를 이용합니다:
 
   ```bash
-  bat cache --clear
+  bat --custom-assets-clear
   ```
 
 4. 만약 특정 문법이 `bat`에 기본적으로 포함되어 있어야 한다고 생각한다면, 방침과
@@ -530,8 +530,8 @@ cd "$(bat --config-dir)/themes"
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
 
-# Update the binary cache
-bat cache --build
+# Parse and store in a binary format
+bat --custom-assets-build
 ```
 
 마지막으로 `bat --list-themes`을 통해 새로 추가한 테마들이 사용 가능한지

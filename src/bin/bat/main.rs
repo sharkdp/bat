@@ -39,28 +39,6 @@ use bat::{
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
 
-fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
-    if matches.is_present("build") {
-        let source_dir = matches
-            .value_of("source")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
-        let target_dir = matches
-            .value_of("target")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
-
-        let blank = matches.is_present("blank");
-
-        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
-        assets.save_to_cache(target_dir, crate_version!())?;
-    } else if matches.is_present("clear") {
-        clear_assets();
-    }
-
-    Ok(())
-}
-
 fn get_syntax_mapping_to_paths<'a>(
     mappings: &[(GlobMatcher, MappingTarget<'a>)],
 ) -> HashMap<&'a str, Vec<String>> {
@@ -204,7 +182,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
         writeln!(
             stdout,
             "Further themes can be installed to '{}', \
-            and are added to the cache with `bat cache --build`. \
+            and are added with `bat --custom-assets-build`. \
             For more information, see:\n\n  \
             https://github.com/sharkdp/bat#adding-new-themes",
             PROJECT_DIRS.config_dir().join("themes").to_string_lossy()
@@ -273,53 +251,55 @@ fn run() -> Result<bool> {
         return Ok(true);
     }
 
-    match app.matches.subcommand() {
-        ("cache", Some(cache_matches)) => {
-            // If there is a file named 'cache' in the current working directory,
-            // arguments for subcommand 'cache' are not mandatory.
-            // If there are non-zero arguments, execute the subcommand cache, else, open the file cache.
-            if !cache_matches.args.is_empty() {
-                run_cache_subcommand(cache_matches)?;
-                Ok(true)
-            } else {
-                let inputs = vec![Input::ordinary_file("cache")];
-                let config = app.config(&inputs)?;
+    let inputs = app.inputs()?;
+    let config = app.config(&inputs)?;
 
-                run_controller(inputs, &config)
-            }
-        }
-        _ => {
-            let inputs = app.inputs()?;
-            let config = app.config(&inputs)?;
+    if app.matches.is_present("custom-assets-build") {
+        let source_dir = app
+            .matches
+            .value_of("custom-assets-build")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
+        let target_dir = app
+            .matches
+            .value_of("custom-assets-target")
+            .map(Path::new)
+            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
-            if app.matches.is_present("list-languages") {
-                let languages: String = get_languages(&config)?;
-                let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
-                let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..Default::default()
-                };
-                run_controller(inputs, &plain_config)
-            } else if app.matches.is_present("list-themes") {
-                list_themes(&config)?;
-                Ok(true)
-            } else if app.matches.is_present("config-file") {
-                println!("{}", config_file().to_string_lossy());
-                Ok(true)
-            } else if app.matches.is_present("generate-config-file") {
-                generate_config_file()?;
-                Ok(true)
-            } else if app.matches.is_present("config-dir") {
-                writeln!(io::stdout(), "{}", config_dir())?;
-                Ok(true)
-            } else if app.matches.is_present("cache-dir") {
-                writeln!(io::stdout(), "{}", cache_dir())?;
-                Ok(true)
-            } else {
-                run_controller(inputs, &config)
-            }
-        }
+        let blank = app.matches.is_present("custom-assets-blank");
+
+        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
+        assets.save_to_cache(target_dir, crate_version!())?;
+        Ok(true)
+    } else if app.matches.is_present("custom-assets-clear") {
+        clear_assets();
+        Ok(true)
+    } else if app.matches.is_present("list-languages") {
+        let languages: String = get_languages(&config)?;
+        let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
+        let plain_config = Config {
+            style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+            paging_mode: PagingMode::QuitIfOneScreen,
+            ..Default::default()
+        };
+        run_controller(inputs, &plain_config)
+    } else if app.matches.is_present("list-themes") {
+        list_themes(&config)?;
+        Ok(true)
+    } else if app.matches.is_present("config-file") {
+        println!("{}", config_file().to_string_lossy());
+        Ok(true)
+    } else if app.matches.is_present("generate-config-file") {
+        generate_config_file()?;
+        Ok(true)
+    } else if app.matches.is_present("config-dir") {
+        writeln!(io::stdout(), "{}", config_dir())?;
+        Ok(true)
+    } else if app.matches.is_present("cache-dir") {
+        writeln!(io::stdout(), "{}", cache_dir())?;
+        Ok(true)
+    } else {
+        run_controller(inputs, &config)
     }
 }
 

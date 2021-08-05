@@ -369,7 +369,7 @@ impl HighlightingAssets {
 /// We keep it in this format since we want to load it lazily.
 #[derive(Debug)]
 enum SerializedSyntaxSet {
-    /// The data comes from a user-generated cache file.
+    /// The data comes from a user-generated file.
     FromFile(PathBuf),
 
     /// The data to use is embedded into the bat binary.

@@ -18,8 +18,8 @@ pub fn cache_dir() -> Cow<'static, str> {
 }
 
 pub fn clear_assets() {
-    clear_asset("themes.bin", "theme set cache");
-    clear_asset("syntaxes.bin", "syntax set cache");
+    clear_asset("themes.bin", "theme set");
+    clear_asset("syntaxes.bin", "syntax set");
     clear_asset("metadata.yaml", "metadata file");
 }
 
@@ -28,10 +28,10 @@ pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<Highlighti
     if let Some(metadata) = AssetsMetadata::load_from_folder(&cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
             return Err(format!(
-                "The binary caches for the user-customized syntaxes and themes \
+                "The user-customized syntaxes and themes (stored in a binary format) \
                  in '{}' are not compatible with this version of bat ({}). To solve this, \
-                 either rebuild the cache (bat cache --build) or remove \
-                 the custom syntaxes/themes (bat cache --clear).\n\
+                 either rebuild the custom assets (bat --custom-assets-build) or remove \
+                 the custom syntaxes/themes (bat --custom-assets-clear).\n\
                  For more information, see:\n\n  \
                  https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions",
                 cache_dir.to_string_lossy(),

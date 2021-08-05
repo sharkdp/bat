@@ -17,7 +17,7 @@ in the `.sublime-syntax` format.
    Sublime Text and convert it to a `.sublime-syntax` file via *Tools* -> *Developer* ->
    *New Syntax from XXX.tmLanguage...*. Save the new file in the `assets/syntaxes` folder.
 
-3. Run the `assets/create.sh` script. It calls `bat cache --build` to parse all available
+3. Run the `assets/create.sh` script. It calls `bat --custom-assets-build` to parse all available
    `.sublime-syntax` files and serialize them to a `syntaxes.bin` file.
 
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
@@ -28,7 +28,7 @@ in the `.sublime-syntax` format.
 6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
 
 7. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
-   file. A new binary cache file will be created once before every new release of `bat`. This
+   file. A new binary file will be created once before every new release of `bat`. This
    avoids bloating the repository size unnecessarily.
 
 ### Syntax tests
@@ -66,8 +66,8 @@ In order to add a new test file, please follow these steps (let's take "Ruby" as
 
 ### Troubleshooting
 
-Make sure that the local cache does not interfere with the internally stored syntaxes and
-themes (`bat cache --clear`).
+Make sure that the custom assets does not interfere with the internally stored syntaxes and
+themes (`bat --custom-assets-clear`).
 
 ## Criteria for inclusion of new syntaxes
 

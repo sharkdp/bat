@@ -447,10 +447,10 @@ syntax:
    git clone https://github.com/tellnobody1/sublime-purescript-syntax
    ```
 
-2. Now use the following command to parse these files into a binary cache:
+2. Now use the following command to parse and store these files in a binary format:
 
    ```bash
-   bat cache --build
+   bat --custom-assets-build
    ```
 
 3. Finally, use `bat --list-languages` to check if the new languages are available.
@@ -458,7 +458,7 @@ syntax:
    If you ever want to go back to the default settings, call:
 
    ```bash
-   bat cache --clear
+   bat --custom-assets-clear
    ```
 
 4. If you think that a specific syntax should be included in `bat` by default, please
@@ -477,8 +477,8 @@ cd "$(bat --config-dir)/themes"
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
 
-# Update the binary cache
-bat cache --build
+# Parse and store in a binary format
+bat --custom-assets-build
 ```
 
 Finally, use `bat --list-themes` to check if the new themes are available.

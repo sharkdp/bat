@@ -35,7 +35,7 @@ impl AssetsMetadata {
         Ok(serde_yaml::from_reader(file)?)
     }
 
-    /// Load metadata about the stored cache file from the given folder.
+    /// Load metadata about custom assets from the given folder.
     ///
     /// There are several possibilities:
     ///   - We find a metadata.yaml file and are able to parse it

@@ -83,6 +83,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
 # first positional argument
 if (( ${#words} == 2 )); then
     local -a subcommands
+    # TODO: Adapt to new CLI
     subcommands=('cache:Modify the syntax-definition and theme cache')
     _describe subcommand subcommands
     _{{PROJECT_EXECUTABLE}}_main

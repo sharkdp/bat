@@ -39,8 +39,8 @@ if [ -t 0 ]; then
 	update_submodules
 fi
 
-# Always remove the local cache to avoid any confusion
-bat cache --clear
+# Always remove the custom assets to avoid any confusion
+bat --custom-assets-clear
 
 # TODO:
 # - Remove the JavaDoc patch once https://github.com/trishume/syntect/issues/222 has been fixed
@@ -53,7 +53,7 @@ bat cache --clear
     done
 )
 
-bat cache --build --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
+bat --custom-assets-build="$ASSET_DIR" --custom-assets-blank --custom-assets-target="$ASSET_DIR"
 
 (
     cd "$ASSET_DIR"

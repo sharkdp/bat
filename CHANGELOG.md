@@ -2,6 +2,8 @@
 
 ## Features
 
+- TODO: Write about new CLI
+
 
 ## Bugfixes
 

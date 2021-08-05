@@ -70,6 +70,7 @@ complete -c {{PROJECT_EXECUTABLE}} -s V -l version -d "Show version information"
 
 complete -c {{PROJECT_EXECUTABLE}} -l wrap -xka "auto never character" -d "<mode> Specify the text-wrapping mode (default: auto)" -n "not __fish_seen_subcommand_from cache"
 
+# TODO: Adapt to new CLI
 # Sub-command 'cache' completions
 complete -c {{PROJECT_EXECUTABLE}} -a "cache" -d "Modify the syntax/language definition cache" -n "not __fish_seen_subcommand_from cache"
 

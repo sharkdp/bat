@@ -387,7 +387,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 Теперь используйте следующую команду, чтобы превратить эти файлы в бинарный кеш:
 
 ```bash
-bat cache --build
+bat --custom-assets-build
 ```
 
 Теперь вы можете использовать `bat --list-languages`, чтобы проверить, доступны ли новые языки.
@@ -395,7 +395,7 @@ bat cache --build
 Если когда-нибудь вы заходите вернуться к настройкам по умолчанию, введите
 
 ```bash
-bat cache --clear
+bat --custom-assets-clear
 ```
 
 ### Добавление новых тем
@@ -411,7 +411,7 @@ cd "$(bat --config-dir)/themes"
 git clone https://github.com/greggb/sublime-snazzy
 
 # Обновите кеш
-bat cache --build
+bat --custom-assets-build
 ```
 
 Теперь используйте `bat --list-themes`, чтобы проверить доступность новых тем.

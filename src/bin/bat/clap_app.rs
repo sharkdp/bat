@@ -1,6 +1,5 @@
-use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
+use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg};
 use std::env;
-use std::path::Path;
 
 pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
     let clap_color_setting = if interactive_output && env::var_os("NO_COLOR").is_none() {
@@ -15,10 +14,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .global_setting(AppSettings::DeriveDisplayOrder)
         .global_setting(AppSettings::UnifiedHelpMessage)
         .global_setting(AppSettings::HidePossibleValuesInHelp)
-        .setting(AppSettings::ArgsNegateSubcommands)
-        .setting(AppSettings::AllowExternalSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::VersionlessSubcommands)
         .max_term_width(100)
         .about(
             "A cat(1) clone with wings.\n\n\
@@ -491,65 +487,49 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden_short_help(true)
                 .help("Show diagnostic information for bug reports.")
         )
+        .arg(
+            Arg::with_name("custom-assets-build")
+                .long("custom-assets-build")
+                .conflicts_with("custom-assets-clear")
+                .takes_value(true)
+                .value_name("dir")
+                .help("Initialize (or update) the custom syntaxes/themes.")
+                .long_help(
+                    "Initialize (or update) the custom syntaxes/themees by loading from \
+                     the given directory (default: the configuration directory).",
+                ),
+        )
+        .arg(
+            Arg::with_name("custom-assets-blank") // TODO: Better name?
+                .long("custom-assets-blank")
+                .requires("custom-assets-build")
+                .conflicts_with("custom-assets-clear")
+                .help(
+                    "Create completely new syntax and theme sets \
+                     (instead of appending to the default sets).",
+                ),
+        )
+        .arg(
+            Arg::with_name("custom-assets-target")
+                .long("custom-assets-target")
+                .requires("custom-assets-build")
+                .conflicts_with("custom-assets-clear")
+                .takes_value(true)
+                .value_name("dir")
+                .help(
+                    "Use a different directory to store the cached syntax and theme set.",
+                ),
+        )
+        .arg(
+            Arg::with_name("custom-assets-clear")
+                .long("custom-assets-clear")
+                .conflicts_with("custom-assets-source")
+                .conflicts_with("custom-assets-target")
+                .conflicts_with("custom-assets-blank")
+                .help("Remove the cached syntax definitions and themes."),
+        )
         .help_message("Print this help message.")
         .version_message("Show version information.");
 
-    // Check if the current directory contains a file name cache. Otherwise,
-    // enable the 'bat cache' subcommand.
-    if Path::new("cache").exists() {
-        app
-    } else {
-        app.subcommand(
-            SubCommand::with_name("cache")
-                .about("Modify the syntax-definition and theme cache")
-                .arg(
-                    Arg::with_name("build")
-                        .long("build")
-                        .short("b")
-                        .help("Initialize (or update) the syntax/theme cache.")
-                        .long_help(
-                            "Initialize (or update) the syntax/theme cache by loading from \
-                             the source directory (default: the configuration directory).",
-                        ),
-                )
-                .arg(
-                    Arg::with_name("clear")
-                        .long("clear")
-                        .short("c")
-                        .help("Remove the cached syntax definitions and themes."),
-                )
-                .group(
-                    ArgGroup::with_name("cache-actions")
-                        .args(&["build", "clear"])
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("source")
-                        .long("source")
-                        .requires("build")
-                        .takes_value(true)
-                        .value_name("dir")
-                        .help("Use a different directory to load syntaxes and themes from."),
-                )
-                .arg(
-                    Arg::with_name("target")
-                        .long("target")
-                        .requires("build")
-                        .takes_value(true)
-                        .value_name("dir")
-                        .help(
-                            "Use a different directory to store the cached syntax and theme set.",
-                        ),
-                )
-                .arg(
-                    Arg::with_name("blank")
-                        .long("blank")
-                        .requires("build")
-                        .help(
-                            "Create completely new syntax and theme sets \
-                             (instead of appending to the default sets).",
-                        ),
-                ),
-        )
-    }
+    app
 }

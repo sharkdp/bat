@@ -8,6 +8,8 @@
 {{PROJECT_EXECUTABLE}} prints the syntax-highlighted content of a collection of FILEs to the
 terminal. If no FILE is specified, or when FILE is '-', it reads from standard input.
 
+TODO: Adapt to new CLI
+
 {{PROJECT_EXECUTABLE}} supports a large number of programming and markup languages.
 It also communicates with git(1) to show modifications with respect to the git index.
 {{PROJECT_EXECUTABLE}} automatically pipes its output through a pager (by default: less).

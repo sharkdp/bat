@@ -423,7 +423,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 次のコマンドを使用して、これらのファイルをバイナリキャッシュに解析します:
 
 ```bash
-bat cache --build
+bat --custom-assets-build
 ```
 
 最後に `bat --list-languages` と入力すると新しい言語が利用可能かどうかチェックします。
@@ -431,7 +431,7 @@ bat cache --build
 デフォルトの設定に戻したいときは以下のコマンドを実行します:
 
 ```bash
-bat cache --clear
+bat --custom-assets-clear
 ```
 
 ### 新しいテーマの追加
@@ -446,8 +446,8 @@ cd "$(bat --config-dir)/themes"
 # Download a theme in '.tmTheme' format, for example:
 git clone https://github.com/greggb/sublime-snazzy
 
-# Update the binary cache
-bat cache --build
+# Parse and store in a binary format
+bat --custom-assets-build
 ```
 
 最後に、 `bat --list-themes` で新しいテーマが利用可能かチェックします
