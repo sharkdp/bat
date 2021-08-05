@@ -5,6 +5,7 @@
 
 ## Bugfixes
 
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 
 ## Other
 
