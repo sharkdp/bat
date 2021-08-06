@@ -17,6 +17,8 @@
 - Groff, see #1685 (@scop)
 - HTTP Requests and Responses, see #1748 (@keith-hall)
 - LLVM, see #1777 (@ioncodes)
+- Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
+
 
 ## New themes
 
