@@ -701,6 +701,16 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
+fn diagnostic_sanity_check() {
+    bat()
+        .arg("--diagnostic")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("BAT_PAGER="))
+        .stderr("");
+}
+
+#[test]
 fn config_location_test() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
