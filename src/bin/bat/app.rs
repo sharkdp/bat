@@ -158,7 +158,7 @@ impl App {
                             WrappingMode::Character
                         }
                     }
-                    _ => unreachable!("other values for --paging are not allowed"),
+                    _ => unreachable!("other values for --wrap are not allowed"),
                 }
             } else {
                 // We don't have the tty width when piping to another program.
