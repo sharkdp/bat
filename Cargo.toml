@@ -17,13 +17,14 @@ default = ["application"]
 # bat as a library.
 application = [
     "atty",
+    "bugreport",
     "clap",
     "dirs-next",
     "git",
     "lazy_static",
     "paging",
-    "wild",
     "regex-onig",
+    "wild",
 ]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
@@ -50,7 +51,7 @@ serde_yaml = "0.8"
 semver = "1.0"
 path_abs = { version = "0.5", default-features = false }
 clircle = "0.3"
-bugreport = "0.4"
+bugreport = { version = "0.4", optional = true }
 dirs-next = { version = "2.0.0", optional = true }
 grep-cli = "0.1.6"
 
