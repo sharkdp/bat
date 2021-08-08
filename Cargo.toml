@@ -12,10 +12,11 @@ build = "build.rs"
 edition = '2018'
 
 [features]
-default = ["application"]
+default = ["full-application"]
 # Feature required for bat the application. Should be disabled when depending on
 # bat as a library.
-application = [
+full-application = [
+    "application",
     "atty",
     "bugreport",
     "clap",
@@ -26,6 +27,19 @@ application = [
     "regex-onig",
     "wild",
 ]
+# Mainly for developers that want to iterate quickly
+# Be aware that the included features might change in the future
+quick-build-application = [
+    "application",
+    "atty",
+    "clap",
+    "dirs-next",
+    "lazy_static",
+    "paging",
+    "regex-onig",
+    "wild",
+]
+application = []
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
 
