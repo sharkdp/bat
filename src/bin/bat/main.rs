@@ -224,52 +224,59 @@ fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
     controller.run(inputs)
 }
 
+#[cfg(feature = "bugreport")]
+fn invoke_bugreport(app: &App) {
+    use bugreport::{bugreport, collector::*, format::Markdown};
+    let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
+        .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
+
+    let report = bugreport!()
+        .info(SoftwareVersion::default())
+        .info(OperatingSystem::default())
+        .info(CommandLine::default())
+        .info(EnvironmentVariables::list(&[
+            "SHELL",
+            "PAGER",
+            "LESS",
+            "BAT_PAGER",
+            "BAT_CACHE_PATH",
+            "BAT_CONFIG_PATH",
+            "BAT_OPTS",
+            "BAT_STYLE",
+            "BAT_TABS",
+            "BAT_THEME",
+            "XDG_CONFIG_HOME",
+            "XDG_CACHE_HOME",
+            "COLORTERM",
+            "NO_COLOR",
+            "MANPAGER",
+        ]))
+        .info(FileContent::new("Config file", config_file()))
+        .info(CompileTimeInformation::default());
+
+    let mut report = if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
+        report.info(CommandOutput::new(
+            "Less version",
+            resolved_path,
+            &["--version"],
+        ))
+    } else {
+        report
+    };
+
+    report.print::<Markdown>();
+}
+
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Ok(true)` on full success and
 /// `Ok(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
     let app = App::new()?;
 
     if app.matches.is_present("diagnostic") {
-        use bugreport::{bugreport, collector::*, format::Markdown};
-        let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
-            .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
-
-        let report = bugreport!()
-            .info(SoftwareVersion::default())
-            .info(OperatingSystem::default())
-            .info(CommandLine::default())
-            .info(EnvironmentVariables::list(&[
-                "SHELL",
-                "PAGER",
-                "LESS",
-                "BAT_PAGER",
-                "BAT_CACHE_PATH",
-                "BAT_CONFIG_PATH",
-                "BAT_OPTS",
-                "BAT_STYLE",
-                "BAT_TABS",
-                "BAT_THEME",
-                "XDG_CONFIG_HOME",
-                "XDG_CACHE_HOME",
-                "COLORTERM",
-                "NO_COLOR",
-                "MANPAGER",
-            ]))
-            .info(FileContent::new("Config file", config_file()))
-            .info(CompileTimeInformation::default());
-
-        let mut report = if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
-            report.info(CommandOutput::new(
-                "Less version",
-                resolved_path,
-                &["--version"],
-            ))
-        } else {
-            report
-        };
-
-        report.print::<Markdown>();
-
+        #[cfg(feature = "bugreport")]
+        invoke_bugreport(&app);
+        #[cfg(not(feature = "bugreport"))]
+        println!("bat has been built without the 'bugreport' feature. The '--diagnostic' option is not available.");
         return Ok(true);
     }
 
