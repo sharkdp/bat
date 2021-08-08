@@ -163,7 +163,7 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter_and_syntax_set = if input
+        let (highlighter, syntax_set) = if input
             .reader
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
@@ -197,8 +197,8 @@ impl<'a> InteractivePrinter<'a> {
             ansi_prefix_sgr: String::new(),
             #[cfg(feature = "git")]
             line_changes,
-            highlighter: highlighter_and_syntax_set.0,
-            syntax_set: highlighter_and_syntax_set.1,
+            highlighter,
+            syntax_set,
             background_color_highlight,
         })
     }
