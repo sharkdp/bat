@@ -1123,6 +1123,42 @@ fn show_all_mode() {
 }
 
 #[test]
+fn no_paging_arg() {
+    bat()
+        .arg("--no-paging")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
+fn no_paging_short_arg() {
+    bat()
+        .arg("-P")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
+fn no_pager_arg() {
+    bat()
+        .arg("--no-pager")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
 fn plain_mode_does_not_add_nonexisting_newline() {
     bat()
         .arg("--paging=never")
