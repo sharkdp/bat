@@ -294,6 +294,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("no-paging")
                 .short("P")
+                .long("no-paging")
                 .alias("no-pager")
                 .overrides_with("no-paging")
                 .hidden(true)
