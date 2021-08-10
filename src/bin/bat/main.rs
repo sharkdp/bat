@@ -23,12 +23,10 @@ use crate::{
 };
 
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
-use clap::crate_version;
 use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
 use bat::{
-    assets::HighlightingAssets,
     config::Config,
     controller::Controller,
     error::*,
@@ -39,21 +37,29 @@ use bat::{
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
 
+#[cfg(feature = "build-assets")]
+fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
+    let source_dir = matches
+        .value_of("source")
+        .map(Path::new)
+        .unwrap_or_else(|| PROJECT_DIRS.config_dir());
+    let target_dir = matches
+        .value_of("target")
+        .map(Path::new)
+        .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
+
+    let blank = matches.is_present("blank");
+
+    let assets = bat::assets::HighlightingAssets::from_files(source_dir, !blank)?;
+    assets.save_to_cache(target_dir, clap::crate_version!())
+}
+
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
-        let source_dir = matches
-            .value_of("source")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
-        let target_dir = matches
-            .value_of("target")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
-
-        let blank = matches.is_present("blank");
-
-        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
-        assets.save_to_cache(target_dir, crate_version!())?;
+        #[cfg(feature = "build-assets")]
+        build_assets(matches)?;
+        #[cfg(not(feature = "build-assets"))]
+        println!("bat has been built without the 'build-assets' feature. The 'cache --build' option is not available.");
     } else if matches.is_present("clear") {
         clear_assets();
     }

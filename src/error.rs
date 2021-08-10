@@ -3,7 +3,7 @@ use std::io::Write;
 
 error_chain! {
     foreign_links {
-        Clap(::clap::Error) #[cfg(feature = "application")];
+        Clap(::clap::Error) #[cfg(feature = "minimal-application")];
         Io(::std::io::Error);
         SyntectError(::syntect::LoadingError);
         ParseIntError(::std::num::ParseIntError);

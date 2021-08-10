@@ -16,6 +16,7 @@ pub struct AssetsMetadata {
 const FILENAME: &str = "metadata.yaml";
 
 impl AssetsMetadata {
+    #[cfg(feature = "build-assets")]
     pub(crate) fn new(current_version: &str) -> AssetsMetadata {
         AssetsMetadata {
             bat_version: Some(current_version.to_owned()),
@@ -23,6 +24,7 @@ impl AssetsMetadata {
         }
     }
 
+    #[cfg(feature = "build-assets")]
     pub(crate) fn save_to_folder(&self, path: &Path) -> Result<()> {
         let file = File::create(path.join(FILENAME))?;
         serde_yaml::to_writer(file, self)?;

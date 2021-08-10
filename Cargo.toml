@@ -12,25 +12,18 @@ build = "build.rs"
 edition = '2018'
 
 [features]
-default = ["full-application"]
+default = ["application"]
 # Feature required for bat the application. Should be disabled when depending on
 # bat as a library.
-full-application = [
-    "application",
-    "atty",
+application = [
     "bugreport",
-    "clap",
-    "dirs-next",
+    "build-assets",
     "git",
-    "lazy_static",
-    "paging",
-    "regex-onig",
-    "wild",
+    "minimal-application",
 ]
 # Mainly for developers that want to iterate quickly
 # Be aware that the included features might change in the future
-quick-build-application = [
-    "application",
+minimal-application = [
     "atty",
     "clap",
     "dirs-next",
@@ -39,9 +32,10 @@ quick-build-application = [
     "regex-onig",
     "wild",
 ]
-application = []
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words"] # Support applying a pager on the output
+# Add "syntect/plist-load" when https://github.com/trishume/syntect/pull/345 reaches us
+build-assets = ["syntect/yaml-load", "syntect/dump-create"]
 
 # You need to use one of these if you depend on bat as a library:
 regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
@@ -77,7 +71,7 @@ default-features = false
 [dependencies.syntect]
 version = "4.6.0"
 default-features = false
-features = ["parsing", "yaml-load", "dump-load", "dump-create"]
+features = ["parsing", "dump-load"]
 
 [dependencies.clap]
 version = "2.33"

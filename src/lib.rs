@@ -40,6 +40,7 @@ mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
 pub mod style;
+#[cfg(feature = "build-assets")]
 mod syntax_dependencies;
 pub(crate) mod syntax_mapping;
 mod terminal;
