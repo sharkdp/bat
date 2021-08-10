@@ -246,12 +246,12 @@ jobs:
         command: check
         args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
 
-    - name: "Feature check: quick-build-application"
+    - name: "Feature check: minimal-application"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --locked --target=${{ matrix.job.target }} --verbose --no-default-features --features quick-build-application
+        args: --locked --target=${{ matrix.job.target }} --verbose --no-default-features --features minimal-application
 
     - name: Create tarball
       id: package
