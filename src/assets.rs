@@ -1,4 +1,3 @@
-use std::collections::BTreeMap;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -77,9 +76,7 @@ impl HighlightingAssets {
         let mut theme_set = if include_integrated_assets {
             get_integrated_themeset()
         } else {
-            ThemeSet {
-                themes: BTreeMap::new(),
-            }
+            ThemeSet::new()
         };
 
         let theme_dir = source_dir.join("themes");
