@@ -16,7 +16,7 @@ contexts:
     - match: ^
       push: text
   loghost:
-    - match: '[\w-]+'
+    - match: '[\w.-]+'
       scope: entity.other.attribute-name.loghost.syslog
       set: process
   process:
