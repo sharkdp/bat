@@ -19,6 +19,7 @@
 - HTTP Requests and Responses, see #1748 (@keith-hall)
 - LLVM, see #1777 (@ioncodes)
 - Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
+- Syslog highlighting improvements, see #1793 (@scop)
 
 
 ## New themes
