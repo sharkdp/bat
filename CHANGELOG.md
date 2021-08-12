@@ -2,6 +2,7 @@
 
 ## Features
 
+- $BAT_CONFIG_DIR is now a recognized environment variable and has precedent over $XDG_CONFIG_HOME. (@billrisher)
 
 ## Bugfixes
 

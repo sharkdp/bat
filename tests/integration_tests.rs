@@ -748,6 +748,25 @@ fn config_location_when_generating() {
 }
 
 #[test]
+fn config_location_from_bat_config_dir_variable() {
+    let bat_conf_dir = tempdir().expect("can't create temporary directory.").path().join("bat_conf_dir/");
+
+    // Create file at BAT_CONFIG_DIR
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", bat_conf_dir.to_str().unwrap())
+        .arg("--generate-config-file")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match("Success! Config file written to .*config\n")
+                .unwrap()
+        );
+
+    // Ensure generated config file exists.
+    assert!(bat_conf_dir.join("config").exists());
+}
+
+#[test]
 fn config_read_arguments_from_file() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
