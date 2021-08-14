@@ -40,6 +40,7 @@ fn bat_raw_command_with_config() -> Command {
     cmd.env_remove("BAT_STYLE");
     cmd.env_remove("BAT_THEME");
     cmd.env_remove("BAT_TABS");
+    cmd.env_remove("BAT_CONFIG_DIR");
     cmd
 }
 
@@ -749,21 +750,15 @@ fn config_location_when_generating() {
 
 #[test]
 fn config_location_from_bat_config_dir_variable() {
-    let bat_conf_dir = tempdir().expect("can't create temporary directory.").path().join("bat_conf_dir/");
-
-    // Create file at BAT_CONFIG_DIR
     bat_with_config()
-        .env("BAT_CONFIG_DIR", bat_conf_dir.to_str().unwrap())
-        .arg("--generate-config-file")
+        .env("BAT_CONFIG_DIR", "conf/")
+        .arg("--config-file")
         .assert()
         .success()
         .stdout(
-            predicate::str::is_match("Success! Config file written to .*config\n")
+            predicate::str::is_match("conf/config\n")
                 .unwrap()
         );
-
-    // Ensure generated config file exists.
-    assert!(bat_conf_dir.join("config").exists());
 }
 
 #[test]
