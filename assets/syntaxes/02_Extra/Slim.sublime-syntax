@@ -1,0 +1,306 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Ruby Slim
+file_extensions:
+  - slim
+  - skim
+scope: text.slim
+contexts:
+  main:
+    - match: ^(\s*)(ruby):$
+      captures:
+        2: constant.language.name.ruby.filter.slim
+      push:
+        - meta_scope: text.ruby.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.ruby
+    - match: ^(\s*)(javascript):$
+      captures:
+        2: constant.language.name.javascript.filter.slim
+      push:
+        - meta_scope: source.js.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.js
+    - match: ^(---)\s*\n
+      captures:
+        1: storage.frontmatter.slim
+      push:
+        - meta_scope: source.yaml.meta.slim
+        - match: ^(---)\s*\n
+          captures:
+            1: storage.frontmatter.slim
+          pop: true
+        - include: scope:source.yaml
+    - match: ^(\s*)(coffee):$
+      captures:
+        2: constant.language.name.coffeescript.filter.slim
+      push:
+        - meta_scope: text.coffeescript.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.coffee
+    - match: ^(\s*)(markdown):$
+      captures:
+        2: constant.language.name.markdown.filter.slim
+      push:
+        - meta_scope: text.markdown.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:text.html.markdown
+    - match: ^(\s*)(css):$
+      captures:
+        2: constant.language.name.css.filter.slim
+      push:
+        - meta_scope: text.css.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.css
+    - match: ^(\s*)(sass):$
+      captures:
+        2: constant.language.name.sass.filter.slim
+      push:
+        - meta_scope: text.sass.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.sass
+    - match: ^(\s*)(scss):$
+      captures:
+        2: constant.language.name.scss.filter.slim
+      push:
+        - meta_scope: text.scss.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.scss
+    - match: ^(\s*)(less):$
+      captures:
+        2: constant.language.name.less.filter.slim
+      push:
+        - meta_scope: text.less.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.less
+    - match: ^(\s*)(erb):$
+      captures:
+        2: constant.language.name.erb.filter.slim
+      push:
+        - meta_scope: text.erb.filter.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:source.erb
+    - match: ^(! )($|\s.*)
+      scope: meta.prolog.slim
+      captures:
+        1: punctuation.definition.prolog.slim
+    - match: ^(\s*)(/)\s*.*$
+      captures:
+        2: comment.line.slash.slim
+      push:
+        - meta_scope: comment.block.slim
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+    - match: ^\s*(?=-)
+      push:
+        - match: $
+          pop: true
+        - include: rubyline
+    - match: (?==+|~)
+      push:
+        - match: $
+          pop: true
+        - include: rubyline
+    - include: tag-attribute
+    - include: embedded-ruby
+    - match: ^(\s*)(\||')\s*
+      comment: Verbatim text (can include HTML tags and copied lines)
+      push:
+        - match: ^(?!(\1\s)|\s*$)
+          pop: true
+        - include: scope:text.html.basic
+        - include: embedded-ruby
+    - match: '^\s*(\.|#|[-a-zA-Z0-9]+)([\w-]+)?'
+      comment: '1 - dot OR hash OR any combination of word, number; 2 - OPTIONAL any combination of word, number, dash or underscore (following a . or'
+      captures:
+        1: entity.name.tag.slim
+        2: entity.other.attribute-name.event.slim
+      push:
+        - meta_scope: meta.tag
+        - match: '$|(?!\.|#|:|-|~|/|\}|\]|\*|\s?[\*\{])'
+          captures:
+            1: entity.name.tag.slim
+            2: entity.other.attribute-name.event.slim
+          pop: true
+        - match: '(:[\w\d]+)+'
+          comment: XML
+          push:
+            - meta_scope: entity.name.tag.slim
+            - match: $|\s
+              pop: true
+        - match: '(:\s)(\.|#|[a-zA-Z0-9]+)([\w-]+)?'
+          comment: Inline HTML / 1 - colon; 2 - dot OR hash OR any combination of word, number; 3 - OPTIONAL any combination of word, number, dash or underscore (following a . or
+          captures:
+            1: punctuation.definition.tag.end.slim
+            2: entity.name.tag.slim
+            3: entity.other.attribute-name.event.slim
+          push:
+            - match: '$|(?!\.|#|=|-|~|/|\}|\]|\*|\s?[\*\{])'
+              captures:
+                1: punctuation.definition.tag.end.slim
+                2: entity.name.tag.slim
+                3: entity.other.attribute-name.event.slim
+              pop: true
+            - include: root-class-id-tag
+            - include: tag-attribute
+        - match: '(\*\{)(?=.*\}|.*\|\s*$)'
+          comment: Splat attributes
+          captures:
+            1: punctuation.section.embedded.ruby
+          push:
+            - meta_scope: source.ruby.embedded.slim
+            - match: '(\})|$|^(?!.*\|\s*$)'
+              captures:
+                1: punctuation.section.embedded.ruby
+              pop: true
+            - include: embedded-ruby
+        - include: root-class-id-tag
+        - include: rubyline
+        - match: /
+          scope: punctuation.terminator.tag.slim
+    - match: ^\s*(\\.)
+      captures:
+        1: meta.escape.slim
+    - match: ^\s*(?=\||')
+      push:
+        - match: $
+          pop: true
+        - include: embedded-ruby
+        - include: scope:text.html.basic
+    - match: '(?=<[\w\d\:]+)'
+      comment: Inline and root-level HTML tags
+      push:
+        - match: $|\/\>
+          pop: true
+        - include: scope:text.html.basic
+  continuation:
+    - match: '([\\,])\s*\n'
+      captures:
+        1: punctuation.separator.continuation.slim
+  delimited-ruby-a:
+    - match: '=\('
+      push:
+        - meta_scope: source.ruby.embedded.slim
+        - match: \)(?=( \w|$))
+          pop: true
+        - include: scope:source.ruby.rails
+  delimited-ruby-b:
+    - match: '=\['
+      push:
+        - meta_scope: source.ruby.embedded.slim
+        - match: '\](?=( \w|$))'
+          pop: true
+        - include: scope:source.ruby.rails
+  delimited-ruby-c:
+    - match: '=\{'
+      push:
+        - meta_scope: source.ruby.embedded.slim
+        - match: '\}(?=( \w|$))'
+          pop: true
+        - include: scope:source.ruby.rails
+  embedded-ruby:
+    - match: '(?<!\\)#\{{1,2}'
+      captures:
+        0: punctuation.section.embedded.ruby
+      push:
+        - meta_scope: source.ruby.embedded.html
+        - match: '\}{1,2}'
+          captures:
+            0: punctuation.section.embedded.ruby
+          pop: true
+        - include: scope:source.ruby.rails
+  entities:
+    - match: '(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)'
+      scope: constant.character.entity.html
+      captures:
+        1: punctuation.definition.entity.html
+        3: punctuation.definition.entity.html
+    - match: '&'
+      scope: invalid.illegal.bad-ampersand.html
+  interpolated-ruby:
+    - match: '=(?=\b)'
+      push:
+        - meta_scope: source.ruby.embedded.html
+        - match: \s|\w$
+          pop: true
+  root-class-id-tag:
+    - match: '(\.|#)([\w\d\-]+)'
+      captures:
+        1: punctuation.separator.key-value.html
+        2: entity.other.attribute-name.html
+  rubyline:
+    - match: (==|=)(<>|><|<'|'<|<|>)?|-
+      comment: Hack to thwart Sublime's Ruby highlighter. It thinks do without a variable continues the next line (this can be muted with a / at the end of the line). For things like yields, do is unnecessary without an argument, so this hack will suffice
+      push:
+        - meta_scope: meta.line.ruby.slim
+        - meta_content_scope: source.ruby.embedded.slim
+        - match: (do\s*\n$)|(?<!\\|,|,\n|\\\n)$
+          captures:
+            1: keyword.control.start-block.ruby
+          pop: true
+        - match: '#.*$'
+          comment: Hack to let ruby comments work in this context properly
+          scope: comment.line.number-sign.ruby
+        - include: continuation
+        - include: scope:source.ruby.rails
+  string-double-quoted:
+    - match: (")(?=.*")
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.double.html
+        - meta_content_scope: meta.toc-list.id.html
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: embedded-ruby
+        - include: entities
+  string-single-quoted:
+    - match: (')(?=.*')
+      captures:
+        0: punctuation.definition.string.begin.html
+      push:
+        - meta_scope: string.quoted.single.html
+        - meta_content_scope: meta.toc-list.id.html
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.html
+          pop: true
+        - include: embedded-ruby
+        - include: entities
+  tag-attribute:
+    - match: '([\w.#_-]+)(=)(?!\s)(true|false|nil)?(\s*\(|\{)?'
+      captures:
+        1: entity.other.attribute-name.event.slim
+        2: punctuation.separator.key-value.html
+        3: constant.language.slim
+      push:
+        - meta_scope: meta.attribute-with-value.slim
+        - match: '\}|\)|$'
+          captures:
+            1: entity.other.attribute-name.event.slim
+            2: punctuation.separator.key-value.html
+            3: constant.language.slim
+          pop: true
+        - include: tag-stuff
+        - include: string-double-quoted
+        - include: string-single-quoted
+  tag-stuff:
+    - include: tag-attribute
+    - include: interpolated-ruby
+    - include: delimited-ruby-a
+    - include: delimited-ruby-b
+    - include: delimited-ruby-c
+    - include: rubyline
+    - include: embedded-ruby
