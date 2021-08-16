@@ -12,3 +12,5 @@ Apr  4 22:00:45 hostname-here dbus-daemon[1094]: [session uid=1000 pid=1094] Suc
 Aug 11 13:29:06 hostname-here insomnia_insomnia.desktop[142666]: 13:29:06.316 › [updater] Updater not running platform=linux dev=false
 Aug 11 13:36:34 192.168.220.5 nginx: 2021/08/11 13:36:34 [debug] 2031#2031: epoll add event: fd:6 op:1 ev:00002001
 Aug 11 21:31:08 ::1 nginx: 2021/08/11 21:31:08 [debug] 760831#760831: epoll add event: fd:6 op:1 ev:10000001
+Aug 11 21:40:31 hostname-here scop hello
+Aug 16 21:38:21 hostname-here systemd[1]: Finished Cleanup of Temporary Directories.
