@@ -20,7 +20,7 @@ contexts:
       scope: entity.other.attribute-name.loghost.syslog
       set: process
   process:
-    - match: ([\w.-]+)(?:(\[)(\d+)(\]))?(:)
+    - match: ([\w.-]+)(?:(\[)(\d+)(\]))?([ :])
       captures:
         1: support.function.process.syslog
         2: punctuation.separator.pid.begin.syslog
