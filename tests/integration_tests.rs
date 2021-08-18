@@ -755,10 +755,7 @@ fn config_location_from_bat_config_dir_variable() {
         .arg("--config-file")
         .assert()
         .success()
-        .stdout(
-            predicate::str::is_match("conf/config\n")
-                .unwrap()
-        );
+        .stdout(predicate::str::is_match("conf/config\n").unwrap());
 }
 
 #[test]
