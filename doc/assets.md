@@ -71,7 +71,7 @@ themes (`bat cache --clear`).
 
 ## Criteria for inclusion of new syntaxes
 
-* More than 10,000 downloads on packagecontrol.io/
+* More than 10,000 downloads at [Package Control](https://packagecontrol.io)
 
 ### Manual modifications
 
