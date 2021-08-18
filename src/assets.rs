@@ -62,7 +62,7 @@ impl HighlightingAssets {
 
     /// Deprecated.
     /// Instead of first [HighlightingAssets::from_files] and then [HighlightingAssets::save_to_cache]
-    /// you now make a single call to [bat::assets::build]. A temporary [HighlightingAssets] object is
+    /// you now make a single call to [crate::assets::build]. A temporary [HighlightingAssets] object is
     /// not needed any longer to build assets.
     #[deprecated]
     pub fn from_files(_source_dir: &Path, _include_integrated_assets: bool) -> Result<Self> {
@@ -85,7 +85,7 @@ impl HighlightingAssets {
 
     /// Deprecated.
     /// Instead of first [HighlightingAssets::from_files] and then [HighlightingAssets::save_to_cache]
-    /// you now make a single call to [bat::assets::build]. A temporary [HighlightingAssets] object is
+    /// you now make a single call to [crate::assets::build]. A temporary [HighlightingAssets] object is
     /// not needed any longer to build assets.
     #[deprecated]
     pub fn save_to_cache(&self, _target_dir: &Path, _current_version: &str) -> Result<()> {

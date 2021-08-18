@@ -27,7 +27,6 @@ use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
 use bat::{
-    assets as lib_assets,
     config::Config,
     controller::Controller,
     error::*,
@@ -51,7 +50,7 @@ fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
 
     let blank = matches.is_present("blank");
 
-    lib_assets::build(source_dir, !blank, target_dir, clap::crate_version!())
+    bat::assets::build(source_dir, !blank, target_dir, clap::crate_version!())
 }
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
