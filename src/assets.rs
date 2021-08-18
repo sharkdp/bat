@@ -408,7 +408,7 @@ impl SerializedSyntaxSet {
     fn deserialize(&self) -> Result<SyntaxSet> {
         match self {
             SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data)),
-            SerializedSyntaxSet::FromFile(ref path) => asset_from_cache(&path, "syntax set"),
+            SerializedSyntaxSet::FromFile(ref path) => asset_from_cache(path, "syntax set"),
         }
     }
 }

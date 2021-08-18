@@ -45,7 +45,7 @@ impl<'b> Controller<'b> {
             // Do not launch the pager if NONE of the input files exist
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
-                let call_pager = inputs.iter().any(|ref input| {
+                let call_pager = inputs.iter().any(|input| {
                     if let InputKind::OrdinaryFile(ref path) = input.kind {
                         Path::new(path).exists()
                     } else {
@@ -124,11 +124,11 @@ impl<'b> Controller<'b> {
                     };
 
                     let mut printer: Box<dyn Printer> = if self.config.loop_through {
-                        Box::new(SimplePrinter::new(&self.config))
+                        Box::new(SimplePrinter::new(self.config))
                     } else {
                         Box::new(InteractivePrinter::new(
-                            &self.config,
-                            &self.assets,
+                            self.config,
+                            self.assets,
                             &mut opened_input,
                             #[cfg(feature = "git")]
                             &line_changes,

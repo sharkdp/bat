@@ -226,7 +226,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 
 fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
-    let controller = Controller::new(&config, &assets);
+    let controller = Controller::new(config, &assets);
     controller.run(inputs)
 }
 
