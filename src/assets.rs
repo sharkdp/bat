@@ -18,7 +18,7 @@ use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 #[derive(Debug)]
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
-    serialized_syntax_set: Option<SerializedSyntaxSet>,
+    serialized_syntax_set: SerializedSyntaxSet,
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
@@ -47,20 +47,9 @@ const IGNORED_SUFFIXES: [&str; 10] = [
 ];
 
 impl HighlightingAssets {
-    fn new(
-        syntax_set: Option<SyntaxSet>,
-        serialized_syntax_set: Option<SerializedSyntaxSet>,
-        theme_set: ThemeSet,
-    ) -> Self {
-        assert!(syntax_set.is_some() || serialized_syntax_set.is_some());
-
-        let syntax_set_cell = LazyCell::new();
-        if let Some(syntax_set) = syntax_set {
-            syntax_set_cell.fill(syntax_set).expect("can never fail");
-        }
-
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
         HighlightingAssets {
-            syntax_set_cell,
+            syntax_set_cell: LazyCell::new(),
             serialized_syntax_set,
             theme_set,
             fallback_theme: None,
@@ -82,20 +71,14 @@ impl HighlightingAssets {
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
-            None,
-            Some(SerializedSyntaxSet::FromFile(
-                cache_path.join("syntaxes.bin"),
-            )),
+            SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
             asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
         ))
     }
 
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
-            None,
-            Some(SerializedSyntaxSet::FromBinary(
-                get_serialized_integrated_syntaxset(),
-            )),
+            SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
             get_integrated_themeset(),
         )
     }
@@ -114,17 +97,8 @@ impl HighlightingAssets {
     }
 
     pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
-        if !self.syntax_set_cell.filled() {
-            self.syntax_set_cell.fill(
-                self.serialized_syntax_set
-                .as_ref()
-                .expect("a dev forgot to setup serialized_syntax_set, please report to https://github.com/sharkdp/bat/issues")
-                .deserialize()?
-             ).unwrap();
-        }
-
-        // It is safe to .unwrap() because we just made sure it was .filled()
-        Ok(self.syntax_set_cell.borrow().unwrap())
+        self.syntax_set_cell
+            .try_borrow_with(|| self.serialized_syntax_set.deserialize())
     }
 
     /// Use [Self::get_syntaxes] instead
