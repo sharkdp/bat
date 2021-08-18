@@ -1,8 +1,13 @@
 use std::collections::HashMap;
+use std::path::Path;
+use syntect::dumps::from_binary;
+use syntect::highlighting::ThemeSet;
 use syntect::parsing::syntax_definition::{
     ContextReference, MatchOperation, MatchPattern, Pattern, SyntaxDefinition,
 };
 use syntect::parsing::{Scope, SyntaxSet, SyntaxSetBuilder};
+
+use crate::error::*;
 
 type SyntaxName = String;
 
@@ -22,9 +27,86 @@ enum Dependency {
     ByScope(Scope),
 }
 
+pub fn build_assets(
+    source_dir: &Path,
+    include_integrated_assets: bool,
+    target_dir: &Path,
+    current_version: &str,
+) -> Result<()> {
+    let mut theme_set = if include_integrated_assets {
+        crate::assets::get_integrated_themeset()
+    } else {
+        ThemeSet::new()
+    };
+
+    let theme_dir = source_dir.join("themes");
+    if theme_dir.exists() {
+        let res = theme_set.add_from_folder(&theme_dir);
+        if let Err(err) = res {
+            println!(
+                "Failed to load one or more themes from '{}' (reason: '{}')",
+                theme_dir.to_string_lossy(),
+                err,
+            );
+        }
+    } else {
+        println!(
+            "No themes were found in '{}', using the default set",
+            theme_dir.to_string_lossy()
+        );
+    }
+
+    let mut syntax_set_builder = if !include_integrated_assets {
+        let mut builder = syntect::parsing::SyntaxSetBuilder::new();
+        builder.add_plain_text_syntax();
+        builder
+    } else {
+        from_binary::<SyntaxSet>(crate::assets::get_serialized_integrated_syntaxset())
+            .into_builder()
+    };
+
+    let syntax_dir = source_dir.join("syntaxes");
+    if syntax_dir.exists() {
+        syntax_set_builder.add_from_folder(syntax_dir, true)?;
+    } else {
+        println!(
+            "No syntaxes were found in '{}', using the default set.",
+            syntax_dir.to_string_lossy()
+        );
+    }
+
+    if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
+        // To trigger this code, run:
+        // BAT_PRINT_SYNTAX_DEPENDENCIES=1 cargo run -- cache --build --source assets --blank --target /tmp
+        print_syntax_dependencies(&syntax_set_builder);
+    }
+
+    let syntax_set = syntax_set_builder.build();
+    let missing_contexts = syntax_set.find_unlinked_contexts();
+    if !missing_contexts.is_empty() {
+        println!("Some referenced contexts could not be found!");
+        for context in missing_contexts {
+            println!("- {}", context);
+        }
+    }
+
+    let _ = std::fs::create_dir_all(target_dir);
+    asset_to_cache(&theme_set, &target_dir.join("themes.bin"), "theme set")?;
+    asset_to_cache(&syntax_set, &target_dir.join("syntaxes.bin"), "syntax set")?;
+
+    print!(
+        "Writing metadata to folder {} ... ",
+        target_dir.to_string_lossy()
+    );
+    crate::assets_metadata::AssetsMetadata::new(current_version).save_to_folder(target_dir)?;
+    println!("okay");
+
+    Ok(())
+}
+
 /// Generates independent [SyntaxSet]s after analyzing dependencies between syntaxes
 /// in a [SyntaxSetBuilder], and then prints the reults.
-pub(crate) fn print_syntax_dependencies(syntax_set_builder: &SyntaxSetBuilder) {
+fn print_syntax_dependencies(syntax_set_builder: &SyntaxSetBuilder) {
     println!("Constructing independent SyntaxSets...");
     let independent_syntax_sets = build_independent_syntax_sets(syntax_set_builder);
 
@@ -181,4 +263,17 @@ impl SyntaxSetDependencyBuilder {
     fn build(self) -> SyntaxSet {
         self.syntax_set_builder.build()
     }
+}
+
+fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
+    print!("Writing {} to {} ... ", description, path.to_string_lossy());
+    syntect::dumps::dump_to_file(asset, &path).chain_err(|| {
+        format!(
+            "Could not save {} to {}",
+            description,
+            path.to_string_lossy()
+        )
+    })?;
+    println!("okay");
+    Ok(())
 }
