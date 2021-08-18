@@ -372,19 +372,19 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = if self.config.show_nonprintable {
-            replace_nonprintable(&line_buffer, self.config.tab_width)
+            replace_nonprintable(line_buffer, self.config.tab_width)
         } else {
             match self.content_type {
                 Some(ContentType::BINARY) | None => {
                     return Ok(());
                 }
                 Some(ContentType::UTF_16LE) => UTF_16LE
-                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .decode(line_buffer, DecoderTrap::Replace)
                     .map_err(|_| "Invalid UTF-16LE")?,
                 Some(ContentType::UTF_16BE) => UTF_16BE
-                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .decode(line_buffer, DecoderTrap::Replace)
                     .map_err(|_| "Invalid UTF-16BE")?,
-                _ => String::from_utf8_lossy(&line_buffer).to_string(),
+                _ => String::from_utf8_lossy(line_buffer).to_string(),
             }
         };
 
@@ -420,7 +420,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|ref d| d.generate(line_number, false, self))
+                .map(|d| d.generate(line_number, false, self))
                 .collect::<Vec<_>>();
 
             for deco in decorations {
@@ -531,7 +531,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                                 "{} ",
                                                 self.decorations
                                                     .iter()
-                                                    .map(|ref d| d
+                                                    .map(|d| d
                                                         .generate(line_number, true, self)
                                                         .text)
                                                     .collect::<Vec<String>>()

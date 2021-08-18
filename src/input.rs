@@ -51,7 +51,7 @@ impl InputDescription {
 
     pub fn title(&self) -> &String {
         match self.title.as_ref() {
-            Some(ref title) => title,
+            Some(title) => title,
             None => &self.name,
         }
     }

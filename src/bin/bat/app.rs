@@ -301,7 +301,7 @@ impl App {
                     .map(|style_str| {
                         style_str
                             .split(',')
-                            .map(|x| StyleComponent::from_str(&x))
+                            .map(|x| StyleComponent::from_str(x))
                             .collect::<Result<Vec<StyleComponent>>>()
                     })
                     .transpose()?;
