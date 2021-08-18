@@ -15,11 +15,11 @@ pub struct BatProjectDirs {
 impl BatProjectDirs {
     fn new() -> Option<BatProjectDirs> {
         let cache_dir = BatProjectDirs::get_cache_dir()?;
-        
+
         // Checks whether or not $BAT_CONFIG_DIR exists. If it doesn't, set our config dir
         // to our system's default configuration home.
-        let config_dir = if let Some(config_dir_op) = env::var_os("BAT_CONFIG_DIR")
-            .map(PathBuf::from) {
+        let config_dir =
+            if let Some(config_dir_op) = env::var_os("BAT_CONFIG_DIR").map(PathBuf::from) {
                 config_dir_op
             } else {
                 #[cfg(target_os = "macos")]
