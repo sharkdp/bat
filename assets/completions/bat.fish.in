@@ -34,7 +34,7 @@ complete -c {{PROJECT_EXECUTABLE}} -s H -l highlight-line -x -d "<N> Highlight t
 
 complete -c {{PROJECT_EXECUTABLE}} -l italic-text -xka "always never" -d "Specify when to use ANSI sequences for italic text (default: never)" -n "not __fish_seen_subcommand_from cache"
 
-complete -c {{PROJECT_EXECUTABLE}} -s l -l language -d "Set the language for syntax highlighting" -n "not __fish_seen_subcommand_from cache" -xa "(__{{PROJECT_EXECUTABLE}}_autocomplete_languages)" 
+complete -c {{PROJECT_EXECUTABLE}} -s l -l language -d "Set the language for syntax highlighting" -n "not __fish_seen_subcommand_from cache" -xa "(__{{PROJECT_EXECUTABLE}}_autocomplete_languages)"
 
 complete -c {{PROJECT_EXECUTABLE}} -s r -l line-range -x -d "<N:M> Only print the specified range of lines for each file" -n "not __fish_seen_subcommand_from cache"
 

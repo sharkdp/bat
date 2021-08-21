@@ -218,7 +218,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 
 Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
 .br
-If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`. 
+If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`.
 
 .SH "ADDING CUSTOM THEMES"
 Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
