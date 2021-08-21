@@ -20,6 +20,13 @@
 
 
 
+# v0.18.3
+
+## Bugfixes
+
+- Bump `git2` dependency to fix build with Rust 1.54, see #1761
+
+
 # v0.18.2
 
 ## Features

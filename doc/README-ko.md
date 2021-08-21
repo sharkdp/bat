@@ -244,7 +244,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 다음과 같이 `.deb` 패키지를 받아 설치하세요:
 
 ```bash
-sudo dpkg -i bat_0.18.2_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.18.3_amd64.deb  # adapt version number and architecture
 ```
 
 ### Alpine Linux에서
