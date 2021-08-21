@@ -3,6 +3,7 @@
 ## Features
 
 - `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
+- Support for `x:+x` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 
 ## Bugfixes
 

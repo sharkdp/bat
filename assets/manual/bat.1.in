@@ -50,6 +50,8 @@ highlights lines 30 to 40
 highlights lines 1 to 40
 .IP "\-\-highlight\-line 40:"
 highlights lines 40 to the end of the file
+.IP "\-\-highlight\-line 30:+10"
+highlights lines 30 to 40
 .RE
 .HP
 \fB\-\-file\-name\fR <name>...
@@ -154,6 +156,8 @@ prints lines 30 to 40
 prints lines 1 to 40
 .IP "\-\-line\-range 40:"
 prints lines 40 to the end of the file
+.IP "\-\-line\-range 30:+10"
+prints lines 30 to 40
 .RE
 .HP
 \fB\-L\fR, \fB\-\-list\-languages\fR
