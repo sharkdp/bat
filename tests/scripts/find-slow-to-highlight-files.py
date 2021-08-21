@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script goes through all languages that are supported by 'bat'. For each
 # language, it loops over the correspoinding file extensions and searches a
