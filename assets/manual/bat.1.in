@@ -50,6 +50,8 @@ highlights lines 30 to 40
 highlights lines 1 to 40
 .IP "\-\-highlight\-line 40:"
 highlights lines 40 to the end of the file
+.IP "\-\-highlight\-line 30:+10"
+highlights lines 30 to 40
 .RE
 .HP
 \fB\-\-file\-name\fR <name>...
@@ -154,6 +156,8 @@ prints lines 30 to 40
 prints lines 1 to 40
 .IP "\-\-line\-range 40:"
 prints lines 40 to the end of the file
+.IP "\-\-line\-range 30:+10"
+prints lines 30 to 40
 .RE
 .HP
 \fB\-L\fR, \fB\-\-list\-languages\fR
@@ -218,7 +222,7 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 
 Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
 .br
-If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`. 
+If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`.
 
 .SH "ADDING CUSTOM THEMES"
 Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.

@@ -95,7 +95,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
-                     '--highlight-line 40:' highlights lines 40 to the end of the file",
+                     '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
+                     '--highlight-line 30:+10' highlights lines 30 to 40",
                 ),
         )
         .arg(
@@ -423,7 +424,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--line-range 30:40' prints lines 30 to 40\n  \
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file\n  \
-                     '--line-range 40' only prints line 40",
+                     '--line-range 40' only prints line 40\n  \
+                     '--line-range 30:+10' prints lines 30 to 40",
                 ),
         )
         .arg(
