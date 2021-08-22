@@ -48,10 +48,10 @@ impl LineRange {
             2 => {
                 new_range.lower = line_numbers[0].parse()?;
 
-                new_range.upper = if line_numbers[1].bytes().next().unwrap() == b'+' {
+                new_range.upper = if line_numbers[1].bytes().next() == Some(b'+') {
                     let more_lines = &line_numbers[1][1..]
                         .parse()
-                        .map_err(|_| "Invalid line number after +")?;
+                        .map_err(|_| "Invalid character after +")?;
                     new_range.lower + more_lines
                 } else {
                     line_numbers[1].parse()?
