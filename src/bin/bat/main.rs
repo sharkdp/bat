@@ -244,6 +244,8 @@ fn invoke_bugreport(app: &App) {
             "SHELL",
             "PAGER",
             "LESS",
+            "LANG",
+            "LC_ALL",
             "BAT_PAGER",
             "BAT_CACHE_PATH",
             "BAT_CONFIG_PATH",
