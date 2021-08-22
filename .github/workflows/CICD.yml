@@ -102,6 +102,7 @@ jobs:
       matrix:
         job:
           - { os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf , use-cross: true }
+          - { os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true }
           - { os: ubuntu-20.04, target: aarch64-unknown-linux-gnu   , use-cross: true }
           - { os: ubuntu-20.04, target: i686-unknown-linux-gnu      , use-cross: true }
           - { os: ubuntu-20.04, target: i686-unknown-linux-musl     , use-cross: true }
@@ -120,7 +121,7 @@ jobs:
       shell: bash
       run: |
         case ${{ matrix.job.target }} in
-          arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          arm-unknown-linux-*) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
 
@@ -170,7 +171,7 @@ jobs:
         # Figure out what strip tool to use if any
         STRIP="strip"
         case ${{ matrix.job.target }} in
-          arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;;
+          arm-unknown-linux-*) STRIP="arm-linux-gnueabihf-strip" ;;
           aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
           *-pc-windows-msvc) STRIP="" ;;
         esac;
