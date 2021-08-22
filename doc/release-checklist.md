@@ -4,11 +4,11 @@
 
 See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 
-- [ ] Optional: update dependencies with `cargo update`. This is also done
-      by dependabot, so it is not strictly necessary.
-- [ ] Check for outdated dependencies (`cargo outdated`) and decide for each
-      of them whether we want to (manually) upgrade. This will require changes
-      to `Cargo.toml`.
+- [ ] Optional: update dependencies with `cargo update`. This is also done by
+      dependabot, so it is not strictly necessary.
+- [ ] Check for outdated dependencies (`cargo outdated`) and decide for each of
+      them whether we want to (manually) upgrade. This will require changes to
+      `Cargo.toml`.
 
 ## Version bump
 
@@ -18,8 +18,8 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
       `grep '^\s*MIN_SUPPORTED_RUST_VERSION' .github/workflows/CICD.yml`.
 - [ ] Update the version and the min. supported Rust version in `README.md` and
       `doc/README-*.md`.
-- [ ] Update `CHANGELOG.md`. Introduce a section for the new release and prepare
-      a new (empty) "unreleased" section at the top.
+- [ ] Update `CHANGELOG.md`. Introduce a section for the new release and
+      prepare a new (empty) "unreleased" section at the top.
 
 ## Update syntaxes and themes (build assets)
 
@@ -55,9 +55,4 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 - [ ] Check if the binary deployment works (archives and Debian packages should
       appear when the CI run for the Git tag has finished).
 - [ ] Publish to crates.io by running `cargo publish` in a *clean* repository.
-      The safest way to do this is to cloning a fresh copy.
-
-## Post release
-
-- [ ] Optional: Inform package maintainers about the update:
-      - https://www.archlinux.org/packages/community/x86_64/bat/
+      The safest way to do this is to clone a fresh copy.
