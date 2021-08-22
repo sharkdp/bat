@@ -45,13 +45,15 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 
 ## Release
 
-- [ ] Create a tag and push it to the remote `git tag vX.Y.Z; git push --tags`.
+- [ ] Create a tag and push it to the remote `git tag vX.Y.Z; git push origin vX.Y.Z`.
       This will trigger the deployment via GitHub Actions.
 - [ ] Go to https://github.com/sharkdp/bat/releases/new to create the new
       release. Select the new tag and also use it as the release title. For the
       release notes, copy the corresponding section from `CHANGELOG.md` and
       possibly add additional remarks for package maintainers.
       Publish the release.
+      NOTE: If you are too slow, the CI job you triggered in the step above will create
+      the release for you, and the author of the release will become **github-actions**.
 - [ ] Check if the binary deployment works (archives and Debian packages should
       appear when the CI run for the Git tag has finished).
 - [ ] Publish to crates.io by running `cargo publish` in a *clean* repository.
