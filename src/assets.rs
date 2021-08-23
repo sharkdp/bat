@@ -60,15 +60,6 @@ impl HighlightingAssets {
         "Monokai Extended"
     }
 
-    /// Deprecated.
-    /// Instead of first [HighlightingAssets::from_files] and then [HighlightingAssets::save_to_cache]
-    /// you now make a single call to [crate::assets::build]. A temporary [HighlightingAssets] object is
-    /// not needed any longer to build assets.
-    #[deprecated]
-    pub fn from_files(_source_dir: &Path, _include_integrated_assets: bool) -> Result<Self> {
-        Err("Deprecated. See rustdoc for more info.".to_owned().into())
-    }
-
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
@@ -81,15 +72,6 @@ impl HighlightingAssets {
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
             get_integrated_themeset(),
         )
-    }
-
-    /// Deprecated.
-    /// Instead of first [HighlightingAssets::from_files] and then [HighlightingAssets::save_to_cache]
-    /// you now make a single call to [crate::assets::build]. A temporary [HighlightingAssets] object is
-    /// not needed any longer to build assets.
-    #[deprecated]
-    pub fn save_to_cache(&self, _target_dir: &Path, _current_version: &str) -> Result<()> {
-        Err("Deprecated. See rustdoc for more info.".to_owned().into())
     }
 
     pub fn set_fallback_theme(&mut self, theme: &'static str) {
