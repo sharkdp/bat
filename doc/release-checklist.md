@@ -52,8 +52,6 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
       release notes, copy the corresponding section from `CHANGELOG.md` and
       possibly add additional remarks for package maintainers.
       Publish the release.
-      NOTE: If you are too slow, the CI job you triggered in the step above will create
-      the release for you, and the author of the release will become **github-actions**.
 - [ ] Check if the binary deployment works (archives and Debian packages should
       appear when the CI run for the Git tag has finished).
 - [ ] Publish to crates.io by running `cargo publish` in a *clean* repository.
