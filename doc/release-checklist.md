@@ -45,7 +45,7 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 
 ## Release
 
-- [ ] Create a tag and push it to the remote `git tag vX.Y.Z; git push --tags`.
+- [ ] Create a tag and push it: `git tag vX.Y.Z; git push origin tag vX.Y.Z`.
       This will trigger the deployment via GitHub Actions.
 - [ ] Go to https://github.com/sharkdp/bat/releases/new to create the new
       release. Select the new tag and also use it as the release title. For the
