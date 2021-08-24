@@ -18,7 +18,7 @@ use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 #[derive(Debug)]
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
-    serialized_syntax_set: Option<SerializedSyntaxSet>,
+    serialized_syntax_set: SerializedSyntaxSet,
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
@@ -47,20 +47,9 @@ const IGNORED_SUFFIXES: [&str; 10] = [
 ];
 
 impl HighlightingAssets {
-    fn new(
-        syntax_set: Option<SyntaxSet>,
-        serialized_syntax_set: Option<SerializedSyntaxSet>,
-        theme_set: ThemeSet,
-    ) -> Self {
-        assert!(syntax_set.is_some() || serialized_syntax_set.is_some());
-
-        let syntax_set_cell = LazyCell::new();
-        if let Some(syntax_set) = syntax_set {
-            syntax_set_cell.fill(syntax_set).expect("can never fail");
-        }
-
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
         HighlightingAssets {
-            syntax_set_cell,
+            syntax_set_cell: LazyCell::new(),
             serialized_syntax_set,
             theme_set,
             fallback_theme: None,
@@ -71,109 +60,18 @@ impl HighlightingAssets {
         "Monokai Extended"
     }
 
-    #[cfg(feature = "build-assets")]
-    pub fn from_files(source_dir: &Path, include_integrated_assets: bool) -> Result<Self> {
-        let mut theme_set = if include_integrated_assets {
-            get_integrated_themeset()
-        } else {
-            ThemeSet::new()
-        };
-
-        let theme_dir = source_dir.join("themes");
-        if theme_dir.exists() {
-            let res = theme_set.add_from_folder(&theme_dir);
-            if let Err(err) = res {
-                println!(
-                    "Failed to load one or more themes from '{}' (reason: '{}')",
-                    theme_dir.to_string_lossy(),
-                    err,
-                );
-            }
-        } else {
-            println!(
-                "No themes were found in '{}', using the default set",
-                theme_dir.to_string_lossy()
-            );
-        }
-
-        let mut syntax_set_builder = if !include_integrated_assets {
-            let mut builder = syntect::parsing::SyntaxSetBuilder::new();
-            builder.add_plain_text_syntax();
-            builder
-        } else {
-            from_binary::<SyntaxSet>(get_serialized_integrated_syntaxset()).into_builder()
-        };
-
-        let syntax_dir = source_dir.join("syntaxes");
-        if syntax_dir.exists() {
-            syntax_set_builder.add_from_folder(syntax_dir, true)?;
-        } else {
-            println!(
-                "No syntaxes were found in '{}', using the default set.",
-                syntax_dir.to_string_lossy()
-            );
-        }
-
-        if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
-            // To trigger this code, run:
-            // BAT_PRINT_SYNTAX_DEPENDENCIES=1 cargo run -- cache --build --source assets --blank --target /tmp
-            crate::syntax_dependencies::print_syntax_dependencies(&syntax_set_builder);
-        }
-
-        let syntax_set = syntax_set_builder.build();
-        let missing_contexts = syntax_set.find_unlinked_contexts();
-        if !missing_contexts.is_empty() {
-            println!("Some referenced contexts could not be found!");
-            for context in missing_contexts {
-                println!("- {}", context);
-            }
-        }
-
-        Ok(HighlightingAssets::new(Some(syntax_set), None, theme_set))
-    }
-
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
-            None,
-            Some(SerializedSyntaxSet::FromFile(
-                cache_path.join("syntaxes.bin"),
-            )),
+            SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
             asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
         ))
     }
 
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
-            None,
-            Some(SerializedSyntaxSet::FromBinary(
-                get_serialized_integrated_syntaxset(),
-            )),
+            SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
             get_integrated_themeset(),
         )
-    }
-
-    #[cfg(feature = "build-assets")]
-    pub fn save_to_cache(&self, target_dir: &Path, current_version: &str) -> Result<()> {
-        let _ = fs::create_dir_all(target_dir);
-        asset_to_cache(
-            self.get_theme_set(),
-            &target_dir.join("themes.bin"),
-            "theme set",
-        )?;
-        asset_to_cache(
-            self.get_syntax_set()?,
-            &target_dir.join("syntaxes.bin"),
-            "syntax set",
-        )?;
-
-        print!(
-            "Writing metadata to folder {} ... ",
-            target_dir.to_string_lossy()
-        );
-        crate::assets_metadata::AssetsMetadata::new(current_version).save_to_folder(target_dir)?;
-        println!("okay");
-
-        Ok(())
     }
 
     pub fn set_fallback_theme(&mut self, theme: &'static str) {
@@ -181,17 +79,8 @@ impl HighlightingAssets {
     }
 
     pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
-        if !self.syntax_set_cell.filled() {
-            self.syntax_set_cell.fill(
-                self.serialized_syntax_set
-                .as_ref()
-                .expect("a dev forgot to setup serialized_syntax_set, please report to https://github.com/sharkdp/bat/issues")
-                .deserialize()?
-             ).unwrap();
-        }
-
-        // It is safe to .unwrap() because we just made sure it was .filled()
-        Ok(self.syntax_set_cell.borrow().unwrap())
+        self.syntax_set_cell
+            .try_borrow_with(|| self.serialized_syntax_set.deserialize())
     }
 
     /// Use [Self::get_syntaxes] instead
@@ -393,6 +282,9 @@ impl HighlightingAssets {
     }
 }
 
+#[cfg(feature = "build-assets")]
+pub use crate::build_assets::build_assets as build;
+
 /// A SyntaxSet in serialized form, i.e. bincoded and flate2 compressed.
 /// We keep it in this format since we want to load it lazily.
 #[derive(Debug)]
@@ -413,26 +305,12 @@ impl SerializedSyntaxSet {
     }
 }
 
-fn get_serialized_integrated_syntaxset() -> &'static [u8] {
+pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
     include_bytes!("../assets/syntaxes.bin")
 }
 
-fn get_integrated_themeset() -> ThemeSet {
+pub(crate) fn get_integrated_themeset() -> ThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"))
-}
-
-#[cfg(feature = "build-assets")]
-fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
-    print!("Writing {} to {} ... ", description, path.to_string_lossy());
-    syntect::dumps::dump_to_file(asset, &path).chain_err(|| {
-        format!(
-            "Could not save {} to {}",
-            description,
-            path.to_string_lossy()
-        )
-    })?;
-    println!("okay");
-    Ok(())
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &str) -> Result<T> {

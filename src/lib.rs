@@ -23,6 +23,8 @@ mod macros;
 
 pub mod assets;
 pub mod assets_metadata;
+#[cfg(feature = "build-assets")]
+mod build_assets;
 pub mod config;
 pub mod controller;
 mod decorations;
@@ -40,8 +42,6 @@ mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
 pub mod style;
-#[cfg(feature = "build-assets")]
-mod syntax_dependencies;
 pub(crate) mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrapping;

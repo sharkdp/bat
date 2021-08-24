@@ -50,8 +50,7 @@ fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
 
     let blank = matches.is_present("blank");
 
-    let assets = bat::assets::HighlightingAssets::from_files(source_dir, !blank)?;
-    assets.save_to_cache(target_dir, clap::crate_version!())
+    bat::assets::build(source_dir, !blank, target_dir, clap::crate_version!())
 }
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
