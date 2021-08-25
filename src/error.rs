@@ -17,12 +17,12 @@ pub enum Error {
     UndetectedSyntax(String),
     #[error("unknown syntax: '{0}'")]
     UnknownSyntax(String),
-    #[error("Use of bat as a pager is disallowed in order to avoid infinite recursion problems")]
-    InvalidPagerValueBat,
     #[error("Unknown style '{0}'")]
     UnknownStyle(String),
+    #[error("Use of bat as a pager is disallowed in order to avoid infinite recursion problems")]
+    InvalidPagerValueBat,
     #[error("{0}")]
-    Msg(String), // TODO: Why does not #[from] work here?
+    Msg(String),
 }
 
 impl From<&'static str> for Error {
@@ -31,7 +31,6 @@ impl From<&'static str> for Error {
     }
 }
 
-// TODO: Why does not #[from] work above?
 impl From<String> for Error {
     fn from(s: String) -> Self {
         Error::Msg(s)
