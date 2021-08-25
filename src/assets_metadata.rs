@@ -52,16 +52,15 @@ impl AssetsMetadata {
     pub fn load_from_folder(path: &Path) -> Result<Option<Self>> {
         match Self::try_load_from_folder(path) {
             Ok(metadata) => Ok(Some(metadata)),
-            Err(e) => match e.kind() {
-                ErrorKind::SerdeYamlError(_) => Err(e),
-                _ => {
-                    if path.join("syntaxes.bin").exists() || path.join("themes.bin").exists() {
-                        Ok(Some(Self::default()))
-                    } else {
-                        Ok(None)
-                    }
+            Err(e) => {
+                if let Error::SerdeYamlError(_) = e {
+                    Err(e)
+                } else if path.join("syntaxes.bin").exists() || path.join("themes.bin").exists() {
+                    Ok(Some(Self::default()))
+                } else {
+                    Ok(None)
                 }
-            },
+            }
         }
     }
 

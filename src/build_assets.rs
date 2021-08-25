@@ -267,7 +267,7 @@ impl SyntaxSetDependencyBuilder {
 
 fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
     print!("Writing {} to {} ... ", description, path.to_string_lossy());
-    syntect::dumps::dump_to_file(asset, &path).chain_err(|| {
+    syntect::dumps::dump_to_file(asset, &path).map_err(|_| {
         format!(
             "Could not save {} to {}",
             description,

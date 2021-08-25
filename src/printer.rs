@@ -174,7 +174,7 @@ impl<'a> InteractivePrinter<'a> {
             let syntax_in_set =
                 match assets.get_syntax(config.language, input, &config.syntax_mapping) {
                     Ok(syntax_in_set) => syntax_in_set,
-                    Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
+                    Err(Error::UndetectedSyntax(_)) => {
                         let syntax_set = assets.get_syntax_set()?;
                         let syntax = syntax_set.find_syntax_plain_text();
                         SyntaxReferenceInSet { syntax, syntax_set }

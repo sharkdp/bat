@@ -1,6 +1,3 @@
-// `error_chain!` can recurse deeply
-#![recursion_limit = "1024"]
-
 mod app;
 mod assets;
 mod clap_app;
