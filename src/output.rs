@@ -52,7 +52,7 @@ impl OutputType {
         use std::process::{Command, Stdio};
 
         let pager_opt =
-            pager::get_pager(pager_from_config).chain_err(|| "Could not parse pager command.")?;
+            pager::get_pager(pager_from_config).map_err(|_| "Could not parse pager command.")?;
 
         let pager = match pager_opt {
             Some(pager) => pager,
@@ -60,7 +60,7 @@ impl OutputType {
         };
 
         if pager.kind == PagerKind::Bat {
-            return Err(ErrorKind::InvalidPagerValueBat.into());
+            return Err(Error::InvalidPagerValueBat);
         }
 
         let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
@@ -142,7 +142,7 @@ impl OutputType {
             OutputType::Pager(ref mut command) => command
                 .stdin
                 .as_mut()
-                .chain_err(|| "Could not open stdin for pager")?,
+                .ok_or("Could not open stdin for pager")?,
             OutputType::Stdout(ref mut handle) => handle,
         })
     }

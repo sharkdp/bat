@@ -62,7 +62,7 @@ impl App {
             // Read arguments from bats config file
             let mut args = get_args_from_env_var()
                 .unwrap_or_else(get_args_from_config_file)
-                .chain_err(|| "Could not parse configuration file")?;
+                .map_err(|_| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());

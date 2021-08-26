@@ -163,7 +163,7 @@ impl HighlightingAssets {
             syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
-                .ok_or_else(|| ErrorKind::UnknownSyntax(language.to_owned()).into())
+                .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
         } else {
             let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
 
@@ -189,30 +189,27 @@ impl HighlightingAssets {
                     .unwrap_or_else(|| path.to_owned());
 
                 match mapping.get_syntax_for(absolute_path) {
-                    Some(MappingTarget::MapToUnknown) => line_syntax.ok_or_else(|| {
-                        ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
-                    }),
+                    Some(MappingTarget::MapToUnknown) => line_syntax
+                        .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
 
                     Some(MappingTarget::MapTo(syntax_name)) => {
                         let syntax_set = self.get_syntax_set()?;
                         syntax_set
                             .find_syntax_by_name(syntax_name)
                             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
-                            .ok_or_else(|| ErrorKind::UnknownSyntax(syntax_name.to_owned()).into())
+                            .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()))
                     }
 
                     None => {
                         let file_name = path.file_name().unwrap_or_default();
                         self.get_extension_syntax(file_name)?
                             .or(line_syntax)
-                            .ok_or_else(|| {
-                                ErrorKind::UndetectedSyntax(path.to_string_lossy().into()).into()
-                            })
+                            .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
                     }
                 }
             } else {
                 // If a path wasn't provided, we fall back to the detect first-line syntax.
-                line_syntax.ok_or_else(|| ErrorKind::UndetectedSyntax("[unknown]".into()).into())
+                line_syntax.ok_or_else(|| Error::UndetectedSyntax("[unknown]".into()))
             }
         }
     }
@@ -314,14 +311,14 @@ pub(crate) fn get_integrated_themeset() -> ThemeSet {
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &str) -> Result<T> {
-    let contents = fs::read(path).chain_err(|| {
+    let contents = fs::read(path).map_err(|_| {
         format!(
             "Could not load cached {} '{}'",
             description,
             path.to_string_lossy()
         )
     })?;
-    from_reader(&contents[..]).chain_err(|| format!("Could not parse cached {}", description))
+    from_reader(&contents[..]).map_err(|_| format!("Could not parse cached {}", description).into())
 }
 
 #[cfg(test)]
