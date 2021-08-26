@@ -33,7 +33,7 @@ pub fn build_assets(
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
-    let theme_set = build_themes(source_dir, include_integrated_assets);
+    let theme_set = build_theme_set(source_dir, include_integrated_assets);
 
     let syntax_set_builder = build_syntax_set_builder(source_dir, include_integrated_assets)?;
 
@@ -50,7 +50,7 @@ pub fn build_assets(
     write_assets(&theme_set, &syntax_set, target_dir, current_version)
 }
 
-fn build_themes(source_dir: &Path, include_integrated_assets: bool) -> ThemeSet {
+fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> ThemeSet {
     let mut theme_set = if include_integrated_assets {
         crate::assets::get_integrated_themeset()
     } else {
