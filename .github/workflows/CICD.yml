@@ -37,7 +37,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --locked --all-targets --all-features
+        args: --locked --all-targets --all-features -- --allow clippy::unknown_clippy_lints
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
