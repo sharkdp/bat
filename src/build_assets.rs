@@ -33,6 +33,24 @@ pub fn build_assets(
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
+    let theme_set = build_themes(source_dir, include_integrated_assets);
+
+    let syntax_set_builder = build_syntax_set_builder(source_dir, include_integrated_assets)?;
+
+    if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
+        // To trigger this code, run:
+        // BAT_PRINT_SYNTAX_DEPENDENCIES=1 cargo run -- cache --build --source assets --blank --target /tmp
+        print_syntax_dependencies(&syntax_set_builder);
+    }
+
+    let syntax_set = syntax_set_builder.build();
+
+    print_unlinked_contexts(&syntax_set);
+
+    write_assets(&theme_set, &syntax_set, target_dir, current_version)
+}
+
+fn build_themes(source_dir: &Path, include_integrated_assets: bool) -> ThemeSet {
     let mut theme_set = if include_integrated_assets {
         crate::assets::get_integrated_themeset()
     } else {
@@ -56,6 +74,13 @@ pub fn build_assets(
         );
     }
 
+    theme_set
+}
+
+fn build_syntax_set_builder(
+    source_dir: &Path,
+    include_integrated_assets: bool,
+) -> Result<SyntaxSetBuilder> {
     let mut syntax_set_builder = if !include_integrated_assets {
         let mut builder = syntect::parsing::SyntaxSetBuilder::new();
         builder.add_plain_text_syntax();
@@ -75,13 +100,10 @@ pub fn build_assets(
         );
     }
 
-    if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
-        // To trigger this code, run:
-        // BAT_PRINT_SYNTAX_DEPENDENCIES=1 cargo run -- cache --build --source assets --blank --target /tmp
-        print_syntax_dependencies(&syntax_set_builder);
-    }
+    Ok(syntax_set_builder)
+}
 
-    let syntax_set = syntax_set_builder.build();
+fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
     let missing_contexts = syntax_set.find_unlinked_contexts();
     if !missing_contexts.is_empty() {
         println!("Some referenced contexts could not be found!");
@@ -89,7 +111,14 @@ pub fn build_assets(
             println!("- {}", context);
         }
     }
+}
 
+fn write_assets(
+    theme_set: &ThemeSet,
+    syntax_set: &SyntaxSet,
+    target_dir: &Path,
+    current_version: &str,
+) -> Result<()> {
     let _ = std::fs::create_dir_all(target_dir);
     asset_to_cache(&theme_set, &target_dir.join("themes.bin"), "theme set")?;
     asset_to_cache(&syntax_set, &target_dir.join("syntaxes.bin"), "syntax set")?;
