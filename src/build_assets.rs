@@ -120,8 +120,8 @@ fn write_assets(
     current_version: &str,
 ) -> Result<()> {
     let _ = std::fs::create_dir_all(target_dir);
-    asset_to_cache(&theme_set, &target_dir.join("themes.bin"), "theme set")?;
-    asset_to_cache(&syntax_set, &target_dir.join("syntaxes.bin"), "syntax set")?;
+    asset_to_cache(theme_set, &target_dir.join("themes.bin"), "theme set")?;
+    asset_to_cache(syntax_set, &target_dir.join("syntaxes.bin"), "syntax set")?;
 
     print!(
         "Writing metadata to folder {} ... ",
