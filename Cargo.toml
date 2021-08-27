@@ -45,7 +45,9 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
 ansi_colours = "^1.0"
+bincode = "1.0"
 console = "0.14.1"
+flate2 = "1.0"
 lazy_static = { version = "1.4", optional = true }
 lazycell = "1.0"
 thiserror = "1.0"
@@ -72,7 +74,7 @@ default-features = false
 [dependencies.syntect]
 version = "4.6.0"
 default-features = false
-features = ["parsing", "dump-load"]
+features = ["parsing"]
 
 [dependencies.clap]
 version = "2.33"
