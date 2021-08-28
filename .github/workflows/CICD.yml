@@ -95,7 +95,7 @@ jobs:
         args: --locked --no-deps --document-private-items --all-features
 
   build:
-    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
+    name: ${{ matrix.job.target }} (${{ matrix.job.os }})
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
