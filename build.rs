@@ -66,8 +66,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     )?;
     template(
         &variables,
-        "assets/completions/bat.ps1.in",
-        out_dir.join("assets/completions/bat.ps1"),
+        "assets/completions/_bat.ps1.in",
+        out_dir.join("assets/completions/_bat.ps1"),
     )?;
     template(
         &variables,
