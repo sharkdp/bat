@@ -29,15 +29,18 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
-const IGNORED_SUFFIXES: [&str; 10] = [
+const IGNORED_SUFFIXES: [&str; 13] = [
     // Editor etc backups
     "~",
     ".bak",
     ".old",
     ".orig",
-    // Debian and derivatives apt/dpkg backups
+    // Debian and derivatives apt/dpkg/ucf backups
     ".dpkg-dist",
     ".dpkg-old",
+    ".ucf-dist",
+    ".ucf-new",
+    ".ucf-old",
     // Red Hat and derivatives rpm backups
     ".rpmnew",
     ".rpmorig",
