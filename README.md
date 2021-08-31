@@ -367,7 +367,7 @@ If you want to build `bat` from source, you need Rust 1.45 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
-cargo install --locked bat
+cargo install bat
 ```
 
 Note that additional files like the man page or shell completion

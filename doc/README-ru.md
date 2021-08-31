@@ -344,7 +344,7 @@ ansible-galaxy install aeimer.install_bat
 Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.45 или выше. После этого используйте `cargo`, чтобы все скомпилировать:
 
 ```bash
-cargo install --locked bat
+cargo install bat
 ```
 
 ## Кастомизация

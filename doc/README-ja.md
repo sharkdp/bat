@@ -367,7 +367,7 @@ ansible-galaxy install aeimer.install_bat
 `cargo` を使用してビルドすることができます:
 
 ```bash
-cargo install --locked bat
+cargo install bat
 ```
 
 一部のプラットフォームでは `llvm` および/または `libclang-dev` のインストールが必要になる場合があります。

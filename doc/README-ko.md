@@ -408,7 +408,7 @@ scoop install bat
 `cargo`를 이용해 전부 빌드할 수 있습니다:
 
 ```bash
-cargo install --locked bat
+cargo install bat
 ```
 
 참고로 man 페이지나 셸 자동 완성 파일과 같은 부가 파일들은 이 방법으로 설치될 수
