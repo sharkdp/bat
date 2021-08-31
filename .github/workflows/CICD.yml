@@ -3,7 +3,6 @@ name: CICD
 env:
   MIN_SUPPORTED_RUST_VERSION: "1.45.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
-  SYNTAX_TESTS_CARGO_ARGS: "--no-default-features --features minimal-application,build-assets"
 
 on:
   workflow_dispatch:
@@ -45,8 +44,8 @@ jobs:
         command: test
         args: --locked
 
-  syntaxes_and_themes_regression_tests:
-    name: Syntaxes and themes regression tests
+  test_with_new_syntaxes_and_themes:
+    name: Run tests with updated syntaxes and themes
     runs-on: ubuntu-20.04
     steps:
     - name: Git checkout
@@ -63,16 +62,24 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: install
-        args: --locked ${{ env.SYNTAX_TESTS_CARGO_ARGS }} --path .
+        args: --locked --path .
     - name: Rebuild binary assets (syntaxes and themes)
       run: bash assets/create.sh
     - name: Build and install bat with updated assets
       uses: actions-rs/cargo@v1
       with:
         command: install
-        args: --locked ${{ env.SYNTAX_TESTS_CARGO_ARGS }} --path .
-    - name: All themes are present test
-      run: tests/syntax-tests/all_themes_are_present_test.sh
+        args: --locked --path .
+    - name: Run unit tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --locked --release
+    - name: Run ignored-by-default unit tests with new syntaxes and themes
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --locked --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
