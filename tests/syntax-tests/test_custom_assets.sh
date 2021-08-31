@@ -4,7 +4,6 @@ set -o errexit -o nounset -o pipefail
 test_file="tests/syntax-tests/source/BatTestCustomAssets/NoColorsUnlessCustomAssetsAreUsed.battestcustomassets"
 
 # First make sure our test syntax is not part of integrated syntaxes
-
 echo "Testing that BatTestCustomAssets is an unknown syntax:"
 bat -f --language BatTestCustomAssets "${test_file}" &&
     echo "should have failed because of unknown syntax" &&
@@ -22,7 +21,7 @@ mkdir -p "${custom_syntaxes_dir}"
 cp tests/syntax-tests/BatTestCustomAssets.sublime-syntax "${custom_syntaxes_dir}/BatTestCustomAssets.sublime-syntax"
 
 # Build custom assets to include the above syntax
-echo "Buidling custom assets to include the BatTestCustomAssets syntax"
+echo "Building custom assets to include the BatTestCustomAssets syntax"
 bat cache --build
 
 # Now bat shall not fail when the syntax is used. If it does not fail, we can be reasonably sure
@@ -41,3 +40,4 @@ bat -f --no-custom-assets --language BatTestCustomAssets "${test_file}" &&
 
 # We clean up after ourselves to reduce risk of problems later
 bat cache --clear
+rm -rf "${custom_syntaxes_dir}"
