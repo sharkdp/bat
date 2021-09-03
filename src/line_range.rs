@@ -4,6 +4,7 @@ use crate::error::*;
 pub struct LineRange {
     lower: usize,
     upper: usize,
+    increment: Option<usize>,
 }
 
 impl Default for LineRange {
@@ -11,6 +12,7 @@ impl Default for LineRange {
         LineRange {
             lower: usize::min_value(),
             upper: usize::max_value(),
+            increment: None,
         }
     }
 }
@@ -20,6 +22,7 @@ impl LineRange {
         LineRange {
             lower: from,
             upper: to,
+            increment: None,
         }
     }
 
@@ -59,15 +62,27 @@ impl LineRange {
 
                 Ok(new_range)
             }
+            3 => {
+                new_range.lower = line_numbers[0].parse()?;
+                new_range.upper = line_numbers[1].parse()?;
+                new_range.increment = Some(line_numbers[2].parse()?);
+                Ok(new_range)
+            }
             _ => Err(
-                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M'"
+                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M' or 'N:M:L'"
                     .into(),
             ),
         }
     }
 
     pub(crate) fn is_inside(&self, line: usize) -> bool {
-        line >= self.lower && line <= self.upper
+        match self.increment {
+            Some(v) => {
+                let increment = line.checked_sub(self.lower);
+                increment.map_or(false,|inc| line >= self.lower && line <= self.upper && v > 0 && ((inc + 1) % v) == 0)
+            },
+            None => line >= self.lower && line <= self.upper
+        }
     }
 }
 
@@ -76,6 +91,14 @@ fn test_parse_full() {
     let range = LineRange::from("40:50").expect("Shouldn't fail on test!");
     assert_eq!(40, range.lower);
     assert_eq!(50, range.upper);
+}
+
+#[test]
+fn test_parse_increment() {
+    let range = LineRange::from("40:50:60").expect("Shouldn't fail on test!");
+    assert_eq!(40, range.lower);
+    assert_eq!(50, range.upper);
+    assert_eq!(Some(60), range.increment);
 }
 
 #[test]
@@ -101,7 +124,7 @@ fn test_parse_single() {
 
 #[test]
 fn test_parse_fail() {
-    let range = LineRange::from("40:50:80");
+    let range = LineRange::from("40:50:80:90");
     assert!(range.is_err());
     let range = LineRange::from("40::80");
     assert!(range.is_err());
@@ -202,6 +225,16 @@ fn test_ranges_simple() {
 
     assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
     assert_eq!(RangeCheckResult::InRange, ranges.check(5));
+    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
+}
+
+#[test]
+fn test_ranges_increment() {
+    let ranges = ranges(&["3:8:2"]);
+
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(4));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(5));
     assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
 }
 

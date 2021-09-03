@@ -224,6 +224,16 @@ fn line_range_multiple() {
         .stdout("line 1\nline 2\nline 4\n");
 }
 
+#[test]
+fn line_range_increment() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=1:4:2")
+        .assert()
+        .success()
+        .stdout("line 2\nline 4\n");
+}
+
 #[cfg(unix)]
 fn setup_temp_file(content: &[u8]) -> io::Result<(PathBuf, tempfile::TempDir)> {
     let dir = tempfile::tempdir().expect("Couldn't create tempdir");
