@@ -81,7 +81,7 @@ default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dev-dependencies]
-assert_cmd = "1.0.8"
+assert_cmd = "2.0.0"
 serial_test = "0.5.1"
 predicates = "2.0.2"
 wait-timeout = "0.2.0"
