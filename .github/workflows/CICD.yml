@@ -86,6 +86,19 @@ jobs:
       run: bat --list-languages
     - name: List of themes
       run: bat --list-themes
+
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v2
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
