@@ -79,9 +79,11 @@ impl LineRange {
         match self.increment {
             Some(v) => {
                 let increment = line.checked_sub(self.lower);
-                increment.map_or(false,|inc| line >= self.lower && line <= self.upper && v > 0 && ((inc + 1) % v) == 0)
-            },
-            None => line >= self.lower && line <= self.upper
+                increment.map_or(false, |inc| {
+                    line >= self.lower && line <= self.upper && v > 0 && ((inc + 1) % v) == 0
+                })
+            }
+            None => line >= self.lower && line <= self.upper,
         }
     }
 }
