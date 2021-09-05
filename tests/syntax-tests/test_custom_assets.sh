@@ -1,43 +1,59 @@
 #!/usr/bin/env bash
 set -o errexit -o nounset -o pipefail
 
-test_file="tests/syntax-tests/source/BatTestCustomAssets/NoColorsUnlessCustomAssetsAreUsed.battestcustomassets"
+### HELPER VARS
 
-# First make sure our test syntax is not part of integrated syntaxes
-echo "Testing that BatTestCustomAssets is an unknown syntax:"
-bat -f --language BatTestCustomAssets "${test_file}" &&
-    echo "should have failed because of unknown syntax" &&
-    exit 1
-
-# Now build custom assets and include our test syntax
-# We do as instructed to regular users at
-# https://github.com/sharkdp/bat/blob/master/README.md#adding-new-syntaxes--language-definitions
-
-# Create dir to put our test syntax
 custom_syntaxes_dir="$(bat --config-dir)/syntaxes"
+
+installed_custom_syntax="${custom_syntaxes_dir}/BatTestCustomAssets.sublime-syntax"
+
+custom_syntax_args=(
+    "--language=BatTestCustomAssets"
+    "tests/syntax-tests/source/BatTestCustomAssets/NoColorsUnlessCustomAssetsAreUsed.battestcustomassets"
+)
+
+integrated_syntax_args=(
+    "--language=Rust"
+    "examples/simple.rs"
+)
+
+### HELPER FUNCTIONS
+
+echo_step() {
+    echo -e "\n== $1 =="
+}
+
+fail_test() {
+    echo "FAIL: $1"
+    exit 1
+}
+
+### TEST STEPS
+
+echo_step "TEST: Make sure 'BatTestCustomAssets' is not part of integrated syntaxes"
+bat -f "${custom_syntax_args[@]}" &&
+    fail_test "EXPECTED: 'unknown syntax' error ACTUAL: no error occured
+               HINT: try manually doing 'bat cache --clear' before running tests"
+
+echo_step "PREPARE: Install custom syntax 'BatTestCustomAssets'"
 mkdir -p "${custom_syntaxes_dir}"
+cp -v "tests/syntax-tests/BatTestCustomAssets.sublime-syntax" "${installed_custom_syntax}"
 
-# Put the syntax in place
-cp tests/syntax-tests/BatTestCustomAssets.sublime-syntax "${custom_syntaxes_dir}/BatTestCustomAssets.sublime-syntax"
-
-# Build custom assets to include the above syntax
-echo "Building custom assets to include the BatTestCustomAssets syntax"
+echo_step "PREPARE: Build custom assets to enable 'BatTestCustomAssets' syntax"
 bat cache --build
 
-# Now bat shall not fail when the syntax is used. If it does not fail, we can be reasonably sure
-# that the custom assets functionality is working
-echo "Testing that BatTestCustomAssets is a KNOWN syntax:"
-bat -f --language BatTestCustomAssets "${test_file}" ||
-    (echo "command shall not have failed this time, but did" &&
-        exit 1)
+echo_step "TEST: 'BatTestCustomAssets' is a known syntax"
+bat -f "${custom_syntax_args[@]}" ||
+    fail_test "EXPECTED: syntax highlighting to work ACTUAL: there was an error"
 
-# While we're at it  and for extra safety in the test, we also
-# make sure that the --no-custom-assets flag work as intended
-echo "Testing that BatTestCustomAssets is an unknown syntax when using --no-custom-assets:"
-bat -f --no-custom-assets --language BatTestCustomAssets "${test_file}" &&
-    echo "should have failed because of unknown syntax via --no-custom-assets" &&
-    exit 1
+echo_step "TEST: The 'Rust' syntax is still available"
+bat -f "${integrated_syntax_args[@]}" ||
+    fail_test "EXPECTED: syntax highlighting to still work for integrated assets ACTUAL: there was an error"
 
-# We clean up after ourselves to reduce risk of problems later
+echo_step "TEST: 'BatTestCustomAssets' is an unknown syntax with --no-custom-assets"
+bat -f --no-custom-assets "${custom_syntax_args[@]}" &&
+    fail_test "EXPECTED: 'unknown syntax' error because of --no-custom-assets, but no error occured"
+
+echo_step "CLEANING: To avoid unwanted side effects of running tests"
 bat cache --clear
-rm -rf "${custom_syntaxes_dir}"
+rm -rfv "${installed_custom_syntax}"
