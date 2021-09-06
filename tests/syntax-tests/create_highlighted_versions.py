@@ -47,12 +47,16 @@ def create_highlighted_versions(output_basepath):
     ):
         try:
             env = os.environ.copy()
-            env.pop("PAGER", None)
-            env.pop("BAT_PAGER", None)
+            env.pop("BAT_CACHE_PATH", None)
+            env.pop("BAT_CONFIG_DIR", None)
             env.pop("BAT_CONFIG_PATH", None)
+            env.pop("BAT_OPTS", None)
+            env.pop("BAT_PAGER", None)
             env.pop("BAT_STYLE", None)
-            env.pop("BAT_THEME", None)
             env.pop("BAT_TABS", None)
+            env.pop("BAT_THEME", None)
+            env.pop("NO_COLOR", None)
+            env.pop("PAGER", None)
             env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors
 
             source_dirname = path.basename(path.dirname(source))
