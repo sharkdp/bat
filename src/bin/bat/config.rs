@@ -64,7 +64,7 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 #--pager="less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse"
 
 # Syntax mappings: map a certain filename pattern to a language.
-#   Example 1: use the C++ syntax for .ino files
+#   Example 1: use the C++ syntax for Arduino .ino files
 #   Example 2: Use ".gitignore"-style highlighting for ".ignore" files
 #--map-syntax "*.ino:C++"
 #--map-syntax ".ignore:Git Ignore"

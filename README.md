@@ -598,7 +598,7 @@ Example configuration file:
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax for .ino files
+# Use C++ syntax for Arduino .ino files
 --map-syntax "*.ino:C++"
 ```
 
