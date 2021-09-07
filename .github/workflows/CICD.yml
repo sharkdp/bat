@@ -86,6 +86,21 @@ jobs:
       run: bat --list-languages
     - name: List of themes
       run: bat --list-themes
+    - name: Test custom assets
+      run: tests/syntax-tests/test_custom_assets.sh
+
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v2
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
@@ -95,24 +110,23 @@ jobs:
         args: --locked --no-deps --document-private-items --all-features
 
   build:
-    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
+    name: ${{ matrix.job.target }} (${{ matrix.job.os }})
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
       matrix:
         job:
-          - { os: ubuntu-20.04, target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-20.04, target: arm-unknown-linux-musleabihf, use-cross: true }
-          - { os: ubuntu-20.04, target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-20.04, target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-20.04, target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-20.04, target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-20.04, target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: macos-10.15 , target: x86_64-apple-darwin         }
-          # - { os: windows-2019, target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
-          - { os: windows-2019, target: i686-pc-windows-msvc        }
-          - { os: windows-2019, target: x86_64-pc-windows-gnu       }
-          - { os: windows-2019, target: x86_64-pc-windows-msvc      }
+          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04, use-cross: true }
+          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04, use-cross: true }
+          - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04, use-cross: true }
+          - { target: i686-pc-windows-msvc        , os: windows-2019                  }
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04, use-cross: true }
+          - { target: i686-unknown-linux-musl     , os: ubuntu-20.04, use-cross: true }
+          - { target: x86_64-apple-darwin         , os: macos-10.15                   }
+          - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
+          - { target: x86_64-pc-windows-msvc      , os: windows-2019                  }
+          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04                  }
+          - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, use-cross: true }
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -285,6 +299,7 @@ jobs:
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.bash "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.bash"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/_bat.ps1 "$ARCHIVE_DIR/autocomplete/_${{ env.PROJECT_NAME }}.ps1"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.zsh"
 
         # base compressed package

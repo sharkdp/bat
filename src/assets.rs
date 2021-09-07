@@ -34,15 +34,18 @@ pub(crate) const COMPRESS_SYNTAXES: bool = true;
 // Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_THEMES: bool = true;
 
-const IGNORED_SUFFIXES: [&str; 10] = [
+const IGNORED_SUFFIXES: [&str; 13] = [
     // Editor etc backups
     "~",
     ".bak",
     ".old",
     ".orig",
-    // Debian and derivatives apt/dpkg backups
+    // Debian and derivatives apt/dpkg/ucf backups
     ".dpkg-dist",
     ".dpkg-old",
+    ".ucf-dist",
+    ".ucf-new",
+    ".ucf-old",
     // Red Hat and derivatives rpm backups
     ".rpmnew",
     ".rpmorig",
