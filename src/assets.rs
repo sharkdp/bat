@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
 
 use lazycell::LazyCell;
 
-use syntect::dumps::{from_binary, from_reader};
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
@@ -28,6 +27,12 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax: &'a SyntaxReference,
     pub syntax_set: &'a SyntaxSet,
 }
+
+// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
+pub(crate) const COMPRESS_SYNTAXES: bool = true;
+
+// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
+pub(crate) const COMPRESS_THEMES: bool = true;
 
 const IGNORED_SUFFIXES: [&str; 13] = [
     // Editor etc backups
@@ -66,7 +71,7 @@ impl HighlightingAssets {
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
-            asset_from_cache(&cache_path.join("themes.bin"), "theme set")?,
+            asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
         ))
     }
 
@@ -299,8 +304,10 @@ enum SerializedSyntaxSet {
 impl SerializedSyntaxSet {
     fn deserialize(&self) -> Result<SyntaxSet> {
         match self {
-            SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data)),
-            SerializedSyntaxSet::FromFile(ref path) => asset_from_cache(path, "syntax set"),
+            SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data, COMPRESS_SYNTAXES)),
+            SerializedSyntaxSet::FromFile(ref path) => {
+                asset_from_cache(path, "syntax set", COMPRESS_SYNTAXES)
+            }
         }
     }
 }
@@ -310,10 +317,32 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
 }
 
 pub(crate) fn get_integrated_themeset() -> ThemeSet {
-    from_binary(include_bytes!("../assets/themes.bin"))
+    from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
 }
 
-fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &str) -> Result<T> {
+pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
+    asset_from_contents(v, "n/a", compressed)
+        .expect("data integrated in binary is never faulty, but make sure `compressed` is in sync!")
+}
+
+fn asset_from_contents<T: serde::de::DeserializeOwned>(
+    contents: &[u8],
+    description: &str,
+    compressed: bool,
+) -> Result<T> {
+    if compressed {
+        bincode::deserialize_from(flate2::read::ZlibDecoder::new(contents))
+    } else {
+        bincode::deserialize_from(contents)
+    }
+    .map_err(|_| format!("Could not parse {}", description).into())
+}
+
+fn asset_from_cache<T: serde::de::DeserializeOwned>(
+    path: &Path,
+    description: &str,
+    compressed: bool,
+) -> Result<T> {
     let contents = fs::read(path).map_err(|_| {
         format!(
             "Could not load cached {} '{}'",
@@ -321,7 +350,8 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(path: &Path, description: &s
             path.to_string_lossy()
         )
     })?;
-    from_reader(&contents[..]).map_err(|_| format!("Could not parse cached {}", description).into())
+    asset_from_contents(&contents[..], description, compressed)
+        .map_err(|_| format!("Could not parse cached {}", description).into())
 }
 
 #[cfg(test)]

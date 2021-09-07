@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::path::Path;
-use syntect::dumps::from_binary;
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::syntax_definition::{
     ContextReference, MatchOperation, MatchPattern, Pattern, SyntaxDefinition,
 };
 use syntect::parsing::{Scope, SyntaxSet, SyntaxSetBuilder};
 
+use crate::assets::*;
 use crate::error::*;
 
 type SyntaxName = String;
@@ -86,7 +86,7 @@ fn build_syntax_set_builder(
         builder.add_plain_text_syntax();
         builder
     } else {
-        from_binary::<SyntaxSet>(crate::assets::get_serialized_integrated_syntaxset())
+        from_binary::<SyntaxSet>(get_serialized_integrated_syntaxset(), COMPRESS_SYNTAXES)
             .into_builder()
     };
 
@@ -120,8 +120,18 @@ fn write_assets(
     current_version: &str,
 ) -> Result<()> {
     let _ = std::fs::create_dir_all(target_dir);
-    asset_to_cache(theme_set, &target_dir.join("themes.bin"), "theme set")?;
-    asset_to_cache(syntax_set, &target_dir.join("syntaxes.bin"), "syntax set")?;
+    asset_to_cache(
+        theme_set,
+        &target_dir.join("themes.bin"),
+        "theme set",
+        COMPRESS_THEMES,
+    )?;
+    asset_to_cache(
+        syntax_set,
+        &target_dir.join("syntaxes.bin"),
+        "syntax set",
+        COMPRESS_SYNTAXES,
+    )?;
 
     print!(
         "Writing metadata to folder {} ... ",
@@ -294,9 +304,33 @@ impl SyntaxSetDependencyBuilder {
     }
 }
 
-fn asset_to_cache<T: serde::Serialize>(asset: &T, path: &Path, description: &str) -> Result<()> {
+fn asset_to_contents<T: serde::Serialize>(
+    asset: &T,
+    description: &str,
+    compressed: bool,
+) -> Result<Vec<u8>> {
+    let mut contents = vec![];
+    if compressed {
+        bincode::serialize_into(
+            flate2::write::ZlibEncoder::new(&mut contents, flate2::Compression::best()),
+            asset,
+        )
+    } else {
+        bincode::serialize_into(&mut contents, asset)
+    }
+    .map_err(|_| format!("Could not serialize {}", description))?;
+    Ok(contents)
+}
+
+fn asset_to_cache<T: serde::Serialize>(
+    asset: &T,
+    path: &Path,
+    description: &str,
+    compressed: bool,
+) -> Result<()> {
     print!("Writing {} to {} ... ", description, path.to_string_lossy());
-    syntect::dumps::dump_to_file(asset, &path).map_err(|_| {
+    let contents = asset_to_contents(asset, description, compressed)?;
+    std::fs::write(path, &contents[..]).map_err(|_| {
         format!(
             "Could not save {} to {}",
             description,
