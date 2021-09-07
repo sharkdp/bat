@@ -86,6 +86,8 @@ jobs:
       run: bat --list-languages
     - name: List of themes
       run: bat --list-themes
+    - name: Test custom assets
+      run: tests/syntax-tests/test_custom_assets.sh
 
   documentation:
     name: Documentation
