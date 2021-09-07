@@ -663,7 +663,7 @@ bat --generate-config-file
 # 터미널에서 이탤릭체 쓰기 (일부 터미널에서 미지원)
 --italic-text=always
 
-# .ino 파일에 C++ 문법 쓰기
+# Arduino .ino 파일에 C++ 문법 쓰기
 --map-syntax "*.ino:C++"
 ```
 

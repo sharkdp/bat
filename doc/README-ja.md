@@ -522,7 +522,7 @@ export BAT_CONFIG_PATH="/path/to/bat.conf"
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax for .ino files
+# Use C++ syntax for Arduino .ino files
 --map-syntax "*.ino:C++"
 
 # Use ".gitignore"-style highlighting for ".ignore" files
