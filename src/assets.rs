@@ -48,7 +48,7 @@ pub(crate) struct MinimalSyntaxes {
     /// (We will later add `by_extension`, `by_first_line`, etc.)
     pub(crate) by_name: HashMap<String, usize>,
 
-    /// Serialized [SyntaxSet]s. Wether or not this data is compressed is
+    /// Serialized [SyntaxSet]s. Whether or not this data is compressed is
     /// decided by [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES]
     pub(crate) serialized_syntax_sets: Vec<Vec<u8>>,
 }
@@ -62,7 +62,7 @@ pub(crate) const COMPRESS_THEMES: bool = true;
 // Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
 
-// Wether or not to compress the serialized form of [MinimalSyntaxes]. Shall
+// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
 // always be `false`, because the data in
 // [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
 // (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
@@ -164,7 +164,7 @@ impl HighlightingAssets {
     }
 
     /// Finds a [SyntaxSet] that contains a [SyntaxReference] by its name. First
-    /// tries to find an minimal [SyntaxSet]. If none is found, returns the
+    /// tries to find a minimal [SyntaxSet]. If none is found, returns the
     /// [SyntaxSet] that contains all syntaxes.
     fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
         let minimal_syntax_set = self

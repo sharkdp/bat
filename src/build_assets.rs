@@ -173,7 +173,7 @@ fn build_minimal_syntaxes(
     if include_integrated_assets {
         // Dependency info is not present in integrated assets, so we can't
         // calculate minimal syntax sets. Return early without any data filled
-        // in. This means that no minimal syntax sets will be avaialble to use, and
+        // in. This means that no minimal syntax sets will be available to use, and
         // the full, slow-to-deserialize, fallback syntax set will be used instead.
         return Ok(minimal_syntaxes);
     }
