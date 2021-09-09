@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -18,6 +19,14 @@ use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
+
+    minimal_syntaxes: MinimalSyntaxes,
+
+    /// Lazily load serialized [SyntaxSet]s from [Self.minimal_syntaxes]. The
+    /// index in this vec matches the index in
+    /// [Self.minimal_syntaxes.serialized_syntax_sets]
+    deserialized_minimal_syntaxes: Vec<LazyCell<SyntaxSet>>,
+
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
@@ -28,11 +37,38 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
+/// Stores and allows lookup of minimal [SyntaxSet]s. The [SyntaxSet]s are
+/// stored in serialized form, and are deserialized on-demand. This gives good
+/// startup performance since only the necessary [SyntaxReference]s needs to be
+/// deserialized.
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub(crate) struct MinimalSyntaxes {
+    /// Lookup the index into `serialized_syntax_sets` of a [SyntaxSet] by the
+    /// name of any [SyntaxReference] inside the [SyntaxSet]
+    /// (We will later add `by_extension`, `by_first_line`, etc.)
+    pub(crate) by_name: HashMap<String, usize>,
+
+    /// Serialized [SyntaxSet]s. Whether or not this data is compressed is
+    /// decided by [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES]
+    pub(crate) serialized_syntax_sets: Vec<Vec<u8>>,
+}
+
 // Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SYNTAXES: bool = true;
 
 // Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_THEMES: bool = true;
+
+// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
+pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
+
+// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
+// always be `false`, because the data in
+// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
+// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
+// structures like `by_name` are tiny. If we compress, deserialization can't do
+// efficient byte-by-byte copy of `serialized_syntax_sets`.
+pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
 
 const IGNORED_SUFFIXES: [&str; 13] = [
     // Editor etc backups
@@ -55,10 +91,20 @@ const IGNORED_SUFFIXES: [&str; 13] = [
 ];
 
 impl HighlightingAssets {
-    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
+    fn new(
+        serialized_syntax_set: SerializedSyntaxSet,
+        minimal_syntaxes: MinimalSyntaxes,
+        theme_set: ThemeSet,
+    ) -> Self {
+        // Prepare so we can lazily load minimal syntaxes without a mut reference
+        let deserialized_minimal_syntaxes =
+            vec![LazyCell::new(); minimal_syntaxes.serialized_syntax_sets.len()];
+
         HighlightingAssets {
             syntax_set_cell: LazyCell::new(),
             serialized_syntax_set,
+            deserialized_minimal_syntaxes,
+            minimal_syntaxes,
             theme_set,
             fallback_theme: None,
         }
@@ -71,6 +117,11 @@ impl HighlightingAssets {
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
+            asset_from_cache(
+                &cache_path.join("minimal_syntaxes.bin"),
+                "minimal syntax sets",
+                COMPRESS_MINIMAL_SYNTAXES,
+            )?,
             asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
         ))
     }
@@ -78,6 +129,7 @@ impl HighlightingAssets {
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
+            get_integrated_minimal_syntaxes(),
             get_integrated_themeset(),
         )
     }
@@ -109,6 +161,41 @@ impl HighlightingAssets {
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
         self.get_theme_set().themes.keys().map(|s| s.as_ref())
+    }
+
+    /// Finds a [SyntaxSet] that contains a [SyntaxReference] by its name. First
+    /// tries to find a minimal [SyntaxSet]. If none is found, returns the
+    /// [SyntaxSet] that contains all syntaxes.
+    fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
+        let minimal_syntax_set = self
+            .minimal_syntaxes
+            .by_name
+            .get(&name.to_ascii_lowercase())
+            .and_then(|index| self.get_minimal_syntax_set_with_index(*index));
+
+        match minimal_syntax_set {
+            Some(syntax_set) => Ok(syntax_set),
+            None => self.get_syntax_set(),
+        }
+    }
+
+    fn load_minimal_syntax_set_with_index(&self, index: usize) -> Result<SyntaxSet> {
+        let serialized_syntax_set = &self.minimal_syntaxes.serialized_syntax_sets[index];
+        asset_from_contents(
+            &serialized_syntax_set[..],
+            &format!("minimal syntax set {}", index),
+            COMPRESS_SERIALIZED_MINIMAL_SYNTAXES,
+        )
+        .map_err(|_| format!("Could not parse minimal syntax set {}", index).into())
+    }
+
+    fn get_minimal_syntax_set_with_index(&self, index: usize) -> Option<&SyntaxSet> {
+        self.deserialized_minimal_syntaxes
+            .get(index)
+            .and_then(|cell| {
+                cell.try_borrow_with(|| self.load_minimal_syntax_set_with_index(index))
+                    .ok()
+            })
     }
 
     /// Use [Self::get_syntax_for_file_name] instead
@@ -167,7 +254,7 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
-            let syntax_set = self.get_syntax_set()?;
+            let syntax_set = self.get_syntax_set_by_name(language)?;
             syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
@@ -318,6 +405,13 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
 
 pub(crate) fn get_integrated_themeset() -> ThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
+}
+
+fn get_integrated_minimal_syntaxes() -> MinimalSyntaxes {
+    from_binary(
+        include_bytes!("../assets/minimal_syntaxes.bin"),
+        COMPRESS_MINIMAL_SYNTAXES,
+    )
 }
 
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
