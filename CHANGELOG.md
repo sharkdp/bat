@@ -13,6 +13,7 @@
 
 - Load cached assets as fast as integrated assets, see #1753 (@Enselic)
 - Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
+- Reduce startup time by approximately 80% for 91 out of 168 syntaxes when using `--language`. See #1787 (@Enselic)
 
 ## Other
 
