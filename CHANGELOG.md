@@ -9,12 +9,14 @@
 
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 
-## Other
+## Performance
 
-- Add PowerShell completion, see #1826 (@rashil2000)
 - Load cached assets as fast as integrated assets, see #1753 (@Enselic)
 - Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
 
+## Other
+
+- Add PowerShell completion, see #1826 (@rashil2000)
 
 ## Syntaxes
 
