@@ -395,7 +395,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     return Ok(());
                 }
             };
-            highlighter.highlight(line.as_ref(), self.syntax_set)
+            highlighter.highlight(&line, self.syntax_set)
         };
 
         if out_of_range {
