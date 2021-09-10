@@ -255,57 +255,56 @@ impl HighlightingAssets {
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
             let syntax_set = self.get_syntax_set_by_name(language)?;
-            syntax_set
+            return syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
-                .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
-        } else {
-            let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
+                .ok_or_else(|| Error::UnknownSyntax(language.to_owned()));
+        }
 
-            // Get the path of the file:
-            // If this was set by the metadata, that will take priority.
-            // If it wasn't, it will use the real file path (if available).
-            let path_str =
-                input
-                    .metadata
-                    .user_provided_name
-                    .as_ref()
-                    .or_else(|| match input.kind {
-                        OpenedInputKind::OrdinaryFile(ref path) => Some(path),
-                        _ => None,
-                    });
+        let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
 
-            if let Some(path_str) = path_str {
-                // If a path was provided, we try and detect the syntax based on extension mappings.
-                let path = Path::new(path_str);
-                let absolute_path = PathAbs::new(path)
-                    .ok()
-                    .map(|p| p.as_path().to_path_buf())
-                    .unwrap_or_else(|| path.to_owned());
+        // Get the path of the file:
+        // If this was set by the metadata, that will take priority.
+        // If it wasn't, it will use the real file path (if available).
+        let path_str = input
+            .metadata
+            .user_provided_name
+            .as_ref()
+            .or_else(|| match input.kind {
+                OpenedInputKind::OrdinaryFile(ref path) => Some(path),
+                _ => None,
+            });
 
-                match mapping.get_syntax_for(absolute_path) {
-                    Some(MappingTarget::MapToUnknown) => line_syntax
-                        .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
+        if let Some(path_str) = path_str {
+            // If a path was provided, we try and detect the syntax based on extension mappings.
+            let path = Path::new(path_str);
+            let absolute_path = PathAbs::new(path)
+                .ok()
+                .map(|p| p.as_path().to_path_buf())
+                .unwrap_or_else(|| path.to_owned());
 
-                    Some(MappingTarget::MapTo(syntax_name)) => {
-                        let syntax_set = self.get_syntax_set()?;
-                        syntax_set
-                            .find_syntax_by_name(syntax_name)
-                            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
-                            .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()))
-                    }
+            match mapping.get_syntax_for(absolute_path) {
+                Some(MappingTarget::MapToUnknown) => line_syntax
+                    .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
 
-                    None => {
-                        let file_name = path.file_name().unwrap_or_default();
-                        self.get_extension_syntax(file_name)?
-                            .or(line_syntax)
-                            .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
-                    }
+                Some(MappingTarget::MapTo(syntax_name)) => {
+                    let syntax_set = self.get_syntax_set()?;
+                    syntax_set
+                        .find_syntax_by_name(syntax_name)
+                        .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
+                        .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()))
                 }
-            } else {
-                // If a path wasn't provided, we fall back to the detect first-line syntax.
-                line_syntax.ok_or_else(|| Error::UndetectedSyntax("[unknown]".into()))
+
+                None => {
+                    let file_name = path.file_name().unwrap_or_default();
+                    self.get_extension_syntax(file_name)?
+                        .or(line_syntax)
+                        .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
+                }
             }
+        } else {
+            // If a path wasn't provided, we fall back to the detect first-line syntax.
+            line_syntax.ok_or_else(|| Error::UndetectedSyntax("[unknown]".into()))
         }
     }
 

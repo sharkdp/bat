@@ -100,17 +100,14 @@ pub fn get_languages(config: &Config) -> Result<String> {
             // Also skip if the 'extension' contains another real extension, likely
             // that is a full match file name like 'CMakeLists.txt' and 'Cargo.lock'
             if extension.starts_with('.') || Path::new(extension).extension().is_some() {
-                true
-            } else {
-                let test_file = Path::new("test").with_extension(extension);
-                let syntax_in_set = assets
-                    .get_syntax_for_file_name(test_file, &config.syntax_mapping)
-                    .unwrap(); // safe since .get_syntaxes() above worked
-                match syntax_in_set {
-                    Some(syntax_in_set) => syntax_in_set.syntax.name == lang_name,
-                    None => false,
-                }
+                return true;
             }
+
+            let test_file = Path::new("test").with_extension(extension);
+            let syntax_in_set = assets
+                .get_syntax_for_file_name(test_file, &config.syntax_mapping)
+                .unwrap(); // safe since .get_syntaxes() above worked
+            matches!(syntax_in_set, Some(syntax_in_set) if syntax_in_set.syntax.name == lang_name)
         });
     }
 
