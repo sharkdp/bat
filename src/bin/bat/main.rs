@@ -91,7 +91,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
         .collect::<Vec<_>>();
 
     // Handling of file-extension conflicts, see issue #1076
-    for lang in languages.iter_mut() {
+    for lang in &mut languages {
         let lang_name = lang.name.clone();
         lang.file_extensions.retain(|extension| {
             // The 'extension' variable is not certainly a real extension.
@@ -115,7 +115,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
 
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
 
-    for lang in languages.iter_mut() {
+    for lang in &mut languages {
         if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
             lang.file_extensions
                 .extend(additional_paths.iter().cloned());

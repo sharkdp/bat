@@ -420,8 +420,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|d| d.generate(line_number, false, self))
-                .collect::<Vec<_>>();
+                .map(|d| d.generate(line_number, false, self));
 
             for deco in decorations {
                 write!(handle, "{} ", deco.text)?;
@@ -435,7 +434,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;
 
-            for &(style, region) in regions.iter() {
+            for &(style, region) in &regions {
                 let text = &*self.preprocess(region, &mut cursor_total);
                 let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
                 write!(
@@ -472,7 +471,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 writeln!(handle)?;
             }
         } else {
-            for &(style, region) in regions.iter() {
+            for &(style, region) in &regions {
                 let ansi_iterator = AnsiCodeIterator::new(region);
                 let mut ansi_prefix: String = String::new();
                 for chunk in ansi_iterator {
