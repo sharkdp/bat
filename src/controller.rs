@@ -175,8 +175,8 @@ impl<'b> Controller<'b> {
                     let mut line_ranges: Vec<LineRange> = vec![];
 
                     if let Some(line_changes) = line_changes {
-                        for line in line_changes.keys() {
-                            let line = *line as usize;
+                        for &line in line_changes.keys() {
+                            let line = line as usize;
                             line_ranges.push(LineRange::new(line - context, line + context));
                         }
                     }

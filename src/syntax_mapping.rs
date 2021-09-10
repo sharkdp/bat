@@ -81,7 +81,7 @@ impl<'a> SyntaxMapping<'a> {
                 .unwrap();
         }
 
-        for glob in [
+        for glob in &[
             "**/systemd/**/*.conf",
             "**/systemd/**/*.example",
             "*.automount",
@@ -100,9 +100,7 @@ impl<'a> SyntaxMapping<'a> {
             "*.swap",
             "*.target",
             "*.timer",
-        ]
-        .iter()
-        {
+        ] {
             mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
         }
 

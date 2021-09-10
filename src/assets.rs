@@ -351,7 +351,7 @@ impl HighlightingAssets {
         let file_path = Path::new(file_name);
         let mut syntax = None;
         if let Some(file_str) = file_path.to_str() {
-            for suffix in IGNORED_SUFFIXES.iter() {
+            for suffix in &IGNORED_SUFFIXES {
                 if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
                     syntax = self.get_extension_syntax(OsStr::new(stripped_filename))?;
                     break;
