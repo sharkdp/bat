@@ -226,29 +226,29 @@ impl<'a> InteractivePrinter<'a> {
 
     fn create_fake_panel(&self, text: &str) -> String {
         if self.panel_width == 0 {
-            "".to_string()
+            return "".to_string();
+        }
+
+        let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
+        let text_filled: String = format!(
+            "{}{}",
+            text_truncated,
+            " ".repeat(self.panel_width - 1 - text_truncated.len())
+        );
+        if self.config.style_components.grid() {
+            format!("{} │ ", text_filled)
         } else {
-            let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
-            let text_filled: String = format!(
-                "{}{}",
-                text_truncated,
-                " ".repeat(self.panel_width - 1 - text_truncated.len())
-            );
-            if self.config.style_components.grid() {
-                format!("{} │ ", text_filled)
-            } else {
-                text_filled
-            }
+            text_filled
         }
     }
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
-            expand_tabs(text, self.config.tab_width, cursor)
-        } else {
-            *cursor += text.len();
-            text.to_string()
+            return expand_tabs(text, self.config.tab_width, cursor);
         }
+
+        *cursor += text.len();
+        text.to_string()
     }
 }
 

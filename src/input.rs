@@ -256,18 +256,18 @@ impl<'a> InputReader<'a> {
     }
 
     pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
-        if self.first_line.is_empty() {
-            let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
-
-            if self.content_type == Some(ContentType::UTF_16LE) {
-                self.inner.read_until(0x00, buf).ok();
-            }
-
-            Ok(res)
-        } else {
+        if !self.first_line.is_empty() {
             buf.append(&mut self.first_line);
-            Ok(true)
+            return Ok(true);
         }
+
+        let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
+
+        if self.content_type == Some(ContentType::UTF_16LE) {
+            let _ = self.inner.read_until(0x00, buf);
+        }
+
+        Ok(res)
     }
 }
 
