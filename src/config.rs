@@ -90,11 +90,10 @@ pub struct Config<'a> {
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
 pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
-    if let Ok(Some(pager)) = crate::pager::get_pager(config_pager) {
-        Some(pager.bin)
-    } else {
-        None
-    }
+    crate::pager::get_pager(config_pager)
+        .ok()
+        .flatten()
+        .map(|pager| pager.bin)
 }
 
 #[test]
