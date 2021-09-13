@@ -24,20 +24,19 @@ const IGNORED_SUFFIXES: [&str; 13] = [
 ];
 
 /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
-/// then try again without it. Note that we do this recursively.
+/// then try again without it.
 pub fn try_with_stripped_suffix<T, F>(file_name: &OsStr, func: F) -> Result<Option<T>>
 where
     F: Fn(&OsStr) -> Result<Option<T>>,
 {
-    let file_path = Path::new(file_name);
-    let mut syntax = None;
-    if let Some(file_str) = file_path.to_str() {
+    let mut from_stripped = None;
+    if let Some(file_str) = Path::new(file_name).to_str() {
         for suffix in &IGNORED_SUFFIXES {
             if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                syntax = func(OsStr::new(stripped_filename))?;
+                from_stripped = func(OsStr::new(stripped_filename))?;
                 break;
             }
         }
     }
-    Ok(syntax)
+    Ok(from_stripped)
 }

@@ -257,7 +257,7 @@ impl HighlightingAssets {
         }
         if syntax.is_none() {
             syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax(stripped_file_name)
+                self.get_extension_syntax(stripped_file_name) // Note: recursion
             })?;
         }
         Ok(syntax)
