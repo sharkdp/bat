@@ -14,6 +14,7 @@ use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
+use ignored_suffixes::*;
 use minimal_assets::*;
 use serialized_syntax_set::*;
 
@@ -23,6 +24,7 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
+mod ignored_suffixes;
 mod minimal_assets;
 mod serialized_syntax_set;
 
@@ -59,26 +61,6 @@ pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
 // structures like `by_name` are tiny. If we compress, deserialization can't do
 // efficient byte-by-byte copy of `serialized_syntax_sets`.
 pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
-
-const IGNORED_SUFFIXES: [&str; 13] = [
-    // Editor etc backups
-    "~",
-    ".bak",
-    ".old",
-    ".orig",
-    // Debian and derivatives apt/dpkg/ucf backups
-    ".dpkg-dist",
-    ".dpkg-old",
-    ".ucf-dist",
-    ".ucf-new",
-    ".ucf-old",
-    // Red Hat and derivatives rpm backups
-    ".rpmnew",
-    ".rpmorig",
-    ".rpmsave",
-    // Build system input/template files
-    ".in",
-];
 
 impl HighlightingAssets {
     fn new(
@@ -274,7 +256,9 @@ impl HighlightingAssets {
             syntax = self.find_syntax_by_file_name_extension(file_name)?;
         }
         if syntax.is_none() {
-            syntax = self.get_extension_syntax_with_stripped_suffix(file_name)?;
+            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
+                self.get_extension_syntax(stripped_file_name)
+            })?;
         }
         Ok(syntax)
     }
@@ -300,25 +284,6 @@ impl HighlightingAssets {
                     .unwrap_or_default(),
             )
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
-    }
-
-    /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
-    /// then try again to find a syntax without it. Note that we do this recursively.
-    fn get_extension_syntax_with_stripped_suffix(
-        &self,
-        file_name: &OsStr,
-    ) -> Result<Option<SyntaxReferenceInSet>> {
-        let file_path = Path::new(file_name);
-        let mut syntax = None;
-        if let Some(file_str) = file_path.to_str() {
-            for suffix in &IGNORED_SUFFIXES {
-                if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                    syntax = self.get_extension_syntax(OsStr::new(stripped_filename))?;
-                    break;
-                }
-            }
-        }
-        Ok(syntax)
     }
 
     fn get_first_line_syntax(
