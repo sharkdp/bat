@@ -1,7 +1,6 @@
-use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use lazycell::LazyCell;
 
@@ -15,17 +14,23 @@ use crate::error::*;
 use crate::input::{InputReader, OpenedInput, OpenedInputKind};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
+use minimal_assets::*;
+use serialized_syntax_set::*;
+
+#[cfg(feature = "build-assets")]
+pub use crate::assets::build_assets::*;
+
+pub(crate) mod assets_metadata;
+mod build_assets;
+mod minimal_assets;
+mod serialized_syntax_set;
+
 #[derive(Debug)]
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    minimal_syntaxes: MinimalSyntaxes,
-
-    /// Lazily load serialized [SyntaxSet]s from [Self.minimal_syntaxes]. The
-    /// index in this vec matches the index in
-    /// [Self.minimal_syntaxes.serialized_syntax_sets]
-    deserialized_minimal_syntaxes: Vec<LazyCell<SyntaxSet>>,
+    minimal_assets: MinimalAssets,
 
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
@@ -35,22 +40,6 @@ pub struct HighlightingAssets {
 pub struct SyntaxReferenceInSet<'a> {
     pub syntax: &'a SyntaxReference,
     pub syntax_set: &'a SyntaxSet,
-}
-
-/// Stores and allows lookup of minimal [SyntaxSet]s. The [SyntaxSet]s are
-/// stored in serialized form, and are deserialized on-demand. This gives good
-/// startup performance since only the necessary [SyntaxReference]s needs to be
-/// deserialized.
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-pub(crate) struct MinimalSyntaxes {
-    /// Lookup the index into `serialized_syntax_sets` of a [SyntaxSet] by the
-    /// name of any [SyntaxReference] inside the [SyntaxSet]
-    /// (We will later add `by_extension`, `by_first_line`, etc.)
-    pub(crate) by_name: HashMap<String, usize>,
-
-    /// Serialized [SyntaxSet]s. Whether or not this data is compressed is
-    /// decided by [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES]
-    pub(crate) serialized_syntax_sets: Vec<Vec<u8>>,
 }
 
 // Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
@@ -96,15 +85,10 @@ impl HighlightingAssets {
         minimal_syntaxes: MinimalSyntaxes,
         theme_set: ThemeSet,
     ) -> Self {
-        // Prepare so we can lazily load minimal syntaxes without a mut reference
-        let deserialized_minimal_syntaxes =
-            vec![LazyCell::new(); minimal_syntaxes.serialized_syntax_sets.len()];
-
         HighlightingAssets {
             syntax_set_cell: LazyCell::new(),
             serialized_syntax_set,
-            deserialized_minimal_syntaxes,
-            minimal_syntaxes,
+            minimal_assets: MinimalAssets::new(minimal_syntaxes),
             theme_set,
             fallback_theme: None,
         }
@@ -167,35 +151,10 @@ impl HighlightingAssets {
     /// tries to find a minimal [SyntaxSet]. If none is found, returns the
     /// [SyntaxSet] that contains all syntaxes.
     fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
-        let minimal_syntax_set = self
-            .minimal_syntaxes
-            .by_name
-            .get(&name.to_ascii_lowercase())
-            .and_then(|index| self.get_minimal_syntax_set_with_index(*index));
-
-        match minimal_syntax_set {
+        match self.minimal_assets.get_syntax_set_by_name(name) {
             Some(syntax_set) => Ok(syntax_set),
             None => self.get_syntax_set(),
         }
-    }
-
-    fn load_minimal_syntax_set_with_index(&self, index: usize) -> Result<SyntaxSet> {
-        let serialized_syntax_set = &self.minimal_syntaxes.serialized_syntax_sets[index];
-        asset_from_contents(
-            &serialized_syntax_set[..],
-            &format!("minimal syntax set {}", index),
-            COMPRESS_SERIALIZED_MINIMAL_SYNTAXES,
-        )
-        .map_err(|_| format!("Could not parse minimal syntax set {}", index).into())
-    }
-
-    fn get_minimal_syntax_set_with_index(&self, index: usize) -> Option<&SyntaxSet> {
-        self.deserialized_minimal_syntaxes
-            .get(index)
-            .and_then(|cell| {
-                cell.try_borrow_with(|| self.load_minimal_syntax_set_with_index(index))
-                    .ok()
-            })
     }
 
     /// Use [Self::get_syntax_for_file_name] instead
@@ -370,31 +329,6 @@ impl HighlightingAssets {
             .ok()
             .and_then(|l| syntax_set.find_syntax_by_first_line(&l))
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
-    }
-}
-
-#[cfg(feature = "build-assets")]
-pub use crate::build_assets::build_assets as build;
-
-/// A SyntaxSet in serialized form, i.e. bincoded and flate2 compressed.
-/// We keep it in this format since we want to load it lazily.
-#[derive(Debug)]
-enum SerializedSyntaxSet {
-    /// The data comes from a user-generated cache file.
-    FromFile(PathBuf),
-
-    /// The data to use is embedded into the bat binary.
-    FromBinary(&'static [u8]),
-}
-
-impl SerializedSyntaxSet {
-    fn deserialize(&self) -> Result<SyntaxSet> {
-        match self {
-            SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data, COMPRESS_SYNTAXES)),
-            SerializedSyntaxSet::FromFile(ref path) => {
-                asset_from_cache(path, "syntax set", COMPRESS_SYNTAXES)
-            }
-        }
     }
 }
 
