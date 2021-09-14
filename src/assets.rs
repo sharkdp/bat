@@ -284,6 +284,7 @@ impl HighlightingAssets {
 
                 Some(MappingTarget::MapTo(syntax_name)) => self
                     .find_syntax_by_name(syntax_name)?
+                    .or(line_syntax)
                     .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
 
                 None => {
