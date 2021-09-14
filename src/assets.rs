@@ -292,11 +292,12 @@ impl HighlightingAssets {
                 }
             }
         } else {
-            // If a path wasn't provided, we fall back to the detect first-line syntax.
             Err(Error::UndetectedSyntax("[unknown]".into()))
         };
 
         match path_syntax {
+            // If a path wasn't provided, or if path based syntax detection
+            // above failed, we fall back to first-line syntax detection.
             Err(err) => self.get_first_line_syntax(&mut input.reader)?.ok_or(err),
             _ => path_syntax,
         }
