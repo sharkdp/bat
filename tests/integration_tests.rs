@@ -1138,7 +1138,8 @@ fn first_line_fallback_when_mapping_to_invalid_syntax() {
         .arg("--style=plain")
         .arg(file)
         .assert()
-        .success();
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
 }
 
 #[test]
