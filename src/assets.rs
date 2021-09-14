@@ -256,8 +256,6 @@ impl HighlightingAssets {
                 .ok_or_else(|| Error::UnknownSyntax(language.to_owned()));
         }
 
-        let line_syntax = self.get_first_line_syntax(&mut input.reader)?;
-
         // Get the path of the file:
         // If this was set by the metadata, that will take priority.
         // If it wasn't, it will use the real file path (if available).
@@ -270,7 +268,7 @@ impl HighlightingAssets {
                 _ => None,
             });
 
-        if let Some(path_str) = path_str {
+        let path_syntax = if let Some(path_str) = path_str {
             // If a path was provided, we try and detect the syntax based on extension mappings.
             let path = Path::new(path_str);
             let absolute_path = PathAbs::new(path)
@@ -279,24 +277,28 @@ impl HighlightingAssets {
                 .unwrap_or_else(|| path.to_owned());
 
             match mapping.get_syntax_for(absolute_path) {
-                Some(MappingTarget::MapToUnknown) => line_syntax
-                    .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
+                Some(MappingTarget::MapToUnknown) => {
+                    Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
+                }
 
                 Some(MappingTarget::MapTo(syntax_name)) => self
                     .find_syntax_by_name(syntax_name)?
-                    .or(line_syntax)
                     .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
 
                 None => {
                     let file_name = path.file_name().unwrap_or_default();
                     self.get_extension_syntax(file_name)?
-                        .or(line_syntax)
                         .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
                 }
             }
         } else {
             // If a path wasn't provided, we fall back to the detect first-line syntax.
-            line_syntax.ok_or_else(|| Error::UndetectedSyntax("[unknown]".into()))
+            Err(Error::UndetectedSyntax("[unknown]".into()))
+        };
+
+        match path_syntax {
+            Err(err) => self.get_first_line_syntax(&mut input.reader)?.ok_or(err),
+            _ => path_syntax,
         }
     }
 
