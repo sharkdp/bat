@@ -7,7 +7,6 @@ use syntect::parsing::syntax_definition::{
 use syntect::parsing::{Scope, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets::*;
-use crate::error::*;
 
 type SyntaxName = String;
 
@@ -27,7 +26,7 @@ enum Dependency {
     ByScope(Scope),
 }
 
-pub fn build_assets(
+pub fn build(
     source_dir: &Path,
     include_integrated_assets: bool,
     target_dir: &Path,
