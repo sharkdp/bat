@@ -298,9 +298,9 @@ impl HighlightingAssets {
         match path_syntax {
             // If a path wasn't provided, or if path based syntax detection
             // above failed, we fall back to first-line syntax detection.
-            Err(Error::UndetectedSyntax(syntax_name)) => self
+            Err(Error::UndetectedSyntax(path)) => self
                 .get_first_line_syntax(&mut input.reader)?
-                .ok_or(Error::UndetectedSyntax(syntax_name)),
+                .ok_or(Error::UndetectedSyntax(path)),
             _ => path_syntax,
         }
     }

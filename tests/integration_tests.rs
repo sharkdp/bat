@@ -1128,7 +1128,7 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
 }
 
 #[test]
-fn first_line_fallback_when_mapping_to_invalid_syntax() {
+fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
     let file = "regression_tests/first_line_fallback.invalid-syntax";
 
     bat()
