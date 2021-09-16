@@ -201,7 +201,7 @@ impl HighlightingAssets {
         // Get the path of the file:
         // If this was set by the metadata, that will take priority.
         // If it wasn't, it will use the real file path (if available).
-        let path_str = input
+        let path = input
             .metadata
             .user_provided_name
             .as_ref()
@@ -210,9 +210,8 @@ impl HighlightingAssets {
                 _ => None,
             });
 
-        let path_syntax = if let Some(path_str) = path_str {
+        let path_syntax = if let Some(path) = path {
             // If a path was provided, we try and detect the syntax based on extension mappings.
-            let path = Path::new(path_str);
             let absolute_path = PathAbs::new(path)
                 .ok()
                 .map(|p| p.as_path().to_path_buf())
