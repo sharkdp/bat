@@ -212,10 +212,8 @@ impl HighlightingAssets {
 
         let path_syntax = if let Some(path) = path {
             // If a path was provided, we try and detect the syntax based on extension mappings.
-            let absolute_path = PathAbs::new(path)
-                .ok()
-                .map(|p| p.as_path().to_path_buf())
-                .unwrap_or_else(|| path.to_owned());
+            let absolute_path =
+                PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf());
 
             match mapping.get_syntax_for(absolute_path) {
                 Some(MappingTarget::MapToUnknown) => {
