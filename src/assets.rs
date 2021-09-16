@@ -45,21 +45,21 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
-// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
+/// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SYNTAXES: bool = true;
 
-// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
+/// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_THEMES: bool = true;
 
-// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
+/// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
 
-// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
-// always be `false`, because the data in
-// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
-// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
-// structures like `by_name` are tiny. If we compress, deserialization can't do
-// efficient byte-by-byte copy of `serialized_syntax_sets`.
+/// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
+/// always be `false`, because the data in
+/// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
+/// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
+/// structures like `by_name` are tiny. If we compress, deserialization can't do
+/// efficient byte-by-byte copy of `serialized_syntax_sets`.
 pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
 
 impl HighlightingAssets {
