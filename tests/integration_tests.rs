@@ -1128,6 +1128,21 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
 }
 
 #[test]
+fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
+    let file = "regression_tests/first_line_fallback.invalid-syntax";
+
+    bat()
+        .arg("--color=always")
+        .arg("--map-syntax=*.invalid-syntax:InvalidSyntax")
+        .arg(&format!("--file-name={}", file))
+        .arg("--style=plain")
+        .arg(file)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
