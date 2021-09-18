@@ -51,25 +51,27 @@ impl LineRange {
             2 => {
                 new_range.lower = line_numbers[0].parse()?;
 
-                new_range.upper = if line_numbers[1].bytes().next() == Some(b'+') {
-                    let more_lines = &line_numbers[1][1..]
+                let tilde_splited_line_numbers: Vec<&str> = line_numbers[1].split("~").collect();
+
+                new_range.upper = if tilde_splited_line_numbers[0].bytes().next() == Some(b'+') {
+                    let more_lines = &tilde_splited_line_numbers[0][1..]
                         .parse()
                         .map_err(|_| "Invalid character after +")?;
                     new_range.lower + more_lines
                 } else {
-                    line_numbers[1].parse()?
+                    tilde_splited_line_numbers[0].parse()?
+                };
+
+                new_range.increment = if tilde_splited_line_numbers.len() > 1 {
+                    Some(tilde_splited_line_numbers[1].parse()?)
+                } else {
+                    None
                 };
 
                 Ok(new_range)
             }
-            3 => {
-                new_range.lower = line_numbers[0].parse()?;
-                new_range.upper = line_numbers[1].parse()?;
-                new_range.increment = Some(line_numbers[2].parse()?);
-                Ok(new_range)
-            }
             _ => Err(
-                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M' or 'N:M:L'"
+                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M'"
                     .into(),
             ),
         }
@@ -97,7 +99,7 @@ fn test_parse_full() {
 
 #[test]
 fn test_parse_increment() {
-    let range = LineRange::from("40:50:60").expect("Shouldn't fail on test!");
+    let range = LineRange::from("40:50~60").expect("Shouldn't fail on test!");
     assert_eq!(40, range.lower);
     assert_eq!(50, range.upper);
     assert_eq!(Some(60), range.increment);
@@ -232,7 +234,7 @@ fn test_ranges_simple() {
 
 #[test]
 fn test_ranges_increment() {
-    let ranges = ranges(&["3:8:2"]);
+    let ranges = ranges(&["3:8~2"]);
 
     assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
     assert_eq!(RangeCheckResult::InRange, ranges.check(4));

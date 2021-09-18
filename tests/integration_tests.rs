@@ -228,7 +228,7 @@ fn line_range_multiple() {
 fn line_range_increment() {
     bat()
         .arg("multiline.txt")
-        .arg("--line-range=1:4:2")
+        .arg("--line-range=1:4~2")
         .assert()
         .success()
         .stdout("line 2\nline 4\n");
