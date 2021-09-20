@@ -11,18 +11,18 @@ use crate::assets::*;
 type SyntaxName = String;
 
 /// Used to look up what dependencies a given [SyntaxDefinition] has
-type SyntaxToDependencies = HashMap<SyntaxName, Vec<Dependency>>;
+type SyntaxToDependencies = HashMap<SyntaxName, Vec<OtherSyntax>>;
 
-/// Used to look up which [SyntaxDefinition] corresponds to a given [Dependency]
-type DependencyToSyntax<'a> = HashMap<Dependency, &'a SyntaxDefinition>;
+/// Used to look up which [SyntaxDefinition] corresponds to a given [OtherSyntax]
+type OtherSyntaxLookup<'a> = HashMap<OtherSyntax, &'a SyntaxDefinition>;
 
-/// Represents a dependency on an external `.sublime-syntax` file.
+/// Represents some other `*.sublime-syntax` file, i.e. another [SyntaxDefinition].
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
-enum Dependency {
-    /// By name. Example YAML: `include: C.sublime-syntax`
+enum OtherSyntax {
+    /// By name. Example YAML: `include: C.sublime-syntax` (name is `"C"`)
     ByName(String),
 
-    /// By scope. Example YAML: `embed: scope:source.c`
+    /// By scope. Example YAML: `embed: scope:source.c` (scope is `"source.c"`)
     ByScope(Scope),
 }
 
@@ -215,7 +215,7 @@ fn build_minimal_syntax_sets(
     let syntaxes = syntax_set_builder.syntaxes();
 
     // Build the data structures we need for dependency resolution
-    let (syntax_to_dependencies, dependency_to_syntax) = generate_maps(syntaxes);
+    let (syntax_to_dependencies, other_syntax_lookup) = generate_maps(syntaxes);
 
     // Create one minimal SyntaxSet from each (non-hidden) SyntaxDefinition
     syntaxes.iter().filter_map(move |syntax| {
@@ -224,7 +224,7 @@ fn build_minimal_syntax_sets(
         }
 
         let mut builder = SyntaxSetDependencyBuilder::new();
-        builder.add_with_dependencies(syntax, &syntax_to_dependencies, &dependency_to_syntax);
+        builder.add_with_dependencies(syntax, &syntax_to_dependencies, &other_syntax_lookup);
         let syntax_set = builder.build();
 
         if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
@@ -238,21 +238,21 @@ fn build_minimal_syntax_sets(
 }
 
 /// In order to analyze dependencies, we need two key pieces of data.
-/// First, when we have a [Dependency], we need to know what [SyntaxDefinition] that
+/// First, when we have a [OtherSyntax], we need to know what [SyntaxDefinition] that
 /// corresponds to. Second, when we have a [SyntaxDefinition], we need to know
 /// what dependencies it has. This functions generates that data for each syntax.
-fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (SyntaxToDependencies, DependencyToSyntax) {
+fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (SyntaxToDependencies, OtherSyntaxLookup) {
     let mut syntax_to_dependencies = HashMap::new();
-    let mut dependency_to_syntax = HashMap::new();
+    let mut other_syntax_lookup = HashMap::new();
 
     for syntax in syntaxes {
         syntax_to_dependencies.insert(syntax.name.clone(), dependencies_for_syntax(syntax));
 
-        dependency_to_syntax.insert(Dependency::ByName(syntax.name.clone()), syntax);
-        dependency_to_syntax.insert(Dependency::ByScope(syntax.scope), syntax);
+        other_syntax_lookup.insert(OtherSyntax::ByName(syntax.name.clone()), syntax);
+        other_syntax_lookup.insert(OtherSyntax::ByScope(syntax.scope), syntax);
     }
 
-    (syntax_to_dependencies, dependency_to_syntax)
+    (syntax_to_dependencies, other_syntax_lookup)
 }
 
 /// Gets what external dependencies a given [SyntaxDefinition] has.
@@ -260,8 +260,8 @@ fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (SyntaxToDependencies, Depend
 /// It does that by looking for variants of the following YAML patterns:
 /// - `include: C.sublime-syntax`
 /// - `embed: scope:source.c`
-fn dependencies_for_syntax(syntax: &SyntaxDefinition) -> Vec<Dependency> {
-    let mut dependencies: Vec<Dependency> = syntax
+fn dependencies_for_syntax(syntax: &SyntaxDefinition) -> Vec<OtherSyntax> {
+    let mut dependencies: Vec<OtherSyntax> = syntax
         .contexts
         .values()
         .flat_map(|context| &context.patterns)
@@ -274,7 +274,7 @@ fn dependencies_for_syntax(syntax: &SyntaxDefinition) -> Vec<Dependency> {
     dependencies
 }
 
-fn dependencies_from_pattern(pattern: &Pattern) -> Vec<Dependency> {
+fn dependencies_from_pattern(pattern: &Pattern) -> Vec<OtherSyntax> {
     match *pattern {
         Pattern::Match(MatchPattern {
             operation: MatchOperation::Push(ref context_references),
@@ -293,10 +293,10 @@ fn dependencies_from_pattern(pattern: &Pattern) -> Vec<Dependency> {
     .collect()
 }
 
-fn dependency_from_context_reference(context_reference: &ContextReference) -> Option<Dependency> {
+fn dependency_from_context_reference(context_reference: &ContextReference) -> Option<OtherSyntax> {
     match &context_reference {
-        ContextReference::File { ref name, .. } => Some(Dependency::ByName(name.clone())),
-        ContextReference::ByScope { ref scope, .. } => Some(Dependency::ByScope(*scope)),
+        ContextReference::File { ref name, .. } => Some(OtherSyntax::ByName(name.clone())),
+        ContextReference::ByScope { ref scope, .. } => Some(OtherSyntax::ByScope(*scope)),
         _ => None,
     }
 }
@@ -321,7 +321,7 @@ impl SyntaxSetDependencyBuilder {
         &mut self,
         syntax: &SyntaxDefinition,
         syntax_to_dependencies: &SyntaxToDependencies,
-        dependency_to_syntax: &DependencyToSyntax,
+        other_syntax_lookup: &OtherSyntaxLookup,
     ) {
         let name = &syntax.name;
         if self.is_syntax_already_added(name) {
@@ -337,11 +337,11 @@ impl SyntaxSetDependencyBuilder {
         }
 
         for dependency in dependencies.unwrap() {
-            if let Some(syntax_definition_dependency) = dependency_to_syntax.get(dependency) {
+            if let Some(syntax_definition_dependency) = other_syntax_lookup.get(dependency) {
                 self.add_with_dependencies(
                     syntax_definition_dependency,
                     syntax_to_dependencies,
-                    dependency_to_syntax,
+                    other_syntax_lookup,
                 )
             }
         }
