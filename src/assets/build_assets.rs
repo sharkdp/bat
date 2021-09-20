@@ -10,11 +10,11 @@ use crate::assets::*;
 
 type SyntaxName = String;
 
-/// Used to look up what dependencies a given [SyntaxDefinition] has
-type SyntaxToDependencies = HashMap<SyntaxName, Vec<OtherSyntax>>;
-
 /// Used to look up which [SyntaxDefinition] corresponds to a given [OtherSyntax]
 type OtherSyntaxLookup<'a> = HashMap<OtherSyntax, &'a SyntaxDefinition>;
+
+/// Used to look up what dependencies a given [SyntaxDefinition] has
+type SyntaxToDependencies = HashMap<SyntaxName, Vec<OtherSyntax>>;
 
 /// Represents some other `*.sublime-syntax` file, i.e. another [SyntaxDefinition].
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -215,7 +215,7 @@ fn build_minimal_syntax_sets(
     let syntaxes = syntax_set_builder.syntaxes();
 
     // Build the data structures we need for dependency resolution
-    let (syntax_to_dependencies, other_syntax_lookup) = generate_maps(syntaxes);
+    let (other_syntax_lookup, syntax_to_dependencies) = generate_maps(syntaxes);
 
     // Create one minimal SyntaxSet from each (non-hidden) SyntaxDefinition
     syntaxes.iter().filter_map(move |syntax| {
@@ -224,7 +224,7 @@ fn build_minimal_syntax_sets(
         }
 
         let mut builder = SyntaxSetDependencyBuilder::new();
-        builder.add_with_dependencies(syntax, &syntax_to_dependencies, &other_syntax_lookup);
+        builder.add_with_dependencies(syntax, &other_syntax_lookup, &syntax_to_dependencies);
         let syntax_set = builder.build();
 
         if std::env::var("BAT_PRINT_SYNTAX_DEPENDENCIES").is_ok() {
@@ -241,9 +241,9 @@ fn build_minimal_syntax_sets(
 /// First, when we have a [OtherSyntax], we need to know what [SyntaxDefinition] that
 /// corresponds to. Second, when we have a [SyntaxDefinition], we need to know
 /// what dependencies it has. This functions generates that data for each syntax.
-fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (SyntaxToDependencies, OtherSyntaxLookup) {
-    let mut syntax_to_dependencies = HashMap::new();
+fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (OtherSyntaxLookup, SyntaxToDependencies) {
     let mut other_syntax_lookup = HashMap::new();
+    let mut syntax_to_dependencies = HashMap::new();
 
     for syntax in syntaxes {
         syntax_to_dependencies.insert(syntax.name.clone(), dependencies_for_syntax(syntax));
@@ -252,7 +252,7 @@ fn generate_maps(syntaxes: &[SyntaxDefinition]) -> (SyntaxToDependencies, OtherS
         other_syntax_lookup.insert(OtherSyntax::ByScope(syntax.scope), syntax);
     }
 
-    (syntax_to_dependencies, other_syntax_lookup)
+    (other_syntax_lookup, syntax_to_dependencies)
 }
 
 /// Gets what external dependencies a given [SyntaxDefinition] has.
@@ -320,8 +320,8 @@ impl SyntaxSetDependencyBuilder {
     fn add_with_dependencies(
         &mut self,
         syntax: &SyntaxDefinition,
-        syntax_to_dependencies: &SyntaxToDependencies,
         other_syntax_lookup: &OtherSyntaxLookup,
+        syntax_to_dependencies: &SyntaxToDependencies,
     ) {
         let name = &syntax.name;
         if self.is_syntax_already_added(name) {
@@ -340,8 +340,8 @@ impl SyntaxSetDependencyBuilder {
             if let Some(syntax_definition_dependency) = other_syntax_lookup.get(dependency) {
                 self.add_with_dependencies(
                     syntax_definition_dependency,
-                    syntax_to_dependencies,
                     other_syntax_lookup,
+                    syntax_to_dependencies,
                 )
             }
         }
