@@ -99,6 +99,20 @@ impl<'a> Printer for SimplePrinter<'a> {
     }
 }
 
+struct HighlighterFromSet<'a> {
+    highlighter: HighlightLines<'a>,
+    syntax_set: &'a SyntaxSet,
+}
+
+impl<'a> HighlighterFromSet<'a> {
+    fn new(syntax_in_set: SyntaxReferenceInSet<'a>, theme: &'a Theme) -> Self {
+        Self {
+            highlighter: HighlightLines::new(syntax_in_set.syntax, theme),
+            syntax_set: syntax_in_set.syntax_set,
+        }
+    }
+}
+
 pub(crate) struct InteractivePrinter<'a> {
     colors: Colors,
     config: &'a Config<'a>,
@@ -108,8 +122,7 @@ pub(crate) struct InteractivePrinter<'a> {
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
-    highlighter: Option<HighlightLines<'a>>,
-    syntax_set: &'a SyntaxSet,
+    highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
 }
 
@@ -163,12 +176,12 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let (highlighter, syntax_set) = if input
+        let highlighter_from_set = if input
             .reader
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
         {
-            (None, assets.get_syntax_set()?)
+            None
         } else {
             // Determine the type of syntax for highlighting
             let syntax_in_set =
@@ -182,10 +195,7 @@ impl<'a> InteractivePrinter<'a> {
                     Err(e) => return Err(e),
                 };
 
-            (
-                Some(HighlightLines::new(syntax_in_set.syntax, theme)),
-                syntax_in_set.syntax_set,
-            )
+            Some(HighlighterFromSet::new(syntax_in_set, theme))
         };
 
         Ok(InteractivePrinter {
@@ -197,8 +207,7 @@ impl<'a> InteractivePrinter<'a> {
             ansi_prefix_sgr: String::new(),
             #[cfg(feature = "git")]
             line_changes,
-            highlighter,
-            syntax_set,
+            highlighter_from_set,
             background_color_highlight,
         })
     }
@@ -389,13 +398,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         let regions = {
-            let highlighter = match self.highlighter {
-                Some(ref mut highlighter) => highlighter,
+            let highlighter_from_set = match self.highlighter_from_set {
+                Some(ref mut highlighter_from_set) => highlighter_from_set,
                 _ => {
                     return Ok(());
                 }
             };
-            highlighter.highlight(&line, self.syntax_set)
+            highlighter_from_set
+                .highlighter
+                .highlight(&line, highlighter_from_set.syntax_set)
         };
 
         if out_of_range {
