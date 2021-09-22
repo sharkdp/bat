@@ -20,8 +20,8 @@ type SyntaxToDependencies = HashMap<SyntaxName, Vec<OtherSyntax>>;
 type SyntaxToDependents<'a> = HashMap<SyntaxName, Vec<OtherSyntax>>;
 
 /// Represents some other `*.sublime-syntax` file, i.e. another [SyntaxDefinition].
-#[derive(Debug, Eq, PartialEq, Clone, Hash)]
-enum OtherSyntax {
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone, Hash)]
+pub(crate) enum OtherSyntax {
     /// By name. Example YAML: `include: C.sublime-syntax` (name is `"C"`)
     ByName(String),
 
@@ -304,6 +304,7 @@ fn dependencies_for_syntax(syntax: &SyntaxDefinition) -> Vec<OtherSyntax> {
         .collect();
 
     // No need to track a dependency more than once
+    dependencies.sort();
     dependencies.dedup();
 
     dependencies
