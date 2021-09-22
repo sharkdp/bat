@@ -329,10 +329,31 @@ fn dependencies_from_pattern(pattern: &Pattern) -> Vec<OtherSyntax> {
     .collect()
 }
 
+/// Removes any context name from the syntax reference.
+///
+/// When we track dependencies between syntaxes, we are not interested in
+/// dependencies on specific contexts inside other syntaxes. We only care about
+/// the dependency on the syntax itself.
+///
+/// For example, if a syntax includes another syntax like this:
+/// ```yaml
+///   - include: scope:source.c++#unique-variables
+/// ```
+/// we only want to track the dependency on `source.c++`.
+fn remove_explicit_context(scope: Scope) -> Scope {
+    if let Some(without_context) = scope.build_string().split('#').next() {
+        Scope::new(without_context).expect("removing context reference must never fail")
+    } else {
+        scope
+    }
+}
+
 fn dependency_from_context_reference(context_reference: &ContextReference) -> Option<OtherSyntax> {
     match &context_reference {
         ContextReference::File { ref name, .. } => Some(OtherSyntax::ByName(name.clone())),
-        ContextReference::ByScope { ref scope, .. } => Some(OtherSyntax::ByScope(*scope)),
+        ContextReference::ByScope { ref scope, .. } => {
+            Some(OtherSyntax::ByScope(remove_explicit_context(*scope)))
+        }
         _ => None,
     }
 }
@@ -436,4 +457,17 @@ fn asset_to_cache<T: serde::Serialize>(
     })?;
     println!("okay");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn remove_explicit_context_sanity() {
+        // Example from Objective-C++.sublime-syntax
+        let scope = Scope::new("source.c++#unique-variables").unwrap();
+        let expected = Scope::new("source.c++").unwrap();
+        assert_eq!(remove_explicit_context(scope), expected);
+    }
 }
