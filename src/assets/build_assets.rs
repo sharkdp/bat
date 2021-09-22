@@ -8,6 +8,8 @@ use syntect::parsing::{Scope, SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets::*;
 
+mod graphviz_utils;
+
 type SyntaxName = String;
 
 /// Used to look up which [SyntaxDefinition] corresponds to a given [OtherSyntax]
@@ -221,6 +223,11 @@ fn build_minimal_syntax_sets(
     let (other_syntax_lookup, syntax_to_dependencies, syntax_to_dependents) =
         generate_maps(syntaxes);
 
+    maybe_write_syntax_dependencies_to_graphviz_dot_file(
+        &other_syntax_lookup,
+        &syntax_to_dependencies,
+    );
+
     // Create one minimal SyntaxSet from each (non-hidden) SyntaxDefinition
     syntaxes.iter().filter_map(move |syntax| {
         if syntax.hidden {
@@ -327,6 +334,26 @@ fn dependencies_from_pattern(pattern: &Pattern) -> Vec<OtherSyntax> {
     .into_iter()
     .flatten()
     .collect()
+}
+
+/// To generate a Graphviz dot file of syntax dependencies, do this:
+/// ```bash
+/// sudo apt install graphviz
+/// BAT_SYNTAX_DEPENDENCIES_TO_GRAPHVIZ_DOT_FILE=/tmp/bat-syntax-dependencies.dot cargo run -- cache  --build --source assets --blank --target /tmp
+/// dot /tmp/bat-syntax-dependencies.dot -Tpng -o /tmp/bat-syntax-dependencies.png
+/// open /tmp/bat-syntax-dependencies.png
+/// ```
+fn maybe_write_syntax_dependencies_to_graphviz_dot_file(
+    other_syntax_lookup: &OtherSyntaxLookup,
+    syntax_to_dependencies: &SyntaxToDependencies,
+) {
+    if let Ok(dot_file_path) = std::env::var("BAT_SYNTAX_DEPENDENCIES_TO_GRAPHVIZ_DOT_FILE") {
+        graphviz_utils::try_syntax_dependencies_to_graphviz_dot_file(
+            other_syntax_lookup,
+            syntax_to_dependencies,
+            &dot_file_path,
+        );
+    }
 }
 
 /// Removes any context name from the syntax reference.
