@@ -140,29 +140,38 @@ impl HighlightingAssets {
         }
     }
 
-    /// Use [Self::get_syntax_for_file_name] instead
+    /// Use [Self::get_syntax_for_path] instead
     #[deprecated]
     pub fn syntax_for_file_name(
         &self,
         file_name: impl AsRef<Path>,
         mapping: &SyntaxMapping,
     ) -> Option<&SyntaxReference> {
-        self.get_syntax_for_file_name(file_name, mapping)
-            .expect(
-                ".syntax_for_file_name() is deprecated, use .get_syntax_for_file_name() instead",
-            )
+        self.get_syntax_for_path(file_name, mapping)
+            .ok()
             .map(|syntax_in_set| syntax_in_set.syntax)
     }
 
-    pub fn get_syntax_for_file_name(
-        &self,
-        file_name: impl AsRef<Path>,
-        mapping: &SyntaxMapping,
-    ) -> Result<Option<SyntaxReferenceInSet>> {
-        Ok(self.get_syntax_for_path(file_name.as_ref(), mapping).ok())
-    }
-
-    fn get_syntax_for_path(
+    /// Detect the syntax based on, in order:
+    ///  1. Syntax mappings (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
+    ///  2. The file name (e.g. `Dockerfile`)
+    ///  3. The file name extension (e.g. `.rs`)
+    ///
+    /// When detecting syntax based on syntax mappings, the full path is taken
+    /// into account. When detecting syntax based on file name, no regard is
+    /// taken to the path of the file. Only the file name itself matters. When
+    /// detecting syntax based on file name extension, only the file name
+    /// extension itself matters.
+    ///
+    /// Returns [Error::UndetectedSyntax] if it was not possible detect syntax
+    /// based on path/file name/extension (or if the path was mapped to
+    /// [MappingTarget::MapToUnknown]). In this case it is appropriate to fall
+    /// back to other methods to detect syntax. Such as using the contents of
+    /// the first line of the file.
+    ///
+    /// Returns [Error::UnknownSyntax] if a syntax mapping exist, but the mapped
+    /// syntax does not exist.
+    pub fn get_syntax_for_path(
         &self,
         path: impl AsRef<Path>,
         mapping: &SyntaxMapping,
@@ -218,7 +227,6 @@ impl HighlightingAssets {
 
         let path = input.path();
         let path_syntax = if let Some(path) = path {
-            // If a path was provided, we try and detect the syntax based on extension mappings.
             self.get_syntax_for_path(
                 PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf()),
                 mapping,
