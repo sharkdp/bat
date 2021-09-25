@@ -167,6 +167,29 @@ impl HighlightingAssets {
         })
     }
 
+    fn get_syntax_for_path(
+        &self,
+        path: impl AsRef<Path>,
+        mapping: &SyntaxMapping,
+    ) -> Result<SyntaxReferenceInSet> {
+        let path = path.as_ref();
+        match mapping.get_syntax_for(path) {
+            Some(MappingTarget::MapToUnknown) => {
+                Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
+            }
+
+            Some(MappingTarget::MapTo(syntax_name)) => self
+                .find_syntax_by_name(syntax_name)?
+                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
+
+            None => {
+                let file_name = path.file_name().unwrap_or_default();
+                self.get_extension_syntax(file_name)?
+                    .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
+            }
+        }
+    }
+
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
         match self.get_theme_set().themes.get(theme) {
             Some(theme) => theme,
@@ -201,23 +224,10 @@ impl HighlightingAssets {
         let path = input.path();
         let path_syntax = if let Some(path) = path {
             // If a path was provided, we try and detect the syntax based on extension mappings.
-            match mapping.get_syntax_for(
+            self.get_syntax_for_path(
                 PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf()),
-            ) {
-                Some(MappingTarget::MapToUnknown) => {
-                    Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
-                }
-
-                Some(MappingTarget::MapTo(syntax_name)) => self
-                    .find_syntax_by_name(syntax_name)?
-                    .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
-
-                None => {
-                    let file_name = path.file_name().unwrap_or_default();
-                    self.get_extension_syntax(file_name)?
-                        .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
-                }
-            }
+                mapping,
+            )
         } else {
             Err(Error::UndetectedSyntax("[unknown]".into()))
         };
