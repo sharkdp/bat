@@ -159,12 +159,7 @@ impl HighlightingAssets {
         file_name: impl AsRef<Path>,
         mapping: &SyntaxMapping,
     ) -> Result<Option<SyntaxReferenceInSet>> {
-        let file_name = file_name.as_ref();
-        Ok(match mapping.get_syntax_for(file_name) {
-            Some(MappingTarget::MapToUnknown) => None,
-            Some(MappingTarget::MapTo(syntax_name)) => self.find_syntax_by_name(syntax_name)?,
-            None => self.get_extension_syntax(file_name.as_os_str())?,
-        })
+        Ok(self.get_syntax_for_path(file_name.as_ref(), mapping).ok())
     }
 
     fn get_syntax_for_path(
