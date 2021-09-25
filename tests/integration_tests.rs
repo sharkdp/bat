@@ -231,7 +231,7 @@ fn line_range_increment() {
         .arg("--line-range=1:4~2")
         .assert()
         .success()
-        .stdout("line 2\nline 4\n");
+        .stdout("line 1\nline 3\n");
 }
 
 #[cfg(unix)]

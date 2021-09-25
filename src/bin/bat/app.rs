@@ -216,8 +216,12 @@ impl App {
                 _ => VisibleLines::Ranges(
                     self.matches
                         .values_of("line-range")
-                        .map(|vs| vs.map(LineRange::from).collect())
-                        .transpose()?
+                        .map(|vs| {
+                            vs.map(LineRange::from)
+                                .flatten()
+                                .flatten()
+                                .collect::<Vec<_>>()
+                        })
                         .map(LineRanges::from)
                         .unwrap_or_default(),
                 ),
@@ -229,8 +233,12 @@ impl App {
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
-                .map(|ws| ws.map(LineRange::from).collect())
-                .transpose()?
+                .map(|ws| {
+                    ws.map(LineRange::from)
+                        .flatten()
+                        .flatten()
+                        .collect::<Vec<_>>()
+                })
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),

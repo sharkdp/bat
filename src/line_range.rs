@@ -4,7 +4,6 @@ use crate::error::*;
 pub struct LineRange {
     lower: usize,
     upper: usize,
-    increment: Option<usize>,
 }
 
 impl Default for LineRange {
@@ -12,7 +11,6 @@ impl Default for LineRange {
         LineRange {
             lower: usize::min_value(),
             upper: usize::max_value(),
-            increment: None,
         }
     }
 }
@@ -22,23 +20,25 @@ impl LineRange {
         LineRange {
             lower: from,
             upper: to,
-            increment: None,
         }
     }
 
-    pub fn from(range_raw: &str) -> Result<LineRange> {
+    pub fn from(range_raw: &str) -> Result<Vec<LineRange>> {
         LineRange::parse_range(range_raw)
     }
 
-    fn parse_range(range_raw: &str) -> Result<LineRange> {
+    fn parse_range(range_raw: &str) -> Result<Vec<LineRange>> {
+        let mut range_vec = Vec::new();
         let mut new_range = LineRange::default();
 
         if range_raw.bytes().next().ok_or("Empty line range")? == b':' {
             new_range.upper = range_raw[1..].parse()?;
-            return Ok(new_range);
+            range_vec.push(new_range);
+            return Ok(range_vec);
         } else if range_raw.bytes().last().ok_or("Empty line range")? == b':' {
             new_range.lower = range_raw[..range_raw.len() - 1].parse()?;
-            return Ok(new_range);
+            range_vec.push(new_range);
+            return Ok(range_vec);
         }
 
         let line_numbers: Vec<&str> = range_raw.split(':').collect();
@@ -46,29 +46,36 @@ impl LineRange {
             1 => {
                 new_range.lower = line_numbers[0].parse()?;
                 new_range.upper = new_range.lower;
-                Ok(new_range)
+                range_vec.push(new_range);
+                Ok(range_vec)
             }
             2 => {
-                new_range.lower = line_numbers[0].parse()?;
-
                 let tilde_splited_line_numbers: Vec<&str> = line_numbers[1].split("~").collect();
-
-                new_range.upper = if tilde_splited_line_numbers[0].bytes().next() == Some(b'+') {
+                let lower: usize = line_numbers[0].parse()?;
+                let upper: usize = if tilde_splited_line_numbers[0].bytes().next() == Some(b'+') {
                     let more_lines = &tilde_splited_line_numbers[0][1..]
                         .parse()
                         .map_err(|_| "Invalid character after +")?;
-                    new_range.lower + more_lines
+                    lower + more_lines
                 } else {
                     tilde_splited_line_numbers[0].parse()?
                 };
 
-                new_range.increment = if tilde_splited_line_numbers.len() > 1 {
-                    Some(tilde_splited_line_numbers[1].parse()?)
+                if tilde_splited_line_numbers.len() > 1 {
+                    // when increment value is set.
+                    let increment: usize = tilde_splited_line_numbers[1].parse()?;
+                    for i in 0..=upper - lower {
+                        if i % increment == 0 {
+                            range_vec.push(LineRange::new(lower + i, lower + i));
+                        }
+                    }
                 } else {
-                    None
-                };
-
-                Ok(new_range)
+                    // when increment value is not set.
+                    new_range.lower = lower;
+                    new_range.upper = upper;
+                    range_vec.push(new_range);
+                }
+                Ok(range_vec)
             }
             _ => Err(
                 "Line range contained more than one ':' character. Expected format: 'N' or 'N:M'"
@@ -78,52 +85,47 @@ impl LineRange {
     }
 
     pub(crate) fn is_inside(&self, line: usize) -> bool {
-        match self.increment {
-            Some(v) => {
-                let increment = line.checked_sub(self.lower);
-                increment.map_or(false, |inc| {
-                    line >= self.lower && line <= self.upper && v > 0 && ((inc + 1) % v) == 0
-                })
-            }
-            None => line >= self.lower && line <= self.upper,
-        }
+        line >= self.lower && line <= self.upper
     }
 }
 
 #[test]
 fn test_parse_full() {
     let range = LineRange::from("40:50").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(40, range[0].lower);
+    assert_eq!(50, range[0].upper);
 }
 
 #[test]
 fn test_parse_increment() {
-    let range = LineRange::from("40:50~60").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(50, range.upper);
-    assert_eq!(Some(60), range.increment);
+    let range = LineRange::from("40:50~2").expect("Shouldn't fail on test!");
+    assert_eq!(6, range.len());
+    assert_eq!(40, range[0].lower);
+    assert_eq!(40, range[0].upper);
+    let len = range.len();
+    assert_eq!(50, range[len - 1].lower);
+    assert_eq!(50, range[len - 1].upper);
 }
 
 #[test]
 fn test_parse_partial_min() {
     let range = LineRange::from(":50").expect("Shouldn't fail on test!");
-    assert_eq!(usize::min_value(), range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(usize::min_value(), range[0].lower);
+    assert_eq!(50, range[0].upper);
 }
 
 #[test]
 fn test_parse_partial_max() {
     let range = LineRange::from("40:").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(usize::max_value(), range.upper);
+    assert_eq!(40, range[0].lower);
+    assert_eq!(usize::max_value(), range[0].upper);
 }
 
 #[test]
 fn test_parse_single() {
     let range = LineRange::from("40").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(40, range.upper);
+    assert_eq!(40, range[0].lower);
+    assert_eq!(40, range[0].upper);
 }
 
 #[test]
@@ -139,8 +141,8 @@ fn test_parse_fail() {
 #[test]
 fn test_parse_plus() {
     let range = LineRange::from("40:+10").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(40, range[0].lower);
+    assert_eq!(50, range[0].upper);
 }
 
 #[test]
@@ -220,7 +222,12 @@ impl Default for HighlightedLineRanges {
 
 #[cfg(test)]
 fn ranges(rs: &[&str]) -> LineRanges {
-    LineRanges::from(rs.iter().map(|r| LineRange::from(r).unwrap()).collect())
+    LineRanges::from(
+        rs.iter()
+            .map(|r| LineRange::from(r).unwrap())
+            .flatten()
+            .collect(),
+    )
 }
 
 #[test]
@@ -237,8 +244,8 @@ fn test_ranges_increment() {
     let ranges = ranges(&["3:8~2"]);
 
     assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(4));
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(5));
+    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
+    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(6));
     assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
 }
 
