@@ -11,7 +11,7 @@ use path_abs::PathAbs;
 
 use crate::bat_warning;
 use crate::error::*;
-use crate::input::{InputReader, OpenedInput, OpenedInputKind};
+use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
 use ignored_suffixes::*;
@@ -198,18 +198,7 @@ impl HighlightingAssets {
                 .ok_or_else(|| Error::UnknownSyntax(language.to_owned()));
         }
 
-        // Get the path of the file:
-        // If this was set by the metadata, that will take priority.
-        // If it wasn't, it will use the real file path (if available).
-        let path = input
-            .metadata
-            .user_provided_name
-            .as_ref()
-            .or_else(|| match input.kind {
-                OpenedInputKind::OrdinaryFile(ref path) => Some(path),
-                _ => None,
-            });
-
+        let path = input.path();
         let path_syntax = if let Some(path) = path {
             // If a path was provided, we try and detect the syntax based on extension mappings.
             match mapping.get_syntax_for(

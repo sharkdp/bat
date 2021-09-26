@@ -108,6 +108,21 @@ pub(crate) struct OpenedInput<'a> {
     pub(crate) description: InputDescription,
 }
 
+impl OpenedInput<'_> {
+    /// Get the path of the file:
+    /// If this was set by the metadata, that will take priority.
+    /// If it wasn't, it will use the real file path (if available).
+    pub(crate) fn path(&self) -> Option<&PathBuf> {
+        self.metadata
+            .user_provided_name
+            .as_ref()
+            .or_else(|| match self.kind {
+                OpenedInputKind::OrdinaryFile(ref path) => Some(path),
+                _ => None,
+            })
+    }
+}
+
 impl<'a> Input<'a> {
     pub fn ordinary_file(path: impl AsRef<Path>) -> Self {
         Self::_ordinary_file(path.as_ref())
