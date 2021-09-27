@@ -232,7 +232,10 @@ impl HighlightingAssets {
         }
     }
 
-    fn find_syntax_by_name(&self, syntax_name: &str) -> Result<Option<SyntaxReferenceInSet>> {
+    pub(crate) fn find_syntax_by_name(
+        &self,
+        syntax_name: &str,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let syntax_set = self.get_syntax_set()?;
         Ok(syntax_set
             .find_syntax_by_name(syntax_name)
