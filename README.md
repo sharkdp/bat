@@ -196,7 +196,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
-`bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
+`bat` is making its way through the [Ubuntu](http://packages.ubuntu.com/search?keywords=bat&exact=1) and
 [Debian](https://packages.debian.org/testing/bat) package release process, and is available
 for Ubuntu as of Eoan 19.10. On Debian `bat` is currently available on the unstable
 "Sid" branch and on the testing branch.
