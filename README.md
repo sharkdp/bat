@@ -196,7 +196,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
-`bat` is available on [Ubuntu since 20.04 ("Focal")](https://packages.ubuntu.com/search?keywords=bat) and [Debian since August 2021 (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat).
+`bat` is available on [Ubuntu since 20.04 ("Focal")](https://packages.ubuntu.com/search?keywords=bat&exact=1) and [Debian since August 2021 (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat).
 
 If your Ubuntu/Debian installation is new enough you can simply run:
 
