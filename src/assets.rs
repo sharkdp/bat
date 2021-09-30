@@ -104,7 +104,7 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
             .try_borrow_with(|| self.serialized_syntax_set.deserialize())
     }
