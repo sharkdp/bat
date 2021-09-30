@@ -15,7 +15,6 @@ use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
 use crate::{bat_warning, SyntaxMapping};
 
-use minimal_assets::*;
 use serialized_syntax_set::*;
 
 #[cfg(feature = "build-assets")]
@@ -24,15 +23,12 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
-mod minimal_assets;
 mod serialized_syntax_set;
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
     syntax_set_cell: LazyCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
-
-    minimal_assets: MinimalAssets,
 
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
@@ -50,27 +46,11 @@ pub(crate) const COMPRESS_SYNTAXES: bool = true;
 /// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_THEMES: bool = true;
 
-/// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
-
-/// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
-/// always be `false`, because the data in
-/// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
-/// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
-/// structures like `by_name` are tiny. If we compress, deserialization can't do
-/// efficient byte-by-byte copy of `serialized_syntax_sets`.
-pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
-
 impl HighlightingAssets {
-    fn new(
-        serialized_syntax_set: SerializedSyntaxSet,
-        minimal_syntaxes: MinimalSyntaxes,
-        theme_set: ThemeSet,
-    ) -> Self {
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
         HighlightingAssets {
             syntax_set_cell: LazyCell::new(),
             serialized_syntax_set,
-            minimal_assets: MinimalAssets::new(minimal_syntaxes),
             theme_set,
             fallback_theme: None,
         }
@@ -83,11 +63,6 @@ impl HighlightingAssets {
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
-            asset_from_cache(
-                &cache_path.join("minimal_syntaxes.bin"),
-                "minimal syntax sets",
-                COMPRESS_MINIMAL_SYNTAXES,
-            )?,
             asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
         ))
     }
@@ -95,7 +70,6 @@ impl HighlightingAssets {
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
-            get_integrated_minimal_syntaxes(),
             get_integrated_themeset(),
         )
     }
@@ -127,16 +101,6 @@ impl HighlightingAssets {
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
         self.get_theme_set().themes.keys().map(|s| s.as_ref())
-    }
-
-    /// Finds a [SyntaxSet] that contains a [SyntaxReference] by its name. First
-    /// tries to find a minimal [SyntaxSet]. If none is found, returns the
-    /// [SyntaxSet] that contains all syntaxes.
-    fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
-        match self.minimal_assets.get_syntax_set_by_name(name) {
-            Some(syntax_set) => Ok(syntax_set),
-            None => self.get_syntax_set(),
-        }
     }
 
     /// Use [Self::get_syntax_for_path] instead
@@ -234,7 +198,7 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
-            let syntax_set = self.get_syntax_set_by_name(language)?;
+            let syntax_set = self.get_syntax_set()?;
             return syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
@@ -329,13 +293,6 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
 
 pub(crate) fn get_integrated_themeset() -> ThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
-}
-
-fn get_integrated_minimal_syntaxes() -> MinimalSyntaxes {
-    from_binary(
-        include_bytes!("../assets/minimal_syntaxes.bin"),
-        COMPRESS_MINIMAL_SYNTAXES,
-    )
 }
 
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
