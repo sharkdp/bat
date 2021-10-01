@@ -248,6 +248,14 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 dnf install bat
 ```
 
+### On Funtoo Linux
+
+You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
+
+```bash
+emerge sys-apps/bat
+```
+
 ### On Gentoo Linux
 
 You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
