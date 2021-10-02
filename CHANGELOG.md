@@ -18,6 +18,7 @@
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
+- Minimum supported Rust version (MSRV) bumped to 1.46
 
 ## Syntaxes
 
