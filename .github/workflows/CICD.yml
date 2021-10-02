@@ -442,6 +442,23 @@ jobs:
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
         echo ::set-output name=IS_RELEASE::${IS_RELEASE}
 
+    - name: Generate checksums file
+      shell: bash
+      id: generate-checksums
+      run: |
+        CHECKSUMS_DIR="${{ env.CICD_INTERMEDIATES_DIR }}/checksums"
+        mkdir -p $CHECKSUMS_DIR
+        pushd $PKG_PATH
+        find . -type f -exec sha256sum {} \; > $CHECKSUMS_DIR/checksums.txt
+        popd
+        pushd $DPKG_PATH
+        find . -type f -exec sha256sum {} \; >> $CHECKSUMS_DIR/checksums.txt
+        popd
+        echo ::set-output name=CHECKSUM_PATH::$CHECKSUMS_DIR/checksums.txt
+      env:
+        PKG_PATH: ${{ steps.package.outputs.PKG_PATH }}
+        DPKG_PATH: ${{ steps.debian-package.outputs.DPKG_PATH }}
+
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
       if: steps.is-release.outputs.IS_RELEASE
@@ -449,5 +466,6 @@ jobs:
         files: |
           ${{ steps.package.outputs.PKG_PATH }}
           ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ steps.generate-checksums.outputs.CHECKSUM_PATH }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
