@@ -40,10 +40,11 @@ pub struct PrettyPrinter<'a> {
 
 impl<'a> PrettyPrinter<'a> {
     pub fn new() -> Self {
-        let mut config = Config::default();
-
-        config.colored_output = true;
-        config.true_color = true;
+        let config = Config {
+            colored_output: true,
+            true_color: true,
+            ..Default::default()
+        };
 
         PrettyPrinter {
             inputs: vec![],
@@ -234,7 +235,9 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     pub fn syntaxes(&self) -> impl Iterator<Item = &SyntaxReference> {
-        self.assets.syntaxes().iter()
+        // We always use assets from the binary, which are guaranteed to always
+        // be valid, so get_syntaxes() can never fail here
+        self.assets.get_syntaxes().unwrap().iter()
     }
 
     /// Pretty-print all specified inputs. This method will "use" all stored inputs.
@@ -327,7 +330,7 @@ impl<'a> Input<'a> {
         self
     }
 
-    /// The title for the input (e.g. "http://example.com/example.txt")
+    /// The title for the input (e.g. "Descriptive title")
     /// This defaults to the file name.
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.input.description_mut().set_title(Some(title.into()));
@@ -335,14 +338,14 @@ impl<'a> Input<'a> {
     }
 }
 
-impl<'a> Into<Input<'a>> for input::Input<'a> {
-    fn into(self) -> Input<'a> {
-        Input { input: self }
+impl<'a> From<input::Input<'a>> for Input<'a> {
+    fn from(input: input::Input<'a>) -> Self {
+        Self { input }
     }
 }
 
-impl<'a> Into<input::Input<'a>> for Input<'a> {
-    fn into(self) -> input::Input<'a> {
-        self.input
+impl<'a> From<Input<'a>> for input::Input<'a> {
+    fn from(Input { input }: Input<'a>) -> Self {
+        input
     }
 }

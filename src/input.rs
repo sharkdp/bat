@@ -50,8 +50,8 @@ impl InputDescription {
     }
 
     pub fn title(&self) -> &String {
-        match self.title.as_ref() {
-            Some(ref title) => title,
+        match &self.title {
+            Some(title) => title,
             None => &self.name,
         }
     }
@@ -106,6 +106,21 @@ pub(crate) struct OpenedInput<'a> {
     pub(crate) metadata: InputMetadata,
     pub(crate) reader: InputReader<'a>,
     pub(crate) description: InputDescription,
+}
+
+impl OpenedInput<'_> {
+    /// Get the path of the file:
+    /// If this was set by the metadata, that will take priority.
+    /// If it wasn't, it will use the real file path (if available).
+    pub(crate) fn path(&self) -> Option<&PathBuf> {
+        self.metadata
+            .user_provided_name
+            .as_ref()
+            .or_else(|| match self.kind {
+                OpenedInputKind::OrdinaryFile(ref path) => Some(path),
+                _ => None,
+            })
+    }
 }
 
 impl<'a> Input<'a> {
@@ -211,7 +226,7 @@ impl<'a> Input<'a> {
                             )
                             .into());
                         }
-                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happended...");
+                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
                     InputReader::new(BufReader::new(file))
@@ -256,18 +271,18 @@ impl<'a> InputReader<'a> {
     }
 
     pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
-        if self.first_line.is_empty() {
-            let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
-
-            if self.content_type == Some(ContentType::UTF_16LE) {
-                self.inner.read_until(0x00, buf).ok();
-            }
-
-            Ok(res)
-        } else {
+        if !self.first_line.is_empty() {
             buf.append(&mut self.first_line);
-            Ok(true)
+            return Ok(true);
         }
+
+        let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
+
+        if self.content_type == Some(ContentType::UTF_16LE) {
+            let _ = self.inner.read_until(0x00, buf);
+        }
+
+        Ok(res)
     }
 }
 
@@ -282,21 +297,21 @@ fn basic() {
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"#!/bin/bash\n", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"echo hello", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(false, res.unwrap());
+    assert!(!res.unwrap());
     assert!(buffer.is_empty());
 }
 
@@ -311,20 +326,20 @@ fn utf16le() {
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(true, res.unwrap());
+    assert!(res.unwrap());
     assert_eq!(b"\x64\x00", &buffer[..]);
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
-    assert_eq!(false, res.unwrap());
+    assert!(!res.unwrap());
     assert!(buffer.is_empty());
 }

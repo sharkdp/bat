@@ -61,9 +61,6 @@
 [submodule "assets/syntaxes/Puppet"]
 	path = assets/syntaxes/02_Extra/Puppet
 	url = https://github.com/russCloak/SublimePuppet
-[submodule "assets/syntaxes/CSV"]
-	path = assets/syntaxes/02_Extra/CSV
-	url = https://github.com/wadetb/Sublime-Text-Advanced-CSV
 [submodule "assets/themes/onehalf"]
 	path = assets/themes/onehalf
 	url = https://github.com/sonph/onehalf
@@ -97,10 +94,6 @@
 [submodule "assets/syntaxes/Assembly (ARM)"]
 	path = assets/syntaxes/02_Extra/Assembly (ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
-[submodule "assets/syntaxes/syslog-syntax"]
-	path = assets/syntaxes/02_Extra/Syslog
-	url = https://github.com/caos21/syslog-syntax.git
-	branch = master
 [submodule "assets/syntaxes/protobuf-syntax-highlighting"]
 	path = assets/syntaxes/02_Extra/Protobuf
 	url = https://github.com/VcamX/protobuf-syntax-highlighting.git
@@ -218,4 +211,22 @@
 	url = https://github.com/hesstobi/sublime_gnuplot
 [submodule "assets/syntaxes/02_Extra/SystemVerilog"]
 	path = assets/syntaxes/02_Extra/SystemVerilog
-	url = git@github.com:TheClams/SystemVerilog.git
+	url = https://github.com/TheClams/SystemVerilog.git
+[submodule "assets/themes/visual-studio-dark-plus"]
+	path = assets/themes/visual-studio-dark-plus
+	url = https://github.com/vidann1/visual-studio-dark-plus.git
+[submodule "assets/syntaxes/02_Extra/SublimeEthereum"]
+	path = assets/syntaxes/02_Extra/SublimeEthereum
+	url = https://github.com/davidhq/SublimeEthereum.git
+[submodule "assets/syntaxes/02_Extra/Groff"]
+	path = assets/syntaxes/02_Extra/Groff
+	url = https://github.com/carsonoid/sublime_man_page_support
+[submodule "assets/syntaxes/02_Extra/http-request-response"]
+	path = assets/syntaxes/02_Extra/http-request-response
+	url = https://github.com/keith-hall/http-request-response-syntax.git
+[submodule "assets/syntaxes/02_Extra/LLVM"]
+	path = assets/syntaxes/02_Extra/LLVM
+	url = https://github.com/ioncodes/LLVM.tmBundle
+[submodule "assets/syntaxes/02_Extra/Slim"]
+	path = assets/syntaxes/02_Extra/Slim
+	url = https://github.com/slim-template/ruby-slim.tmbundle.git

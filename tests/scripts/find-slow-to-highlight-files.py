@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # This script goes through all languages that are supported by 'bat'. For each
-# language, it loops over the correspoinding file extensions and searches a
+# language, it loops over the corresponding file extensions and searches a
 # given folder for matching files. It calls 'bat' for each of these files and
 # measures the highlighting speed (number of characters per second). The script
 # reports files which lead to slow highlighting speeds or errors during the

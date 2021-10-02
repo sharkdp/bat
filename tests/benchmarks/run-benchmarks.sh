@@ -3,9 +3,9 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 
 # Check that Hyperfine is installed.
 if ! command -v hyperfine > /dev/null 2>&1; then
-    echo "'hyperfine' does not seem to be installed."
-    echo "You can get it here: https://github.com/sharkdp/hyperfine"
-    exit 1
+	echo "'hyperfine' does not seem to be installed."
+	echo "You can get it here: https://github.com/sharkdp/hyperfine"
+	exit 1
 fi
 
 # Determine the target directories.
@@ -15,7 +15,7 @@ get_target_dir() {
 			| sed 's/^[[:space:]]*target-dir[[:space:]]*=//; s/^[[:space:]]*"//; s/"[[:space:]]*$//' \
 			&& return 0
 	fi
-	
+
 	echo "../../target"
 }
 
@@ -68,5 +68,5 @@ echo "### Time to syntax-highlight large files"
 echo
 
 for SRC in test-src/*; do
-    hyperfine --warmup 3 "$(printf "%q" "$BAT") --style=full --color=always --paging=never $(printf "%q" "$SRC")"
+	hyperfine --warmup 3 "$(printf "%q" "$BAT") --style=full --color=always --paging=never $(printf "%q" "$SRC")"
 done

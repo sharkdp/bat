@@ -62,7 +62,7 @@ impl App {
             // Read arguments from bats config file
             let mut args = get_args_from_env_var()
                 .unwrap_or_else(get_args_from_config_file)
-                .chain_err(|| "Could not parse configuration file")?;
+                .map_err(|_| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
@@ -158,7 +158,7 @@ impl App {
                             WrappingMode::Character
                         }
                     }
-                    _ => unreachable!("other values for --paging are not allowed"),
+                    _ => unreachable!("other values for --wrap are not allowed"),
                 }
             } else {
                 // We don't have the tty width when piping to another program.
@@ -234,6 +234,7 @@ impl App {
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
+            use_custom_assets: !self.matches.is_present("no-custom-assets"),
         })
     }
 
@@ -300,7 +301,7 @@ impl App {
                     .map(|style_str| {
                         style_str
                             .split(',')
-                            .map(|x| StyleComponent::from_str(&x))
+                            .map(|x| StyleComponent::from_str(x))
                             .collect::<Result<Vec<StyleComponent>>>()
                     })
                     .transpose()?;

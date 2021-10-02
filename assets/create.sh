@@ -5,7 +5,7 @@ ASSET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_DIR="$ASSET_DIR/.."
 
 # Ensure submodules are initialized.
-function update_submodules() {
+update_submodules() {
 	local submodule
 	local submodule_prompt=unspecified
 	local submodule_path

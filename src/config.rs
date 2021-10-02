@@ -82,15 +82,18 @@ pub struct Config<'a> {
 
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
+
+    /// Whether or not to allow custom assets. If this is false or if custom assets (a.k.a.
+    /// cached assets) are not available, assets from the binary will be used instead.
+    pub use_custom_assets: bool,
 }
 
-#[cfg(all(feature = "application", feature = "paging"))]
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
 pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
-    if let Ok(Some(pager)) = crate::pager::get_pager(config_pager) {
-        Some(pager.bin)
-    } else {
-        None
-    }
+    crate::pager::get_pager(config_pager)
+        .ok()
+        .flatten()
+        .map(|pager| pager.bin)
 }
 
 #[test]

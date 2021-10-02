@@ -18,7 +18,7 @@ use encoding::{DecoderTrap, Encoding};
 
 use unicode_width::UnicodeWidthChar;
 
-use crate::assets::HighlightingAssets;
+use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
@@ -100,6 +100,20 @@ impl<'a> Printer for SimplePrinter<'a> {
     }
 }
 
+struct HighlighterFromSet<'a> {
+    highlighter: HighlightLines<'a>,
+    syntax_set: &'a SyntaxSet,
+}
+
+impl<'a> HighlighterFromSet<'a> {
+    fn new(syntax_in_set: SyntaxReferenceInSet<'a>, theme: &'a Theme) -> Self {
+        Self {
+            highlighter: HighlightLines::new(syntax_in_set.syntax, theme),
+            syntax_set: syntax_in_set.syntax_set,
+        }
+    }
+}
+
 pub(crate) struct InteractivePrinter<'a> {
     colors: Colors,
     config: &'a Config<'a>,
@@ -109,8 +123,7 @@ pub(crate) struct InteractivePrinter<'a> {
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
-    highlighter: Option<HighlightLines<'a>>,
-    syntax_set: &'a SyntaxSet,
+    highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
 }
 
@@ -164,7 +177,7 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter = if input
+        let highlighter_from_set = if input
             .reader
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
@@ -172,15 +185,16 @@ impl<'a> InteractivePrinter<'a> {
             None
         } else {
             // Determine the type of syntax for highlighting
-            let syntax = match assets.get_syntax(config.language, input, &config.syntax_mapping) {
-                Ok(syntax) => syntax,
-                Err(Error(ErrorKind::UndetectedSyntax(_), _)) => {
-                    assets.syntax_set.find_syntax_plain_text()
-                }
-                Err(e) => return Err(e),
-            };
+            let syntax_in_set =
+                match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+                    Ok(syntax_in_set) => syntax_in_set,
+                    Err(Error::UndetectedSyntax(_)) => assets
+                        .find_syntax_by_name("Plain Text")?
+                        .expect("A plain text syntax is available"),
+                    Err(e) => return Err(e),
+                };
 
-            Some(HighlightLines::new(syntax, theme))
+            Some(HighlighterFromSet::new(syntax_in_set, theme))
         };
 
         Ok(InteractivePrinter {
@@ -192,8 +206,7 @@ impl<'a> InteractivePrinter<'a> {
             ansi_style: AnsiStyle::new(),
             #[cfg(feature = "git")]
             line_changes,
-            highlighter,
-            syntax_set: &assets.syntax_set,
+            highlighter_from_set,
             background_color_highlight,
         })
     }
@@ -221,29 +234,29 @@ impl<'a> InteractivePrinter<'a> {
 
     fn create_fake_panel(&self, text: &str) -> String {
         if self.panel_width == 0 {
-            "".to_string()
+            return "".to_string();
+        }
+
+        let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
+        let text_filled: String = format!(
+            "{}{}",
+            text_truncated,
+            " ".repeat(self.panel_width - 1 - text_truncated.len())
+        );
+        if self.config.style_components.grid() {
+            format!("{} │ ", text_filled)
         } else {
-            let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
-            let text_filled: String = format!(
-                "{}{}",
-                text_truncated,
-                " ".repeat(self.panel_width - 1 - text_truncated.len())
-            );
-            if self.config.style_components.grid() {
-                format!("{} │ ", text_filled)
-            } else {
-                text_filled
-            }
+            text_filled
         }
     }
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
-            expand_tabs(text, self.config.tab_width, cursor)
-        } else {
-            *cursor += text.len();
-            text.to_string()
+            return expand_tabs(text, self.config.tab_width, cursor);
         }
+
+        *cursor += text.len();
+        text.to_string()
     }
 }
 
@@ -367,30 +380,32 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = if self.config.show_nonprintable {
-            replace_nonprintable(&line_buffer, self.config.tab_width)
+            replace_nonprintable(line_buffer, self.config.tab_width)
         } else {
             match self.content_type {
                 Some(ContentType::BINARY) | None => {
                     return Ok(());
                 }
                 Some(ContentType::UTF_16LE) => UTF_16LE
-                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .decode(line_buffer, DecoderTrap::Replace)
                     .map_err(|_| "Invalid UTF-16LE")?,
                 Some(ContentType::UTF_16BE) => UTF_16BE
-                    .decode(&line_buffer, DecoderTrap::Replace)
+                    .decode(line_buffer, DecoderTrap::Replace)
                     .map_err(|_| "Invalid UTF-16BE")?,
-                _ => String::from_utf8_lossy(&line_buffer).to_string(),
+                _ => String::from_utf8_lossy(line_buffer).to_string(),
             }
         };
 
         let regions = {
-            let highlighter = match self.highlighter {
-                Some(ref mut highlighter) => highlighter,
+            let highlighter_from_set = match self.highlighter_from_set {
+                Some(ref mut highlighter_from_set) => highlighter_from_set,
                 _ => {
                     return Ok(());
                 }
             };
-            highlighter.highlight(line.as_ref(), self.syntax_set)
+            highlighter_from_set
+                .highlighter
+                .highlight(&line, highlighter_from_set.syntax_set)
         };
 
         if out_of_range {
@@ -415,8 +430,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|ref d| d.generate(line_number, false, self))
-                .collect::<Vec<_>>();
+                .map(|d| d.generate(line_number, false, self));
 
             for deco in decorations {
                 write!(handle, "{} ", deco.text)?;
@@ -430,7 +444,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;
 
-            for &(style, region) in regions.iter() {
+            for &(style, region) in &regions {
                 let ansi_iterator = AnsiCodeIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -460,9 +474,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                             if text.len() != text_trimmed.len() {
                                 if let Some(background_color) = background_color {
-                                    let mut ansi_style = Style::default();
-                                    ansi_style.background =
-                                        to_ansi_color(background_color, true_color);
+                                    let ansi_style = Style {
+                                        background: to_ansi_color(background_color, true_color),
+                                        ..Default::default()
+                                    };
+
                                     let width = if cursor_total <= cursor_max {
                                         cursor_max - cursor_total + 1
                                     } else {
@@ -481,7 +497,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 writeln!(handle)?;
             }
         } else {
-            for &(style, region) in regions.iter() {
+            for &(style, region) in &regions {
                 let ansi_iterator = AnsiCodeIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -521,7 +537,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                                 "{} ",
                                                 self.decorations
                                                     .iter()
-                                                    .map(|ref d| d
+                                                    .map(|d| d
                                                         .generate(line_number, true, self)
                                                         .text)
                                                     .collect::<Vec<String>>()
@@ -577,8 +593,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
 
             if let Some(background_color) = background_color {
-                let mut ansi_style = Style::default();
-                ansi_style.background = to_ansi_color(background_color, self.config.true_color);
+                let ansi_style = Style {
+                    background: to_ansi_color(background_color, self.config.true_color),
+                    ..Default::default()
+                };
 
                 write!(
                     handle,

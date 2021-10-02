@@ -47,7 +47,16 @@ impl LineRange {
             }
             2 => {
                 new_range.lower = line_numbers[0].parse()?;
-                new_range.upper = line_numbers[1].parse()?;
+
+                new_range.upper = if line_numbers[1].bytes().next() == Some(b'+') {
+                    let more_lines = &line_numbers[1][1..]
+                        .parse()
+                        .map_err(|_| "Invalid character after +")?;
+                    new_range.lower + more_lines
+                } else {
+                    line_numbers[1].parse()?
+                };
+
                 Ok(new_range)
             }
             _ => Err(
@@ -97,6 +106,23 @@ fn test_parse_fail() {
     let range = LineRange::from("40::80");
     assert!(range.is_err());
     let range = LineRange::from(":40:");
+    assert!(range.is_err());
+}
+
+#[test]
+fn test_parse_plus() {
+    let range = LineRange::from("40:+10").expect("Shouldn't fail on test!");
+    assert_eq!(40, range.lower);
+    assert_eq!(50, range.upper);
+}
+
+#[test]
+fn test_parse_plus_fail() {
+    let range = LineRange::from("40:+z");
+    assert!(range.is_err());
+    let range = LineRange::from("40:+-10");
+    assert!(range.is_err());
+    let range = LineRange::from("40:+");
     assert!(range.is_err());
 }
 

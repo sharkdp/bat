@@ -1,6 +1,3 @@
-// `error_chain!` can recurse deeply
-#![recursion_limit = "1024"]
-
 mod app;
 mod assets;
 mod clap_app;
@@ -23,12 +20,10 @@ use crate::{
 };
 
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
-use clap::crate_version;
 use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
 use bat::{
-    assets::HighlightingAssets,
     config::Config,
     controller::Controller,
     error::*,
@@ -39,21 +34,28 @@ use bat::{
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
 
+#[cfg(feature = "build-assets")]
+fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
+    let source_dir = matches
+        .value_of("source")
+        .map(Path::new)
+        .unwrap_or_else(|| PROJECT_DIRS.config_dir());
+    let target_dir = matches
+        .value_of("target")
+        .map(Path::new)
+        .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
+
+    let blank = matches.is_present("blank");
+
+    bat::assets::build(source_dir, !blank, target_dir, clap::crate_version!())
+}
+
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
     if matches.is_present("build") {
-        let source_dir = matches
-            .value_of("source")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.config_dir());
-        let target_dir = matches
-            .value_of("target")
-            .map(Path::new)
-            .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
-
-        let blank = matches.is_present("blank");
-
-        let assets = HighlightingAssets::from_files(source_dir, !blank)?;
-        assets.save_to_cache(target_dir, crate_version!())?;
+        #[cfg(feature = "build-assets")]
+        build_assets(matches)?;
+        #[cfg(not(feature = "build-assets"))]
+        println!("bat has been built without the 'build-assets' feature. The 'cache --build' option is not available.");
     } else if matches.is_present("clear") {
         clear_assets();
     }
@@ -80,16 +82,16 @@ fn get_syntax_mapping_to_paths<'a>(
 pub fn get_languages(config: &Config) -> Result<String> {
     let mut result: String = String::new();
 
-    let assets = assets_from_cache_or_binary()?;
+    let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
     let mut languages = assets
-        .syntaxes()
+        .get_syntaxes()?
         .iter()
         .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
         .cloned()
         .collect::<Vec<_>>();
 
     // Handling of file-extension conflicts, see issue #1076
-    for lang in languages.iter_mut() {
+    for lang in &mut languages {
         let lang_name = lang.name.clone();
         lang.file_extensions.retain(|extension| {
             // The 'extension' variable is not certainly a real extension.
@@ -98,14 +100,12 @@ pub fn get_languages(config: &Config) -> Result<String> {
             // Also skip if the 'extension' contains another real extension, likely
             // that is a full match file name like 'CMakeLists.txt' and 'Cargo.lock'
             if extension.starts_with('.') || Path::new(extension).extension().is_some() {
-                true
-            } else {
-                let test_file = Path::new("test").with_extension(extension);
-                match assets.syntax_for_file_name(test_file, &config.syntax_mapping) {
-                    Some(syntax) => syntax.name == lang_name,
-                    None => false,
-                }
+                return true;
             }
+
+            let test_file = Path::new("test").with_extension(extension);
+            let syntax_in_set = assets.get_syntax_for_path(test_file, &config.syntax_mapping);
+            matches!(syntax_in_set, Ok(syntax_in_set) if syntax_in_set.syntax.name == lang_name)
         });
     }
 
@@ -113,7 +113,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
 
     let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
 
-    for lang in languages.iter_mut() {
+    for lang in &mut languages {
         if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
             lang.file_extensions
                 .extend(additional_paths.iter().cloned());
@@ -175,7 +175,7 @@ fn theme_preview_file<'a>() -> Input<'a> {
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
-    let assets = assets_from_cache_or_binary()?;
+    let assets = assets_from_cache_or_binary(cfg.use_custom_assets)?;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
@@ -216,9 +216,54 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 }
 
 fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
-    let assets = assets_from_cache_or_binary()?;
-    let controller = Controller::new(&config, &assets);
+    let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
+    let controller = Controller::new(config, &assets);
     controller.run(inputs)
+}
+
+#[cfg(feature = "bugreport")]
+fn invoke_bugreport(app: &App) {
+    use bugreport::{bugreport, collector::*, format::Markdown};
+    let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
+        .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
+
+    let report = bugreport!()
+        .info(SoftwareVersion::default())
+        .info(OperatingSystem::default())
+        .info(CommandLine::default())
+        .info(EnvironmentVariables::list(&[
+            "SHELL",
+            "PAGER",
+            "LESS",
+            "LANG",
+            "LC_ALL",
+            "BAT_PAGER",
+            "BAT_CACHE_PATH",
+            "BAT_CONFIG_PATH",
+            "BAT_OPTS",
+            "BAT_STYLE",
+            "BAT_TABS",
+            "BAT_THEME",
+            "XDG_CONFIG_HOME",
+            "XDG_CACHE_HOME",
+            "COLORTERM",
+            "NO_COLOR",
+            "MANPAGER",
+        ]))
+        .info(FileContent::new("Config file", config_file()))
+        .info(CompileTimeInformation::default());
+
+    let mut report = if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
+        report.info(CommandOutput::new(
+            "Less version",
+            resolved_path,
+            &["--version"],
+        ))
+    } else {
+        report
+    };
+
+    report.print::<Markdown>();
 }
 
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Ok(true)` on full success and
@@ -227,35 +272,10 @@ fn run() -> Result<bool> {
     let app = App::new()?;
 
     if app.matches.is_present("diagnostic") {
-        use bugreport::{bugreport, collector::*, format::Markdown};
-        let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
-            .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
-
-        bugreport!()
-            .info(SoftwareVersion::default())
-            .info(OperatingSystem::default())
-            .info(CommandLine::default())
-            .info(EnvironmentVariables::list(&[
-                "SHELL",
-                "PAGER",
-                "BAT_PAGER",
-                "BAT_CACHE_PATH",
-                "BAT_CONFIG_PATH",
-                "BAT_OPTS",
-                "BAT_STYLE",
-                "BAT_TABS",
-                "BAT_THEME",
-                "XDG_CONFIG_HOME",
-                "XDG_CACHE_HOME",
-                "COLORTERM",
-                "NO_COLOR",
-                "MANPAGER",
-            ]))
-            .info(FileContent::new("Config file", config_file()))
-            .info(CompileTimeInformation::default())
-            .info(CommandOutput::new("Less version", pager, &["--version"]))
-            .print::<Markdown>();
-
+        #[cfg(feature = "bugreport")]
+        invoke_bugreport(&app);
+        #[cfg(not(feature = "bugreport"))]
+        println!("bat has been built without the 'bugreport' feature. The '--diagnostic' option is not available.");
         return Ok(true);
     }
 

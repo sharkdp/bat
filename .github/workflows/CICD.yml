@@ -16,30 +16,37 @@ on:
 jobs:
   min_version:
     name: Minimum supported rust version
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
-    - name: Git checkout
+    - name: Checkout source code
       uses: actions/checkout@v2
+
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
-        components: clippy
+        components: clippy, rustfmt
+    - name: Ensure `cargo fmt` has been run
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: -- --check
     - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --all-targets --all-features
+        args: --locked --all-targets --all-features -- --allow clippy::unknown_clippy_lints
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
+        args: --locked
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - name: Git checkout
       uses: actions/checkout@v2
@@ -67,37 +74,59 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --release
+        args: --locked --release
     - name: Run ignored-by-default unit tests with new syntaxes and themes
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --release -- --ignored
+        args: --locked --release -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
       run: bat --list-languages
     - name: List of themes
       run: bat --list-themes
+    - name: Test custom assets
+      run: tests/syntax-tests/test_custom_assets.sh
+
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v2
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      uses: actions-rs/cargo@v1
+      with:
+        command: doc
+        args: --locked --no-deps --document-private-items --all-features
 
   build:
-    name: ${{ matrix.job.os }} (${{ matrix.job.target }})
+    name: ${{ matrix.job.target }} (${{ matrix.job.os }})
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
       matrix:
         job:
-          - { os: ubuntu-18.04 , target: arm-unknown-linux-gnueabihf , use-cross: true }
-          - { os: ubuntu-18.04 , target: aarch64-unknown-linux-gnu   , use-cross: true }
-          - { os: ubuntu-18.04 , target: i686-unknown-linux-gnu      , use-cross: true }
-          - { os: ubuntu-18.04 , target: i686-unknown-linux-musl     , use-cross: true }
-          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-gnu    }
-          - { os: ubuntu-18.04 , target: x86_64-unknown-linux-musl   , use-cross: true }
-          - { os: macos-10.15  , target: x86_64-apple-darwin         }
-          # - { os: windows-2019 , target: i686-pc-windows-gnu         }  ## disabled; error: linker `i686-w64-mingw32-gcc` not found
-          - { os: windows-2019 , target: i686-pc-windows-msvc        }
-          - { os: windows-2019 , target: x86_64-pc-windows-gnu       }
-          - { os: windows-2019 , target: x86_64-pc-windows-msvc      }
+          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04, use-cross: true }
+          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04, use-cross: true }
+          - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04, use-cross: true }
+          - { target: i686-pc-windows-msvc        , os: windows-2019                  }
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04, use-cross: true }
+          - { target: i686-unknown-linux-musl     , os: ubuntu-20.04, use-cross: true }
+          - { target: x86_64-apple-darwin         , os: macos-10.15                   }
+          - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
+          - { target: x86_64-pc-windows-msvc      , os: windows-2019                  }
+          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04                  }
+          - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, use-cross: true }
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -106,14 +135,14 @@ jobs:
       shell: bash
       run: |
         case ${{ matrix.job.target }} in
-          arm-unknown-linux-gnueabihf) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          arm-unknown-linux-*) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
           aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
         esac
 
     - name: Extract crate information
       shell: bash
       run: |
-        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
+        echo "PROJECT_NAME=$(sed -n 's/^name = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)" >> $GITHUB_ENV
         echo "PROJECT_MAINTAINER=$(sed -n 's/^authors = \["\(.*\)"\]/\1/p' Cargo.toml)" >> $GITHUB_ENV
         echo "PROJECT_HOMEPAGE=$(sed -n 's/^homepage = "\(.*\)"/\1/p' Cargo.toml)" >> $GITHUB_ENV
@@ -141,7 +170,7 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: build
-        args: --release --target=${{ matrix.job.target }}
+        args: --locked --release --target=${{ matrix.job.target }}
 
     - name: Strip debug information from executable
       id: strip
@@ -156,7 +185,7 @@ jobs:
         # Figure out what strip tool to use if any
         STRIP="strip"
         case ${{ matrix.job.target }} in
-          arm-unknown-linux-gnueabihf) STRIP="arm-linux-gnueabihf-strip" ;;
+          arm-unknown-linux-*) STRIP="arm-linux-gnueabihf-strip" ;;
           aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
           *-pc-windows-msvc) STRIP="" ;;
         esac;
@@ -193,49 +222,56 @@ jobs:
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
-        args: --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
 
     - name: Run bat
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
+        args: --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
 
     - name: Show diagnostics (bat --diagnostic)
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: run
-        args: --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
+        args: --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
 
     - name: "Feature check: regex-onig"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
 
     - name: "Feature check: regex-onig,git"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
 
     - name: "Feature check: regex-onig,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
 
     - name: "Feature check: regex-onig,git,paging"
       uses: actions-rs/cargo@v1
       with:
         use-cross: ${{ matrix.job.use-cross }}
         command: check
-        args: --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
+        args: --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
+
+    - name: "Feature check: minimal-application"
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: ${{ matrix.job.use-cross }}
+        command: check
+        args: --locked --target=${{ matrix.job.target }} --verbose --no-default-features --features minimal-application
 
     - name: Create tarball
       id: package
@@ -261,7 +297,9 @@ jobs:
         cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
         # Autocompletion files
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.bash "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.bash"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.fish"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/_bat.ps1 "$ARCHIVE_DIR/autocomplete/_${{ env.PROJECT_NAME }}.ps1"
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.zsh"
 
         # base compressed package
@@ -310,6 +348,7 @@ jobs:
         gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
 
         # Autocompletion files
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.bash "${DPKG_DIR}/usr/share/bash-completion/completions/${{ env.PROJECT_NAME }}"
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ env.PROJECT_NAME }}.fish"
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ env.PROJECT_NAME }}"
 

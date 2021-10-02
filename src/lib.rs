@@ -22,7 +22,9 @@
 mod macros;
 
 pub mod assets;
-pub mod assets_metadata;
+pub mod assets_metadata {
+    pub use super::assets::assets_metadata::*;
+}
 pub mod config;
 pub mod controller;
 mod decorations;

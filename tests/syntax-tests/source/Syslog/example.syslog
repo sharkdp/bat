@@ -1,0 +1,16 @@
+Apr  4 00:00:01 hostname-here systemd[1]: logrotate.service: Succeeded.
+Apr  4 00:00:01 hostname-here systemd[1]: Finished Rotate log files.
+Apr  4 00:00:01 hostname-here colord[920]: failed to get session [pid 137485]: No data available
+Apr  4 00:00:21 hostname-here kernel: [55604.908232] audit: type=1400 audit(1617483621.094:28): apparmor="DENIED" operation="capable" profile="/usr/sbin/cups-browsed" pid=59311 comm="cups-browsed" capability=23  capname="sys_nice"
+Apr  4 00:01:38 hostname-here systemd-resolved[721]: Server returned error NXDOMAIN, mitigating potential DNS violation DVE-2018-0001, retrying transaction with reduced feature level UDP.
+Apr  4 00:04:46 hostname-here ntpd[952]: Soliciting pool server 255.76.59.37
+Apr  4 00:05:21 hostname-here ntpd[952]: ::1 local addr 0:0:0:0:0:0:0:1 -> <null>
+Apr  4 00:06:29 hostname-here ntpd[952]: receive: Unexpected origin timestamp 0xe414a8d1.82e825f5 does not match aorg 0xe414a8d5.82c50d8c from server@127.0.0.1 xmt 0xe414a8d1.e671d7c4
+Apr  4 09:30:01 hostname-here CRON[89278]: (root) CMD ([ -x /etc/init.d/anacron ] && if [ ! -d /run/systemd/system ]; then /usr/sbin/invoke-rc.d anacron start >/dev/null; fi)
+Apr  4 16:32:07 hostname-here NetworkManager[740]: <info>  [1617629527.1101] manager: NetworkManager state is now CONNECTED_GLOBAL
+Apr  4 22:00:45 hostname-here dbus-daemon[1094]: [session uid=1000 pid=1094] Successfully activated service 'io.github.celluloid_player.Celluloid'
+Aug 11 13:29:06 hostname-here insomnia_insomnia.desktop[142666]: 13:29:06.316 › [updater] Updater not running platform=linux dev=false
+Aug 11 13:36:34 192.168.220.5 nginx: 2021/08/11 13:36:34 [debug] 2031#2031: epoll add event: fd:6 op:1 ev:00002001
+Aug 11 21:31:08 ::1 nginx: 2021/08/11 21:31:08 [debug] 760831#760831: epoll add event: fd:6 op:1 ev:10000001
+Aug 11 21:40:31 hostname-here scop hello
+Aug 16 21:38:21 hostname-here systemd[1]: Finished Cleanup of Temporary Directories.

@@ -95,7 +95,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
-                     '--highlight-line 40:' highlights lines 40 to the end of the file",
+                     '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
+                     '--highlight-line 30:+10' highlights lines 30 to 40",
                 ),
         )
         .arg(
@@ -294,6 +295,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("no-paging")
                 .short("P")
+                .long("no-paging")
                 .alias("no-pager")
                 .overrides_with("no-paging")
                 .hidden(true)
@@ -394,8 +396,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * full: enables all available components.\n  \
-                     * auto: same as 'full', unless the output is piped (default).\n  \
+                     * full: enables all available components (default).\n  \
+                     * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: show filenames before the content.\n  \
@@ -422,7 +424,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--line-range 30:40' prints lines 30 to 40\n  \
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file\n  \
-                     '--line-range 40' only prints line 40",
+                     '--line-range 40' only prints line 40\n  \
+                     '--line-range 30:+10' prints lines 30 to 40",
                 ),
         )
         .arg(
@@ -449,6 +452,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("no-config")
                 .hidden(true)
                 .help("Do not use the configuration file"),
+        )
+        .arg(
+            Arg::with_name("no-custom-assets")
+                .long("no-custom-assets")
+                .hidden(true)
+                .help("Do not load custom assets"),
         )
         .arg(
             Arg::with_name("config-file")

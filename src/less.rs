@@ -4,18 +4,20 @@ use std::ffi::OsStr;
 use std::process::Command;
 
 pub fn retrieve_less_version(less_path: &dyn AsRef<OsStr>) -> Option<usize> {
-    let cmd = Command::new(less_path).arg("--version").output().ok()?;
+    let resolved_path = grep_cli::resolve_binary(less_path.as_ref()).ok()?;
+
+    let cmd = Command::new(resolved_path).arg("--version").output().ok()?;
     parse_less_version(&cmd.stdout)
 }
 
 fn parse_less_version(output: &[u8]) -> Option<usize> {
-    if output.starts_with(b"less ") {
-        let version = std::str::from_utf8(&output[5..]).ok()?;
-        let end = version.find(' ')?;
-        version[..end].parse::<usize>().ok()
-    } else {
-        None
+    if !output.starts_with(b"less ") {
+        return None;
     }
+
+    let version = std::str::from_utf8(&output[5..]).ok()?;
+    let end = version.find(|c: char| !c.is_ascii_digit())?;
+    version[..end].parse::<usize>().ok()
 }
 
 #[test]
@@ -55,6 +57,19 @@ see the file named README in the less distribution.
 Home page: http://www.greenwoodsoftware.com/less";
 
     assert_eq!(Some(551), parse_less_version(output));
+}
+
+#[test]
+fn test_parse_less_version_581_2() {
+    let output = b"less 581.2 (PCRE2 regular expressions)
+Copyright (C) 1984-2021  Mark Nudelman
+
+less comes with NO WARRANTY, to the extent permitted by law.
+For information about the terms of redistribution,
+see the file named README in the less distribution.
+Home page: https://greenwoodsoftware.com/less";
+
+    assert_eq!(Some(581), parse_less_version(output));
 }
 
 #[test]

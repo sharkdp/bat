@@ -95,6 +95,17 @@ bat f - g  # output 'f', then stdin, then 'g'.
 
 ### 他のツールとの統合
 
+#### `fzf`
+
+[`fzf`](https://github.com/junegunn/fzf) のプレビューウィンドウに `bat` を使用できます。
+その場合、`bat` の `--color=always` オプションを用いてカラー出力を強制しなければなりません。
+また、`--line-range` オプションを用いることで巨大なファイルの読み込み時間を制限できます:
+```bash
+fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+```
+
+詳しくは [`fzf` の `README`](https://github.com/junegunn/fzf#preview-window) を参照してください。
+
 #### `find` or `fd`
 
 `find` の `-exec` オプションを使用して、`bat` ですべての検索結果をプレビューできます:
@@ -191,7 +202,7 @@ ln -s /usr/bin/batcat ~/.local/bin/bat
 batの最新リリースを実行する場合、または Ubuntu/Debian の古いバージョンを使用している場合は、[release page](https://github.com/sharkdp/bat/releases) から最新の `.deb` パッケージをダウンロードし、
 次の方法でインストールします:
 ```bash
-sudo dpkg -i bat_0.18.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.18.3_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
@@ -393,7 +404,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 ### 新しい構文の追加 / 言語の定義
 
-`bat` はシンタックスハイライトのための [`syntext`](https://github.com/trishume/syntect/)
+`bat` はシンタックスハイライトのための [`syntect`](https://github.com/trishume/syntect/)
 という素晴らしいライブラリを使用しています。`syntect` は、
 [Sublime Text の `.sublime-syntax` ファイル](https://www.sublimetext.com/docs/3/syntax.html)
 とテーマを読み取ることができます。新しい構文を定義するために以下の手順を行います。
@@ -511,7 +522,7 @@ export BAT_CONFIG_PATH="/path/to/bat.conf"
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax for .ino files
+# Use C++ syntax for Arduino .ino files
 --map-syntax "*.ino:C++"
 
 # Use ".gitignore"-style highlighting for ".ignore" files

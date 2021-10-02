@@ -81,7 +81,7 @@ impl<'a> SyntaxMapping<'a> {
                 .unwrap();
         }
 
-        for glob in [
+        for glob in &[
             "**/systemd/**/*.conf",
             "**/systemd/**/*.example",
             "*.automount",
@@ -100,9 +100,7 @@ impl<'a> SyntaxMapping<'a> {
             "*.swap",
             "*.target",
             "*.timer",
-        ]
-        .iter()
-        {
+        ] {
             mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
         }
 
@@ -153,7 +151,7 @@ impl<'a> SyntaxMapping<'a> {
     }
 
     pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
-        let candidate = Candidate::new(path.as_ref());
+        let candidate = Candidate::new(&path);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
         for (ref glob, ref syntax) in self.mappings.iter().rev() {
             if glob.is_match_candidate(&candidate)

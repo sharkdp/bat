@@ -1,0 +1,16 @@
+diff --git syntaxes/02_Extra/Groff/Man Page/Man Page.sublime-syntax syntaxes/02_Extra/Groff/Man Page/Man Page.sublime-syntax
+index 57834af..6648664 100644
+--- syntaxes/02_Extra/Groff/Man Page/Man Page.sublime-syntax	
++++ syntaxes/02_Extra/Groff/Man Page/Man Page.sublime-syntax	
+@@ -4,9 +4,9 @@
+ #   - man-pages(7)
+ #   - groff(7)
+ ---
+-name: Man Page (groff/troff)
++name: Groff/troff
+ scope: text.groff
+-file_extensions: [man, groff, troff, '1', '2', '3', '4', '5', '6', '7']
++file_extensions: [groff, troff, '1', '2', '3', '4', '5', '6', '7', '8', '9']
+ 
+ contexts:
+   main:

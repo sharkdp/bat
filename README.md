@@ -197,9 +197,9 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 *... and other Debian-based Linux distributions.*
 
 `bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
-[Debian](https://packages.debian.org/sid/bat) package release process, and is available
-for Ubuntu as of Eoan 19.10. On Debian `bat` is currently only available on the unstable
-"Sid" branch.
+[Debian](https://packages.debian.org/testing/bat) package release process, and is available
+for Ubuntu as of Eoan 19.10. On Debian `bat` is currently available on the unstable
+"Sid" branch and on the testing branch.
 
 If your Ubuntu/Debian installation is new enough you can simply run:
 
@@ -222,7 +222,7 @@ the most recent release of `bat`, download the latest `.deb` package from the
 [release page](https://github.com/sharkdp/bat/releases) and install it via:
 
 ```bash
-sudo dpkg -i bat_0.18.0_amd64.deb  # adapt version number and architecture
+sudo dpkg -i bat_0.18.3_amd64.deb  # adapt version number and architecture
 ```
 
 ### On Alpine Linux
@@ -409,10 +409,11 @@ even when truecolor support is available:
   It replaces certain bright colors with 8-bit colors from 16 to 21. **Do not** use this simply
   because you have a 256-color terminal but are not using base16-shell.
 
-Although these themes are more restricted, they have two advantages over truecolor themes:
+Although these themes are more restricted, they have three advantages over truecolor themes. They:
 
-- They harmonize better with other terminal software using 3-bit or 4-bit colors.
-- When you change your terminal theme, `bat` output already on the screen will update to match.
+- Enjoy maximum compatibility. Some terminal utilities do not support more than 3-bit colors.
+- Adapt to terminal theme changes. Even for already printed output.
+- Visually harmonize better with other terminal software.
 
 ### Output style
 
@@ -516,6 +517,8 @@ set, `less` is used by default. If you want to use a different pager, you can ei
 `PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
 `PAGER`.
 
+**Note**: If `PAGER` is `more` or `most`, `bat` will silently use `less` instead to ensure support for colors.
+
 If you want to pass command-line arguments to the pager, you can also set them via the
 `PAGER`/`BAT_PAGER` variables:
 
@@ -595,7 +598,7 @@ Example configuration file:
 # Use italic text on the terminal (not supported on all terminals)
 --italic-text=always
 
-# Use C++ syntax for .ino files
+# Use C++ syntax for Arduino .ino files
 --map-syntax "*.ino:C++"
 ```
 
@@ -713,6 +716,10 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 - [eth-p](https://github.com/eth-p)
 - [keith-hall](https://github.com/keith-hall)
 - [Enselic](https://github.com/Enselic)
+
+## Security vulnerabilities
+
+Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnerability in `bat`.
 
 ## Project goals and alternatives
 

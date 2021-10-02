@@ -16,6 +16,7 @@ pub struct AssetsMetadata {
 const FILENAME: &str = "metadata.yaml";
 
 impl AssetsMetadata {
+    #[cfg(feature = "build-assets")]
     pub(crate) fn new(current_version: &str) -> AssetsMetadata {
         AssetsMetadata {
             bat_version: Some(current_version.to_owned()),
@@ -23,6 +24,7 @@ impl AssetsMetadata {
         }
     }
 
+    #[cfg(feature = "build-assets")]
     pub(crate) fn save_to_folder(&self, path: &Path) -> Result<()> {
         let file = File::create(path.join(FILENAME))?;
         serde_yaml::to_writer(file, self)?;
@@ -50,16 +52,15 @@ impl AssetsMetadata {
     pub fn load_from_folder(path: &Path) -> Result<Option<Self>> {
         match Self::try_load_from_folder(path) {
             Ok(metadata) => Ok(Some(metadata)),
-            Err(e) => match e.kind() {
-                ErrorKind::SerdeYamlError(_) => Err(e),
-                _ => {
-                    if path.join("syntaxes.bin").exists() || path.join("themes.bin").exists() {
-                        Ok(Some(Self::default()))
-                    } else {
-                        Ok(None)
-                    }
+            Err(e) => {
+                if let Error::SerdeYamlError(_) = e {
+                    Err(e)
+                } else if path.join("syntaxes.bin").exists() || path.join("themes.bin").exists() {
+                    Ok(Some(Self::default()))
+                } else {
+                    Ok(None)
                 }
-            },
+            }
         }
     }
 

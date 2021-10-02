@@ -1,23 +1,100 @@
 # unreleased
 
 ## Features
-- Add SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
+
+- `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
+- Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 
 ## Bugfixes
 
 - Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
 - Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+
+## Performance
+
+- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
+- Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
+- Reduce startup time by approximately 80% for 91 out of 168 syntaxes when using `--language`. See #1787 (@Enselic)
+
+## Other
+
+- Add PowerShell completion, see #1826 (@rashil2000)
+
+## Syntaxes
+
+- Groff, see #1685 (@scop)
+- HTTP Requests and Responses, see #1748 (@keith-hall)
+- LLVM, see #1777 (@ioncodes)
+- Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
+- Syslog highlighting improvements, see #1793 (@scop)
+- Added support for `slim` syntax, see #1693 (@mfinelli)
+
+## New themes
+
+
+## `bat` as a library
+
+- Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_path()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. They also return which `SyntaxSet` the returned `SyntaxReference` belongs to. See #1747, #1755, #1776, #1862 (@Enselic)
+- Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802 (@Enselic)
+- Replace  the `error::Error(error::ErrorKind, _)` struct and enum with an `error::Error` enum. `Error(ErrorKind::UnknownSyntax, _)` becomes `Error::UnknownSyntax`, etc. Also remove the `error::ResultExt` trait. These changes stem from replacing `error-chain` with `thiserror`. See #1820 (@Enselic)
+
+
+
+# v0.18.3
+
+## Bugfixes
+
+- Bump `git2` dependency to fix build with Rust 1.54, see #1761
+
+
+# v0.18.2
+
+## Features
+
+- Ignore known backup/template filename suffixes when selecting the syntax, see #1687 (@scop)
+
+## Bugfixes
+
+- Fix for a security vulnerability on Windows. Prior to this release, `bat` would execute programs called `less`/`less.exe` from the current working directory (instead of the one from `PATH`) with priority. An attacker might be able to use this by placing a malicious program in a shared directory where the user would execute `bat`. `bat` users on Windows are advised to upgrade to this version. See #1724 and #1472 (@Ry0taK).
+
+## Other
+
+- Add bash completion, see #1678 (@scop)
+- Fix Clippy lints, see #1661 (@mohamed-abdelnour)
+- Add syntax highlighting test files, see #1213 and #1668 (@mohamed-abdelnour)
+
+## Syntaxes
+
+- Upgraded Julia syntax to fix a highlighting bug, see #1692
+- Added support for `dash` syntax, see #1654 (@mohamed-abdelnour)
+- Added support for `XAML` syntax, see #1590 and #1655 (@mohamed-abdelnour)
+- Apply `DotENV` syntax also for `.env.default` and `.env.defaults` files, see #1669
+
+
+# v0.18.1
+
+## Bugfixes
+
+- Mouse support and screen clearing broken for `less` versions with minor version number (581.2), see #1629 and #1639 (@aswild)
+>>>>>>> origin/master
 
 ## Other
 
 - `Input::ordinary_file` and `Input::with_name` now accept `Path` rather than `OsStr` see #1571 (@matklad)
+- The `LESS` environment variable is now included in `bat --diagnostic`, see #1589 (@Enselic)
 - Increased min. required Rust version to 1.45
 
 ## Syntaxes
 
+- Improved the Syslog syntax highlighting, see #1606 (@keith-hall)
+- Replaced "Advanced CSV" with a custom CSV syntax definition written especially for `bat`; see #1574 (@keith-hall)
+- Added SystemVerilog file syntax, see #1580 (@SeanMcLoughlin)
+- Added Solidity and Vyper syntax, see #1602 (@Ersikan)
+
 ## New themes
 
-## `bat` as a library
+- Dark+ VS Code theme, see #1588 and #1598 (@PatriotRossii)
 
 
 
@@ -511,7 +588,7 @@ You can see the API documentation here: https://docs.rs/bat/
 
 - Added `BAT_CONFIG_PATH` environment variable to set a non-default path for `bat`s configuration file, see #375 (@deg4uss3r)
 
-- Allow for multiple occurences of `--style` to allow for the configuration
+- Allow for multiple occurrences of `--style` to allow for the configuration
   of styles from the config file, see #367 (@sindreij)
 
 - Allow for multiple `--line-range` arguments, see #23

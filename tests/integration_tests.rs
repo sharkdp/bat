@@ -34,12 +34,17 @@ const EXAMPLES_DIR: &str = "tests/examples";
 fn bat_raw_command_with_config() -> Command {
     let mut cmd = Command::cargo_bin("bat").unwrap();
     cmd.current_dir("tests/examples");
-    cmd.env_remove("PAGER");
-    cmd.env_remove("BAT_PAGER");
+    cmd.env_remove("BAT_CACHE_PATH");
+    cmd.env_remove("BAT_CONFIG_DIR");
     cmd.env_remove("BAT_CONFIG_PATH");
+    cmd.env_remove("BAT_OPTS");
+    cmd.env_remove("BAT_PAGER");
     cmd.env_remove("BAT_STYLE");
-    cmd.env_remove("BAT_THEME");
     cmd.env_remove("BAT_TABS");
+    cmd.env_remove("BAT_THEME");
+    cmd.env_remove("COLORTERM");
+    cmd.env_remove("NO_COLOR");
+    cmd.env_remove("PAGER");
     cmd
 }
 
@@ -701,6 +706,16 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
+fn diagnostic_sanity_check() {
+    bat()
+        .arg("--diagnostic")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("BAT_PAGER="))
+        .stderr("");
+}
+
+#[test]
 fn config_location_test() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
@@ -735,6 +750,16 @@ fn config_location_when_generating() {
 
     // Now we expect the file to exist. If it exists, we assume contents are correct
     assert!(tmp_config_path.exists());
+}
+
+#[test]
+fn config_location_from_bat_config_dir_variable() {
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", "conf/")
+        .arg("--config-file")
+        .assert()
+        .success()
+        .stdout(predicate::str::is_match("conf/config\n").unwrap());
 }
 
 #[test]
@@ -793,6 +818,17 @@ fn can_print_file_starting_with_cache() {
 #[test]
 fn does_not_print_unwanted_file_named_cache() {
     bat_with_config().arg("cach").assert().failure();
+}
+
+#[test]
+fn accepts_no_custom_assets_arg() {
+    // Just make sure --no-custom-assets is considered a valid arg
+    // Don't bother to actually verify that it works
+    bat()
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success();
 }
 
 #[test]
@@ -1092,6 +1128,21 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
 }
 
 #[test]
+fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
+    let file = "regression_tests/first_line_fallback.invalid-syntax";
+
+    bat()
+        .arg("--color=always")
+        .arg("--map-syntax=*.invalid-syntax:InvalidSyntax")
+        .arg(&format!("--file-name={}", file))
+        .arg("--style=plain")
+        .arg(file)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
@@ -1099,6 +1150,42 @@ fn show_all_mode() {
         .assert()
         .stdout("hello·world␊\n├──┤␍␀␇␈␛")
         .stderr("");
+}
+
+#[test]
+fn no_paging_arg() {
+    bat()
+        .arg("--no-paging")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
+fn no_paging_short_arg() {
+    bat()
+        .arg("-P")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
+fn no_pager_arg() {
+    bat()
+        .arg("--no-pager")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line");
 }
 
 #[test]

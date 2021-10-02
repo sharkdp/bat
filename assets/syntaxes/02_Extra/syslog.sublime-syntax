@@ -1,0 +1,63 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: syslog
+file_extensions:
+  - syslog
+scope: text.log.syslog
+contexts:
+  main:
+    - match: ^(\w+\s+\d+)\s+(\d{2}:\d{2}:\d{2})
+      scope: meta.datetime.syslog constant.numeric.syslog
+      captures:
+        1: meta.date.syslog
+        2: meta.time.syslog
+      push: loghost
+    - match: ^
+      push: text
+  loghost:
+    - match: '[\w:.-]+'
+      scope: entity.other.attribute-name.loghost.syslog
+      set: process
+  process:
+    - match: ([\w.-]+)(?:(\[)(\d+)(\]))?([ :])
+      captures:
+        1: support.function.process.syslog
+        2: punctuation.separator.pid.begin.syslog
+        3: meta.pid.syslog meta.number.integer.syslog constant.numeric.value.syslog
+        4: punctuation.separator.pid.end.syslog
+        5: punctuation.separator.mapping.syslog
+      set: structured-data
+  structured-data:
+    - match: '\['
+      scope: punctuation.section.mapping.begin.syslog
+      push:
+        - match: \]
+          scope: punctuation.section.mapping.end.syslog
+          pop: true
+        - match: \w+
+          scope: variable.parameter.syslog
+        - match: =
+          scope: keyword.operator.assignment.syslog
+          push:
+            - match: '[^\s\]]+'
+              scope: constant.other.syslog
+              pop: true
+            - match: (?=\])
+              pop: true
+    - match: (?=\S)
+      set: text
+  text:
+    - match: $
+      pop: true
+    - match: '<\w+>'
+      scope: constant.language.syslog
+    - match: \b(CMD)\b\s+(\()
+      captures:
+        1: entity.name.label.syslog
+        2: punctuation.section.block.begin.syslog
+      embed: scope:source.shell.bash
+      escape: \)$
+      escape_captures:
+        0: punctuation.section.block.end.syslog
+    - include: scope:text.log

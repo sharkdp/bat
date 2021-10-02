@@ -4,7 +4,6 @@
 name: DotENV
 file_extensions:
   - .env
-  - .envrc
   - .env.dist
   - .env.local
   - .env.sample
@@ -19,8 +18,11 @@ file_extensions:
   - .env.production
   - .env.production.local
   - .env.dusk.local
-  - .flaskenv
   - .env.staging
+  - .env.default
+  - .env.defaults
+  - .envrc
+  - .flaskenv
 scope: source.env
 contexts:
   main:
