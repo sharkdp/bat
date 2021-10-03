@@ -28,6 +28,7 @@
 - Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
 - Syslog highlighting improvements, see #1793 (@scop)
 - Added support for `slim` syntax, see #1693 (@mfinelli)
+- Racket, see #1884 (@jubnzv)
 
 ## New themes
 
