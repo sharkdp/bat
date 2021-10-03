@@ -18,6 +18,12 @@ jobs:
     name: Ensure 'cargo fmt' has been run
     runs-on: ubuntu-20.04
     steps:
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+        components: rustfmt
     - uses: actions/checkout@v2
     - run: cargo fmt -- --check
 
