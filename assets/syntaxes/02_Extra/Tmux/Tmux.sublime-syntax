@@ -1,0 +1,60 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Tmux
+hidden: false
+file_extensions:
+  - tmux.conf
+  - tmux
+  - .tmux.conf
+  - .tmux
+scope: source.tmux
+contexts:
+  main:
+    - match: \bC\-[a-z]\b
+      scope: support.constant.tmux
+    - match: \b[1-9][0-9]*\b
+      scope: constant.numeric.tmux
+    - match: |-
+        (?x)^(
+
+          bind|
+          split-window|
+          send-keys|
+          set-(window-)?option|
+          set|
+          unbind
+
+        )\b
+      scope: support.function.tmux
+    - match: |-
+        (?x)\b(
+
+          base-index|
+          (begin|copy)-selection|
+          copy-(mode|pipe)|
+          display|
+          default-terminal|
+          escape-time|
+          mode-(keys|mouse)|
+          mouse|
+          pane-base-index|
+          paste-buffer|
+          prefix|
+          renumber-windows|
+          resize-pane|
+          select-pane|
+          send-prefix|
+          set-titles-string|
+          set-titles|
+          source-file|
+          split-window|
+          status-(fg|bg|keys)|
+          status-(left|right)(-length)?|
+          terminal-overrides|
+          vi-copy|
+          window-status(-(format|separator|current(-(bg|format))))?|
+          xterm-keys
+        )\b
+      scope: entity.other.tmux
+    - include: scope:source.shell

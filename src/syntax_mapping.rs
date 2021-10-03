@@ -81,6 +81,16 @@ impl<'a> SyntaxMapping<'a> {
                 .unwrap();
         }
 
+        // Support syntax highlighting for Tmux, resolves issue #1703
+        for glob in &[
+            "tmux.conf",
+	    "tmux",
+	    ".tmux.conf",
+	    ".tmux",
+        ] {
+            mapping.insert(glob, MappingTarget::MapTo("Tmux")).unwrap();
+        }
+
         for glob in &[
             "**/systemd/**/*.conf",
             "**/systemd/**/*.example",
