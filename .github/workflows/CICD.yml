@@ -14,6 +14,19 @@ on:
       - '*'
 
 jobs:
+  ensure_cargo_fmt:
+    name: Ensure 'cargo fmt' has been run
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+        components: rustfmt
+    - uses: actions/checkout@v2
+    - run: cargo fmt -- --check
+
   min_version:
     name: Minimum supported rust version
     runs-on: ubuntu-20.04
@@ -27,12 +40,7 @@ jobs:
         toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
         default: true
         profile: minimal # minimal component installation (ie, no documentation)
-        components: clippy, rustfmt
-    - name: Ensure `cargo fmt` has been run
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: -- --check
+        components: clippy
     - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
       uses: actions-rs/cargo@v1
       with:
