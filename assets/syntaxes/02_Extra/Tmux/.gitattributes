@@ -1,0 +1,10 @@
+# Handle line endings automatically for files detected as text and leave all
+# files detected as binary untouched.
+* text=auto
+
+# Files and directories with the attribute export-ignore won’t be added to
+# archive files. See http://git-scm.com/docs/gitattributes for details.
+/*.sublime-project  export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/tests/             export-ignore
