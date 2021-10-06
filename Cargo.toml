@@ -83,14 +83,14 @@ default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dev-dependencies]
-assert_cmd = "2.0.0"
+assert_cmd = "2.0.1"
 serial_test = "0.5.1"
 predicates = "2.0.2"
 wait-timeout = "0.2.0"
 tempfile = "3.2.0"
 
 [target.'cfg(unix)'.dev-dependencies]
-nix = "0.22.1"
+nix = "0.23.0"
 
 [build-dependencies]
 clap = { version = "2.33", optional = true }

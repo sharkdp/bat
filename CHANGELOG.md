@@ -18,6 +18,7 @@
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
+- Minimum supported Rust version (MSRV) bumped to 1.46
 
 ## Syntaxes
 
@@ -28,6 +29,7 @@
 - Syslog highlighting improvements, see #1793 (@scop)
 - Added support for `slim` syntax, see #1693 (@mfinelli)
 - Added support for `Tmux` syntax, see #1703 (@cbolgiano)
+- Racket, see #1884 (@jubnzv)
 
 ## New themes
 

@@ -196,10 +196,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
-`bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
-[Debian](https://packages.debian.org/testing/bat) package release process, and is available
-for Ubuntu as of Eoan 19.10. On Debian `bat` is currently available on the unstable
-"Sid" branch and on the testing branch.
+`bat` is available on [Ubuntu since 20.04 ("Focal")](https://packages.ubuntu.com/search?keywords=bat&exact=1) and [Debian since August 2021 (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat).
 
 If your Ubuntu/Debian installation is new enough you can simply run:
 
@@ -249,6 +246,14 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 
 ```bash
 dnf install bat
+```
+
+### On Funtoo Linux
+
+You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
+
+```bash
+emerge sys-apps/bat
 ```
 
 ### On Gentoo Linux
@@ -363,7 +368,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.45 or
+If you want to build `bat` from source, you need Rust 1.46 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
