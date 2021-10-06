@@ -621,6 +621,10 @@ A default configuration file can be created with the `--generate-config-file` op
 bat --generate-config-file
 ```
 
+There is also now a systemwide configuration file, which is located under `/etc/bat/config` on
+Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
+file is present, the content of the user configuration will simply be appended to it.
+
 ### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.

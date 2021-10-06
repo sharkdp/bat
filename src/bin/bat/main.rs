@@ -21,6 +21,9 @@ use crate::{
     config::{config_file, generate_config_file},
 };
 
+#[cfg(feature = "bugreport")]
+use crate::config::system_config_file;
+
 use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
 use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
@@ -256,6 +259,7 @@ fn invoke_bugreport(app: &App) {
             "NO_COLOR",
             "MANPAGER",
         ]))
+        .info(FileContent::new("System Config file", system_config_file()))
         .info(FileContent::new("Config file", config_file()))
         .info(FileContent::new(
             "Custom assets metadata",
