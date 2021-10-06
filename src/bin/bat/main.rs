@@ -1,3 +1,5 @@
+#![deny(unsafe_code)]
+
 mod app;
 mod assets;
 mod clap_app;

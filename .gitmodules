@@ -233,3 +233,6 @@
 [submodule "assets/syntaxes/02_Extra/Tmux"]
 	path = assets/syntaxes/02_Extra/Tmux/
 	url = https://github.com/gerardroche/sublime-tmux.git
+[submodule "assets/syntaxes/02_Extra/Racket"]
+	path = assets/syntaxes/02_Extra/Racket
+	url = https://github.com/follesoe/sublime-racket.git

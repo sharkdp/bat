@@ -8,7 +8,6 @@
 ## Bugfixes
 
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
-
 - Generic handling of .conf file syntax handling when there is an exact file name match. See #1703 (@cbolgiano)
 
 ## Performance
@@ -20,6 +19,7 @@
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
+- Minimum supported Rust version (MSRV) bumped to 1.46
 
 ## Syntaxes
 
@@ -29,6 +29,8 @@
 - Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
 - Syslog highlighting improvements, see #1793 (@scop)
 - Added support for `slim` syntax, see #1693 (@mfinelli)
+- Added support for `Tmux` syntax, see #1703 (@cbolgiano)
+- Racket, see #1884 (@jubnzv)
 
 ## New themes
 
