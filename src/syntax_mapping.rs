@@ -8,7 +8,6 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 pub enum MappingTarget<'a> {
     MapTo(&'a str),
     MapToUnknown,
-    MapToUnknownUnlessExactFileNameMatch,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -54,12 +53,13 @@ impl<'a> SyntaxMapping<'a> {
 
         // Nginx and Apache syntax files both want to style all ".conf" files
         // see #1131 and #1137
-        // Support general syntax highlighting for .conf files if exact match is found, resolves issue #1703
         mapping
-            .insert(
-                "*.conf",
-                MappingTarget::MapToUnknownUnlessExactFileNameMatch,
-            )
+            .insert("*.conf", MappingTarget::MapToUnknown)
+            .unwrap();
+
+        // Re-insert a mapping for resolv.conf, see #1510
+        mapping
+            .insert("resolv.conf", MappingTarget::MapTo("resolv"))
             .unwrap();
 
         for glob in &[
