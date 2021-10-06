@@ -185,11 +185,15 @@ impl HighlightingAssets {
             Some(MappingTarget::MapToUnknownUnlessExactFileNameMatch) => {
                 let file_name = path.file_name().unwrap_or_default();
                 // Check if we have an exact match using file name.
-                Ok(self.find_syntax_by_name(file_name.to_str().unwrap())?
+                Ok(self
+                    .find_syntax_by_name(file_name.to_str().unwrap())?
                     // if we do not check to see if we have an exact match using extension.
-                    .ok_or_else(|| self.get_extension_syntax(file_name)?
-                        // If no matches fail like MapToUnknown
-                        .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))).unwrap())
+                    .ok_or_else(|| {
+                        self.get_extension_syntax(file_name)?
+                            // If no matches fail like MapToUnknown
+                            .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
+                    })
+                    .unwrap())
             }
 
             Some(MappingTarget::MapTo(syntax_name)) => self
