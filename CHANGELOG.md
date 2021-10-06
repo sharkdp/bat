@@ -6,8 +6,10 @@
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 
 ## Bugfixes
-	
+
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+
+- Generic handling of .conf file syntax handling when there is an exact file name match. See #1703 (@cbolgiano)
 
 ## Performance
 
@@ -27,7 +29,6 @@
 - Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
 - Syslog highlighting improvements, see #1793 (@scop)
 - Added support for `slim` syntax, see #1693 (@mfinelli)
-- Added support for `Tmux` syntax, see #1703 (@cbolgiano)
 
 ## New themes
 
