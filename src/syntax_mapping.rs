@@ -8,7 +8,7 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 pub enum MappingTarget<'a> {
     MapTo(&'a str),
     MapToUnknown,
-    MapToUnknownUnlessExactFileNameMatch,
+    MapExtensionToUnknown,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -56,10 +56,7 @@ impl<'a> SyntaxMapping<'a> {
         // see #1131 and #1137
         // Support general syntax highlighting for .conf files if exact match is found, resolves issue #1703
         mapping
-            .insert(
-                "*.conf",
-                MappingTarget::MapToUnknownUnlessExactFileNameMatch,
-            )
+            .insert("*.conf", MappingTarget::MapExtensionToUnknown)
             .unwrap();
 
         for glob in &[

@@ -72,7 +72,7 @@ fn get_syntax_mapping_to_paths<'a>(
     for mapping in mappings {
         match mapping {
             (_, MappingTarget::MapToUnknown) => {}
-            (_, MappingTarget::MapToUnknownUnlessExactFileNameMatch) => {}
+            (_, MappingTarget::MapExtensionToUnknown) => {}
             (matcher, MappingTarget::MapTo(s)) => {
                 let globs = map.entry(*s).or_insert_with(Vec::new);
                 globs.push(matcher.glob().glob().into());
