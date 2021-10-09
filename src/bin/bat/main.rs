@@ -84,7 +84,7 @@ fn get_syntax_mapping_to_paths<'a>(
 pub fn get_languages(config: &Config) -> Result<String> {
     let mut result: String = String::new();
 
-    let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
+    let assets = assets_from_cache_or_binary(config)?;
     let mut languages = assets
         .get_syntaxes()?
         .iter()
@@ -177,7 +177,7 @@ fn theme_preview_file<'a>() -> Input<'a> {
 }
 
 pub fn list_themes(cfg: &Config) -> Result<()> {
-    let assets = assets_from_cache_or_binary(cfg.use_custom_assets)?;
+    let assets = assets_from_cache_or_binary(cfg)?;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
@@ -218,7 +218,7 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
 }
 
 fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
-    let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
+    let assets = assets_from_cache_or_binary(config)?;
     let controller = Controller::new(config, &assets);
     controller.run(inputs)
 }

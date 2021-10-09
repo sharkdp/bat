@@ -235,6 +235,12 @@ impl App {
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             use_custom_assets: !self.matches.is_present("no-custom-assets"),
+            ignored_suffixes: self
+                .matches
+                .values_of("ignored-suffix")
+                .unwrap_or_default()
+                .map(String::from)
+                .collect(),
         })
     }
 

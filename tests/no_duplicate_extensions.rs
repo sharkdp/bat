@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use bat::assets::HighlightingAssets;
+use bat::{assets::HighlightingAssets, ignored_suffixes::IgnoredSuffixes};
 
 #[test]
 fn no_duplicate_extensions() {
@@ -22,7 +22,7 @@ fn no_duplicate_extensions() {
         "v",
     ];
 
-    let assets = HighlightingAssets::from_binary();
+    let assets = HighlightingAssets::from_binary(IgnoredSuffixes::default());
 
     let mut extensions = HashSet::new();
 

@@ -1,6 +1,8 @@
 use std::borrow::Cow;
 use std::fs;
 
+use bat::config::Config;
+use bat::ignored_suffixes::IgnoredSuffixes;
 use clap::crate_version;
 
 use crate::directories::PROJECT_DIRS;
@@ -24,7 +26,7 @@ pub fn clear_assets() {
     clear_asset("metadata.yaml", "metadata file");
 }
 
-pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<HighlightingAssets> {
+pub fn assets_from_cache_or_binary(config: &Config) -> Result<HighlightingAssets> {
     let cache_dir = PROJECT_DIRS.cache_dir();
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
@@ -42,12 +44,13 @@ pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<Highlighti
         }
     }
 
-    let custom_assets = if use_custom_assets {
-        HighlightingAssets::from_cache(cache_dir).ok()
+    let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
+    let custom_assets = if config.use_custom_assets {
+        HighlightingAssets::from_cache(cache_dir, ignored_suffixes.clone()).ok()
     } else {
         None
     };
-    Ok(custom_assets.unwrap_or_else(HighlightingAssets::from_binary))
+    Ok(custom_assets.unwrap_or_else(|| HighlightingAssets::from_binary(ignored_suffixes.clone())))
 }
 
 fn clear_asset(filename: &str, description: &str) {

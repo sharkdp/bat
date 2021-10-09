@@ -86,6 +86,9 @@ pub struct Config<'a> {
     /// Whether or not to allow custom assets. If this is false or if custom assets (a.k.a.
     /// cached assets) are not available, assets from the binary will be used instead.
     pub use_custom_assets: bool,
+
+    /// Ignored suffixes
+    pub ignored_suffixes: Vec<String>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

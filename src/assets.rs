@@ -11,10 +11,10 @@ use path_abs::PathAbs;
 
 use crate::bat_warning;
 use crate::error::*;
+use crate::ignored_suffixes::IgnoredSuffixes;
 use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
 
-use ignored_suffixes::*;
 use minimal_assets::*;
 use serialized_syntax_set::*;
 
@@ -24,7 +24,6 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
-mod ignored_suffixes;
 mod minimal_assets;
 mod serialized_syntax_set;
 
@@ -37,6 +36,7 @@ pub struct HighlightingAssets {
 
     theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
+    ignored_suffixes: IgnoredSuffixes,
 }
 
 #[derive(Debug)]
@@ -67,6 +67,7 @@ impl HighlightingAssets {
         serialized_syntax_set: SerializedSyntaxSet,
         minimal_syntaxes: MinimalSyntaxes,
         theme_set: ThemeSet,
+        ignored_suffixes: IgnoredSuffixes,
     ) -> Self {
         HighlightingAssets {
             syntax_set_cell: LazyCell::new(),
@@ -74,6 +75,7 @@ impl HighlightingAssets {
             minimal_assets: MinimalAssets::new(minimal_syntaxes),
             theme_set,
             fallback_theme: None,
+            ignored_suffixes,
         }
     }
 
@@ -81,7 +83,7 @@ impl HighlightingAssets {
         "Monokai Extended"
     }
 
-    pub fn from_cache(cache_path: &Path) -> Result<Self> {
+    pub fn from_cache(cache_path: &Path, ignored_suffixes: IgnoredSuffixes) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
             asset_from_cache(
@@ -90,14 +92,16 @@ impl HighlightingAssets {
                 COMPRESS_MINIMAL_SYNTAXES,
             )?,
             asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
+            ignored_suffixes,
         ))
     }
 
-    pub fn from_binary() -> Self {
+    pub fn from_binary(ignored_suffixes: IgnoredSuffixes) -> Self {
         HighlightingAssets::new(
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
             get_integrated_minimal_syntaxes(),
             get_integrated_themeset(),
+            ignored_suffixes,
         )
     }
 
@@ -269,9 +273,12 @@ impl HighlightingAssets {
             syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         }
         if syntax.is_none() {
-            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax(stripped_file_name) // Note: recursion
-            })?;
+            syntax = self.ignored_suffixes.try_with_stripped_suffix(
+                file_name,
+                |stripped_file_name| {
+                    self.get_extension_syntax(stripped_file_name) // Note: recursion
+                },
+            )?;
         }
         Ok(syntax)
     }
@@ -358,7 +365,7 @@ mod tests {
     impl<'a> SyntaxDetectionTest<'a> {
         fn new() -> Self {
             SyntaxDetectionTest {
-                assets: HighlightingAssets::from_binary(),
+                assets: HighlightingAssets::from_binary(IgnoredSuffixes::default()),
                 syntax_mapping: SyntaxMapping::builtin(),
                 temp_dir: TempDir::new().expect("creation of temporary directory"),
             }

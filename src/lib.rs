@@ -32,6 +32,7 @@ pub mod controller;
 mod decorations;
 mod diff;
 pub mod error;
+pub mod ignored_suffixes;
 pub mod input;
 mod less;
 pub mod line_range;
