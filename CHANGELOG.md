@@ -8,6 +8,7 @@
 ## Bugfixes
 
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- First line not shown in diff context. See #1891 (@divagant-martian)
 
 ## Performance
 
