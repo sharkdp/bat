@@ -279,6 +279,14 @@ pacman -S bat
 dnf install bat
 ```
 
+### Funtoo Linux에서
+
+dev-kit을 통해 [`bat` 패키지](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat)를 설치할 수 있습니다: 
+
+```bash
+emerge sys-apps/bat
+```
+
 ### Gentoo Linux에서
 
 공식 소스를 통해
