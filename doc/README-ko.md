@@ -805,6 +805,10 @@ cargo install --locked --force
 - [keith-hall](https://github.com/keith-hall)
 - [Enselic](https://github.com/Enselic)
 
+## 보안 취약점
+
+만약 `bat`의 취약점을 발견하였다면, [David Peter](https://david-peter.de/)에게 메일로 연락주시기 바랍니다. 
+
 ## 프로젝트 목표와 대안들
 
 `bat`은 다음과 같은 목표를 달성하려고 합니다:
