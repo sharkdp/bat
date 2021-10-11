@@ -60,7 +60,6 @@ impl<'a> SyntaxMapping<'a> {
 
         // Nginx and Apache syntax files both want to style all ".conf" files
         // see #1131 and #1137
-        // Support general syntax highlighting for .conf files if exact match is found, resolves issue #1703
         mapping
             .insert("*.conf", MappingTarget::MapExtensionToUnknown)
             .unwrap();

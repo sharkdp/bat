@@ -278,19 +278,6 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn get_extension_syntax_by_file_extension(
-        &self,
-        file_name: &OsStr,
-    ) -> Result<Option<SyntaxReferenceInSet>> {
-        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
-        if syntax.is_none() {
-            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax_by_file_extension(stripped_file_name) // Note: recursion
-            })?;
-        }
-        Ok(syntax)
-    }
-
     fn get_extension_syntax_by_file_name(
         &self,
         file_name: &OsStr,
@@ -299,6 +286,19 @@ impl HighlightingAssets {
         if syntax.is_none() {
             syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
                 self.get_extension_syntax_by_file_name(stripped_file_name) // Note: recursion
+            })?;
+        }
+        Ok(syntax)
+    }
+
+    fn get_extension_syntax_by_file_extension(
+        &self,
+        file_name: &OsStr,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
+        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
+        if syntax.is_none() {
+            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
+                self.get_extension_syntax_by_file_extension(stripped_file_name) // Note: recursion
             })?;
         }
         Ok(syntax)
