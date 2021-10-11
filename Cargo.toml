@@ -65,6 +65,7 @@ clircle = "0.3"
 bugreport = { version = "0.4", optional = true }
 dirs-next = { version = "2.0.0", optional = true }
 grep-cli = "0.1.6"
+colors-transform = "0.2.11"
 
 [dependencies.git2]
 version = "0.13"

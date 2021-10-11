@@ -416,13 +416,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
-        // Line highlighting
-        let highlight_this_line =
-            self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
-
-        let background_color = self
-            .background_color_highlight
-            .filter(|_| highlight_this_line);
+        let background_color = match self.config.highlighted_lines.0.check(line_number) {
+            RangeCheckResult::InRange(color) => color.or(self.background_color_highlight),
+            _ => None,
+        };
 
         // Line decorations.
         if self.panel_width > 0 {

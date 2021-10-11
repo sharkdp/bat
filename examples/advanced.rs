@@ -8,7 +8,7 @@ fn main() {
         .line_numbers(true)
         .use_italics(true)
         // The following line will be highlighted in the output:
-        .highlight(line!() as usize)
+        .highlight(line!() as usize, None)
         .theme("1337")
         .wrapping_mode(WrappingMode::Character)
         .paging_mode(PagingMode::QuitIfOneScreen)

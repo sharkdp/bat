@@ -20,7 +20,7 @@ use bat::{
     config::{Config, VisibleLines},
     error::*,
     input::Input,
-    line_range::{HighlightedLineRanges, LineRange, LineRanges},
+    line_range::{BasicLineRange, HighlightedLineRanges, LineRanges},
     style::{StyleComponent, StyleComponents},
     MappingTarget, PagingMode, SyntaxMapping, WrappingMode,
 };
@@ -216,7 +216,7 @@ impl App {
                 _ => VisibleLines::Ranges(
                     self.matches
                         .values_of("line-range")
-                        .map(|vs| vs.map(LineRange::from).collect())
+                        .map(|vs| vs.map(BasicLineRange::from).collect())
                         .transpose()?
                         .map(LineRanges::from)
                         .unwrap_or_default(),
@@ -229,7 +229,7 @@ impl App {
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
-                .map(|ws| ws.map(LineRange::from).collect())
+                .map(|ws| ws.map(BasicLineRange::from).collect())
                 .transpose()?
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)

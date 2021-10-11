@@ -1,4 +1,4 @@
-use crate::line_range::{HighlightedLineRanges, LineRanges};
+use crate::line_range::{ColoredLineRange, HighlightedLineRanges, LineRange, LineRanges};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::style::StyleComponents;
@@ -8,7 +8,7 @@ use crate::wrapping::WrappingMode;
 #[derive(Debug, Clone)]
 pub enum VisibleLines {
     /// Show all lines which are included in the line ranges
-    Ranges(LineRanges),
+    Ranges(LineRanges<LineRange>),
 
     #[cfg(feature = "git")]
     /// Only show lines surrounding added/deleted/modified lines
@@ -81,7 +81,7 @@ pub struct Config<'a> {
     pub use_italic_text: bool,
 
     /// Ranges of lines which should be highlighted with a special background color
-    pub highlighted_lines: HighlightedLineRanges,
+    pub highlighted_lines: HighlightedLineRanges<ColoredLineRange>,
 
     /// Whether or not to allow custom assets. If this is false or if custom assets (a.k.a.
     /// cached assets) are not available, assets from the binary will be used instead.
@@ -100,7 +100,10 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
 fn default_config_should_include_all_lines() {
     use crate::line_range::RangeCheckResult;
 
-    assert_eq!(LineRanges::default().check(17), RangeCheckResult::InRange);
+    assert_eq!(
+        LineRanges::<LineRange>::default().check(17),
+        RangeCheckResult::InRange(None)
+    );
 }
 
 #[test]
@@ -109,6 +112,6 @@ fn default_config_should_highlight_no_lines() {
 
     assert_ne!(
         Config::default().highlighted_lines.0.check(17),
-        RangeCheckResult::InRange
+        RangeCheckResult::InRange(None)
     );
 }

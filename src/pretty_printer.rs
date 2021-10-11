@@ -2,7 +2,7 @@ use std::io::Read;
 use std::path::Path;
 
 use console::Term;
-use syntect::parsing::SyntaxReference;
+use syntect::{highlighting::Color, parsing::SyntaxReference};
 
 use crate::{
     assets::HighlightingAssets,
@@ -10,7 +10,7 @@ use crate::{
     controller::Controller,
     error::Result,
     input,
-    line_range::{HighlightedLineRanges, LineRange, LineRanges},
+    line_range::{ColoredLineRange, HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
     SyntaxMapping, WrappingMode,
 };
@@ -33,7 +33,7 @@ pub struct PrettyPrinter<'a> {
     config: Config<'a>,
     assets: HighlightingAssets,
 
-    highlighted_lines: Vec<LineRange>,
+    highlighted_lines: Vec<ColoredLineRange>,
     term_width: Option<usize>,
     active_style_components: ActiveStyleComponents,
 }
@@ -197,7 +197,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Specify the lines that should be printed (default: all)
-    pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
+    pub fn line_ranges(&mut self, ranges: LineRanges<LineRange>) -> &mut Self {
         self.config.visible_lines = VisibleLines::Ranges(ranges);
         self
     }
@@ -205,16 +205,18 @@ impl<'a> PrettyPrinter<'a> {
     /// Specify a line that should be highlighted (default: none).
     /// This can be called multiple times to highlight more than one
     /// line. See also: highlight_range.
-    pub fn highlight(&mut self, line: usize) -> &mut Self {
-        self.highlighted_lines.push(LineRange::new(line, line));
+    pub fn highlight(&mut self, line: usize, color: Option<Color>) -> &mut Self {
+        self.highlighted_lines
+            .push(ColoredLineRange::new(line, line, color));
         self
     }
 
     /// Specify a range of lines that should be highlighted (default: none).
     /// This can be called multiple times to highlight more than one range
     /// of lines.
-    pub fn highlight_range(&mut self, from: usize, to: usize) -> &mut Self {
-        self.highlighted_lines.push(LineRange::new(from, to));
+    pub fn highlight_range(&mut self, from: usize, to: usize, color: Option<Color>) -> &mut Self {
+        self.highlighted_lines
+            .push(ColoredLineRange::new(from, to, color));
         self
     }
 

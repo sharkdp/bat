@@ -96,7 +96,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
                      '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
-                     '--highlight-line 30:+10' highlights lines 30 to 40",
+                     '--highlight-line 30:+10' highlights lines 30 to 40\n  \
+                     '--highlight-line 40#ff0' highlights line 40 with yellow background color\n  \
+                     '--highlight-line 30:40#FF0000' highlights line 30 to 40 with white background color",
                 ),
         )
         .arg(

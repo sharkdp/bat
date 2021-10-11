@@ -197,7 +197,7 @@ impl<'b> Controller<'b> {
         printer: &mut dyn Printer,
         writer: &mut dyn Write,
         reader: &mut InputReader,
-        line_ranges: &LineRanges,
+        line_ranges: &LineRanges<crate::line_range::LineRange>,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
         let mut line_number: usize = 1;
@@ -216,7 +216,7 @@ impl<'b> Controller<'b> {
                     mid_range = false;
                 }
 
-                RangeCheckResult::InRange => {
+                RangeCheckResult::InRange(_) => {
                     if style_snip {
                         if first_range {
                             first_range = false;
