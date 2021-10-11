@@ -2,7 +2,7 @@ use std::borrow::Cow;
 use std::fs;
 
 use bat::config::Config;
-use bat::ignored_suffixes::IgnoredSuffixes;
+
 use clap::crate_version;
 
 use crate::directories::PROJECT_DIRS;
@@ -44,13 +44,12 @@ pub fn assets_from_cache_or_binary(config: &Config) -> Result<HighlightingAssets
         }
     }
 
-    let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
     let custom_assets = if config.use_custom_assets {
-        HighlightingAssets::from_cache(cache_dir, ignored_suffixes.clone()).ok()
+        HighlightingAssets::from_cache(cache_dir).ok()
     } else {
         None
     };
-    Ok(custom_assets.unwrap_or_else(|| HighlightingAssets::from_binary(ignored_suffixes.clone())))
+    Ok(custom_assets.unwrap_or_else(HighlightingAssets::from_binary))
 }
 
 fn clear_asset(filename: &str, description: &str) {

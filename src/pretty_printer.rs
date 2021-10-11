@@ -9,7 +9,6 @@ use crate::{
     config::{Config, VisibleLines},
     controller::Controller,
     error::Result,
-    ignored_suffixes::IgnoredSuffixes,
     input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
@@ -50,7 +49,7 @@ impl<'a> PrettyPrinter<'a> {
         PrettyPrinter {
             inputs: vec![],
             config,
-            assets: HighlightingAssets::from_binary(IgnoredSuffixes::default()),
+            assets: HighlightingAssets::from_binary(),
 
             highlighted_lines: vec![],
             term_width: None,

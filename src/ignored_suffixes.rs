@@ -49,7 +49,7 @@ impl IgnoredSuffixes {
                 .values
                 .iter()
                 .map(|v| v.as_str())
-                .chain(IGNORED_SUFFIXES.iter().map(|v| *v))
+                .chain(IGNORED_SUFFIXES.iter().copied())
             {
                 if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
                     from_stripped = func(OsStr::new(stripped_filename))?;
