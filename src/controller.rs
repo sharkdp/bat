@@ -113,7 +113,7 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_input<'a, R: BufRead>(
+    fn print_input<R: BufRead>(
         &self,
         input: Input,
         writer: &mut dyn Write,
