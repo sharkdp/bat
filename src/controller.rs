@@ -89,15 +89,7 @@ impl<'b> Controller<'b> {
 
         let writer = output_type.handle()?;
         let mut no_errors: bool = true;
-
         let stderr = io::stderr();
-        let print_error = |error: &Error, write: &mut dyn Write| {
-            if attached_to_pager {
-                handle_error(error, write);
-            } else {
-                handle_error(error, &mut stderr.lock());
-            }
-        };
 
         for (index, input) in inputs.into_iter().enumerate() {
             let identifier = stdout_identifier.as_ref();
@@ -109,7 +101,11 @@ impl<'b> Controller<'b> {
                 self.print_input(input, writer, DummyStdin, identifier, is_first)
             };
             if let Err(error) = result {
-                print_error(&error, writer);
+                if attached_to_pager {
+                    handle_error(&error, writer);
+                } else {
+                    handle_error(&error, &mut stderr.lock());
+                }
                 no_errors = false;
             }
         }
