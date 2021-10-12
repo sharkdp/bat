@@ -1,4 +1,4 @@
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, Write};
 
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
@@ -15,19 +15,6 @@ use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
-
-struct DummyStdin;
-impl Read for DummyStdin {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        Ok(buf.len())
-    }
-}
-impl BufRead for DummyStdin {
-    fn fill_buf(&mut self) -> io::Result<&[u8]> {
-        Ok(&[])
-    }
-    fn consume(&mut self, _amt: usize) {}
-}
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -98,7 +85,7 @@ impl<'b> Controller<'b> {
                 self.print_input(input, writer, io::stdin().lock(), identifier, is_first)
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
-                self.print_input(input, writer, DummyStdin, identifier, is_first)
+                self.print_input(input, writer, io::empty(), identifier, is_first)
             };
             if let Err(error) = result {
                 if attached_to_pager {
