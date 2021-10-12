@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::io::{self, BufRead, Read, Write};
 
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
@@ -14,7 +14,20 @@ use crate::output::OutputType;
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
-use clircle::Clircle;
+use clircle::{Clircle, Identifier};
+
+struct DummyStdin;
+impl Read for DummyStdin {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        Ok(buf.len())
+    }
+}
+impl BufRead for DummyStdin {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        Ok(&[])
+    }
+    fn consume(&mut self, _amt: usize) {}
+}
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -87,72 +100,82 @@ impl<'b> Controller<'b> {
         };
 
         for (index, input) in inputs.into_iter().enumerate() {
-            match input.open(io::stdin().lock(), stdout_identifier.as_ref()) {
-                Err(error) => {
-                    print_error(&error, writer);
-                    no_errors = false;
-                }
-                Ok(mut opened_input) => {
-                    #[cfg(feature = "git")]
-                    let line_changes = if self.config.visible_lines.diff_mode()
-                        || (!self.config.loop_through && self.config.style_components.changes())
-                    {
-                        match opened_input.kind {
-                            crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
-                                let diff = get_git_diff(path);
-
-                                // Skip files without Git modifications
-                                if self.config.visible_lines.diff_mode()
-                                    && diff
-                                        .as_ref()
-                                        .map(|changes| changes.is_empty())
-                                        .unwrap_or(false)
-                                {
-                                    continue;
-                                }
-
-                                diff
-                            }
-                            _ if self.config.visible_lines.diff_mode() => {
-                                // Skip non-file inputs in diff mode
-                                continue;
-                            }
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    };
-
-                    let mut printer: Box<dyn Printer> = if self.config.loop_through {
-                        Box::new(SimplePrinter::new(self.config))
-                    } else {
-                        Box::new(InteractivePrinter::new(
-                            self.config,
-                            self.assets,
-                            &mut opened_input,
-                            #[cfg(feature = "git")]
-                            &line_changes,
-                        )?)
-                    };
-
-                    let result = self.print_file(
-                        &mut *printer,
-                        writer,
-                        &mut opened_input,
-                        index != 0,
-                        #[cfg(feature = "git")]
-                        &line_changes,
-                    );
-
-                    if let Err(error) = result {
-                        print_error(&error, writer);
-                        no_errors = false;
-                    }
-                }
+            let identifier = stdout_identifier.as_ref();
+            let is_first = index == 0;
+            let result = if input.is_stdin() {
+                self.print_input(input, writer, io::stdin().lock(), identifier, is_first)
+            } else {
+                // Use dummy stdin since stdin is actually not used (#1902)
+                self.print_input(input, writer, DummyStdin, identifier, is_first)
+            };
+            if let Err(error) = result {
+                print_error(&error, writer);
+                no_errors = false;
             }
         }
 
         Ok(no_errors)
+    }
+
+    fn print_input<'a, R: BufRead>(
+        &self,
+        input: Input,
+        writer: &mut dyn Write,
+        stdin: R,
+        stdout_identifier: Option<&Identifier>,
+        is_first: bool,
+    ) -> Result<()> {
+        let mut opened_input = input.open(stdin, stdout_identifier)?;
+        #[cfg(feature = "git")]
+        let line_changes = if self.config.visible_lines.diff_mode()
+            || (!self.config.loop_through && self.config.style_components.changes())
+        {
+            match opened_input.kind {
+                crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
+                    let diff = get_git_diff(path);
+
+                    // Skip files without Git modifications
+                    if self.config.visible_lines.diff_mode()
+                        && diff
+                            .as_ref()
+                            .map(|changes| changes.is_empty())
+                            .unwrap_or(false)
+                    {
+                        return Ok(());
+                    }
+
+                    diff
+                }
+                _ if self.config.visible_lines.diff_mode() => {
+                    // Skip non-file inputs in diff mode
+                    return Ok(());
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+
+        let mut printer: Box<dyn Printer> = if self.config.loop_through {
+            Box::new(SimplePrinter::new(self.config))
+        } else {
+            Box::new(InteractivePrinter::new(
+                self.config,
+                self.assets,
+                &mut opened_input,
+                #[cfg(feature = "git")]
+                &line_changes,
+            )?)
+        };
+
+        self.print_file(
+            &mut *printer,
+            writer,
+            &mut opened_input,
+            !is_first,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
     }
 
     fn print_file(
