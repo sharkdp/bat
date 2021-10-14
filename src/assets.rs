@@ -182,34 +182,29 @@ impl HighlightingAssets {
 
         let syntax_match = mapping.get_syntax_for(path);
 
-        if syntax_match.is_some() {
-            if let MappingTarget::MapToUnknown = syntax_match.unwrap() {
-                return Err(Error::UndetectedSyntax(path.to_string_lossy().into()));
-            }
+        if let Some(MappingTarget::MapToUnknown) = syntax_match {
+            return Err(Error::UndetectedSyntax(path.to_string_lossy().into()));
+        }
 
-            if let MappingTarget::MapTo(syntax_name) = syntax_match.unwrap() {
-                return self
-                    .find_syntax_by_name(syntax_name)?
-                    .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
-            }
+        if let Some(MappingTarget::MapTo(syntax_name)) = syntax_match {
+            return self
+                .find_syntax_by_name(syntax_name)?
+                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
         }
 
         let syntax_match_file_name = self
             .get_extension_syntax_by_file_name(file_name)?
             .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()));
 
-        if syntax_match.is_some() {
-            if let MappingTarget::MapExtensionToUnknown = syntax_match.unwrap() {
-                return syntax_match_file_name;
-            }
+        if let Some(MappingTarget::MapExtensionToUnknown) = syntax_match {
+            return syntax_match_file_name;
         }
 
         if syntax_match_file_name.is_ok() {
-            return syntax_match_file_name;
+            syntax_match_file_name
         } else {
-            return self
-                .get_extension_syntax_by_file_extension(file_name)?
-                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()));
+            self.get_extension_syntax_by_file_extension(file_name)?
+                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
         }
     }
 
