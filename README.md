@@ -294,6 +294,14 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
+### On OpenBSD
+
+You can install `bat` package using [`pkg_add(1)`](https://man.openbsd.org/pkg_add.1):
+
+```bash
+pkg_add bat
+```
+
 ### Via nix
 
 You can install `bat` using the [nix package manager](https://nixos.org/nix):
