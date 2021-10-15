@@ -216,13 +216,7 @@ impl App {
                 _ => VisibleLines::Ranges(
                     self.matches
                         .values_of("line-range")
-                        .map(|vs| {
-                            vs.map(LineRange::from)
-                                .flatten()
-                                .flatten()
-                                .collect::<Vec<_>>()
-                        })
-                        .map(LineRanges::from)
+                        .map(App::get_line_ranges)
                         .unwrap_or_default(),
                 ),
             },
@@ -233,17 +227,20 @@ impl App {
             highlighted_lines: self
                 .matches
                 .values_of("highlight-line")
-                .map(|ws| {
-                    ws.map(LineRange::from)
-                        .flatten()
-                        .flatten()
-                        .collect::<Vec<_>>()
-                })
-                .map(LineRanges::from)
+                .map(App::get_line_ranges)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             use_custom_assets: !self.matches.is_present("no-custom-assets"),
         })
+    }
+
+    fn get_line_ranges(clap_val: clap::Values) -> LineRanges {
+        let line_range_vec = clap_val
+            .map(LineRange::from)
+            .flatten()
+            .flatten()
+            .collect::<Vec<_>>();
+        LineRanges::from(line_range_vec)
     }
 
     pub fn inputs(&self) -> Result<Vec<Input>> {
