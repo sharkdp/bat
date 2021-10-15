@@ -12,7 +12,11 @@
   <a href="#installation">Installation</a> •
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a><br>
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="doc/README-ja.md">日本語</a>] [<a href="doc/README-ko.md">한국어</a>] [<a href="doc/README-ru.md">Русский</a>]
+  [English]
+  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="doc/README-ja.md">日本語</a>]
+  [<a href="doc/README-ko.md">한국어</a>]
+  [<a href="doc/README-ru.md">Русский</a>]
 </p>
 
 ### Syntax highlighting
