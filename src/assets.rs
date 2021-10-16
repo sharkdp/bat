@@ -178,8 +178,6 @@ impl HighlightingAssets {
     ) -> Result<SyntaxReferenceInSet> {
         let path = path.as_ref();
 
-        let file_name = path.file_name().unwrap_or_default();
-
         let syntax_match = mapping.get_syntax_for(path);
 
         if let Some(MappingTarget::MapToUnknown) = syntax_match {
@@ -192,19 +190,18 @@ impl HighlightingAssets {
                 .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
         }
 
-        let syntax_match_file_name = self
-            .get_extension_syntax_by_file_name(file_name)?
-            .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()));
+        let file_name = path.file_name().unwrap_or_default();
 
-        if let Some(MappingTarget::MapExtensionToUnknown) = syntax_match {
-            return syntax_match_file_name;
-        }
+        match (self.get_syntax_for_file_name(file_name)?, syntax_match) {
+            (Some(syntax), _) => Ok(syntax),
 
-        if syntax_match_file_name.is_ok() {
-            syntax_match_file_name
-        } else {
-            self.get_extension_syntax_by_file_extension(file_name)?
-                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
+            (_, Some(MappingTarget::MapExtensionToUnknown)) => {
+                Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
+            }
+
+            _ => self
+                .get_syntax_for_file_extension(file_name)?
+                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
         }
     }
 
@@ -277,27 +274,24 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn get_extension_syntax_by_file_name(
-        &self,
-        file_name: &OsStr,
-    ) -> Result<Option<SyntaxReferenceInSet>> {
+    fn get_syntax_for_file_name(&self, file_name: &OsStr) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
         if syntax.is_none() {
             syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax_by_file_name(stripped_file_name) // Note: recursion
+                self.get_syntax_for_file_name(stripped_file_name) // Note: recursion
             })?;
         }
         Ok(syntax)
     }
 
-    fn get_extension_syntax_by_file_extension(
+    fn get_syntax_for_file_extension(
         &self,
         file_name: &OsStr,
     ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         if syntax.is_none() {
             syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax_by_file_extension(stripped_file_name)
+                self.get_syntax_for_file_extension(stripped_file_name)
                 // Note: recursion
             })?;
         }
