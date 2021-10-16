@@ -188,7 +188,8 @@ impl HighlightingAssets {
 
             None => {
                 let file_name = path.file_name().unwrap_or_default();
-                self.get_extension_syntax(file_name, config)?
+                let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
+                self.get_extension_syntax(file_name, &ignored_suffixes)?
                     .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
             }
         }
@@ -266,17 +267,16 @@ impl HighlightingAssets {
     fn get_extension_syntax(
         &self,
         file_name: &OsStr,
-        config: &Config,
+        ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
-        let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
         if syntax.is_none() {
             syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         }
         if syntax.is_none() {
             syntax =
                 ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
-                    self.get_extension_syntax(stripped_file_name, config) // Note: recursion
+                    self.get_extension_syntax(stripped_file_name, ignored_suffixes) // Note: recursion
                 })?;
         }
         Ok(syntax)
