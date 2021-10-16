@@ -56,14 +56,14 @@ impl LineRange {
                     new_range.lower + more_lines
                 } else if first_byte == Some(b'-') {
                     // this will prevent values like "-+5" even though "+5" is valid integer
-                    if &line_numbers[1][1..].bytes().next() == &Some(b'+') {
+                    if line_numbers[1][1..].bytes().next() == Some(b'+') {
                         return Err("Invalid character after -".into());
                     }
-                    let less_lines = &line_numbers[1][1..]
+                    let prior_lines = &line_numbers[1][1..]
                         .parse()
                         .map_err(|_| "Invalid character after -")?;
                     let prev_lower = new_range.lower;
-                    new_range.lower = new_range.lower - less_lines;
+                    new_range.lower -= prior_lines;
                     prev_lower
                 } else {
                     line_numbers[1].parse()?
