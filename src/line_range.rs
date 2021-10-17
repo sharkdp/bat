@@ -63,7 +63,7 @@ impl LineRange {
                         .parse()
                         .map_err(|_| "Invalid character after -")?;
                     let prev_lower = new_range.lower;
-                    new_range.lower -= prior_lines;
+                    new_range.lower = new_range.lower.saturating_sub(*prior_lines);
                     prev_lower
                 } else {
                     line_numbers[1].parse()?
