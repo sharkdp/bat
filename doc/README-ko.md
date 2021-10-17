@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
@@ -11,8 +11,12 @@
   <a href="#사용법">사용법</a> •
   <a href="#설치">설치</a> •
   <a href="#사용자화">사용자화</a> •
-  <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a> •
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="../doc/README-ja.md">日本語</a>] [<a href="../doc/README-ko.md">한국어</a>] [<a href="../doc/README-ru.md">Русский</a>]
+  <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a><br>
+  [<a href="../README.md">English</a>]
+  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-ja.md">日本語</a>]
+  [한국어]
+  [<a href="README-ru.md">Русский</a>]
 </p>
 
 ### 문법 강조
