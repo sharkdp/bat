@@ -1104,8 +1104,7 @@ dependencies = [
 [[package]]
 name = "syntect"
 version = "4.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b20815bbe80ee0be06e6957450a841185fcf690fe0178f14d77a05ce2caa031"
+source = "git+https://github.com/Enselic/syntect.git?rev=5ac373b295#5ac373b295ffe683c7bc02cefcdeb035ae225a01"
 dependencies = [
  "bincode",
  "bitflags",
@@ -1113,7 +1112,7 @@ dependencies = [
  "flate2",
  "fnv",
  "lazy_static",
- "lazycell",
+ "once_cell",
  "onig",
  "plist",
  "regex-syntax",

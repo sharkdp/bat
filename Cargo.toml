@@ -72,9 +72,9 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "4.6.0"
-default-features = false
-features = ["parsing"]
+#path = "/home/martin/src/syntect"
+git = "https://github.com/Enselic/syntect.git"
+rev = "5ac373b295"
 
 [dependencies.clap]
 version = "2.33"
