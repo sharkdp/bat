@@ -153,9 +153,11 @@ impl HighlightingAssets {
     }
 
     /// Detect the syntax based on, in order:
-    ///  1. Syntax mappings (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
-    ///  2. The file name (e.g. `Dockerfile`)
-    ///  3. The file name extension (e.g. `.rs`)
+    ///  1. No syntax match found. Fall back to other methods to detect syntax
+    ///  2. Syntax mappings (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
+    ///  3. The file name (e.g. `Dockerfile`)
+    ///  4. Map extension to unknown (e.g. `*.conf` -> `MappingTarget::MapExtensionToUnknown`)
+    ///  5. The file name extension (e.g. `.rs`)
     ///
     /// When detecting syntax based on syntax mappings, the full path is taken
     /// into account. When detecting syntax based on file name, no regard is
@@ -550,6 +552,17 @@ mod tests {
             .insert("*.h", MappingTarget::MapTo("C"))
             .ok();
         assert_eq!(test.syntax_for_file("test.h"), "C");
+    }
+
+    #[test]
+    fn syntax_detection_with_unknown_mapping() {
+        let mut test = SyntaxDetectionTest::new();
+
+        assert_eq!(test.syntax_for_file("test.config"), "!no syntax!");
+        test.syntax_mapping
+            .insert("*.test", MappingTarget::MapExtensionToUnknown)
+            .ok();
+        assert_eq!(test.syntax_for_file("test.test"), "!no syntax!");
     }
 
     #[test]
