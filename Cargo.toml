@@ -33,7 +33,7 @@ minimal-application = [
     "wild",
 ]
 git = ["git2"] # Support indicating git modifications
-paging = ["shell-words"] # Support applying a pager on the output
+paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
 # Add "syntect/plist-load" when https://github.com/trishume/syntect/pull/345 reaches us
 build-assets = ["syntect/yaml-load", "syntect/dump-create"]
 
@@ -64,7 +64,7 @@ path_abs = { version = "0.5", default-features = false }
 clircle = "0.3"
 bugreport = { version = "0.4", optional = true }
 dirs-next = { version = "2.0.0", optional = true }
-grep-cli = "0.1.6"
+grep-cli = { version = "0.1.6", optional = true }
 
 [dependencies.git2]
 version = "0.13"
