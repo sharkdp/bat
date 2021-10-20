@@ -6,14 +6,20 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MappingTarget<'a> {
+    /// For mapping a path to a specifc syntax.
     MapTo(&'a str),
+
+    /// For mapping a path (typically an extension-less file name) to an unknown
+    /// syntax. This typically means later using the contents of the first line
+    /// of the file to determine what syntax to use.
     MapToUnknown,
-    /// Maps a file extension (e.g. `*.conf`) to an unknown syntax. This
-    /// typically means using the contents of the first line of the file to
-    /// determine what syntax to use. However, if a syntax handles a file name
-    /// that happens to have the given file extension (e.g. `resolv.conf`), then
-    /// that association will have higher precedence, and the mapping will be
-    /// ignored.
+
+    /// For mapping a file extension (e.g. `*.conf`) to an unknown syntax. This
+    /// typically means later using the contents of the first line of the file
+    /// to determine what syntax to use. However, if a syntax handles a file
+    /// name that happens to have the given file extension (e.g. `resolv.conf`),
+    /// then that association will have higher precedence, and the mapping will
+    /// be ignored.
     MapExtensionToUnknown,
 }
 
