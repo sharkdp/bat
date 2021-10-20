@@ -45,7 +45,7 @@ pub fn build(
 
     let syntax_set = syntax_set_builder.build();
 
-    print_unlinked_contexts(&syntax_set);
+    print_unlinked_contexts(&syntax_set)?;
 
     write_assets(
         &theme_set,
@@ -109,13 +109,42 @@ fn build_syntax_set_builder(
     Ok(syntax_set_builder)
 }
 
-fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
+fn print_unlinked_contexts(syntax_set: &SyntaxSet) -> Result<()> {
     let missing_contexts = syntax_set.find_unlinked_contexts();
-    if !missing_contexts.is_empty() {
-        println!("Some referenced contexts could not be found!");
-        for context in missing_contexts {
+    if missing_contexts.is_empty() {
+        return Ok(());
+    }
+
+    // Allowed since they already exist
+    let mut allowed = std::collections::BTreeSet::<String>::new();
+    for a in [
+        "Syntax 'Svelte' with scope 'text.html.svelte' has unresolved context reference ByScope { scope: <source.livescript>, sub_context: None }",
+        "Syntax 'Svelte' with scope 'text.html.svelte' has unresolved context reference ByScope { scope: <source.postcss>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <source.livescript>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <source.postcss>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <source.sss>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <text.jade>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <text.pug>, sub_context: None }",
+        "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <text.slm>, sub_context: None }",
+    ] {
+        allowed.insert(a.to_string());
+    }
+
+    println!("Some referenced contexts could not be found!");
+    let mut found_problem = false;
+    for context in missing_contexts {
+        if allowed.contains(&context) {
             println!("- {}", context);
+        } else {
+            eprintln!("- FATAL: {}", context);
+            found_problem = true;
         }
+    }
+
+    if !found_problem {
+        Ok(())
+    } else {
+        Err("Incomplete syntax definition found! See FATAL errors above. This can crash bat and is not allowed.".into())
     }
 }
 
