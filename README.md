@@ -205,7 +205,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 If your Ubuntu/Debian installation is new enough you can simply run:
 
 ```bash
-apt install bat
+sudo apt install bat
 ```
 
 **Important**: If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
