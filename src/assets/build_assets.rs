@@ -117,7 +117,7 @@ fn print_unlinked_contexts(syntax_set: &SyntaxSet) -> Result<()> {
 
     // Allowed since they already exist
     let mut allowed = std::collections::BTreeSet::<String>::new();
-    for a in [
+    for a in &[
         "Syntax 'Svelte' with scope 'text.html.svelte' has unresolved context reference ByScope { scope: <source.livescript>, sub_context: None }",
         "Syntax 'Svelte' with scope 'text.html.svelte' has unresolved context reference ByScope { scope: <source.postcss>, sub_context: None }",
         "Syntax 'Vue Component' with scope 'text.html.vue' has unresolved context reference ByScope { scope: <source.livescript>, sub_context: None }",
