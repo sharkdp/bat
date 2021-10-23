@@ -26,7 +26,6 @@ application = [
 minimal-application = [
     "atty",
     "clap",
-    "dirs-next",
     "lazy_static",
     "paging",
     "regex-onig",
@@ -63,7 +62,7 @@ semver = "1.0"
 path_abs = { version = "0.5", default-features = false }
 clircle = "0.3"
 bugreport = { version = "0.4", optional = true }
-dirs-next = { version = "2.0.0", optional = true }
+dirs-next = "2.0.0"
 grep-cli = { version = "0.1.6", optional = true }
 
 [dependencies.git2]
