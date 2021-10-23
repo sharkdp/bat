@@ -1,8 +1,6 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use lazy_static::lazy_static;
-
 /// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.
 /// The `XDG_CACHE_HOME` environment variable is checked first. `BAT_CONFIG_DIR`
 ///  is then checked before the `XDG_CONFIG_HOME` environment variable.
@@ -13,7 +11,7 @@ pub struct BatProjectDirs {
 }
 
 impl BatProjectDirs {
-    fn new() -> Option<BatProjectDirs> {
+    pub fn new() -> Option<BatProjectDirs> {
         let cache_dir = BatProjectDirs::get_cache_dir()?;
 
         // Checks whether or not $BAT_CONFIG_DIR exists. If it doesn't, set our config dir
@@ -66,9 +64,4 @@ impl BatProjectDirs {
     pub fn config_dir(&self) -> &Path {
         &self.config_dir
     }
-}
-
-lazy_static! {
-    pub static ref PROJECT_DIRS: BatProjectDirs =
-        BatProjectDirs::new().expect("Could not get home directory");
 }

@@ -4,7 +4,6 @@ mod app;
 mod assets;
 mod clap_app;
 mod config;
-mod directories;
 mod input;
 
 use std::collections::{HashMap, HashSet};
@@ -21,8 +20,7 @@ use crate::{
     config::{config_file, generate_config_file},
 };
 
-use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir};
-use directories::PROJECT_DIRS;
+use assets::{assets_from_cache_or_binary, cache_dir, clear_assets, config_dir, PROJECT_DIRS};
 use globset::GlobMatcher;
 
 use bat::{

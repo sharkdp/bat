@@ -4,7 +4,7 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::PathBuf;
 
-use crate::directories::PROJECT_DIRS;
+use crate::assets::PROJECT_DIRS;
 
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")

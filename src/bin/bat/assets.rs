@@ -2,12 +2,16 @@ use std::borrow::Cow;
 use std::fs;
 
 use clap::crate_version;
+use lazy_static::lazy_static;
 
-use crate::directories::PROJECT_DIRS;
-
-use bat::assets::HighlightingAssets;
+use bat::assets::{BatProjectDirs, HighlightingAssets};
 use bat::assets_metadata::AssetsMetadata;
 use bat::error::*;
+
+lazy_static! {
+    pub static ref PROJECT_DIRS: BatProjectDirs =
+        BatProjectDirs::new().expect("Could not get home directory");
+}
 
 pub fn config_dir() -> Cow<'static, str> {
     PROJECT_DIRS.config_dir().to_string_lossy()
