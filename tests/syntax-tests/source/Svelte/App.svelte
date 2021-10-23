@@ -26,6 +26,10 @@
 	onMount(hashchange);
 </script>
 
+<script type="text/livescript">
+    // This block is a regression test for a bat panic when a LiveScript syntax definition is missing
+</script>
+
 <style>
 	main {
 		position: relative;
