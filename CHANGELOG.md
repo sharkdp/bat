@@ -20,6 +20,7 @@
 
 - Add PowerShell completion, see #1826 (@rashil2000)
 - Minimum supported Rust version (MSRV) bumped to 1.46
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Syntaxes
 
