@@ -229,6 +229,14 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Clear highlighted lines added by [`PrettyPrinter::highlight`] and
+    /// [`PrettyPrinter::highlight_range`]. This is useful when reusing a
+    /// `PrettyPrinter` instance for multiple different ranges.
+    pub fn clear_highlights(&mut self) -> &mut Self {
+        self.highlighted_lines.clear();
+        self
+    }
+
     /// Specify the highlighting theme
     pub fn theme(&mut self, theme: impl AsRef<str>) -> &mut Self {
         self.config.theme = theme.as_ref().to_owned();
