@@ -6,7 +6,7 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MappingTarget<'a> {
-    /// For mapping a path to a specifc syntax.
+    /// For mapping a path to a specific syntax.
     MapTo(&'a str),
 
     /// For mapping a path (typically an extension-less file name) to an unknown
