@@ -146,6 +146,19 @@ fn test_parse_minus_success() {
 }
 
 #[test]
+fn test_parse_minus_edge_cases_success() {
+    let range = LineRange::from("5:-4").expect("Shouldn't fail on test!");
+    assert_eq!(1, range.lower);
+    assert_eq!(5, range.upper);
+    let range = LineRange::from("5:-5").expect("Shouldn't fail on test!");
+    assert_eq!(0, range.lower);
+    assert_eq!(5, range.upper);
+    let range = LineRange::from("5:-100").expect("Shouldn't fail on test!");
+    assert_eq!(0, range.lower);
+    assert_eq!(5, range.upper);
+}
+
+#[test]
 fn test_parse_minus_fail() {
     let range = LineRange::from("40:-z");
     assert!(range.is_err());
