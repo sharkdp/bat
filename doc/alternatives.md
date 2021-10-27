@@ -1,8 +1,6 @@
 # Alternatives
 
-The following table tries to give an overview *from `bat`s perspective*, i.e. we only compare
-categories which are relevant for `bat`. Some of these projects have completely different goals and
-if you are not looking for a program like `bat`, this comparison might not be for you.
+Based on this table, we only compare categories that are *relevant to `bat`s*, which means that some of these projects have completely different goals. If you are not looking for a program like `bat`, you might not find this comparison to be useful.
 
 |                                              | bat                                                                 | [pygments](http://pygments.org/) | [highlight](http://www.andre-simon.de/doku/highlight/highlight.php) | [ccat](https://github.com/jingweno/ccat) | [source-highlight](https://www.gnu.org/software/src-highlite/) | [hicat](https://github.com/rstacruz/hicat)          | [coderay](https://github.com/rubychan/coderay)      | [rouge](https://github.com/jneen/rouge)             |
 |----------------------------------------------|---------------------------------------------------------------------|----------------------------------|---------------------------------------------------------------------|------------------------------------------|----------------------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------|-----------------------------------------------------|
@@ -16,9 +14,6 @@ if you are not looking for a program like `bat`, this comparison might not be fo
 | Execution time [ms] (`miniz.c`)              | 66                                                                  | 656                              | 26                                                                  | 8                                        | 53                                                             | 141                                                 | 75                                                  | 254                                                 |
 | Execution time [ms] (370 kB XML file)        | 238                                                                 | 487                              | 129                                                                 | 111                                      | 110                                                            | 339                                                 | 147                                                 | 359                                                 |
 
-If you think that some entries in this table are outdated or wrong, please open a ticket or pull
-request.
-
-Some other alternatives that are also related, but not yet included in the table:
+You may open a ticket or a pull request if you believe that some entries in this table are outdated or incorrect. Some alternatives related to this table, but not yet included:
 - [lesspipe](https://github.com/wofr06/lesspipe)
 - [vimpager](https://github.com/rkitover/vimpager)
