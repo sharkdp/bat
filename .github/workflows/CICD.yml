@@ -96,7 +96,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --locked --release -- --ignored
+        args: --locked --release --test assets -- --ignored
     - name: Syntax highlighting regression test
       run: tests/syntax-tests/regression_test.sh
     - name: List of languages
@@ -105,6 +105,32 @@ jobs:
       run: bat --list-themes
     - name: Test custom assets
       run: tests/syntax-tests/test_custom_assets.sh
+
+  test_with_system_config:
+    name: Run tests with system wide configuration
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v2
+    - name: Prepare environment variables
+      run: |
+        echo "BAT_SYSTEM_CONFIG_PREFIX=$GITHUB_WORKSPACE/tests/examples/system_config" >> $GITHUB_ENV
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        default: true
+        profile: minimal
+    - name: Build and install bat
+      uses: actions-rs/cargo@v1
+      with:
+        command: install
+        args: --locked --path .
+    - name: Run unit tests
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --locked --test system_wide_config -- --ignored
 
   documentation:
     name: Documentation
