@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use std::fs;
+use std::io;
 
 use bat::config::Config;
 
@@ -54,6 +55,14 @@ pub fn assets_from_cache_or_binary(config: &Config) -> Result<HighlightingAssets
 
 fn clear_asset(filename: &str, description: &str) {
     print!("Clearing {} ... ", description);
-    fs::remove_file(PROJECT_DIRS.cache_dir().join(filename)).ok();
-    println!("okay");
+    let path = PROJECT_DIRS.cache_dir().join(filename);
+    match fs::remove_file(&path) {
+        Err(err) if err.kind() == io::ErrorKind::NotFound => {
+            println!("skipped (not present)");
+        }
+        Err(err) => {
+            println!("could not remove the cache file {:?}: {}", &path, err);
+        }
+        Ok(_) => println!("okay"),
+    }
 }

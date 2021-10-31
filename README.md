@@ -12,7 +12,11 @@
   <a href="#installation">Installation</a> •
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a><br>
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="doc/README-ja.md">日本語</a>] [<a href="doc/README-ko.md">한국어</a>] [<a href="doc/README-ru.md">Русский</a>]
+  [English]
+  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="doc/README-ja.md">日本語</a>]
+  [<a href="doc/README-ko.md">한국어</a>]
+  [<a href="doc/README-ru.md">Русский</a>]
 </p>
 
 ### Syntax highlighting
@@ -201,7 +205,7 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 If your Ubuntu/Debian installation is new enough you can simply run:
 
 ```bash
-apt install bat
+sudo apt install bat
 ```
 
 **Important**: If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
@@ -292,6 +296,14 @@ or build it on your own from the FreeBSD ports:
 ```bash
 cd /usr/ports/textproc/bat
 make install
+```
+
+### On OpenBSD
+
+You can install `bat` package using [`pkg_add(1)`](https://man.openbsd.org/pkg_add.1):
+
+```bash
+pkg_add bat
 ```
 
 ### Via nix

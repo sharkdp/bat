@@ -153,9 +153,12 @@ impl HighlightingAssets {
     }
 
     /// Detect the syntax based on, in order:
-    ///  1. Syntax mappings (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
+    ///  1. Syntax mappings with [MappingTarget::MapTo] and [MappingTarget::MapToUnknown]
+    ///     (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
     ///  2. The file name (e.g. `Dockerfile`)
-    ///  3. The file name extension (e.g. `.rs`)
+    ///  3. Syntax mappings with [MappingTarget::MapExtensionToUnknown]
+    ///     (e.g. `*.conf`)
+    ///  4. The file name extension (e.g. `.rs`)
     ///
     /// When detecting syntax based on syntax mappings, the full path is taken
     /// into account. When detecting syntax based on file name, no regard is
@@ -165,9 +168,9 @@ impl HighlightingAssets {
     ///
     /// Returns [Error::UndetectedSyntax] if it was not possible detect syntax
     /// based on path/file name/extension (or if the path was mapped to
-    /// [MappingTarget::MapToUnknown]). In this case it is appropriate to fall
-    /// back to other methods to detect syntax. Such as using the contents of
-    /// the first line of the file.
+    /// [MappingTarget::MapToUnknown] or [MappingTarget::MapExtensionToUnknown]).
+    /// In this case it is appropriate to fall back to other methods to detect
+    /// syntax. Such as using the contents of the first line of the file.
     ///
     /// Returns [Error::UnknownSyntax] if a syntax mapping exist, but the mapped
     /// syntax does not exist.
@@ -177,21 +180,35 @@ impl HighlightingAssets {
         config: &Config,
     ) -> Result<SyntaxReferenceInSet> {
         let path = path.as_ref();
-        match config.syntax_mapping.get_syntax_for(path) {
-            Some(MappingTarget::MapToUnknown) => {
+
+        let syntax_match = config.syntax_mapping.get_syntax_for(path);
+        let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
+
+        if let Some(MappingTarget::MapToUnknown) = syntax_match {
+            return Err(Error::UndetectedSyntax(path.to_string_lossy().into()));
+        }
+
+        if let Some(MappingTarget::MapTo(syntax_name)) = syntax_match {
+            return self
+                .find_syntax_by_name(syntax_name)?
+                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
+        }
+
+        let file_name = path.file_name().unwrap_or_default();
+
+        match (
+            self.get_syntax_for_file_name(file_name, &ignored_suffixes)?,
+            syntax_match,
+        ) {
+            (Some(syntax), _) => Ok(syntax),
+
+            (_, Some(MappingTarget::MapExtensionToUnknown)) => {
                 Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
             }
 
-            Some(MappingTarget::MapTo(syntax_name)) => self
-                .find_syntax_by_name(syntax_name)?
-                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
-
-            None => {
-                let file_name = path.file_name().unwrap_or_default();
-                let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
-                self.get_extension_syntax(file_name, &ignored_suffixes)?
-                    .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
-            }
+            _ => self
+                .get_syntax_for_file_extension(file_name, &ignored_suffixes)?
+                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
         }
     }
 
@@ -264,20 +281,33 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn get_extension_syntax(
+    fn get_syntax_for_file_name(
         &self,
         file_name: &OsStr,
         ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
         if syntax.is_none() {
-            syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
+            syntax =
+                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                    // Note: recursion
+                    self.get_syntax_for_file_name(stripped_file_name, ignored_suffixes)
+                })?;
         }
+        Ok(syntax)
+    }
+
+    fn get_syntax_for_file_extension(
+        &self,
+        file_name: &OsStr,
+        ignored_suffixes: &IgnoredSuffixes,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
+        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         if syntax.is_none() {
             syntax =
                 ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
                     // Note: recursion
-                    self.get_extension_syntax(stripped_file_name, ignored_suffixes)
+                    self.get_syntax_for_file_extension(stripped_file_name, ignored_suffixes)
                 })?;
         }
         Ok(syntax)
@@ -579,6 +609,45 @@ mod tests {
             .insert("*.h", MappingTarget::MapTo("C"))
             .ok();
         assert_eq!(test.syntax_for_file("test.h", &config), "C");
+    }
+
+    #[test]
+    fn syntax_detection_with_extension_mapping_to_unknown() {
+        let test = SyntaxDetectionTest::new();
+        let mut config = Config::default();
+        config.syntax_mapping = SyntaxMapping::builtin();
+
+        // Normally, a CMakeLists.txt file shall use the CMake syntax, even if it is
+        // a bash script in disguise
+        assert_eq!(
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash", &config),
+            "CMake"
+        );
+
+        // Other .txt files shall use the Plain Text syntax
+        assert_eq!(
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash", &config),
+            "Plain Text"
+        );
+
+        // If we setup MapExtensionToUnknown on *.txt, the match on the full
+        // file name of "CMakeLists.txt" shall have higher prio, and CMake shall
+        // still be used for it
+        config
+            .syntax_mapping
+            .insert("*.txt", MappingTarget::MapExtensionToUnknown)
+            .ok();
+        assert_eq!(
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash", &config),
+            "CMake"
+        );
+
+        // However, for *other* files with a .txt extension, first-line fallback
+        // shall now be used
+        assert_eq!(
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash", &config),
+            "Bourne Again Shell (bash)"
+        );
     }
 
     #[test]

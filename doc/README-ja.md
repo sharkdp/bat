@@ -1,7 +1,6 @@
 <p align="center">
   <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
-  <a href="https://travis-ci.org/sharkdp/bat"><img src="https://travis-ci.org/sharkdp/bat.svg?branch=master" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf?svg=true"></a>
+  <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
   シンタックスハイライトとGitとの連携機能付きの <i>cat(1)</i> クローン。
@@ -12,8 +11,12 @@
   <a href="#使い方">使い方</a> •
   <a href="#インストール">インストール</a> •
   <a href="#カスタマイズ">カスタマイズ</a> •
-  <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a> •
-  翻訳 [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="README-ja.md">日本語</a>][<a href="README-ko.md">한국어</a>]
+  <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a><br>
+  [<a href="../README.md">English</a>]
+  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [日本語]
+  [<a href="README-ko.md">한국어</a>]
+  [<a href="README-ru.md">Русский</a>]
 </p>
 
 ### シンタックスハイライト
