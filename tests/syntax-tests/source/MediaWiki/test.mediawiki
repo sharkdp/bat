@@ -1,0 +1,37 @@
+= Heading 1 =
+== Heading 2 ==
+=== Heading 3 ===
+==== Heading 4 ====
+===== Heading 5 =====
+====== Heading 6 ======
+
+== Lists ==
+* Unordered
+* lists
+** with nested
+*** elements
+
+# Ordered
+# lists
+## with nested
+### elements
+
+; Description : lists with single definition
+
+; Description
+: lists
+: with more
+: definitions
+
+== Text formatting ==
+''italic text''
+
+'''bold text'''
+
+'''''bold italic text'''''
+
+== Links ==
+[https://www.wikipedia.org/ Wikipedia]
+
+== Images ==
+[[File:MediaWiki-2020-logo.svg|thumb|MediaWiki logo]]

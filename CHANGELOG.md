@@ -33,6 +33,7 @@
 - Added support for `slim` syntax, see #1693 (@mfinelli)
 - Racket, see #1884 (@jubnzv)
 - LiveScript, see #1915 (@Enselic)
+- MediaWiki, see #1925 (@sorairolake)
 
 ## New themes
 
