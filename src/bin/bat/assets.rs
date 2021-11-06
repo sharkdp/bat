@@ -2,8 +2,6 @@ use std::borrow::Cow;
 use std::fs;
 use std::io;
 
-use bat::config::Config;
-
 use clap::crate_version;
 
 use crate::directories::PROJECT_DIRS;
@@ -27,7 +25,7 @@ pub fn clear_assets() {
     clear_asset("metadata.yaml", "metadata file");
 }
 
-pub fn assets_from_cache_or_binary(config: &Config) -> Result<HighlightingAssets> {
+pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<HighlightingAssets> {
     let cache_dir = PROJECT_DIRS.cache_dir();
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
@@ -45,7 +43,7 @@ pub fn assets_from_cache_or_binary(config: &Config) -> Result<HighlightingAssets
         }
     }
 
-    let custom_assets = if config.use_custom_assets {
+    let custom_assets = if use_custom_assets {
         HighlightingAssets::from_cache(cache_dir).ok()
     } else {
         None
