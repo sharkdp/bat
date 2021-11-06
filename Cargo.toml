@@ -46,7 +46,7 @@ atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
 ansi_colours = "^1.0"
 bincode = "1.0"
-console = "0.14.1"
+console = "0.15.0"
 flate2 = "1.0"
 lazy_static = { version = "1.4", optional = true }
 lazycell = "1.0"
@@ -83,9 +83,9 @@ default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dev-dependencies]
-assert_cmd = "2.0.1"
+assert_cmd = "2.0.2"
 serial_test = "0.5.1"
-predicates = "2.0.2"
+predicates = "2.0.3"
 wait-timeout = "0.2.0"
 tempfile = "3.2.0"
 

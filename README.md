@@ -42,7 +42,7 @@ characters:
 
 ### Automatic paging
 
-By default, `bat` pipes its own output to a pager (e.g `less`) if the output is too large for one screen.
+By default, `bat` pipes its own output to a pager (e.g. `less`) if the output is too large for one screen.
 If you would rather `bat` work like `cat` all the time (never page output), you can set `--paging=never` as an option, either on the command line or in your configuration file.
 If you intend to alias `cat` to `bat` in your shell configuration, you can use `alias cat='bat --paging=never'` to preserve the default behavior.
 
@@ -103,19 +103,23 @@ bat f - g  # output 'f', then stdin, then 'g'.
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
 use `bat`s `--color=always` option to force colorized output. You can also use `--line-range`
 option to restrict the load times for long files:
+
 ```bash
 fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
 ```
-For more information, see [`fzf`s `README`](https://github.com/junegunn/fzf#preview-window).
+
+For more information, see [`fzf`'s `README`](https://github.com/junegunn/fzf#preview-window).
 
 #### `find` or `fd`
 
 You can use the `-exec` option of `find` to preview all search results with `bat`:
+
 ```bash
 find … -exec bat {} +
 ```
 
 If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`/`--exec-batch` option to do the same:
+
 ```bash
 fd … -X bat
 ```
@@ -131,9 +135,11 @@ batgrep needle src/
 #### `tail -f`
 
 `bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
+
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
+
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
@@ -141,6 +147,7 @@ explicitly (`-l log`), as it can not be auto-detected in this case.
 
 You can combine `bat` with `git show` to view an older version of a given file with proper syntax
 highlighting:
+
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
@@ -177,7 +184,7 @@ bat main.cpp | xclip
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
-(replace `bat` by `batcat` if you are on Debian or Ubuntu)
+(replace `bat` with `batcat` if you are on Debian or Ubuntu)
 
 It might also be necessary to set `MANROFFOPT="-c"` if you experience
 formatting problems.
@@ -585,7 +592,7 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
 on your operating system. To get the default path for your system, call
-```
+```bash
 bat --config-file
 ```
 
