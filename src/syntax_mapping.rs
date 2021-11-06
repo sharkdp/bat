@@ -34,7 +34,7 @@ impl<'a> SyntaxMapping<'a> {
         Default::default()
     }
 
-    pub fn builtin() -> SyntaxMapping<'a> {
+    pub fn builtin(ignored_suffixes: Vec<String>) -> SyntaxMapping<'a> {
         let mut mapping = Self::empty();
         mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
         mapping.insert("*.fs", MappingTarget::MapTo("F#")).unwrap();
@@ -143,6 +143,8 @@ impl<'a> SyntaxMapping<'a> {
                 .ok();
         }
 
+        mapping.ignored_suffixes = IgnoredSuffixes::new(ignored_suffixes);
+
         mapping
     }
 
@@ -197,7 +199,7 @@ fn basic() {
 
 #[test]
 fn user_can_override_builtin_mappings() {
-    let mut map = SyntaxMapping::builtin();
+    let mut map = SyntaxMapping::builtin(vec![]);
 
     assert_eq!(
         map.get_syntax_for("/etc/profile"),
@@ -213,7 +215,7 @@ fn user_can_override_builtin_mappings() {
 
 #[test]
 fn builtin_mappings() {
-    let map = SyntaxMapping::builtin();
+    let map = SyntaxMapping::builtin(vec![]);
 
     assert_eq!(
         map.get_syntax_for("/path/to/build"),

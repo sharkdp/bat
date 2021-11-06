@@ -19,7 +19,6 @@ use bat::{
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
-    ignored_suffixes::IgnoredSuffixes,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
@@ -106,8 +105,7 @@ impl App {
             _ => unreachable!("other values for --paging are not allowed"),
         };
 
-        let mut syntax_mapping = SyntaxMapping::builtin();
-        syntax_mapping.ignored_suffixes = IgnoredSuffixes::new(
+        let mut syntax_mapping = SyntaxMapping::builtin(
             self.matches
                 .values_of("ignored-suffix")
                 .unwrap_or_default()
