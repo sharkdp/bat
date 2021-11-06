@@ -33,6 +33,20 @@ impl IgnoredSuffixes {
         IgnoredSuffixes { values }
     }
 
+    pub fn strip_suffix<'a>(&self, file_name: &'a str) -> Option<&'a str> {
+        for suffix in self
+            .values
+            .iter()
+            .map(|v| v.as_str())
+            .chain(IGNORED_SUFFIXES.iter().copied())
+        {
+            if let Some(stripped_file_name) = file_name.strip_suffix(suffix) {
+                return Some(stripped_file_name);
+            }
+        }
+        None
+    }
+
     /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
     /// then try again without it.
     pub fn try_with_stripped_suffix<'a, T, F>(
@@ -43,21 +57,12 @@ impl IgnoredSuffixes {
     where
         F: Fn(&'a OsStr) -> Result<Option<T>>,
     {
-        let mut from_stripped = None;
         if let Some(file_str) = Path::new(file_name).to_str() {
-            for suffix in self
-                .values
-                .iter()
-                .map(|v| v.as_str())
-                .chain(IGNORED_SUFFIXES.iter().copied())
-            {
-                if let Some(stripped_filename) = file_str.strip_suffix(suffix) {
-                    from_stripped = func(OsStr::new(stripped_filename))?;
-                    break;
-                }
+            if let Some(stripped_file_name) = self.strip_suffix(file_str) {
+                return func(OsStr::new(stripped_file_name));
             }
         }
-        Ok(from_stripped)
+        Ok(None)
     }
 }
 

@@ -107,7 +107,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
             }
 
             let test_file = Path::new("test").with_extension(extension);
-            let syntax_in_set = assets.get_syntax_for_path(test_file, config);
+            let syntax_in_set = assets.get_syntax_for_path(test_file, &config.syntax_mapping);
             matches!(syntax_in_set, Ok(syntax_in_set) if syntax_in_set.syntax.name == lang_name)
         });
     }

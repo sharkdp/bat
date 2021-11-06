@@ -9,12 +9,11 @@ use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use path_abs::PathAbs;
 
-use crate::bat_warning;
-use crate::config::Config;
 use crate::error::*;
 use crate::ignored_suffixes::IgnoredSuffixes;
 use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::MappingTarget;
+use crate::{bat_warning, SyntaxMapping};
 
 use minimal_assets::*;
 use serialized_syntax_set::*;
@@ -145,9 +144,9 @@ impl HighlightingAssets {
     pub fn syntax_for_file_name(
         &self,
         file_name: impl AsRef<Path>,
-        config: &Config,
+        mapping: &SyntaxMapping,
     ) -> Option<&SyntaxReference> {
-        self.get_syntax_for_path(file_name, config)
+        self.get_syntax_for_path(file_name, mapping)
             .ok()
             .map(|syntax_in_set| syntax_in_set.syntax)
     }
@@ -177,12 +176,11 @@ impl HighlightingAssets {
     pub fn get_syntax_for_path(
         &self,
         path: impl AsRef<Path>,
-        config: &Config,
+        mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         let path = path.as_ref();
 
-        let syntax_match = config.syntax_mapping.get_syntax_for(path);
-        let ignored_suffixes = IgnoredSuffixes::new(config.ignored_suffixes.clone());
+        let syntax_match = mapping.get_syntax_for(path);
 
         if let Some(MappingTarget::MapToUnknown) = syntax_match {
             return Err(Error::UndetectedSyntax(path.to_string_lossy().into()));
@@ -197,7 +195,7 @@ impl HighlightingAssets {
         let file_name = path.file_name().unwrap_or_default();
 
         match (
-            self.get_syntax_for_file_name(file_name, &ignored_suffixes)?,
+            self.get_syntax_for_file_name(file_name, &mapping.ignored_suffixes)?,
             syntax_match,
         ) {
             (Some(syntax), _) => Ok(syntax),
@@ -207,7 +205,7 @@ impl HighlightingAssets {
             }
 
             _ => self
-                .get_syntax_for_file_extension(file_name, &ignored_suffixes)?
+                .get_syntax_for_file_extension(file_name, &mapping.ignored_suffixes)?
                 .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
         }
     }
@@ -233,7 +231,7 @@ impl HighlightingAssets {
         &self,
         language: Option<&str>,
         input: &mut OpenedInput,
-        config: &Config,
+        mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
             let syntax_set = self.get_syntax_set_by_name(language)?;
@@ -247,7 +245,7 @@ impl HighlightingAssets {
         let path_syntax = if let Some(path) = path {
             self.get_syntax_for_path(
                 PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf()),
-                config,
+                mapping,
             )
         } else {
             Err(Error::UndetectedSyntax("[unknown]".into()))
@@ -273,9 +271,18 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn find_syntax_by_extension(&self, e: Option<&OsStr>) -> Result<Option<SyntaxReferenceInSet>> {
+    fn find_syntax_by_extension(
+        &self,
+        e: Option<&OsStr>,
+        ignored_suffixes: &IgnoredSuffixes,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let syntax_set = self.get_syntax_set()?;
-        let extension = e.and_then(|x| x.to_str()).unwrap_or_default();
+        let mut extension = e.and_then(|x| x.to_str()).unwrap_or_default();
+
+        if let Some(stripped_extension) = ignored_suffixes.strip_suffix(extension) {
+            extension = stripped_extension;
+        }
+
         Ok(syntax_set
             .find_syntax_by_extension(extension)
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
@@ -286,7 +293,7 @@ impl HighlightingAssets {
         file_name: &OsStr,
         ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet>> {
-        let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
+        let mut syntax = self.find_syntax_by_extension(Some(file_name), ignored_suffixes)?;
         if syntax.is_none() {
             syntax =
                 ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
@@ -302,7 +309,8 @@ impl HighlightingAssets {
         file_name: &OsStr,
         ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet>> {
-        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
+        let mut syntax =
+            self.find_syntax_by_extension(Path::new(file_name).extension(), ignored_suffixes)?;
         if syntax.is_none() {
             syntax =
                 ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
@@ -385,17 +393,18 @@ mod tests {
     use tempfile::TempDir;
 
     use crate::input::Input;
-    use crate::SyntaxMapping;
 
-    struct SyntaxDetectionTest {
+    struct SyntaxDetectionTest<'a> {
         assets: HighlightingAssets,
+        pub syntax_mapping: SyntaxMapping<'a>,
         pub temp_dir: TempDir,
     }
 
-    impl SyntaxDetectionTest {
+    impl<'a> SyntaxDetectionTest<'a> {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
+                syntax_mapping: SyntaxMapping::builtin(),
                 temp_dir: TempDir::new().expect("creation of temporary directory"),
             }
         }
@@ -404,10 +413,10 @@ mod tests {
             &self,
             language: Option<&str>,
             input: &mut OpenedInput,
-            config: &Config,
+            mapping: &SyntaxMapping,
         ) -> String {
             self.assets
-                .get_syntax(language, input, config)
+                .get_syntax(language, input, mapping)
                 .map(|syntax_in_set| syntax_in_set.syntax.name.clone())
                 .unwrap_or_else(|_| "!no syntax!".to_owned())
         }
@@ -416,7 +425,6 @@ mod tests {
             &self,
             file_name: &OsStr,
             first_line: &str,
-            config: &Config,
         ) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             {
@@ -428,64 +436,42 @@ mod tests {
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, &config)
+            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
         }
 
-        fn syntax_for_file_with_content_os(
-            &self,
-            file_name: &OsStr,
-            first_line: &str,
-            config: &Config,
-        ) -> String {
+        fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
             let file_path = self.temp_dir.path().join(file_name);
             let input = Input::from_reader(Box::new(BufReader::new(first_line.as_bytes())))
                 .with_name(Some(&file_path));
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, config)
+            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
         }
 
         #[cfg(unix)]
-        fn syntax_for_file_os(&self, file_name: &OsStr, config: &Config) -> String {
-            self.syntax_for_file_with_content_os(file_name, "", config)
+        fn syntax_for_file_os(&self, file_name: &OsStr) -> String {
+            self.syntax_for_file_with_content_os(file_name, "")
         }
 
-        fn syntax_for_file_with_content(
-            &self,
-            file_name: &str,
-            first_line: &str,
-            config: &Config,
-        ) -> String {
-            self.syntax_for_file_with_content_os(OsStr::new(file_name), first_line, config)
+        fn syntax_for_file_with_content(&self, file_name: &str, first_line: &str) -> String {
+            self.syntax_for_file_with_content_os(OsStr::new(file_name), first_line)
         }
 
-        fn syntax_for_file(&self, file_name: &str, config: &Config) -> String {
-            self.syntax_for_file_with_content(file_name, "", config)
+        fn syntax_for_file(&self, file_name: &str) -> String {
+            self.syntax_for_file_with_content(file_name, "")
         }
 
-        fn syntax_for_stdin_with_content(
-            &self,
-            file_name: &str,
-            content: &[u8],
-            config: &Config,
-        ) -> String {
+        fn syntax_for_stdin_with_content(&self, file_name: &str, content: &[u8]) -> String {
             let input = Input::stdin().with_name(Some(file_name));
             let mut opened_input = input.open(content, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, config)
+            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
         }
 
-        fn syntax_is_same_for_inputkinds(
-            &self,
-            file_name: &str,
-            content: &str,
-            config: &Config,
-        ) -> bool {
-            let as_file =
-                self.syntax_for_real_file_with_content_os(file_name.as_ref(), content, config);
-            let as_reader =
-                self.syntax_for_file_with_content_os(file_name.as_ref(), content, &config);
+        fn syntax_is_same_for_inputkinds(&self, file_name: &str, content: &str) -> bool {
+            let as_file = self.syntax_for_real_file_with_content_os(file_name.as_ref(), content);
+            let as_reader = self.syntax_for_file_with_content_os(file_name.as_ref(), content);
             let consistent = as_file == as_reader;
             // TODO: Compare StdIn somehow?
 
@@ -503,23 +489,16 @@ mod tests {
     #[test]
     fn syntax_detection_basic() {
         let test = SyntaxDetectionTest::new();
-        let config = Config::default();
 
-        assert_eq!(test.syntax_for_file("test.rs", &config), "Rust");
-        assert_eq!(test.syntax_for_file("test.cpp", &config), "C++");
+        assert_eq!(test.syntax_for_file("test.rs"), "Rust");
+        assert_eq!(test.syntax_for_file("test.cpp"), "C++");
+        assert_eq!(test.syntax_for_file("test.build"), "NAnt Build File");
         assert_eq!(
-            test.syntax_for_file("test.build", &config),
-            "NAnt Build File"
-        );
-        assert_eq!(
-            test.syntax_for_file("PKGBUILD", &config),
+            test.syntax_for_file("PKGBUILD"),
             "Bourne Again Shell (bash)"
         );
-        assert_eq!(
-            test.syntax_for_file(".bashrc", &config),
-            "Bourne Again Shell (bash)"
-        );
-        assert_eq!(test.syntax_for_file("Makefile", &config), "Makefile");
+        assert_eq!(test.syntax_for_file(".bashrc"), "Bourne Again Shell (bash)");
+        assert_eq!(test.syntax_for_file("Makefile"), "Makefile");
     }
 
     #[cfg(unix)]
@@ -528,155 +507,130 @@ mod tests {
         use std::os::unix::ffi::OsStrExt;
 
         let test = SyntaxDetectionTest::new();
-        let config = Config::default();
 
         assert_eq!(
-            test.syntax_for_file_os(OsStr::from_bytes(b"invalid_\xFEutf8_filename.rs"), &config),
+            test.syntax_for_file_os(OsStr::from_bytes(b"invalid_\xFEutf8_filename.rs")),
             "Rust"
         );
     }
 
     #[test]
     fn syntax_detection_same_for_inputkinds() {
-        let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
+        let mut test = SyntaxDetectionTest::new();
 
-        config
-            .syntax_mapping
+        test.syntax_mapping
             .insert("*.myext", MappingTarget::MapTo("C"))
             .ok();
-        config
-            .syntax_mapping
+        test.syntax_mapping
             .insert("MY_FILE", MappingTarget::MapTo("Markdown"))
             .ok();
 
-        assert!(test.syntax_is_same_for_inputkinds("Test.md", "", &config));
-        assert!(test.syntax_is_same_for_inputkinds("Test.txt", "#!/bin/bash", &config));
-        assert!(test.syntax_is_same_for_inputkinds(".bashrc", "", &config));
-        assert!(test.syntax_is_same_for_inputkinds("test.h", "", &config));
-        assert!(test.syntax_is_same_for_inputkinds("test.js", "#!/bin/bash", &config));
-        assert!(test.syntax_is_same_for_inputkinds("test.myext", "", &config));
-        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", "", &config));
-        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", "<?php", &config));
+        assert!(test.syntax_is_same_for_inputkinds("Test.md", ""));
+        assert!(test.syntax_is_same_for_inputkinds("Test.txt", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_inputkinds(".bashrc", ""));
+        assert!(test.syntax_is_same_for_inputkinds("test.h", ""));
+        assert!(test.syntax_is_same_for_inputkinds("test.js", "#!/bin/bash"));
+        assert!(test.syntax_is_same_for_inputkinds("test.myext", ""));
+        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", ""));
+        assert!(test.syntax_is_same_for_inputkinds("MY_FILE", "<?php"));
     }
 
     #[test]
     fn syntax_detection_well_defined_mapping_for_duplicate_extensions() {
         let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
 
-        assert_eq!(test.syntax_for_file("test.h", &config), "C++");
-        assert_eq!(test.syntax_for_file("test.sass", &config), "Sass");
-        assert_eq!(
-            test.syntax_for_file("test.js", &config),
-            "JavaScript (Babel)"
-        );
-        assert_eq!(test.syntax_for_file("test.fs", &config), "F#");
-        assert_eq!(test.syntax_for_file("test.v", &config), "Verilog");
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
+        assert_eq!(test.syntax_for_file("test.sass"), "Sass");
+        assert_eq!(test.syntax_for_file("test.js"), "JavaScript (Babel)");
+        assert_eq!(test.syntax_for_file("test.fs"), "F#");
+        assert_eq!(test.syntax_for_file("test.v"), "Verilog");
     }
 
     #[test]
     fn syntax_detection_first_line() {
         let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
 
         assert_eq!(
-            test.syntax_for_file_with_content("my_script", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("my_script", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
         assert_eq!(
-            test.syntax_for_file_with_content("build", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("build", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
         assert_eq!(
-            test.syntax_for_file_with_content("my_script", "<?php", &config),
+            test.syntax_for_file_with_content("my_script", "<?php"),
             "PHP"
         );
     }
 
     #[test]
     fn syntax_detection_with_custom_mapping() {
-        let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
+        let mut test = SyntaxDetectionTest::new();
 
-        assert_eq!(test.syntax_for_file("test.h", &config), "C++");
-        config
-            .syntax_mapping
+        assert_eq!(test.syntax_for_file("test.h"), "C++");
+        test.syntax_mapping
             .insert("*.h", MappingTarget::MapTo("C"))
             .ok();
-        assert_eq!(test.syntax_for_file("test.h", &config), "C");
+        assert_eq!(test.syntax_for_file("test.h"), "C");
     }
 
     #[test]
     fn syntax_detection_with_extension_mapping_to_unknown() {
-        let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
+        let mut test = SyntaxDetectionTest::new();
 
         // Normally, a CMakeLists.txt file shall use the CMake syntax, even if it is
         // a bash script in disguise
         assert_eq!(
-            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash"),
             "CMake"
         );
 
         // Other .txt files shall use the Plain Text syntax
         assert_eq!(
-            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash"),
             "Plain Text"
         );
 
         // If we setup MapExtensionToUnknown on *.txt, the match on the full
         // file name of "CMakeLists.txt" shall have higher prio, and CMake shall
         // still be used for it
-        config
-            .syntax_mapping
+        test.syntax_mapping
             .insert("*.txt", MappingTarget::MapExtensionToUnknown)
             .ok();
         assert_eq!(
-            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash"),
             "CMake"
         );
 
         // However, for *other* files with a .txt extension, first-line fallback
         // shall now be used
         assert_eq!(
-            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash", &config),
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
     }
 
     #[test]
     fn syntax_detection_is_case_sensitive() {
-        let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
+        let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_for_file("README.MD", &config), "Markdown");
-        config
-            .syntax_mapping
+        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
+        test.syntax_mapping
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
-        assert_eq!(test.syntax_for_file("README.MD", &config), "Markdown");
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
     }
 
     #[test]
     fn syntax_detection_stdin_filename() {
         let test = SyntaxDetectionTest::new();
-        let config = Config::default();
 
         // from file extension
-        assert_eq!(
-            test.syntax_for_stdin_with_content("test.cpp", b"a", &config),
-            "C++"
-        );
+        assert_eq!(test.syntax_for_stdin_with_content("test.cpp", b"a"), "C++");
         // from first line (fallback)
         assert_eq!(
-            test.syntax_for_stdin_with_content("my_script", b"#!/bin/bash", &config),
+            test.syntax_for_stdin_with_content("my_script", b"#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
     }
@@ -687,8 +641,6 @@ mod tests {
         use std::os::unix::fs::symlink;
 
         let test = SyntaxDetectionTest::new();
-        let mut config = Config::default();
-        config.syntax_mapping = SyntaxMapping::builtin();
         let file_path = test.temp_dir.path().join("my_ssh_config_filename");
         {
             File::create(&file_path).unwrap();
@@ -704,7 +656,7 @@ mod tests {
         let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
         assert_eq!(
-            test.get_syntax_name(None, &mut opened_input, &config),
+            test.get_syntax_name(None, &mut opened_input, &test.syntax_mapping),
             "SSH Config"
         );
     }

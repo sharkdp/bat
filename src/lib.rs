@@ -45,7 +45,7 @@ mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
 pub mod style;
-pub(crate) mod syntax_mapping;
+mod syntax_mapping;
 mod terminal;
 pub(crate) mod wrapping;
 

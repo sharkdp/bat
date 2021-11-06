@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::error::Result;
+use crate::{error::Result, ignored_suffixes::IgnoredSuffixes};
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
 
@@ -26,6 +26,7 @@ pub enum MappingTarget<'a> {
 #[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping<'a> {
     mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
+    pub ignored_suffixes: IgnoredSuffixes,
 }
 
 impl<'a> SyntaxMapping<'a> {

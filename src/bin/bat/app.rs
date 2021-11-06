@@ -19,6 +19,7 @@ use bat::{
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
+    ignored_suffixes::IgnoredSuffixes,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
@@ -106,6 +107,13 @@ impl App {
         };
 
         let mut syntax_mapping = SyntaxMapping::builtin();
+        syntax_mapping.ignored_suffixes = IgnoredSuffixes::new(
+            self.matches
+                .values_of("ignored-suffix")
+                .unwrap_or_default()
+                .map(String::from)
+                .collect(),
+        );
 
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {
@@ -235,12 +243,6 @@ impl App {
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             use_custom_assets: !self.matches.is_present("no-custom-assets"),
-            ignored_suffixes: self
-                .matches
-                .values_of("ignored-suffix")
-                .unwrap_or_default()
-                .map(String::from)
-                .collect(),
         })
     }
 
