@@ -1,44 +1,45 @@
 use std::ffi::OsStr;
+use std::fmt::Debug;
 use std::path::Path;
 
 use crate::error::*;
 
-const IGNORED_SUFFIXES: [&str; 13] = [
-    // Editor etc backups
-    "~",
-    ".bak",
-    ".old",
-    ".orig",
-    // Debian and derivatives apt/dpkg/ucf backups
-    ".dpkg-dist",
-    ".dpkg-old",
-    ".ucf-dist",
-    ".ucf-new",
-    ".ucf-old",
-    // Red Hat and derivatives rpm backups
-    ".rpmnew",
-    ".rpmorig",
-    ".rpmsave",
-    // Build system input/template files
-    ".in",
-];
-
-#[derive(Debug, Clone, Default)]
-pub struct IgnoredSuffixes {
-    values: Vec<String>,
+#[derive(Debug, Clone)]
+pub struct IgnoredSuffixes<'a> {
+    values: Vec<&'a str>,
 }
 
-impl IgnoredSuffixes {
-    pub fn new(values: Vec<String>) -> Self {
-        IgnoredSuffixes { values }
+impl Default for IgnoredSuffixes<'_> {
+    fn default() -> Self {
+        Self { values: vec![
+            // Editor etc backups
+            "~",
+            ".bak",
+            ".old",
+            ".orig",
+            // Debian and derivatives apt/dpkg/ucf backups
+            ".dpkg-dist",
+            ".dpkg-old",
+            ".ucf-dist",
+            ".ucf-new",
+            ".ucf-old",
+            // Red Hat and derivatives rpm backups
+            ".rpmnew",
+            ".rpmorig",
+            ".rpmsave",
+            // Build system input/template files
+            ".in",
+        ] }
+    }
+}
+
+impl<'a> IgnoredSuffixes<'a> {
+    pub fn add_suffix(&mut self, suffix: &'a str) {
+        self.values.push(suffix)
     }
 
-    pub fn strip_suffix<'a>(&self, file_name: &'a str) -> Option<&'a str> {
-        for suffix in self
-            .values
-            .iter()
-            .map(|v| v.as_str())
-            .chain(IGNORED_SUFFIXES.iter().copied())
+    pub fn strip_suffix(&self, file_name: &'a str) -> Option<&'a str> {
+        for suffix in self.values.iter()
         {
             if let Some(stripped_file_name) = file_name.strip_suffix(suffix) {
                 return Some(stripped_file_name);
@@ -49,7 +50,7 @@ impl IgnoredSuffixes {
 
     /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
     /// then try again without it.
-    pub fn try_with_stripped_suffix<'a, T, F>(
+    pub fn try_with_stripped_suffix<T, F>(
         &self,
         file_name: &'a OsStr,
         func: F,
@@ -68,9 +69,9 @@ impl IgnoredSuffixes {
 
 #[test]
 fn internal_suffixes() {
-    let ignored_suffixes = IgnoredSuffixes::new(vec![]);
+    let ignored_suffixes = IgnoredSuffixes::default();
 
-    let file_names = IGNORED_SUFFIXES
+    let file_names = ignored_suffixes.values
         .iter()
         .map(|suffix| format!("test.json{}", suffix));
     for file_name_str in file_names {
@@ -87,10 +88,9 @@ fn internal_suffixes() {
 
 #[test]
 fn external_suffixes() {
-    let ignored_suffixes = IgnoredSuffixes::new(vec![
-        String::from(".development"),
-        String::from(".production"),
-    ]);
+    let mut ignored_suffixes = IgnoredSuffixes::default();
+    ignored_suffixes.add_suffix(".development");
+    ignored_suffixes.add_suffix(".production");
 
     let file_names = ignored_suffixes
         .values

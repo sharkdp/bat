@@ -105,13 +105,15 @@ impl App {
             _ => unreachable!("other values for --paging are not allowed"),
         };
 
-        let mut syntax_mapping = SyntaxMapping::builtin(
-            self.matches
-                .values_of("ignored-suffix")
-                .unwrap_or_default()
-                .map(String::from)
-                .collect(),
-        );
+        let mut syntax_mapping = SyntaxMapping::builtin();
+
+        let ignored_suffixes: Vec<&str> = self.matches
+            .values_of("ignored-suffix")
+            .unwrap_or_default()
+            .collect();
+        for suffix in ignored_suffixes {
+            syntax_mapping.insert_ignored_suffix(suffix);
+        }
 
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {

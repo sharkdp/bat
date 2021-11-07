@@ -26,7 +26,7 @@ pub enum MappingTarget<'a> {
 #[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping<'a> {
     mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
-    pub ignored_suffixes: IgnoredSuffixes,
+    pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 }
 
 impl<'a> SyntaxMapping<'a> {
@@ -34,7 +34,7 @@ impl<'a> SyntaxMapping<'a> {
         Default::default()
     }
 
-    pub fn builtin(ignored_suffixes: Vec<String>) -> SyntaxMapping<'a> {
+    pub fn builtin() -> SyntaxMapping<'a> {
         let mut mapping = Self::empty();
         mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
         mapping.insert("*.fs", MappingTarget::MapTo("F#")).unwrap();
@@ -143,8 +143,6 @@ impl<'a> SyntaxMapping<'a> {
                 .ok();
         }
 
-        mapping.ignored_suffixes = IgnoredSuffixes::new(ignored_suffixes);
-
         mapping
     }
 
@@ -175,6 +173,10 @@ impl<'a> SyntaxMapping<'a> {
         }
         None
     }
+
+    pub fn insert_ignored_suffix(&mut self, suffix: &'a str) {
+        self.ignored_suffixes.add_suffix(suffix);
+    }
 }
 
 #[test]
@@ -199,7 +201,7 @@ fn basic() {
 
 #[test]
 fn user_can_override_builtin_mappings() {
-    let mut map = SyntaxMapping::builtin(vec![]);
+    let mut map = SyntaxMapping::builtin();
 
     assert_eq!(
         map.get_syntax_for("/etc/profile"),
@@ -215,7 +217,7 @@ fn user_can_override_builtin_mappings() {
 
 #[test]
 fn builtin_mappings() {
-    let map = SyntaxMapping::builtin(vec![]);
+    let map = SyntaxMapping::builtin();
 
     assert_eq!(
         map.get_syntax_for("/path/to/build"),
