@@ -11,25 +11,27 @@ pub struct IgnoredSuffixes<'a> {
 
 impl Default for IgnoredSuffixes<'_> {
     fn default() -> Self {
-        Self { values: vec![
-            // Editor etc backups
-            "~",
-            ".bak",
-            ".old",
-            ".orig",
-            // Debian and derivatives apt/dpkg/ucf backups
-            ".dpkg-dist",
-            ".dpkg-old",
-            ".ucf-dist",
-            ".ucf-new",
-            ".ucf-old",
-            // Red Hat and derivatives rpm backups
-            ".rpmnew",
-            ".rpmorig",
-            ".rpmsave",
-            // Build system input/template files
-            ".in",
-        ] }
+        Self {
+            values: vec![
+                // Editor etc backups
+                "~",
+                ".bak",
+                ".old",
+                ".orig",
+                // Debian and derivatives apt/dpkg/ucf backups
+                ".dpkg-dist",
+                ".dpkg-old",
+                ".ucf-dist",
+                ".ucf-new",
+                ".ucf-old",
+                // Red Hat and derivatives rpm backups
+                ".rpmnew",
+                ".rpmorig",
+                ".rpmsave",
+                // Build system input/template files
+                ".in",
+            ],
+        }
     }
 }
 
@@ -39,8 +41,7 @@ impl<'a> IgnoredSuffixes<'a> {
     }
 
     pub fn strip_suffix(&self, file_name: &'a str) -> Option<&'a str> {
-        for suffix in self.values.iter()
-        {
+        for suffix in self.values.iter() {
             if let Some(stripped_file_name) = file_name.strip_suffix(suffix) {
                 return Some(stripped_file_name);
             }
@@ -50,11 +51,7 @@ impl<'a> IgnoredSuffixes<'a> {
 
     /// If we find an ignored suffix on the file name, e.g. '~', we strip it and
     /// then try again without it.
-    pub fn try_with_stripped_suffix<T, F>(
-        &self,
-        file_name: &'a OsStr,
-        func: F,
-    ) -> Result<Option<T>>
+    pub fn try_with_stripped_suffix<T, F>(&self, file_name: &'a OsStr, func: F) -> Result<Option<T>>
     where
         F: Fn(&'a OsStr) -> Result<Option<T>>,
     {
@@ -71,7 +68,8 @@ impl<'a> IgnoredSuffixes<'a> {
 fn internal_suffixes() {
     let ignored_suffixes = IgnoredSuffixes::default();
 
-    let file_names = ignored_suffixes.values
+    let file_names = ignored_suffixes
+        .values
         .iter()
         .map(|suffix| format!("test.json{}", suffix));
     for file_name_str in file_names {

@@ -107,7 +107,8 @@ impl App {
 
         let mut syntax_mapping = SyntaxMapping::builtin();
 
-        let ignored_suffixes: Vec<&str> = self.matches
+        let ignored_suffixes: Vec<&str> = self
+            .matches
             .values_of("ignored-suffix")
             .unwrap_or_default()
             .collect();
