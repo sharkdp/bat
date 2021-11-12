@@ -107,13 +107,10 @@ impl App {
 
         let mut syntax_mapping = SyntaxMapping::builtin();
 
-        let ignored_suffixes: Vec<&str> = self
-            .matches
-            .values_of("ignored-suffix")
-            .unwrap_or_default()
-            .collect();
-        for suffix in ignored_suffixes {
-            syntax_mapping.insert_ignored_suffix(suffix);
+        if let Some(values) = self.matches.values_of("ignored-suffix") {
+            for suffix in values {
+                syntax_mapping.insert_ignored_suffix(suffix);
+            }
         }
 
         if let Some(values) = self.matches.values_of("map-syntax") {

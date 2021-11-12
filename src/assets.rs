@@ -10,8 +10,8 @@ use syntect::parsing::{SyntaxReference, SyntaxSet};
 use path_abs::PathAbs;
 
 use crate::error::*;
-use crate::ignored_suffixes::IgnoredSuffixes;
 use crate::input::{InputReader, OpenedInput};
+use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
 use crate::{bat_warning, SyntaxMapping};
 
@@ -274,7 +274,6 @@ impl HighlightingAssets {
     fn find_syntax_by_extension(&self, e: Option<&OsStr>) -> Result<Option<SyntaxReferenceInSet>> {
         let syntax_set = self.get_syntax_set()?;
         let extension = e.and_then(|x| x.to_str()).unwrap_or_default();
-
         Ok(syntax_set
             .find_syntax_by_extension(extension)
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))

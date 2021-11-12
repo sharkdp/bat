@@ -1,8 +1,11 @@
 use std::path::Path;
 
-use crate::{error::Result, ignored_suffixes::IgnoredSuffixes};
+use self::ignored_suffixes::IgnoredSuffixes;
+use crate::error::Result;
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
+
+pub(crate) mod ignored_suffixes;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MappingTarget<'a> {
