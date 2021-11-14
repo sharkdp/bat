@@ -29,7 +29,7 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
-use crate::terminal::{as_terminal_escaped, to_ansi_color};
+use crate::terminal::{as_terminal_escaped, blend_foreground_alpha, to_ansi_color};
 use crate::wrapping::WrappingMode;
 
 pub(crate) trait Printer {
@@ -647,7 +647,12 @@ impl Colors {
                 // Note: It might be the special value #00000001, in which case
                 // to_ansi_color returns None and we use an empty Style
                 // (resulting in the terminal's default foreground color).
-                Some(c) => to_ansi_color(c, true_color),
+                Some(mut fg) => {
+                    if let Some(bg) = theme.settings.background {
+                        fg = blend_foreground_alpha(fg, bg)
+                    }
+                    to_ansi_color(fg, true_color)
+                }
                 // Otherwise, use a specific fallback color.
                 None => Some(Fixed(DEFAULT_GUTTER_COLOR)),
             },

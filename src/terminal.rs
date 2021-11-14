@@ -3,6 +3,27 @@ use ansi_term::{self, Style};
 
 use syntect::highlighting::{self, FontStyle};
 
+pub fn blend_foreground_alpha(
+    fg: highlighting::Color,
+    bg: highlighting::Color,
+) -> highlighting::Color {
+    if fg.a == 255 || fg.a == 0 || fg.a == 1 {
+        return fg;
+    }
+
+    let ratio = fg.a as u32;
+    let r = (fg.r as u32 * ratio + bg.r as u32 * (255 - ratio)) / 255;
+    let g = (fg.g as u32 * ratio + bg.g as u32 * (255 - ratio)) / 255;
+    let b = (fg.b as u32 * ratio + bg.b as u32 * (255 - ratio)) / 255;
+
+    highlighting::Color {
+        r: r as u8,
+        g: g as u8,
+        b: b as u8,
+        a: 255,
+    }
+}
+
 pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<ansi_term::Color> {
     if color.a == 0 {
         // Themes can specify one of the user-configurable terminal colors by
