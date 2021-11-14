@@ -101,3 +101,55 @@ pub fn as_terminal_escaped(
     style.background = background_color.and_then(|c| to_ansi_color(c, true_color));
     style.paint(text).to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syntect::highlighting::Color;
+
+    #[test]
+    fn test_blend_foreground_alpha() {
+        let bg = Color {
+            r: 255,
+            g: 255,
+            b: 255,
+            a: 255,
+        };
+        let fg = Color {
+            r: 30,
+            g: 40,
+            b: 50,
+            a: 128,
+        };
+        let c = blend_foreground_alpha(fg, bg);
+        assert_eq!(
+            c,
+            Color {
+                r: 142,
+                g: 147,
+                b: 152,
+                a: 255,
+            },
+        );
+
+        // Special cases
+
+        let pass_through = Color {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 1,
+        };
+        let c = blend_foreground_alpha(pass_through, bg);
+        assert_eq!(c, pass_through);
+
+        let ansi_16_color = Color {
+            r: 1,
+            g: 0,
+            b: 0,
+            a: 0,
+        };
+        let c = blend_foreground_alpha(ansi_16_color, bg);
+        assert_eq!(c, ansi_16_color);
+    }
+}
