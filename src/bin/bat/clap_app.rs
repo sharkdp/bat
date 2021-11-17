@@ -515,6 +515,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .multiple(true)
                 .takes_value(true)
                 .long("ignored-suffix")
+                .hidden_short_help(true)
                 .help(
                     "Ignore extension. For example:\n  \
                     'bat --ignored-suffix \".dev\" my_file.json.dev' will use JSON syntax, and ignore '.dev'"
