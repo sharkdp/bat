@@ -1228,3 +1228,48 @@ fn grid_for_file_without_newline() {
         )
         .stderr("");
 }
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_not_stripped_in_loop_through_mode() {
+    bat()
+        .arg("--plain")
+        .arg("--decorations=never")
+        .arg("--color=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout("\u{feff}hello world\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_colored_output() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231mhello world\u{1b}[0m\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_no_color_and_not_loop_through() {
+    bat()
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: test_BOM.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ hello world
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        );
+}
