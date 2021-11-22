@@ -95,8 +95,8 @@ cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 heading "Plain-text speed"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain test-src/test_multiarray.py" \
-	--command-name 'bat … --language=txt test_multiarray.py' \
+	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain test-src/numpy_test_multiarray.py" \
+	--command-name 'bat … --language=txt numpy_test_multiarray.py' \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/plain-text-speed.md" \
     --export-json "$RESULT_DIR/plain-text-speed.json"
