@@ -2,7 +2,7 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
-use lazycell::LazyCell;
+use once_cell::unsync::OnceCell;
 
 use syntect::highlighting::{Theme, ThemeSet};
 use syntect::parsing::{SyntaxReference, SyntaxSet};
@@ -27,7 +27,7 @@ mod serialized_syntax_set;
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    syntax_set_cell: LazyCell<SyntaxSet>,
+    syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
     theme_set: ThemeSet,
@@ -49,7 +49,7 @@ pub(crate) const COMPRESS_THEMES: bool = true;
 impl HighlightingAssets {
     fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
         HighlightingAssets {
-            syntax_set_cell: LazyCell::new(),
+            syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
             theme_set,
             fallback_theme: None,
@@ -80,7 +80,7 @@ impl HighlightingAssets {
 
     fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
-            .try_borrow_with(|| self.serialized_syntax_set.deserialize())
+            .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
 
     /// Use [Self::get_syntaxes] instead
