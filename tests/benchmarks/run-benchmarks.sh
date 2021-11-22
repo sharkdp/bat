@@ -29,6 +29,20 @@ heading() {
     echo -e "\n### $1\n" >> "$REPORT"
 }
 
+# Clean up environment
+unset BAT_CACHE_PATH
+unset BAT_CONFIG_DIR
+unset BAT_CONFIG_PATH
+unset BAT_OPTS
+unset BAT_PAGER
+unset BAT_STYLE
+unset BAT_TABS
+unset BAT_THEME
+unset COLORTERM
+unset NO_COLOR
+unset PAGER
+
+
 RESULT_DIR="benchmark-results"
 REPORT="$RESULT_DIR/report.md"
 
@@ -68,28 +82,34 @@ rm -f "$RESULT_DIR"/*.md
 
 echo "## \`bat\` benchmark results" >> "$REPORT"
 
+
 heading "Startup time"
 hyperfine \
-	"$BAT" \
+	"$(printf "%q" "$BAT") --no-config" \
+	--command-name "bat" \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time.md" \
     --export-json "$RESULT_DIR/startup-time.json"
 cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
-heading "Plain text speed"
+
+heading "Plain-text speed"
 hyperfine \
-	"$(printf "%q" "$BAT") --language txt --paging=never 'test-src/jquery-3.3.1.js'" \
+	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain test-src/test_multiarray.py" \
+	--command-name 'bat … --language=txt test_multiarray.py' \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/plain-text-speed.md" \
     --export-json "$RESULT_DIR/plain-text-speed.json"
 cat "$RESULT_DIR/plain-text-speed.md" >> "$REPORT"
 
+
 for SRC in test-src/*; do
 	filename="$(basename "$SRC")"
-	heading "Syntax highlighting speed: \`$filename\`"
 
+	heading "Syntax highlighting speed: \`$filename\`"
 	hyperfine --warmup "$WARMUP_COUNT" \
-		"$(printf "%q" "$BAT") --style=full --color=always --paging=never $(printf "%q" "$SRC")" \
+		"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=character --terminal-width=80 '$SRC'" \
+		--command-name "bat … ${filename}" \
 		--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
 		--export-json "$RESULT_DIR/syntax-highlighting-speed-${filename}.json"
 	cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
