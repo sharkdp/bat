@@ -8,18 +8,18 @@ if ! command -v hyperfine > /dev/null 2>&1; then
 	exit 1
 fi
 
-# Determine the target directories.
-get_target_dir() {
-	if [[ -f "$HOME/.cargo/config" ]]; then
-		grep 'target-dir[[:space:]]*=' "$HOME/.cargo/config" \
-			| sed 's/^[[:space:]]*target-dir[[:space:]]*=//; s/^[[:space:]]*"//; s/"[[:space:]]*$//' \
-			&& return 0
-	fi
+# Check that jq is installed.
+if ! command -v jq > /dev/null 2>&1; then
+	echo "'jq' does not seem to be installed."
+	echo "You can get it here: https://stedolan.github.io/jq"
+	exit 1
+fi
 
-	echo "../../target"
+get_cargo_target_dir() {
+	cargo metadata --no-deps --format-version 1 | jq -r .target_directory
 }
 
-TARGET_DIR="$(get_target_dir)"
+TARGET_DIR="$(get_cargo_target_dir)"
 TARGET_DEBUG="${TARGET_DIR}/debug/bat"
 TARGET_RELEASE="${TARGET_DIR}/release/bat"
 
