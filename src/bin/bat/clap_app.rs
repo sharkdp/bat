@@ -1,21 +1,20 @@
 use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
+use once_cell::sync::Lazy;
 use std::env;
 use std::path::Path;
 
-lazy_static::lazy_static! {
-    static ref VERSION: String = {
-        #[cfg(feature = "bugreport")]
-        let git_version = bugreport::git_version!(fallback = "");
-        #[cfg(not(feature = "bugreport"))]
-        let git_version = "";
+static VERSION: Lazy<String> = Lazy::new(|| {
+    #[cfg(feature = "bugreport")]
+    let git_version = bugreport::git_version!(fallback = "");
+    #[cfg(not(feature = "bugreport"))]
+    let git_version = "";
 
-        if git_version.is_empty() {
-            crate_version!().to_string()
-        } else {
-            format!("{} ({})", crate_version!(), git_version)
-        }
-    };
-}
+    if git_version.is_empty() {
+        crate_version!().to_string()
+    } else {
+        format!("{} ({})", crate_version!(), git_version)
+    }
+});
 
 pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
     let clap_color_setting = if interactive_output && env::var_os("NO_COLOR").is_none() {

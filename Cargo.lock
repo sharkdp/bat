@@ -101,7 +101,6 @@ dependencies = [
  "git2",
  "globset",
  "grep-cli",
- "lazy_static",
  "nix",
  "once_cell",
  "path_abs",

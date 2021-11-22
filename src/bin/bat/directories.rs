@@ -1,7 +1,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 /// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.
 /// The `XDG_CACHE_HOME` environment variable is checked first. `BAT_CONFIG_DIR`
@@ -68,7 +68,5 @@ impl BatProjectDirs {
     }
 }
 
-lazy_static! {
-    pub static ref PROJECT_DIRS: BatProjectDirs =
-        BatProjectDirs::new().expect("Could not get home directory");
-}
+pub static PROJECT_DIRS: Lazy<BatProjectDirs> =
+    Lazy::new(|| BatProjectDirs::new().expect("Could not get home directory"));
