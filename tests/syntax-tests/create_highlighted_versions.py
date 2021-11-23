@@ -91,7 +91,7 @@ def create_highlighted_versions(output_basepath):
             p.map(create_highlighted_version, sources)
     except subprocess.CalledProcessError as err:
         print(
-            "=== Error: Could not highlight source file '{}".format(source),
+            "=== Error: Could not highlight source file:\n" + " ".join(err.cmd),
             file=sys.stderr,
         )
         print(

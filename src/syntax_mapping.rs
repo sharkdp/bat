@@ -1,18 +1,35 @@
 use std::path::Path;
 
 use crate::error::Result;
+use ignored_suffixes::IgnoredSuffixes;
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
 
+pub mod ignored_suffixes;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MappingTarget<'a> {
+    /// For mapping a path to a specific syntax.
     MapTo(&'a str),
+
+    /// For mapping a path (typically an extension-less file name) to an unknown
+    /// syntax. This typically means later using the contents of the first line
+    /// of the file to determine what syntax to use.
     MapToUnknown,
+
+    /// For mapping a file extension (e.g. `*.conf`) to an unknown syntax. This
+    /// typically means later using the contents of the first line of the file
+    /// to determine what syntax to use. However, if a syntax handles a file
+    /// name that happens to have the given file extension (e.g. `resolv.conf`),
+    /// then that association will have higher precedence, and the mapping will
+    /// be ignored.
+    MapExtensionToUnknown,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping<'a> {
     mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
+    pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 }
 
 impl<'a> SyntaxMapping<'a> {
@@ -54,12 +71,7 @@ impl<'a> SyntaxMapping<'a> {
         // Nginx and Apache syntax files both want to style all ".conf" files
         // see #1131 and #1137
         mapping
-            .insert("*.conf", MappingTarget::MapToUnknown)
-            .unwrap();
-
-        // Re-insert a mapping for resolv.conf, see #1510
-        mapping
-            .insert("resolv.conf", MappingTarget::MapTo("resolv"))
+            .insert("*.conf", MappingTarget::MapExtensionToUnknown)
             .unwrap();
 
         for glob in &[
@@ -163,6 +175,10 @@ impl<'a> SyntaxMapping<'a> {
             }
         }
         None
+    }
+
+    pub fn insert_ignored_suffix(&mut self, suffix: &'a str) {
+        self.ignored_suffixes.add_suffix(suffix);
     }
 }
 
