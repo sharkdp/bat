@@ -93,6 +93,16 @@ hyperfine \
 cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 
+heading "Startup time with syntax highlighting"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-Markdown-file.md" \
+	--command-name "bat … small-Markdown-file.md" \
+	--warmup "$WARMUP_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
+    --export-json "$RESULT_DIR/startup-time-with-syntax-highlighting.json"
+cat "$RESULT_DIR/startup-time-with-syntax-highlighting.md" >> "$REPORT"
+
+
 heading "Plain-text speed"
 hyperfine \
 	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain test-src/numpy_test_multiarray.py" \
