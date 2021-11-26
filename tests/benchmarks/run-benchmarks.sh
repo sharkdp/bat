@@ -95,12 +95,22 @@ cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 heading "Startup time with syntax highlighting"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-Markdown-file.md" \
-	--command-name "bat … small-Markdown-file.md" \
+	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-CpuInfo-file.cpuinfo" \
+	--command-name "bat … small-CpuInfo-file.cpuinfo" \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
     --export-json "$RESULT_DIR/startup-time-with-syntax-highlighting.json"
 cat "$RESULT_DIR/startup-time-with-syntax-highlighting.md" >> "$REPORT"
+
+
+heading "Startup time with syntax with dependencies"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-Markdown-file.md" \
+	--command-name "bat … small-Markdown-file.md" \
+	--warmup "$WARMUP_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" \
+    --export-json "$RESULT_DIR/startup-time-with-syntax-with-dependencies.json"
+cat "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" >> "$REPORT"
 
 
 heading "Plain-text speed"
