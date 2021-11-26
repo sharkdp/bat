@@ -381,7 +381,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let line = if self.config.show_nonprintable {
             replace_nonprintable(line_buffer, self.config.tab_width)
         } else {
-            match self.content_type {
+            let line = match self.content_type {
                 Some(ContentType::BINARY) | None => {
                     return Ok(());
                 }
@@ -392,8 +392,16 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     .decode(line_buffer, DecoderTrap::Replace)
                     .map_err(|_| "Invalid UTF-16BE")?,
                 _ => String::from_utf8_lossy(line_buffer).to_string(),
+            };
+            // Remove byte order mark from the first line if it exists
+            if line_number == 1 {
+                match line.strip_prefix('\u{feff}') {
+                    Some(stripped) => stripped.to_string(),
+                    None => line,
+                }
+            } else {
+                line
             }
-            .replace('\u{feff}', "") // Removing BOM from all non-loop-through output
         };
 
         let regions = {
