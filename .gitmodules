@@ -67,9 +67,6 @@
 [submodule "assets/syntaxes/JavaScript (Babel)"]
 	path = assets/syntaxes/02_Extra/JavaScript (Babel)
 	url = https://github.com/babel/babel-sublime
-[submodule "assets/syntaxes/Dart"]
-	path = assets/syntaxes/02_Extra/Dart
-	url = https://github.com/guillermooo/dart-sublime-bundle
 [submodule "assets/syntaxes/FSharp"]
 	path = assets/syntaxes/02_Extra/FSharp
 	url = https://github.com/hoest/sublimetext-fsharp
