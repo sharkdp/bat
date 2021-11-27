@@ -236,3 +236,6 @@
 [submodule "assets/syntaxes/02_Extra/MediaWiki"]
 	path = assets/syntaxes/02_Extra/MediaWiki
 	url = https://github.com/tosher/Mediawiker.git
+[submodule "assets/syntaxes/02_Extra/Dart"]
+	path = assets/syntaxes/02_Extra/Dart
+	url = https://github.com/elMuso/Dartlight.git
