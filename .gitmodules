@@ -113,9 +113,6 @@
 [submodule "assets/syntaxes/Org mode"]
 	path = assets/syntaxes/02_Extra/Org mode
 	url = https://github.com/jezcope/Org.tmbundle.git
-[submodule "assets/syntaxes/requirementstxt"]
-	path = assets/syntaxes/02_Extra/requirementstxt
-	url = https://github.com/wuub/requirementstxt
 [submodule "assets/syntaxes/DotENV"]
 	path = assets/syntaxes/02_Extra/DotENV
 	url = https://github.com/zaynali53/DotENV
