@@ -27,6 +27,15 @@ jobs:
     - uses: actions/checkout@v2
     - run: cargo fmt -- --check
 
+  license_checks:
+    name: License checks
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: true # we especially want to perform license checks on submodules
+    - run: tests/scripts/license-checks.sh
+
   min_version:
     name: Minimum supported rust version
     runs-on: ubuntu-20.04
