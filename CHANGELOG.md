@@ -35,6 +35,7 @@
 - Racket, see #1884 (@jubnzv)
 - LiveScript, see #1915 (@Enselic)
 - MediaWiki, see #1925 (@sorairolake)
+- The `requirements.txt` syntax has been removed due to incompatible license requirements.
 
 ## New themes
 
