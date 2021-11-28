@@ -35,6 +35,7 @@
 - Racket, see #1884 (@jubnzv)
 - LiveScript, see #1915 (@Enselic)
 - MediaWiki, see #1925 (@sorairolake)
+- Dart, new highlighter, see #1958 (@Ersikan)
 
 ## New themes
 
