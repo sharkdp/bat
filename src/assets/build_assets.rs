@@ -1,4 +1,6 @@
+use std::convert::TryInto;
 use std::path::Path;
+
 use syntect::highlighting::ThemeSet;
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 
@@ -10,7 +12,7 @@ pub fn build(
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
-    let theme_set = build_theme_set(source_dir, include_integrated_assets);
+    let theme_set = build_theme_set(source_dir, include_integrated_assets)?;
 
     let syntax_set_builder = build_syntax_set_builder(source_dir, include_integrated_assets)?;
 
@@ -21,9 +23,9 @@ pub fn build(
     write_assets(&theme_set, &syntax_set, target_dir, current_version)
 }
 
-fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> ThemeSet {
+fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result<LazyThemeSet> {
     let mut theme_set = if include_integrated_assets {
-        crate::assets::get_integrated_themeset()
+        crate::assets::get_integrated_themeset().try_into()?
     } else {
         ThemeSet::new()
     };
@@ -45,7 +47,7 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> ThemeS
         );
     }
 
-    theme_set
+    theme_set.try_into()
 }
 
 fn build_syntax_set_builder(
@@ -85,7 +87,7 @@ fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
 }
 
 fn write_assets(
-    theme_set: &ThemeSet,
+    theme_set: &LazyThemeSet,
     syntax_set: &SyntaxSet,
     target_dir: &Path,
     current_version: &str,
@@ -114,7 +116,7 @@ fn write_assets(
     Ok(())
 }
 
-fn asset_to_contents<T: serde::Serialize>(
+pub(crate) fn asset_to_contents<T: serde::Serialize>(
     asset: &T,
     description: &str,
     compressed: bool,

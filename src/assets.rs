@@ -4,7 +4,7 @@ use std::path::Path;
 
 use once_cell::unsync::OnceCell;
 
-use syntect::highlighting::{Theme, ThemeSet};
+use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use path_abs::PathAbs;
@@ -15,6 +15,8 @@ use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
 use crate::{bat_warning, SyntaxMapping};
 
+use lazy_theme_set::LazyThemeSet;
+
 use serialized_syntax_set::*;
 
 #[cfg(feature = "build-assets")]
@@ -23,6 +25,7 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
+mod lazy_theme_set;
 mod serialized_syntax_set;
 
 #[derive(Debug)]
@@ -30,7 +33,7 @@ pub struct HighlightingAssets {
     syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    theme_set: ThemeSet,
+    theme_set: LazyThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -43,11 +46,17 @@ pub struct SyntaxReferenceInSet<'a> {
 /// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SYNTAXES: bool = true;
 
-/// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_THEMES: bool = true;
+/// We don't want to compress our [LazyThemeSet] since the lazy-loaded themes
+/// within it are already compressed, and compressing another time just makes
+/// performance suffer
+pub(crate) const COMPRESS_THEMES: bool = false;
+
+/// Compress for size of ~40 kB instead of ~200 kB without much difference in
+/// performance due to lazy-loading
+pub(crate) const COMPRESS_LAZY_THEMES: bool = true;
 
 impl HighlightingAssets {
-    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: ThemeSet) -> Self {
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: LazyThemeSet) -> Self {
         HighlightingAssets {
             syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
@@ -95,12 +104,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    fn get_theme_set(&self) -> &ThemeSet {
+    fn get_theme_set(&self) -> &LazyThemeSet {
         &self.theme_set
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.get_theme_set().themes.keys().map(|s| s.as_ref())
+        self.get_theme_set().themes()
     }
 
     /// Use [Self::get_syntax_for_path] instead
@@ -175,7 +184,7 @@ impl HighlightingAssets {
     }
 
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
-        match self.get_theme_set().themes.get(theme) {
+        match self.get_theme_set().get(theme) {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
@@ -186,7 +195,6 @@ impl HighlightingAssets {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 self.get_theme_set()
-                    .themes
                     .get(self.fallback_theme.unwrap_or_else(|| Self::default_theme()))
                     .expect("something is very wrong if the default theme is missing")
             }
@@ -293,7 +301,7 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
     include_bytes!("../assets/syntaxes.bin")
 }
 
-pub(crate) fn get_integrated_themeset() -> ThemeSet {
+pub(crate) fn get_integrated_themeset() -> LazyThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
 }
 
