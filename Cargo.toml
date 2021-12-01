@@ -83,7 +83,7 @@ features = ["suggestions", "color", "wrap_help"]
 [dev-dependencies]
 assert_cmd = "2.0.2"
 serial_test = "0.5.1"
-predicates = "2.0.3"
+predicates = "2.1.0"
 wait-timeout = "0.2.0"
 tempfile = "3.2.0"
 
