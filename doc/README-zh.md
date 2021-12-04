@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
@@ -7,16 +7,16 @@
 </p>
 
 <p align="center">
-  <a href="#syntax-highlighting">主要功能</a> •
-  <a href="#how-to-use">使用方法</a> •
-  <a href="#installation">安装</a> •
-  <a href="#customization">自定义</a> •
+  <a href="#语法高亮">主要功能</a> •
+  <a href="#如何使用">使用方法</a> •
+  <a href="#安装">安装</a> •
+  <a href="#自定义">自定义</a> •
   <a href="#project-goals-and-alternatives">项目目标和替代方案</a><br>
-  [<a href="README.md">English</a>]
+  [<a href="../README.md">English</a>]
   [中文]
-  [<a href="doc/README-ja.md">日本語</a>]
-  [<a href="doc/README-ko.md">한국어</a>]
-  [<a href="doc/README-ru.md">Русский</a>]
+  [<a href="README-ja.md">日本語</a>]
+  [<a href="README-ko.md">한국어</a>]
+  [<a href="README-ru.md">Русский</a>]
 </p>
 
 ### 语法高亮
