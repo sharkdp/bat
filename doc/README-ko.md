@@ -13,7 +13,7 @@
   <a href="#사용자화">사용자화</a> •
   <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a><br>
   [<a href="../README.md">English</a>]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-zh.md">中文</a>]
   [<a href="README-ja.md">日本語</a>]
   [한국어]
   [<a href="README-ru.md">Русский</a>]
