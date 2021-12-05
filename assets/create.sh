@@ -53,7 +53,7 @@ bat cache --clear
     done
 )
 
-bat cache --build --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
+bat cache --build --blank --acknowledgements --source="$ASSET_DIR" --target="$ASSET_DIR"
 
 (
     cd "$ASSET_DIR"

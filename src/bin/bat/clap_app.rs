@@ -584,6 +584,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                             "Create completely new syntax and theme sets \
                              (instead of appending to the default sets).",
                         ),
+                )
+                .arg(
+                    Arg::with_name("acknowledgements")
+                        .long("acknowledgements")
+                        .requires("build")
+                        .help("Build acknowledgements.bin."),
                 ),
         )
     }

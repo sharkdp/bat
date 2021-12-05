@@ -10,6 +10,7 @@ mod acknowledgements;
 pub fn build(
     source_dir: &Path,
     include_integrated_assets: bool,
+    acknowledgements: bool,
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
@@ -19,7 +20,7 @@ pub fn build(
 
     let syntax_set = syntax_set_builder.build();
 
-    let acknowledgements = build_acknowledgements(source_dir, include_integrated_assets)?;
+    let acknowledgements = build_acknowledgements(source_dir, acknowledgements)?;
 
     print_unlinked_contexts(&syntax_set);
 

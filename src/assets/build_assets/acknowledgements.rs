@@ -15,11 +15,8 @@ See the LICENSE-APACHE and LICENSE-MIT files for license details.
 /// Looks for LICENSE and NOTICE files in `source_dir`, does some rudimentary
 /// analysis, and compiles them together in a single string that is meant to be
 /// used in the output to `--acknowledgements`
-pub fn build_acknowledgements(
-    source_dir: &Path,
-    include_integrated_assets: bool,
-) -> Result<Option<String>> {
-    if include_integrated_assets {
+pub fn build_acknowledgements(source_dir: &Path, acknowledgements: bool) -> Result<Option<String>> {
+    if !acknowledgements {
         return Ok(None);
     }
 
