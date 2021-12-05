@@ -13,7 +13,7 @@
   <a href="#кастомизация">Кастомизация</a> •
   <a href="#цели-и-альтернативы">Цели и альтернативы </a><br>
   [<a href="../README.md">English]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-zh.md">中文</a>]
   [<a href="README-ja.md">日本語</a>]
   [<a href="README-ko.md">한국어</a>]
   [Русский]
