@@ -1,4 +1,5 @@
 use assert_cmd::cargo::CommandCargoExt;
+use predicates::boolean::PredicateBooleanExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
 use std::path::Path;
@@ -1254,5 +1255,32 @@ fn ignored_suffix_arg() {
         .assert()
         .success()
         .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stderr("");
+}
+
+#[test]
+fn acknowledgements() {
+    bat()
+        .arg("--acknowledgements")
+        .assert()
+        .success()
+        .stdout(
+            // Just some sanity checking that avoids names of persons, except our own Keith Hall :)
+            predicate::str::contains(
+                "Copyright (c) 2018-2021 bat-developers (https://github.com/sharkdp/bat).",
+            )
+            .and(predicate::str::contains(
+                "Copyright (c) 2012-2020 The Sublime CMake authors",
+            ))
+            .and(predicate::str::contains(
+                "Copyright 2014-2015 SaltStack Team",
+            ))
+            .and(predicate::str::contains(
+                "Copyright (c) 2013-present Dracula Theme",
+            ))
+            .and(predicate::str::contains("Copyright (c) 2017 b123400"))
+            .and(predicate::str::contains("Copyright (c) 2021 Keith Hall"))
+            .and(predicate::str::contains("Copyright 2014 Clams")),
+        )
         .stderr("");
 }

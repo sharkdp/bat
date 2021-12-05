@@ -3,6 +3,9 @@ use syntect::highlighting::ThemeSet;
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets::*;
+use acknowledgements::build_acknowledgements;
+
+mod acknowledgements;
 
 pub fn build(
     source_dir: &Path,
@@ -16,9 +19,17 @@ pub fn build(
 
     let syntax_set = syntax_set_builder.build();
 
+    let acknowledgements = build_acknowledgements(source_dir, include_integrated_assets)?;
+
     print_unlinked_contexts(&syntax_set);
 
-    write_assets(&theme_set, &syntax_set, target_dir, current_version)
+    write_assets(
+        &theme_set,
+        &syntax_set,
+        &acknowledgements,
+        target_dir,
+        current_version,
+    )
 }
 
 fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> ThemeSet {
@@ -87,6 +98,7 @@ fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
 fn write_assets(
     theme_set: &ThemeSet,
     syntax_set: &SyntaxSet,
+    acknowledgements: &Option<String>,
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
@@ -103,6 +115,15 @@ fn write_assets(
         "syntax set",
         COMPRESS_SYNTAXES,
     )?;
+
+    if let Some(acknowledgements) = acknowledgements {
+        asset_to_cache(
+            acknowledgements,
+            &target_dir.join("acknowledgements.bin"),
+            "acknowledgements",
+            COMPRESS_ACKNOWLEDGEMENTS,
+        )?;
+    }
 
     print!(
         "Writing metadata to folder {} ... ",

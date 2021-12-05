@@ -324,6 +324,9 @@ fn run() -> Result<bool> {
             } else if app.matches.is_present("cache-dir") {
                 writeln!(io::stdout(), "{}", cache_dir())?;
                 Ok(true)
+            } else if app.matches.is_present("acknowledgements") {
+                writeln!(io::stdout(), "{}", bat::assets::get_acknowledgements())?;
+                Ok(true)
             } else {
                 run_controller(inputs, &config)
             }

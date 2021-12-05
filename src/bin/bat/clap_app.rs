@@ -509,6 +509,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .help("Show diagnostic information for bug reports.")
         )
         .arg(
+            Arg::with_name("acknowledgements")
+                .long("acknowledgements")
+                .hidden_short_help(true)
+                .help("Show acknowledgements."),
+        )
+        .arg(
             Arg::with_name("ignored-suffix")
                 .number_of_values(1)
                 .multiple(true)
