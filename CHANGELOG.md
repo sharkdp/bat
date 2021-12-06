@@ -35,7 +35,8 @@
 - Racket, see #1884 (@jubnzv)
 - LiveScript, see #1915 (@Enselic)
 - MediaWiki, see #1925 (@sorairolake)
-- Dart, new highlighter, see #1958 (@Ersikan)
+- The `requirements.txt` syntax has been removed due to incompatible license requirements.
+- Dart, new highlighter, see #1959 (@Ersikan)
 
 ## New themes
 
