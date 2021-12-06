@@ -251,7 +251,7 @@ pub(crate) struct InputReader<'a> {
 impl<'a> InputReader<'a> {
     fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
         let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line).ok();
+        Self::read_line_safely(&mut reader, &mut first_line).ok();
 
         let content_type = if first_line.is_empty() {
             None
@@ -276,13 +276,25 @@ impl<'a> InputReader<'a> {
             return Ok(true);
         }
 
-        let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
+        let res = Self::read_line_safely(&mut self.inner, buf).map(|size| size > 0)?;
 
         if self.content_type == Some(ContentType::UTF_16LE) {
             let _ = self.inner.read_until(0x00, buf);
         }
 
         Ok(res)
+    }
+
+    fn read_line_safely<R: BufRead + 'a>(reader: &mut R, buf: &mut Vec<u8>) -> io::Result<usize> {
+        let limit = 100_000_000_usize;
+
+        match reader.take(limit as u64).read_until(b'\n', buf) {
+            Ok(n) if n == limit => Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Lines longer than 100 MB are not supported",
+            )),
+            r => r,
+        }
     }
 }
 
