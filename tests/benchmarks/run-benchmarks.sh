@@ -123,14 +123,16 @@ hyperfine \
 cat "$RESULT_DIR/plain-text-speed.md" >> "$REPORT"
 
 
-for SRC in highlighting-speed-src/*; do
-	filename="$(basename "$SRC")"
+for wrap in character never; do
+	for SRC in highlighting-speed-src/*; do
+		filename="$(basename "$SRC")"
 
-	heading "Syntax highlighting speed: \`$filename\`"
-	hyperfine --warmup "$WARMUP_COUNT" \
-		"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=character --terminal-width=80 '$SRC'" \
-		--command-name "bat … ${filename}" \
-		--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
-		--export-json "$RESULT_DIR/syntax-highlighting-speed-${filename}.json"
-	cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
+		heading "Syntax highlighting speed --wrap=${wrap}: \`$filename\`"
+		hyperfine --warmup "$WARMUP_COUNT" \
+			"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=${wrap} --terminal-width=80 '$SRC'" \
+			--command-name "bat … ${filename}" \
+			--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
+			--export-json "$RESULT_DIR/syntax-highlighting-speed-${filename}.json"
+		cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
+	done
 done
