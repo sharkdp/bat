@@ -46,6 +46,7 @@ pub(crate) mod printer;
 pub mod style;
 pub(crate) mod syntax_mapping;
 mod terminal;
+mod vscreen;
 pub(crate) mod wrapping;
 
 pub use pretty_printer::{Input, PrettyPrinter};

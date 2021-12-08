@@ -30,6 +30,7 @@ use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
+use crate::vscreen::AnsiStyle;
 use crate::wrapping::WrappingMode;
 
 pub(crate) trait Printer {
@@ -118,7 +119,7 @@ pub(crate) struct InteractivePrinter<'a> {
     config: &'a Config<'a>,
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
-    ansi_prefix_sgr: String,
+    ansi_style: AnsiStyle,
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
@@ -202,7 +203,7 @@ impl<'a> InteractivePrinter<'a> {
             config,
             decorations,
             content_type: input.reader.content_type,
-            ansi_prefix_sgr: String::new(),
+            ansi_style: AnsiStyle::new(),
             #[cfg(feature = "git")]
             line_changes,
             highlighter_from_set,
@@ -444,35 +445,51 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                let text = &*self.preprocess(region, &mut cursor_total);
-                let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
-                write!(
-                    handle,
-                    "{}",
-                    as_terminal_escaped(
-                        style,
-                        text_trimmed,
-                        true_color,
-                        colored_output,
-                        italics,
-                        background_color
-                    )
-                )?;
+                let ansi_iterator = AnsiCodeIterator::new(region);
+                for chunk in ansi_iterator {
+                    match chunk {
+                        // ANSI escape passthrough.
+                        (ansi, true) => {
+                            self.ansi_style.update(ansi);
+                            write!(handle, "{}", ansi)?;
+                        }
 
-                if text.len() != text_trimmed.len() {
-                    if let Some(background_color) = background_color {
-                        let ansi_style = Style {
-                            background: to_ansi_color(background_color, true_color),
-                            ..Default::default()
-                        };
-                        let width = if cursor_total <= cursor_max {
-                            cursor_max - cursor_total + 1
-                        } else {
-                            0
-                        };
-                        write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                        // Regular text.
+                        (text, false) => {
+                            let text = &*self.preprocess(text, &mut cursor_total);
+                            let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+
+                            write!(
+                                handle,
+                                "{}",
+                                as_terminal_escaped(
+                                    style,
+                                    &format!("{}{}", self.ansi_style, text_trimmed),
+                                    true_color,
+                                    colored_output,
+                                    italics,
+                                    background_color
+                                )
+                            )?;
+
+                            if text.len() != text_trimmed.len() {
+                                if let Some(background_color) = background_color {
+                                    let ansi_style = Style {
+                                        background: to_ansi_color(background_color, true_color),
+                                        ..Default::default()
+                                    };
+
+                                    let width = if cursor_total <= cursor_max {
+                                        cursor_max - cursor_total + 1
+                                    } else {
+                                        0
+                                    };
+                                    write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                                }
+                                write!(handle, "{}", &text[text_trimmed.len()..])?;
+                            }
+                        }
                     }
-                    write!(handle, "{}", &text[text_trimmed.len()..])?;
                 }
             }
 
@@ -482,31 +499,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
         } else {
             for &(style, region) in &regions {
                 let ansi_iterator = AnsiCodeIterator::new(region);
-                let mut ansi_prefix: String = String::new();
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
-                        (text, true) => {
-                            let is_ansi_csi = text.starts_with("\x1B[");
-
-                            if is_ansi_csi && text.ends_with('m') {
-                                // It's an ANSI SGR sequence.
-                                // We should be mostly safe to just append these together.
-                                ansi_prefix.push_str(text);
-                                if text == "\x1B[0m" {
-                                    self.ansi_prefix_sgr = "\x1B[0m".to_owned();
-                                } else {
-                                    self.ansi_prefix_sgr.push_str(text);
-                                }
-                            } else if is_ansi_csi {
-                                // It's a regular CSI sequence.
-                                // We should be mostly safe to just append these together.
-                                ansi_prefix.push_str(text);
-                            } else {
-                                // It's probably a VT100 code.
-                                // Passing it through is the safest bet.
-                                write!(handle, "{}", text)?;
-                            }
+                        (ansi, true) => {
+                            self.ansi_style.update(ansi);
+                            write!(handle, "{}", ansi)?;
                         }
 
                         // Regular text.
@@ -556,10 +554,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                         "{}\n{}",
                                         as_terminal_escaped(
                                             style,
-                                            &*format!(
-                                                "{}{}{}",
-                                                self.ansi_prefix_sgr, ansi_prefix, line_buf
-                                            ),
+                                            &*format!("{}{}", self.ansi_style, line_buf),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
@@ -585,19 +580,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 "{}",
                                 as_terminal_escaped(
                                     style,
-                                    &*format!(
-                                        "{}{}{}",
-                                        self.ansi_prefix_sgr, ansi_prefix, line_buf
-                                    ),
+                                    &*format!("{}{}", self.ansi_style, line_buf),
                                     self.config.true_color,
                                     self.config.colored_output,
                                     self.config.use_italic_text,
                                     background_color
                                 )
                             )?;
-
-                            // Clear the ANSI prefix buffer.
-                            ansi_prefix.clear();
                         }
                     }
                 }

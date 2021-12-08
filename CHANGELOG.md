@@ -9,6 +9,8 @@
 
 ## Bugfixes
 
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
