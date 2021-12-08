@@ -195,7 +195,7 @@ impl HighlightingAssets {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 self.get_theme_set()
-                    .get(self.fallback_theme.unwrap_or_else(|| Self::default_theme()))
+                    .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
                     .expect("something is very wrong if the default theme is missing")
             }
         }
