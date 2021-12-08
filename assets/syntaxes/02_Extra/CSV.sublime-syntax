@@ -7,7 +7,7 @@ file_extensions:
   - tsv
 scope: text.csv
 variables:
-  field_separator: (?:[,;\t])
+  field_separator: (?:[|,;\t])
   record_separator: (?:$\n?)
 contexts:
   prototype:
