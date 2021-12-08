@@ -47,12 +47,24 @@ impl LineRange {
             }
             2 => {
                 new_range.lower = line_numbers[0].parse()?;
+                let first_byte = line_numbers[1].bytes().next();
 
-                new_range.upper = if line_numbers[1].bytes().next() == Some(b'+') {
+                new_range.upper = if first_byte == Some(b'+') {
                     let more_lines = &line_numbers[1][1..]
                         .parse()
                         .map_err(|_| "Invalid character after +")?;
                     new_range.lower + more_lines
+                } else if first_byte == Some(b'-') {
+                    // this will prevent values like "-+5" even though "+5" is valid integer
+                    if line_numbers[1][1..].bytes().next() == Some(b'+') {
+                        return Err("Invalid character after -".into());
+                    }
+                    let prior_lines = &line_numbers[1][1..]
+                        .parse()
+                        .map_err(|_| "Invalid character after -")?;
+                    let prev_lower = new_range.lower;
+                    new_range.lower = new_range.lower.saturating_sub(*prior_lines);
+                    prev_lower
                 } else {
                     line_numbers[1].parse()?
                 };
@@ -123,6 +135,36 @@ fn test_parse_plus_fail() {
     let range = LineRange::from("40:+-10");
     assert!(range.is_err());
     let range = LineRange::from("40:+");
+    assert!(range.is_err());
+}
+
+#[test]
+fn test_parse_minus_success() {
+    let range = LineRange::from("40:-10").expect("Shouldn't fail on test!");
+    assert_eq!(30, range.lower);
+    assert_eq!(40, range.upper);
+}
+
+#[test]
+fn test_parse_minus_edge_cases_success() {
+    let range = LineRange::from("5:-4").expect("Shouldn't fail on test!");
+    assert_eq!(1, range.lower);
+    assert_eq!(5, range.upper);
+    let range = LineRange::from("5:-5").expect("Shouldn't fail on test!");
+    assert_eq!(0, range.lower);
+    assert_eq!(5, range.upper);
+    let range = LineRange::from("5:-100").expect("Shouldn't fail on test!");
+    assert_eq!(0, range.lower);
+    assert_eq!(5, range.upper);
+}
+
+#[test]
+fn test_parse_minus_fail() {
+    let range = LineRange::from("40:-z");
+    assert!(range.is_err());
+    let range = LineRange::from("40:-+10");
+    assert!(range.is_err());
+    let range = LineRange::from("40:-");
     assert!(range.is_err());
 }
 

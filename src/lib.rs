@@ -19,6 +19,8 @@
 //!     .unwrap();
 //! ```
 
+#![deny(unsafe_code)]
+
 mod macros;
 
 pub mod assets;

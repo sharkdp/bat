@@ -1,7 +1,6 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
-  <a href="https://travis-ci.org/sharkdp/bat"><img src="https://travis-ci.org/sharkdp/bat.svg?branch=master" alt="Build Status"></a>
-  <a href="https://ci.appveyor.com/project/sharkdp/bat"><img src="https://ci.appveyor.com/api/projects/status/cptsmtbiwbnr2vhf/branch/master?svg=true"></a>
+  <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
   Клон утилиты <i>cat(1)</i> с поддержкой выделения синтаксиса и Git
@@ -12,8 +11,12 @@
   <a href="#как-использовать">Использование</a> •
   <a href="#установка">Установка</a> •
   <a href="#кастомизация">Кастомизация</a> •
-  <a href="#цели-и-альтернативы">Цели и альтернативы </a> •
-  Перевод [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>][<a href="doc/README-ja.md">日本語</a>][<a href="doc/README-ko.md">한국어</a>][<a href="doc/README-ru.md">Русский</a>]
+  <a href="#цели-и-альтернативы">Цели и альтернативы </a><br>
+  [<a href="../README.md">English]
+  [<a href="README-zh.md">中文</a>]
+  [<a href="README-ja.md">日本語</a>]
+  [<a href="README-ko.md">한국어</a>]
+  [Русский]
 </p>
 
 ### Выделение синтаксиса
@@ -341,7 +344,7 @@ ansible-galaxy install aeimer.install_bat
 
 ### Из исходников
 
-Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.45 или выше. После этого используйте `cargo`, чтобы все скомпилировать:
+Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.46 или выше. После этого используйте `cargo`, чтобы все скомпилировать:
 
 ```bash
 cargo install --locked bat

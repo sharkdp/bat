@@ -2,6 +2,8 @@
 
 ## Features
 
+- Support for `x:-delta` (minus) syntax in line ranges (e.g. `20:-10`). See  #1901 (@bojan88)
+- Support for `--ignored-suffix` argument. See #1892 (@bojan88)
 - `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 
@@ -10,16 +12,20 @@
 - Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
 - Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- First line not shown in diff context. See #1891 (@divagant-martian)
+- Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
 
 ## Performance
 
 - Load cached assets as fast as integrated assets, see #1753 (@Enselic)
 - Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
-- Reduce startup time by approximately 80% for 91 out of 168 syntaxes when using `--language`. See #1787 (@Enselic)
+- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
 
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
+- Minimum supported Rust version (MSRV) bumped to 1.46
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Syntaxes
 
@@ -29,6 +35,11 @@
 - Highlight for `vimrc` and `gvimrc` files, see #1763 (@SuperSandro2000)
 - Syslog highlighting improvements, see #1793 (@scop)
 - Added support for `slim` syntax, see #1693 (@mfinelli)
+- Racket, see #1884 (@jubnzv)
+- LiveScript, see #1915 (@Enselic)
+- MediaWiki, see #1925 (@sorairolake)
+- The `requirements.txt` syntax has been removed due to incompatible license requirements.
+- Dart, new highlighter, see #1959 (@Ersikan)
 
 ## New themes
 
@@ -38,6 +49,8 @@
 - Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_path()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. They also return which `SyntaxSet` the returned `SyntaxReference` belongs to. See #1747, #1755, #1776, #1862 (@Enselic)
 - Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802 (@Enselic)
 - Replace  the `error::Error(error::ErrorKind, _)` struct and enum with an `error::Error` enum. `Error(ErrorKind::UnknownSyntax, _)` becomes `Error::UnknownSyntax`, etc. Also remove the `error::ResultExt` trait. These changes stem from replacing `error-chain` with `thiserror`. See #1820 (@Enselic)
+- Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its docummentation for more information. Clients are adviced to treat `MapExtensionToUnknown` the same as `MapToUnknown` in exhaustive matches. See #1703 (@cbolgiano)
+
 
 
 
@@ -77,7 +90,6 @@
 ## Bugfixes
 
 - Mouse support and screen clearing broken for `less` versions with minor version number (581.2), see #1629 and #1639 (@aswild)
->>>>>>> origin/master
 
 ## Other
 

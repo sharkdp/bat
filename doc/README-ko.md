@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="logo-header.svg" alt="bat - a cat clone with wings"><br>
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
@@ -11,8 +11,12 @@
   <a href="#사용법">사용법</a> •
   <a href="#설치">설치</a> •
   <a href="#사용자화">사용자화</a> •
-  <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a> •
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="../doc/README-ja.md">日本語</a>] [<a href="../doc/README-ko.md">한국어</a>] [<a href="../doc/README-ru.md">Русский</a>]
+  <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a><br>
+  [<a href="../README.md">English</a>]
+  [<a href="README-zh.md">中文</a>]
+  [<a href="README-ja.md">日本語</a>]
+  [한국어]
+  [<a href="README-ru.md">Русский</a>]
 </p>
 
 ### 문법 강조
@@ -279,6 +283,14 @@ pacman -S bat
 dnf install bat
 ```
 
+### Funtoo Linux에서
+
+dev-kit을 통해 [`bat` 패키지](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat)를 설치할 수 있습니다: 
+
+```bash
+emerge sys-apps/bat
+```
+
 ### Gentoo Linux에서
 
 공식 소스를 통해
@@ -404,7 +416,7 @@ scoop install bat
 
 ### 소스에서
 
-`bat`의 소스를 빌드하기 위해서는, Rust 1.45 이상이 필요합니다.
+`bat`의 소스를 빌드하기 위해서는, Rust 1.46 이상이 필요합니다.
 `cargo`를 이용해 전부 빌드할 수 있습니다:
 
 ```bash
@@ -796,6 +808,10 @@ cargo install --locked --force
 - [eth-p](https://github.com/eth-p)
 - [keith-hall](https://github.com/keith-hall)
 - [Enselic](https://github.com/Enselic)
+
+## 보안 취약점
+
+만약 `bat`의 취약점을 발견하였다면, [David Peter](https://david-peter.de/)에게 메일로 연락주시기 바랍니다. 
 
 ## 프로젝트 목표와 대안들
 

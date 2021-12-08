@@ -1,4 +1,5 @@
 File: sample.rs
+/// A rectangle. First line is changed to prevent a regression of #1869
 struct Rectangle {
     width: u32,
     height: u32,

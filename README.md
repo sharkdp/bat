@@ -12,7 +12,11 @@
   <a href="#installation">Installation</a> •
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a><br>
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>] [<a href="doc/README-ja.md">日本語</a>] [<a href="doc/README-ko.md">한국어</a>] [<a href="doc/README-ru.md">Русский</a>]
+  [English]
+  [<a href="doc/README-zh.md">中文</a>]
+  [<a href="doc/README-ja.md">日本語</a>]
+  [<a href="doc/README-ko.md">한국어</a>]
+  [<a href="doc/README-ru.md">Русский</a>]
 </p>
 
 ### Syntax highlighting
@@ -38,7 +42,7 @@ characters:
 
 ### Automatic paging
 
-By default, `bat` pipes its own output to a pager (e.g `less`) if the output is too large for one screen.
+By default, `bat` pipes its own output to a pager (e.g. `less`) if the output is too large for one screen.
 If you would rather `bat` work like `cat` all the time (never page output), you can set `--paging=never` as an option, either on the command line or in your configuration file.
 If you intend to alias `cat` to `bat` in your shell configuration, you can use `alias cat='bat --paging=never'` to preserve the default behavior.
 
@@ -99,19 +103,23 @@ bat f - g  # output 'f', then stdin, then 'g'.
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
 use `bat`s `--color=always` option to force colorized output. You can also use `--line-range`
 option to restrict the load times for long files:
+
 ```bash
 fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
 ```
-For more information, see [`fzf`s `README`](https://github.com/junegunn/fzf#preview-window).
+
+For more information, see [`fzf`'s `README`](https://github.com/junegunn/fzf#preview-window).
 
 #### `find` or `fd`
 
 You can use the `-exec` option of `find` to preview all search results with `bat`:
+
 ```bash
 find … -exec bat {} +
 ```
 
 If you happen to use [`fd`](https://github.com/sharkdp/fd), you can use the `-X`/`--exec-batch` option to do the same:
+
 ```bash
 fd … -X bat
 ```
@@ -127,9 +135,11 @@ batgrep needle src/
 #### `tail -f`
 
 `bat` can be combined with `tail -f` to continuously monitor a given file with syntax highlighting.
+
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
+
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
 
@@ -137,6 +147,7 @@ explicitly (`-l log`), as it can not be auto-detected in this case.
 
 You can combine `bat` with `git show` to view an older version of a given file with proper syntax
 highlighting:
+
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
@@ -173,7 +184,7 @@ bat main.cpp | xclip
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
-(replace `bat` by `batcat` if you are on Debian or Ubuntu)
+(replace `bat` with `batcat` if you are on Debian or Ubuntu)
 
 It might also be necessary to set `MANROFFOPT="-c"` if you experience
 formatting problems.
@@ -196,15 +207,12 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
 
-`bat` is making its way through the [Ubuntu](https://packages.ubuntu.com/eoan/bat) and
-[Debian](https://packages.debian.org/testing/bat) package release process, and is available
-for Ubuntu as of Eoan 19.10. On Debian `bat` is currently available on the unstable
-"Sid" branch and on the testing branch.
+`bat` is available on [Ubuntu since 20.04 ("Focal")](https://packages.ubuntu.com/search?keywords=bat&exact=1) and [Debian since August 2021 (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat).
 
 If your Ubuntu/Debian installation is new enough you can simply run:
 
 ```bash
-apt install bat
+sudo apt install bat
 ```
 
 **Important**: If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
@@ -251,6 +259,14 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 dnf install bat
 ```
 
+### On Funtoo Linux
+
+You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
+
+```bash
+emerge sys-apps/bat
+```
+
 ### On Gentoo Linux
 
 You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
@@ -287,6 +303,14 @@ or build it on your own from the FreeBSD ports:
 ```bash
 cd /usr/ports/textproc/bat
 make install
+```
+
+### On OpenBSD
+
+You can install `bat` package using [`pkg_add(1)`](https://man.openbsd.org/pkg_add.1):
+
+```bash
+pkg_add bat
 ```
 
 ### Via nix
@@ -363,7 +387,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.45 or
+If you want to build `bat` from source, you need Rust 1.46 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
@@ -568,7 +592,7 @@ alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /de
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
 on your operating system. To get the default path for your system, call
-```
+```bash
 bat --config-file
 ```
 
@@ -649,6 +673,13 @@ bat() {
 ```
 
 ## Troubleshooting
+
+### Garbled output
+
+If an input file contains color codes or other ANSI escape sequences, `bat` will have problems
+performing syntax highlighting and text wrapping, and thus the output can become garbled.
+When displaying such files it is recommended to disable both syntax highlighting and wrapping by
+passing the `--color=never --wrap=never` options to `bat`.
 
 ### Terminals & colors
 

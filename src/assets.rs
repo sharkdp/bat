@@ -2,20 +2,21 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
-use lazycell::LazyCell;
+use once_cell::unsync::OnceCell;
 
-use syntect::highlighting::{Theme, ThemeSet};
+use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use path_abs::PathAbs;
 
-use crate::bat_warning;
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
-use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
+use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
+use crate::syntax_mapping::MappingTarget;
+use crate::{bat_warning, SyntaxMapping};
 
-use ignored_suffixes::*;
-use minimal_assets::*;
+use lazy_theme_set::LazyThemeSet;
+
 use serialized_syntax_set::*;
 
 #[cfg(feature = "build-assets")]
@@ -24,18 +25,15 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
-mod ignored_suffixes;
-mod minimal_assets;
+mod lazy_theme_set;
 mod serialized_syntax_set;
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    syntax_set_cell: LazyCell<SyntaxSet>,
+    syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    minimal_assets: MinimalAssets,
-
-    theme_set: ThemeSet,
+    theme_set: LazyThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -48,30 +46,20 @@ pub struct SyntaxReferenceInSet<'a> {
 /// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
 pub(crate) const COMPRESS_SYNTAXES: bool = true;
 
-/// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_THEMES: bool = true;
+/// We don't want to compress our [LazyThemeSet] since the lazy-loaded themes
+/// within it are already compressed, and compressing another time just makes
+/// performance suffer
+pub(crate) const COMPRESS_THEMES: bool = false;
 
-/// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
-
-/// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
-/// always be `false`, because the data in
-/// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
-/// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
-/// structures like `by_name` are tiny. If we compress, deserialization can't do
-/// efficient byte-by-byte copy of `serialized_syntax_sets`.
-pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
+/// Compress for size of ~40 kB instead of ~200 kB without much difference in
+/// performance due to lazy-loading
+pub(crate) const COMPRESS_LAZY_THEMES: bool = true;
 
 impl HighlightingAssets {
-    fn new(
-        serialized_syntax_set: SerializedSyntaxSet,
-        minimal_syntaxes: MinimalSyntaxes,
-        theme_set: ThemeSet,
-    ) -> Self {
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: LazyThemeSet) -> Self {
         HighlightingAssets {
-            syntax_set_cell: LazyCell::new(),
+            syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
-            minimal_assets: MinimalAssets::new(minimal_syntaxes),
             theme_set,
             fallback_theme: None,
         }
@@ -84,11 +72,6 @@ impl HighlightingAssets {
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
-            asset_from_cache(
-                &cache_path.join("minimal_syntaxes.bin"),
-                "minimal syntax sets",
-                COMPRESS_MINIMAL_SYNTAXES,
-            )?,
             asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
         ))
     }
@@ -96,7 +79,6 @@ impl HighlightingAssets {
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
-            get_integrated_minimal_syntaxes(),
             get_integrated_themeset(),
         )
     }
@@ -105,9 +87,9 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
-            .try_borrow_with(|| self.serialized_syntax_set.deserialize())
+            .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
 
     /// Use [Self::get_syntaxes] instead
@@ -122,22 +104,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    fn get_theme_set(&self) -> &ThemeSet {
+    fn get_theme_set(&self) -> &LazyThemeSet {
         &self.theme_set
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.get_theme_set().themes.keys().map(|s| s.as_ref())
-    }
-
-    /// Finds a [SyntaxSet] that contains a [SyntaxReference] by its name. First
-    /// tries to find a minimal [SyntaxSet]. If none is found, returns the
-    /// [SyntaxSet] that contains all syntaxes.
-    fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
-        match self.minimal_assets.get_syntax_set_by_name(name) {
-            Some(syntax_set) => Ok(syntax_set),
-            None => self.get_syntax_set(),
-        }
+        self.get_theme_set().themes()
     }
 
     /// Use [Self::get_syntax_for_path] instead
@@ -153,9 +125,12 @@ impl HighlightingAssets {
     }
 
     /// Detect the syntax based on, in order:
-    ///  1. Syntax mappings (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
+    ///  1. Syntax mappings with [MappingTarget::MapTo] and [MappingTarget::MapToUnknown]
+    ///     (e.g. `/etc/profile` -> `Bourne Again Shell (bash)`)
     ///  2. The file name (e.g. `Dockerfile`)
-    ///  3. The file name extension (e.g. `.rs`)
+    ///  3. Syntax mappings with [MappingTarget::MapExtensionToUnknown]
+    ///     (e.g. `*.conf`)
+    ///  4. The file name extension (e.g. `.rs`)
     ///
     /// When detecting syntax based on syntax mappings, the full path is taken
     /// into account. When detecting syntax based on file name, no regard is
@@ -165,9 +140,9 @@ impl HighlightingAssets {
     ///
     /// Returns [Error::UndetectedSyntax] if it was not possible detect syntax
     /// based on path/file name/extension (or if the path was mapped to
-    /// [MappingTarget::MapToUnknown]). In this case it is appropriate to fall
-    /// back to other methods to detect syntax. Such as using the contents of
-    /// the first line of the file.
+    /// [MappingTarget::MapToUnknown] or [MappingTarget::MapExtensionToUnknown]).
+    /// In this case it is appropriate to fall back to other methods to detect
+    /// syntax. Such as using the contents of the first line of the file.
     ///
     /// Returns [Error::UnknownSyntax] if a syntax mapping exist, but the mapped
     /// syntax does not exist.
@@ -177,25 +152,39 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         let path = path.as_ref();
-        match mapping.get_syntax_for(path) {
-            Some(MappingTarget::MapToUnknown) => {
+
+        let syntax_match = mapping.get_syntax_for(path);
+
+        if let Some(MappingTarget::MapToUnknown) = syntax_match {
+            return Err(Error::UndetectedSyntax(path.to_string_lossy().into()));
+        }
+
+        if let Some(MappingTarget::MapTo(syntax_name)) = syntax_match {
+            return self
+                .find_syntax_by_name(syntax_name)?
+                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
+        }
+
+        let file_name = path.file_name().unwrap_or_default();
+
+        match (
+            self.get_syntax_for_file_name(file_name, &mapping.ignored_suffixes)?,
+            syntax_match,
+        ) {
+            (Some(syntax), _) => Ok(syntax),
+
+            (_, Some(MappingTarget::MapExtensionToUnknown)) => {
                 Err(Error::UndetectedSyntax(path.to_string_lossy().into()))
             }
 
-            Some(MappingTarget::MapTo(syntax_name)) => self
-                .find_syntax_by_name(syntax_name)?
-                .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned())),
-
-            None => {
-                let file_name = path.file_name().unwrap_or_default();
-                self.get_extension_syntax(file_name)?
-                    .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into()))
-            }
+            _ => self
+                .get_syntax_for_file_extension(file_name, &mapping.ignored_suffixes)?
+                .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
         }
     }
 
     pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
-        match self.get_theme_set().themes.get(theme) {
+        match self.get_theme_set().get(theme) {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
@@ -205,8 +194,9 @@ impl HighlightingAssets {
                 if !theme.is_empty() {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
-                &self.get_theme_set().themes
-                    [self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
+                self.get_theme_set()
+                    .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
+                    .expect("something is very wrong if the default theme is missing")
             }
         }
     }
@@ -218,7 +208,7 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
-            let syntax_set = self.get_syntax_set_by_name(language)?;
+            let syntax_set = self.get_syntax_set()?;
             return syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
@@ -263,15 +253,34 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn get_extension_syntax(&self, file_name: &OsStr) -> Result<Option<SyntaxReferenceInSet>> {
+    fn get_syntax_for_file_name(
+        &self,
+        file_name: &OsStr,
+        ignored_suffixes: &IgnoredSuffixes,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
         if syntax.is_none() {
-            syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
+            syntax =
+                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                    // Note: recursion
+                    self.get_syntax_for_file_name(stripped_file_name, ignored_suffixes)
+                })?;
         }
+        Ok(syntax)
+    }
+
+    fn get_syntax_for_file_extension(
+        &self,
+        file_name: &OsStr,
+        ignored_suffixes: &IgnoredSuffixes,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
+        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         if syntax.is_none() {
-            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_extension_syntax(stripped_file_name) // Note: recursion
-            })?;
+            syntax =
+                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                    // Note: recursion
+                    self.get_syntax_for_file_extension(stripped_file_name, ignored_suffixes)
+                })?;
         }
         Ok(syntax)
     }
@@ -292,15 +301,8 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
     include_bytes!("../assets/syntaxes.bin")
 }
 
-pub(crate) fn get_integrated_themeset() -> ThemeSet {
+pub(crate) fn get_integrated_themeset() -> LazyThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
-}
-
-fn get_integrated_minimal_syntaxes() -> MinimalSyntaxes {
-    from_binary(
-        include_bytes!("../assets/minimal_syntaxes.bin"),
-        COMPRESS_MINIMAL_SYNTAXES,
-    )
 }
 
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
@@ -528,6 +530,42 @@ mod tests {
             .insert("*.h", MappingTarget::MapTo("C"))
             .ok();
         assert_eq!(test.syntax_for_file("test.h"), "C");
+    }
+
+    #[test]
+    fn syntax_detection_with_extension_mapping_to_unknown() {
+        let mut test = SyntaxDetectionTest::new();
+
+        // Normally, a CMakeLists.txt file shall use the CMake syntax, even if it is
+        // a bash script in disguise
+        assert_eq!(
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash"),
+            "CMake"
+        );
+
+        // Other .txt files shall use the Plain Text syntax
+        assert_eq!(
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash"),
+            "Plain Text"
+        );
+
+        // If we setup MapExtensionToUnknown on *.txt, the match on the full
+        // file name of "CMakeLists.txt" shall have higher prio, and CMake shall
+        // still be used for it
+        test.syntax_mapping
+            .insert("*.txt", MappingTarget::MapExtensionToUnknown)
+            .ok();
+        assert_eq!(
+            test.syntax_for_file_with_content("CMakeLists.txt", "#!/bin/bash"),
+            "CMake"
+        );
+
+        // However, for *other* files with a .txt extension, first-line fallback
+        // shall now be used
+        assert_eq!(
+            test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash"),
+            "Bourne Again Shell (bash)"
+        );
     }
 
     #[test]

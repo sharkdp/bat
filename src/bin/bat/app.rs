@@ -107,6 +107,12 @@ impl App {
 
         let mut syntax_mapping = SyntaxMapping::builtin();
 
+        if let Some(values) = self.matches.values_of("ignored-suffix") {
+            for suffix in values {
+                syntax_mapping.insert_ignored_suffix(suffix);
+            }
+        }
+
         if let Some(values) = self.matches.values_of("map-syntax") {
             for from_to in values {
                 let parts: Vec<_> = from_to.split(':').collect();
@@ -301,7 +307,7 @@ impl App {
                     .map(|style_str| {
                         style_str
                             .split(',')
-                            .map(|x| StyleComponent::from_str(x))
+                            .map(StyleComponent::from_str)
                             .collect::<Result<Vec<StyleComponent>>>()
                     })
                     .transpose()?;
