@@ -1229,7 +1229,7 @@ fn grid_for_file_without_newline() {
 // Ensure that ANSI passthrough is emitted properly for both wrapping and non-wrapping printer.
 #[test]
 fn ansi_passthrough_emit() {
-    for wrapping in vec!["never", "character"] {
+    for wrapping in &["never", "character"] {
         bat()
             .arg("--paging=never")
             .arg("--color=never")

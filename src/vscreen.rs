@@ -158,7 +158,7 @@ impl Attributes {
     }
 
     fn update_with_unsupported(&mut self, sequence: &str) -> bool {
-        self.unknown_buffer.push_str(&sequence);
+        self.unknown_buffer.push_str(sequence);
         false
     }
 
