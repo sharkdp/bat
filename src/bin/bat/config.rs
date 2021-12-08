@@ -91,7 +91,7 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
         .ok()
         .map(|content| get_args_from_str(&content))
         .transpose()?
-        .unwrap_or_else(Vec::new))
+        .unwrap_or_default())
 }
 
 pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
