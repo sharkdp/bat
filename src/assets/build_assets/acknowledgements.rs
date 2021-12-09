@@ -1,7 +1,15 @@
 use std::fs::read_to_string;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+
+use walkdir::DirEntry;
 
 use crate::error::*;
+
+struct PathAndStem {
+    path: PathBuf,
+    stem: String,
+    relative_path: String,
+}
 
 /// Looks for LICENSE and NOTICE files in `source_dir`, does some rudimentary
 /// analysis, and compiles them together in a single string that is meant to be
@@ -14,51 +22,63 @@ pub fn build_acknowledgements(
         return Ok(None);
     }
 
-    let mut acknowledgements = include_str!("../../../NOTICE").to_string();
+    let mut acknowledgements = format!("{}\n\n", include_str!("../../../NOTICE"));
 
     // Sort entries so the order is stable over time
     let entries = walkdir::WalkDir::new(source_dir).sort_by(|a, b| a.path().cmp(b.path()));
-    for entry in entries {
-        let entry = match entry {
-            Ok(entry) => entry,
-            Err(_) => continue,
-        };
-
-        let path = entry.path();
-        let stem = match path.file_stem().and_then(|s| s.to_str()) {
-            Some(stem) => stem,
-            None => continue,
-        };
-
-        handle_file(&mut acknowledgements, path, stem)?
+    for path_and_stem in entries
+        .into_iter()
+        .flatten()
+        .map(|entry| to_path_and_stem(source_dir, entry))
+        .flatten()
+    {
+        if let Some(license_text) = handle_file(&path_and_stem)? {
+            append_to_acknowledgements(
+                &mut acknowledgements,
+                &path_and_stem.relative_path,
+                &license_text,
+            )
+        }
     }
 
     Ok(Some(acknowledgements))
 }
 
-fn handle_file(acknowledgements: &mut String, path: &Path, stem: &str) -> Result<()> {
-    if stem == "NOTICE" {
-        handle_notice(acknowledgements, path)?;
-    } else if stem.to_ascii_uppercase() == "LICENSE" {
-        handle_license(acknowledgements, path)?;
+fn to_path_and_stem(source_dir: &Path, entry: DirEntry) -> Option<PathAndStem> {
+    let path = entry.path();
+
+    Some(PathAndStem {
+        path: path.to_owned(),
+        stem: path.file_stem().map(|s| s.to_string_lossy().to_string())?,
+        relative_path: path
+            .strip_prefix(source_dir)
+            .map(|p| p.to_string_lossy().to_string())
+            .ok()?,
+    })
+}
+
+fn handle_file(path_and_stem: &PathAndStem) -> Result<Option<String>> {
+    if path_and_stem.stem == "NOTICE" {
+        handle_notice(&path_and_stem.path)
+    } else if path_and_stem.stem.to_ascii_uppercase() == "LICENSE" {
+        handle_license(&path_and_stem.path)
+    } else {
+        Ok(None)
     }
-
-    Ok(())
 }
 
-fn handle_notice(acknowledgements: &mut String, path: &Path) -> Result<()> {
+fn handle_notice(path: &Path) -> Result<Option<String>> {
     // Assume NOTICE as defined by Apache License 2.0. These must be part of acknowledgements.
-    let license_text = read_to_string(path)?;
-    append_to_acknowledgements(acknowledgements, &license_text)
+    Ok(Some(read_to_string(path)?))
 }
 
-fn handle_license(acknowledgements: &mut String, path: &Path) -> Result<()> {
+fn handle_license(path: &Path) -> Result<Option<String>> {
     let license_text = read_to_string(path)?;
 
     if include_license_in_acknowledgments(&license_text) {
-        append_to_acknowledgements(acknowledgements, &license_text)
+        Ok(Some(license_text))
     } else if license_not_needed_in_acknowledgements(&license_text) {
-        Ok(())
+        Ok(None)
     } else {
         Err(format!("ERROR: License is of unknown type: {:?}", path).into())
     }
@@ -97,14 +117,12 @@ fn license_contains_marker(license_text: &str, markers: &[&str]) -> bool {
     markers.iter().any(|m| normalized_license_text.contains(m))
 }
 
-fn append_to_acknowledgements(acknowledgements: &mut String, license_text: &str) -> Result<()> {
-    // Most license texts wrap at 80 chars so our horizontal divider is 80 chars
-    acknowledgements.push_str(
-        "――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――\n",
-    );
-
-    // Now add the license text itself
-    acknowledgements.push_str(license_text);
+fn append_to_acknowledgements(
+    acknowledgements: &mut String,
+    relative_path: &str,
+    license_text: &str,
+) {
+    acknowledgements.push_str(&format!("## {}\n\n{}", relative_path, license_text));
 
     // Make sure the last char is a newline to not mess up formatting later
     if acknowledgements
@@ -116,7 +134,9 @@ fn append_to_acknowledgements(acknowledgements: &mut String, license_text: &str)
         acknowledgements.push('\n');
     }
 
-    Ok(())
+    // Add two more newlines to make it easy to distinguish where this text ends
+    // and the next starts
+    acknowledgements.push_str("\n\n");
 }
 
 /// Replaces newlines with a space character, and replaces multiple spaces with one space.
@@ -162,24 +182,37 @@ and we need to handle that.";
 
     #[test]
     fn test_append_to_acknowledgements_adds_newline_if_missing() {
-        let mut acknowledgements = "preamble\n".to_owned();
+        let mut acknowledgements = "preamble\n\n\n".to_owned();
 
-        append_to_acknowledgements(&mut acknowledgements, "line without newline").unwrap();
+        append_to_acknowledgements(&mut acknowledgements, "some/path", "line without newline");
         assert_eq!(
             "preamble
-――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+## some/path
+
 line without newline
+
+
 ",
             acknowledgements
         );
 
-        append_to_acknowledgements(&mut acknowledgements, "line with newline\n").unwrap();
+        append_to_acknowledgements(&mut acknowledgements, "another/path", "line with newline\n");
         assert_eq!(
             "preamble
-――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+## some/path
+
 line without newline
-――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+
+
+## another/path
+
 line with newline
+
+
 ",
             acknowledgements
         );

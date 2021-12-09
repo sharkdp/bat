@@ -1278,6 +1278,15 @@ fn acknowledgements() {
             .and(predicate::str::contains(
                 "Copyright (c) 2013-present Dracula Theme",
             ))
+            .and(predicate::str::contains(
+                "## syntaxes/01_Packages/Rust/LICENSE.txt",
+            ))
+            .and(predicate::str::contains(
+                "## syntaxes/02_Extra/http-request-response/LICENSE",
+            ))
+            .and(predicate::str::contains(
+                "## themes/dracula-sublime/LICENSE",
+            ))
             .and(predicate::str::contains("Copyright (c) 2017 b123400"))
             .and(predicate::str::contains("Copyright (c) 2021 Keith Hall"))
             .and(predicate::str::contains("Copyright 2014 Clams")),
