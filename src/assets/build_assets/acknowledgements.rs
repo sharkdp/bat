@@ -3,15 +3,6 @@ use std::path::Path;
 
 use crate::error::*;
 
-// Sourced from the License section in the README.md
-const PREAMBLE: &str = "Copyright (c) 2018-2021 bat-developers (https://github.com/sharkdp/bat).
-
-bat is made available under the terms of either the MIT License or the Apache
-License 2.0, at your option.
-
-See the LICENSE-APACHE and LICENSE-MIT files for license details.
-";
-
 /// Looks for LICENSE and NOTICE files in `source_dir`, does some rudimentary
 /// analysis, and compiles them together in a single string that is meant to be
 /// used in the output to `--acknowledgements`
@@ -20,8 +11,7 @@ pub fn build_acknowledgements(source_dir: &Path, acknowledgements: bool) -> Resu
         return Ok(None);
     }
 
-    let mut acknowledgements = String::new();
-    acknowledgements.push_str(PREAMBLE);
+    let mut acknowledgements = include_str!("../../../NOTICE").to_string();
 
     // Sort entries so the order is stable over time
     let entries = walkdir::WalkDir::new(source_dir).sort_by(|a, b| a.path().cmp(b.path()));
