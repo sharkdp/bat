@@ -94,12 +94,7 @@ fn license_not_needed_in_acknowledgements(license_text: &str) -> bool {
 
 fn license_contains_marker(license_text: &str, markers: &[&str]) -> bool {
     let normalized_license_text = normalize_license_text(license_text);
-    for marker in markers {
-        if normalized_license_text.contains(marker) {
-            return true;
-        }
-    }
-    false
+    markers.iter().any(|m| normalized_license_text.contains(m))
 }
 
 fn append_to_acknowledgements(acknowledgements: &mut String, license_text: &str) -> Result<()> {
