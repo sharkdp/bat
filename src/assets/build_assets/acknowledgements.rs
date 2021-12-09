@@ -6,8 +6,11 @@ use crate::error::*;
 /// Looks for LICENSE and NOTICE files in `source_dir`, does some rudimentary
 /// analysis, and compiles them together in a single string that is meant to be
 /// used in the output to `--acknowledgements`
-pub fn build_acknowledgements(source_dir: &Path, acknowledgements: bool) -> Result<Option<String>> {
-    if !acknowledgements {
+pub fn build_acknowledgements(
+    source_dir: &Path,
+    include_acknowledgements: bool,
+) -> Result<Option<String>> {
+    if !include_acknowledgements {
         return Ok(None);
     }
 
