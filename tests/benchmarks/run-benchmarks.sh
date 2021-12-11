@@ -95,7 +95,7 @@ cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 heading "Startup time with syntax highlighting"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-CpuInfo-file.cpuinfo" \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-CpuInfo-file.cpuinfo" \
 	--command-name "bat … small-CpuInfo-file.cpuinfo" \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
@@ -105,7 +105,7 @@ cat "$RESULT_DIR/startup-time-with-syntax-highlighting.md" >> "$REPORT"
 
 heading "Startup time with syntax with dependencies"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --color=always test-src/small-Markdown-file.md" \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-Markdown-file.md" \
 	--command-name "bat … small-Markdown-file.md" \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" \
@@ -115,7 +115,7 @@ cat "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" >> "$REPORT"
 
 heading "Plain-text speed"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain test-src/numpy_test_multiarray.py" \
+	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain highlighting-speed-src/numpy_test_multiarray.py" \
 	--command-name 'bat … --language=txt numpy_test_multiarray.py' \
 	--warmup "$WARMUP_COUNT" \
     --export-markdown "$RESULT_DIR/plain-text-speed.md" \
@@ -123,14 +123,16 @@ hyperfine \
 cat "$RESULT_DIR/plain-text-speed.md" >> "$REPORT"
 
 
-for SRC in test-src/*; do
-	filename="$(basename "$SRC")"
+for wrap in character never; do
+	for SRC in highlighting-speed-src/*; do
+		filename="$(basename "$SRC")"
 
-	heading "Syntax highlighting speed: \`$filename\`"
-	hyperfine --warmup "$WARMUP_COUNT" \
-		"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=character --terminal-width=80 '$SRC'" \
-		--command-name "bat … ${filename}" \
-		--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
-		--export-json "$RESULT_DIR/syntax-highlighting-speed-${filename}.json"
-	cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
+		heading "Syntax highlighting speed --wrap=${wrap}: \`$filename\`"
+		hyperfine --warmup "$WARMUP_COUNT" \
+			"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=${wrap} --terminal-width=80 '$SRC'" \
+			--command-name "bat … ${filename}" \
+			--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
+			--export-json "$RESULT_DIR/syntax-highlighting-speed-${filename}.json"
+		cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
+	done
 done

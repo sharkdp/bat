@@ -10,6 +10,8 @@
 
 ## Bugfixes
 
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
 - Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
@@ -18,6 +20,7 @@
 
 - Load cached assets as fast as integrated assets, see #1753 (@Enselic)
 - Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
+- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
 
 ## Other
 
@@ -37,6 +40,7 @@
 - LiveScript, see #1915 (@Enselic)
 - MediaWiki, see #1925 (@sorairolake)
 - The `requirements.txt` syntax has been removed due to incompatible license requirements.
+- Dart, new highlighter, see #1959 (@Ersikan)
 
 ## New themes
 

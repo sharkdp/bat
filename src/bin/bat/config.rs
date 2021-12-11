@@ -104,7 +104,7 @@ fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseE
         .map(|line| line.trim())
         .filter(|line| !line.is_empty())
         .filter(|line| !line.starts_with('#'))
-        .map(|line| shell_words::split(line))
+        .map(shell_words::split)
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok(args_per_line

@@ -13,7 +13,7 @@
   <a href="#カスタマイズ">カスタマイズ</a> •
   <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a><br>
   [<a href="../README.md">English</a>]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-zh.md">中文</a>]
   [日本語]
   [<a href="README-ko.md">한국어</a>]
   [<a href="README-ru.md">Русский</a>]
