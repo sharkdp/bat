@@ -55,6 +55,9 @@ pub(crate) const COMPRESS_THEMES: bool = false;
 /// performance due to lazy-loading
 pub(crate) const COMPRESS_LAZY_THEMES: bool = true;
 
+/// Compress for size of ~10 kB instead of ~120 kB
+pub(crate) const COMPRESS_ACKNOWLEDGEMENTS: bool = true;
+
 impl HighlightingAssets {
     fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: LazyThemeSet) -> Self {
         HighlightingAssets {
@@ -303,6 +306,13 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
 
 pub(crate) fn get_integrated_themeset() -> LazyThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
+}
+
+pub fn get_acknowledgements() -> String {
+    from_binary(
+        include_bytes!("../assets/acknowledgements.bin"),
+        COMPRESS_ACKNOWLEDGEMENTS,
+    )
 }
 
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {

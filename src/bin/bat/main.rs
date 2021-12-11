@@ -47,9 +47,13 @@ fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
         .map(Path::new)
         .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
-    let blank = matches.is_present("blank");
-
-    bat::assets::build(source_dir, !blank, target_dir, clap::crate_version!())
+    bat::assets::build(
+        source_dir,
+        !matches.is_present("blank"),
+        matches.is_present("acknowledgements"),
+        target_dir,
+        clap::crate_version!(),
+    )
 }
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
@@ -323,6 +327,9 @@ fn run() -> Result<bool> {
                 Ok(true)
             } else if app.matches.is_present("cache-dir") {
                 writeln!(io::stdout(), "{}", cache_dir())?;
+                Ok(true)
+            } else if app.matches.is_present("acknowledgements") {
+                writeln!(io::stdout(), "{}", bat::assets::get_acknowledgements())?;
                 Ok(true)
             } else {
                 run_controller(inputs, &config)

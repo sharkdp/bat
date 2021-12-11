@@ -34,7 +34,7 @@ minimal-application = [
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
 # Add "syntect/plist-load" when https://github.com/trishume/syntect/pull/345 reaches us
-build-assets = ["syntect/yaml-load", "syntect/dump-create"]
+build-assets = ["syntect/yaml-load", "syntect/dump-create", "regex", "walkdir"]
 
 # You need to use one of these if you depend on bat as a library:
 regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
@@ -63,6 +63,8 @@ clircle = "0.3"
 bugreport = { version = "0.4", optional = true }
 dirs-next = { version = "2.0.0", optional = true }
 grep-cli = { version = "0.1.6", optional = true }
+regex = { version = "1.0", optional = true }
+walkdir = { version = "2.0", optional = true }
 
 [dependencies.git2]
 version = "0.13"

@@ -96,6 +96,7 @@ dependencies = [
  "once_cell",
  "path_abs",
  "predicates",
+ "regex",
  "semver",
  "serde",
  "serde_yaml",
@@ -106,6 +107,7 @@ dependencies = [
  "thiserror",
  "unicode-width",
  "wait-timeout",
+ "walkdir",
  "wild",
 ]
 
