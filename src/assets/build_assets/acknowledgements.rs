@@ -29,8 +29,7 @@ pub fn build_acknowledgements(
     for path_and_stem in entries
         .into_iter()
         .flatten()
-        .map(|entry| to_path_and_stem(source_dir, entry))
-        .flatten()
+        .flat_map(|entry| to_path_and_stem(source_dir, entry))
     {
         if let Some(license_text) = handle_file(&path_and_stem)? {
             append_to_acknowledgements(
