@@ -43,6 +43,7 @@
 - Dart, new highlighter, see #1959 (@Ersikan)
 - SCSS and Sass syntaxes updated, see #1766 (@Enselic)
 - PowerShell syntax updated, see #1935 (@Enselic)
+- TypeScript syntax updated, see #1834 (@Enselic)
 
 ## New themes
 
