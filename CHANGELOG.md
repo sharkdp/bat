@@ -41,6 +41,7 @@
 - MediaWiki, see #1925 (@sorairolake)
 - The `requirements.txt` syntax has been removed due to incompatible license requirements.
 - Dart, new highlighter, see #1959 (@Ersikan)
+- SCSS and Sass syntaxes updated, see #1766 (@Enselic)
 
 ## New themes
 
