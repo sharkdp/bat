@@ -42,6 +42,7 @@
 - The `requirements.txt` syntax has been removed due to incompatible license requirements.
 - Dart, new highlighter, see #1959 (@Ersikan)
 - SCSS and Sass syntaxes updated, see #1766 (@Enselic)
+- PowerShell syntax updated, see #1935 (@Enselic)
 
 ## New themes
 
