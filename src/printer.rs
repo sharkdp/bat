@@ -463,6 +463,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let highlight_this_line =
             self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
+        if highlight_this_line && self.config.theme == "ansi" {
+            self.ansi_style.update("^[4m");
+        }
+
         let background_color = self
             .background_color_highlight
             .filter(|_| highlight_this_line);
@@ -647,6 +651,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 )?;
             }
             writeln!(handle)?;
+        }
+
+        if highlight_this_line && self.config.theme == "ansi" {
+            self.ansi_style.update("^[24m");
         }
 
         Ok(())
