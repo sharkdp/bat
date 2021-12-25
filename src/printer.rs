@@ -4,6 +4,9 @@ use std::vec::Vec;
 use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
 
+use bytesize::ByteSize;
+use time::{format_description, OffsetDateTime};
+
 use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
@@ -26,6 +29,7 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::LineChanges;
 use crate::error::*;
+use crate::header::HeaderComponent;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
@@ -289,15 +293,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         if self.config.style_components.grid() {
             self.print_horizontal_line(handle, '┬')?;
-
-            write!(
-                handle,
-                "{}{}",
-                " ".repeat(self.panel_width),
-                self.colors
-                    .grid
-                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
-            )?;
         } else {
             // Only pad space between files, if we haven't already drawn a horizontal rule
             if add_header_padding && !self.config.style_components.rule() {
@@ -315,17 +310,73 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         let description = &input.description;
+        let metadata = &input.metadata;
 
-        writeln!(
-            handle,
-            "{}{}{}",
-            description
-                .kind()
-                .map(|kind| format!("{}: ", kind))
-                .unwrap_or_else(|| "".into()),
-            self.colors.filename.paint(description.title()),
-            mode
-        )?;
+        self.config
+            .header_components
+            .0
+            .iter()
+            .try_for_each(|component| {
+                if self.config.style_components.grid() {
+                    write!(
+                        handle,
+                        "{}{}",
+                        " ".repeat(self.panel_width),
+                        self.colors
+                            .grid
+                            .paint(if self.panel_width > 0 { "│ " } else { "" }),
+                    )?;
+                };
+
+                match component {
+                    HeaderComponent::Filename => writeln!(
+                        handle,
+                        "{}{}{}",
+                        description
+                            .kind()
+                            .map(|kind| format!("{}: ", kind))
+                            .unwrap_or_else(|| "".into()),
+                        self.colors.filename.paint(description.title()),
+                        mode
+                    ),
+
+                    HeaderComponent::Size => {
+                        let bsize = metadata
+                            .size
+                            .map(|s| format!("{}", ByteSize(s)))
+                            .unwrap_or("".into());
+                        writeln!(handle, "Size: {}", bsize)
+                    }
+
+                    HeaderComponent::Permissions => writeln!(
+                        handle,
+                        "Permissions: {:o}",
+                        metadata
+                            .permissions
+                            .clone()
+                            .map(|perm| perm.mode)
+                            .unwrap_or(0)
+                    ),
+
+                    HeaderComponent::LastModified => {
+                        let format = format_description::parse(
+                            "[day] [month repr:short] [year] [hour]:[minute]:[second]",
+                        )
+                        .unwrap();
+                        let fmt_modified = metadata
+                            .modified
+                            .map(|t| OffsetDateTime::from(t).format(&format).unwrap());
+
+                        writeln!(
+                            handle,
+                            "Last Modified At: {}",
+                            fmt_modified.unwrap_or("".into())
+                        )
+                    }
+
+                    _ => Ok(()),
+                }
+            })?;
 
         if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {

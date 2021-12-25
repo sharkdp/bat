@@ -19,6 +19,7 @@ use bat::{
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
+    header::{HeaderComponent, HeaderComponents},
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
@@ -78,6 +79,7 @@ impl App {
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
         let style_components = self.style_components()?;
+        let header_components = self.header_components()?;
 
         let paging_mode = match self.matches.value_of("paging") {
             Some("always") => PagingMode::Always,
@@ -229,6 +231,7 @@ impl App {
                 ),
             },
             style_components,
+            header_components,
             syntax_mapping,
             pager: self.matches.value_of("pager"),
             use_italic_text: self.matches.value_of("italic-text") == Some("always"),
@@ -337,5 +340,39 @@ impl App {
         }
 
         Ok(styled_components)
+    }
+
+    fn header_components(&self) -> Result<HeaderComponents> {
+        let matches = &self.matches;
+        let header_components = HeaderComponents({
+            let env_header_components: Option<Vec<HeaderComponent>> = env::var("BAT_HEADER_INFO")
+                .ok()
+                .map(|header_str| {
+                    header_str
+                        .split(',')
+                        .map(HeaderComponent::from_str)
+                        .collect::<Result<Vec<HeaderComponent>>>()
+                })
+                .transpose()?;
+
+            matches
+                .values_of("header-info")
+                .map(|header| {
+                    header
+                        .map(|header| header.parse::<HeaderComponent>())
+                        .filter_map(|header| header.ok())
+                        .collect::<Vec<_>>()
+                })
+                .or(env_header_components)
+                .unwrap_or_else(|| vec![HeaderComponent::Full])
+                .into_iter()
+                .map(|header| header.components())
+                .fold(HashSet::new(), |mut acc, components| {
+                    acc.extend(components.iter().cloned());
+                    acc
+                })
+        });
+
+        Ok(header_components)
     }
 }

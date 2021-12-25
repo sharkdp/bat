@@ -382,6 +382,33 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
+            Arg::with_name("header-info")
+                .long("header-info")
+                .value_name("components")
+                .use_delimiter(true)
+                .takes_value(true)
+                .possible_values(&["full", "auto", "filename", "size", "last-modified", "permissions"])
+                .help(
+                    "Comma-separated list of header information elements to display \
+                     (full, filename, size, last-modified, permissions).",
+                )
+                .long_help(
+                    "Configure what information (filename, file size, last modification date, \
+                     permissions, ..) to display in the header.\
+                     The argument is a comma-separated list of \
+                     components to display (e.g. 'filename,size,last-modified') or all of them ('full'). \
+                     To set a default set of header information, add the \
+                     '--header-info=\"..\"' option to the configuration file or export the \
+                     BAT_HEADER_INFO environment variable (e.g.: export BAT_HEADER_INFO=\"..\").\n\n\
+                     Possible values:\n\n  \
+                     * full: enables all available components (default).\n  \
+                     * filename: displays the file name.\n  \
+                     * size: displays the size of the file in human-readable format.\n  \
+                     * last-modified: displays the last modification timestamp of the file.\n  \
+                     * permissions: displays the file owner, group and mode.",
+                ),
+        )
+        .arg(
             Arg::with_name("style")
                 .long("style")
                 .value_name("components")
