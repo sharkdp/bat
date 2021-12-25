@@ -676,7 +676,7 @@ bat() {
 
 ### Garbled output
 
-If an input file contains color codes or other ANSI escape sequences, `bat` will have problems
+If an input file contains color codes or other ANSI escape sequences or control characters, `bat` will have problems
 performing syntax highlighting and text wrapping, and thus the output can become garbled.
 When displaying such files it is recommended to disable both syntax highlighting and wrapping by
 passing the `--color=never --wrap=never` options to `bat`.
