@@ -72,9 +72,9 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "4.6.0"
+version = "4.7.0"
 default-features = false
-features = ["parsing"]
+features = ["parsing", "plist-load", "dump-load"]
 
 [dependencies.clap]
 version = "2.34"
