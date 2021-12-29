@@ -1,7 +1,7 @@
 name: CICD
 
 env:
-  MIN_SUPPORTED_RUST_VERSION: "1.46.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.51.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on:
@@ -54,7 +54,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --locked --all-targets --all-features -- --allow clippy::unknown_clippy_lints
+        args: --locked --all-targets --all-features
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
