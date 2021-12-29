@@ -364,7 +364,7 @@ impl App {
                         .collect::<Vec<_>>()
                 })
                 .or(env_header_components)
-                .unwrap_or_else(|| vec![HeaderComponent::Full])
+                .unwrap_or_else(|| vec![HeaderComponent::Filename])
                 .into_iter()
                 .map(|header| header.components())
                 .fold(Vec::new(), |mut acc, components| {
