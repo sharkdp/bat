@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::fmt;
 use std::str::FromStr;
 
@@ -64,7 +63,7 @@ impl FromStr for HeaderComponent {
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct HeaderComponents(pub HashSet<HeaderComponent>);
+pub struct HeaderComponents(pub Vec<HeaderComponent>);
 
 impl HeaderComponents {
     pub fn new(components: &[HeaderComponent]) -> HeaderComponents {

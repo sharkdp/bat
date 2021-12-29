@@ -367,7 +367,7 @@ impl App {
                 .unwrap_or_else(|| vec![HeaderComponent::Full])
                 .into_iter()
                 .map(|header| header.components())
-                .fold(HashSet::new(), |mut acc, components| {
+                .fold(Vec::new(), |mut acc, components| {
                     acc.extend(components.iter().cloned());
                     acc
                 })
