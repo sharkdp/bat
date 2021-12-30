@@ -1254,7 +1254,7 @@ fn ignored_suffix_arg() {
         .arg("test.json~")
         .assert()
         .success()
-        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("{\u{1b}[32m\"\u{1b}[0m\u{1b}[32mtest\u{1b}[0m\u{1b}[32m\"\u{1b}[0m: \u{1b}[32m\"\u{1b}[0m\u{1b}[32mvalue\u{1b}[0m\u{1b}[32m\"\u{1b}[0m}")
         .stderr("");
 
     bat()
@@ -1264,7 +1264,7 @@ fn ignored_suffix_arg() {
         .arg("test.json.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("{\u{1b}[32m\"\u{1b}[0m\u{1b}[32mtest\u{1b}[0m\u{1b}[32m\"\u{1b}[0m: \u{1b}[32m\"\u{1b}[0m\u{1b}[32mvalue\u{1b}[0m\u{1b}[32m\"\u{1b}[0m}")
         .stderr("");
 
     bat()
@@ -1273,7 +1273,7 @@ fn ignored_suffix_arg() {
         .arg("test.json.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stdout("{\"test\": \"value\"}")
         .stderr("");
 }
 

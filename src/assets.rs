@@ -69,7 +69,7 @@ impl HighlightingAssets {
     }
 
     pub fn default_theme() -> &'static str {
-        "Monokai Extended"
+        "ansi"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
