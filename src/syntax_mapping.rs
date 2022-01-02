@@ -8,6 +8,7 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 pub mod ignored_suffixes;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[non_exhaustive]
 pub enum MappingTarget<'a> {
     /// For mapping a path to a specific syntax.
     MapTo(&'a str),

@@ -74,13 +74,9 @@ fn get_syntax_mapping_to_paths<'a>(
 ) -> HashMap<&'a str, Vec<String>> {
     let mut map = HashMap::new();
     for mapping in mappings {
-        match mapping {
-            (_, MappingTarget::MapToUnknown) => {}
-            (_, MappingTarget::MapExtensionToUnknown) => {}
-            (matcher, MappingTarget::MapTo(s)) => {
-                let globs = map.entry(*s).or_insert_with(Vec::new);
-                globs.push(matcher.glob().glob().into());
-            }
+        if let (matcher, MappingTarget::MapTo(s)) = mapping {
+            let globs = map.entry(*s).or_insert_with(Vec::new);
+            globs.push(matcher.glob().glob().into());
         }
     }
     map
