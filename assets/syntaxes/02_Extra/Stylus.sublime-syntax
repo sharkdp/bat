@@ -197,7 +197,7 @@ contexts:
           scope: entity.other.attribute-name.stylus
     - match: |-
         (?x)                # multi-line regex definition mode
-        (?<=^|;|{)\s*    # starts after begining of line, '{' or ';''
+        (?<=^|;|{)\s*    # starts after beginning of line, '{' or ';''
         (?=                 # lookahead for
             (
              [a-zA-Z0-9_-]  # then a letter
@@ -207,7 +207,7 @@ contexts:
              (/\*.*?\*/)    # comment
             )+
 
-            \s*[:\s]\s*     # value is separted by colon or space
+            \s*[:\s]\s*     # value is separated by colon or space
 
             (?!(\s*\{))     # if there are only spaces afterwards
 
