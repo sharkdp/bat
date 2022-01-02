@@ -1,7 +1,6 @@
 use std::collections::HashSet;
 use std::env;
 use std::path::Path;
-use std::str::FromStr;
 
 use atty::{self, Stream};
 
@@ -32,7 +31,7 @@ fn is_truecolor_terminal() -> bool {
 }
 
 pub struct App {
-    pub matches: ArgMatches<'static>,
+    pub matches: ArgMatches,
     interactive_output: bool,
 }
 
@@ -49,8 +48,8 @@ impl App {
         })
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
-        let app = clap_app::build_app(interactive_output);
+    fn matches(interactive_output: bool) -> Result<ArgMatches> {
+        let mut app = clap_app::build_app(interactive_output);
         if wild::args_os().nth(1) == Some("cache".into())
             || wild::args_os().any(|arg| arg == "--no-config")
         {
@@ -62,35 +61,22 @@ impl App {
                 .unwrap_or_else(get_args_from_config_file)
                 .map_err(|_| "Could not parse configuration file")?;
 
-            let mut config_matches = app
+            let config_matches = app
                 .clone()
                 .setting(AppSettings::NoBinaryName)
                 .setting(AppSettings::AllArgsOverrideSelf)
                 .get_matches_from(config_args);
 
-            let mut args_matches = app.get_matches_from(wild::args_os());
+            let names: Vec<&str> = app.get_arguments().map(|arg| arg.get_name()).collect();
 
-            for (name, arg) in config_matches
-                .args
-                .drain()
-                .filter(|(_, arg)| arg.occurs > 0)
-            {
-                args_matches
-                    .args
-                    .entry(&name)
-                    .and_modify(|matched_arg| {
-                        // There are two cases when `occurs` and `vals.len()` don't match up,
-                        // when there are defaults present, and when an environment variable is
-                        // present.
-                        // In both of those cases we want to disregard the config matches.
-                        if matched_arg.occurs == 0 && arg.occurs == arg.vals.len() as u64 {
-                            *matched_arg = arg.clone();
-                        }
-                    })
-                    .or_insert(arg);
+            for name in names {
+                if let Some(vals) = config_matches.values_of(name) {
+                    let vals: Vec<String> = vals.map(|v| v.to_owned()).collect();
+                    app = app.mut_arg(name, |a| a.default_values(&vals));
+                }
             }
 
-            Ok(args_matches)
+            Ok(app.get_matches_from(wild::args_os()))
         }
     }
 

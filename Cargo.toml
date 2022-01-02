@@ -77,10 +77,10 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "2.34"
+version = "3.0"
 optional = true
 default-features = false
-features = ["suggestions", "color", "wrap_help"]
+features = ["suggestions", "color", "wrap_help", "cargo", "std", "env"]
 
 [dev-dependencies]
 assert_cmd = "2.0.2"
