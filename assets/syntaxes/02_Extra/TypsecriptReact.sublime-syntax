@@ -379,7 +379,7 @@ contexts:
         1: keyword.operator.rest.tsx
         2: punctuation.definition.binding-pattern.array.tsx
       push:
-        - meta_scope: meta.paramter.array-binding-pattern.tsx
+        - meta_scope: meta.parameter.array-binding-pattern.tsx
         - match: '\]'
           captures:
             0: punctuation.definition.binding-pattern.array.tsx

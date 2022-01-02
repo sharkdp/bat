@@ -402,7 +402,7 @@ contexts:
         1: keyword.operator.rest.ts
         2: punctuation.definition.binding-pattern.array.ts
       push:
-        - meta_scope: meta.paramter.array-binding-pattern.ts
+        - meta_scope: meta.parameter.array-binding-pattern.ts
         - match: '\]'
           captures:
             0: punctuation.definition.binding-pattern.array.ts
