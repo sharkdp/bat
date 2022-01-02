@@ -222,7 +222,7 @@ man 2 select
 `bat`은 [Ubuntu](https://packages.ubuntu.com/eoan/bat)와
 [Debian](https://packages.debian.org/sid/bat) 패키지 배포 과정에 도입되는 중이며,
 Eoan 19.10 버전의 Ubuntu에서부터 제공됩니다.
-현재 Debain에서는 불안정한 "Sid" 브랜치에서만 `bat`이 제공됩니다.
+현재 Debian에서는 불안정한 "Sid" 브랜치에서만 `bat`이 제공됩니다.
 
 만약 충분히 최신 버전의 Ubuntu/Debian이 설치되어 있다면 간단히 다음을 실행하세요:
 
