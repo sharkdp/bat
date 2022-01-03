@@ -8,6 +8,11 @@
   </div>
 </template>
 
+<template lang='pug'>
+  #container.col
+    p This shall be formated as Plain Text as long as a Pug syntax definition is missing
+</template>
+
 <script>
 import AppHeader from "@/components/AppHeader";
 import AppLoadingIndicator from "@/components/AppLoadingIndicator";

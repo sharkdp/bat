@@ -447,7 +447,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             };
             highlighter_from_set
                 .highlighter
-                .highlight(&line, highlighter_from_set.syntax_set)
+                .highlight_line(&line, highlighter_from_set.syntax_set)?
         };
 
         if out_of_range {
