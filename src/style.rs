@@ -11,6 +11,10 @@ pub enum StyleComponent {
     Grid,
     Rule,
     Header,
+    Filename,
+    Filesize,
+    Permissions,
+    LastModified,
     LineNumbers,
     Snip,
     Full,
@@ -31,14 +35,21 @@ impl StyleComponent {
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Rule => &[StyleComponent::Rule],
-            StyleComponent::Header => &[StyleComponent::Header],
+            StyleComponent::Header => &[StyleComponent::Filename],
+            StyleComponent::Filename => &[StyleComponent::Filename],
+            StyleComponent::Filesize => &[StyleComponent::Filesize],
+            StyleComponent::Permissions => &[StyleComponent::Permissions],
+            StyleComponent::LastModified => &[StyleComponent::LastModified],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
-                StyleComponent::Header,
+                StyleComponent::Filename,
+                StyleComponent::Filesize,
+                StyleComponent::Permissions,
+                StyleComponent::LastModified,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -57,7 +68,11 @@ impl FromStr for StyleComponent {
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
             "rule" => Ok(StyleComponent::Rule),
-            "header" => Ok(StyleComponent::Header),
+            "header" => Ok(StyleComponent::Filename),
+            "filename" => Ok(StyleComponent::Filename),
+            "filesize" => Ok(StyleComponent::Filesize),
+            "permissions" => Ok(StyleComponent::Permissions),
+            "lastmodified" => Ok(StyleComponent::LastModified),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
@@ -89,7 +104,23 @@ impl StyleComponents {
     }
 
     pub fn header(&self) -> bool {
-        self.0.contains(&StyleComponent::Header)
+        self.filename() || self.filesize() || self.permissions() || self.last_modified()
+    }
+
+    pub fn filename(&self) -> bool {
+        self.0.contains(&StyleComponent::Filename)
+    }
+
+    pub fn filesize(&self) -> bool {
+        self.0.contains(&StyleComponent::Filesize)
+    }
+
+    pub fn permissions(&self) -> bool {
+        self.0.contains(&StyleComponent::Permissions)
+    }
+
+    pub fn last_modified(&self) -> bool {
+        self.0.contains(&StyleComponent::LastModified)
     }
 
     pub fn numbers(&self) -> bool {

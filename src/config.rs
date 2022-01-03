@@ -1,4 +1,3 @@
-use crate::header::HeaderComponents;
 use crate::line_range::{HighlightedLineRanges, LineRanges};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
@@ -58,9 +57,6 @@ pub struct Config<'a> {
 
     /// Style elements (grid, line numbers, ...)
     pub style_components: StyleComponents,
-
-    /// Header elements (filename, size, ...)
-    pub header_components: HeaderComponents,
 
     /// If and how text should be wrapped
     pub wrapping_mode: WrappingMode,

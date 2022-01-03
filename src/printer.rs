@@ -29,10 +29,10 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 #[cfg(feature = "git")]
 use crate::diff::LineChanges;
 use crate::error::*;
-use crate::header::HeaderComponent;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::AnsiStyle;
 use crate::wrapping::WrappingMode;
@@ -312,71 +312,92 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let description = &input.description;
         let metadata = &input.metadata;
 
-        self.config
-            .header_components
-            .0
-            .iter()
-            .try_for_each(|component| {
-                if self.config.style_components.grid() {
-                    write!(
-                        handle,
-                        "{}{}",
-                        " ".repeat(self.panel_width),
-                        self.colors
-                            .grid
-                            .paint(if self.panel_width > 0 { "│ " } else { "" }),
-                    )?;
-                };
+        // We use this iterator to have a deterministic order for
+        // header components. HashSet has arbitrary order, but Vec is ordered.
+        let header_components: Vec<StyleComponent> = [
+            (
+                StyleComponent::Filename,
+                self.config.style_components.filename(),
+            ),
+            (
+                StyleComponent::Filesize,
+                self.config.style_components.filesize(),
+            ),
+            (
+                StyleComponent::Permissions,
+                self.config.style_components.permissions(),
+            ),
+            (
+                StyleComponent::LastModified,
+                self.config.style_components.last_modified(),
+            ),
+        ]
+        .iter()
+        .filter(|(_, is_enabled)| *is_enabled)
+        .map(|(component, _)| *component)
+        .collect();
 
-                match component {
-                    HeaderComponent::Filename => writeln!(
-                        handle,
-                        "{}{}{}",
-                        description
-                            .kind()
-                            .map(|kind| format!("{}: ", kind))
-                            .unwrap_or_else(|| "".into()),
-                        self.colors.filename.paint(description.title()),
-                        mode
-                    ),
+        header_components.iter().try_for_each(|component| {
+            if self.config.style_components.grid() {
+                write!(
+                    handle,
+                    "{}{}",
+                    " ".repeat(self.panel_width),
+                    self.colors
+                        .grid
+                        .paint(if self.panel_width > 0 { "│ " } else { "" }),
+                )?;
+            };
 
-                    HeaderComponent::Size => {
-                        let bsize = metadata
-                            .size
-                            .map(|s| format!("{}", ByteSize(s)))
-                            .unwrap_or("".into());
-                        writeln!(handle, "Size: {}", bsize)
-                    }
+            match component {
+                StyleComponent::Filename => writeln!(
+                    handle,
+                    "{}{}{}",
+                    description
+                        .kind()
+                        .map(|kind| format!("{}: ", kind))
+                        .unwrap_or_else(|| "".into()),
+                    self.colors.filename.paint(description.title()),
+                    mode
+                ),
 
-                    HeaderComponent::Permissions => writeln!(
-                        handle,
-                        "Permissions: {:o}",
-                        metadata
-                            .permissions
-                            .clone()
-                            .map(|perm| perm.mode)
-                            .unwrap_or(0)
-                    ),
-
-                    HeaderComponent::LastModified => {
-                        let format = format_description::parse(
-                            "[day] [month repr:short] [year] [hour]:[minute]:[second]",
-                        )
-                        .unwrap();
-                        let fmt_modified = metadata
-                            .modified
-                            .map(|t| OffsetDateTime::from(t).format(&format).unwrap());
-
-                        writeln!(
-                            handle,
-                            "Last Modified At: {}",
-                            fmt_modified.unwrap_or("".into())
-                        )
-                    }
-
-                    _ => Ok(()),
+                StyleComponent::Filesize => {
+                    let bsize = metadata
+                        .size
+                        .map(|s| format!("{}", ByteSize(s)))
+                        .unwrap_or("".into());
+                    writeln!(handle, "Size: {}", bsize)
                 }
-            })?;
+
+                StyleComponent::Permissions => writeln!(
+                    handle,
+                    "Permissions: {:o}",
+                    metadata
+                        .permissions
+                        .clone()
+                        .map(|perm| perm.mode)
+                        .unwrap_or(0)
+                ),
+
+                StyleComponent::LastModified => {
+                    let format = format_description::parse(
+                        "[day] [month repr:short] [year] [hour]:[minute]:[second]",
+                    )
+                    .unwrap();
+                    let fmt_modified = metadata
+                        .modified
+                        .map(|t| OffsetDateTime::from(t).format(&format).unwrap());
+
+                    writeln!(
+                        handle,
+                        "Last Modified At: {}",
+                        fmt_modified.unwrap_or("".into())
+                    )
+                }
+
+                _ => Ok(()),
+            }
+        })?;
 
         if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {

@@ -1,3 +1,4 @@
+use bat::bat_warning;
 use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
 use once_cell::sync::Lazy;
 use std::env;
@@ -382,33 +383,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
-            Arg::with_name("header-info")
-                .long("header-info")
-                .value_name("components")
-                .use_delimiter(true)
-                .takes_value(true)
-                .possible_values(&["full", "auto", "filename", "size", "last-modified", "permissions"])
-                .help(
-                    "Comma-separated list of header information elements to display \
-                     (full, filename, size, last-modified, permissions).",
-                )
-                .long_help(
-                    "Configure what information (filename, file size, last modification date, \
-                     permissions, ..) to display in the header.\
-                     The argument is a comma-separated list of \
-                     components to display (e.g. 'filename,size,last-modified') or all of them ('full'). \
-                     To set a default set of header information, add the \
-                     '--header-info=\"..\"' option to the configuration file or export the \
-                     BAT_HEADER_INFO environment variable (e.g.: export BAT_HEADER_INFO=\"..\").\n\n\
-                     Possible values:\n\n  \
-                     * full: enables all available components (default).\n  \
-                     * filename: displays the file name.\n  \
-                     * size: displays the size of the file in human-readable format.\n  \
-                     * last-modified: displays the last modification timestamp of the file.\n  \
-                     * permissions: displays the file owner, group and mode.",
-                ),
-        )
-        .arg(
             Arg::with_name("style")
                 .long("style")
                 .value_name("components")
@@ -423,12 +397,16 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "grid", "rule", "numbers", "snip",
+                            "auto", "full", "plain", "header", "filename", "filesize", "permissions", "lastmodified", "grid", "rule", "numbers", "snip",
                             #[cfg(feature = "git")]
                                 "changes",
                         ]
                             .contains(style)
                     });
+
+                    if val.contains("header") {
+                        bat_warning!("Style 'header' is deprecated, use 'filename' instead.");
+                    }
 
                     if let Some(invalid) = invalid_vals.next() {
                         Err(format!("Unknown style, '{}'", invalid))
@@ -453,7 +431,10 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
-                     * header: show filenames before the content.\n  \
+                     * filename: displays the file name.\n  \
+                     * size: displays the size of the file in human-readable format.\n  \
+                     * last-modified: displays the last modification timestamp of the file.\n  \
+                     * permissions: displays the file owner, group and mode.\n \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
