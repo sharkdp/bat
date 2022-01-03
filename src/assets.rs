@@ -43,8 +43,9 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
-/// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SYNTAXES: bool = true;
+/// Lazy-loaded syntaxes are already compressed, and we don't want to compress
+/// already compressed data.
+pub(crate) const COMPRESS_SYNTAXES: bool = false;
 
 /// We don't want to compress our [LazyThemeSet] since the lazy-loaded themes
 /// within it are already compressed, and compressing another time just makes
@@ -579,13 +580,22 @@ mod tests {
     }
 
     #[test]
-    fn syntax_detection_is_case_sensitive() {
+    fn syntax_detection_is_case_insensitive() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
+
+        // Adding a mapping for "MD" in addition to "md" should not break the mapping
         test.syntax_mapping
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
+
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
         assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
     }
 
