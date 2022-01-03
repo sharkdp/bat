@@ -1,5 +1,13 @@
 # unreleased
 
+## Performance
+
+- Load themes and syntaxes lazily to make bat start TODO% faster. See #1747, #1969, #TODO (@Enselic)
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
+- Load custom assets as fast as integrated assets, see #1753 (@Enselic)
+
 ## Features
 
 - Support for `x:-delta` (minus) syntax in line ranges (e.g. `20:-10`). See  #1901 (@bojan88)
@@ -7,26 +15,17 @@
 - `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 - Add new `--acknowledgements` option that gives credit to theme and syntax definition authors. See #1971 (@Enselic)
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Bugfixes
 
-- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
-- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
-- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
-
-## Performance
-
-- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
-- Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
-- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
 
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
 - Minimum supported Rust version (MSRV) bumped to 1.51, see #1994 (@mdibaiee)
-- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Syntaxes
 
