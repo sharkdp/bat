@@ -1,4 +1,3 @@
-use bat::bat_warning;
 use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
 use once_cell::sync::Lazy;
 use std::env;
@@ -397,16 +396,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "filename", "filesize", "permissions", "lastmodified", "grid", "rule", "numbers", "snip",
+                            "auto", "full", "plain", "header", "header-full", "header-filename", "header-filesize", "header-permissions", "header-lastmodified", "grid", "rule", "numbers", "snip",
                             #[cfg(feature = "git")]
                                 "changes",
                         ]
                             .contains(style)
                     });
-
-                    if val.contains("header") {
-                        bat_warning!("Style 'header' is deprecated, use 'filename' instead.");
-                    }
 
                     if let Some(invalid) = invalid_vals.next() {
                         Err(format!("Unknown style, '{}'", invalid))
@@ -431,10 +426,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
-                     * filename: displays the file name.\n  \
-                     * size: displays the size of the file in human-readable format.\n  \
-                     * last-modified: displays the last modification timestamp of the file.\n  \
-                     * permissions: displays the file owner, group and mode.\n \
+                     * header: displays the filename and filesize.\n \
+                     * header-full: displays all header-* fields.\n \
+                     * header-filename: displays the file name.\n  \
+                     * header-filesize: displays the size of the file in human-readable format.\n  \
+                     * header-last-modified: displays the last modification timestamp of the file.\n  \
+                     * header-permissions: displays the file owner, group and mode.\n \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \

@@ -164,8 +164,8 @@ impl<'a> Input<'a> {
 
                 InputMetadata {
                     size: Some(size),
-                    modified: modified,
-                    permissions: permissions,
+                    modified,
+                    permissions,
                     ..InputMetadata::default()
                 }
             }
@@ -174,7 +174,7 @@ impl<'a> Input<'a> {
 
         Input {
             description: kind.description(),
-            metadata: metadata,
+            metadata,
             kind,
         }
     }

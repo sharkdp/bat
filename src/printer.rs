@@ -316,20 +316,20 @@ impl<'a> Printer for InteractivePrinter<'a> {
         // header components. HashSet has arbitrary order, but Vec is ordered.
         let header_components: Vec<StyleComponent> = [
             (
-                StyleComponent::Filename,
-                self.config.style_components.filename(),
+                StyleComponent::HeaderFilename,
+                self.config.style_components.header_filename(),
             ),
             (
-                StyleComponent::Filesize,
-                self.config.style_components.filesize(),
+                StyleComponent::HeaderFilesize,
+                self.config.style_components.header_filesize(),
             ),
             (
-                StyleComponent::Permissions,
-                self.config.style_components.permissions(),
+                StyleComponent::HeaderPermissions,
+                self.config.style_components.header_permissions(),
             ),
             (
-                StyleComponent::LastModified,
-                self.config.style_components.last_modified(),
+                StyleComponent::HeaderLastModified,
+                self.config.style_components.header_last_modified(),
             ),
         ]
         .iter()
@@ -350,7 +350,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             };
 
             match component {
-                StyleComponent::Filename => writeln!(
+                StyleComponent::HeaderFilename => writeln!(
                     handle,
                     "{}{}{}",
                     description
@@ -361,7 +361,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     mode
                 ),
 
-                StyleComponent::Filesize => {
+                StyleComponent::HeaderFilesize => {
                     let bsize = metadata
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
@@ -369,7 +369,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     writeln!(handle, "Size: {}", bsize)
                 }
 
-                StyleComponent::Permissions => writeln!(
+                StyleComponent::HeaderPermissions => writeln!(
                     handle,
                     "Permissions: {:o}",
                     metadata
@@ -379,7 +379,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .unwrap_or(0)
                 ),
 
-                StyleComponent::LastModified => {
+                StyleComponent::HeaderLastModified => {
                     let format = format_description::parse(
                         "[day] [month repr:short] [year] [hour]:[minute]:[second]",
                     )

@@ -11,10 +11,11 @@ pub enum StyleComponent {
     Grid,
     Rule,
     Header,
-    Filename,
-    Filesize,
-    Permissions,
-    LastModified,
+    HeaderFull,
+    HeaderFilename,
+    HeaderFilesize,
+    HeaderPermissions,
+    HeaderLastModified,
     LineNumbers,
     Snip,
     Full,
@@ -35,21 +36,30 @@ impl StyleComponent {
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Rule => &[StyleComponent::Rule],
-            StyleComponent::Header => &[StyleComponent::Filename],
-            StyleComponent::Filename => &[StyleComponent::Filename],
-            StyleComponent::Filesize => &[StyleComponent::Filesize],
-            StyleComponent::Permissions => &[StyleComponent::Permissions],
-            StyleComponent::LastModified => &[StyleComponent::LastModified],
+            StyleComponent::Header => &[
+                StyleComponent::HeaderFilename,
+                StyleComponent::HeaderFilesize,
+            ],
+            StyleComponent::HeaderFull => &[
+                StyleComponent::HeaderFilename,
+                StyleComponent::HeaderFilesize,
+                StyleComponent::HeaderPermissions,
+                StyleComponent::HeaderLastModified,
+            ],
+            StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
+            StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
+            StyleComponent::HeaderPermissions => &[StyleComponent::HeaderPermissions],
+            StyleComponent::HeaderLastModified => &[StyleComponent::HeaderLastModified],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
-                StyleComponent::Filename,
-                StyleComponent::Filesize,
-                StyleComponent::Permissions,
-                StyleComponent::LastModified,
+                StyleComponent::HeaderFilename,
+                StyleComponent::HeaderFilesize,
+                StyleComponent::HeaderPermissions,
+                StyleComponent::HeaderLastModified,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -68,11 +78,12 @@ impl FromStr for StyleComponent {
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
             "rule" => Ok(StyleComponent::Rule),
-            "header" => Ok(StyleComponent::Filename),
-            "filename" => Ok(StyleComponent::Filename),
-            "filesize" => Ok(StyleComponent::Filesize),
-            "permissions" => Ok(StyleComponent::Permissions),
-            "lastmodified" => Ok(StyleComponent::LastModified),
+            "header" => Ok(StyleComponent::Header),
+            "header-full" => Ok(StyleComponent::HeaderFull),
+            "header-filename" => Ok(StyleComponent::HeaderFilename),
+            "header-filesize" => Ok(StyleComponent::HeaderFilesize),
+            "header-permissions" => Ok(StyleComponent::HeaderPermissions),
+            "header-lastmodified" => Ok(StyleComponent::HeaderLastModified),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
@@ -104,23 +115,26 @@ impl StyleComponents {
     }
 
     pub fn header(&self) -> bool {
-        self.filename() || self.filesize() || self.permissions() || self.last_modified()
+        self.header_filename()
+            || self.header_filesize()
+            || self.header_permissions()
+            || self.header_last_modified()
     }
 
-    pub fn filename(&self) -> bool {
-        self.0.contains(&StyleComponent::Filename)
+    pub fn header_filename(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderFilename)
     }
 
-    pub fn filesize(&self) -> bool {
-        self.0.contains(&StyleComponent::Filesize)
+    pub fn header_filesize(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderFilesize)
     }
 
-    pub fn permissions(&self) -> bool {
-        self.0.contains(&StyleComponent::Permissions)
+    pub fn header_permissions(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderPermissions)
     }
 
-    pub fn last_modified(&self) -> bool {
-        self.0.contains(&StyleComponent::LastModified)
+    pub fn header_last_modified(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderLastModified)
     }
 
     pub fn numbers(&self) -> bool {
