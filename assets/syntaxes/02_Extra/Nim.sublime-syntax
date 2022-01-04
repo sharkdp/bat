@@ -5,6 +5,7 @@ name: Nim
 file_extensions:
   - nim
   - nims
+  - nimble
 scope: source.nim
 contexts:
   main:
