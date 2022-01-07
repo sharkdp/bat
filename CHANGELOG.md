@@ -1,4 +1,13 @@
-# unreleased
+# v0.19.0
+
+## Performance
+
+- Reduce startup time in loop-through mode (e.g. when redirecting output) by 90%. See #1747 (@Enselic)
+- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
+- Load custom assets as fast as integrated assets, see #1753 (@Enselic)
 
 ## Features
 
@@ -7,26 +16,17 @@
 - `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 - Add new `--acknowledgements` option that gives credit to theme and syntax definition authors. See #1971 (@Enselic)
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Bugfixes
 
-- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
-- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
-- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
-
-## Performance
-
-- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
-- Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
-- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
 
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
 - Minimum supported Rust version (MSRV) bumped to 1.51, see #1994 (@mdibaiee)
-- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Syntaxes
 
@@ -45,17 +45,12 @@
 - PowerShell syntax updated, see #1935 (@Enselic)
 - TypeScript syntax updated, see #1834 (@Enselic)
 
-## New themes
-
-
 ## `bat` as a library
 
 - Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_path()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. They also return which `SyntaxSet` the returned `SyntaxReference` belongs to. See #1747, #1755, #1776, #1862 (@Enselic)
 - Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802, #1971 (@Enselic)
 - Replace  the `error::Error(error::ErrorKind, _)` struct and enum with an `error::Error` enum. `Error(ErrorKind::UnknownSyntax, _)` becomes `Error::UnknownSyntax`, etc. Also remove the `error::ResultExt` trait. These changes stem from replacing `error-chain` with `thiserror`. See #1820 (@Enselic)
 - Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its documentation for more information. Also mark `MappingTarget` as `#[non_exhaustive]` since more enum variants might be added in the future. See #1703 (@cbolgiano), #2012 (@Enselic)
-
-
 
 
 # v0.18.3
