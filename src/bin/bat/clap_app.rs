@@ -350,6 +350,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
+            Arg::with_name("ignored-suffix")
+                .number_of_values(1)
+                .multiple(true)
+                .takes_value(true)
+                .long("ignored-suffix")
+                .hidden_short_help(true)
+                .help(
+                    "Ignore extension. For example:\n  \
+                    'bat --ignored-suffix \".dev\" my_file.json.dev' will use JSON syntax, and ignore '.dev'"
+                )
+        )
+        .arg(
             Arg::with_name("theme")
                 .long("theme")
                 .overrides_with("theme")
@@ -513,18 +525,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long("acknowledgements")
                 .hidden_short_help(true)
                 .help("Show acknowledgements."),
-        )
-        .arg(
-            Arg::with_name("ignored-suffix")
-                .number_of_values(1)
-                .multiple(true)
-                .takes_value(true)
-                .long("ignored-suffix")
-                .hidden_short_help(true)
-                .help(
-                    "Ignore extension. For example:\n  \
-                    'bat --ignored-suffix \".dev\" my_file.json.dev' will use JSON syntax, and ignore '.dev'"
-                )
         )
         .help_message("Print this help message.")
         .version_message("Show version information.");
