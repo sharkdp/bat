@@ -18,9 +18,9 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 - [ ] Find the current min. supported Rust version by running
       `grep '^\s*MIN_SUPPORTED_RUST_VERSION' .github/workflows/CICD.yml`.
 - [ ] Update the version and the min. supported Rust version in `README.md` and
-      `doc/README-*.md`.
-- [ ] Update `CHANGELOG.md`. Introduce a section for the new release and
-      prepare a new (empty) "unreleased" section at the top.
+      `doc/README-*.md`. Check with `git grep -i 'rust.*1\.'` and
+      `git grep -i '1\..*rust'`.
+- [ ] Update `CHANGELOG.md`. Introduce a section for the new release.
 
 ## Update syntaxes and themes (build assets)
 
@@ -39,7 +39,7 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
 - [ ] Push all changes and wait for CI to succeed (before continuing with the
       next section).
 - [ ] Optional: manually test the new features and command-line options. To do
-      this, install the latest `bat` version again (to include the new synaxes
+      this, install the latest `bat` version again (to include the new syntaxes
       and themes).
 - [ ] Run `cargo publish --dry-run --allow-dirty` to make sure that it will
       succeed later (after creating the GitHub release).
@@ -57,3 +57,7 @@ See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
       appear when the CI run for the Git tag has finished).
 - [ ] Publish to crates.io by running `cargo publish` in a *clean* repository.
       The safest way to do this is to clone a fresh copy.
+
+## Post-release
+
+- [ ] Prepare a new (empty) "unreleased" section at the top of `CHANGELOG.md`.
