@@ -27,7 +27,15 @@ impl StyleComponent {
         match self {
             StyleComponent::Auto => {
                 if interactive_terminal {
-                    StyleComponent::Full.components(interactive_terminal)
+                    &[
+                        #[cfg(feature = "git")]
+                        StyleComponent::Changes,
+                        StyleComponent::Grid,
+                        StyleComponent::HeaderFilename,
+                        StyleComponent::HeaderFilesize,
+                        StyleComponent::LineNumbers,
+                        StyleComponent::Snip,
+                    ]
                 } else {
                     StyleComponent::Plain.components(interactive_terminal)
                 }

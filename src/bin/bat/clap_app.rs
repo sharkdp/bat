@@ -396,11 +396,22 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "header-full", "header-filename", "header-filesize", "header-permissions", "header-lastmodified", "grid", "rule", "numbers", "snip",
+                            "auto",
+                            "full",
+                            "plain",
+                            "header",
+                            "header-full",
+                            "header-filename",
+                            "header-filesize",
+                            "header-permissions",
+                            "header-lastmodified",
+                            "grid",
+                            "rule",
+                            "numbers",
+                            "snip",
                             #[cfg(feature = "git")]
-                                "changes",
-                        ]
-                            .contains(style)
+                            "changes",
+                        ].contains(style)
                     });
 
                     if let Some(invalid) = invalid_vals.next() {
@@ -422,8 +433,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * full: enables all available components (default).\n  \
-                     * auto: same as 'full', unless the output is piped.\n  \
+                     * auto: enables all components and 'header', unless the output is piped.
+                     * (default)\n  \
+                     * full: enables all available components.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: displays the filename and filesize.\n \

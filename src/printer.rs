@@ -357,7 +357,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .kind()
                         .map(|kind| format!("{}: ", kind))
                         .unwrap_or_else(|| "".into()),
-                    self.colors.filename.paint(description.title()),
+                    self.colors.header_value.paint(description.title()),
                     mode
                 ),
 
@@ -366,18 +366,24 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
                         .unwrap_or("".into());
-                    writeln!(handle, "Size: {}", bsize)
+                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
                 }
 
-                StyleComponent::HeaderPermissions => writeln!(
-                    handle,
-                    "Permissions: {:o}",
-                    metadata
-                        .permissions
-                        .clone()
-                        .map(|perm| perm.mode)
-                        .unwrap_or(0)
-                ),
+                StyleComponent::HeaderPermissions => {
+                    let fmt_perms = format!(
+                        "{:o}",
+                        metadata
+                            .permissions
+                            .clone()
+                            .map(|perm| perm.mode)
+                            .unwrap_or(0)
+                    );
+                    writeln!(
+                        handle,
+                        "Permissions: {}",
+                        self.colors.header_value.paint(fmt_perms)
+                    )
+                }
 
                 StyleComponent::HeaderLastModified => {
                     let format = format_description::parse(
@@ -390,8 +396,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                     writeln!(
                         handle,
-                        "Last Modified At: {}",
-                        fmt_modified.unwrap_or("".into())
+                        "Modified: {}",
+                        self.colors
+                            .header_value
+                            .paint(fmt_modified.unwrap_or("".into()))
                     )
                 }
 
@@ -689,7 +697,7 @@ const DEFAULT_GUTTER_COLOR: u8 = 238;
 pub struct Colors {
     pub grid: Style,
     pub rule: Style,
-    pub filename: Style,
+    pub header_value: Style,
     pub git_added: Style,
     pub git_removed: Style,
     pub git_modified: Style,
@@ -718,7 +726,7 @@ impl Colors {
         Colors {
             grid: gutter_style,
             rule: gutter_style,
-            filename: Style::new().bold(),
+            header_value: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
