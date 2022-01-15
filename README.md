@@ -432,6 +432,7 @@ even when truecolor support is available:
 - `base16-256` is designed for [base16-shell](https://github.com/chriskempson/base16-shell).
   It replaces certain bright colors with 8-bit colors from 16 to 21. **Do not** use this simply
   because you have a 256-color terminal but are not using base16-shell.
+- `terminal-ansi16` looks decent on any terminal. It uses 4-bit colors (3-bit colors plus bright variants) in accordance with the [Ansi 16](https://github.com/chtenb/ansi16) guidelines. If your editor and terminal have the same Ansi 16 color theme, their syntax highlighting will match.
 
 Although these themes are more restricted, they have three advantages over truecolor themes. They:
 
