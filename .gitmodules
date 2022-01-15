@@ -236,3 +236,6 @@
 [submodule "assets/syntaxes/02_Extra/Dart"]
 	path = assets/syntaxes/02_Extra/Dart
 	url = https://github.com/elMuso/Dartlight.git
+[submodule "assets/themes/ansi16"]
+	path = assets/themes/ansi16
+	url = https://github.com/chtenb/ansi16
