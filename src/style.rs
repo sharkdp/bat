@@ -11,11 +11,8 @@ pub enum StyleComponent {
     Grid,
     Rule,
     Header,
-    HeaderFull,
     HeaderFilename,
     HeaderFilesize,
-    HeaderPermissions,
-    HeaderLastModified,
     LineNumbers,
     Snip,
     Full,
@@ -27,15 +24,7 @@ impl StyleComponent {
         match self {
             StyleComponent::Auto => {
                 if interactive_terminal {
-                    &[
-                        #[cfg(feature = "git")]
-                        StyleComponent::Changes,
-                        StyleComponent::Grid,
-                        StyleComponent::HeaderFilename,
-                        StyleComponent::HeaderFilesize,
-                        StyleComponent::LineNumbers,
-                        StyleComponent::Snip,
-                    ]
+                    StyleComponent::Full.components(interactive_terminal)
                 } else {
                     StyleComponent::Plain.components(interactive_terminal)
                 }
@@ -44,20 +33,9 @@ impl StyleComponent {
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Rule => &[StyleComponent::Rule],
-            StyleComponent::Header => &[
-                StyleComponent::HeaderFilename,
-                StyleComponent::HeaderFilesize,
-            ],
-            StyleComponent::HeaderFull => &[
-                StyleComponent::HeaderFilename,
-                StyleComponent::HeaderFilesize,
-                StyleComponent::HeaderPermissions,
-                StyleComponent::HeaderLastModified,
-            ],
+            StyleComponent::Header => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
-            StyleComponent::HeaderPermissions => &[StyleComponent::HeaderPermissions],
-            StyleComponent::HeaderLastModified => &[StyleComponent::HeaderLastModified],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
@@ -66,8 +44,6 @@ impl StyleComponent {
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
-                StyleComponent::HeaderPermissions,
-                StyleComponent::HeaderLastModified,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -87,11 +63,8 @@ impl FromStr for StyleComponent {
             "grid" => Ok(StyleComponent::Grid),
             "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
-            "header-full" => Ok(StyleComponent::HeaderFull),
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
-            "header-permissions" => Ok(StyleComponent::HeaderPermissions),
-            "header-lastmodified" => Ok(StyleComponent::HeaderLastModified),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
@@ -123,10 +96,7 @@ impl StyleComponents {
     }
 
     pub fn header(&self) -> bool {
-        self.header_filename()
-            || self.header_filesize()
-            || self.header_permissions()
-            || self.header_last_modified()
+        self.header_filename() || self.header_filesize()
     }
 
     pub fn header_filename(&self) -> bool {
@@ -135,14 +105,6 @@ impl StyleComponents {
 
     pub fn header_filesize(&self) -> bool {
         self.0.contains(&StyleComponent::HeaderFilesize)
-    }
-
-    pub fn header_permissions(&self) -> bool {
-        self.0.contains(&StyleComponent::HeaderPermissions)
-    }
-
-    pub fn header_last_modified(&self) -> bool {
-        self.0.contains(&StyleComponent::HeaderLastModified)
     }
 
     pub fn numbers(&self) -> bool {

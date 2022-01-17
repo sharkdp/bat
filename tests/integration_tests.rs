@@ -919,30 +919,30 @@ fn empty_file_leads_to_empty_output_with_rule_enabled() {
 }
 
 #[test]
-fn filename_basic() {
+fn header_basic() {
     bat()
         .arg("test.txt")
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename,header-filesize")
         .arg("-r=0:0")
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("File: foo\n")
+        .stdout("File: foo\nSize: 12 B\n")
         .stderr("");
 }
 
 #[test]
-fn filename_binary() {
+fn header_binary() {
     bat()
         .arg("test.binary")
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename,header-filesize")
         .arg("-r=0:0")
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("File: foo   <BINARY>\n")
+        .stdout("File: foo   <BINARY>\nSize: 4 B\n")
         .stderr("");
 }
 
@@ -950,7 +950,7 @@ fn filename_binary() {
 fn filename_stdin() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename")
         .arg("-r=0:0")
         .arg("-")
         .write_stdin("stdin\n")
@@ -966,7 +966,7 @@ fn filename_stdin_binary() {
     let vec = vec![0; 1];
     bat_with_config()
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename")
         .write_stdin(vec)
         .arg("--file-name=foo")
         .assert()
@@ -979,7 +979,7 @@ fn filename_stdin_binary() {
 fn filename_multiple_ok() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename")
         .arg("-r=0:0")
         .arg("test.txt")
         .arg("--file-name=foo")
@@ -995,7 +995,7 @@ fn filename_multiple_ok() {
 fn filename_multiple_err() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename")
         .arg("-r=0:0")
         .arg("test.txt")
         .arg("--file-name=foo")
@@ -1008,11 +1008,11 @@ fn filename_multiple_err() {
 fn header_padding() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=header")
+        .arg("--style=header-filename,header-filesize")
         .arg("test.txt")
         .arg("single-line.txt")
         .assert()
-        .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
+        .stdout("File: test.txt\nSize: 12 B\nhello world\n\nFile: single-line.txt\nSize: 11 B\nSingle Line\n")
         .stderr("");
 }
 
@@ -1020,16 +1020,18 @@ fn header_padding() {
 fn header_padding_rule() {
     bat()
         .arg("--decorations=always")
-        .arg("--style=header,rule")
+        .arg("--style=header-filename,header-filesize,rule")
         .arg("--terminal-width=80")
         .arg("test.txt")
         .arg("single-line.txt")
         .assert()
         .stdout(
             "File: test.txt
+Size: 12 B
 hello world
 ────────────────────────────────────────────────────────────────────────────────
 File: single-line.txt
+Size: 11 B
 Single Line
 ",
         )
@@ -1219,6 +1221,7 @@ fn grid_for_file_without_newline() {
             "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
+       │ Size: 11 B
 ───────┼────────────────────────────────────────────────────────────────────────
    1   │ Single Line
 ───────┴────────────────────────────────────────────────────────────────────────

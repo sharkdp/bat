@@ -106,7 +106,6 @@ dependencies = [
  "syntect",
  "tempfile",
  "thiserror",
- "time",
  "unicode-width",
  "wait-timeout",
  "walkdir",

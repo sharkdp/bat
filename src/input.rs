@@ -2,10 +2,7 @@ use std::convert::TryFrom;
 use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
-#[cfg(unix)]
-use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
@@ -88,17 +85,10 @@ impl<'a> InputKind<'a> {
     }
 }
 
-#[derive(Clone)]
-pub(crate) struct InputPermissions {
-    pub(crate) mode: u32,
-}
-
 #[derive(Clone, Default)]
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
-    pub(crate) permissions: Option<InputPermissions>,
-    pub(crate) modified: Option<SystemTime>,
 }
 
 pub struct Input<'a> {
@@ -140,32 +130,14 @@ impl<'a> Input<'a> {
         Self::_ordinary_file(path.as_ref())
     }
 
-    #[cfg(unix)]
-    fn _input_permissions_os(metadata: fs::Metadata) -> Option<InputPermissions> {
-        Some(InputPermissions {
-            // the 3 digits from right are the familiar mode bits
-            // we are looking for
-            mode: metadata.permissions().mode() & 0o777,
-        })
-    }
-
-    #[cfg(not(unix))]
-    fn _input_permissions_os(_metadata: fs::Metadata) -> Option<InputPermissions> {
-        None
-    }
-
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
         let metadata = match fs::metadata(path.to_path_buf()) {
             Ok(meta) => {
                 let size = meta.len();
-                let modified = meta.modified().ok();
-                let permissions = Self::_input_permissions_os(meta);
 
                 InputMetadata {
                     size: Some(size),
-                    modified,
-                    permissions,
                     ..InputMetadata::default()
                 }
             }

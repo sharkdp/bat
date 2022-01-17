@@ -5,7 +5,6 @@ use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
 
 use bytesize::ByteSize;
-use time::{format_description, OffsetDateTime};
 
 use console::AnsiCodeIterator;
 
@@ -298,7 +297,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             if add_header_padding && !self.config.style_components.rule() {
                 writeln!(handle)?;
             }
-            write!(handle, "{}", " ".repeat(self.panel_width))?;
         }
 
         let mode = match self.content_type {
@@ -323,14 +321,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 StyleComponent::HeaderFilesize,
                 self.config.style_components.header_filesize(),
             ),
-            (
-                StyleComponent::HeaderPermissions,
-                self.config.style_components.header_permissions(),
-            ),
-            (
-                StyleComponent::HeaderLastModified,
-                self.config.style_components.header_last_modified(),
-            ),
         ]
         .iter()
         .filter(|(_, is_enabled)| *is_enabled)
@@ -347,7 +337,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .grid
                         .paint(if self.panel_width > 0 { "│ " } else { "" }),
                 )?;
-            };
+            } else {
+                write!(handle, "{}", " ".repeat(self.panel_width))?;
+            }
 
             match component {
                 StyleComponent::HeaderFilename => writeln!(
@@ -368,41 +360,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .unwrap_or("".into());
                     writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
                 }
-
-                StyleComponent::HeaderPermissions => {
-                    let fmt_perms = format!(
-                        "{:o}",
-                        metadata
-                            .permissions
-                            .clone()
-                            .map(|perm| perm.mode)
-                            .unwrap_or(0)
-                    );
-                    writeln!(
-                        handle,
-                        "Permissions: {}",
-                        self.colors.header_value.paint(fmt_perms)
-                    )
-                }
-
-                StyleComponent::HeaderLastModified => {
-                    let format = format_description::parse(
-                        "[day] [month repr:short] [year] [hour]:[minute]:[second]",
-                    )
-                    .unwrap();
-                    let fmt_modified = metadata
-                        .modified
-                        .map(|t| OffsetDateTime::from(t).format(&format).unwrap());
-
-                    writeln!(
-                        handle,
-                        "Modified: {}",
-                        self.colors
-                            .header_value
-                            .paint(fmt_modified.unwrap_or("".into()))
-                    )
-                }
-
                 _ => Ok(()),
             }
         })?;

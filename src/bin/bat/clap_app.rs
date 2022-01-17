@@ -400,11 +400,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                             "full",
                             "plain",
                             "header",
-                            "header-full",
                             "header-filename",
                             "header-filesize",
-                            "header-permissions",
-                            "header-lastmodified",
                             "grid",
                             "rule",
                             "numbers",
@@ -433,17 +430,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * auto: enables all components and 'header', unless the output is piped.
-                     * (default)\n  \
-                     * full: enables all available components.\n  \
+                     * full: enables all available components (default).\n  \
+                     * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
-                     * header: displays the filename and filesize.\n \
-                     * header-full: displays all header-* fields.\n \
+                     * header: show filenames before the content.\n \
                      * header-filename: displays the file name.\n  \
                      * header-filesize: displays the size of the file in human-readable format.\n  \
-                     * header-last-modified: displays the last modification timestamp of the file.\n  \
-                     * header-permissions: displays the file owner, group and mode.\n \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
