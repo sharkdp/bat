@@ -53,26 +53,32 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
 
     let mut idx = 0;
+    let mut line_idx = 0;
     let len = input.len();
     while idx < len {
         if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
             idx += skip_ahead;
+            line_idx += 1;
 
             match chr {
                 // space
                 ' ' => output.push('·'),
                 // tab
                 '\t' => {
-                    if tab_width == 1 {
+                    let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                    if tab_stop == 1 {
                         output.push('↹');
                     } else {
                         output.push('├');
-                        output.push_str(&"─".repeat(tab_width - 2));
+                        output.push_str(&"─".repeat(tab_stop - 2));
                         output.push('┤');
                     }
                 }
                 // line feed
-                '\x0A' => output.push_str("␊\x0A"),
+                '\x0A' => {
+                    output.push_str("␊\x0A");
+                    line_idx = 0;
+                }
                 // carriage return
                 '\x0D' => output.push('␍'),
                 // null
