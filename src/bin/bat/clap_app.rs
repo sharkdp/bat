@@ -434,9 +434,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
-                     * header: show filenames before the content.\n \
-                     * header-filename: displays the file name.\n  \
-                     * header-filesize: displays the size of the file in human-readable format.\n  \
+                     * header: legacy alias for 'header-filename'.\n  \
+                     * header-filename: show filenames before the content.\n  \
+                     * header-filesize: show file sizes before the content.\n  \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
