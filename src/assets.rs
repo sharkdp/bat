@@ -65,7 +65,7 @@ impl HighlightingAssets {
         HighlightingAssets {
             syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
-            theme_set: ThemeSet::LazyThemeSet(theme_set),
+            theme_set: ThemeSet(theme_set),
             fallback_theme: None,
         }
     }
