@@ -15,7 +15,8 @@ use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
 use crate::{bat_warning, SyntaxMapping};
 
-pub use lazy_theme_set::LazyThemeSet;
+use lazy_theme_set::LazyThemeSet;
+pub use theme_set::ThemeSet;
 
 use serialized_syntax_set::*;
 
@@ -27,13 +28,14 @@ pub(crate) mod assets_metadata;
 mod build_assets;
 mod lazy_theme_set;
 mod serialized_syntax_set;
+mod theme_set;
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
     syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    theme_set: LazyThemeSet,
+    theme_set: ThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -63,7 +65,7 @@ impl HighlightingAssets {
         HighlightingAssets {
             syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
-            theme_set,
+            theme_set: ThemeSet::LazyThemeSet(theme_set),
             fallback_theme: None,
         }
     }
@@ -107,12 +109,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    pub fn get_theme_set(&self) -> &LazyThemeSet {
+    pub fn get_theme_set(&self) -> &ThemeSet {
         &self.theme_set
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.get_theme_set().themes()
+        self.get_theme_set().theme_names()
     }
 
     /// Use [Self::get_syntax_for_path] instead
