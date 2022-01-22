@@ -241,6 +241,7 @@ impl App {
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             use_custom_assets: !self.matches.is_present("no-custom-assets"),
+            fail_if_unsupported: self.matches.is_present("fail_if_unsupported"),
         })
     }
 
