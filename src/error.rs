@@ -57,7 +57,7 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
             )
             .ok();
         }
-        Error::SilentExit => { 
+        Error::SilentExit => {
             ::std::process::exit(-1);
         }
         _ => {
