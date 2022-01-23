@@ -526,6 +526,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden_short_help(true)
                 .help("Show acknowledgements."),
         )
+        .arg(
+            Arg::with_name("fail-if-unsupported")
+                .long("fail-if-unsupported")
+                .hidden_short_help(true)
+                .help("Fail silently with a non zero exit code if no specific syntax was found for the file")
+        )
         .help_message("Print this help message.")
         .version_message("Show version information.");
 
