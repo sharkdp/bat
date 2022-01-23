@@ -21,6 +21,8 @@ pub enum Error {
     UnknownStyle(String),
     #[error("Use of bat as a pager is disallowed in order to avoid infinite recursion problems")]
     InvalidPagerValueBat,
+    #[error("")]
+    SilentExit,
     #[error("{0}")]
     Msg(String),
 }
@@ -54,6 +56,9 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
                 error
             )
             .ok();
+        }
+        Error::SilentExit => { 
+            ::std::process::exit(-1);
         }
         _ => {
             writeln!(output, "{}: {}", Red.paint("[bat error]"), error).ok();
