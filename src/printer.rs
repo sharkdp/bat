@@ -253,6 +253,21 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
+    fn print_header_component_indent(&mut self, handle: &mut dyn Write) -> std::io::Result<()> {
+        if self.config.style_components.grid() {
+            write!(
+                handle,
+                "{}{}",
+                " ".repeat(self.panel_width),
+                self.colors
+                    .grid
+                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
+            )
+        } else {
+            write!(handle, "{}", " ".repeat(self.panel_width))
+        }
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
@@ -290,15 +305,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             return Ok(());
         }
 
-        if self.config.style_components.grid() {
-            self.print_horizontal_line(handle, '┬')?;
-        } else {
-            // Only pad space between files, if we haven't already drawn a horizontal rule
-            if add_header_padding && !self.config.style_components.rule() {
-                writeln!(handle)?;
-            }
-        }
-
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
             Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
@@ -327,19 +333,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
         .map(|(component, _)| *component)
         .collect();
 
-        header_components.iter().try_for_each(|component| {
-            if self.config.style_components.grid() {
-                write!(
-                    handle,
-                    "{}{}",
-                    " ".repeat(self.panel_width),
-                    self.colors
-                        .grid
-                        .paint(if self.panel_width > 0 { "│ " } else { "" }),
-                )?;
-            } else {
-                write!(handle, "{}", " ".repeat(self.panel_width))?;
+        // Print the cornering grid before the first header component
+        if self.config.style_components.grid() {
+            self.print_horizontal_line(handle, '┬')?;
+        } else {
+            // Only pad space between files, if we haven't already drawn a horizontal rule
+            if add_header_padding && !self.config.style_components.rule() {
+                writeln!(handle)?;
             }
+        }
+
+        header_components.iter().try_for_each(|component| {
+            self.print_header_component_indent(handle)?;
 
             match component {
                 StyleComponent::HeaderFilename => writeln!(
