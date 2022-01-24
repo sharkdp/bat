@@ -66,6 +66,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                 // tab
                 '\t' => {
                     let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                    line_idx = 0;
                     if tab_stop == 1 {
                         output.push('↹');
                     } else {
