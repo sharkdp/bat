@@ -88,7 +88,7 @@ pub struct Config<'a> {
     pub use_custom_assets: bool,
 
     /// Whether or not we fail silently with a non zero exit code if the syntax is unsupported
-    pub fail_if_unsupported: bool
+    pub fail_if_unsupported: bool,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

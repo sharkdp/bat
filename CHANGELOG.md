@@ -2,7 +2,8 @@
 
 ## Features
 
-- Flag `--fail-if-unsupported` added, allows `bat` to fail silently with a non-zero exit code, see #1709
+- Flag `--fail-if-unsupported` added, allows `bat` to fail silently with a non-zero exit code if
+  no specific syntax highlighting was found for the file, see #1709
 
 ## Bugfixes
 
