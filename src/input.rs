@@ -132,16 +132,9 @@ impl<'a> Input<'a> {
 
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
-        let metadata = match fs::metadata(path.to_path_buf()) {
-            Ok(meta) => {
-                let size = meta.len();
-
-                InputMetadata {
-                    size: Some(size),
-                    ..InputMetadata::default()
-                }
-            }
-            Err(_) => InputMetadata::default(),
+        let metadata = InputMetadata {
+            size: fs::metadata(path).map(|m| m.len()).ok(),
+            ..InputMetadata::default()
         };
 
         Input {
