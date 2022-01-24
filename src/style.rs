@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use crate::error::*;
 
+#[non_exhaustive]
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum StyleComponent {
     Auto,
