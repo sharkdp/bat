@@ -182,7 +182,11 @@ impl<'a> InteractivePrinter<'a> {
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
         {
-            None
+            if config.fail_if_unsupported {
+                return Err(Error::SilentExit);
+            } else {
+                None
+            }
         } else {
             // Determine the type of syntax for highlighting
             let syntax_in_set =
