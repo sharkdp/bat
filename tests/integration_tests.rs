@@ -1312,3 +1312,14 @@ fn acknowledgements() {
         )
         .stderr("");
 }
+
+// Regression test for https://github.com/sharkdp/bat/issues/1709
+#[test]
+fn fail_if_unsupported_supported() {
+    bat()
+        .arg("--fail-if-unsupported")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}

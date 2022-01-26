@@ -168,7 +168,8 @@ Display a list of supported languages for syntax highlighting.
 .HP
 \fB\-\-fail\-if\-unsupported\fR
 .IP
-If this flag is enabled, {{PROJECT_EXECUTABLE}} will fail if there's no specific syntax highlighting support for the file, and will return a non zero error code. Useful when using {{[PROJECT_EXECUTABLE}} as a preprocessor.
+If this flag is enabled, {{PROJECT_EXECUTABLE}} will fail if there's no specific syntax highlighting support for the file, or if the file is
+a binary file, and will return a non zero error code. Useful when using {{[PROJECT_EXECUTABLE}} as a preprocessor.
 .HP
 \fB\-u\fR, \fB\-\-unbuffered\fR
 .IP
