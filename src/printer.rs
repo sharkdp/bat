@@ -362,7 +362,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     let bsize = metadata
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
-                        .unwrap_or("".into());
+                        .unwrap_or_else(|| "-".into());
                     writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
                 }
                 _ => Ok(()),
