@@ -515,8 +515,8 @@ command line option. The option takes an argument of the form `pattern:syntax` w
 the absolute file path. The `syntax` part is the full name of a supported language
 (use `bat --list-languages` for an overview).
 
-*Note:* You probably want to use this option as [an entry in `bat`'s configuration file](#configuration-file)
-for persistence, instead of passing it on the command line as a one-off, as generally
+**Note:** You probably want to use this option as [an entry in `bat`'s configuration file](#configuration-file)
+for persistence instead of passing it on the command line as a one-off. Generally
 you'd just use `-l` if you want to manually specify a language for a file.
 
 Example: To use "INI" syntax highlighting for all files with a `.conf` file extension, use
