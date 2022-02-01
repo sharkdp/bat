@@ -87,7 +87,7 @@ assert_cmd = "2.0.2"
 serial_test = "0.5.1"
 predicates = "2.1.0"
 wait-timeout = "0.2.0"
-tempfile = "3.2.0"
+tempfile = "3.3.0"
 
 [target.'cfg(unix)'.dev-dependencies]
 nix = "0.23.1"
