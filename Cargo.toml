@@ -77,7 +77,7 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "2.34"
+version = "3.0"
 optional = true
 default-features = false
 features = ["suggestions", "color", "wrap_help"]
@@ -93,7 +93,7 @@ tempfile = "3.2.0"
 nix = "0.23.1"
 
 [build-dependencies]
-clap = { version = "2.34", optional = true }
+clap = { version = "3.0", optional = true }
 
 [profile.release]
 lto = true
