@@ -9,15 +9,15 @@ if ! command -v hyperfine > /dev/null 2>&1; then
 	exit 1
 fi
 
-# Check that jq is installed.
-if ! command -v jq > /dev/null 2>&1; then
-	echo "'jq' does not seem to be installed."
-	echo "You can get it here: https://stedolan.github.io/jq"
+# Check that python3 is installed.
+if ! command -v python3 > /dev/null 2>&1; then
+	echo "'python3' does not seem to be installed."
+	echo "You can get it here: https://www.python.org/downloads/"
 	exit 1
 fi
 
 get_cargo_target_dir() {
-	cargo metadata --no-deps --format-version 1 | jq -r .target_directory
+	cargo metadata --no-deps --format-version 1 | python3 -c 'import sys, json; print(json.load(sys.stdin)["target_directory"])'
 }
 
 heading() {
