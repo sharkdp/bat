@@ -104,6 +104,9 @@ fn license_not_needed_in_acknowledgements(license_text: &str) -> bool {
         // Public domain
         "This is free and unencumbered software released into the public domain.",
 
+        // Public domain with stronger wording than above
+        "DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE",
+
         // Special license of assets/syntaxes/01_Packages/LICENSE
         "Permission to copy, use, modify, sell and distribute this software is granted. This software is provided \"as is\" without express or implied warranty, and with no claim as to its suitability for any purpose."
     ];
