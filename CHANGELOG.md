@@ -8,6 +8,8 @@
 
 ## Syntaxes
 
+- Associate `poetry.lock` files with the `TOML` syntax. See #2049
+
 ## Themes
 
 ## `bat` as a library
