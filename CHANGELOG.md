@@ -12,6 +12,7 @@
 
 ## `bat` as a library
 
+- Exposed `get_syntax_set` and `get_theme` methods on `HighlightingAssets`. See #2030 (@dandavison)
 
 # v0.19.0
 
