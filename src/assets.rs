@@ -90,6 +90,7 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
+    /// Return the collection of syntect syntax definitions.
     pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
             .get_or_try_init(|| self.serialized_syntax_set.deserialize())
@@ -186,6 +187,7 @@ impl HighlightingAssets {
         }
     }
 
+    /// Look up a syntect theme by name.
     pub fn get_theme(&self, theme: &str) -> &Theme {
         match self.get_theme_set().get(theme) {
             Some(theme) => theme,
