@@ -36,6 +36,10 @@ fn all_themes_are_present() {
             "base16-256",
             "gruvbox-dark",
             "gruvbox-light",
+            "material-ansi16",
+            "noctis-lux-ansi16",
+            "synthwave-material-ansi16",
+            "terminal-ansi16"
             "zenburn"
         ]
     );
