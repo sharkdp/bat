@@ -90,7 +90,7 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
             .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
@@ -186,7 +186,7 @@ impl HighlightingAssets {
         }
     }
 
-    pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
+    pub fn get_theme(&self, theme: &str) -> &Theme {
         match self.get_theme_set().get(theme) {
             Some(theme) => theme,
             None => {
