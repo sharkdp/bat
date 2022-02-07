@@ -4,6 +4,8 @@ use std::vec::Vec;
 use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
 
+use bytesize::ByteSize;
+
 use console::AnsiCodeIterator;
 
 use syntect::easy::HighlightLines;
@@ -29,6 +31,7 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::AnsiStyle;
 use crate::wrapping::WrappingMode;
@@ -250,6 +253,21 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
+    fn print_header_component_indent(&mut self, handle: &mut dyn Write) -> std::io::Result<()> {
+        if self.config.style_components.grid() {
+            write!(
+                handle,
+                "{}{}",
+                " ".repeat(self.panel_width),
+                self.colors
+                    .grid
+                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
+            )
+        } else {
+            write!(handle, "{}", " ".repeat(self.panel_width))
+        }
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
@@ -287,25 +305,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             return Ok(());
         }
 
-        if self.config.style_components.grid() {
-            self.print_horizontal_line(handle, '┬')?;
-
-            write!(
-                handle,
-                "{}{}",
-                " ".repeat(self.panel_width),
-                self.colors
-                    .grid
-                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
-            )?;
-        } else {
-            // Only pad space between files, if we haven't already drawn a horizontal rule
-            if add_header_padding && !self.config.style_components.rule() {
-                writeln!(handle)?;
-            }
-            write!(handle, "{}", " ".repeat(self.panel_width))?;
-        }
-
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
             Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
@@ -315,17 +314,60 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         let description = &input.description;
+        let metadata = &input.metadata;
 
-        writeln!(
-            handle,
-            "{}{}{}",
-            description
-                .kind()
-                .map(|kind| format!("{}: ", kind))
-                .unwrap_or_else(|| "".into()),
-            self.colors.filename.paint(description.title()),
-            mode
-        )?;
+        // We use this iterator to have a deterministic order for
+        // header components. HashSet has arbitrary order, but Vec is ordered.
+        let header_components: Vec<StyleComponent> = [
+            (
+                StyleComponent::HeaderFilename,
+                self.config.style_components.header_filename(),
+            ),
+            (
+                StyleComponent::HeaderFilesize,
+                self.config.style_components.header_filesize(),
+            ),
+        ]
+        .iter()
+        .filter(|(_, is_enabled)| *is_enabled)
+        .map(|(component, _)| *component)
+        .collect();
+
+        // Print the cornering grid before the first header component
+        if self.config.style_components.grid() {
+            self.print_horizontal_line(handle, '┬')?;
+        } else {
+            // Only pad space between files, if we haven't already drawn a horizontal rule
+            if add_header_padding && !self.config.style_components.rule() {
+                writeln!(handle)?;
+            }
+        }
+
+        header_components.iter().try_for_each(|component| {
+            self.print_header_component_indent(handle)?;
+
+            match component {
+                StyleComponent::HeaderFilename => writeln!(
+                    handle,
+                    "{}{}{}",
+                    description
+                        .kind()
+                        .map(|kind| format!("{}: ", kind))
+                        .unwrap_or_else(|| "".into()),
+                    self.colors.header_value.paint(description.title()),
+                    mode
+                ),
+
+                StyleComponent::HeaderFilesize => {
+                    let bsize = metadata
+                        .size
+                        .map(|s| format!("{}", ByteSize(s)))
+                        .unwrap_or_else(|| "-".into());
+                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
+                }
+                _ => Ok(()),
+            }
+        })?;
 
         if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
@@ -617,7 +659,7 @@ const DEFAULT_GUTTER_COLOR: u8 = 238;
 pub struct Colors {
     pub grid: Style,
     pub rule: Style,
-    pub filename: Style,
+    pub header_value: Style,
     pub git_added: Style,
     pub git_removed: Style,
     pub git_modified: Style,
@@ -646,7 +688,7 @@ impl Colors {
         Colors {
             grid: gutter_style,
             rule: gutter_style,
-            filename: Style::new().bold(),
+            header_value: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),

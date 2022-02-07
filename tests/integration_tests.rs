@@ -919,7 +919,7 @@ fn empty_file_leads_to_empty_output_with_rule_enabled() {
 }
 
 #[test]
-fn filename_basic() {
+fn header_basic() {
     bat()
         .arg("test.txt")
         .arg("--decorations=always")
@@ -933,7 +933,21 @@ fn filename_basic() {
 }
 
 #[test]
-fn filename_binary() {
+fn header_full_basic() {
+    bat()
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_binary() {
     bat()
         .arg("test.binary")
         .arg("--decorations=always")
@@ -943,6 +957,20 @@ fn filename_binary() {
         .assert()
         .success()
         .stdout("File: foo   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
+fn header_full_binary() {
+    bat()
+        .arg("test.binary")
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo   <BINARY>\nSize: 4 B\n")
         .stderr("");
 }
 
@@ -1017,6 +1045,18 @@ fn header_padding() {
 }
 
 #[test]
+fn header_full_padding() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout("File: test.txt\nSize: 12 B\nhello world\n\nFile: single-line.txt\nSize: 11 B\nSingle Line\n")
+        .stderr("");
+}
+
+#[test]
 fn header_padding_rule() {
     bat()
         .arg("--decorations=always")
@@ -1030,6 +1070,28 @@ fn header_padding_rule() {
 hello world
 ────────────────────────────────────────────────────────────────────────────────
 File: single-line.txt
+Single Line
+",
+        )
+        .stderr("");
+}
+
+#[test]
+fn header_full_padding_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "File: test.txt
+Size: 12 B
+hello world
+────────────────────────────────────────────────────────────────────────────────
+File: single-line.txt
+Size: 11 B
 Single Line
 ",
         )
@@ -1219,6 +1281,7 @@ fn grid_for_file_without_newline() {
             "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
+       │ Size: 11 B
 ───────┼────────────────────────────────────────────────────────────────────────
    1   │ Single Line
 ───────┴────────────────────────────────────────────────────────────────────────

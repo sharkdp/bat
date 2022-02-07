@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use std::fs;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
@@ -87,6 +88,7 @@ impl<'a> InputKind<'a> {
 #[derive(Clone, Default)]
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
+    pub(crate) size: Option<u64>,
 }
 
 pub struct Input<'a> {
@@ -130,9 +132,14 @@ impl<'a> Input<'a> {
 
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
+        let metadata = InputMetadata {
+            size: fs::metadata(path).map(|m| m.len()).ok(),
+            ..InputMetadata::default()
+        };
+
         Input {
             description: kind.description(),
-            metadata: InputMetadata::default(),
+            metadata,
             kind,
         }
     }

@@ -136,3 +136,13 @@ for wrap in character never; do
 		cat "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" >> "$REPORT"
 	done
 done
+
+
+heading "Many small files speed (overhead of metadata)"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain many-small-files/*.txt" \
+	--command-name 'bat … --language=txt *.txt' \
+	--warmup "$WARMUP_COUNT" \
+    --export-markdown "$RESULT_DIR/many-small-files-speed.md" \
+    --export-json "$RESULT_DIR/many-small-files-speed.json"
+cat "$RESULT_DIR/many-small-files-speed.md" >> "$REPORT"

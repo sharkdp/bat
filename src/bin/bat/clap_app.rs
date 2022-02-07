@@ -396,11 +396,19 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .validator(|val| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
-                            "auto", "full", "plain", "header", "grid", "rule", "numbers", "snip",
+                            "auto",
+                            "full",
+                            "plain",
+                            "header",
+                            "header-filename",
+                            "header-filesize",
+                            "grid",
+                            "rule",
+                            "numbers",
+                            "snip",
                             #[cfg(feature = "git")]
-                                "changes",
-                        ]
-                            .contains(style)
+                            "changes",
+                        ].contains(style)
                     });
 
                     if let Some(invalid) = invalid_vals.next() {
@@ -426,7 +434,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      * auto: same as 'full', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
-                     * header: show filenames before the content.\n  \
+                     * header: alias for 'header-filename'.\n  \
+                     * header-filename: show filenames before the content.\n  \
+                     * header-filesize: show file sizes before the content.\n  \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
