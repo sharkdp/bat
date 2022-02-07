@@ -8,6 +8,9 @@
 
 ## Syntaxes
 
+- Associate `_vimrc` and `_gvimrc` files with the `VimL` syntax. See #2002
+- Associate `poetry.lock` files with the `TOML` syntax. See #2049
+
 ## Themes
 
 ## `bat` as a library

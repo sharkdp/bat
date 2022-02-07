@@ -43,7 +43,7 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 [dependencies]
 atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
-ansi_colours = "^1.0"
+ansi_colours = "^1.1"
 bincode = "1.0"
 console = "0.15.0"
 flate2 = "1.0"
@@ -83,11 +83,11 @@ default-features = false
 features = ["suggestions", "color", "wrap_help"]
 
 [dev-dependencies]
-assert_cmd = "2.0.2"
+assert_cmd = "2.0.4"
 serial_test = "0.5.1"
 predicates = "2.1.0"
 wait-timeout = "0.2.0"
-tempfile = "3.2.0"
+tempfile = "3.3.0"
 
 [target.'cfg(unix)'.dev-dependencies]
 nix = "0.23.1"
