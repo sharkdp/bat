@@ -655,6 +655,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update("^[24m");
+            write!(handle, "\x1B[24m")?;
         }
 
         Ok(())

@@ -1290,6 +1290,25 @@ fn grid_for_file_without_newline() {
         .stderr("");
 }
 
+// For ANSI theme, use underscore as a highlighter
+#[test]
+fn ansi_highlight_underline() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
 // Ensure that ANSI passthrough is emitted properly for both wrapping and non-wrapping printer.
 #[test]
 fn ansi_passthrough_emit() {
