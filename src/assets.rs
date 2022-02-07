@@ -15,7 +15,7 @@ use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
 use crate::{bat_warning, SyntaxMapping};
 
-pub use lazy_theme_set::LazyThemeSet;
+use lazy_theme_set::LazyThemeSet;
 
 use serialized_syntax_set::*;
 
@@ -90,7 +90,7 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
             .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
@@ -107,7 +107,7 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    pub fn get_theme_set(&self) -> &LazyThemeSet {
+    fn get_theme_set(&self) -> &LazyThemeSet {
         &self.theme_set
     }
 
