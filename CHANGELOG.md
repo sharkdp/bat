@@ -2,6 +2,8 @@
 
 ## Features
 
+- New style component `header-filesize` to show size of the displayed file in the header. See #1988 (@mdibaiee)
+
 ## Bugfixes
 
 ## Other
