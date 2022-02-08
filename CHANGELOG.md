@@ -13,6 +13,7 @@
 - `GraphQL`: Add support for interfaces implementing interfaces and consider ampersand an operator. See #2000
 - Associate `_vimrc` and `_gvimrc` files with the `VimL` syntax. See #2002
 - Associate `poetry.lock` files with the `TOML` syntax. See #2049
+- Associate `.mesh`, `.task`, `.rgen`, `.rint`, `.rahit`, `.rchit`, `.rmiss`, and `.rcall` with the `GLSL` syntax. See #2050
 
 ## Themes
 
