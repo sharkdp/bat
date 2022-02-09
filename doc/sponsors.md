@@ -1,5 +1,7 @@
 ## Sponsors
 
+`bat` development is sponsored by many individuals and companies. Thank you very much!
+
 Please note, that being sponsored does not affect the individuality of the `bat`
 project or affect the maintainers' actions in any way.
 We remain impartial and continue to assess pull requests solely on merit - the
