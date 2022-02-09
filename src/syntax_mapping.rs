@@ -126,7 +126,7 @@ impl<'a> SyntaxMapping<'a> {
         // `$XDG_CONFIG_HOME/git`, or `$HOME/.config/git` if `$XDG_CONFIG_HOME` is not set or empty
         // see https://git-scm.com/docs/git-config#FILES
         if let Some(git_config_path) = std::env::var_os("XDG_CONFIG_HOME")
-            .and_then(|val| if val.is_empty() { None } else { Some(val) })
+            .and_then(|val| (!val.is_empty()).then(|| val))
             .map(PathBuf::from)
             .or_else(|| std::env::var_os("HOME").map(|home| Path::new(&home).join(".config")))
             .map(|mut config_home| {
