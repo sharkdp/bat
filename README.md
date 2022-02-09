@@ -7,7 +7,6 @@
 </p>
 
 <p align="center">
-  <a href="#sponsors">Sponsors</a> •
   <a href="#syntax-highlighting">Key Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#installation">Installation</a> •
@@ -22,28 +21,15 @@
 
 ### Sponsors
 <p align="center">
-  and now, a word from our sponsors:
+  a special thank you goes to our <a href="doc/sponsors.md">sponsors</a>:<br>
   <a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=bat&utm_source=github">
-    <div>
-      <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
-    </div>
+    <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
+    <br>
     <strong>Your app, enterprise-ready.</strong>
-    <div>
-      <sub>Start selling to enterprise customers with just a few lines of code.</sub>
-      <br>
-      <sup>Add Single Sign-On (and more) in minutes instead of months.</sup>
-    </div>
+    <sub>Start selling to enterprise customers with just a few lines of code.</sub>
+    <br>
+    <sup>Add Single Sign-On (and more) in minutes instead of months.</sup>
   </a>
-
-  <div>
-      Please note, that being sponsored does not affect the individuality of the `bat`
-      project or affect the maintainers' actions in any way. We remain impartial and
-      continue to assess pull requests solely on merit - the features added, bugs
-      solved, and effect on the overall complexity of the code. No issue will have a
-      different priority based on sponsorship status of the reporter.
-  </div>
-
-  If you are interested to learn more, see our [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 </p>
 
 ### Syntax highlighting
