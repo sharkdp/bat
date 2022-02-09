@@ -39,7 +39,7 @@ fn all_themes_are_present() {
             "material-ansi16",
             "noctis-lux-ansi16",
             "synthwave-material-ansi16",
-            "terminal-ansi16"
+            "terminal-ansi16",
             "zenburn"
         ]
     );
