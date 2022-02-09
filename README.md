@@ -21,7 +21,7 @@
 
 ### Sponsors
 
-a special thank you goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
+A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
 <a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=bat&utm_source=github">
   <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
   <br>
