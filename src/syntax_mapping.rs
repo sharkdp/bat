@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::error::Result;
 use ignored_suffixes::IgnoredSuffixes;
@@ -122,9 +122,18 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.hook", MappingTarget::MapTo("INI"))
             .unwrap();
 
-        if let Some(xdg_config_home) = std::env::var_os("XDG_CONFIG_HOME") {
-            let git_config_path = Path::new(&xdg_config_home).join("git");
-
+        // global git config files
+        // `$XDG_CONFIG_HOME/git`, or `$HOME/.config/git` if `$XDG_CONFIG_HOME` is not set or empty
+        // see https://git-scm.com/docs/git-config#FILES
+        if let Some(git_config_path) = std::env::var_os("XDG_CONFIG_HOME")
+            .and_then(|val| if val.is_empty() { None } else { Some(val) })
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("HOME").map(|home| Path::new(&home).join(".config")))
+            .map(|mut config_home| {
+                config_home.push("git");
+                config_home
+            })
+        {
             mapping
                 .insert(
                     &git_config_path.join("config").to_string_lossy(),
