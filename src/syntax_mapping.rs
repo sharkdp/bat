@@ -125,35 +125,41 @@ impl<'a> SyntaxMapping<'a> {
         // global git config files
         // `$XDG_CONFIG_HOME/git`, or `$HOME/.config/git` if `$XDG_CONFIG_HOME` is not set or empty
         // see https://git-scm.com/docs/git-config#FILES
-        if let Some(git_config_path) = std::env::var_os("XDG_CONFIG_HOME")
-            .and_then(|val| (!val.is_empty()).then(|| val))
-            .map(PathBuf::from)
-            .or_else(|| std::env::var_os("HOME").map(|home| Path::new(&home).join(".config")))
-            .map(|mut config_home| {
-                config_home.push("git");
-                config_home
-            })
+        // we cover both cases regardless of the state of `$XDG_CONFIG_HOME`
+        if let Some(xdg_config_home) =
+            std::env::var_os("XDG_CONFIG_HOME").and_then(|val| (!val.is_empty()).then(|| val))
         {
+            insert_git_config_global(&mut mapping, &xdg_config_home);
+        }
+        if let Some(default_config_home) =
+            std::env::var_os("HOME").map(|home| Path::new(&home).join(".config"))
+        {
+            insert_git_config_global(&mut mapping, &default_config_home);
+        }
+
+        fn insert_git_config_global(mapping: &mut SyntaxMapping, config_home: impl AsRef<Path>) {
+            let git_config_path = config_home.as_ref().join("git");
+
             mapping
                 .insert(
                     &git_config_path.join("config").to_string_lossy(),
                     MappingTarget::MapTo("Git Config"),
                 )
-                .ok();
+                .unwrap();
 
             mapping
                 .insert(
                     &git_config_path.join("ignore").to_string_lossy(),
                     MappingTarget::MapTo("Git Ignore"),
                 )
-                .ok();
+                .unwrap();
 
             mapping
                 .insert(
                     &git_config_path.join("attributes").to_string_lossy(),
                     MappingTarget::MapTo("Git Attributes"),
                 )
-                .ok();
+                .unwrap();
         }
 
         mapping
