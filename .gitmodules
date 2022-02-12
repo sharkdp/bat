@@ -236,3 +236,6 @@
 [submodule "assets/syntaxes/02_Extra/Dart"]
 	path = assets/syntaxes/02_Extra/Dart
 	url = https://github.com/elMuso/Dartlight.git
+[submodule "assets/syntaxes/02_Extra/SublimeJQ"]
+	path = assets/syntaxes/02_Extra/SublimeJQ
+	url = https://github.com/zogwarg/SublimeJQ.git
