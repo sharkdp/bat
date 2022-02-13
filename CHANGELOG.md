@@ -6,7 +6,7 @@
 
 ## Bugfixes
 
-- Fix bash completion on macOS. See #2066 (@joshpencheon)
+- Fix bash completion on bash 3.x and bash-completion 1.x. See #2066 (@joshpencheon)
 
 ## Other
 
