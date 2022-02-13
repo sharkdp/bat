@@ -6,6 +6,8 @@
 
 ## Bugfixes
 
+- Fix bash completion on macOS. See #2066 (@joshpencheon)
+
 ## Other
 
 ## Syntaxes
