@@ -16,9 +16,8 @@ _bat() {
 		_init_completion -s || return 0
 	else
 		__bat_init_completion -n "=" || return 0
+		_split_longopt && split=true
 	fi
-
-	_split_longopt && split=true
 
 	if [[ ${words[1]-} == cache ]]; then
 		case $prev in
