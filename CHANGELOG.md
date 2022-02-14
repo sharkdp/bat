@@ -3,6 +3,7 @@
 ## Features
 
 - New style component `header-filesize` to show size of the displayed file in the header. See #1988 (@mdibaiee)
+- Use underline for line highlighting on ANSI, see #1730 (@mdibaiee)
 
 ## Bugfixes
 
