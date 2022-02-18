@@ -1364,10 +1364,10 @@ fn ignored_suffix_arg() {
 #[test]
 fn all_global_git_config_locations_syntax_mapping_work() {
     let fake_home = Path::new(EXAMPLES_DIR).join("git").canonicalize().unwrap();
-    let expected = "\
-\u{1b}[38;2;248;248;242m[\u{1b}[0m\u{1b}[38;2;166;226;46muser\u{1b}[0m\u{1b}[38;2;248;248;242m]\u{1b}[0m
-\u{1b}[38;2;248;248;242m    \u{1b}[0m\u{1b}[38;2;255;255;255memail\u{1b}[0m\u{1b}[38;2;248;248;242m \u{1b}[0m\u{1b}[38;2;249;38;114m=\u{1b}[0m\u{1b}[38;2;248;248;242m \u{1b}[0m\u{1b}[38;2;230;219;116mfoo@bar.net\u{1b}[0m
-\u{1b}[38;2;248;248;242m    \u{1b}[0m\u{1b}[38;2;255;255;255mname\u{1b}[0m\u{1b}[38;2;248;248;242m \u{1b}[0m\u{1b}[38;2;249;38;114m=\u{1b}[0m\u{1b}[38;2;248;248;242m \u{1b}[0m\u{1b}[38;2;230;219;116mfoobar\u{1b}[0m\n";
+    let expected = "\u{1b}[38;5;231m[\u{1b}[0m\u{1b}[38;5;149muser\u{1b}[0m\u{1b}[38;5;231m]\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231memail\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoo@bar.net\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231mname\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoobar\u{1b}[0m
+";
 
     bat()
         .env("XDG_CONFIG_HOME", fake_home.join(".config").as_os_str())
