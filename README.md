@@ -194,7 +194,7 @@ bat main.cpp | xclip
 `MANPAGER` environment variable:
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="sh -c 'col -bx | bat -l man -p --paging=always --color=always | less -r'"
 man 2 select
 ```
 (replace `bat` with `batcat` if you are on Debian or Ubuntu)
