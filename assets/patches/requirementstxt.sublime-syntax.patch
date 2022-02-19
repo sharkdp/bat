@@ -1,0 +1,26 @@
+diff --git a/assets/syntaxes/02_Extra/requirementstxt.sublime-syntax b/assets/syntaxes/02_Extra/requirementstxt.sublime-syntax
+index 8419f27..bffb1a6 100644
+--- syntaxes/02_Extra/requirementstxt.sublime-syntax
++++ syntaxes/02_Extra/requirementstxt.sublime-syntax
+@@ -2,6 +2,12 @@
+ ---
+ # http://www.sublimetext.com/docs/syntax.html
+ name: requirements.txt
++file_extensions:
++  - requirements.txt
++  - requirements-dev.txt
++  - requirements-test.txt
++  - dev-requirements.txt
++  - test-requirements.txt
+ scope: source.requirementstxt
+ contexts:
+   main:
+@@ -11,7 +17,7 @@ contexts:
+         1: punctuation.definition.comment.requirementstxt
+     - match: '(?i)^[a-z0-9_\-\.]+'
+       scope: string.package_name.requirementstxt
+-    - match: (?i)==|<|<=|>=|>
++    - match: (?i)==|<|<=|>=|>|~=|!=|===
+       scope: keyword.operator.logical.punctuation.requirementstxt
+     - match: '(?i)\d+\.[\da-z\-_\.]*'
+       scope: constant.numeric.verions.requirementstxt

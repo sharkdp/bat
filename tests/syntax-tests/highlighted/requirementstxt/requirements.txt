@@ -1,0 +1,30 @@
+[38;2;117;113;94m#[0m[38;2;117;113;94m Example from https://pip.pypa.io/en/stable/reference/requirements-file-format/#example for pip v22.0.3[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m##### Requirements without Version Specifiers ######[0m
+[38;2;230;219;116mpytest[0m
+[38;2;230;219;116mpytest-cov[0m
+[38;2;230;219;116mbeautifulsoup4[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m##### Requirements with Version Specifiers ######[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m   See https://www.python.org/dev/peps/pep-0440/#version-specifiers[0m
+[38;2;230;219;116mdocopt[0m[38;2;248;248;242m [0m[38;2;249;38;114m==[0m[38;2;248;248;242m [0m[38;2;190;132;255m0.6.1[0m[38;2;248;248;242m             [0m[38;2;117;113;94m#[0m[38;2;117;113;94m Version Matching. Must be version 0.6.1[0m
+[38;2;230;219;116mkeyring[0m[38;2;248;248;242m [0m[38;2;249;38;114m>=[0m[38;2;248;248;242m [0m[38;2;190;132;255m4.1.1[0m[38;2;248;248;242m            [0m[38;2;117;113;94m#[0m[38;2;117;113;94m Minimum version 4.1.1[0m
+[38;2;230;219;116mcoverage[0m[38;2;248;248;242m [0m[38;2;249;38;114m!=[0m[38;2;248;248;242m [0m[38;2;190;132;255m3.5[0m[38;2;248;248;242m             [0m[38;2;117;113;94m#[0m[38;2;117;113;94m Version Exclusion. Anything except version 3.5[0m
+[38;2;230;219;116mMopidy-Dirble[0m[38;2;248;248;242m [0m[38;2;249;38;114m~=[0m[38;2;248;248;242m [0m[38;2;190;132;255m1.1[0m[38;2;248;248;242m        [0m[38;2;117;113;94m#[0m[38;2;117;113;94m Compatible release. Same as >= 1.1, == 1.*[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m##### Refer to other requirements files ######[0m
+[38;2;230;219;116m-r[0m[38;2;248;248;242m other-requirements.txt[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m##### A particular file ######[0m
+[38;2;230;219;116m.[0m[38;2;248;248;242m/downloads/numpy-[0m[38;2;190;132;255m1.9.2-cp34-none-win32.whl[0m
+[38;2;230;219;116mhttp[0m[38;2;248;248;242m://wxpython.org/Phoenix/snapshot-builds/wxPython_Phoenix-[0m[38;2;190;132;255m3.0.3.dev1820[0m[38;2;248;248;242m+49a8884-cp34-none-win_amd[0m[38;2;190;132;255m64.whl[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m##### Additional Requirements without Version Specifiers ######[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m   Same as 1st section, just here to show that you can put things in any order.[0m
+[38;2;230;219;116mrejected[0m
+[38;2;230;219;116mgreen[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m Additional examples from https://www.python.org/dev/peps/pep-0508/#examples[0m
+
+[38;2;230;219;116mrequests[0m[38;2;248;248;242m [security,tests] [0m[38;2;249;38;114m>=[0m[38;2;248;248;242m [0m[38;2;190;132;255m2.8.1[0m[38;2;248;248;242m, [0m[38;2;249;38;114m==[0m[38;2;248;248;242m [0m[38;2;190;132;255m2.8.[0m[38;2;248;248;242m* ; python_version [0m[38;2;249;38;114m<[0m[38;2;248;248;242m "[0m[38;2;190;132;255m2.7[0m[38;2;248;248;242m"[0m
+[38;2;230;219;116mpip[0m[38;2;248;248;242m @ https://github.com/pypa/pip/archive/[0m[38;2;190;132;255m1.3.1.zip[0m[38;2;117;113;94m#[0m[38;2;117;113;94msha1=da9234ee9982d4bbb3c72346a6de940a148ea686[0m

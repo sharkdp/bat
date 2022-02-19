@@ -239,3 +239,6 @@
 [submodule "assets/syntaxes/02_Extra/SublimeJQ"]
 	path = assets/syntaxes/02_Extra/SublimeJQ
 	url = https://github.com/zogwarg/SublimeJQ.git
+[submodule "assets/syntaxes/02_Extra/requirementstxt"]
+	path = assets/syntaxes/02_Extra/requirementstxt
+	url = https://github.com/wuub/requirementstxt.git
