@@ -145,21 +145,21 @@ impl<'a> SyntaxMapping<'a> {
                     &git_config_path.join("config").to_string_lossy(),
                     MappingTarget::MapTo("Git Config"),
                 )
-                .unwrap();
+                .ok();
 
             mapping
                 .insert(
                     &git_config_path.join("ignore").to_string_lossy(),
                     MappingTarget::MapTo("Git Ignore"),
                 )
-                .unwrap();
+                .ok();
 
             mapping
                 .insert(
                     &git_config_path.join("attributes").to_string_lossy(),
                     MappingTarget::MapTo("Git Attributes"),
                 )
-                .unwrap();
+                .ok();
         }
 
         mapping
