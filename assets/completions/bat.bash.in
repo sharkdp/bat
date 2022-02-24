@@ -2,9 +2,22 @@
 
 # Requires https://github.com/scop/bash-completion
 
+# Macs have bash3 for which the bash-completion package doesn't include
+# _init_completion. This is a minimal version of that function.
+__bat_init_completion()
+{
+	COMPREPLY=()
+	_get_comp_words_by_ref "$@" cur prev words cword
+}
+
 _bat() {
-	local cur prev words cword split
-	_init_completion -s || return 0
+	local cur prev words cword split=false
+	if declare -F _init_completion >/dev/null 2>&1; then
+		_init_completion -s || return 0
+	else
+		__bat_init_completion -n "=" || return 0
+		_split_longopt && split=true
+	fi
 
 	if [[ ${words[1]-} == cache ]]; then
 		case $prev in
