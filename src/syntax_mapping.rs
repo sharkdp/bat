@@ -122,10 +122,8 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.hook", MappingTarget::MapTo("INI"))
             .unwrap();
 
-        // global git config files
-        // `$XDG_CONFIG_HOME/git`, or `$HOME/.config/git` if `$XDG_CONFIG_HOME` is not set or empty
-        // see https://git-scm.com/docs/git-config#FILES
-        // we cover both cases regardless of the state of `$XDG_CONFIG_HOME`
+        // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
+        // See e.g. https://git-scm.com/docs/git-config#FILES
         if let Some(xdg_config_home) =
             std::env::var_os("XDG_CONFIG_HOME").and_then(|val| (!val.is_empty()).then(|| val))
         {

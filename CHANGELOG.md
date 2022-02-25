@@ -16,7 +16,7 @@
 - Associate `poetry.lock` files with the `TOML` syntax. See #2049
 - Associate `.mesh`, `.task`, `.rgen`, `.rint`, `.rahit`, `.rchit`, `.rmiss`, and `.rcall` with the `GLSL` syntax. See #2050
 - Added support for `JQ` syntax, see #2072
-- `Git`: Associate global config files in all valid locations. See #2067 (@cyqsimon)
+- Properly associate global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`. See #2067 (@cyqsimon)
 
 ## Themes
 
