@@ -1,16 +1,5 @@
 # Release checklist
 
-## Dependencies
-
-See this page for a good overview: https://deps.rs/repo/github/sharkdp/bat
-
-- [ ] Optional: update dependencies with `cargo update`. This is also done by
-      dependabot, so it is not strictly necessary.
-- [ ] Install [cargo-outdated](https://crates.io/crates/cargo-outdated). Check
-      for outdated dependencies with `cargo outdated --root-deps-only` and
-      decide for each of them whether we want to (manually) upgrade. This will
-      require changes to `Cargo.toml`.
-
 ## Version bump
 
 - [ ] Update version in `Cargo.toml`. Run `cargo build` to update `Cargo.lock`.
