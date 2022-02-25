@@ -125,12 +125,13 @@ impl<'a> SyntaxMapping<'a> {
         // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
         // See e.g. https://git-scm.com/docs/git-config#FILES
         if let Some(xdg_config_home) =
-            std::env::var_os("XDG_CONFIG_HOME").and_then(|val| (!val.is_empty()).then(|| val))
+            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty())
         {
             insert_git_config_global(&mut mapping, &xdg_config_home);
         }
-        if let Some(default_config_home) =
-            std::env::var_os("HOME").map(|home| Path::new(&home).join(".config"))
+        if let Some(default_config_home) = std::env::var_os("HOME")
+            .filter(|val| !val.is_empty())
+            .map(|home| Path::new(&home).join(".config"))
         {
             insert_git_config_global(&mut mapping, &default_config_home);
         }
