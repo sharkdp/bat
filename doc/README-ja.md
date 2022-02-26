@@ -181,7 +181,7 @@ man 2 select
 
 ## インストール
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg)](https://repology.org/project/bat-cat/versions)
 
 ###  On Ubuntu (`apt` を使用)
 *... や他のDebianベースのLinuxディストリビューション*
