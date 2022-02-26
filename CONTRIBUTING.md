@@ -51,7 +51,7 @@ first.
 ## Regression tests
 
 You are strongly encouraged to add regression tests. Regression tests are great,
-not least because they
+not least because they:
 
 * ensure that your contribution will never completely stop working,
 
