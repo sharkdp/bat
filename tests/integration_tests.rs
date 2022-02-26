@@ -1117,7 +1117,9 @@ Single Line
 ────────────────────────────────────────────────────────────────────────────────
 ",
         )
-        .stderr("\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n");
+        .stderr(
+            "\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n",
+        );
 }
 
 #[cfg(target_os = "linux")]
@@ -1356,6 +1358,45 @@ fn ignored_suffix_arg() {
         .assert()
         .success()
         .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stderr("");
+}
+
+#[test]
+fn all_global_git_config_locations_syntax_mapping_work() {
+    let fake_home = Path::new(EXAMPLES_DIR).join("git").canonicalize().unwrap();
+    let expected = "\u{1b}[38;5;231m[\u{1b}[0m\u{1b}[38;5;149muser\u{1b}[0m\u{1b}[38;5;231m]\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231memail\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoo@bar.net\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231mname\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoobar\u{1b}[0m
+";
+
+    bat()
+        .env("XDG_CONFIG_HOME", fake_home.join(".config").as_os_str())
+        .arg("-f")
+        .arg("-p")
+        .arg("git/.config/git/config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+
+    bat()
+        .env("HOME", fake_home.as_os_str())
+        .arg("-f")
+        .arg("-p")
+        .arg("git/.config/git/config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+
+    bat()
+        .env("HOME", fake_home.as_os_str())
+        .arg("-f")
+        .arg("-p")
+        .arg("git/.gitconfig")
+        .assert()
+        .success()
+        .stdout(expected)
         .stderr("");
 }
 

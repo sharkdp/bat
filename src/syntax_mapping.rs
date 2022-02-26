@@ -122,8 +122,22 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.hook", MappingTarget::MapTo("INI"))
             .unwrap();
 
-        if let Some(xdg_config_home) = std::env::var_os("XDG_CONFIG_HOME") {
-            let git_config_path = Path::new(&xdg_config_home).join("git");
+        // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
+        // See e.g. https://git-scm.com/docs/git-config#FILES
+        if let Some(xdg_config_home) =
+            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty())
+        {
+            insert_git_config_global(&mut mapping, &xdg_config_home);
+        }
+        if let Some(default_config_home) = std::env::var_os("HOME")
+            .filter(|val| !val.is_empty())
+            .map(|home| Path::new(&home).join(".config"))
+        {
+            insert_git_config_global(&mut mapping, &default_config_home);
+        }
+
+        fn insert_git_config_global(mapping: &mut SyntaxMapping, config_home: impl AsRef<Path>) {
+            let git_config_path = config_home.as_ref().join("git");
 
             mapping
                 .insert(
