@@ -75,7 +75,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         ;;
 
         style)
-            _values -s , 'style' auto full plain changes header grid rule numbers snip
+            _values -s , 'style' auto full plain changes header header-filename header-filesize grid rule numbers snip
         ;;
     esac
 }
