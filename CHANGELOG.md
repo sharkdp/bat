@@ -1,4 +1,4 @@
-# unreleased
+# v0.20.0
 
 ## Features
 
@@ -9,8 +9,6 @@
 
 - Fix bash completion on bash 3.x and bash-completion 1.x. See #2066 (@joshpencheon)
 
-## Other
-
 ## Syntaxes
 
 - `GraphQL`: Add support for interfaces implementing interfaces and consider ampersand an operator. See #2000
@@ -20,11 +18,11 @@
 - Added support for `JQ` syntax, see #2072
 - Properly associate global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`. See #2067 (@cyqsimon)
 
-## Themes
-
 ## `bat` as a library
 
 - Exposed `get_syntax_set` and `get_theme` methods on `HighlightingAssets`. See #2030 (@dandavison)
+- Added `HeaderFilename` and `HeaderFilesize` to `StyleComponent` enum, and mark it `#[non_exhaustive]`. See #1988 (@mdibaiee)
+
 
 # v0.19.0
 
