@@ -146,7 +146,8 @@ Configure which elements (line numbers, file headers, grid borders, Git modifica
 of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
 To set a default style, add the '\-\-style=".."' option to the configuration file or
 export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
-values: *full*, auto, plain, changes, header, grid, rule, numbers, snip.
+values: *full*, auto, plain, changes, header, header-filename, header-filesize, grid,
+rule, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
