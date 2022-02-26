@@ -160,7 +160,7 @@ man 2 select
 
 ## Установка
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg)](https://repology.org/project/bat-cat/versions)
 
 ### Ubuntu (с помощью `apt`)
 *... и другие дистрибутивы основанные на Debian.*
