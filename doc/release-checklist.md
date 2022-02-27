@@ -49,4 +49,23 @@
 
 ## Post-release
 
-- [ ] Prepare a new (empty) "unreleased" section at the top of `CHANGELOG.md`.
+- [ ] Prepare a new "unreleased" section at the top of `CHANGELOG.md`.
+      Put this at the top:
+
+```
+# unreleased
+
+## Features
+
+## Bugfixes
+
+## Other
+
+## Syntaxes
+
+## Themes
+
+## `bat` as a library
+
+
+```
