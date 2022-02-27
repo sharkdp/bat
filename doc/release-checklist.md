@@ -37,6 +37,7 @@
 
 - [ ] Create a tag and push it: `git tag vX.Y.Z; git push origin tag vX.Y.Z`.
       This will trigger the deployment via GitHub Actions.
+      REMINDER: If your `origin` is a fork, don't forget to push to e.g. `upstream` instead!
 - [ ] Go to https://github.com/sharkdp/bat/releases/new to create the new
       release. Select the new tag and also use it as the release title. For the
       release notes, copy the corresponding section from `CHANGELOG.md` and
