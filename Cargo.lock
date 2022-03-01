@@ -1016,9 +1016,9 @@ checksum = "45bb67a18fa91266cc7807181f62f9178a6873bfad7dc788c42e6430db40184f"
 
 [[package]]
 name = "shell-words"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6fa3938c99da4914afedd13bf3d79bcb6c277d1b2c398d23257a304d9e1b074"
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "smallvec"
