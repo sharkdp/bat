@@ -52,7 +52,7 @@ thiserror = "1.0"
 wild = { version = "2.0", optional = true }
 content_inspector = "0.2.4"
 encoding = "0.2"
-shell-words = { version = "1.0.0", optional = true }
+shell-words = { version = "1.1.0", optional = true }
 unicode-width = "0.1.9"
 globset = "0.4"
 serde = { version = "1.0", features = ["derive"] }
