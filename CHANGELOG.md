@@ -6,6 +6,8 @@
 
 ## Other
 
+- Include contents of custom assets `metadata.yaml` in `--diagnostics`. See #2107 (@Enselic)
+
 ## Syntaxes
 
 ## Themes
