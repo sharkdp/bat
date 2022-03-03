@@ -230,6 +230,9 @@ fn invoke_bugreport(app: &App) {
     let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
         .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
 
+    let mut custom_assets_metadata = PROJECT_DIRS.cache_dir().to_path_buf();
+    custom_assets_metadata.push("metadata.yaml");
+
     let mut report = bugreport!()
         .info(SoftwareVersion::default())
         .info(OperatingSystem::default())
@@ -254,6 +257,10 @@ fn invoke_bugreport(app: &App) {
             "MANPAGER",
         ]))
         .info(FileContent::new("Config file", config_file()))
+        .info(FileContent::new(
+            "Custom assets metadata",
+            custom_assets_metadata,
+        ))
         .info(CompileTimeInformation::default());
 
     #[cfg(feature = "paging")]
