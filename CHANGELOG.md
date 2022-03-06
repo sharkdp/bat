@@ -2,6 +2,8 @@
 
 ## Features
 
+- Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
+
 ## Bugfixes
 
 ## Other
