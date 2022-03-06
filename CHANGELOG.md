@@ -8,6 +8,8 @@
 
 ## Syntaxes
 
+- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+
 ## Themes
 
 ## `bat` as a library
@@ -19,7 +21,6 @@
 
 - New style component `header-filesize` to show size of the displayed file in the header. See #1988 (@mdibaiee)
 - Use underline for line highlighting on ANSI, see #1730 (@mdibaiee)
-- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
 
 ## Bugfixes
 
