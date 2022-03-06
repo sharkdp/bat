@@ -8,6 +8,8 @@
 
 ## Syntaxes
 
+- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+
 ## Themes
 
 ## `bat` as a library
