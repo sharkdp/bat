@@ -1218,7 +1218,7 @@ fn show_all_mode() {
 }
 
 #[test]
-fn show_all_tabstops() {
+fn show_all_extends_tab_markers_to_next_tabstop() {
     bat()
         .arg("tabs.txt")
         .arg("--show-all")
@@ -1241,7 +1241,7 @@ fn show_all_tabstops() {
 }
 
 #[test]
-fn show_all_tabstops_long() {
+fn show_all_extends_tab_markers_to_next_tabstop_width_8() {
     bat()
         .arg("tabs.txt")
         .arg("--show-all")
