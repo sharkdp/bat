@@ -398,6 +398,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         !&[
                             "auto",
                             "full",
+                            "default",
                             "plain",
                             "header",
                             "header-filename",
