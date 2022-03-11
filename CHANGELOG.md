@@ -3,7 +3,7 @@
 ## Features
 
 - Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
-- Add a --style=default option, less verbose than =full, see #2061 (@IsaacHorvath)
+- Add a `--style=default` option, less verbose than `full`, see #2061 (@IsaacHorvath)
 
 ## Bugfixes
 
