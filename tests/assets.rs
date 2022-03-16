@@ -31,6 +31,7 @@ fn all_themes_are_present() {
             "Sublime Snazzy",
             "TwoDark",
             "Visual Studio Dark+",
+            "Catppuccin",
             "ansi",
             "base16",
             "base16-256",
