@@ -13,6 +13,7 @@
 ## Syntaxes
 
 - Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
 
 ## Themes
 
