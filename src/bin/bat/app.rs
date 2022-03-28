@@ -322,7 +322,7 @@ impl App {
                             .collect::<Vec<_>>()
                     })
                     .or(env_style_components)
-                    .unwrap_or_else(|| vec![StyleComponent::Full])
+                    .unwrap_or_else(|| vec![StyleComponent::Default])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {
