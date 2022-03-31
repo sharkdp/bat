@@ -999,6 +999,29 @@ fn header_default() {
 }
 
 #[test]
+fn header_default_is_default() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: single-line.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ Single Line
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("");
+}
+
+#[test]
 fn filename_stdin() {
     bat()
         .arg("--decorations=always")
