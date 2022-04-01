@@ -164,6 +164,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to print binary content or nonprintable characters (default: no)
+    pub fn show_nonprintable(&mut self, yes: bool) -> &mut Self {
+        self.config.show_nonprintable = yes;
+        self
+    }
+
     /// Whether to show "snip" markers between visible line ranges (default: no)
     pub fn snip(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.snip = yes;
