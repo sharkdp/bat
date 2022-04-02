@@ -19,7 +19,7 @@
 
 ## `bat` as a library
 
-- Allow crates using `bat` as a library to configure `show_nonprintable` with `PrettyPrinter`, see #2142
+- Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
 
 # v0.20.0
 
