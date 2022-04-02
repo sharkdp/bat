@@ -10,7 +10,7 @@
 
 ## Other
 
-- Include contents of custom assets `metadata.yaml` in `--diagnostics`. See #2107 (@Enselic)
+- Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
 
 ## Syntaxes
 
