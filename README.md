@@ -212,6 +212,22 @@ Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145)
 
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
 
+#### Highlighting `--help` messages
+
+You can use bat to colorize help text: `$ cp --help | bat -plhelp`
+
+But you may want to use a wrapper around this:
+
+```bash
+# in your .bashrc/.zshrc/*rc
+alias bathelp='bat --plain --language=help'
+help() {
+    "$@" --help 2>&1 | bathelp
+}
+```
+
+Then you can do `$ help cp` or `$ help git commit`.
+
 
 ## Installation
 
