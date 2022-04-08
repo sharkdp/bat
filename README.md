@@ -214,9 +214,9 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 
 #### Highlighting `--help` messages
 
-You can use bat to colorize help text: `$ cp --help | bat -plhelp`
+You can use `bat` to colorize help text: `$ cp --help | bat -plhelp`
 
-But you may want to use a wrapper around this:
+You can also use a wrapper around this:
 
 ```bash
 # in your .bashrc/.zshrc/*rc
@@ -227,6 +227,8 @@ help() {
 ```
 
 Then you can do `$ help cp` or `$ help git commit`.
+
+Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
 
 ## Installation
