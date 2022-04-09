@@ -433,7 +433,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      Possible values:\n\n  \
                      * default: enables recommended style components (default).\n  \
                      * full: enables all available components.\n  \
-                     * auto: same as 'full', unless the output is piped.\n  \
+                     * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: alias for 'header-filename'.\n  \
