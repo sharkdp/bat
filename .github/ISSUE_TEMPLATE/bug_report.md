@@ -7,7 +7,18 @@ assignees: ''
 
 ---
 
-<!-- Hey there, thank you for creating an issue! -->
+<!--
+
+Hey there, thank you for reporting a bug!
+
+Please note that the following bugs have already been reported:
+
+* dpkg: error processing archive /some/path/some-program.deb (--unpack):
+  trying to overwrite '/usr/.crates2.json'
+
+  See https://github.com/sharkdp/bat/issues/938
+
+-->
 
 **Describe the bug you encountered:**
 
