@@ -20,7 +20,13 @@ Please note that the following bugs have already been reported:
 
 -->
 
-**Describe the bug you encountered:**
+**What steps will reproduce the bug?**
+
+1. step 1
+2. step 2
+3. ...
+
+**What happens?**
 
 ...
 
