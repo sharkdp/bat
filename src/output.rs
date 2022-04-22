@@ -4,7 +4,7 @@ use std::process::Child;
 
 use crate::error::*;
 #[cfg(feature = "paging")]
-use crate::less::retrieve_less_version;
+use crate::less::{retrieve_less_version, LessVersion};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 #[cfg(feature = "paging")]
@@ -83,15 +83,6 @@ impl OutputType {
             let replace_arguments_to_less = pager.source == PagerSource::EnvVarPager;
 
             if args.is_empty() || replace_arguments_to_less {
-                p.arg("--RAW-CONTROL-CHARS");
-                if single_screen_action == SingleScreenAction::Quit {
-                    p.arg("--quit-if-one-screen");
-                }
-
-                if wrapping_mode == WrappingMode::NoWrapping(true) {
-                    p.arg("--chop-long-lines");
-                }
-
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                 //
@@ -99,14 +90,31 @@ impl OutputType {
                 //
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
-                match retrieve_less_version(&pager.bin) {
+                let less_version = retrieve_less_version(&pager.bin);
+                match less_version {
                     None => {
                         p.arg("--no-init");
                     }
-                    Some(version) if (version < 530 || (cfg!(windows) && version < 558)) => {
+                    Some(LessVersion::Less(version))
+                        if (version < 530 || (cfg!(windows) && version < 558)) =>
+                    {
                         p.arg("--no-init");
                     }
+                    Some(LessVersion::BusyBox) => {
+                        // This makes BusyBox less filter out color escapes
+                        p.arg("-R");
+                    }
                     _ => {}
+                }
+                if less_version != Some(LessVersion::BusyBox) {
+                    p.arg("--RAW-CONTROL-CHARS");
+                    if single_screen_action == SingleScreenAction::Quit {
+                        p.arg("--quit-if-one-screen");
+                    }
+
+                    if wrapping_mode == WrappingMode::NoWrapping(true) {
+                        p.arg("--chop-long-lines");
+                    }
                 }
             } else {
                 p.args(args);
