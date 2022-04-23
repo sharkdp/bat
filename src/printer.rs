@@ -447,12 +447,14 @@ impl<'a> Printer for InteractivePrinter<'a> {
             };
             // skip syntax highlighting on long lines
             if line.len() > 1024 * 16 {
-                let mut empty = highlighter_from_set.highlighter
+                let mut empty = highlighter_from_set
+                    .highlighter
                     .highlight(&"\n", highlighter_from_set.syntax_set);
                 empty[0].1 = line.as_ref();
                 empty
             } else {
-                highlighter_from_set.highlighter
+                highlighter_from_set
+                    .highlighter
                     .highlight(&line, highlighter_from_set.syntax_set)
             }
         };
