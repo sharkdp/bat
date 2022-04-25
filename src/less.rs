@@ -16,16 +16,22 @@ pub fn retrieve_less_version(less_path: &dyn AsRef<OsStr>) -> Option<LessVersion
     if cmd.status.success() {
         parse_less_version(&cmd.stdout)
     } else {
-        parse_less_version(&cmd.stderr)
+        parse_less_version_busybox(&cmd.stderr)
     }
 }
 
 fn parse_less_version(output: &[u8]) -> Option<LessVersion> {
+    if !output.starts_with(b"less ") {
+        return None;
+    }
+
+    let version = std::str::from_utf8(&output[5..]).ok()?;
+    let end = version.find(|c: char| !c.is_ascii_digit())?;
+    Some(LessVersion::Less(version[..end].parse::<usize>().ok()?))
+}
+
+fn parse_less_version_busybox(output: &[u8]) -> Option<LessVersion> {
     match std::str::from_utf8(output) {
-        Ok(version) if version.starts_with("less ") => {
-            let end = (&version[5..]).find(|c: char| !c.is_ascii_digit())? + 5;
-            Some(LessVersion::Less(version[5..end].parse::<usize>().ok()?))
-        }
         Ok(version) if version.contains("BusyBox ") => Some(LessVersion::BusyBox),
         _ => None,
     }
@@ -109,5 +115,8 @@ View FILE (or stdin) one screenful at a time
         -R      Remove color escape codes in input
         -~      Suppress ~s displayed past EOF";
 
-    assert_eq!(Some(LessVersion::BusyBox), parse_less_version(output));
+    assert_eq!(
+        Some(LessVersion::BusyBox),
+        parse_less_version_busybox(output)
+    );
 }

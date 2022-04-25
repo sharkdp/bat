@@ -83,6 +83,17 @@ impl OutputType {
             let replace_arguments_to_less = pager.source == PagerSource::EnvVarPager;
 
             if args.is_empty() || replace_arguments_to_less {
+                if args.is_empty() || replace_arguments_to_less {
+                    p.arg("-R");
+                }
+                if single_screen_action == SingleScreenAction::Quit {
+                    p.arg("-F");
+                }
+
+                if wrapping_mode == WrappingMode::NoWrapping(true) {
+                    p.arg("-S");
+                }
+
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                 //
@@ -90,8 +101,7 @@ impl OutputType {
                 //
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
-                let less_version = retrieve_less_version(&pager.bin);
-                match less_version {
+                match retrieve_less_version(&pager.bin) {
                     None => {
                         p.arg("--no-init");
                     }
@@ -100,21 +110,7 @@ impl OutputType {
                     {
                         p.arg("--no-init");
                     }
-                    Some(LessVersion::BusyBox) => {
-                        // This makes BusyBox less filter out color escapes
-                        p.arg("-R");
-                    }
                     _ => {}
-                }
-                if less_version != Some(LessVersion::BusyBox) {
-                    p.arg("--RAW-CONTROL-CHARS");
-                    if single_screen_action == SingleScreenAction::Quit {
-                        p.arg("--quit-if-one-screen");
-                    }
-
-                    if wrapping_mode == WrappingMode::NoWrapping(true) {
-                        p.arg("--chop-long-lines");
-                    }
                 }
             } else {
                 p.args(args);

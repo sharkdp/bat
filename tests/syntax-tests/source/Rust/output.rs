@@ -93,13 +93,10 @@ impl OutputType {
                             None => {
                                 p.arg("--no-init");
                             }
-                            Some(LessVersion::Less(version))
+                            Some(version)
                                 if (version < 530 || (cfg!(windows) && version < 558)) =>
                             {
                                 p.arg("--no-init");
-                            }
-                            Some(LessVersion::BusyBox) => {
-                                p.arg("-R")
                             }
                             _ => {}
                         }
