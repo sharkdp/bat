@@ -16,6 +16,7 @@
 
 - Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
 - log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
+- Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
 
 ## Themes
 
