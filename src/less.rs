@@ -94,6 +94,7 @@ fn test_parse_less_version_wrong_program() {
     let output = b"more from util-linux 2.34";
 
     assert_eq!(None, parse_less_version(output));
+    assert_eq!(None, parse_less_version_busybox(output));
 }
 
 #[test]
@@ -119,4 +120,12 @@ View FILE (or stdin) one screenful at a time
         Some(LessVersion::BusyBox),
         parse_less_version_busybox(output)
     );
+}
+
+#[test]
+fn test_parse_less_version_invalid_utf_8() {
+    let output = b"\xff";
+
+    assert_eq!(None, parse_less_version(output));
+    assert_eq!(None, parse_less_version_busybox(output));
 }
