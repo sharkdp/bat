@@ -120,6 +120,11 @@ impl<'a> SyntaxMapping<'a> {
             mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
         }
 
+        // unix mail spool
+        for glob in &["/var/spool/mail/*", "/var/mail/*"] {
+            mapping.insert(glob, MappingTarget::MapTo("Email")).unwrap()
+        }
+
         // pacman hooks
         mapping
             .insert("*.hook", MappingTarget::MapTo("INI"))
