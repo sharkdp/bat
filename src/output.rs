@@ -4,7 +4,7 @@ use std::process::Child;
 
 use crate::error::*;
 #[cfg(feature = "paging")]
-use crate::less::retrieve_less_version;
+use crate::less::{retrieve_less_version, LessVersion};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 #[cfg(feature = "paging")]
@@ -83,13 +83,13 @@ impl OutputType {
             let replace_arguments_to_less = pager.source == PagerSource::EnvVarPager;
 
             if args.is_empty() || replace_arguments_to_less {
-                p.arg("--RAW-CONTROL-CHARS");
+                p.arg("-R"); // Short version of --RAW-CONTROL-CHARS for maximum compatibility
                 if single_screen_action == SingleScreenAction::Quit {
-                    p.arg("--quit-if-one-screen");
+                    p.arg("-F"); // Short version of --quit-if-one-screen for compatibility
                 }
 
                 if wrapping_mode == WrappingMode::NoWrapping(true) {
-                    p.arg("--chop-long-lines");
+                    p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
@@ -103,7 +103,9 @@ impl OutputType {
                     None => {
                         p.arg("--no-init");
                     }
-                    Some(version) if (version < 530 || (cfg!(windows) && version < 558)) => {
+                    Some(LessVersion::Less(version))
+                        if (version < 530 || (cfg!(windows) && version < 558)) =>
+                    {
                         p.arg("--no-init");
                     }
                     _ => {}

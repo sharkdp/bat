@@ -239,3 +239,8 @@
 [submodule "assets/syntaxes/02_Extra/SublimeJQ"]
 	path = assets/syntaxes/02_Extra/SublimeJQ
 	url = https://github.com/zogwarg/SublimeJQ.git
+[submodule "assets/syntaxes/02_Extra/cmd-help"]
+	path = assets/syntaxes/02_Extra/cmd-help
+	url = https://github.com/victor-gp/cmd-help-sublime-syntax.git
+	branch = main
+	shallow = true

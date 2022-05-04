@@ -4,21 +4,29 @@
 
 - Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
 - Add a `--style=default` option, less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox less as pager, see #2162 (@nfisher1226)
 
 ## Bugfixes
 
+- Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
+
 ## Other
 
-- Include contents of custom assets `metadata.yaml` in `--diagnostics`. See #2107 (@Enselic)
+- Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
 
 ## Syntaxes
 
 - Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
+- Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
+- Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
 
 ## Themes
 
 ## `bat` as a library
 
+- Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
 
 # v0.20.0
 
