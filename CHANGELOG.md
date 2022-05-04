@@ -12,6 +12,7 @@
 ## Other
 
 - Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
 
 ## Syntaxes
 
