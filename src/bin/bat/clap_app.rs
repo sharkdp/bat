@@ -398,6 +398,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         !&[
                             "auto",
                             "full",
+                            "default",
                             "plain",
                             "header",
                             "header-filename",
@@ -419,7 +420,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -430,8 +431,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * full: enables all available components (default).\n  \
-                     * auto: same as 'full', unless the output is piped.\n  \
+                     * default: enables recommended style components (default).\n  \
+                     * full: enables all available components.\n  \
+                     * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: alias for 'header-filename'.\n  \

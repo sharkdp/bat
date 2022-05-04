@@ -17,6 +17,7 @@ pub enum StyleComponent {
     LineNumbers,
     Snip,
     Full,
+    Default,
     Plain,
 }
 
@@ -25,7 +26,7 @@ impl StyleComponent {
         match self {
             StyleComponent::Auto => {
                 if interactive_terminal {
-                    StyleComponent::Full.components(interactive_terminal)
+                    StyleComponent::Default.components(interactive_terminal)
                 } else {
                     StyleComponent::Plain.components(interactive_terminal)
                 }
@@ -45,6 +46,14 @@ impl StyleComponent {
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
+                StyleComponent::LineNumbers,
+                StyleComponent::Snip,
+            ],
+            StyleComponent::Default => &[
+                #[cfg(feature = "git")]
+                StyleComponent::Changes,
+                StyleComponent::Grid,
+                StyleComponent::HeaderFilename,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -69,6 +78,7 @@ impl FromStr for StyleComponent {
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
+            "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
             _ => Err(format!("Unknown style '{}'", s).into()),
         }
