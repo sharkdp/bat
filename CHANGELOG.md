@@ -3,6 +3,7 @@
 ## Features
 
 - Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
+- Enable BusyBox less as pager, see #2162 (@nfisher1226)
 
 ## Bugfixes
 
