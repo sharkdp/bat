@@ -445,18 +445,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     return Ok(());
                 }
             };
+
             // skip syntax highlighting on long lines
-            if line.len() > 1024 * 16 {
-                let mut empty = highlighter_from_set
-                    .highlighter
-                    .highlight(&"\n", highlighter_from_set.syntax_set);
-                empty[0].1 = line.as_ref();
-                empty
-            } else {
-                highlighter_from_set
-                    .highlighter
-                    .highlight(&line, highlighter_from_set.syntax_set)
+            let too_long = line.len() > 1024 * 16;
+
+            let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+            let mut highlighted_line = highlighter_from_set
+                .highlighter
+                .highlight(for_highlighting, highlighter_from_set.syntax_set);
+
+            if too_long {
+                highlighted_line[0].1 = &line;
             }
+
+            highlighted_line
         };
 
         if out_of_range {
