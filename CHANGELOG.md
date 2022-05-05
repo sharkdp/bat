@@ -21,6 +21,7 @@
 - log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
 - Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
 - Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
+- Slightly adjust Zig syntax. See #2136 (@Enselic)
 
 ## Themes
 
