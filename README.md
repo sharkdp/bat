@@ -171,7 +171,7 @@ You can combine `bat` with `git diff` to view lines around code changes with pro
 highlighting:
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d | xargs bat --diff
+    git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
 ```
 If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
