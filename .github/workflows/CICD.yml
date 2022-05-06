@@ -118,6 +118,18 @@ jobs:
         toolchain: stable
         default: true
         profile: minimal
+    - name: Print -h
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --locked -- -h
+    - name: Print --help
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --locked -- --help
+    - name: Show man page
+      run: man $(find . -name bat.1)
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
