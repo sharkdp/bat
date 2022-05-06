@@ -129,7 +129,7 @@ jobs:
         command: run
         args: --locked -- --help
     - name: Show man page
-      run: man $(find . -name bat.1) | tee
+      run: man $(find . -name bat.1)
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
