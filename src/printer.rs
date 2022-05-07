@@ -453,7 +453,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             let mut highlighted_line = highlighter_from_set
                 .highlighter
-                .highlight(for_highlighting, highlighter_from_set.syntax_set);
+                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
 
             if too_long {
                 highlighted_line[0].1 = &line;

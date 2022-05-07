@@ -27,8 +27,12 @@
 </script>
 
 <script type="text/livescript">
-    // This block is a regression test for a bat panic when a LiveScript syntax definition is missing
+	// This block is a regression test for a bat panic when a LiveScript syntax definition is missing
 </script>
+
+<style lang="text/postcss">
+	/* This block is a regression test for a bat panic when a PostCSS syntax definition is missing */
+</style>
 
 <style>
 	main {

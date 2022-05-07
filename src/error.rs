@@ -2,11 +2,14 @@ use std::io::Write;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum Error {
     #[error(transparent)]
     Io(#[from] ::std::io::Error),
     #[error(transparent)]
-    SyntectError(#[from] ::syntect::LoadingError),
+    SyntectError(#[from] ::syntect::Error),
+    #[error(transparent)]
+    SyntectLoadingError(#[from] ::syntect::LoadingError),
     #[error(transparent)]
     ParseIntError(#[from] ::std::num::ParseIntError),
     #[error(transparent)]
