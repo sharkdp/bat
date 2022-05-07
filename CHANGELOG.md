@@ -5,15 +5,21 @@
 - Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
 - Add a `--style=default` option, less verbose than `full`, see #2061 (@IsaacHorvath)
 - Enable BusyBox less as pager, see #2162 (@nfisher1226)
+- File extensions are now matched without taking case into account. See #1854, #2181 (@Enselic)
 
 ## Bugfixes
 
 - Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
+- `bat` no longer crashes when encountering files that references missing syntaxes. See #915, #2181 (@Enselic)
+
+## Performance
+
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
+- Vastly improve startup time by lazy-loading syntaxes via syntect 5.0.0. This makes bat display small files ~75% faster than before. See #951, #2181 (@Enselic)
 
 ## Other
 
 - Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
-- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
 
 ## Syntaxes
 
@@ -28,6 +34,10 @@
 ## `bat` as a library
 
 - Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
+- The binary format of syntaxes.bin has been changed due to syntaxes now being lazy-loaded via syntect 5.0.0. See #2181 (@Enselic)
+- Mark `bat::error::Error` enum as `#[non_exhaustive]` to allow adding new variants without future semver breakage. See #2181 (@Enselic)
+- Change `Error::SyntectError(syntect::LoadingError)` to `Error::SyntectError(syntect::Error)`. See #2181 (@Enselic)
+- Add `Error::SyntectLoadingError(syntect::LoadingError)` enum variant. See #2181 (@Enselic)
 
 # v0.20.0
 
