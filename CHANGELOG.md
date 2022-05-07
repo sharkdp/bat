@@ -3,6 +3,8 @@
 ## Features
 
 - Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
+- Add a `--style=default` option, less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox less as pager, see #2162 (@nfisher1226)
 
 ## Bugfixes
 
@@ -11,6 +13,7 @@
 ## Other
 
 - Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
 
 ## Syntaxes
 
@@ -18,6 +21,7 @@
 - log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
 - Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
 - Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
+- Slightly adjust Zig syntax. See #2136 (@Enselic)
 
 ## Themes
 

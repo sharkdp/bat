@@ -118,7 +118,7 @@ impl OpenedInput<'_> {
         self.metadata
             .user_provided_name
             .as_ref()
-            .or_else(|| match self.kind {
+            .or(match self.kind {
                 OpenedInputKind::OrdinaryFile(ref path) => Some(path),
                 _ => None,
             })

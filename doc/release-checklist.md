@@ -20,8 +20,8 @@
 
 ## Documentation
 
-- [ ] Review the `-h` and `--help` texts
-- [ ] Review the `man` page (`man $(fd -HIp target/release/build.*out/assets/manual/bat.1) | tee`)
+- [ ] Review `-h`, `--help`, and the `man` page. All of these are shown in
+      the output of the CI job called *Documentation*, so look there.
 
 ## Pre-release checks
 
