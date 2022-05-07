@@ -10,7 +10,7 @@
 
 [38;2;255;255;255m<[0m[38;2;249;38;114mtemplate [0m[38;2;166;226;46mlang[0m[38;2;166;226;46m=[0m[38;2;255;255;255m'[0m[38;2;230;219;116mpug[0m[38;2;255;255;255m'[0m[38;2;255;255;255m>[0m
 [38;2;248;248;242m  #container.col[0m
-[38;2;248;248;242m    p This shall be formated as Plain Text as long as a Pug syntax definition is missing[0m
+[38;2;248;248;242m    p This shall be formatted as Plain Text as long as a Pug syntax definition is missing[0m
 [38;2;255;255;255m</[0m[38;2;249;38;114mtemplate[0m[38;2;255;255;255m>[0m
 
 [38;2;255;255;255m<[0m[3;38;2;249;38;114mscript[0m[38;2;255;255;255m>[0m

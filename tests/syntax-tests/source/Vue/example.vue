@@ -10,7 +10,7 @@
 
 <template lang='pug'>
   #container.col
-    p This shall be formated as Plain Text as long as a Pug syntax definition is missing
+    p This shall be formatted as Plain Text as long as a Pug syntax definition is missing
 </template>
 
 <script>
