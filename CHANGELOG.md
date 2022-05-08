@@ -2,10 +2,10 @@
 
 ## Features
 
-- Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
-- Add a `--style=default` option, less verbose than `full`, see #2061 (@IsaacHorvath)
-- Enable BusyBox less as pager, see #2162 (@nfisher1226)
-- File extensions are now matched without taking case into account. See #1854, #2181 (@Enselic)
+- Correctly render tab stops in `--show-all`, see #2038 (@Synthetica9)
+- Add a `--style=default` option and make it the default. It is less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox `less` as pager, see #2162 (@nfisher1226)
+- File extensions are now matched case-insensitively. See #1854, #2181 (@Enselic)
 
 ## Bugfixes
 
@@ -38,6 +38,7 @@
 - Mark `bat::error::Error` enum as `#[non_exhaustive]` to allow adding new variants without future semver breakage. See #2181 (@Enselic)
 - Change `Error::SyntectError(syntect::LoadingError)` to `Error::SyntectError(syntect::Error)`. See #2181 (@Enselic)
 - Add `Error::SyntectLoadingError(syntect::LoadingError)` enum variant. See #2181 (@Enselic)
+
 
 # v0.20.0
 
