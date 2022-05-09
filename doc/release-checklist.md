@@ -7,8 +7,8 @@
 - [ ] Find the current min. supported Rust version by running
       `grep '^\s*MIN_SUPPORTED_RUST_VERSION' .github/workflows/CICD.yml`.
 - [ ] Update the version and the min. supported Rust version in `README.md` and
-      `doc/README-*.md`. Check with `git grep -i 'rust.*1\.'` and
-      `git grep -i '1\..*rust'`.
+      `doc/README-*.md`. Check with
+      `git grep -i -e 'rust.*1\.' -e '1\..*rust' | grep README | grep -v tests/`.
 - [ ] Update `CHANGELOG.md`. Introduce a section for the new release.
 
 ## Update syntaxes and themes (build assets)
