@@ -13,7 +13,7 @@
 
 ## Update syntaxes and themes (build assets)
 
-- [ ] Install the latest master version (`cargo clean && cargo install -f --path .`) and make
+- [ ] Install the latest master version (`cargo clean && cargo install --locked -f --path .`) and make
       sure that it is available on the `PATH` (`bat --version` should show the
       new version).
 - [ ] Run `assets/create.sh` and check in the binary asset files.
