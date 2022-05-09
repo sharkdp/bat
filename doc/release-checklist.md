@@ -31,7 +31,7 @@
 - [ ] Optional: manually test the new features and command-line options. To do
       this, install the latest `bat` version again (to include the new syntaxes
       and themes).
-- [ ] Run `cargo publish --dry-run --allow-dirty` to make sure that it will
+- [ ] Run `cargo publish --dry-run` to make sure that it will
       succeed later (after creating the GitHub release).
 
 ## Release
