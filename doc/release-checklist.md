@@ -22,6 +22,7 @@
 
 - [ ] Review `-h`, `--help`, and the `man` page. All of these are shown in
       the output of the CI job called *Documentation*, so look there.
+      The CI workflow corresponding to the tip of the master branch is a good place to look.
 
 ## Pre-release checks
 
