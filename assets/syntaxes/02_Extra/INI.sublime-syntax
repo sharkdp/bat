@@ -5,8 +5,8 @@ name: INI
 file_extensions:
   - ini
   - INI
-  - inf
-  - INF
+  - "inf"
+  - "INF"
   - reg
   - REG
   - lng

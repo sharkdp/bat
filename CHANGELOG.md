@@ -28,6 +28,7 @@
 - Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
 - Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
 - Slightly adjust Zig syntax. See #2136 (@Enselic)
+- Associate `.inf` files with the `INI` syntax. See #2190 (@Enselic)
 
 ## Themes
 
