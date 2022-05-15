@@ -45,8 +45,6 @@
 - Slightly adjust Zig syntax. See #2136 (@Enselic)
 - Associate `.inf` files with the `INI` syntax. See #2190 (@Enselic)
 
-## Themes
-
 ## `bat` as a library
 
 - Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
