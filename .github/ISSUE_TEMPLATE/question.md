@@ -7,3 +7,5 @@ assignees: ''
 
 ---
 
+<!-- Using a normal ticket is still fine, but feel free to ask your
+questions about bat on https://github.com/sharkdp/bat/discussions instead. -->
