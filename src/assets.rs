@@ -69,8 +69,55 @@ impl HighlightingAssets {
         }
     }
 
+    /// The default theme.
+    ///
+    /// ### Windows and Linux
+    ///
+    /// Windows and most Linux distributions has a dark terminal theme by
+    /// default. On these platforms, this function always returns a theme that
+    /// looks good on a dark background.
+    ///
+    /// ### macOS
+    ///
+    /// On macOS the default terminal background is light, but it is common that
+    /// Dark Mode is active, which makes the terminal background dark. On this
+    /// platform, the default theme depends on
+    /// ```bash
+    /// defaults read -globalDomain AppleInterfaceStyle
+    /// ````
+    /// To avoid the overhead of the check on macOS, simply specify a theme
+    /// explicitly via `--theme`, `BAT_THEME`, or `~/.config/bat`.
+    ///
+    /// See <https://github.com/sharkdp/bat/issues/1746> and
+    /// <https://github.com/sharkdp/bat/issues/1928> for more context.
     pub fn default_theme() -> &'static str {
+        #[cfg(not(target_os = "macos"))]
+        {
+            Self::default_dark_theme()
+        }
+        #[cfg(target_os = "macos")]
+        {
+            if macos_dark_mode_active() {
+                Self::default_dark_theme()
+            } else {
+                Self::default_light_theme()
+            }
+        }
+    }
+
+    /**
+     * The default theme that looks good on a dark background.
+     */
+    fn default_dark_theme() -> &'static str {
         "Monokai Extended"
+    }
+
+    /**
+     * The default theme that looks good on a light background.
+     */
+    #[cfg(target_os = "macos")]
+    fn default_light_theme() -> &'static str {
+        "Monokai Extended Light"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
@@ -350,6 +397,16 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
     })?;
     asset_from_contents(&contents[..], description, compressed)
         .map_err(|_| format!("Could not parse cached {}", description).into())
+}
+
+#[cfg(target_os = "macos")]
+fn macos_dark_mode_active() -> bool {
+    let mut defaults_cmd = std::process::Command::new("defaults");
+    defaults_cmd.args(&["read", "-globalDomain", "AppleInterfaceStyle"]);
+    match defaults_cmd.output() {
+        Ok(output) => output.stdout == b"Dark\n",
+        Err(_) => true,
+    }
 }
 
 #[cfg(test)]

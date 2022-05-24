@@ -2,6 +2,8 @@
 
 ## Features
 
+- Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
+
 ## Bugfixes
 
 ## Other
