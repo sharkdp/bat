@@ -80,7 +80,7 @@ impl HighlightingAssets {
     /// ### macOS
     ///
     /// On macOS the default terminal background is light, but it is common that
-    /// Dark Mode active, which makes the terminal background dark. On this
+    /// Dark Mode is active, which makes the terminal background dark. On this
     /// platform, the default theme depends on
     /// ```bash
     /// defaults read -globalDomain AppleInterfaceStyle
