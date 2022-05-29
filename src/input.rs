@@ -69,7 +69,8 @@ impl InputDescription {
     }
 }
 
-pub(crate) enum InputKind<'a> {
+pub enum InputKind<'a> {
+    // TODO
     OrdinaryFile(PathBuf),
     StdIn,
     CustomReader(Box<dyn Read + 'a>),
@@ -86,14 +87,15 @@ impl<'a> InputKind<'a> {
 }
 
 #[derive(Clone, Default)]
-pub(crate) struct InputMetadata {
-    pub(crate) user_provided_name: Option<PathBuf>,
+pub struct InputMetadata {
+    // TODO
+    pub user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
 }
 
 pub struct Input<'a> {
-    pub(crate) kind: InputKind<'a>,
-    pub(crate) metadata: InputMetadata,
+    pub kind: InputKind<'a>,     // TODO
+    pub metadata: InputMetadata, // TODO
     pub(crate) description: InputDescription,
 }
 

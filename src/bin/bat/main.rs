@@ -8,6 +8,7 @@ mod directories;
 mod input;
 
 use std::collections::{HashMap, HashSet};
+use std::ffi::OsStr;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
@@ -218,7 +219,51 @@ pub fn list_themes(cfg: &Config) -> Result<()> {
     Ok(())
 }
 
-fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
+fn load_and_run_preprocess_plugins(plugins: &[&OsStr], inputs: &mut Vec<Input>) -> Result<()> {
+    use bat::input::InputKind;
+    use rlua::{Function, Lua, Result as LuaResult};
+    use std::fs;
+    use std::path::PathBuf;
+
+    let lua = Lua::new();
+
+    for plugin_name in plugins {
+        // TODO: how to handle plugin priority?
+        let mut plugin_path = PathBuf::from("plugins");
+        plugin_path.push(plugin_name);
+
+        let plugin_source_code = fs::read_to_string(&plugin_path).unwrap(); // TODO: proper error handling
+
+        lua.context::<_, LuaResult<()>>(|lua_ctx| {
+            let globals = lua_ctx.globals();
+
+            lua_ctx.load(&plugin_source_code).exec()?;
+
+            let preprocess: Function = globals.get("preprocess")?;
+
+            for input in inputs.iter_mut() {
+                if let InputKind::OrdinaryFile(ref mut path) = &mut input.kind {
+                    let path_str: String = path.to_string_lossy().into();
+                    let new_path = preprocess.call::<_, String>(path_str)?;
+
+                    *path = PathBuf::from(new_path);
+
+                    input.metadata.user_provided_name =
+                        Some(PathBuf::from(path.file_name().unwrap())); // TODO
+                }
+            }
+
+            Ok(())
+        })
+        .map_err(|e| format!("Error while executing Lua code: {}", e))?;
+    }
+
+    Ok(())
+}
+
+fn run_controller(mut inputs: Vec<Input>, config: &Config) -> Result<bool> {
+    load_and_run_preprocess_plugins(&config.plugins, &mut inputs)?;
+
     let assets = assets_from_cache_or_binary(config.use_custom_assets)?;
     let controller = Controller::new(config, &assets);
     controller.run(inputs)

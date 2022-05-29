@@ -475,6 +475,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help("Display a list of supported languages for syntax highlighting."),
         )
         .arg(
+            Arg::with_name("load-plugin")
+            .long("load-plugin")
+            .takes_value(true)
+            .value_name("name")
+            .help("Load plugin with specified name.")
+            .hidden_short_help(true)
+        )
+        .arg(
             Arg::with_name("unbuffered")
                 .short("u")
                 .long("unbuffered")

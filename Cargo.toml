@@ -30,6 +30,7 @@ minimal-application = [
     "paging",
     "regex-onig",
     "wild",
+    "rlua"
 ]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
@@ -65,6 +66,7 @@ grep-cli = { version = "0.1.6", optional = true }
 regex = { version = "1.5.5", optional = true }
 walkdir = { version = "2.0", optional = true }
 bytesize = { version = "1.1.0" }
+rlua = { version = "0.19", optional = true }
 
 [dependencies.git2]
 version = "0.14"

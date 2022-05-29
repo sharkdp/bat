@@ -5,6 +5,8 @@ use crate::style::StyleComponents;
 use crate::syntax_mapping::SyntaxMapping;
 use crate::wrapping::WrappingMode;
 
+use std::ffi::OsStr;
+
 #[derive(Debug, Clone)]
 pub enum VisibleLines {
     /// Show all lines which are included in the line ranges
@@ -86,6 +88,9 @@ pub struct Config<'a> {
     /// Whether or not to allow custom assets. If this is false or if custom assets (a.k.a.
     /// cached assets) are not available, assets from the binary will be used instead.
     pub use_custom_assets: bool,
+
+    /// List of bat plugins to be loaded
+    pub plugins: Vec<&'a OsStr>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

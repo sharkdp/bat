@@ -241,6 +241,11 @@ impl App {
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
             use_custom_assets: !self.matches.is_present("no-custom-assets"),
+            plugins: self
+                .matches
+                .values_of_os("load-plugin")
+                .unwrap_or_default()
+                .collect(),
         })
     }
 

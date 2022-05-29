@@ -98,6 +98,7 @@ dependencies = [
  "path_abs",
  "predicates",
  "regex",
+ "rlua",
  "semver",
  "serde",
  "serde_yaml",
@@ -914,6 +915,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a374af9a0e5fdcdd98c1c7b64f05004f9ea2555b6c75f211daa81268a3c50f1"
 dependencies = [
  "bytemuck",
+]
+
+[[package]]
+name = "rlua"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "627ae78424400009e889c43b0c188d0b7af3fe7301b68c03d9cfacb29115408a"
+dependencies = [
+ "bitflags",
+ "bstr",
+ "libc",
+ "num-traits",
+ "rlua-lua54-sys",
+]
+
+[[package]]
+name = "rlua-lua54-sys"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4e1fdfc6a5f7acfa1b1fe26c5076b54f5ebd6818b5982460c39844c8b859370"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
 ]
 
 [[package]]
