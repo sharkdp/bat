@@ -225,20 +225,33 @@ fn load_and_run_preprocess_plugins(plugins: &[&OsStr], inputs: &mut Vec<Input>) 
     use std::fs;
     use std::path::PathBuf;
 
+    if plugins.is_empty() {
+        // Do not create Lua context if there are no plugins
+        return Ok(());
+    }
+
     let lua = Lua::new();
 
     for plugin_name in plugins {
+        // TODO: properly load plugins from a central directory + user directories
         // TODO: how to handle plugin priority?
         let mut plugin_path = PathBuf::from("plugins");
         plugin_path.push(plugin_name);
 
-        let plugin_source_code = fs::read_to_string(&plugin_path).unwrap(); // TODO: proper error handling
+        let plugin_source_code = fs::read_to_string(&plugin_path).map_err(|e| {
+            format!(
+                "Could not load bat plugin '{}': {}",
+                plugin_path.to_string_lossy(),
+                e
+            )
+        })?;
 
         lua.context::<_, LuaResult<()>>(|lua_ctx| {
             let globals = lua_ctx.globals();
 
             lua_ctx.load(&plugin_source_code).exec()?;
 
+            // Plugins are expected to have a 'preprocess' function
             let preprocess: Function = globals.get("preprocess")?;
 
             for input in inputs.iter_mut() {
@@ -248,8 +261,10 @@ fn load_and_run_preprocess_plugins(plugins: &[&OsStr], inputs: &mut Vec<Input>) 
 
                     *path = PathBuf::from(new_path);
 
-                    input.metadata.user_provided_name =
-                        Some(PathBuf::from(path.file_name().unwrap())); // TODO
+                    // TODO: the following line overwrites actual user provided names. However,
+                    // this is necessary to get proper syntax highlighting for the path that
+                    // is being provided by the plugin.
+                    input.metadata.user_provided_name = Some(path.clone());
                 }
             }
 
