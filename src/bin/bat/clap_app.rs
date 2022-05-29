@@ -477,7 +477,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("load-plugin")
             .long("load-plugin")
+            .multiple(true)
             .takes_value(true)
+            .number_of_values(1)
             .value_name("name")
             .help("Load plugin with specified name.")
             .hidden_short_help(true)
