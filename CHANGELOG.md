@@ -12,6 +12,8 @@
 
 ## Syntaxes
 
+- NSE (Nmap Scripting Engine) is mapped to Lua, see #2151 (@Cre3per)
+
 ## Themes
 
 ## `bat` as a library
