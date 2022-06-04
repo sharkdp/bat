@@ -68,7 +68,7 @@ impl<'a> SyntaxMapping<'a> {
             .unwrap();
 
         // See #2151, https://nmap.org/book/nse-language.html
-        // mapping.insert("*.nse", MappingTarget::MapTo("Lua")).unwrap();
+        mapping.insert("*.nse", MappingTarget::MapTo("Lua")).unwrap();
 
         // See #1008
         mapping
