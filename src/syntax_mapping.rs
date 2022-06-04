@@ -67,6 +67,11 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.pac", MappingTarget::MapTo("JavaScript (Babel)"))
             .unwrap();
 
+        // See #2151, https://nmap.org/book/nse-language.html
+        mapping
+            .insert("*.nse", MappingTarget::MapTo("Lua"))
+            .unwrap();
+
         // See #1008
         mapping
             .insert("rails", MappingTarget::MapToUnknown)
