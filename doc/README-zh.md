@@ -550,7 +550,7 @@ bat --generate-config-file
 # 在终端中以斜体输出文本（不是所有终端都支持）
 --italic-text=always
 
-# 使用 C++ 语法来给 Ardiuno 的 .ino 文件提供高亮
+# 使用 C++ 语法来给 Arduino 的 .ino 文件提供高亮
 --map-syntax "*.ino:C++"
 ```
 
