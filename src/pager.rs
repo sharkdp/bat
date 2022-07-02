@@ -59,7 +59,6 @@ impl PagerKind {
             _ if is_current_bin_pager => PagerKind::Bat,
             _ => PagerKind::Unknown,
         }
-        }
     }
 }
 
