@@ -52,15 +52,13 @@ impl PagerKind {
             .map(|arg0| Path::new(&arg0).file_stem() == pager_bin)
             .unwrap_or(false);
 
-        if is_current_bin_pager {
-            PagerKind::Bat
-        } else {
-            match pager_bin.map(|s| s.to_string_lossy()).as_deref() {
-                Some("less") => PagerKind::Less,
-                Some("more") => PagerKind::More,
-                Some("most") => PagerKind::Most,
-                _ => PagerKind::Unknown,
-            }
+        match pager_bin.map(|s| s.to_string_lossy()).as_deref() {
+            Some("less") => PagerKind::Less,
+            Some("more") => PagerKind::More,
+            Some("most") => PagerKind::Most,
+            _ if is_current_bin_pager => PagerKind::Bat,
+            _ => PagerKind::Unknown,
+        }
         }
     }
 }
