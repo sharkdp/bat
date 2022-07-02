@@ -39,24 +39,29 @@ pub(crate) enum PagerKind {
 impl PagerKind {
     fn from_bin(bin: &str) -> PagerKind {
         use std::path::Path;
-
-        let file_stem = Path::new(bin).file_stem();
-
-        match file_stem.map(|s| s.to_string_lossy()).as_deref() {
-            Some("bat") => PagerKind::Bat,
-            Some("less") => PagerKind::Less,
-            Some("more") => PagerKind::More,
-            Some("most") => PagerKind::Most,
-            _ => {
-                if env::args_os()
-                    .nth(0)
-                    .map(|arg0| Path::new(&arg0).file_stem() == file_stem)
-                    .unwrap_or(false)
-                {
-                    PagerKind::Bat
-                } else {
-                    PagerKind::Unknown
-                }
+        
+        // Set to `less` by default on most Linux distros.
+        let pager_bin = Path::new(bin).file_stem();
+        
+        // The name of the current running binary. Normally `bat` but sometimes
+        // `batcat` for compatibility reasons.
+        let current_bin = env::args_os()
+            .next();
+        
+        // Check if the current running binary is set to be our pager.
+        let is_current_bin_pager = current_bin
+            .map(|arg0| Path::new(&arg0).file_stem() == pager_bin)
+            .unwrap_or(false);
+        
+        if is_current_bin_pager {
+            PagerKind::Bat
+        }
+        else {
+            match pager_bin.map(|s| s.to_string_lossy()).as_deref() {
+                Some("less") => PagerKind::Less,
+                Some("more") => PagerKind::More,
+                Some("most") => PagerKind::Most,
+                _ => PagerKind::Unknown
             }
         }
     }
