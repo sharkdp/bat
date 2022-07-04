@@ -4,6 +4,8 @@
 name: TypeScript
 file_extensions:
   - ts
+  - mts
+  - cts
 scope: source.ts
 contexts:
   main:
