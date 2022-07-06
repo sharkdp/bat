@@ -29,7 +29,7 @@ control the width of the tab\-placeholders.
 .IP
 Only show plain style, no decorations. This is an alias for
 \&'\-\-style=plain'. When '\-p' is used twice ('\-pp'), it also disables
-automatic paging (alias for '\-\-style=plain \fB\-\-pager\fR=\fI\,never\/\fR').
+automatic paging (alias for '\-\-style=plain \fB\-\-paging\fR=\fI\,never\/\fR').
 .HP
 \fB\-l\fR, \fB\-\-language\fR <language>
 .IP

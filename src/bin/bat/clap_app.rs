@@ -77,7 +77,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
                      '--style=plain'. When '-p' is used twice ('-pp'), it also disables \
-                     automatic paging (alias for '--style=plain --pager=never').",
+                     automatic paging (alias for '--style=plain --paging=never').",
                 ),
         )
         .arg(
