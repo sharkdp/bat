@@ -95,7 +95,7 @@ contexts:
 
   fstab_dump:
     - include: comment
-    - match: '\s*[01]\s*'
+    - match: '\s*[012]\s*'
       comment: dump field
       scope: constant.numeric
       set: fstab_pass
@@ -107,7 +107,7 @@ contexts:
 
   fstab_pass:
     - include: comment
-    - match: '\s*[01]\s*'
+    - match: '\s*[012]\s*'
       comment: pass field
       scope: constant.numeric
       set: expected_eol

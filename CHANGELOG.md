@@ -13,6 +13,7 @@
 ## Syntaxes
 
 - NSE (Nmap Scripting Engine) is mapped to Lua, see #2151 (@Cre3per)
+- Correctly color `fstab` dump and pass fields, see #2246 (@yuvalmo)
 
 ## Themes
 
