@@ -6,6 +6,8 @@
 
 ## Bugfixes
 
+- --map-syntax and --ignored-suffix now works together, see #2093 (@czzrr)
+
 ## Other
 
 - Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)

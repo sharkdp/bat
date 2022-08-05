@@ -191,18 +191,35 @@ impl<'a> SyntaxMapping<'a> {
     }
 
     pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
-        let candidate = Candidate::new(&path);
-        let candidate_filename = path.as_ref().file_name().map(Candidate::new);
-        for (ref glob, ref syntax) in self.mappings.iter().rev() {
-            if glob.is_match_candidate(&candidate)
-                || candidate_filename
-                    .as_ref()
-                    .map_or(false, |filename| glob.is_match_candidate(filename))
-            {
-                return Some(*syntax);
+        // Try matching on the file name as-is.
+        let mut syntax = {
+            let candidate = Candidate::new(&path);
+            let candidate_filename = path.as_ref().file_name().map(Candidate::new);
+            for (ref glob, ref syntax) in self.mappings.iter().rev() {
+                if glob.is_match_candidate(&candidate)
+                    || candidate_filename
+                        .as_ref()
+                        .map_or(false, |filename| glob.is_match_candidate(filename))
+                {
+                    return Some(*syntax);
+                }
             }
+            None
+        };
+        // Try matching on the file name after removing an ignored suffix.
+        if syntax.is_none() {
+            if let Some(file_name) = path.as_ref().file_name() {
+                syntax = self
+                    .ignored_suffixes
+                    .try_with_stripped_suffix(file_name, |stripped_file_name| {
+                        Ok(self.get_syntax_for(stripped_file_name))
+                    })
+                    .ok()?;
+            }
+            syntax
+        } else {
+            None
         }
-        None
     }
 
     pub fn insert_ignored_suffix(&mut self, suffix: &'a str) {
