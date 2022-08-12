@@ -6,6 +6,8 @@
 
 ## Bugfixes
 
+- Prevent fork nightmare with `PAGER=batcat`. See #2235 (@johnmatthiggins)
+
 ## Other
 
 - Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
