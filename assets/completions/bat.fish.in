@@ -100,6 +100,14 @@ set -l color_opts '
 set -l decorations_opts $color_opts
 set -l paging_opts $color_opts
 
+# Include some examples so we can indicate the default.
+set -l pager_opts '
+    less\tdefault
+    less\ -FR\t
+    more\t
+    vimpager\t
+'
+
 set -l italic_text_opts '
     always\t
     never\tdefault
@@ -165,7 +173,7 @@ complete -c $bat -s m -l map-syntax -x -a "(__bat_complete_map_syntax)" -d "Map 
 
 complete -c $bat -s n -l number -d "Only show line numbers, no other decorations" -n __bat_no_excl_args
 
-complete -c $bat -l pager -x -a less\tdefault -d "Which pager to use" -n __bat_no_excl_args
+complete -c $bat -l pager -x -a "$pager_opts" -d "Which pager to use" -n __bat_no_excl_args
 
 complete -c $bat -l paging -x -a "$paging_opts" -d "When to use the pager" -n __bat_no_excl_args
 
