@@ -696,6 +696,18 @@ fn alias_pager_disable_long_overrides_short() {
 }
 
 #[test]
+fn disable_pager_if_disable_paging_flag_comes_after_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("-P")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
 fn pager_failed_to_parse() {
     bat()
         .env("BAT_PAGER", "mismatched-quotes 'a")
