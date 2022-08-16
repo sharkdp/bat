@@ -207,3 +207,5 @@ complete -c $bat -l acknowledgements -d "Build acknowledgements.bin" -n __bat_ca
 complete -c $bat -s h -d "Print a concise overview of $bat-cache help" -n __bat_cache_no_excl
 
 complete -c $bat -l help -f -d "Print all $bat-cache help" -n __bat_cache_no_excl
+
+# vim:ft=fish
