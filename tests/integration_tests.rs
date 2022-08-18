@@ -987,6 +987,7 @@ fn header_full_binary() {
 }
 
 #[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default() {
     bat()
         .arg("--paging=never")
@@ -1011,6 +1012,7 @@ fn header_default() {
 }
 
 #[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default_is_default() {
     bat()
         .arg("--paging=never")
@@ -1373,6 +1375,7 @@ fn plain_mode_does_not_add_nonexisting_newline() {
 
 // Regression test for https://github.com/sharkdp/bat/issues/299
 #[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
 fn grid_for_file_without_newline() {
     bat()
         .arg("--paging=never")

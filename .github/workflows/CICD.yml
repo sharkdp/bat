@@ -39,6 +39,8 @@ jobs:
   min_version:
     name: Minimum supported rust version
     runs-on: ubuntu-20.04
+    env:
+      MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -54,12 +56,12 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --locked --all-targets --all-features
+        args: --locked --all-targets ${{ env.MSRV_FEATURES }}
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --locked
+        args: --locked ${{ env.MSRV_FEATURES }}
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
