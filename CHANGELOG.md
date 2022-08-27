@@ -13,6 +13,7 @@
 ## Other
 
 - Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
+- Improved fish completions. See #2275 (@zgracem)
 
 ## Syntaxes
 
