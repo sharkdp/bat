@@ -14,6 +14,7 @@
 
 - Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
 - Improved fish completions. See #2275 (@zgracem)
+- Stop pre-processing ANSI escape characters. Syntax highlighting on ANSI escaped input is not supported. See #2185 and #2189 (@Enselic)
 
 ## Syntaxes
 
