@@ -293,11 +293,11 @@ fn run() -> Result<bool> {
     }
 
     match app.matches.subcommand() {
-        ("cache", Some(cache_matches)) => {
+        Some(("cache", cache_matches)) => {
             // If there is a file named 'cache' in the current working directory,
             // arguments for subcommand 'cache' are not mandatory.
             // If there are non-zero arguments, execute the subcommand cache, else, open the file cache.
-            if !cache_matches.args.is_empty() {
+            if cache_matches.args_present() {
                 run_cache_subcommand(cache_matches)?;
                 Ok(true)
             } else {
