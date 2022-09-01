@@ -32,7 +32,7 @@ fn is_truecolor_terminal() -> bool {
 }
 
 pub struct App {
-    pub matches: ArgMatches<'static>,
+    pub matches: ArgMatches,
     interactive_output: bool,
 }
 
@@ -49,7 +49,7 @@ impl App {
         })
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
+    fn matches(interactive_output: bool) -> Result<ArgMatches> {
         let args = if wild::args_os().nth(1) == Some("cache".into())
             || wild::args_os().any(|arg| arg == "--no-config")
         {

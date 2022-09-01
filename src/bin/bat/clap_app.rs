@@ -16,7 +16,7 @@ static VERSION: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
+pub fn build_app(interactive_output: bool) -> ClapApp<'static> {
     let clap_color_setting = if interactive_output && env::var_os("NO_COLOR").is_none() {
         AppSettings::ColoredHelp
     } else {
@@ -32,7 +32,6 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .setting(AppSettings::ArgsNegateSubcommands)
         .setting(AppSettings::AllowExternalSubcommands)
         .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::VersionlessSubcommands)
         .max_term_width(100)
         .about(
             "A cat(1) clone with wings.\n\n\
@@ -50,14 +49,16 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                     "File(s) to print / concatenate. Use a dash ('-') or no argument at all \
                      to read from standard input.",
                 )
+                .takes_value(true)
                 .multiple(true)
-                .empty_values(false),
+                .empty_values(false)
+                .allow_invalid_utf8(true),
         )
         .arg(
             Arg::with_name("show-all")
                 .long("show-all")
                 .alias("show-nonprintable")
-                .short("A")
+                .short('A')
                 .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
@@ -70,9 +71,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             Arg::with_name("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
-                .short("p")
+                .short('p')
                 .long("plain")
-                .multiple(true)
+                .multiple_occurrences(true)
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
@@ -82,7 +83,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         )
         .arg(
             Arg::with_name("language")
-                .short("l")
+                .short('l')
                 .long("language")
                 .overrides_with("language")
                 .help("Set the language for syntax highlighting.")
@@ -97,7 +98,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("highlight-line")
                 .long("highlight-line")
-                .short("H")
+                .short('H')
                 .takes_value(true)
                 .number_of_values(1)
                 .multiple(true)
@@ -120,6 +121,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .number_of_values(1)
                 .multiple(true)
                 .value_name("name")
+                .allow_invalid_utf8(true)
                 .help("Specify the name to display for a file.")
                 .long_help(
                     "Specify the name to display for a file. Useful when piping \
@@ -135,7 +137,8 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .arg(
                     Arg::with_name("diff")
                         .long("diff")
-                        .short("d")
+                        .short('d')
+                        .conflicts_with("line-range")
                         .help("Only show lines that have been added/removed/modified.")
                         .long_help(
                             "Only show lines that have been added/removed/modified with respect \
@@ -226,7 +229,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             Arg::with_name("number")
                 .long("number")
                 .overrides_with("number")
-                .short("n")
+                .short('n')
                 .help("Show line numbers (alias for '--style=numbers').")
                 .long_help(
                     "Only show line numbers, no other decorations. This is an alias for \
@@ -280,7 +283,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("force-colorization")
                 .long("force-colorization")
-                .short("f")
+                .short('f')
                 .conflicts_with("color")
                 .conflicts_with("decorations")
                 .overrides_with("force-colorization")
@@ -309,7 +312,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         )
         .arg(
             Arg::with_name("no-paging")
-                .short("P")
+                .short('P')
                 .long("no-paging")
                 .alias("no-pager")
                 .overrides_with("no-paging")
@@ -334,7 +337,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         )
         .arg(
             Arg::with_name("map-syntax")
-                .short("m")
+                .short('m')
                 .long("map-syntax")
                 .multiple(true)
                 .takes_value(true)
@@ -450,12 +453,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("line-range")
                 .long("line-range")
-                .short("r")
+                .short('r')
                 .multiple(true)
                 .takes_value(true)
                 .number_of_values(1)
                 .value_name("N:M")
-                .conflicts_with("diff")
                 .help("Only print the lines from N to M.")
                 .long_help(
                     "Only print the specified range of lines for each file. \
@@ -470,14 +472,14 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         .arg(
             Arg::with_name("list-languages")
                 .long("list-languages")
-                .short("L")
+                .short('L')
                 .conflicts_with("list-themes")
                 .help("Display all supported languages.")
                 .long_help("Display a list of supported languages for syntax highlighting."),
         )
         .arg(
             Arg::with_name("unbuffered")
-                .short("u")
+                .short('u')
                 .long("unbuffered")
                 .hidden_short_help(true)
                 .long_help(
@@ -539,8 +541,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .hidden_short_help(true)
                 .help("Show acknowledgements."),
         )
-        .help_message("Print this help message.")
-        .version_message("Show version information.");
+        .help_message("Print this help message.");
 
     // Check if the current directory contains a file name cache. Otherwise,
     // enable the 'bat cache' subcommand.
@@ -553,7 +554,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .arg(
                     Arg::with_name("build")
                         .long("build")
-                        .short("b")
+                        .short('b')
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -563,7 +564,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .arg(
                     Arg::with_name("clear")
                         .long("clear")
-                        .short("c")
+                        .short('c')
                         .help("Remove the cached syntax definitions and themes."),
                 )
                 .group(
@@ -606,4 +607,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
     }
+}
+
+#[test]
+fn verify_app() {
+    build_app(false).debug_assert();
 }
