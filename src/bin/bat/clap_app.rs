@@ -1,5 +1,6 @@
 use clap::{
-    crate_name, crate_version, value_parser, AppSettings, Arg, ArgGroup, ColorChoice, Command,
+    crate_name, crate_version, value_parser, AppSettings, Arg, ArgAction, ArgGroup, ColorChoice,
+    Command,
 };
 use once_cell::sync::Lazy;
 use std::env;
@@ -73,7 +74,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .overrides_with("number")
                 .short('p')
                 .long("plain")
-                .multiple_occurrences(true)
+                .action(ArgAction::Count)
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
@@ -100,7 +101,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("highlight-line")
                 .short('H')
                 .takes_value(true)
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .value_name("N:M")
                 .help("Highlight lines N through M.")
                 .long_help(
@@ -117,7 +118,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("file-name")
                 .long("file-name")
                 .takes_value(true)
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .value_name("name")
                 .value_parser(value_parser!(PathBuf))
                 .help("Specify the name to display for a file.")
@@ -337,7 +338,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("map-syntax")
                 .short('m')
                 .long("map-syntax")
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .takes_value(true)
                 .value_name("glob:syntax")
                 .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
@@ -352,7 +353,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         )
         .arg(
             Arg::new("ignored-suffix")
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .takes_value(true)
                 .long("ignored-suffix")
                 .hide_short_help(true)
@@ -450,7 +451,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("line-range")
                 .long("line-range")
                 .short('r')
-                .multiple_occurrences(true)
+                .action(ArgAction::Append)
                 .takes_value(true)
                 .value_name("N:M")
                 .help("Only print the lines from N to M.")

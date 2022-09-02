@@ -84,7 +84,7 @@ impl App {
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
-                let extra_plain = self.matches.occurrences_of("plain") > 1;
+                let extra_plain = self.matches.get_count("plain") > 1;
                 if extra_plain || self.matches.is_present("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
@@ -297,7 +297,7 @@ impl App {
                 HashSet::new()
             } else if matches.is_present("number") {
                 [StyleComponent::LineNumbers].iter().cloned().collect()
-            } else if matches.is_present("plain") {
+            } else if 0 < matches.get_count("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
             } else {
                 let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
