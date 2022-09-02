@@ -1,7 +1,9 @@
-use clap::{crate_name, crate_version, AppSettings, Arg, ArgGroup, ColorChoice, Command};
+use clap::{
+    crate_name, crate_version, value_parser, AppSettings, Arg, ArgGroup, ColorChoice, Command,
+};
 use once_cell::sync::Lazy;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 static VERSION: Lazy<String> = Lazy::new(|| {
     #[cfg(feature = "bugreport")]
@@ -50,7 +52,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 )
                 .takes_value(true)
                 .multiple_values(true)
-                .allow_invalid_utf8(true),
+                .value_parser(value_parser!(PathBuf)),
         )
         .arg(
             Arg::new("show-all")
@@ -117,7 +119,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .takes_value(true)
                 .multiple_occurrences(true)
                 .value_name("name")
-                .allow_invalid_utf8(true)
+                .value_parser(value_parser!(PathBuf))
                 .help("Specify the name to display for a file.")
                 .long_help(
                     "Specify the name to display for a file. Useful when piping \
