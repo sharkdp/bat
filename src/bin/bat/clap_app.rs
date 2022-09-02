@@ -152,11 +152,11 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                         .overrides_with("diff-context")
                         .takes_value(true)
                         .value_name("N")
-                        .validator(
-                            |n| {
+                        .value_parser(
+                            |n: &str| {
                                 n.parse::<usize>()
                                     .map_err(|_| "must be a number")
-                                    .map(|_| ()) // Convert to Result<(), &str>
+                                    .map(|_| n.to_owned()) // Convert to Result<String, &str>
                                     .map_err(|e| e.to_string())
                             }, // Convert to Result<(), String>
                         )
@@ -173,11 +173,11 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             .overrides_with("tabs")
             .takes_value(true)
             .value_name("T")
-            .validator(
-                |t| {
+            .value_parser(
+                |t: &str| {
                     t.parse::<u32>()
                         .map_err(|_t| "must be a number")
-                        .map(|_t| ()) // Convert to Result<(), &str>
+                        .map(|_t| t.to_owned()) // Convert to Result<String, &str>
                         .map_err(|e| e.to_string())
                 }, // Convert to Result<(), String>
             )
@@ -208,15 +208,15 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .value_name("width")
                 .hide_short_help(true)
                 .allow_hyphen_values(true)
-                .validator(
-                    |t| {
+                .value_parser(
+                    |t: &str| {
                         let is_offset = t.starts_with('+') || t.starts_with('-');
                         t.parse::<i32>()
                             .map_err(|_e| "must be an offset or number")
                             .and_then(|v| if v == 0 && !is_offset {
                                 Err("terminal width cannot be zero")
                             } else {
-                                Ok(())
+                                Ok(t.to_owned())
                             })
                             .map_err(|e| e.to_string())
                     })
@@ -400,7 +400,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .overrides_with("plain")
                 .overrides_with("number")
                 // Cannot use claps built in validation because we have to turn off clap's delimiters
-                .validator(|val| {
+                .value_parser(|val: &str| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
                             "auto",
@@ -422,7 +422,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     if let Some(invalid) = invalid_vals.next() {
                         Err(format!("Unknown style, '{}'", invalid))
                     } else {
-                        Ok(())
+                        Ok(val.to_owned())
                     }
                 })
                 .help(
