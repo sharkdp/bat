@@ -39,11 +39,11 @@ const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.
 #[cfg(feature = "build-assets")]
 fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
     let source_dir = matches
-        .value_of("source")
+        .get_one::<String>("source")
         .map(Path::new)
         .unwrap_or_else(|| PROJECT_DIRS.config_dir());
     let target_dir = matches
-        .value_of("target")
+        .get_one::<String>("target")
         .map(Path::new)
         .unwrap_or_else(|| PROJECT_DIRS.cache_dir());
 
@@ -227,8 +227,10 @@ fn run_controller(inputs: Vec<Input>, config: &Config) -> Result<bool> {
 #[cfg(feature = "bugreport")]
 fn invoke_bugreport(app: &App) {
     use bugreport::{bugreport, collector::*, format::Markdown};
-    let pager = bat::config::get_pager_executable(app.matches.value_of("pager"))
-        .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
+    let pager = bat::config::get_pager_executable(
+        app.matches.get_one::<String>("pager").map(|s| s.as_str()),
+    )
+    .unwrap_or_else(|| "less".to_owned()); // FIXME: Avoid non-canonical path to "less".
 
     let mut custom_assets_metadata = PROJECT_DIRS.cache_dir().to_path_buf();
     custom_assets_metadata.push("metadata.yaml");
