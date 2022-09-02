@@ -60,6 +60,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("show-all")
                 .alias("show-nonprintable")
                 .short('A')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
@@ -137,6 +138,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("diff")
                         .long("diff")
                         .short('d')
+                        .action(ArgAction::SetTrue)
                         .conflicts_with("line-range")
                         .help("Only show lines that have been added/removed/modified.")
                         .long_help(
@@ -229,6 +231,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("number")
                 .overrides_with("number")
                 .short('n')
+                .action(ArgAction::SetTrue)
                 .help("Show line numbers (alias for '--style=numbers').")
                 .long_help(
                     "Only show line numbers, no other decorations. This is an alias for \
@@ -283,6 +286,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("force-colorization")
                 .long("force-colorization")
                 .short('f')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("color")
                 .conflicts_with("decorations")
                 .overrides_with("force-colorization")
@@ -314,6 +318,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .short('P')
                 .long("no-paging")
                 .alias("no-pager")
+                .action(ArgAction::SetTrue)
                 .overrides_with("no-paging")
                 .hide(true)
                 .hide_short_help(true)
@@ -379,6 +384,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("list-themes")
                 .long("list-themes")
+                .action(ArgAction::SetTrue)
                 .help("Display all supported highlighting themes.")
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
@@ -469,6 +475,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("list-languages")
                 .long("list-languages")
                 .short('L')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-themes")
                 .help("Display all supported languages.")
                 .long_help("Display a list of supported languages for syntax highlighting."),
@@ -493,12 +500,14 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("no-custom-assets")
                 .long("no-custom-assets")
+                .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Do not load custom assets"),
         )
         .arg(
             Arg::new("config-file")
                 .long("config-file")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-languages")
                 .conflicts_with("list-themes")
                 .hide(true)
@@ -507,6 +516,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("generate-config-file")
                 .long("generate-config-file")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-languages")
                 .conflicts_with("list-themes")
                 .hide(true)
@@ -515,12 +525,14 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("config-dir")
                 .long("config-dir")
+                .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Show bat's configuration directory."),
         )
         .arg(
             Arg::new("cache-dir")
                 .long("cache-dir")
+                .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Show bat's cache directory."),
         )
@@ -528,12 +540,14 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("diagnostic")
                 .long("diagnostic")
                 .alias("diagnostics")
+                .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show diagnostic information for bug reports.")
         )
         .arg(
             Arg::new("acknowledgements")
                 .long("acknowledgements")
+                .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show acknowledgements."),
         )
@@ -551,6 +565,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("build")
                         .long("build")
                         .short('b')
+                        .action(ArgAction::SetTrue)
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -561,6 +576,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("clear")
                         .long("clear")
                         .short('c')
+                        .action(ArgAction::SetTrue)
                         .help("Remove the cached syntax definitions and themes."),
                 )
                 .group(
@@ -586,13 +602,20 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                             "Use a different directory to store the cached syntax and theme set.",
                         ),
                 )
-                .arg(Arg::new("blank").long("blank").requires("build").help(
-                    "Create completely new syntax and theme sets \
+                .arg(
+                    Arg::new("blank")
+                        .long("blank")
+                        .action(ArgAction::SetTrue)
+                        .requires("build")
+                        .help(
+                            "Create completely new syntax and theme sets \
                              (instead of appending to the default sets).",
-                ))
+                        ),
+                )
                 .arg(
                     Arg::new("acknowledgements")
                         .long("acknowledgements")
+                        .action(ArgAction::SetTrue)
                         .requires("build")
                         .help("Build acknowledgements.bin."),
                 ),

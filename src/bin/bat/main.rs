@@ -49,20 +49,20 @@ fn build_assets(matches: &clap::ArgMatches) -> Result<()> {
 
     bat::assets::build(
         source_dir,
-        !matches.is_present("blank"),
-        matches.is_present("acknowledgements"),
+        !matches.get_flag("blank"),
+        matches.get_flag("acknowledgements"),
         target_dir,
         clap::crate_version!(),
     )
 }
 
 fn run_cache_subcommand(matches: &clap::ArgMatches) -> Result<()> {
-    if matches.is_present("build") {
+    if matches.get_flag("build") {
         #[cfg(feature = "build-assets")]
         build_assets(matches)?;
         #[cfg(not(feature = "build-assets"))]
         println!("bat has been built without the 'build-assets' feature. The 'cache --build' option is not available.");
-    } else if matches.is_present("clear") {
+    } else if matches.get_flag("clear") {
         clear_assets();
     }
 
@@ -286,7 +286,7 @@ fn invoke_bugreport(app: &App) {
 fn run() -> Result<bool> {
     let app = App::new()?;
 
-    if app.matches.is_present("diagnostic") {
+    if app.matches.get_flag("diagnostic") {
         #[cfg(feature = "bugreport")]
         invoke_bugreport(&app);
         #[cfg(not(feature = "bugreport"))]
@@ -313,7 +313,7 @@ fn run() -> Result<bool> {
             let inputs = app.inputs()?;
             let config = app.config(&inputs)?;
 
-            if app.matches.is_present("list-languages") {
+            if app.matches.get_flag("list-languages") {
                 let languages: String = get_languages(&config)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
                 let plain_config = Config {
@@ -322,22 +322,22 @@ fn run() -> Result<bool> {
                     ..Default::default()
                 };
                 run_controller(inputs, &plain_config)
-            } else if app.matches.is_present("list-themes") {
+            } else if app.matches.get_flag("list-themes") {
                 list_themes(&config)?;
                 Ok(true)
-            } else if app.matches.is_present("config-file") {
+            } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());
                 Ok(true)
-            } else if app.matches.is_present("generate-config-file") {
+            } else if app.matches.get_flag("generate-config-file") {
                 generate_config_file()?;
                 Ok(true)
-            } else if app.matches.is_present("config-dir") {
+            } else if app.matches.get_flag("config-dir") {
                 writeln!(io::stdout(), "{}", config_dir())?;
                 Ok(true)
-            } else if app.matches.is_present("cache-dir") {
+            } else if app.matches.get_flag("cache-dir") {
                 writeln!(io::stdout(), "{}", cache_dir())?;
                 Ok(true)
-            } else if app.matches.is_present("acknowledgements") {
+            } else if app.matches.get_flag("acknowledgements") {
                 writeln!(io::stdout(), "{}", bat::assets::get_acknowledgements())?;
                 Ok(true)
             } else {
