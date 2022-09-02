@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use atty::{self, Stream};
@@ -245,30 +245,28 @@ impl App {
     }
 
     pub fn inputs(&self) -> Result<Vec<Input>> {
-        // verify equal length of file-names and input FILEs
-        match self.matches.values_of("file-name") {
-            Some(ref filenames)
-                if self.matches.values_of_os("FILE").is_some()
-                    && filenames.len() != self.matches.values_of_os("FILE").unwrap().len() =>
-            {
-                return Err("Must be one file name per input type.".into());
-            }
-            _ => {}
-        }
         let filenames: Option<Vec<&Path>> = self
             .matches
-            .values_of_os("file-name")
-            .map(|values| values.map(Path::new).collect());
+            .get_many::<PathBuf>("file-name")
+            .map(|vs| vs.map(|p| p.as_path()).collect::<Vec<_>>());
+
+        let files: Option<Vec<&Path>> = self
+            .matches
+            .get_many::<PathBuf>("FILE")
+            .map(|vs| vs.map(|p| p.as_path()).collect::<Vec<_>>());
+
+        // verify equal length of file-names and input FILEs
+        if filenames.is_some()
+            && files.is_some()
+            && filenames.as_ref().map(|v| v.len()) != files.as_ref().map(|v| v.len())
+        {
+            return Err("Must be one file name per input type.".into());
+        }
 
         let mut filenames_or_none: Box<dyn Iterator<Item = Option<&Path>>> = match filenames {
             Some(filenames) => Box::new(filenames.into_iter().map(Some)),
             None => Box::new(std::iter::repeat(None)),
         };
-        let files: Option<Vec<&Path>> = self
-            .matches
-            .values_of_os("FILE")
-            .map(|vs| vs.map(Path::new).collect());
-
         if files.is_none() {
             return Ok(vec![new_stdin_input(
                 filenames_or_none.next().unwrap_or(None),
