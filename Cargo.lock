@@ -1283,9 +1283,9 @@ checksum = "fd6fbd9a79829dd1ad0cc20627bf1ed606756a7f77edff7b66b7064f9cb327c6"
 
 [[package]]
 name = "wild"
-version = "2.0.4"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "035793abb854745033f01a07647a79831eba29ec0be377205f2a25b0aa830020"
+checksum = "05b116685a6be0c52f5a103334cbff26db643826c7b3735fc0a3ba9871310a74"
 dependencies = [
  "glob",
 ]
