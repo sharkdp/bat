@@ -85,7 +85,7 @@ impl App {
             Some("auto") | None => {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
                 let extra_plain = self.matches.get_count("plain") > 1;
-                if extra_plain || self.matches.is_present("no-paging") {
+                if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
@@ -153,13 +153,13 @@ impl App {
                 .get_one::<String>("language")
                 .map(|s| s.as_str())
                 .or_else(|| {
-                    if self.matches.is_present("show-all") {
+                    if self.matches.get_flag("show-all") {
                         Some("show-nonprintable")
                     } else {
                         None
                     }
                 }),
-            show_nonprintable: self.matches.is_present("show-all"),
+            show_nonprintable: self.matches.get_flag("show-all"),
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                     Some("character") => WrappingMode::Character,
@@ -178,7 +178,7 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping(false)
             },
-            colored_output: self.matches.is_present("force-colorization")
+            colored_output: self.matches.get_flag("force-colorization")
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
                     Some("always") => true,
                     Some("never") => false,
@@ -194,7 +194,7 @@ impl App {
                     .get_one::<String>("decorations")
                     .map(|s| s.as_str())
                     == Some("always")
-                || self.matches.is_present("force-colorization")),
+                || self.matches.get_flag("force-colorization")),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -221,7 +221,7 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            visible_lines: match self.matches.is_present("diff") {
+            visible_lines: match self.matches.contains_id("diff") && self.matches.get_flag("diff") {
                 #[cfg(feature = "git")]
                 true => VisibleLines::DiffContext(
                     self.matches
@@ -255,7 +255,7 @@ impl App {
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
-            use_custom_assets: !self.matches.is_present("no-custom-assets"),
+            use_custom_assets: !self.matches.get_flag("no-custom-assets"),
         })
     }
 
@@ -310,7 +310,7 @@ impl App {
         let mut styled_components = StyleComponents(
             if matches.get_one::<String>("decorations").map(|s| s.as_str()) == Some("never") {
                 HashSet::new()
-            } else if matches.is_present("number") {
+            } else if matches.get_flag("number") {
                 [StyleComponent::LineNumbers].iter().cloned().collect()
             } else if 0 < matches.get_count("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
