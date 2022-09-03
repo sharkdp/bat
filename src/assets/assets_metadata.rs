@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::*;
 
-#[derive(Debug, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct AssetsMetadata {
     bat_version: Option<String>,
     creation_time: Option<SystemTime>,

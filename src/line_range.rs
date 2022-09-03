@@ -168,7 +168,7 @@ fn test_parse_minus_fail() {
     assert!(range.is_err());
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RangeCheckResult {
     // Within one of the given ranges
     InRange,

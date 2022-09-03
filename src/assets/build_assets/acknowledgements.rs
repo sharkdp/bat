@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::fs::read_to_string;
 use std::path::{Path, PathBuf};
 
@@ -124,7 +125,7 @@ fn append_to_acknowledgements(
     relative_path: &str,
     license_text: &str,
 ) {
-    acknowledgements.push_str(&format!("## {}\n\n{}", relative_path, license_text));
+    write!(acknowledgements, "## {}\n\n{}", relative_path, license_text).ok();
 
     // Make sure the last char is a newline to not mess up formatting later
     if acknowledgements

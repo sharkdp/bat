@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 /// Expand tabs like an ANSI-enabled expand(1).
 pub fn expand_tabs(mut text: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(text.len() * 2);
@@ -92,7 +94,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                 c => output.push_str(&c.escape_unicode().collect::<String>()),
             }
         } else {
-            output.push_str(&format!("\\x{:02X}", input[idx]));
+            write!(output, "\\x{:02X}", input[idx]).ok();
             idx += 1;
         }
     }
