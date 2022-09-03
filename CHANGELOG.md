@@ -28,6 +28,8 @@
 
 ## `bat` as a library
 
+- Make `bat::PrettyPrinter::syntaxes()` iterate over new `bat::Syntax` struct instead of `&syntect::parsing::SyntaxReference`. See #2222 (@Enselic)
+
 
 # v0.21.0
 
