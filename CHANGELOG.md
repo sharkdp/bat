@@ -22,6 +22,7 @@
 - Correctly color `fstab` dump and pass fields, see #2246 (@yuvalmo)
 - Update `Command Help` syntax, see #2255
 - `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
+- Minor update to `LiveScript`, see #2291
 
 ## Themes
 
