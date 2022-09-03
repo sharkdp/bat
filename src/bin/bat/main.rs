@@ -8,6 +8,7 @@ mod directories;
 mod input;
 
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write as _;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
@@ -125,7 +126,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
 
     if config.loop_through {
         for lang in languages {
-            result += &format!("{}:{}\n", lang.name, lang.file_extensions.join(","));
+            writeln!(result, "{}:{}", lang.name, lang.file_extensions.join(",")).ok();
         }
     } else {
         let longest = languages
@@ -146,7 +147,7 @@ pub fn get_languages(config: &Config) -> Result<String> {
         };
 
         for lang in languages {
-            result += &format!("{:width$}{}", lang.name, separator, width = longest);
+            write!(result, "{:width$}{}", lang.name, separator, width = longest).ok();
 
             // Number of characters on this line so far, wrap before `desired_width`
             let mut num_chars = 0;
@@ -157,11 +158,11 @@ pub fn get_languages(config: &Config) -> Result<String> {
                 let new_chars = word.len() + comma_separator.len();
                 if num_chars + new_chars >= desired_width {
                     num_chars = 0;
-                    result += &format!("\n{:width$}{}", "", separator, width = longest);
+                    write!(result, "\n{:width$}{}", "", separator, width = longest).ok();
                 }
 
                 num_chars += new_chars;
-                result += &format!("{}", style.paint(&word[..]));
+                write!(result, "{}", style.paint(&word[..])).ok();
                 if extension.peek().is_some() {
                     result += comma_separator;
                 }
