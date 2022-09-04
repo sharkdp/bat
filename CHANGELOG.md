@@ -3,6 +3,7 @@
 ## Features
 
 - Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
+- Support for separate system and user config files. See #668 (@patrickpichler)
 
 ## Bugfixes
 
@@ -117,7 +118,6 @@
 - Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
 - Add new `--acknowledgements` option that gives credit to theme and syntax definition authors. See #1971 (@Enselic)
 - Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
-- Support for separate system and user config files. See #668 (@patrickpichler)
 
 ## Bugfixes
 
