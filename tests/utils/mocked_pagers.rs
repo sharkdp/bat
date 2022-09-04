@@ -1,3 +1,5 @@
+#![allow(unused)] // Because indirectly included by e.g. system_wide_config.rs, but not used
+
 use assert_cmd::Command;
 use predicates::prelude::predicate;
 use std::env;

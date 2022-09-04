@@ -1,3 +1,5 @@
+#![allow(unused)] // Because indirectly included by e.g.integration_tests.rs, but not everything inside is used
+
 use assert_cmd::cargo::CommandCargoExt;
 use std::process::Command;
 
