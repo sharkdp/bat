@@ -6,6 +6,22 @@ use std::path::PathBuf;
 
 use crate::directories::PROJECT_DIRS;
 
+#[cfg(not(target_os = "windows"))]
+const DEFAULT_SYSTEM_CONFIG_PREFIX: &str = "/etc";
+
+#[cfg(target_os = "windows")]
+const DEFAULT_SYSTEM_CONFIG_PREFIX: &str = "C:\\ProgramData";
+
+pub fn system_config_file() -> PathBuf {
+    let folder = option_env!("BAT_SYSTEM_CONFIG_PREFIX").unwrap_or(DEFAULT_SYSTEM_CONFIG_PREFIX);
+    let mut path = PathBuf::from(folder);
+
+    path.push("bat");
+    path.push("config");
+
+    path
+}
+
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
         .ok()
@@ -87,11 +103,18 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 }
 
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    Ok(fs::read_to_string(config_file())
-        .ok()
-        .map(|content| get_args_from_str(&content))
-        .transpose()?
-        .unwrap_or_default())
+    let mut config = String::new();
+
+    if let Ok(c) = fs::read_to_string(system_config_file()) {
+        config.push_str(&c);
+        config.push('\n');
+    }
+
+    if let Ok(c) = fs::read_to_string(config_file()) {
+        config.push_str(&c);
+    }
+
+    get_args_from_str(&config)
 }
 
 pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {

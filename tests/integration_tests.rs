@@ -1,9 +1,7 @@
-use assert_cmd::cargo::CommandCargoExt;
 use predicates::boolean::PredicateBooleanExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
 use std::path::Path;
-use std::process::Command;
 use std::str::from_utf8;
 use tempfile::tempdir;
 
@@ -28,40 +26,13 @@ mod unix {
 use unix::*;
 
 mod utils;
+use utils::command::{bat, bat_with_config};
+
+#[cfg(unix)]
+use utils::command::bat_raw_command;
 use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
-
-fn bat_raw_command_with_config() -> Command {
-    let mut cmd = Command::cargo_bin("bat").unwrap();
-    cmd.current_dir("tests/examples");
-    cmd.env_remove("BAT_CACHE_PATH");
-    cmd.env_remove("BAT_CONFIG_DIR");
-    cmd.env_remove("BAT_CONFIG_PATH");
-    cmd.env_remove("BAT_OPTS");
-    cmd.env_remove("BAT_PAGER");
-    cmd.env_remove("BAT_STYLE");
-    cmd.env_remove("BAT_TABS");
-    cmd.env_remove("BAT_THEME");
-    cmd.env_remove("COLORTERM");
-    cmd.env_remove("NO_COLOR");
-    cmd.env_remove("PAGER");
-    cmd
-}
-
-fn bat_raw_command() -> Command {
-    let mut cmd = bat_raw_command_with_config();
-    cmd.arg("--no-config");
-    cmd
-}
-
-fn bat_with_config() -> assert_cmd::Command {
-    assert_cmd::Command::from_std(bat_raw_command_with_config())
-}
-
-fn bat() -> assert_cmd::Command {
-    assert_cmd::Command::from_std(bat_raw_command())
-}
 
 #[test]
 fn basic() {

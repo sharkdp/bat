@@ -3,6 +3,7 @@
 ## Features
 
 - Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
+- Support for separate system and user config files. See #668 (@patrickpichler)
 
 ## Bugfixes
 
