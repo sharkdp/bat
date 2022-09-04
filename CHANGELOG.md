@@ -24,6 +24,7 @@
 - Update `Command Help` syntax, see #2255
 - `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
 - Minor update to `LiveScript`, see #2291
+- Associate `.mts` and `.cts` files with the `TypeScript` syntax. See #2236 (@kidonng)
 
 ## Themes
 
