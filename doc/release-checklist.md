@@ -7,21 +7,22 @@
 - [ ] Find the current min. supported Rust version by running
       `grep '^\s*MIN_SUPPORTED_RUST_VERSION' .github/workflows/CICD.yml`.
 - [ ] Update the version and the min. supported Rust version in `README.md` and
-      `doc/README-*.md`. Check with `git grep -i 'rust.*1\.'` and
-      `git grep -i '1\..*rust'`.
+      `doc/README-*.md`. Check with
+      `git grep -i -e 'rust.*1\.' -e '1\..*rust' | grep README | grep -v tests/`.
 - [ ] Update `CHANGELOG.md`. Introduce a section for the new release.
 
 ## Update syntaxes and themes (build assets)
 
-- [ ] Install the latest master version (`cargo clean && cargo install -f --path .`) and make
+- [ ] Install the latest master version (`cargo clean && cargo install --locked -f --path .`) and make
       sure that it is available on the `PATH` (`bat --version` should show the
       new version).
 - [ ] Run `assets/create.sh` and check in the binary asset files.
 
 ## Documentation
 
-- [ ] Review the `-h` and `--help` texts
-- [ ] Review the `man` page (`man $(fd -HIp target/release/build.*out/assets/manual/bat.1) | tee`)
+- [ ] Review `-h`, `--help`, and the `man` page. All of these are shown in
+      the output of the CI job called *Documentation*, so look there.
+      The CI workflow corresponding to the tip of the master branch is a good place to look.
 
 ## Pre-release checks
 
@@ -30,7 +31,7 @@
 - [ ] Optional: manually test the new features and command-line options. To do
       this, install the latest `bat` version again (to include the new syntaxes
       and themes).
-- [ ] Run `cargo publish --dry-run --allow-dirty` to make sure that it will
+- [ ] Run `cargo publish --dry-run` to make sure that it will
       succeed later (after creating the GitHub release).
 
 ## Release

@@ -1,7 +1,10 @@
-use clap::{crate_name, crate_version, App as ClapApp, AppSettings, Arg, ArgGroup, SubCommand};
+use clap::{
+    crate_name, crate_version, value_parser, AppSettings, Arg, ArgAction, ArgGroup, ColorChoice,
+    Command,
+};
 use once_cell::sync::Lazy;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 static VERSION: Lazy<String> = Lazy::new(|| {
     #[cfg(feature = "bugreport")]
@@ -16,23 +19,21 @@ static VERSION: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
-    let clap_color_setting = if interactive_output && env::var_os("NO_COLOR").is_none() {
-        AppSettings::ColoredHelp
+pub fn build_app(interactive_output: bool) -> Command<'static> {
+    let color_when = if interactive_output && env::var_os("NO_COLOR").is_none() {
+        ColorChoice::Auto
     } else {
-        AppSettings::ColorNever
+        ColorChoice::Never
     };
 
-    let mut app = ClapApp::new(crate_name!())
+    let mut app = Command::new(crate_name!())
         .version(VERSION.as_str())
-        .global_setting(clap_color_setting)
+        .color(color_when)
         .global_setting(AppSettings::DeriveDisplayOrder)
-        .global_setting(AppSettings::UnifiedHelpMessage)
-        .global_setting(AppSettings::HidePossibleValuesInHelp)
-        .setting(AppSettings::ArgsNegateSubcommands)
-        .setting(AppSettings::AllowExternalSubcommands)
-        .setting(AppSettings::DisableHelpSubcommand)
-        .setting(AppSettings::VersionlessSubcommands)
+        .hide_possible_values(true)
+        .args_conflicts_with_subcommands(true)
+        .allow_external_subcommands(true)
+        .disable_help_subcommand(true)
         .max_term_width(100)
         .about(
             "A cat(1) clone with wings.\n\n\
@@ -44,20 +45,22 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         )
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
         .arg(
-            Arg::with_name("FILE")
+            Arg::new("FILE")
                 .help("File(s) to print / concatenate. Use '-' for standard input.")
                 .long_help(
                     "File(s) to print / concatenate. Use a dash ('-') or no argument at all \
                      to read from standard input.",
                 )
-                .multiple(true)
-                .empty_values(false),
+                .takes_value(true)
+                .multiple_values(true)
+                .value_parser(value_parser!(PathBuf)),
         )
         .arg(
-            Arg::with_name("show-all")
+            Arg::new("show-all")
                 .long("show-all")
                 .alias("show-nonprintable")
-                .short("A")
+                .short('A')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
@@ -67,22 +70,22 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("plain")
+            Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
-                .short("p")
+                .short('p')
                 .long("plain")
-                .multiple(true)
+                .action(ArgAction::Count)
                 .help("Show plain style (alias for '--style=plain').")
                 .long_help(
                     "Only show plain style, no decorations. This is an alias for \
                      '--style=plain'. When '-p' is used twice ('-pp'), it also disables \
-                     automatic paging (alias for '--style=plain --pager=never').",
+                     automatic paging (alias for '--style=plain --paging=never').",
                 ),
         )
         .arg(
-            Arg::with_name("language")
-                .short("l")
+            Arg::new("language")
+                .short('l')
                 .long("language")
                 .overrides_with("language")
                 .help("Set the language for syntax highlighting.")
@@ -95,12 +98,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("highlight-line")
+            Arg::new("highlight-line")
                 .long("highlight-line")
-                .short("H")
+                .short('H')
                 .takes_value(true)
-                .number_of_values(1)
-                .multiple(true)
+                .action(ArgAction::Append)
                 .value_name("N:M")
                 .help("Highlight lines N through M.")
                 .long_help(
@@ -114,12 +116,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("file-name")
+            Arg::new("file-name")
                 .long("file-name")
                 .takes_value(true)
-                .number_of_values(1)
-                .multiple(true)
+                .action(ArgAction::Append)
                 .value_name("name")
+                .value_parser(value_parser!(PathBuf))
                 .help("Specify the name to display for a file.")
                 .long_help(
                     "Specify the name to display for a file. Useful when piping \
@@ -133,9 +135,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
     {
         app = app
                 .arg(
-                    Arg::with_name("diff")
+                    Arg::new("diff")
                         .long("diff")
-                        .short("d")
+                        .short('d')
+                        .action(ArgAction::SetTrue)
+                        .conflicts_with("line-range")
                         .help("Only show lines that have been added/removed/modified.")
                         .long_help(
                             "Only show lines that have been added/removed/modified with respect \
@@ -143,20 +147,20 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         ),
                 )
                 .arg(
-                    Arg::with_name("diff-context")
+                    Arg::new("diff-context")
                         .long("diff-context")
                         .overrides_with("diff-context")
                         .takes_value(true)
                         .value_name("N")
-                        .validator(
-                            |n| {
+                        .value_parser(
+                            |n: &str| {
                                 n.parse::<usize>()
                                     .map_err(|_| "must be a number")
-                                    .map(|_| ()) // Convert to Result<(), &str>
+                                    .map(|_| n.to_owned()) // Convert to Result<String, &str>
                                     .map_err(|e| e.to_string())
                             }, // Convert to Result<(), String>
                         )
-                        .hidden_short_help(true)
+                        .hide_short_help(true)
                         .long_help(
                             "Include N lines of context around added/removed/modified lines when using '--diff'.",
                         ),
@@ -164,16 +168,16 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
     }
 
     app = app.arg(
-        Arg::with_name("tabs")
+        Arg::new("tabs")
             .long("tabs")
             .overrides_with("tabs")
             .takes_value(true)
             .value_name("T")
-            .validator(
-                |t| {
+            .value_parser(
+                |t: &str| {
                     t.parse::<u32>()
                         .map_err(|_t| "must be a number")
-                        .map(|_t| ()) // Convert to Result<(), &str>
+                        .map(|_t| t.to_owned()) // Convert to Result<String, &str>
                         .map_err(|e| e.to_string())
                 }, // Convert to Result<(), String>
             )
@@ -184,12 +188,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
             ),
     )
         .arg(
-            Arg::with_name("wrap")
+            Arg::new("wrap")
                 .long("wrap")
                 .overrides_with("wrap")
                 .takes_value(true)
                 .value_name("mode")
-                .possible_values(&["auto", "never", "character"])
+                .value_parser(["auto", "never", "character"])
                 .default_value("auto")
                 .hide_default_value(true)
                 .help("Specify the text-wrapping mode (*auto*, never, character).")
@@ -198,21 +202,21 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                            control the output width."),
         )
         .arg(
-            Arg::with_name("terminal-width")
+            Arg::new("terminal-width")
                 .long("terminal-width")
                 .takes_value(true)
                 .value_name("width")
-                .hidden_short_help(true)
+                .hide_short_help(true)
                 .allow_hyphen_values(true)
-                .validator(
-                    |t| {
+                .value_parser(
+                    |t: &str| {
                         let is_offset = t.starts_with('+') || t.starts_with('-');
                         t.parse::<i32>()
                             .map_err(|_e| "must be an offset or number")
                             .and_then(|v| if v == 0 && !is_offset {
                                 Err("terminal width cannot be zero")
                             } else {
-                                Ok(())
+                                Ok(t.to_owned())
                             })
                             .map_err(|e| e.to_string())
                     })
@@ -223,10 +227,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("number")
+            Arg::new("number")
                 .long("number")
                 .overrides_with("number")
-                .short("n")
+                .short('n')
+                .action(ArgAction::SetTrue)
                 .help("Show line numbers (alias for '--style=numbers').")
                 .long_help(
                     "Only show line numbers, no other decorations. This is an alias for \
@@ -234,12 +239,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("color")
+            Arg::new("color")
                 .long("color")
                 .overrides_with("color")
                 .takes_value(true)
                 .value_name("when")
-                .possible_values(&["auto", "never", "always"])
+                .value_parser(["auto", "never", "always"])
                 .hide_default_value(true)
                 .default_value("auto")
                 .help("When to use colors (*auto*, never, always).")
@@ -251,23 +256,23 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("italic-text")
+            Arg::new("italic-text")
                 .long("italic-text")
                 .takes_value(true)
                 .value_name("when")
-                .possible_values(&["always", "never"])
+                .value_parser(["always", "never"])
                 .default_value("never")
                 .hide_default_value(true)
                 .help("Use italics in output (always, *never*)")
                 .long_help("Specify when to use ANSI sequences for italic text in the output. Possible values: always, *never*."),
         )
         .arg(
-            Arg::with_name("decorations")
+            Arg::new("decorations")
                 .long("decorations")
                 .overrides_with("decorations")
                 .takes_value(true)
                 .value_name("when")
-                .possible_values(&["auto", "never", "always"])
+                .value_parser(["auto", "never", "always"])
                 .default_value("auto")
                 .hide_default_value(true)
                 .help("When to show the decorations (*auto*, never, always).")
@@ -278,24 +283,26 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("force-colorization")
+            Arg::new("force-colorization")
                 .long("force-colorization")
-                .short("f")
+                .short('f')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("color")
                 .conflicts_with("decorations")
                 .overrides_with("force-colorization")
-                .hidden_short_help(true)
+                .hide_short_help(true)
                 .long_help("Alias for '--decorations=always --color=always'. This is useful \
                         if the output of bat is piped to another program, but you want \
                         to keep the colorization/decorations.")
         )
         .arg(
-            Arg::with_name("paging")
+            Arg::new("paging")
                 .long("paging")
                 .overrides_with("paging")
+                .overrides_with("no-paging")
                 .takes_value(true)
                 .value_name("when")
-                .possible_values(&["auto", "never", "always"])
+                .value_parser(["auto", "never", "always"])
                 .default_value("auto")
                 .hide_default_value(true)
                 .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
@@ -307,22 +314,23 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("no-paging")
-                .short("P")
+            Arg::new("no-paging")
+                .short('P')
                 .long("no-paging")
                 .alias("no-pager")
+                .action(ArgAction::SetTrue)
                 .overrides_with("no-paging")
-                .hidden(true)
-                .hidden_short_help(true)
+                .hide(true)
+                .hide_short_help(true)
                 .help("Alias for '--paging=never'")
             )
         .arg(
-            Arg::with_name("pager")
+            Arg::new("pager")
                 .long("pager")
                 .overrides_with("pager")
                 .takes_value(true)
                 .value_name("command")
-                .hidden_short_help(true)
+                .hide_short_help(true)
                 .help("Determine which pager to use.")
                 .long_help(
                     "Determine which pager is used. This option will override the \
@@ -332,12 +340,11 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("map-syntax")
-                .short("m")
+            Arg::new("map-syntax")
+                .short('m')
                 .long("map-syntax")
-                .multiple(true)
+                .action(ArgAction::Append)
                 .takes_value(true)
-                .number_of_values(1)
                 .value_name("glob:syntax")
                 .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
                 .long_help(
@@ -350,19 +357,18 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("ignored-suffix")
-                .number_of_values(1)
-                .multiple(true)
+            Arg::new("ignored-suffix")
+                .action(ArgAction::Append)
                 .takes_value(true)
                 .long("ignored-suffix")
-                .hidden_short_help(true)
+                .hide_short_help(true)
                 .help(
                     "Ignore extension. For example:\n  \
                     'bat --ignored-suffix \".dev\" my_file.json.dev' will use JSON syntax, and ignore '.dev'"
                 )
         )
         .arg(
-            Arg::with_name("theme")
+            Arg::new("theme")
                 .long("theme")
                 .overrides_with("theme")
                 .takes_value(true)
@@ -376,28 +382,30 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("list-themes")
+            Arg::new("list-themes")
                 .long("list-themes")
+                .action(ArgAction::SetTrue)
                 .help("Display all supported highlighting themes.")
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
-            Arg::with_name("style")
+            Arg::new("style")
                 .long("style")
                 .value_name("components")
                 // Need to turn this off for overrides_with to work as we want. See the bottom most
                 // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
-                .use_delimiter(false)
+                .use_value_delimiter(false)
                 .takes_value(true)
                 .overrides_with("style")
                 .overrides_with("plain")
                 .overrides_with("number")
                 // Cannot use claps built in validation because we have to turn off clap's delimiters
-                .validator(|val| {
+                .value_parser(|val: &str| {
                     let mut invalid_vals = val.split(',').filter(|style| {
                         !&[
                             "auto",
                             "full",
+                            "default",
                             "plain",
                             "header",
                             "header-filename",
@@ -414,12 +422,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                     if let Some(invalid) = invalid_vals.next() {
                         Err(format!("Unknown style, '{}'", invalid))
                     } else {
-                        Ok(())
+                        Ok(val.to_owned())
                     }
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*auto*, full, plain, changes, header, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -430,8 +438,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      Possible values:\n\n  \
-                     * full: enables all available components (default).\n  \
-                     * auto: same as 'full', unless the output is piped.\n  \
+                     * default: enables recommended style components (default).\n  \
+                     * full: enables all available components.\n  \
+                     * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
                      * header: alias for 'header-filename'.\n  \
@@ -445,14 +454,12 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("line-range")
+            Arg::new("line-range")
                 .long("line-range")
-                .short("r")
-                .multiple(true)
+                .short('r')
+                .action(ArgAction::Append)
                 .takes_value(true)
-                .number_of_values(1)
                 .value_name("N:M")
-                .conflicts_with("diff")
                 .help("Only print the lines from N to M.")
                 .long_help(
                     "Only print the specified range of lines for each file. \
@@ -465,18 +472,19 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("list-languages")
+            Arg::new("list-languages")
                 .long("list-languages")
-                .short("L")
+                .short('L')
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-themes")
                 .help("Display all supported languages.")
                 .long_help("Display a list of supported languages for syntax highlighting."),
         )
         .arg(
-            Arg::with_name("unbuffered")
-                .short("u")
+            Arg::new("unbuffered")
+                .short('u')
                 .long("unbuffered")
-                .hidden_short_help(true)
+                .hide_short_help(true)
                 .long_help(
                     "This option exists for POSIX-compliance reasons ('u' is for \
                      'unbuffered'). The output is always unbuffered - this option \
@@ -484,60 +492,66 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                 ),
         )
         .arg(
-            Arg::with_name("no-config")
+            Arg::new("no-config")
                 .long("no-config")
-                .hidden(true)
+                .hide(true)
                 .help("Do not use the configuration file"),
         )
         .arg(
-            Arg::with_name("no-custom-assets")
+            Arg::new("no-custom-assets")
                 .long("no-custom-assets")
-                .hidden(true)
+                .action(ArgAction::SetTrue)
+                .hide(true)
                 .help("Do not load custom assets"),
         )
         .arg(
-            Arg::with_name("config-file")
+            Arg::new("config-file")
                 .long("config-file")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-languages")
                 .conflicts_with("list-themes")
-                .hidden(true)
+                .hide(true)
                 .help("Show path to the configuration file."),
         )
         .arg(
-            Arg::with_name("generate-config-file")
+            Arg::new("generate-config-file")
                 .long("generate-config-file")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("list-languages")
                 .conflicts_with("list-themes")
-                .hidden(true)
+                .hide(true)
                 .help("Generates a default configuration file."),
         )
         .arg(
-            Arg::with_name("config-dir")
+            Arg::new("config-dir")
                 .long("config-dir")
-                .hidden(true)
+                .action(ArgAction::SetTrue)
+                .hide(true)
                 .help("Show bat's configuration directory."),
         )
         .arg(
-            Arg::with_name("cache-dir")
+            Arg::new("cache-dir")
                 .long("cache-dir")
-                .hidden(true)
+                .action(ArgAction::SetTrue)
+                .hide(true)
                 .help("Show bat's cache directory."),
         )
         .arg(
-            Arg::with_name("diagnostic")
+            Arg::new("diagnostic")
                 .long("diagnostic")
                 .alias("diagnostics")
-                .hidden_short_help(true)
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
                 .help("Show diagnostic information for bug reports.")
         )
         .arg(
-            Arg::with_name("acknowledgements")
+            Arg::new("acknowledgements")
                 .long("acknowledgements")
-                .hidden_short_help(true)
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
                 .help("Show acknowledgements."),
         )
-        .help_message("Print this help message.")
-        .version_message("Show version information.");
+        .mut_arg("help", |arg| arg.help("Print this help message."));
 
     // Check if the current directory contains a file name cache. Otherwise,
     // enable the 'bat cache' subcommand.
@@ -545,12 +559,13 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
         app
     } else {
         app.subcommand(
-            SubCommand::with_name("cache")
+            Command::new("cache")
                 .about("Modify the syntax-definition and theme cache")
                 .arg(
-                    Arg::with_name("build")
+                    Arg::new("build")
                         .long("build")
-                        .short("b")
+                        .short('b')
+                        .action(ArgAction::SetTrue)
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -558,18 +573,19 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         ),
                 )
                 .arg(
-                    Arg::with_name("clear")
+                    Arg::new("clear")
                         .long("clear")
-                        .short("c")
+                        .short('c')
+                        .action(ArgAction::SetTrue)
                         .help("Remove the cached syntax definitions and themes."),
                 )
                 .group(
-                    ArgGroup::with_name("cache-actions")
+                    ArgGroup::new("cache-actions")
                         .args(&["build", "clear"])
                         .required(true),
                 )
                 .arg(
-                    Arg::with_name("source")
+                    Arg::new("source")
                         .long("source")
                         .requires("build")
                         .takes_value(true)
@@ -577,7 +593,7 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         .help("Use a different directory to load syntaxes and themes from."),
                 )
                 .arg(
-                    Arg::with_name("target")
+                    Arg::new("target")
                         .long("target")
                         .requires("build")
                         .takes_value(true)
@@ -587,8 +603,9 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         ),
                 )
                 .arg(
-                    Arg::with_name("blank")
+                    Arg::new("blank")
                         .long("blank")
+                        .action(ArgAction::SetTrue)
                         .requires("build")
                         .help(
                             "Create completely new syntax and theme sets \
@@ -596,11 +613,17 @@ pub fn build_app(interactive_output: bool) -> ClapApp<'static, 'static> {
                         ),
                 )
                 .arg(
-                    Arg::with_name("acknowledgements")
+                    Arg::new("acknowledgements")
                         .long("acknowledgements")
+                        .action(ArgAction::SetTrue)
                         .requires("build")
                         .help("Build acknowledgements.bin."),
                 ),
         )
     }
+}
+
+#[test]
+fn verify_app() {
+    build_app(false).debug_assert();
 }

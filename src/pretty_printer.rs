@@ -2,7 +2,6 @@ use std::io::Read;
 use std::path::Path;
 
 use console::Term;
-use syntect::parsing::SyntaxReference;
 
 use crate::{
     assets::HighlightingAssets,
@@ -26,6 +25,12 @@ struct ActiveStyleComponents {
     rule: bool,
     line_numbers: bool,
     snip: bool,
+}
+
+#[non_exhaustive]
+pub struct Syntax {
+    pub name: String,
+    pub file_extensions: Vec<String>,
 }
 
 pub struct PrettyPrinter<'a> {
@@ -164,6 +169,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to print binary content or nonprintable characters (default: no)
+    pub fn show_nonprintable(&mut self, yes: bool) -> &mut Self {
+        self.config.show_nonprintable = yes;
+        self
+    }
+
     /// Whether to show "snip" markers between visible line ranges (default: no)
     pub fn snip(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.snip = yes;
@@ -234,10 +245,18 @@ impl<'a> PrettyPrinter<'a> {
         self.assets.themes()
     }
 
-    pub fn syntaxes(&self) -> impl Iterator<Item = &SyntaxReference> {
+    pub fn syntaxes(&self) -> impl Iterator<Item = Syntax> + '_ {
         // We always use assets from the binary, which are guaranteed to always
         // be valid, so get_syntaxes() can never fail here
-        self.assets.get_syntaxes().unwrap().iter()
+        self.assets
+            .get_syntaxes()
+            .unwrap()
+            .iter()
+            .filter(|s| !s.hidden)
+            .map(|s| Syntax {
+                name: s.name.clone(),
+                file_extensions: s.file_extensions.clone(),
+            })
     }
 
     /// Pretty-print all specified inputs. This method will "use" all stored inputs.

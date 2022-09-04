@@ -171,7 +171,7 @@ You can combine `bat` with `git diff` to view lines around code changes with pro
 highlighting:
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d | xargs bat --diff
+    git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
 ```
 If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
@@ -211,6 +211,24 @@ Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145)
 #### `prettier` / `shfmt` / `rustfmt`
 
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
+
+#### Highlighting `--help` messages
+
+You can use `bat` to colorize help text: `$ cp --help | bat -plhelp`
+
+You can also use a wrapper around this:
+
+```bash
+# in your .bashrc/.zshrc/*rc
+alias bathelp='bat --plain --language=help'
+help() {
+    "$@" --help 2>&1 | bathelp
+}
+```
+
+Then you can do `$ help cp` or `$ help git commit`.
+
+Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
 
 ## Installation
@@ -400,7 +418,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.51 or
+If you want to build `bat` from source, you need Rust 1.60.0 or
 higher. You can then use `cargo` to build everything:
 
 ```bash

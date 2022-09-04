@@ -1,7 +1,7 @@
 name: CICD
 
 env:
-  MIN_SUPPORTED_RUST_VERSION: "1.51.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.60.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on:
@@ -39,6 +39,8 @@ jobs:
   min_version:
     name: Minimum supported rust version
     runs-on: ubuntu-20.04
+    env:
+      MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
@@ -54,12 +56,12 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: clippy
-        args: --locked --all-targets --all-features
+        args: --locked --all-targets ${{ env.MSRV_FEATURES }}
     - name: Run tests
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --locked
+        args: --locked ${{ env.MSRV_FEATURES }}
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
@@ -144,6 +146,18 @@ jobs:
         toolchain: stable
         default: true
         profile: minimal
+    - name: Print -h
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --locked -- -h
+    - name: Print --help
+      uses: actions-rs/cargo@v1
+      with:
+        command: run
+        args: --locked -- --help
+    - name: Show man page
+      run: man $(find . -name bat.1)
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
@@ -168,7 +182,7 @@ jobs:
           - { target: x86_64-apple-darwin         , os: macos-10.15                   }
           - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
           - { target: x86_64-pc-windows-msvc      , os: windows-2019                  }
-          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04                  }
+          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04, use-cross: true }
           - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, use-cross: true }
     steps:
     - name: Checkout source code

@@ -1,13 +1,13 @@
+#[cfg(feature = "git")]
 mod tester;
-
-use crate::tester::BatTester;
 
 macro_rules! snapshot_tests {
     ($($test_name: ident: $style: expr,)*) => {
         $(
             #[test]
+            #[cfg(feature = "git")]
             fn $test_name() {
-                let bat_tester = BatTester::default();
+                let bat_tester = tester::BatTester::default();
                 bat_tester.test_snapshot(stringify!($test_name), $style);
             }
         )*

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 use atty::{self, Stream};
@@ -32,7 +32,7 @@ fn is_truecolor_terminal() -> bool {
 }
 
 pub struct App {
-    pub matches: ArgMatches<'static>,
+    pub matches: ArgMatches,
     interactive_output: bool,
 }
 
@@ -49,7 +49,7 @@ impl App {
         })
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches<'static>> {
+    fn matches(interactive_output: bool) -> Result<ArgMatches> {
         let args = if wild::args_os().nth(1) == Some("cache".into())
             || wild::args_os().any(|arg| arg == "--no-config")
         {
@@ -79,13 +79,13 @@ impl App {
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
         let style_components = self.style_components()?;
 
-        let paging_mode = match self.matches.value_of("paging") {
+        let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
             Some("always") => PagingMode::Always,
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
-                let extra_plain = self.matches.occurrences_of("plain") > 1;
-                if extra_plain || self.matches.is_present("no-paging") {
+                let extra_plain = self.matches.get_count("plain") > 1;
+                if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
                     // If we are reading from stdin, only enable paging if we write to an
@@ -107,13 +107,13 @@ impl App {
 
         let mut syntax_mapping = SyntaxMapping::builtin();
 
-        if let Some(values) = self.matches.values_of("ignored-suffix") {
+        if let Some(values) = self.matches.get_many::<String>("ignored-suffix") {
             for suffix in values {
                 syntax_mapping.insert_ignored_suffix(suffix);
             }
         }
 
-        if let Some(values) = self.matches.values_of("map-syntax") {
+        if let Some(values) = self.matches.get_many::<String>("map-syntax") {
             for from_to in values {
                 let parts: Vec<_> = from_to.split(':').collect();
 
@@ -125,36 +125,43 @@ impl App {
             }
         }
 
-        let maybe_term_width = self.matches.value_of("terminal-width").and_then(|w| {
-            if w.starts_with('+') || w.starts_with('-') {
-                // Treat argument as a delta to the current terminal width
-                w.parse().ok().map(|delta: i16| {
-                    let old_width: u16 = Term::stdout().size().1;
-                    let new_width: i32 = i32::from(old_width) + i32::from(delta);
+        let maybe_term_width = self
+            .matches
+            .get_one::<String>("terminal-width")
+            .and_then(|w| {
+                if w.starts_with('+') || w.starts_with('-') {
+                    // Treat argument as a delta to the current terminal width
+                    w.parse().ok().map(|delta: i16| {
+                        let old_width: u16 = Term::stdout().size().1;
+                        let new_width: i32 = i32::from(old_width) + i32::from(delta);
 
-                    if new_width <= 0 {
-                        old_width as usize
-                    } else {
-                        new_width as usize
-                    }
-                })
-            } else {
-                w.parse().ok()
-            }
-        });
+                        if new_width <= 0 {
+                            old_width as usize
+                        } else {
+                            new_width as usize
+                        }
+                    })
+                } else {
+                    w.parse().ok()
+                }
+            });
 
         Ok(Config {
             true_color: is_truecolor_terminal(),
-            language: self.matches.value_of("language").or_else(|| {
-                if self.matches.is_present("show-all") {
-                    Some("show-nonprintable")
-                } else {
-                    None
-                }
-            }),
-            show_nonprintable: self.matches.is_present("show-all"),
+            language: self
+                .matches
+                .get_one::<String>("language")
+                .map(|s| s.as_str())
+                .or_else(|| {
+                    if self.matches.get_flag("show-all") {
+                        Some("show-nonprintable")
+                    } else {
+                        None
+                    }
+                }),
+            show_nonprintable: self.matches.get_flag("show-all"),
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
-                match self.matches.value_of("wrap") {
+                match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                     Some("character") => WrappingMode::Character,
                     Some("never") => WrappingMode::NoWrapping(true),
                     Some("auto") | None => {
@@ -171,8 +178,8 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping(false)
             },
-            colored_output: self.matches.is_present("force-colorization")
-                || match self.matches.value_of("color") {
+            colored_output: self.matches.get_flag("force-colorization")
+                || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
                     Some("always") => true,
                     Some("never") => false,
                     Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
@@ -181,12 +188,16 @@ impl App {
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
-                || self.matches.value_of("color") == Some("always")
-                || self.matches.value_of("decorations") == Some("always")
-                || self.matches.is_present("force-colorization")),
+                || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
+                || self
+                    .matches
+                    .get_one::<String>("decorations")
+                    .map(|s| s.as_str())
+                    == Some("always")
+                || self.matches.get_flag("force-colorization")),
             tab_width: self
                 .matches
-                .value_of("tabs")
+                .get_one::<String>("tabs")
                 .map(String::from)
                 .or_else(|| env::var("BAT_TABS").ok())
                 .and_then(|t| t.parse().ok())
@@ -199,7 +210,7 @@ impl App {
                 ),
             theme: self
                 .matches
-                .value_of("theme")
+                .get_one::<String>("theme")
                 .map(String::from)
                 .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
@@ -210,19 +221,19 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            visible_lines: match self.matches.is_present("diff") {
+            visible_lines: match self.matches.contains_id("diff") && self.matches.get_flag("diff") {
                 #[cfg(feature = "git")]
                 true => VisibleLines::DiffContext(
                     self.matches
-                        .value_of("diff-context")
+                        .get_one::<String>("diff-context")
                         .and_then(|t| t.parse().ok())
                         .unwrap_or(2),
                 ),
 
                 _ => VisibleLines::Ranges(
                     self.matches
-                        .values_of("line-range")
-                        .map(|vs| vs.map(LineRange::from).collect())
+                        .get_many::<String>("line-range")
+                        .map(|vs| vs.map(|s| LineRange::from(s.as_str())).collect())
                         .transpose()?
                         .map(LineRanges::from)
                         .unwrap_or_default(),
@@ -230,45 +241,47 @@ impl App {
             },
             style_components,
             syntax_mapping,
-            pager: self.matches.value_of("pager"),
-            use_italic_text: self.matches.value_of("italic-text") == Some("always"),
+            pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
+            use_italic_text: self
+                .matches
+                .get_one::<String>("italic-text")
+                .map(|s| s.as_str())
+                == Some("always"),
             highlighted_lines: self
                 .matches
-                .values_of("highlight-line")
-                .map(|ws| ws.map(LineRange::from).collect())
+                .get_many::<String>("highlight-line")
+                .map(|ws| ws.map(|s| LineRange::from(s.as_str())).collect())
                 .transpose()?
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
-            use_custom_assets: !self.matches.is_present("no-custom-assets"),
+            use_custom_assets: !self.matches.get_flag("no-custom-assets"),
         })
     }
 
     pub fn inputs(&self) -> Result<Vec<Input>> {
-        // verify equal length of file-names and input FILEs
-        match self.matches.values_of("file-name") {
-            Some(ref filenames)
-                if self.matches.values_of_os("FILE").is_some()
-                    && filenames.len() != self.matches.values_of_os("FILE").unwrap().len() =>
-            {
-                return Err("Must be one file name per input type.".into());
-            }
-            _ => {}
-        }
         let filenames: Option<Vec<&Path>> = self
             .matches
-            .values_of_os("file-name")
-            .map(|values| values.map(Path::new).collect());
+            .get_many::<PathBuf>("file-name")
+            .map(|vs| vs.map(|p| p.as_path()).collect::<Vec<_>>());
+
+        let files: Option<Vec<&Path>> = self
+            .matches
+            .get_many::<PathBuf>("FILE")
+            .map(|vs| vs.map(|p| p.as_path()).collect::<Vec<_>>());
+
+        // verify equal length of file-names and input FILEs
+        if filenames.is_some()
+            && files.is_some()
+            && filenames.as_ref().map(|v| v.len()) != files.as_ref().map(|v| v.len())
+        {
+            return Err("Must be one file name per input type.".into());
+        }
 
         let mut filenames_or_none: Box<dyn Iterator<Item = Option<&Path>>> = match filenames {
             Some(filenames) => Box::new(filenames.into_iter().map(Some)),
             None => Box::new(std::iter::repeat(None)),
         };
-        let files: Option<Vec<&Path>> = self
-            .matches
-            .values_of_os("FILE")
-            .map(|vs| vs.map(Path::new).collect());
-
         if files.is_none() {
             return Ok(vec![new_stdin_input(
                 filenames_or_none.next().unwrap_or(None),
@@ -294,12 +307,12 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        let mut styled_components =
-            StyleComponents(if matches.value_of("decorations") == Some("never") {
+        let mut styled_components = StyleComponents(
+            if matches.get_one::<String>("decorations").map(|s| s.as_str()) == Some("never") {
                 HashSet::new()
-            } else if matches.is_present("number") {
+            } else if matches.get_flag("number") {
                 [StyleComponent::LineNumbers].iter().cloned().collect()
-            } else if matches.is_present("plain") {
+            } else if 0 < matches.get_count("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
             } else {
                 let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
@@ -313,7 +326,7 @@ impl App {
                     .transpose()?;
 
                 matches
-                    .value_of("style")
+                    .get_one::<String>("style")
                     .map(|styles| {
                         styles
                             .split(',')
@@ -322,14 +335,15 @@ impl App {
                             .collect::<Vec<_>>()
                     })
                     .or(env_style_components)
-                    .unwrap_or_else(|| vec![StyleComponent::Full])
+                    .unwrap_or_else(|| vec![StyleComponent::Default])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {
                         acc.extend(components.iter().cloned());
                         acc
                     })
-            });
+            },
+        );
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {

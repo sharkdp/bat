@@ -2,21 +2,74 @@
 
 ## Features
 
-- Correctly render tab stops in --show-all, see #2038 (@Synthetica9)
+- Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
 
 ## Bugfixes
 
+- Prevent fork nightmare with `PAGER=batcat`. See #2235 (@johnmatthiggins)
+- Make `--no-paging`/`-P` override `--paging=...` if passed as a later arg, see #2201 (@themkat)
+- `--map-syntax` and `--ignored-suffix` now works together, see #2093 (@czzrr)
+
 ## Other
 
-- Include contents of custom assets `metadata.yaml` in `--diagnostics`. See #2107 (@Enselic)
+- Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
+- Improved fish completions. See #2275 (@zgracem)
+- Stop pre-processing ANSI escape characters. Syntax highlighting on ANSI escaped input is not supported. See #2185 and #2189 (@Enselic)
 
 ## Syntaxes
 
-- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- NSE (Nmap Scripting Engine) is mapped to Lua, see #2151 (@Cre3per)
+- Correctly color `fstab` dump and pass fields, see #2246 (@yuvalmo)
+- Update `Command Help` syntax, see #2255
+- `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
+- Minor update to `LiveScript`, see #2291
 
 ## Themes
 
 ## `bat` as a library
+
+- Make `bat::PrettyPrinter::syntaxes()` iterate over new `bat::Syntax` struct instead of `&syntect::parsing::SyntaxReference`. See #2222 (@Enselic)
+
+
+# v0.21.0
+
+## Features
+
+- Correctly render tab stops in `--show-all`, see #2038 (@Synthetica9)
+- Add a `--style=default` option and make it the default. It is less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox `less` as pager, see #2162 (@nfisher1226)
+- File extensions are now matched case-insensitively. See #1854, #2181 (@Enselic)
+
+## Bugfixes
+
+- Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
+- `bat` no longer crashes when encountering files that references missing syntaxes. See #915, #2181 (@Enselic)
+
+## Performance
+
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
+- Vastly improve startup time by lazy-loading syntaxes via syntect 5.0.0. This makes bat display small files ~75% faster than before. See #951, #2181 (@Enselic)
+
+## Other
+
+- Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+
+## Syntaxes
+
+- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
+- Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
+- Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
+- Slightly adjust Zig syntax. See #2136 (@Enselic)
+- Associate `.inf` files with the `INI` syntax. See #2190 (@Enselic)
+
+## `bat` as a library
+
+- Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
+- The binary format of syntaxes.bin has been changed due to syntaxes now being lazy-loaded via syntect 5.0.0. See #2181 (@Enselic)
+- Mark `bat::error::Error` enum as `#[non_exhaustive]` to allow adding new variants without future semver breakage. See #2181 (@Enselic)
+- Change `Error::SyntectError(syntect::LoadingError)` to `Error::SyntectError(syntect::Error)`. See #2181 (@Enselic)
+- Add `Error::SyntectLoadingError(syntect::LoadingError)` enum variant. See #2181 (@Enselic)
 
 
 # v0.20.0

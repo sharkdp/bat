@@ -6,8 +6,6 @@ use ansi_term::Style;
 
 use bytesize::ByteSize;
 
-use console::AnsiCodeIterator;
-
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
 use syntect::highlighting::Theme;
@@ -33,7 +31,6 @@ use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::vscreen::AnsiStyle;
 use crate::wrapping::WrappingMode;
 
 pub(crate) trait Printer {
@@ -122,7 +119,6 @@ pub(crate) struct InteractivePrinter<'a> {
     config: &'a Config<'a>,
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
-    ansi_style: AnsiStyle,
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
@@ -206,7 +202,6 @@ impl<'a> InteractivePrinter<'a> {
             config,
             decorations,
             content_type: input.reader.content_type,
-            ansi_style: AnsiStyle::new(),
             #[cfg(feature = "git")]
             line_changes,
             highlighter_from_set,
@@ -445,9 +440,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     return Ok(());
                 }
             };
-            highlighter_from_set
+
+            // skip syntax highlighting on long lines
+            let too_long = line.len() > 1024 * 16;
+
+            let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+            let mut highlighted_line = highlighter_from_set
                 .highlighter
-                .highlight(&line, highlighter_from_set.syntax_set)
+                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+            if too_long {
+                highlighted_line[0].1 = &line;
+            }
+
+            highlighted_line
         };
 
         if out_of_range {
@@ -464,7 +471,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[4m");
+            write!(handle, "\x1B[4m")?;
         }
 
         let background_color = self
@@ -491,51 +498,37 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
-                for chunk in ansi_iterator {
-                    match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
+                let text = &*self.preprocess(region, &mut cursor_total);
+                let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
 
-                        // Regular text.
-                        (text, false) => {
-                            let text = &*self.preprocess(text, &mut cursor_total);
-                            let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(
+                        style,
+                        text_trimmed,
+                        true_color,
+                        colored_output,
+                        italics,
+                        background_color
+                    )
+                )?;
 
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{}", self.ansi_style, text_trimmed),
-                                    true_color,
-                                    colored_output,
-                                    italics,
-                                    background_color
-                                )
-                            )?;
+                if text.len() != text_trimmed.len() {
+                    if let Some(background_color) = background_color {
+                        let ansi_style = Style {
+                            background: to_ansi_color(background_color, true_color),
+                            ..Default::default()
+                        };
 
-                            if text.len() != text_trimmed.len() {
-                                if let Some(background_color) = background_color {
-                                    let ansi_style = Style {
-                                        background: to_ansi_color(background_color, true_color),
-                                        ..Default::default()
-                                    };
-
-                                    let width = if cursor_total <= cursor_max {
-                                        cursor_max - cursor_total + 1
-                                    } else {
-                                        0
-                                    };
-                                    write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
-                                }
-                                write!(handle, "{}", &text[text_trimmed.len()..])?;
-                            }
-                        }
+                        let width = if cursor_total <= cursor_max {
+                            cursor_max - cursor_total + 1
+                        } else {
+                            0
+                        };
+                        write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
                     }
+                    write!(handle, "{}", &text[text_trimmed.len()..])?;
                 }
             }
 
@@ -544,98 +537,82 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         } else {
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
-                for chunk in ansi_iterator {
-                    match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
+                let text = self.preprocess(
+                    region.trim_end_matches(|c| c == '\r' || c == '\n'),
+                    &mut cursor_total,
+                );
 
-                        // Regular text.
-                        (text, false) => {
-                            let text = self.preprocess(
-                                text.trim_end_matches(|c| c == '\r' || c == '\n'),
-                                &mut cursor_total,
-                            );
+                let mut max_width = cursor_max - cursor;
 
-                            let mut max_width = cursor_max - cursor;
+                // line buffer (avoid calling write! for every character)
+                let mut line_buf = String::with_capacity(max_width * 4);
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
+                // Displayed width of line_buf
+                let mut current_width = 0;
 
-                            // Displayed width of line_buf
-                            let mut current_width = 0;
+                for c in text.chars() {
+                    // calculate the displayed width for next character
+                    let cw = c.width().unwrap_or(0);
+                    current_width += cw;
 
-                            for c in text.chars() {
-                                // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
-                                current_width += cw;
-
-                                // if next character cannot be printed on this line,
-                                // flush the buffer.
-                                if current_width > max_width {
-                                    // Generate wrap padding if not already generated.
-                                    if panel_wrap.is_none() {
-                                        panel_wrap = if self.panel_width > 0 {
-                                            Some(format!(
-                                                "{} ",
-                                                self.decorations
-                                                    .iter()
-                                                    .map(|d| d
-                                                        .generate(line_number, true, self)
-                                                        .text)
-                                                    .collect::<Vec<String>>()
-                                                    .join(" ")
-                                            ))
-                                        } else {
-                                            Some("".to_string())
-                                        }
-                                    }
-
-                                    // It wraps.
-                                    write!(
-                                        handle,
-                                        "{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &*format!("{}{}", self.ansi_style, line_buf),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
-                                        panel_wrap.clone().unwrap()
-                                    )?;
-
-                                    cursor = 0;
-                                    max_width = cursor_max;
-
-                                    line_buf.clear();
-                                    current_width = cw;
-                                }
-
-                                line_buf.push(c);
+                    // if next character cannot be printed on this line,
+                    // flush the buffer.
+                    if current_width > max_width {
+                        // Generate wrap padding if not already generated.
+                        if panel_wrap.is_none() {
+                            panel_wrap = if self.panel_width > 0 {
+                                Some(format!(
+                                    "{} ",
+                                    self.decorations
+                                        .iter()
+                                        .map(|d| d.generate(line_number, true, self).text)
+                                        .collect::<Vec<String>>()
+                                        .join(" ")
+                                ))
+                            } else {
+                                Some("".to_string())
                             }
-
-                            // flush the buffer
-                            cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &*format!("{}{}", self.ansi_style, line_buf),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
                         }
+
+                        // It wraps.
+                        write!(
+                            handle,
+                            "{}\n{}",
+                            as_terminal_escaped(
+                                style,
+                                &line_buf,
+                                self.config.true_color,
+                                self.config.colored_output,
+                                self.config.use_italic_text,
+                                background_color
+                            ),
+                            panel_wrap.clone().unwrap()
+                        )?;
+
+                        cursor = 0;
+                        max_width = cursor_max;
+
+                        line_buf.clear();
+                        current_width = cw;
                     }
+
+                    line_buf.push(c);
                 }
+
+                // flush the buffer
+                cursor += current_width;
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(
+                        style,
+                        &line_buf,
+                        self.config.true_color,
+                        self.config.colored_output,
+                        self.config.use_italic_text,
+                        background_color
+                    )
+                )?;
             }
 
             if let Some(background_color) = background_color {
@@ -654,7 +631,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[24m");
             write!(handle, "\x1B[24m")?;
         }
 

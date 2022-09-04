@@ -372,7 +372,7 @@ scoop install bat
 
 ### 从源码编译
 
-如果你想要自己构建`bat`，那么你需要安装有高于1.51版本的 Rust。
+如果你想要自己构建`bat`，那么你需要安装有高于1.58.0版本的 Rust。
 
 使用以下命令编译。
 
@@ -550,7 +550,7 @@ bat --generate-config-file
 # 在终端中以斜体输出文本（不是所有终端都支持）
 --italic-text=always
 
-# 使用 C++ 语法来给 Ardiuno 的 .ino 文件提供高亮
+# 使用 C++ 语法来给 Arduino 的 .ino 文件提供高亮
 --map-syntax "*.ino:C++"
 ```
 
