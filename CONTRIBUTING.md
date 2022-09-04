@@ -46,3 +46,25 @@ If you really think that a particular syntax or theme should be added for all
 users, please read the corresponding
 [documentation](https://github.com/sharkdp/bat/blob/master/doc/assets.md)
 first.
+
+
+## Regression tests
+
+You are strongly encouraged to add regression tests. Regression tests are great,
+not least because they:
+
+* ensure that your contribution will never completely stop working,
+
+* makes code review easier, because it becomes very clear what the code is
+  supposed to do.
+
+For functional changes, you most likely want to add a test to
+[`tests/integration_tests.rs`](https://github.com/sharkdp/bat/blob/master/tests/integration_tests.rs).
+Look at existing tests to know how to write a new test. In short, you will
+invoke the `bat` binary with a certain set of arguments, and then assert on
+stdout/stderr.
+
+To learn how to write regression tests for theme and syntax changes, read the
+[Syntax
+tests](https://github.com/sharkdp/bat/blob/master/doc/assets.md#syntax-tests)
+section in `assets.md`.

@@ -1,0 +1,5 @@
+[38;2;248;248;242m[[0m[38;2;166;226;46msection[0m[38;2;248;248;242m][0m
+[38;2;249;38;114mkey[0m[38;2;248;248;242m=[0m[38;2;230;219;116mvalue[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m This file is just for testing that the INI syntax is registered to handle[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m the .inf file extension, it is not testing the syntax highlighting capabilities[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m of the INI syntax itself[0m

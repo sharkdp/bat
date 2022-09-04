@@ -1,8 +1,7 @@
-use assert_cmd::cargo::CommandCargoExt;
+use predicates::boolean::PredicateBooleanExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
 use std::path::Path;
-use std::process::Command;
 use std::str::from_utf8;
 use tempfile::tempdir;
 
@@ -27,40 +26,13 @@ mod unix {
 use unix::*;
 
 mod utils;
+use utils::command::{bat, bat_with_config};
+
+#[cfg(unix)]
+use utils::command::bat_raw_command;
 use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
-
-fn bat_raw_command_with_config() -> Command {
-    let mut cmd = Command::cargo_bin("bat").unwrap();
-    cmd.current_dir("tests/examples");
-    cmd.env_remove("BAT_CACHE_PATH");
-    cmd.env_remove("BAT_CONFIG_DIR");
-    cmd.env_remove("BAT_CONFIG_PATH");
-    cmd.env_remove("BAT_OPTS");
-    cmd.env_remove("BAT_PAGER");
-    cmd.env_remove("BAT_STYLE");
-    cmd.env_remove("BAT_TABS");
-    cmd.env_remove("BAT_THEME");
-    cmd.env_remove("COLORTERM");
-    cmd.env_remove("NO_COLOR");
-    cmd.env_remove("PAGER");
-    cmd
-}
-
-fn bat_raw_command() -> Command {
-    let mut cmd = bat_raw_command_with_config();
-    cmd.arg("--no-config");
-    cmd
-}
-
-fn bat_with_config() -> assert_cmd::Command {
-    assert_cmd::Command::from_std(bat_raw_command_with_config())
-}
-
-fn bat() -> assert_cmd::Command {
-    assert_cmd::Command::from_std(bat_raw_command())
-}
 
 #[test]
 fn basic() {
@@ -695,6 +667,18 @@ fn alias_pager_disable_long_overrides_short() {
 }
 
 #[test]
+fn disable_pager_if_disable_paging_flag_comes_after_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("-P")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
 fn pager_failed_to_parse() {
     bat()
         .env("BAT_PAGER", "mismatched-quotes 'a")
@@ -785,6 +769,52 @@ fn utf16() {
         .assert()
         .success()
         .stdout("hello world\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_not_stripped_in_loop_through_mode() {
+    bat()
+        .arg("--plain")
+        .arg("--decorations=never")
+        .arg("--color=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout("\u{feff}hello world\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_colored_output() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231mhello world\u{1b}[0m\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_no_color_and_not_loop_through() {
+    bat()
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers,grid,header")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+─────┬──────────────────────────────────────────────────────────────────────────
+     │ File: test_BOM.txt
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ hello world
+─────┴──────────────────────────────────────────────────────────────────────────
+",
+        );
 }
 
 #[test]
@@ -921,7 +951,7 @@ fn empty_file_leads_to_empty_output_with_rule_enabled() {
 }
 
 #[test]
-fn filename_basic() {
+fn header_basic() {
     bat()
         .arg("test.txt")
         .arg("--decorations=always")
@@ -935,7 +965,21 @@ fn filename_basic() {
 }
 
 #[test]
-fn filename_binary() {
+fn header_full_basic() {
+    bat()
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_binary() {
     bat()
         .arg("test.binary")
         .arg("--decorations=always")
@@ -945,6 +989,69 @@ fn filename_binary() {
         .assert()
         .success()
         .stdout("File: foo   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
+fn header_full_binary() {
+    bat()
+        .arg("test.binary")
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo   <BINARY>\nSize: 4 B\n")
+        .stderr("");
+}
+
+#[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
+fn header_default() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=default")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: single-line.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ Single Line
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        )
+        .stderr("");
+}
+
+#[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
+fn header_default_is_default() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: single-line.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ Single Line
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        )
         .stderr("");
 }
 
@@ -1019,6 +1126,18 @@ fn header_padding() {
 }
 
 #[test]
+fn header_full_padding() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout("File: test.txt\nSize: 12 B\nhello world\n\nFile: single-line.txt\nSize: 11 B\nSingle Line\n")
+        .stderr("");
+}
+
+#[test]
 fn header_padding_rule() {
     bat()
         .arg("--decorations=always")
@@ -1032,6 +1151,28 @@ fn header_padding_rule() {
 hello world
 ────────────────────────────────────────────────────────────────────────────────
 File: single-line.txt
+Single Line
+",
+        )
+        .stderr("");
+}
+
+#[test]
+fn header_full_padding_rule() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=header-filename,header-filesize,rule")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .arg("single-line.txt")
+        .assert()
+        .stdout(
+            "File: test.txt
+Size: 12 B
+hello world
+────────────────────────────────────────────────────────────────────────────────
+File: single-line.txt
+Size: 11 B
 Single Line
 ",
         )
@@ -1057,7 +1198,9 @@ Single Line
 ────────────────────────────────────────────────────────────────────────────────
 ",
         )
-        .stderr("\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n");
+        .stderr(
+            "\x1b[33m[bat warning]\x1b[0m: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n",
+        );
 }
 
 #[cfg(target_os = "linux")]
@@ -1156,6 +1299,52 @@ fn show_all_mode() {
 }
 
 #[test]
+fn show_all_extends_tab_markers_to_next_tabstop() {
+    bat()
+        .arg("tabs.txt")
+        .arg("--show-all")
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .assert()
+        .success()
+        .stdout(
+            "├──┤1├─┤2├─┤3├─┤4␊
+1├─┤?␊
+22├┤?␊
+333↹?␊
+4444├──┤?␊
+55555├─┤?␊
+666666├┤?␊
+7777777↹?␊
+88888888├──┤?␊
+",
+        );
+}
+
+#[test]
+fn show_all_extends_tab_markers_to_next_tabstop_width_8() {
+    bat()
+        .arg("tabs.txt")
+        .arg("--show-all")
+        .arg("--tabs=8")
+        .arg("--style=plain")
+        .assert()
+        .success()
+        .stdout(
+            "├──────┤1├─────┤2├─────┤3├─────┤4␊
+1├─────┤?␊
+22├────┤?␊
+333├───┤?␊
+4444├──┤?␊
+55555├─┤?␊
+666666├┤?␊
+7777777↹?␊
+88888888├──────┤?␊
+",
+        );
+}
+
+#[test]
 fn no_paging_arg() {
     bat()
         .arg("--no-paging")
@@ -1206,6 +1395,7 @@ fn plain_mode_does_not_add_nonexisting_newline() {
 
 // Regression test for https://github.com/sharkdp/bat/issues/299
 #[test]
+#[cfg(feature = "git")] // Expected output assumes git is enabled
 fn grid_for_file_without_newline() {
     bat()
         .arg("--paging=never")
@@ -1221,6 +1411,7 @@ fn grid_for_file_without_newline() {
             "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
+       │ Size: 11 B
 ───────┼────────────────────────────────────────────────────────────────────────
    1   │ Single Line
 ───────┴────────────────────────────────────────────────────────────────────────
@@ -1229,47 +1420,188 @@ fn grid_for_file_without_newline() {
         .stderr("");
 }
 
-// Regression test for https://github.com/sharkdp/bat/issues/1922
+// For ANSI theme, use underscore as a highlighter
 #[test]
-fn bom_not_stripped_in_loop_through_mode() {
+fn ansi_highlight_underline() {
     bat()
-        .arg("--plain")
-        .arg("--decorations=never")
+        .arg("--paging=never")
         .arg("--color=never")
-        .arg("test_BOM.txt")
-        .assert()
-        .success()
-        .stdout("\u{feff}hello world\n");
-}
-
-// Regression test for https://github.com/sharkdp/bat/issues/1922
-#[test]
-fn bom_stripped_when_colored_output() {
-    bat()
-        .arg("--color=always")
-        .arg("--decorations=never")
-        .arg("test_BOM.txt")
-        .assert()
-        .success()
-        .stdout("\u{1b}[38;5;231mhello world\u{1b}[0m\n");
-}
-
-// Regression test for https://github.com/sharkdp/bat/issues/1922
-#[test]
-fn bom_stripped_when_no_color_and_not_loop_through() {
-    bat()
-        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
         .arg("--decorations=always")
-        .arg("test_BOM.txt")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
+fn ignored_suffix_arg() {
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("test.json~")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stderr("");
+
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("--ignored-suffix=.suffix")
+        .arg("test.json.suffix")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stderr("");
+
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("test.json.suffix")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stderr("");
+}
+
+#[test]
+fn highlighting_is_skipped_on_long_lines() {
+    let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
+        "\u{1b}" +
+        r#"[38;5;231m    {"ANGLE_instanced_arrays":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"drawArraysInstancedANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/drawArraysInstancedANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"drawElementsInstancedANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/drawElementsInstancedANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"vertexAttribDivisorANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbortController":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController","spec_url":"https://dom.spec.whatwg.org/#interface-abortcontroller","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}},"AbortController":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/AbortController","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-abortcontroller①","description":"<code>AbortController()</code> constructor","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}},"abort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/abort","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-abortcontroller①","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}},"signal":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/signal","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-signal②","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}}},"AbortPaymentEvent":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}},"AbortPaymentEvent":{"__compat":{"description":"<code>AbortPaymentEvent()</code> constructor","mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent/AbortPaymentEvent","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}}},"respondWith":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent/respondWith","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}}}},"AbortSignal":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal","spec_url":"https://dom.spec.whatwg.org/#interface-AbortSignal","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"abort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/abort","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortsignal-abort①","support":{"chrome":{"version_added":false},"chrome_android":{"version_added":false},"edge":{"version_added":false},"firefox":{"version_added":"88"},"firefox_android":{"version_added":"88"},"ie":{"version_added":false},"nodejs":{"version_added":false},"opera":{"version_added":false},"opera_android":{"version_added":false},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":false},"webview_android":{"version_added":false}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"abort_event":{"__compat":{"description":"<code>abort</code> event","mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/abort_event","spec_url":"https://dom.spec.whatwg.org/#eventdef-abortsignal-abort","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"aborted":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/aborted","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortsignal-aborted①","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"onabort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/onabort","spec_url":"https://dom.spec.whatwg.org/#abortsignal-onabort","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbsoluteOrientationSensor":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbsoluteOrientationSensor","spec_url":"https://w3c.github.io/orientation-sensor/#absoluteorientationsensor-interface","support":{"chrome":{"version_added":"67"},"chrome_android":{"version_added":"67"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"54"},"opera_android":{"version_added":"48"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"67"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"AbsoluteOrientationSensor":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbsoluteOrientationSensor/AbsoluteOrientationSensor","spec_url":"https://w3c.github.io/orientation-sensor/#dom-absoluteorientationsensor-absoluteorientationsensor","description":"<code>AbsoluteOrientationSensor()</code> constructor","support":{"chrome":{"version_added":"67"},"chrome_android":{"version_added":"67"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"54"},"opera_android":{"version_added":"48"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"67"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbstractRange":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbstractRange","spec_url":"https://dom.spec.whatwg.org/#interface-abstractrange","support":{"chrome":{"version_added":"90"},"chrome_android":{"version_added":"90"},"edge":[{"version_added":"90"},{"version_added":"18","version_removed":"79"}],"firefox":{"version_added":"69"},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":false},"opera_android":{"version_added":false},"safari":{"version_added":"14.1"},"safari_ios":{"version_added":"14.5"},"samsunginternet_android":{"version_added":false},"webview_android":{"version_added":"90"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"collapsed":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbstractRange/collapsed","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-range-collapsed①","support":{"chrome":{"version_added":"90"},"chrome_android":{"version_added":"90"},"edge":[{"version_added":"90"},{"version_added":"18","version_removed":"79"}],"firefox":{"version_added":"69"},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":false},"opera_android":"# +
+        "\u{1b}[0m\n\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mversion_added\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;141mfalse\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m\n";
+
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("longline.json")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn all_global_git_config_locations_syntax_mapping_work() {
+    let fake_home = Path::new(EXAMPLES_DIR).join("git").canonicalize().unwrap();
+    let expected = "\u{1b}[38;5;231m[\u{1b}[0m\u{1b}[38;5;149muser\u{1b}[0m\u{1b}[38;5;231m]\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231memail\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoo@bar.net\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231mname\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoobar\u{1b}[0m
+";
+
+    bat()
+        .env("XDG_CONFIG_HOME", fake_home.join(".config").as_os_str())
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("git/.config/git/config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+
+    bat()
+        .env("HOME", fake_home.as_os_str())
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("git/.config/git/config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+
+    bat()
+        .env("HOME", fake_home.as_os_str())
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("git/.gitconfig")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn map_syntax_and_ignored_suffix_work_together() {
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("--ignored-suffix=.suffix")
+        .arg("--map-syntax=*.demo:JSON")
+        .arg("test.demo.suffix")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stderr("");
+
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("--ignored-suffix=.suffix")
+        .arg("--ignored-suffix=.foo")
+        .arg("--map-syntax=*.demo:JSON")
+        .arg("test.demo.foo.suffix")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stderr("");
+}
+
+#[test]
+fn acknowledgements() {
+    bat()
+        .arg("--acknowledgements")
         .assert()
         .success()
         .stdout(
-            "\
-───────┬────────────────────────────────────────────────────────────────────────
-       │ File: test_BOM.txt
-───────┼────────────────────────────────────────────────────────────────────────
-   1   │ hello world
-───────┴────────────────────────────────────────────────────────────────────────
-",
-        );
+            // Just some sanity checking that avoids names of persons, except our own Keith Hall :)
+            predicate::str::contains(
+                "Copyright (c) 2018-2021 bat-developers (https://github.com/sharkdp/bat).",
+            )
+            .and(predicate::str::contains(
+                "Copyright (c) 2012-2020 The Sublime CMake authors",
+            ))
+            .and(predicate::str::contains(
+                "Copyright 2014-2015 SaltStack Team",
+            ))
+            .and(predicate::str::contains(
+                "Copyright (c) 2013-present Dracula Theme",
+            ))
+            .and(predicate::str::contains(
+                "## syntaxes/01_Packages/Rust/LICENSE.txt",
+            ))
+            .and(predicate::str::contains(
+                "## syntaxes/02_Extra/http-request-response/LICENSE",
+            ))
+            .and(predicate::str::contains(
+                "## themes/dracula-sublime/LICENSE",
+            ))
+            .and(predicate::str::contains("Copyright (c) 2017 b123400"))
+            .and(predicate::str::contains("Copyright (c) 2021 Keith Hall"))
+            .and(predicate::str::contains("Copyright 2014 Clams")),
+        )
+        .stderr("");
 }

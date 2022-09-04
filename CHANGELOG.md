@@ -2,27 +2,134 @@
 
 ## Features
 
-- `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
-- Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
+- Make the default macOS theme depend on Dark Mode. See #2197, #1746 (@Enselic)
+- Support for separate system and user config files. See #668 (@patrickpichler)
 
 ## Bugfixes
 
-- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
-- First line not shown in diff context. See #1891 (@divagant-martian)
-- Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
+- Prevent fork nightmare with `PAGER=batcat`. See #2235 (@johnmatthiggins)
+- Make `--no-paging`/`-P` override `--paging=...` if passed as a later arg, see #2201 (@themkat)
+- `--map-syntax` and `--ignored-suffix` now works together, see #2093 (@czzrr)
 - Strips byte order mark from output when in non-loop-through mode. See #1922 (@dag-h)
+
+## Other
+
+- Relaxed glibc requirements on amd64, see #2106 and #2194 (@sharkdp)
+- Improved fish completions. See #2275 (@zgracem)
+- Stop pre-processing ANSI escape characters. Syntax highlighting on ANSI escaped input is not supported. See #2185 and #2189 (@Enselic)
+
+## Syntaxes
+
+- NSE (Nmap Scripting Engine) is mapped to Lua, see #2151 (@Cre3per)
+- Correctly color `fstab` dump and pass fields, see #2246 (@yuvalmo)
+- Update `Command Help` syntax, see #2255
+- `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
+- Minor update to `LiveScript`, see #2291
+- Associate `.mts` and `.cts` files with the `TypeScript` syntax. See #2236 (@kidonng)
+
+## Themes
+
+## `bat` as a library
+
+- Make `bat::PrettyPrinter::syntaxes()` iterate over new `bat::Syntax` struct instead of `&syntect::parsing::SyntaxReference`. See #2222 (@Enselic)
+
+
+# v0.21.0
+
+## Features
+
+- Correctly render tab stops in `--show-all`, see #2038 (@Synthetica9)
+- Add a `--style=default` option and make it the default. It is less verbose than `full`, see #2061 (@IsaacHorvath)
+- Enable BusyBox `less` as pager, see #2162 (@nfisher1226)
+- File extensions are now matched case-insensitively. See #1854, #2181 (@Enselic)
+
+## Bugfixes
+
+- Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
+- `bat` no longer crashes when encountering files that references missing syntaxes. See #915, #2181 (@Enselic)
 
 ## Performance
 
-- Load cached assets as fast as integrated assets, see #1753 (@Enselic)
-- Greatly reduce startup time in loop-through mode, e.g. when redirecting output. Instead of *50 ms* - *100 ms*, startup takes *5 ms* - *10 ms*. See #1747 (@Enselic)
-- Reduce startup time by approximately 80% for 91 out of 168 syntaxes when using `--language`. See #1787 (@Enselic)
+- Skip syntax highlighting on long lines (> 16384 chars) to help improve performance. See #2165 (@keith-hall)
+- Vastly improve startup time by lazy-loading syntaxes via syntect 5.0.0. This makes bat display small files ~75% faster than before. See #951, #2181 (@Enselic)
+
+## Other
+
+- Include info about custom assets in `--diagnostics` if used. See #2107, #2144 (@Enselic)
+
+## Syntaxes
+
+- Mapped clang-format config file (.clang-format) to YAML syntax (@TruncatedDinosour)
+- log syntax: improved handling of escape characters in double quoted strings. See #2123 (@keith-hall)
+- Associate `/var/spool/mail/*` and `/var/mail/*` with the `Email` syntax. See #2156 (@cyqsimon)
+- Added cmd-help syntax to scope --help messages. See #2148 (@victor-gp)
+- Slightly adjust Zig syntax. See #2136 (@Enselic)
+- Associate `.inf` files with the `INI` syntax. See #2190 (@Enselic)
+
+## `bat` as a library
+
+- Allow configuration of `show_nonprintable` with `PrettyPrinter`, see #2142
+- The binary format of syntaxes.bin has been changed due to syntaxes now being lazy-loaded via syntect 5.0.0. See #2181 (@Enselic)
+- Mark `bat::error::Error` enum as `#[non_exhaustive]` to allow adding new variants without future semver breakage. See #2181 (@Enselic)
+- Change `Error::SyntectError(syntect::LoadingError)` to `Error::SyntectError(syntect::Error)`. See #2181 (@Enselic)
+- Add `Error::SyntectLoadingError(syntect::LoadingError)` enum variant. See #2181 (@Enselic)
+
+
+# v0.20.0
+
+## Features
+
+- New style component `header-filesize` to show size of the displayed file in the header. See #1988 (@mdibaiee)
+- Use underline for line highlighting on ANSI, see #1730 (@mdibaiee)
+
+## Bugfixes
+
+- Fix bash completion on bash 3.x and bash-completion 1.x. See #2066 (@joshpencheon)
+
+## Syntaxes
+
+- `GraphQL`: Add support for interfaces implementing interfaces and consider ampersand an operator. See #2000
+- Associate `_vimrc` and `_gvimrc` files with the `VimL` syntax. See #2002
+- Associate `poetry.lock` files with the `TOML` syntax. See #2049
+- Associate `.mesh`, `.task`, `.rgen`, `.rint`, `.rahit`, `.rchit`, `.rmiss`, and `.rcall` with the `GLSL` syntax. See #2050
+- Added support for `JQ` syntax, see #2072
+- Properly associate global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`. See #2067 (@cyqsimon)
+
+## `bat` as a library
+
+- Exposed `get_syntax_set` and `get_theme` methods on `HighlightingAssets`. See #2030 (@dandavison)
+- Added `HeaderFilename` and `HeaderFilesize` to `StyleComponent` enum, and mark it `#[non_exhaustive]`. See #1988 (@mdibaiee)
+
+
+# v0.19.0
+
+## Performance
+
+- Reduce startup time in loop-through mode (e.g. when redirecting output) by 90%. See #1747 (@Enselic)
+- Load themes lazily to make bat start 25% faster when disregarding syntax load time. See #1969 (@Enselic)
+- Python syntax highlighting no longer suffers from abysmal performance in specific scenarios. See #1688 (@keith-hall)
+- Fix for poor performance when ANSI escape sequences are piped to `bat`, see #1596 (@eth-p)
+- Fix for incorrect handling of ANSI escape sequences when using `--wrap=never`, see #1596 (@eth-p)
+- Load custom assets as fast as integrated assets, see #1753 (@Enselic)
+
+## Features
+
+- Support for `x:-delta` (minus) syntax in line ranges (e.g. `20:-10`). See  #1901 (@bojan88)
+- Support for `--ignored-suffix` argument. See #1892 (@bojan88)
+- `$BAT_CONFIG_DIR` is now a recognized environment variable. It has precedence over `$XDG_CONFIG_HOME`, see #1727 (@billrisher)
+- Support for `x:+delta` syntax in line ranges (e.g. `20:+10`). See  #1810 (@bojan88)
+- Add new `--acknowledgements` option that gives credit to theme and syntax definition authors. See #1971 (@Enselic)
+- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
+
+## Bugfixes
+
+- First line not shown in diff context. See #1891 (@divagant-martian)
+- Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
 
 ## Other
 
 - Add PowerShell completion, see #1826 (@rashil2000)
-- Minimum supported Rust version (MSRV) bumped to 1.46
-- Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
+- Minimum supported Rust version (MSRV) bumped to 1.51, see #1994 (@mdibaiee)
 
 ## Syntaxes
 
@@ -34,18 +141,19 @@
 - Added support for `slim` syntax, see #1693 (@mfinelli)
 - Racket, see #1884 (@jubnzv)
 - LiveScript, see #1915 (@Enselic)
-
-## New themes
-
+- MediaWiki, see #1925 (@sorairolake)
+- The `requirements.txt` syntax has been removed due to incompatible license requirements.
+- Dart, new highlighter, see #1959 (@Ersikan)
+- SCSS and Sass syntaxes updated, see #1766 (@Enselic)
+- PowerShell syntax updated, see #1935 (@Enselic)
+- TypeScript syntax updated, see #1834 (@Enselic)
 
 ## `bat` as a library
 
 - Deprecate `HighlightingAssets::syntaxes()` and `HighlightingAssets::syntax_for_file_name()`. Use `HighlightingAssets::get_syntaxes()` and `HighlightingAssets::get_syntax_for_path()` instead. They return a `Result` which is needed for upcoming lazy-loading work to improve startup performance. They also return which `SyntaxSet` the returned `SyntaxReference` belongs to. See #1747, #1755, #1776, #1862 (@Enselic)
-- Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802 (@Enselic)
+- Remove `HighlightingAssets::from_files` and `HighlightingAssets::save_to_cache`. Instead of calling the former and then the latter you now make a single call to `bat::assets::build`. See #1802, #1971 (@Enselic)
 - Replace  the `error::Error(error::ErrorKind, _)` struct and enum with an `error::Error` enum. `Error(ErrorKind::UnknownSyntax, _)` becomes `Error::UnknownSyntax`, etc. Also remove the `error::ResultExt` trait. These changes stem from replacing `error-chain` with `thiserror`. See #1820 (@Enselic)
-- Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its docummentation for more information. Clients are adviced to treat `MapExtensionToUnknown` the same as `MapToUnknown` in exhaustive matches. See #1703 (@cbolgiano)
-
-
+- Add new `MappingTarget` enum variant `MapExtensionToUnknown`. Refer to its documentation for more information. Also mark `MappingTarget` as `#[non_exhaustive]` since more enum variants might be added in the future. See #1703 (@cbolgiano), #2012 (@Enselic)
 
 
 # v0.18.3

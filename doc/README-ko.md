@@ -13,7 +13,7 @@
   <a href="#사용자화">사용자화</a> •
   <a href="#프로젝트-목표와-대안들">프로젝트 목표와 대안들</a><br>
   [<a href="../README.md">English</a>]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-zh.md">中文</a>]
   [<a href="README-ja.md">日本語</a>]
   [한국어]
   [<a href="README-ru.md">Русский</a>]
@@ -222,7 +222,7 @@ man 2 select
 `bat`은 [Ubuntu](https://packages.ubuntu.com/eoan/bat)와
 [Debian](https://packages.debian.org/sid/bat) 패키지 배포 과정에 도입되는 중이며,
 Eoan 19.10 버전의 Ubuntu에서부터 제공됩니다.
-현재 Debain에서는 불안정한 "Sid" 브랜치에서만 `bat`이 제공됩니다.
+현재 Debian에서는 불안정한 "Sid" 브랜치에서만 `bat`이 제공됩니다.
 
 만약 충분히 최신 버전의 Ubuntu/Debian이 설치되어 있다면 간단히 다음을 실행하세요:
 
@@ -416,7 +416,7 @@ scoop install bat
 
 ### 소스에서
 
-`bat`의 소스를 빌드하기 위해서는, Rust 1.46 이상이 필요합니다.
+`bat`의 소스를 빌드하기 위해서는, Rust 1.60.0 이상이 필요합니다.
 `cargo`를 이용해 전부 빌드할 수 있습니다:
 
 ```bash

@@ -13,11 +13,24 @@
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a><br>
   [English]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="doc/README-zh.md">中文</a>]
   [<a href="doc/README-ja.md">日本語</a>]
   [<a href="doc/README-ko.md">한국어</a>]
   [<a href="doc/README-ru.md">Русский</a>]
 </p>
+
+### Sponsors
+
+A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
+<a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=bat&utm_source=github">
+  <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
+  <br>
+  <strong>Your app, enterprise-ready.</strong>
+  <br>
+  <sub>Start selling to enterprise customers with just a few lines of code.</sub>
+  <br>
+  <sup>Add Single Sign-On (and more) in minutes instead of months.</sup>
+</a>
 
 ### Syntax highlighting
 
@@ -158,7 +171,7 @@ You can combine `bat` with `git diff` to view lines around code changes with pro
 highlighting:
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d | xargs bat --diff
+    git diff --name-only --relative --diff-filter=d | xargs bat --diff
 }
 ```
 If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
@@ -198,6 +211,24 @@ Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145)
 #### `prettier` / `shfmt` / `rustfmt`
 
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
+
+#### Highlighting `--help` messages
+
+You can use `bat` to colorize help text: `$ cp --help | bat -plhelp`
+
+You can also use a wrapper around this:
+
+```bash
+# in your .bashrc/.zshrc/*rc
+alias bathelp='bat --plain --language=help'
+help() {
+    "$@" --help 2>&1 | bathelp
+}
+```
+
+Then you can do `$ help cp` or `$ help git commit`.
+
+Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
 
 ## Installation
@@ -387,7 +418,7 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.46 or
+If you want to build `bat` from source, you need Rust 1.60.0 or
 higher. You can then use `cargo` to build everything:
 
 ```bash
@@ -515,8 +546,9 @@ command line option. The option takes an argument of the form `pattern:syntax` w
 the absolute file path. The `syntax` part is the full name of a supported language
 (use `bat --list-languages` for an overview).
 
-Note: You probably want to use this option as an entry in `bat`s configuration file instead
-of passing it on the command line (see below).
+**Note:** You probably want to use this option as [an entry in `bat`'s configuration file](#configuration-file)
+for persistence instead of passing it on the command line as a one-off. Generally
+you'd just use `-l` if you want to manually specify a language for a file.
 
 Example: To use "INI" syntax highlighting for all files with a `.conf` file extension, use
 ```bash
@@ -607,6 +639,10 @@ A default configuration file can be created with the `--generate-config-file` op
 bat --generate-config-file
 ```
 
+There is also now a systemwide configuration file, which is located under `/etc/bat/config` on
+Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
+file is present, the content of the user configuration will simply be appended to it.
+
 ### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
@@ -673,6 +709,13 @@ bat() {
 ```
 
 ## Troubleshooting
+
+### Garbled output
+
+If an input file contains color codes or other ANSI escape sequences or control characters, `bat` will have problems
+performing syntax highlighting and text wrapping, and thus the output can become garbled.
+When displaying such files it is recommended to disable both syntax highlighting and wrapping by
+passing the `--color=never --wrap=never` options to `bat`.
 
 ### Terminals & colors
 

@@ -1,34 +1,27 @@
-use console::AnsiCodeIterator;
+use std::fmt::Write;
 
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
-    let mut buffer = String::with_capacity(line.len() * 2);
+pub fn expand_tabs(mut text: &str, width: usize, cursor: &mut usize) -> String {
+    let mut buffer = String::with_capacity(text.len() * 2);
 
-    for chunk in AnsiCodeIterator::new(line) {
-        match chunk {
-            (text, true) => buffer.push_str(text),
-            (mut text, false) => {
-                while let Some(index) = text.find('\t') {
-                    // Add previous text.
-                    if index > 0 {
-                        *cursor += index;
-                        buffer.push_str(&text[0..index]);
-                    }
-
-                    // Add tab.
-                    let spaces = width - (*cursor % width);
-                    *cursor += spaces;
-                    buffer.push_str(&*" ".repeat(spaces));
-
-                    // Next.
-                    text = &text[index + 1..text.len()];
-                }
-
-                *cursor += text.len();
-                buffer.push_str(text);
-            }
+    while let Some(index) = text.find('\t') {
+        // Add previous text.
+        if index > 0 {
+            *cursor += index;
+            buffer.push_str(&text[0..index]);
         }
+
+        // Add tab.
+        let spaces = width - (*cursor % width);
+        *cursor += spaces;
+        buffer.push_str(&*" ".repeat(spaces));
+
+        // Next.
+        text = &text[index + 1..text.len()];
     }
+
+    *cursor += text.len();
+    buffer.push_str(text);
 
     buffer
 }
@@ -53,26 +46,33 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
 
     let mut idx = 0;
+    let mut line_idx = 0;
     let len = input.len();
     while idx < len {
         if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
             idx += skip_ahead;
+            line_idx += 1;
 
             match chr {
                 // space
                 ' ' => output.push('·'),
                 // tab
                 '\t' => {
-                    if tab_width == 1 {
+                    let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                    line_idx = 0;
+                    if tab_stop == 1 {
                         output.push('↹');
                     } else {
                         output.push('├');
-                        output.push_str(&"─".repeat(tab_width - 2));
+                        output.push_str(&"─".repeat(tab_stop - 2));
                         output.push('┤');
                     }
                 }
                 // line feed
-                '\x0A' => output.push_str("␊\x0A"),
+                '\x0A' => {
+                    output.push_str("␊\x0A");
+                    line_idx = 0;
+                }
                 // carriage return
                 '\x0D' => output.push('␍'),
                 // null
@@ -94,7 +94,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                 c => output.push_str(&c.escape_unicode().collect::<String>()),
             }
         } else {
-            output.push_str(&format!("\\x{:02X}", input[idx]));
+            write!(output, "\\x{:02X}", input[idx]).ok();
             idx += 1;
         }
     }

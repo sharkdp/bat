@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use crate::error::*;
 
+#[non_exhaustive]
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
 pub enum StyleComponent {
     Auto,
@@ -11,9 +12,12 @@ pub enum StyleComponent {
     Grid,
     Rule,
     Header,
+    HeaderFilename,
+    HeaderFilesize,
     LineNumbers,
     Snip,
     Full,
+    Default,
     Plain,
 }
 
@@ -22,7 +26,7 @@ impl StyleComponent {
         match self {
             StyleComponent::Auto => {
                 if interactive_terminal {
-                    StyleComponent::Full.components(interactive_terminal)
+                    StyleComponent::Default.components(interactive_terminal)
                 } else {
                     StyleComponent::Plain.components(interactive_terminal)
                 }
@@ -31,14 +35,25 @@ impl StyleComponent {
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Rule => &[StyleComponent::Rule],
-            StyleComponent::Header => &[StyleComponent::Header],
+            StyleComponent::Header => &[StyleComponent::HeaderFilename],
+            StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
+            StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
-                StyleComponent::Header,
+                StyleComponent::HeaderFilename,
+                StyleComponent::HeaderFilesize,
+                StyleComponent::LineNumbers,
+                StyleComponent::Snip,
+            ],
+            StyleComponent::Default => &[
+                #[cfg(feature = "git")]
+                StyleComponent::Changes,
+                StyleComponent::Grid,
+                StyleComponent::HeaderFilename,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -58,9 +73,12 @@ impl FromStr for StyleComponent {
             "grid" => Ok(StyleComponent::Grid),
             "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
+            "header-filename" => Ok(StyleComponent::HeaderFilename),
+            "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
+            "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
             _ => Err(format!("Unknown style '{}'", s).into()),
         }
@@ -89,7 +107,15 @@ impl StyleComponents {
     }
 
     pub fn header(&self) -> bool {
-        self.0.contains(&StyleComponent::Header)
+        self.header_filename() || self.header_filesize()
+    }
+
+    pub fn header_filename(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderFilename)
+    }
+
+    pub fn header_filesize(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderFilesize)
     }
 
     pub fn numbers(&self) -> bool {

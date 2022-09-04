@@ -4,7 +4,7 @@ use std::vec::Vec;
 use ansi_term::Colour::{Fixed, Green, Red, Yellow};
 use ansi_term::Style;
 
-use console::AnsiCodeIterator;
+use bytesize::ByteSize;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
@@ -29,6 +29,7 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::wrapping::WrappingMode;
 
@@ -118,7 +119,6 @@ pub(crate) struct InteractivePrinter<'a> {
     config: &'a Config<'a>,
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
-    ansi_prefix_sgr: String,
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
@@ -202,7 +202,6 @@ impl<'a> InteractivePrinter<'a> {
             config,
             decorations,
             content_type: input.reader.content_type,
-            ansi_prefix_sgr: String::new(),
             #[cfg(feature = "git")]
             line_changes,
             highlighter_from_set,
@@ -249,6 +248,21 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
+    fn print_header_component_indent(&mut self, handle: &mut dyn Write) -> std::io::Result<()> {
+        if self.config.style_components.grid() {
+            write!(
+                handle,
+                "{}{}",
+                " ".repeat(self.panel_width),
+                self.colors
+                    .grid
+                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
+            )
+        } else {
+            write!(handle, "{}", " ".repeat(self.panel_width))
+        }
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
@@ -286,25 +300,6 @@ impl<'a> Printer for InteractivePrinter<'a> {
             return Ok(());
         }
 
-        if self.config.style_components.grid() {
-            self.print_horizontal_line(handle, '┬')?;
-
-            write!(
-                handle,
-                "{}{}",
-                " ".repeat(self.panel_width),
-                self.colors
-                    .grid
-                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
-            )?;
-        } else {
-            // Only pad space between files, if we haven't already drawn a horizontal rule
-            if add_header_padding && !self.config.style_components.rule() {
-                writeln!(handle)?;
-            }
-            write!(handle, "{}", " ".repeat(self.panel_width))?;
-        }
-
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
             Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
@@ -314,17 +309,60 @@ impl<'a> Printer for InteractivePrinter<'a> {
         };
 
         let description = &input.description;
+        let metadata = &input.metadata;
 
-        writeln!(
-            handle,
-            "{}{}{}",
-            description
-                .kind()
-                .map(|kind| format!("{}: ", kind))
-                .unwrap_or_else(|| "".into()),
-            self.colors.filename.paint(description.title()),
-            mode
-        )?;
+        // We use this iterator to have a deterministic order for
+        // header components. HashSet has arbitrary order, but Vec is ordered.
+        let header_components: Vec<StyleComponent> = [
+            (
+                StyleComponent::HeaderFilename,
+                self.config.style_components.header_filename(),
+            ),
+            (
+                StyleComponent::HeaderFilesize,
+                self.config.style_components.header_filesize(),
+            ),
+        ]
+        .iter()
+        .filter(|(_, is_enabled)| *is_enabled)
+        .map(|(component, _)| *component)
+        .collect();
+
+        // Print the cornering grid before the first header component
+        if self.config.style_components.grid() {
+            self.print_horizontal_line(handle, '┬')?;
+        } else {
+            // Only pad space between files, if we haven't already drawn a horizontal rule
+            if add_header_padding && !self.config.style_components.rule() {
+                writeln!(handle)?;
+            }
+        }
+
+        header_components.iter().try_for_each(|component| {
+            self.print_header_component_indent(handle)?;
+
+            match component {
+                StyleComponent::HeaderFilename => writeln!(
+                    handle,
+                    "{}{}{}",
+                    description
+                        .kind()
+                        .map(|kind| format!("{}: ", kind))
+                        .unwrap_or_else(|| "".into()),
+                    self.colors.header_value.paint(description.title()),
+                    mode
+                ),
+
+                StyleComponent::HeaderFilesize => {
+                    let bsize = metadata
+                        .size
+                        .map(|s| format!("{}", ByteSize(s)))
+                        .unwrap_or_else(|| "-".into());
+                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
+                }
+                _ => Ok(()),
+            }
+        })?;
 
         if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
@@ -411,9 +449,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     return Ok(());
                 }
             };
-            highlighter_from_set
+
+            // skip syntax highlighting on long lines
+            let too_long = line.len() > 1024 * 16;
+
+            let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+            let mut highlighted_line = highlighter_from_set
                 .highlighter
-                .highlight(&line, highlighter_from_set.syntax_set)
+                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+            if too_long {
+                highlighted_line[0].1 = &line;
+            }
+
+            highlighted_line
         };
 
         if out_of_range {
@@ -428,6 +478,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         // Line highlighting
         let highlight_this_line =
             self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
+
+        if highlight_this_line && self.config.theme == "ansi" {
+            write!(handle, "\x1B[4m")?;
+        }
 
         let background_color = self
             .background_color_highlight
@@ -455,6 +509,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             for &(style, region) in &regions {
                 let text = &*self.preprocess(region, &mut cursor_total);
                 let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+
                 write!(
                     handle,
                     "{}",
@@ -474,6 +529,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                             background: to_ansi_color(background_color, true_color),
                             ..Default::default()
                         };
+
                         let width = if cursor_total <= cursor_max {
                             cursor_max - cursor_total + 1
                         } else {
@@ -490,126 +546,82 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         } else {
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
-                let mut ansi_prefix: String = String::new();
-                for chunk in ansi_iterator {
-                    match chunk {
-                        // ANSI escape passthrough.
-                        (text, true) => {
-                            let is_ansi_csi = text.starts_with("\x1B[");
+                let text = self.preprocess(
+                    region.trim_end_matches(|c| c == '\r' || c == '\n'),
+                    &mut cursor_total,
+                );
 
-                            if is_ansi_csi && text.ends_with('m') {
-                                // It's an ANSI SGR sequence.
-                                // We should be mostly safe to just append these together.
-                                ansi_prefix.push_str(text);
-                                if text == "\x1B[0m" {
-                                    self.ansi_prefix_sgr = "\x1B[0m".to_owned();
-                                } else {
-                                    self.ansi_prefix_sgr.push_str(text);
-                                }
-                            } else if is_ansi_csi {
-                                // It's a regular CSI sequence.
-                                // We should be mostly safe to just append these together.
-                                ansi_prefix.push_str(text);
+                let mut max_width = cursor_max - cursor;
+
+                // line buffer (avoid calling write! for every character)
+                let mut line_buf = String::with_capacity(max_width * 4);
+
+                // Displayed width of line_buf
+                let mut current_width = 0;
+
+                for c in text.chars() {
+                    // calculate the displayed width for next character
+                    let cw = c.width().unwrap_or(0);
+                    current_width += cw;
+
+                    // if next character cannot be printed on this line,
+                    // flush the buffer.
+                    if current_width > max_width {
+                        // Generate wrap padding if not already generated.
+                        if panel_wrap.is_none() {
+                            panel_wrap = if self.panel_width > 0 {
+                                Some(format!(
+                                    "{} ",
+                                    self.decorations
+                                        .iter()
+                                        .map(|d| d.generate(line_number, true, self).text)
+                                        .collect::<Vec<String>>()
+                                        .join(" ")
+                                ))
                             } else {
-                                // It's probably a VT100 code.
-                                // Passing it through is the safest bet.
-                                write!(handle, "{}", text)?;
+                                Some("".to_string())
                             }
                         }
 
-                        // Regular text.
-                        (text, false) => {
-                            let text = self.preprocess(
-                                text.trim_end_matches(|c| c == '\r' || c == '\n'),
-                                &mut cursor_total,
-                            );
+                        // It wraps.
+                        write!(
+                            handle,
+                            "{}\n{}",
+                            as_terminal_escaped(
+                                style,
+                                &line_buf,
+                                self.config.true_color,
+                                self.config.colored_output,
+                                self.config.use_italic_text,
+                                background_color
+                            ),
+                            panel_wrap.clone().unwrap()
+                        )?;
 
-                            let mut max_width = cursor_max - cursor;
+                        cursor = 0;
+                        max_width = cursor_max;
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
-
-                            // Displayed width of line_buf
-                            let mut current_width = 0;
-
-                            for c in text.chars() {
-                                // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
-                                current_width += cw;
-
-                                // if next character cannot be printed on this line,
-                                // flush the buffer.
-                                if current_width > max_width {
-                                    // Generate wrap padding if not already generated.
-                                    if panel_wrap.is_none() {
-                                        panel_wrap = if self.panel_width > 0 {
-                                            Some(format!(
-                                                "{} ",
-                                                self.decorations
-                                                    .iter()
-                                                    .map(|d| d
-                                                        .generate(line_number, true, self)
-                                                        .text)
-                                                    .collect::<Vec<String>>()
-                                                    .join(" ")
-                                            ))
-                                        } else {
-                                            Some("".to_string())
-                                        }
-                                    }
-
-                                    // It wraps.
-                                    write!(
-                                        handle,
-                                        "{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &*format!(
-                                                "{}{}{}",
-                                                self.ansi_prefix_sgr, ansi_prefix, line_buf
-                                            ),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
-                                        panel_wrap.clone().unwrap()
-                                    )?;
-
-                                    cursor = 0;
-                                    max_width = cursor_max;
-
-                                    line_buf.clear();
-                                    current_width = cw;
-                                }
-
-                                line_buf.push(c);
-                            }
-
-                            // flush the buffer
-                            cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &*format!(
-                                        "{}{}{}",
-                                        self.ansi_prefix_sgr, ansi_prefix, line_buf
-                                    ),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
-
-                            // Clear the ANSI prefix buffer.
-                            ansi_prefix.clear();
-                        }
+                        line_buf.clear();
+                        current_width = cw;
                     }
+
+                    line_buf.push(c);
                 }
+
+                // flush the buffer
+                cursor += current_width;
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(
+                        style,
+                        &line_buf,
+                        self.config.true_color,
+                        self.config.colored_output,
+                        self.config.use_italic_text,
+                        background_color
+                    )
+                )?;
             }
 
             if let Some(background_color) = background_color {
@@ -627,6 +639,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
             writeln!(handle)?;
         }
 
+        if highlight_this_line && self.config.theme == "ansi" {
+            write!(handle, "\x1B[24m")?;
+        }
+
         Ok(())
     }
 }
@@ -637,7 +653,7 @@ const DEFAULT_GUTTER_COLOR: u8 = 238;
 pub struct Colors {
     pub grid: Style,
     pub rule: Style,
-    pub filename: Style,
+    pub header_value: Style,
     pub git_added: Style,
     pub git_removed: Style,
     pub git_modified: Style,
@@ -666,7 +682,7 @@ impl Colors {
         Colors {
             grid: gutter_style,
             rule: gutter_style,
-            filename: Style::new().bold(),
+            header_value: Style::new().bold(),
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),

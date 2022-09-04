@@ -2,20 +2,21 @@ use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
 
-use lazycell::LazyCell;
+use once_cell::unsync::OnceCell;
 
-use syntect::highlighting::{Theme, ThemeSet};
+use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
 use path_abs::PathAbs;
 
-use crate::bat_warning;
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
-use crate::syntax_mapping::{MappingTarget, SyntaxMapping};
+use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
+use crate::syntax_mapping::MappingTarget;
+use crate::{bat_warning, SyntaxMapping};
 
-use ignored_suffixes::*;
-use minimal_assets::*;
+use lazy_theme_set::LazyThemeSet;
+
 use serialized_syntax_set::*;
 
 #[cfg(feature = "build-assets")]
@@ -24,18 +25,15 @@ pub use crate::assets::build_assets::*;
 pub(crate) mod assets_metadata;
 #[cfg(feature = "build-assets")]
 mod build_assets;
-mod ignored_suffixes;
-mod minimal_assets;
+mod lazy_theme_set;
 mod serialized_syntax_set;
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
-    syntax_set_cell: LazyCell<SyntaxSet>,
+    syntax_set_cell: OnceCell<SyntaxSet>,
     serialized_syntax_set: SerializedSyntaxSet,
 
-    minimal_assets: MinimalAssets,
-
-    theme_set: ThemeSet,
+    theme_set: LazyThemeSet,
     fallback_theme: Option<&'static str>,
 }
 
@@ -45,50 +43,86 @@ pub struct SyntaxReferenceInSet<'a> {
     pub syntax_set: &'a SyntaxSet,
 }
 
-/// Compress for size of ~700 kB instead of ~4600 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SYNTAXES: bool = true;
+/// Lazy-loaded syntaxes are already compressed, and we don't want to compress
+/// already compressed data.
+pub(crate) const COMPRESS_SYNTAXES: bool = false;
 
-/// Compress for size of ~20 kB instead of ~200 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_THEMES: bool = true;
+/// We don't want to compress our [LazyThemeSet] since the lazy-loaded themes
+/// within it are already compressed, and compressing another time just makes
+/// performance suffer
+pub(crate) const COMPRESS_THEMES: bool = false;
 
-/// Compress for size of ~400 kB instead of ~2100 kB at the cost of ~30% longer deserialization time
-pub(crate) const COMPRESS_SERIALIZED_MINIMAL_SYNTAXES: bool = true;
+/// Compress for size of ~40 kB instead of ~200 kB without much difference in
+/// performance due to lazy-loading
+pub(crate) const COMPRESS_LAZY_THEMES: bool = true;
 
-/// Whether or not to compress the serialized form of [MinimalSyntaxes]. Shall
-/// always be `false`, because the data in
-/// [MinimalSyntaxes.serialized_syntax_sets] has already been compressed
-/// (assuming [COMPRESS_SERIALIZED_MINIMAL_SYNTAXES] is `true`). The "outer" data
-/// structures like `by_name` are tiny. If we compress, deserialization can't do
-/// efficient byte-by-byte copy of `serialized_syntax_sets`.
-pub(crate) const COMPRESS_MINIMAL_SYNTAXES: bool = false;
+/// Compress for size of ~10 kB instead of ~120 kB
+pub(crate) const COMPRESS_ACKNOWLEDGEMENTS: bool = true;
 
 impl HighlightingAssets {
-    fn new(
-        serialized_syntax_set: SerializedSyntaxSet,
-        minimal_syntaxes: MinimalSyntaxes,
-        theme_set: ThemeSet,
-    ) -> Self {
+    fn new(serialized_syntax_set: SerializedSyntaxSet, theme_set: LazyThemeSet) -> Self {
         HighlightingAssets {
-            syntax_set_cell: LazyCell::new(),
+            syntax_set_cell: OnceCell::new(),
             serialized_syntax_set,
-            minimal_assets: MinimalAssets::new(minimal_syntaxes),
             theme_set,
             fallback_theme: None,
         }
     }
 
+    /// The default theme.
+    ///
+    /// ### Windows and Linux
+    ///
+    /// Windows and most Linux distributions has a dark terminal theme by
+    /// default. On these platforms, this function always returns a theme that
+    /// looks good on a dark background.
+    ///
+    /// ### macOS
+    ///
+    /// On macOS the default terminal background is light, but it is common that
+    /// Dark Mode is active, which makes the terminal background dark. On this
+    /// platform, the default theme depends on
+    /// ```bash
+    /// defaults read -globalDomain AppleInterfaceStyle
+    /// ````
+    /// To avoid the overhead of the check on macOS, simply specify a theme
+    /// explicitly via `--theme`, `BAT_THEME`, or `~/.config/bat`.
+    ///
+    /// See <https://github.com/sharkdp/bat/issues/1746> and
+    /// <https://github.com/sharkdp/bat/issues/1928> for more context.
     pub fn default_theme() -> &'static str {
+        #[cfg(not(target_os = "macos"))]
+        {
+            Self::default_dark_theme()
+        }
+        #[cfg(target_os = "macos")]
+        {
+            if macos_dark_mode_active() {
+                Self::default_dark_theme()
+            } else {
+                Self::default_light_theme()
+            }
+        }
+    }
+
+    /**
+     * The default theme that looks good on a dark background.
+     */
+    fn default_dark_theme() -> &'static str {
         "Monokai Extended"
+    }
+
+    /**
+     * The default theme that looks good on a light background.
+     */
+    #[cfg(target_os = "macos")]
+    fn default_light_theme() -> &'static str {
+        "Monokai Extended Light"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
-            asset_from_cache(
-                &cache_path.join("minimal_syntaxes.bin"),
-                "minimal syntax sets",
-                COMPRESS_MINIMAL_SYNTAXES,
-            )?,
             asset_from_cache(&cache_path.join("themes.bin"), "theme set", COMPRESS_THEMES)?,
         ))
     }
@@ -96,7 +130,6 @@ impl HighlightingAssets {
     pub fn from_binary() -> Self {
         HighlightingAssets::new(
             SerializedSyntaxSet::FromBinary(get_serialized_integrated_syntaxset()),
-            get_integrated_minimal_syntaxes(),
             get_integrated_themeset(),
         )
     }
@@ -105,9 +138,10 @@ impl HighlightingAssets {
         self.fallback_theme = Some(theme);
     }
 
-    pub(crate) fn get_syntax_set(&self) -> Result<&SyntaxSet> {
+    /// Return the collection of syntect syntax definitions.
+    pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
         self.syntax_set_cell
-            .try_borrow_with(|| self.serialized_syntax_set.deserialize())
+            .get_or_try_init(|| self.serialized_syntax_set.deserialize())
     }
 
     /// Use [Self::get_syntaxes] instead
@@ -122,22 +156,12 @@ impl HighlightingAssets {
         Ok(self.get_syntax_set()?.syntaxes())
     }
 
-    fn get_theme_set(&self) -> &ThemeSet {
+    fn get_theme_set(&self) -> &LazyThemeSet {
         &self.theme_set
     }
 
     pub fn themes(&self) -> impl Iterator<Item = &str> {
-        self.get_theme_set().themes.keys().map(|s| s.as_ref())
-    }
-
-    /// Finds a [SyntaxSet] that contains a [SyntaxReference] by its name. First
-    /// tries to find a minimal [SyntaxSet]. If none is found, returns the
-    /// [SyntaxSet] that contains all syntaxes.
-    fn get_syntax_set_by_name(&self, name: &str) -> Result<&SyntaxSet> {
-        match self.minimal_assets.get_syntax_set_by_name(name) {
-            Some(syntax_set) => Ok(syntax_set),
-            None => self.get_syntax_set(),
-        }
+        self.get_theme_set().themes()
     }
 
     /// Use [Self::get_syntax_for_path] instead
@@ -195,7 +219,10 @@ impl HighlightingAssets {
 
         let file_name = path.file_name().unwrap_or_default();
 
-        match (self.get_syntax_for_file_name(file_name)?, syntax_match) {
+        match (
+            self.get_syntax_for_file_name(file_name, &mapping.ignored_suffixes)?,
+            syntax_match,
+        ) {
             (Some(syntax), _) => Ok(syntax),
 
             (_, Some(MappingTarget::MapExtensionToUnknown)) => {
@@ -203,13 +230,14 @@ impl HighlightingAssets {
             }
 
             _ => self
-                .get_syntax_for_file_extension(file_name)?
+                .get_syntax_for_file_extension(file_name, &mapping.ignored_suffixes)?
                 .ok_or_else(|| Error::UndetectedSyntax(path.to_string_lossy().into())),
         }
     }
 
-    pub(crate) fn get_theme(&self, theme: &str) -> &Theme {
-        match self.get_theme_set().themes.get(theme) {
+    /// Look up a syntect theme by name.
+    pub fn get_theme(&self, theme: &str) -> &Theme {
+        match self.get_theme_set().get(theme) {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
@@ -219,8 +247,9 @@ impl HighlightingAssets {
                 if !theme.is_empty() {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
-                &self.get_theme_set().themes
-                    [self.fallback_theme.unwrap_or_else(|| Self::default_theme())]
+                self.get_theme_set()
+                    .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
+                    .expect("something is very wrong if the default theme is missing")
             }
         }
     }
@@ -232,7 +261,7 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet> {
         if let Some(language) = language {
-            let syntax_set = self.get_syntax_set_by_name(language)?;
+            let syntax_set = self.get_syntax_set()?;
             return syntax_set
                 .find_syntax_by_token(language)
                 .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set })
@@ -277,12 +306,18 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
-    fn get_syntax_for_file_name(&self, file_name: &OsStr) -> Result<Option<SyntaxReferenceInSet>> {
+    fn get_syntax_for_file_name(
+        &self,
+        file_name: &OsStr,
+        ignored_suffixes: &IgnoredSuffixes,
+    ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
         if syntax.is_none() {
-            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_syntax_for_file_name(stripped_file_name) // Note: recursion
-            })?;
+            syntax =
+                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                    // Note: recursion
+                    self.get_syntax_for_file_name(stripped_file_name, ignored_suffixes)
+                })?;
         }
         Ok(syntax)
     }
@@ -290,12 +325,15 @@ impl HighlightingAssets {
     fn get_syntax_for_file_extension(
         &self,
         file_name: &OsStr,
+        ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet>> {
         let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
         if syntax.is_none() {
-            syntax = try_with_stripped_suffix(file_name, |stripped_file_name| {
-                self.get_syntax_for_file_extension(stripped_file_name) // Note: recursion
-            })?;
+            syntax =
+                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                    // Note: recursion
+                    self.get_syntax_for_file_extension(stripped_file_name, ignored_suffixes)
+                })?;
         }
         Ok(syntax)
     }
@@ -316,14 +354,14 @@ pub(crate) fn get_serialized_integrated_syntaxset() -> &'static [u8] {
     include_bytes!("../assets/syntaxes.bin")
 }
 
-pub(crate) fn get_integrated_themeset() -> ThemeSet {
+pub(crate) fn get_integrated_themeset() -> LazyThemeSet {
     from_binary(include_bytes!("../assets/themes.bin"), COMPRESS_THEMES)
 }
 
-fn get_integrated_minimal_syntaxes() -> MinimalSyntaxes {
+pub fn get_acknowledgements() -> String {
     from_binary(
-        include_bytes!("../assets/minimal_syntaxes.bin"),
-        COMPRESS_MINIMAL_SYNTAXES,
+        include_bytes!("../assets/acknowledgements.bin"),
+        COMPRESS_ACKNOWLEDGEMENTS,
     )
 }
 
@@ -359,6 +397,16 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
     })?;
     asset_from_contents(&contents[..], description, compressed)
         .map_err(|_| format!("Could not parse cached {}", description).into())
+}
+
+#[cfg(target_os = "macos")]
+fn macos_dark_mode_active() -> bool {
+    let mut defaults_cmd = std::process::Command::new("defaults");
+    defaults_cmd.args(&["read", "-globalDomain", "AppleInterfaceStyle"]);
+    match defaults_cmd.output() {
+        Ok(output) => output.stdout == b"Dark\n",
+        Err(_) => true,
+    }
 }
 
 #[cfg(test)]
@@ -591,13 +639,22 @@ mod tests {
     }
 
     #[test]
-    fn syntax_detection_is_case_sensitive() {
+    fn syntax_detection_is_case_insensitive() {
         let mut test = SyntaxDetectionTest::new();
 
-        assert_ne!(test.syntax_for_file("README.MD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
+
+        // Adding a mapping for "MD" in addition to "md" should not break the mapping
         test.syntax_mapping
             .insert("*.MD", MappingTarget::MapTo("Markdown"))
             .ok();
+
+        assert_eq!(test.syntax_for_file("README.md"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.mD"), "Markdown");
+        assert_eq!(test.syntax_for_file("README.Md"), "Markdown");
         assert_eq!(test.syntax_for_file("README.MD"), "Markdown");
     }
 

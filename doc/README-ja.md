@@ -13,7 +13,7 @@
   <a href="#カスタマイズ">カスタマイズ</a> •
   <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a><br>
   [<a href="../README.md">English</a>]
-  [<a href="https://github.com/chinanf-boy/bat-zh">中文</a>]
+  [<a href="README-zh.md">中文</a>]
   [日本語]
   [<a href="README-ko.md">한국어</a>]
   [<a href="README-ru.md">Русский</a>]
@@ -181,7 +181,7 @@ man 2 select
 
 ## インストール
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat.svg)](https://repology.org/project/bat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg)](https://repology.org/project/bat-cat/versions)
 
 ###  On Ubuntu (`apt` を使用)
 *... や他のDebianベースのLinuxディストリビューション*
@@ -366,7 +366,7 @@ ansible-galaxy install aeimer.install_bat
 ### From source
 
 
-`bat` をソースからビルドしたいならば、Rust 1.36 以上の環境が必要です。
+`bat` をソースからビルドしたいならば、Rust 1.60.0 以上の環境が必要です。
 `cargo` を使用してビルドすることができます:
 
 ```bash

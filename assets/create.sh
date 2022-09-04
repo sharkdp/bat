@@ -46,6 +46,7 @@ bat cache --clear
 # - Remove the JavaDoc patch once https://github.com/trishume/syntect/issues/222 has been fixed
 # - Remove the C# patch once https://github.com/sublimehq/Packages/pull/2331 has been merged
 
+# Apply patches
 (
     cd "$ASSET_DIR"
     for patch in patches/*.patch; do
@@ -53,11 +54,16 @@ bat cache --clear
     done
 )
 
-bat cache --build --blank --source="$ASSET_DIR" --target="$ASSET_DIR"
+reverse_patches() {
+    (
+        cd "$ASSET_DIR"
+        for patch in patches/*.patch; do
+            patch --strip=0 --reverse <"$patch"
+        done
+    )
+}
 
-(
-    cd "$ASSET_DIR"
-    for patch in patches/*.patch; do
-        patch --strip=0 --reverse < "$patch"
-    done
-)
+# Make sure to always reverse patches, even if the `bat cache` command fails or aborts
+trap reverse_patches EXIT
+
+bat cache --build --blank --acknowledgements --source="$ASSET_DIR" --target="$ASSET_DIR"
