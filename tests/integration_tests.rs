@@ -793,7 +793,9 @@ fn bom_stripped_when_colored_output() {
         .arg("test_BOM.txt")
         .assert()
         .success()
-        .stdout("\u{1b}[38;5;231mhello world\u{1b}[0m\n");
+        .stdout(
+            predicate::str::is_match("\u{1b}\\[38;5;[0-9]{3}mhello world\u{1b}\\[0m\n").unwrap(),
+        );
 }
 
 // Regression test for https://github.com/sharkdp/bat/issues/1922
