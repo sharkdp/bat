@@ -26,12 +26,14 @@
 - `Julia`: Fix syntax highlighting for function name starting with `struct`, see #2230
 - Minor update to `LiveScript`, see #2291
 - Associate `.mts` and `.cts` files with the `TypeScript` syntax. See #2236 (@kidonng)
+- Fish history is mapped to YAML. See #2237 (@kidonng)
 
 ## Themes
 
 ## `bat` as a library
 
 - Make `bat::PrettyPrinter::syntaxes()` iterate over new `bat::Syntax` struct instead of `&syntect::parsing::SyntaxReference`. See #2222 (@Enselic)
+- Clear highlights after printing, see #1919 and #1920 (@rhysd)
 
 
 # v0.21.0

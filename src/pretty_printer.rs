@@ -263,8 +263,8 @@ impl<'a> PrettyPrinter<'a> {
     /// If you want to call 'print' multiple times, you have to call the appropriate
     /// input_* methods again.
     pub fn print(&mut self) -> Result<bool> {
-        self.config.highlighted_lines =
-            HighlightedLineRanges(LineRanges::from(self.highlighted_lines.clone()));
+        let highlight_lines = std::mem::take(&mut self.highlighted_lines);
+        self.config.highlighted_lines = HighlightedLineRanges(LineRanges::from(highlight_lines));
         self.config.term_width = self
             .term_width
             .unwrap_or_else(|| Term::stdout().size().1 as usize);

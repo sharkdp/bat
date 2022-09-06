@@ -66,6 +66,9 @@ impl<'a> SyntaxMapping<'a> {
         mapping
             .insert("*.pac", MappingTarget::MapTo("JavaScript (Babel)"))
             .unwrap();
+        mapping
+            .insert("fish_history", MappingTarget::MapTo("YAML"))
+            .unwrap();
 
         // See #2151, https://nmap.org/book/nse-language.html
         mapping
