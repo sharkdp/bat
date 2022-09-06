@@ -805,6 +805,7 @@ fn bom_stripped_when_no_color_and_not_loop_through() {
         .arg("--color=never")
         .arg("--decorations=always")
         .arg("--style=numbers,grid,header")
+        .arg("--terminal-width=80")
         .arg("test_BOM.txt")
         .assert()
         .success()
