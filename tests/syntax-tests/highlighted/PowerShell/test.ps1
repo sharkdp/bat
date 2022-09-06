@@ -1,4 +1,4 @@
-[38;2;248;248;242m﻿[0m[38;2;117;113;94m#[0m[38;2;117;113;94m PowerShell script for testing syntax highlighting[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m PowerShell script for testing syntax highlighting[0m
 
 [3;38;2;102;217;239mfunction[0m[38;2;248;248;242m [0m[38;2;166;226;46mGet-FutureTime[0m[38;2;248;248;242m [0m[38;2;248;248;242m{[0m
 [38;2;248;248;242m    [0m[38;2;249;38;114mparam[0m[38;2;248;248;242m [0m[38;2;248;248;242m([0m

@@ -758,14 +758,66 @@ fn config_read_arguments_from_file() {
 
 #[test]
 fn utf16() {
-    // The output will be converted to UTF-8 with a leading UTF-8 BOM
+    // The output will be converted to UTF-8 with the leading UTF-16
+    // BOM removed. This behavior is wanted in interactive mode as
+    // some terminals seem to display the BOM character as a space,
+    // and it also breaks syntax highlighting.
     bat()
         .arg("--plain")
         .arg("--decorations=always")
         .arg("test_UTF-16LE.txt")
         .assert()
         .success()
-        .stdout(std::str::from_utf8(b"\xEF\xBB\xBFhello world\n").unwrap());
+        .stdout("hello world\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_not_stripped_in_loop_through_mode() {
+    bat()
+        .arg("--plain")
+        .arg("--decorations=never")
+        .arg("--color=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout("\u{feff}hello world\n");
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_colored_output() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match("\u{1b}\\[38;5;[0-9]{3}mhello world\u{1b}\\[0m\n").unwrap(),
+        );
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/1922
+#[test]
+fn bom_stripped_when_no_color_and_not_loop_through() {
+    bat()
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers,grid,header")
+        .arg("--terminal-width=80")
+        .arg("test_BOM.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+─────┬──────────────────────────────────────────────────────────────────────────
+     │ File: test_BOM.txt
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ hello world
+─────┴──────────────────────────────────────────────────────────────────────────
+",
+        );
 }
 
 #[test]
