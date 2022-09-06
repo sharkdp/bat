@@ -1,4 +1,4 @@
-# unreleased
+# v0.22.0
 
 ## Features
 
@@ -27,8 +27,6 @@
 - Minor update to `LiveScript`, see #2291
 - Associate `.mts` and `.cts` files with the `TypeScript` syntax. See #2236 (@kidonng)
 - Fish history is mapped to YAML. See #2237 (@kidonng)
-
-## Themes
 
 ## `bat` as a library
 
