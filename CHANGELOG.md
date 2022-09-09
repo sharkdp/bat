@@ -4,6 +4,8 @@
 
 ## Bugfixes
 
+- Bring back pre-processing of ANSI escape characters to so that some common `bat` use cases starts working again. See #2308 (@Enselic)
+
 ## Other
 
 ## Syntaxes
