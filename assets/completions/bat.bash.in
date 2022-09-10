@@ -10,6 +10,27 @@ __bat_init_completion()
 	_get_comp_words_by_ref "$@" cur prev words cword
 }
 
+__bat_escape_completions()
+{
+	# Do not escape if completing a quoted value.
+	[[ $cur == [\"\']* ]] && return 0
+	# printf -v to an array index is available in bash >= 4.1.
+	# Use it if available, as -o filenames is semantically incorrect if
+	# we are not actually completing filenames, and it has side effects
+	# (e.g. adds trailing slash to candidates matching present dirs).
+	if ((
+		BASH_VERSINFO[0] > 4 || \
+		BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] > 0
+	)); then
+		local i
+		for i in ${!COMPREPLY[*]}; do
+			printf -v "COMPREPLY[i]" %q "${COMPREPLY[i]}"
+		done
+	else
+		compopt -o filenames
+	fi
+}
+
 _bat() {
 	local cur prev words cword split=false
 	if declare -F _init_completion >/dev/null 2>&1; then
@@ -45,7 +66,7 @@ _bat() {
 				printf "%s\n" "$lang"
 			done
 		)" -- "$cur"))
-		compopt -o filenames  # for escaping
+                __bat_escape_completions
 		return 0
 		;;
 	-H | --highlight-line | \
@@ -92,7 +113,7 @@ _bat() {
 	--theme)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
-		compopt -o filenames  # for escaping
+                __bat_escape_completions
 		return 0
 		;;
 	--style)
