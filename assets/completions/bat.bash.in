@@ -53,9 +53,11 @@ _bat() {
 	--tabs | \
 	--terminal-width | \
 	-m | --map-syntax | \
+	--ignored-suffix | \
 	--style | \
 	--line-range | \
 	--diagnostic | \
+	--acknowledgements | \
 	-h | --help | \
 	-V | --version | \
 	--cache-dir | \
@@ -116,6 +118,7 @@ _bat() {
 			--paging
 			--pager
 			--map-syntax
+			--ignored-suffix
 			--theme
 			--list-themes
 			--style
@@ -123,6 +126,7 @@ _bat() {
 			--list-languages
 			--unbuffered
 			--diagnostic
+			--acknowledgements
 			--help
 			--version
 			--cache-dir
