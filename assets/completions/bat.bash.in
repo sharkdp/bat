@@ -27,7 +27,12 @@ _bat() {
 			;;
 		esac
 		COMPREPLY=($(compgen -W "
-			--build --clear --source --target --blank --help
+			--build
+			--clear
+			--source
+			--target
+			--blank
+			--help
 		" -- "$cur"))
 		return 0
 	fi
@@ -43,10 +48,20 @@ _bat() {
 		compopt -o filenames  # for escaping
 		return 0
 		;;
-	-H | --highlight-line | --diff-context | --tabs | --terminal-width | \
-	-m | --map-syntax | --style | --line-range | -h | --help | -V | \
-	--version | --diagnostic | --config-file | --config-dir | \
-	--cache-dir | --generate-config-file)
+	-H | --highlight-line | \
+	--diff-context | \
+	--tabs | \
+	--terminal-width | \
+	-m | --map-syntax | \
+	--style | \
+	--line-range | \
+	--diagnostic | \
+	-h | --help | \
+	-V | --version | \
+	--cache-dir | \
+	--config-dir | \
+	--config-file | \
+	--generate-config-file)
 		# argument required but no completion available, or option
 		# causes an exit
 		return 0
@@ -83,13 +98,36 @@ _bat() {
 
 	if [[ $cur == -* ]]; then
 		COMPREPLY=($(compgen -W "
-			--show-all --plain --language --highlight-line
-			--file-name --diff --diff-context --tabs --wrap
-			--terminal-width --number --color --italic-text
-			--decorations --paging --pager --map-syntax --theme
-			--list-themes --style --line-range --list-languages
-			--help --version --force-colorization --unbuffered
-			--diagnostic --config-file --config-dir --cache-dir
+			--show-all
+			--plain
+			--language
+			--highlight-line
+			--file-name
+			--diff
+			--diff-context
+			--tabs
+			--wrap
+			--terminal-width
+			--number
+			--color
+			--italic-text
+			--decorations
+			--force-colorization
+			--paging
+			--pager
+			--map-syntax
+			--theme
+			--list-themes
+			--style
+			--line-range
+			--list-languages
+			--unbuffered
+			--diagnostic
+			--help
+			--version
+			--cache-dir
+			--config-dir
+			--config-file
 			--generate-config-file
 		" -- "$cur"))
 		return 0
