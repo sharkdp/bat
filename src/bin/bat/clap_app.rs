@@ -202,6 +202,13 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                            control the output width."),
         )
         .arg(
+            Arg::new("chop-long-lines")
+                .long("chop-long-lines")
+                .short('S')
+                .takes_value(false)
+                .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
+        )
+        .arg(
             Arg::new("terminal-width")
                 .long("terminal-width")
                 .takes_value(true)
