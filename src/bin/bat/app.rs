@@ -174,8 +174,7 @@ impl App {
                         }
                         _ => unreachable!("other values for --wrap are not allowed"),
                     }
-                }
-                else {
+                } else {
                     WrappingMode::NoWrapping(true)
                 }
             } else {
