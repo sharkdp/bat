@@ -124,6 +124,7 @@ _bat() {
 	$split && return 0
 
 	if [[ $cur == -* ]]; then
+		# --unbuffered excluded intentionally (no-op)
 		COMPREPLY=($(compgen -W "
 			--show-all
 			--plain
@@ -149,7 +150,6 @@ _bat() {
 			--style
 			--line-range
 			--list-languages
-			--unbuffered
 			--diagnostic
 			--acknowledgements
 			--help
