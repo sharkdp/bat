@@ -54,7 +54,6 @@ _bat() {
 	--terminal-width | \
 	-m | --map-syntax | \
 	--ignored-suffix | \
-	--style | \
 	--list-themes | \
 	--line-range | \
 	-L | --list-languages | \
@@ -96,6 +95,30 @@ _bat() {
 		compopt -o filenames  # for escaping
 		return 0
 		;;
+	--style)
+		# shellcheck disable=SC2034
+		local -a styles=(
+			default
+			full
+			auto
+			plain
+			changes
+			header
+			header-filename
+			header-filesize
+			grid
+			rule
+			numbers
+			snip
+		)
+                # shellcheck disable=SC2016
+		if declare -F _comp_delimited >/dev/null 2>&1; then
+			# bash-completion > 2.11
+			_comp_delimited , -W '"${styles[@]}"'
+		else
+			COMPREPLY=($(compgen -W '${styles[@]}' -- "$cur"))
+		fi
+		return 0
 	esac
 
 	$split && return 0
