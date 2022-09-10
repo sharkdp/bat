@@ -55,7 +55,9 @@ _bat() {
 	-m | --map-syntax | \
 	--ignored-suffix | \
 	--style | \
+	--list-themes | \
 	--line-range | \
+	-L | --list-languages | \
 	--diagnostic | \
 	--acknowledgements | \
 	-h | --help | \
