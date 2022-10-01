@@ -221,7 +221,9 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            visible_lines: match self.matches.contains_id("diff") && self.matches.get_flag("diff") {
+            visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
+                && self.matches.get_flag("diff")
+            {
                 #[cfg(feature = "git")]
                 true => VisibleLines::DiffContext(
                     self.matches

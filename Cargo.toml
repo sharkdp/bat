@@ -77,10 +77,9 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "3.2.20"
+version = "4.0.2"
 optional = true
-default-features = false
-features = ["std", "suggestions", "color", "wrap_help", "cargo"]
+features = ["wrap_help", "cargo"]
 
 [dev-dependencies]
 assert_cmd = "2.0.4"
@@ -92,8 +91,10 @@ tempfile = "3.3.0"
 [target.'cfg(unix)'.dev-dependencies]
 nix = { version = "0.24.2", default-features = false, features = ["term"] }
 
-[build-dependencies]
-clap = { version = "3.2.20", optional = true }
+[build-dependencies.clap]
+version = "4.0.2"
+optional = true
+features = ["wrap_help", "cargo"]
 
 [profile.release]
 lto = true
