@@ -186,7 +186,7 @@ man 2 select
 ###  On Ubuntu (`apt` を使用)
 *... や他のDebianベースのLinuxディストリビューション*
 
-Ubuntu Eoan 19.10 または Debian 不安定版 sid 以降の [the Ubuntu `bat` package](https://packages.ubuntu.com/eoan/bat) または [the Debian `bat` package](https://packages.debian.org/sid/bat) からインストールできます:
+[20.04 ("Focal") 以降の Ubuntu](https://packages.ubuntu.com/search?keywords=bat&exact=1) または [2021 年 8 月以降の Debian (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat) では `bat` パッケージが利用できます。
 
 ```bash
 apt install bat
