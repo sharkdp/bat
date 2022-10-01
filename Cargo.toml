@@ -44,7 +44,7 @@ atty = { version = "0.2.14", optional = true }
 ansi_term = "^0.12.1"
 ansi_colours = "^1.1"
 bincode = "1.0"
-console = "0.15.1"
+console = "0.15.2"
 flate2 = "1.0"
 once_cell = "1.13"
 thiserror = "1.0"
