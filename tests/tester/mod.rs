@@ -94,7 +94,7 @@ fn create_sample_directory() -> Result<TempDir, git2::Error> {
         &[],
     );
     let mut opts = CheckoutBuilder::new();
-    repo.checkout_head(Some(opts.force()))?;
+    repo.checkout_head(Some(opts.force()));
 
     fs::copy("tests/snapshots/sample.modified.rs", &sample_path).expect("successful copy");
 
