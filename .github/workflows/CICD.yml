@@ -24,14 +24,14 @@ jobs:
         default: true
         profile: minimal
         components: rustfmt
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - run: cargo fmt -- --check
 
   license_checks:
     name: License checks
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: true # we especially want to perform license checks on submodules
     - run: tests/scripts/license-checks.sh
@@ -43,7 +43,7 @@ jobs:
       MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
       uses: actions-rs/toolchain@v1
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Git checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Git checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Prepare environment variables
       run: |
         echo "BAT_SYSTEM_CONFIG_PREFIX=$GITHUB_WORKSPACE/tests/examples/system_config" >> $GITHUB_ENV
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Git checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
@@ -186,7 +186,7 @@ jobs:
           - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, use-cross: true }
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install prerequisites
       shell: bash
