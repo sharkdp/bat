@@ -77,12 +77,12 @@ themes (`bat cache --clear`).
 
 The following files have been manually modified after converting from a `.tmLanguage` file:
 
-* `Apache.sublime_syntax`=> removed `.conf` and `.CONF` file types.
+* `Apache.sublime_syntax`=> removed `conf` and `CONF` file types.
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
-* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers
+* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers.
 * `Org mode.sublime-syntax` => removed `task` file type.
+* `Robot.sublime_syntax` => changed name to "Robot Framework", added `.resource` extension.
 * `SML.sublime_syntax` => removed `ml` file type.
-* `Robot.sublime_syntax` => changed name to "Robot Framework", added `.resource` extension
 
 ### Non-submodule additions
 
