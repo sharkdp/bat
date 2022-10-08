@@ -367,7 +367,7 @@ Existing packages may be available, but are not officially supported and may con
 
 ### On macOS (or Linux) via Homebrew
 
-You can install `bat` with [Homebrew on MacOS](https://formulae.brew.sh/formula/bat) or [Homebrew on Linux](https://formulae.brew.sh/formula-linux/bat):
+You can install `bat` with [Homebrew](https://formulae.brew.sh/formula/bat):
 
 ```bash
 brew install bat
