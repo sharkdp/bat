@@ -53,9 +53,9 @@ first.
 You are **strongly encouraged** to add regression tests. Regression tests are great,
 not least because they:
 
-* Ensure that your contribution will never completely stop working.
+* ensure that your contribution will never completely stop working.
 
-* Makes code reviews easier, because it becomes very clear what the code is
+* makes code reviews easier, because it becomes very clear what the code is
   supposed to do.
 
 For functional changes, you most likely want to add a test to
