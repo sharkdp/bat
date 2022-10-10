@@ -1442,6 +1442,26 @@ fn ansi_highlight_underline() {
         .stderr("");
 }
 
+// Ensure that ANSI passthrough is emitted properly for both wrapping and non-wrapping printer.
+// See https://github.com/sharkdp/bat/issues/2307 for what common use case this test tests.
+#[test]
+fn ansi_passthrough_emit() {
+    for wrapping in &["never", "character"] {
+        bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=80")
+            .arg(format!("--wrap={}", wrapping))
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor\nColor \x1B[m\nPlain\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor\n\x1B[33mColor \x1B[m\nPlain\n")
+            .stderr("");
+    }
+}
+
 #[test]
 fn ignored_suffix_arg() {
     bat()

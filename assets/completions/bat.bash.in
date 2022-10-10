@@ -10,6 +10,27 @@ __bat_init_completion()
 	_get_comp_words_by_ref "$@" cur prev words cword
 }
 
+__bat_escape_completions()
+{
+	# Do not escape if completing a quoted value.
+	[[ $cur == [\"\']* ]] && return 0
+	# printf -v to an array index is available in bash >= 4.1.
+	# Use it if available, as -o filenames is semantically incorrect if
+	# we are not actually completing filenames, and it has side effects
+	# (e.g. adds trailing slash to candidates matching present dirs).
+	if ((
+		BASH_VERSINFO[0] > 4 || \
+		BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] > 0
+	)); then
+		local i
+		for i in ${!COMPREPLY[*]}; do
+			printf -v "COMPREPLY[i]" %q "${COMPREPLY[i]}"
+		done
+	else
+		compopt -o filenames
+	fi
+}
+
 _bat() {
 	local cur prev words cword split=false
 	if declare -F _init_completion >/dev/null 2>&1; then
@@ -27,7 +48,12 @@ _bat() {
 			;;
 		esac
 		COMPREPLY=($(compgen -W "
-			--build --clear --source --target --blank --help
+			--build
+			--clear
+			--source
+			--target
+			--blank
+			--help
 		" -- "$cur"))
 		return 0
 	fi
@@ -40,13 +66,26 @@ _bat() {
 				printf "%s\n" "$lang"
 			done
 		)" -- "$cur"))
-		compopt -o filenames  # for escaping
+                __bat_escape_completions
 		return 0
 		;;
-	-H | --highlight-line | --diff-context | --tabs | --terminal-width | \
-	-m | --map-syntax | --style | --line-range | -h | --help | -V | \
-	--version | --diagnostic | --config-file | --config-dir | \
-	--cache-dir | --generate-config-file)
+	-H | --highlight-line | \
+	--diff-context | \
+	--tabs | \
+	--terminal-width | \
+	-m | --map-syntax | \
+	--ignored-suffix | \
+	--list-themes | \
+	--line-range | \
+	-L | --list-languages | \
+	--diagnostic | \
+	--acknowledgements | \
+	-h | --help | \
+	-V | --version | \
+	--cache-dir | \
+	--config-dir | \
+	--config-file | \
+	--generate-config-file)
 		# argument required but no completion available, or option
 		# causes an exit
 		return 0
@@ -74,22 +113,71 @@ _bat() {
 	--theme)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
-		compopt -o filenames  # for escaping
+                __bat_escape_completions
 		return 0
 		;;
+	--style)
+		# shellcheck disable=SC2034
+		local -a styles=(
+			default
+			full
+			auto
+			plain
+			changes
+			header
+			header-filename
+			header-filesize
+			grid
+			rule
+			numbers
+			snip
+		)
+                # shellcheck disable=SC2016
+		if declare -F _comp_delimited >/dev/null 2>&1; then
+			# bash-completion > 2.11
+			_comp_delimited , -W '"${styles[@]}"'
+		else
+			COMPREPLY=($(compgen -W '${styles[@]}' -- "$cur"))
+		fi
+		return 0
 	esac
 
 	$split && return 0
 
 	if [[ $cur == -* ]]; then
+		# --unbuffered excluded intentionally (no-op)
 		COMPREPLY=($(compgen -W "
-			--show-all --plain --language --highlight-line
-			--file-name --diff --diff-context --tabs --wrap
-			--terminal-width --number --color --italic-text
-			--decorations --paging --pager --map-syntax --theme
-			--list-themes --style --line-range --list-languages
-			--help --version --force-colorization --unbuffered
-			--diagnostic --config-file --config-dir --cache-dir
+			--show-all
+			--plain
+			--language
+			--highlight-line
+			--file-name
+			--diff
+			--diff-context
+			--tabs
+			--wrap
+			--terminal-width
+			--number
+			--color
+			--italic-text
+			--decorations
+			--force-colorization
+			--paging
+			--pager
+			--map-syntax
+			--ignored-suffix
+			--theme
+			--list-themes
+			--style
+			--line-range
+			--list-languages
+			--diagnostic
+			--acknowledgements
+			--help
+			--version
+			--cache-dir
+			--config-dir
+			--config-file
 			--generate-config-file
 		" -- "$cur"))
 		return 0
