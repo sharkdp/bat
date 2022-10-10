@@ -1480,6 +1480,101 @@ fn ignored_suffix_arg() {
 }
 
 #[test]
+fn no_line_wrapping_when_set_to_never() {
+    let expected =
+"───────┬────────────────────────────────────────────────────────────────────────
+       │ File: 80-columns.txt
+       │ Size: 101 B
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz
+───────┴────────────────────────────────────────────────────────────────────────
+";
+
+    bat()
+        .arg("--style=full")
+        .arg("--decorations=always")
+        .arg("--wrap=never")
+        .arg("--terminal-width=80")
+        .arg("80-columns.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn line_wrapping_when_auto() {
+    let expected =
+        "───────┬────────────────────────────────────────────────────────────────────────
+       │ File: 80-columns.txt
+       │ Size: 101 B
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
+       │ vxyzabcdefghigklmnopqrstuvxyz
+───────┴────────────────────────────────────────────────────────────────────────
+";
+
+    bat()
+        .arg("--style=full")
+        .arg("--decorations=always")
+        .arg("--wrap=auto")
+        .arg("--terminal-width=80")
+        .arg("80-columns.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn line_wrapping_with_s_flag() {
+    let expected =
+        "───────┬────────────────────────────────────────────────────────────────────────
+       │ File: 80-columns.txt
+       │ Size: 101 B
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
+       │ vxyzabcdefghigklmnopqrstuvxyz
+───────┴────────────────────────────────────────────────────────────────────────
+";
+
+    bat()
+        .arg("--style=full")
+        .arg("--decorations=always")
+        .arg("-S")
+        .arg("--terminal-width=80")
+        .arg("80-columns.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn chop_long_lines_when_specified() {
+    let expected =
+        "───────┬────────────────────────────────────────────────────────────────────────
+       │ File: 80-columns.txt
+       │ Size: 101 B
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
+       │ vxyzabcdefghigklmnopqrstuvxyz
+───────┴────────────────────────────────────────────────────────────────────────
+";
+
+    bat()
+        .arg("--style=full")
+        .arg("--decorations=always")
+        .arg("--chop-long-lines")
+        .arg("--terminal-width=80")
+        .arg("80-columns.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
 fn highlighting_is_skipped_on_long_lines() {
     let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
         "\u{1b}" +
