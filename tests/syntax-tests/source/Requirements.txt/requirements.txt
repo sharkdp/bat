@@ -1,0 +1,40 @@
+# Options
+--allow-external
+--allow-unverified
+
+# Freeze packages
+alabaster==0.7.6
+Babel>=2.9.1
+docutils==0.12
+gevent_subprocess==0.1.2
+gitpython==3.0.7
+hg-diff==1.2.4
+Jinja2>=2.8.1
+MarkupSafe==0.23
+Pygments==2.7.4
+pytz==2015.7
+six==1.10.0
+snowballstemmer==1.2.0
+Sphinx==1.3.3
+sphinx-rtd-theme==0.1.9
+svn==1.0.1
+zope.interface==4.2.0
+
+# Examples from PEP508
+# c.f. https://www.python.org/dev/peps/pep-0508/
+requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7" # Comment
+pip @ https://github.com/pypa/pip/archive/1.3.1.zip#sha1=da9234ee9982d4bbb3c72346a6de940a148ea686
+name @ gopher:/foo/com"
+foobar[quux]<2,>=3; os_name=='a'
+
+# VCS repositories
+-e git+git://git.myproject.org/MyProject#egg=MyProject # Git
+-e git://git.myproject.org/MyProject.git@v1.0#egg=MyProject
+-e hg+https://hg.myproject.org/MyProject#egg=MyProject # Mercurial
+-e hg+http://hg.myproject.org/MyProject@da39a3ee5e6b#egg=MyProject
+-e svn+http://svn.myproject.org/svn/MyProject/trunk@2019#egg=MyProject # Subversion
+-e bzr+ssh://user@myproject.org/MyProject/trunk#egg=MyProject # Bazaar
+-e bzr+https://bzr.myproject.org/MyProject/trunk@2019#egg=MyProject
+
+# Project or archive URL
+https://github.com/pallets/click/archive/7.0.zip#egg=click

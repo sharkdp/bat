@@ -1,0 +1,82 @@
+# SYNTAX TEST "Requirementstxt.sublime-syntax"
+# Options
+# <- punctuation.definition.comment
+# ^^^^^^^ comment.line
+--allow-external
+#^^^^^^^^^^^^^^^ entity.name.function.option
+--allow-unverified
+
+# Freeze packages
+alabaster==0.7.6
+Babel>=2.9.1
+docutils==0.12
+gevent_subprocess==0.1.2
+gitpython==3.0.7
+hg-diff==1.2.4
+#^^^^^^ variable.parameter.package-name
+#      ^^ keyword.operator.logical
+#        ^^^^^ constant.other
+Jinja2>=2.8.1
+MarkupSafe==0.23
+Pygments==2.7.4
+pytz==2015.7
+six==1.10.0
+snowballstemmer==1.2.0
+Sphinx==1.3.3
+sphinx-rtd-theme==0.1.9
+svn==1.0.1
+zope.interface==4.2.0
+
+# Examples from PEP508
+# c.f. https://www.python.org/dev/peps/pep-0508/
+requests [security,tests] >= 2.8.1, == 2.8.* ; python_version < "2.7" # Comment
+#^^^^^^^ variable.parameter.package-name
+#        ^^^^^^^^^^^^^^^^ variable.function.extra
+#        ^ punctuation.section.braces.begin
+#                 ^ punctuation.separator
+#                       ^ punctuation.section.braces.end
+#                         ^^ keyword.operator.logical
+#                            ^^^^^ constant.other
+#                                   ^^ keyword.operator.logical
+#                                      ^^^^^ constant.other
+#                                            ^ punctuation.definition.annotation
+#                                            ^^^^^^^^^^^^^^^^^^^^^^^^ meta.annotation
+#                                              ^^^^^^^^^^^^^^ variable.language
+#                                                             ^ keyword.operator.logical
+#                                                               ^ punctuation.definition.string.begin.double
+#                                                               ^^^^^ string.quoted.double.requirements-txt
+#                                                                   ^ punctuation.definition.string.end.double
+#                                                                     ^^^^^^^^^ comment.line
+pip @ https://github.com/pypa/pip/archive/1.3.1.zip#sha1=da9234ee9982d4bbb3c72346a6de940a148ea686
+#   ^ punctuation.definition.keyword
+#   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.url
+name @ gopher:/foo/com"
+foobar[quux]<2,>=3; os_name=='a'
+
+# VCS repositories
+-e git+git://git.myproject.org/MyProject#egg=MyProject # Git
+# <- entity.name.function.option
+#^ entity.name.function.option
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+#                                       ^^^^^^^^^^^^^^^ - comment.line
+#                                                      ^^^^^ comment.line
+-e git://git.myproject.org/MyProject.git@v1.0#egg=MyProject
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+-e hg+https://hg.myproject.org/MyProject#egg=MyProject # Mercurial
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+#                                                      ^^^^^^^^^^^ comment.line
+-e hg+http://hg.myproject.org/MyProject@da39a3ee5e6b#egg=MyProject
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+-e svn+http://svn.myproject.org/svn/MyProject/trunk@2019#egg=MyProject # Subversion
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+#                                                                      ^^^^^^^^^^^^ comment.line
+-e bzr+ssh://user@myproject.org/MyProject/trunk#egg=MyProject # Bazaar
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+#                                                             ^^^^^^^^ comment.line
+-e bzr+https://bzr.myproject.org/MyProject/trunk@2019#egg=MyProject
+#  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.versioncontrols
+
+# Project or archive URL
+https://github.com/pallets/click/archive/7.0.zip#egg=click
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ markup.underline.link.url
+#                                               ^^^^^^^^^^ - comment.line
