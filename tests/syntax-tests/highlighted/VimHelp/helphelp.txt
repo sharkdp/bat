@@ -1,0 +1,392 @@
+[38;2;248;248;242m*helphelp.txt*	Nvim[0m
+
+
+[38;2;248;248;242m		  VIM REFERENCE MANUAL    by Bram Moolenaar[0m
+
+
+[38;2;248;248;242mHelp on help files					*helphelp*[0m
+
+[38;2;248;248;242m                                      Type |gO| to see the table of contents.[0m
+
+[38;2;248;248;242m==============================================================================[0m
+[38;2;248;248;242m1. Help commands					*online-help*[0m
+
+[38;2;248;248;242m			*help* *<Help>* *:h* *:help* *<F1>* *i_<F1>* *i_<Help>*[0m
+[38;2;248;248;242m<Help>		or[0m
+[38;2;248;248;242m:h[elp]			Open a window and display the help file in read-only[0m
+[38;2;248;248;242m			mode.  If there is a help window open already, use[0m
+[38;2;248;248;242m			that one.  Otherwise, if the current window uses the[0m
+[38;2;248;248;242m			full width of the screen or is at least 80 characters[0m
+[38;2;248;248;242m			wide, the help window will appear just above the[0m
+[38;2;248;248;242m			current window.  Otherwise the new window is put at[0m
+[38;2;248;248;242m			the very top.[0m
+[38;2;248;248;242m			The 'helplang' option is used to select a language, if[0m
+[38;2;248;248;242m			the main help file is available in several languages.[0m
+
+[38;2;248;248;242m			Type |gO| to see the table of contents.[0m
+
+[38;2;248;248;242m						*{subject}* *E149* *E661*[0m
+[38;2;248;248;242m:h[elp] {subject}	Like ":help", additionally jump to the tag {subject}.[0m
+[38;2;248;248;242m			For example:  >[0m
+[38;2;248;248;242m				:help options[0m
+
+[38;2;248;248;242m<			{subject} can include wildcards such as "*", "?" and[0m
+[38;2;248;248;242m			"[a-z]":[0m
+[38;2;248;248;242m			   :help z?	jump to help for any "z" command[0m
+[38;2;248;248;242m			   :help z.	jump to the help for "z."[0m
+[38;2;248;248;242m			But when a tag exists it is taken literally:[0m
+[38;2;248;248;242m			   :help :?	jump to help for ":?"[0m
+
+[38;2;248;248;242m			If there is no full match for the pattern, or there[0m
+[38;2;248;248;242m			are several matches, the "best" match will be used.[0m
+[38;2;248;248;242m			A sophisticated algorithm is used to decide which[0m
+[38;2;248;248;242m			match is better than another one.  These items are[0m
+[38;2;248;248;242m			considered in the computation:[0m
+[38;2;248;248;242m			- A match with same case is much better than a match[0m
+[38;2;248;248;242m			  with different case.[0m
+[38;2;248;248;242m			- A match that starts after a non-alphanumeric[0m
+[38;2;248;248;242m			  character is better than a match in the middle of a[0m
+[38;2;248;248;242m			  word.[0m
+[38;2;248;248;242m			- A match at or near the beginning of the tag is[0m
+[38;2;248;248;242m			  better than a match further on.[0m
+[38;2;248;248;242m			- The more alphanumeric characters match, the better.[0m
+[38;2;248;248;242m			- The shorter the length of the match, the better.[0m
+
+[38;2;248;248;242m			The 'helplang' option is used to select a language, if[0m
+[38;2;248;248;242m			the {subject} is available in several languages.[0m
+[38;2;248;248;242m			To find a tag in a specific language, append "@ab",[0m
+[38;2;248;248;242m			where "ab" is the two-letter language code.  See[0m
+[38;2;248;248;242m			|help-translated|.[0m
+
+[38;2;248;248;242m			Note that the longer the {subject} you give, the less[0m
+[38;2;248;248;242m			matches will be found.  You can get an idea how this[0m
+[38;2;248;248;242m			all works by using commandline completion (type CTRL-D[0m
+[38;2;248;248;242m			after ":help subject" |c_CTRL-D|).[0m
+[38;2;248;248;242m			If there are several matches, you can have them listed[0m
+[38;2;248;248;242m			by hitting CTRL-D.  Example: >[0m
+[38;2;248;248;242m				:help cont<Ctrl-D>[0m
+
+[38;2;248;248;242m<			Instead of typing ":help CTRL-V" to search for help[0m
+[38;2;248;248;242m			for CTRL-V you can type: >[0m
+[38;2;248;248;242m				:help ^V[0m
+[38;2;248;248;242m<			This also works together with other characters, for[0m
+[38;2;248;248;242m			example to find help for CTRL-V in Insert mode: >[0m
+[38;2;248;248;242m				:help i^V[0m
+[38;2;248;248;242m<[0m
+[38;2;248;248;242m			It is also possible to first do ":help" and then[0m
+[38;2;248;248;242m			use ":tag {pattern}" in the help window.  The[0m
+[38;2;248;248;242m			":tnext" command can then be used to jump to other[0m
+[38;2;248;248;242m			matches, "tselect" to list matches and choose one. >[0m
+[38;2;248;248;242m				:help index[0m
+[38;2;248;248;242m				:tselect /.*mode[0m
+
+[38;2;248;248;242m<			When there is no argument you will see matches for[0m
+[38;2;248;248;242m			"help", to avoid listing all possible matches (that[0m
+[38;2;248;248;242m			would be very slow).[0m
+[38;2;248;248;242m			The number of matches displayed is limited to 300.[0m
+
+[38;2;248;248;242m			The `:help` command can be followed by '|' and another[0m
+[38;2;248;248;242m			command, but you don't need to escape the '|' inside a[0m
+[38;2;248;248;242m			help command.  So these both work: >[0m
+[38;2;248;248;242m				:help |[0m
+[38;2;248;248;242m				:help k| only[0m
+[38;2;248;248;242m<			Note that a space before the '|' is seen as part of[0m
+[38;2;248;248;242m			the ":help" argument.[0m
+[38;2;248;248;242m			You can also use <NL> or <CR> to separate the help[0m
+[38;2;248;248;242m			command from a following command.  You need to type[0m
+[38;2;248;248;242m			CTRL-V first to insert the <NL> or <CR>.  Example: >[0m
+[38;2;248;248;242m				:help so<C-V><CR>only[0m
+[38;2;248;248;242m<[0m
+
+[38;2;248;248;242m:h[elp]! [subject]	Like ":help", but in non-English help files prefer to[0m
+[38;2;248;248;242m			find a tag in a file with the same language as the[0m
+[38;2;248;248;242m			current file.  See |help-translated|.[0m
+
+[38;2;248;248;242m							*:helpc* *:helpclose*[0m
+[38;2;248;248;242m:helpc[lose]		Close one help window, if there is one.[0m
+[38;2;248;248;242m			Vim will try to restore the window layout (including[0m
+[38;2;248;248;242m			cursor position) to the same layout it was before[0m
+[38;2;248;248;242m			opening the help window initially.  This might cause[0m
+[38;2;248;248;242m			triggering several autocommands.[0m
+
+[38;2;248;248;242m							*:helpg* *:helpgrep*[0m
+[38;2;248;248;242m:helpg[rep] {pattern}[@xx][0m
+[38;2;248;248;242m			Search all help text files and make a list of lines[0m
+[38;2;248;248;242m			in which {pattern} matches.  Jumps to the first match.[0m
+[38;2;248;248;242m			The optional [@xx] specifies that only matches in the[0m
+[38;2;248;248;242m			"xx" language are to be found.[0m
+[38;2;248;248;242m			You can navigate through the matches with the[0m
+[38;2;248;248;242m			|quickfix| commands, e.g., |:cnext| to jump to the[0m
+[38;2;248;248;242m			next one.  Or use |:cwindow| to get the list of[0m
+[38;2;248;248;242m			matches in the quickfix window.[0m
+[38;2;248;248;242m			{pattern} is used as a Vim regexp |pattern|.[0m
+[38;2;248;248;242m			'ignorecase' is not used, add "\c" to ignore case.[0m
+[38;2;248;248;242m			Example for case sensitive search: >[0m
+[38;2;248;248;242m				:helpgrep Uganda[0m
+[38;2;248;248;242m<			Example for case ignoring search: >[0m
+[38;2;248;248;242m				:helpgrep uganda\c[0m
+[38;2;248;248;242m<			Example for searching in French help: >[0m
+[38;2;248;248;242m				:helpgrep backspace@fr[0m
+[38;2;248;248;242m<			The pattern does not support line breaks, it must[0m
+[38;2;248;248;242m			match within one line.  You can use |:grep| instead,[0m
+[38;2;248;248;242m			but then you need to get the list of help files in a[0m
+[38;2;248;248;242m			complicated way.[0m
+[38;2;248;248;242m			Cannot be followed by another command, everything is[0m
+[38;2;248;248;242m			used as part of the pattern.  But you can use[0m
+[38;2;248;248;242m			|:execute| when needed.[0m
+[38;2;248;248;242m			Compressed help files will not be searched (Fedora[0m
+[38;2;248;248;242m			compresses the help files).[0m
+
+[38;2;248;248;242m							*:lh* *:lhelpgrep*[0m
+[38;2;248;248;242m:lh[elpgrep] {pattern}[@xx][0m
+[38;2;248;248;242m			Same as ":helpgrep", except the location list is used[0m
+[38;2;248;248;242m			instead of the quickfix list.  If the help window is[0m
+[38;2;248;248;242m			already opened, then the location list for that window[0m
+[38;2;248;248;242m			is used.  Otherwise, a new help window is opened and[0m
+[38;2;248;248;242m			the location list for that window is set.  The[0m
+[38;2;248;248;242m			location list for the current window is not changed[0m
+[38;2;248;248;242m			then.[0m
+
+[38;2;248;248;242m							*:exu* *:exusage*[0m
+[38;2;248;248;242m:exu[sage]		Show help on Ex commands.  Added to simulate the Nvi[0m
+[38;2;248;248;242m			command.[0m
+
+[38;2;248;248;242m							*:viu* *:viusage*[0m
+[38;2;248;248;242m:viu[sage]		Show help on Normal mode commands.  Added to simulate[0m
+[38;2;248;248;242m			the Nvi command.[0m
+
+[38;2;248;248;242mWhen no argument is given to |:help| the file given with the 'helpfile' option[0m
+[38;2;248;248;242mwill be opened.  Otherwise the specified tag is searched for in all "doc/tags"[0m
+[38;2;248;248;242mfiles in the directories specified in the 'runtimepath' option.[0m
+
+[38;2;248;248;242mIf you would like to open the help in the current window, see this tip:[0m
+[38;2;248;248;242m|help-curwin|.[0m
+
+[38;2;248;248;242mThe initial height of the help window can be set with the 'helpheight' option[0m
+[38;2;248;248;242m(default 20).[0m
+[38;2;248;248;242m						*help-buffer-options*[0m
+[38;2;248;248;242mWhen the help buffer is created, several local options are set to make sure[0m
+[38;2;248;248;242mthe help text is displayed as it was intended:[0m
+[38;2;248;248;242m    'iskeyword'		nearly all ASCII chars except ' ', '*', '"' and '|'[0m
+[38;2;248;248;242m    'foldmethod'	"manual"[0m
+[38;2;248;248;242m    'tabstop'		8[0m
+[38;2;248;248;242m    'arabic'		off[0m
+[38;2;248;248;242m    'binary'		off[0m
+[38;2;248;248;242m    'buflisted'		off[0m
+[38;2;248;248;242m    'cursorbind'	off[0m
+[38;2;248;248;242m    'diff'		off[0m
+[38;2;248;248;242m    'foldenable'	off[0m
+[38;2;248;248;242m    'list'		off[0m
+[38;2;248;248;242m    'modifiable'	off[0m
+[38;2;248;248;242m    'number'		off[0m
+[38;2;248;248;242m    'relativenumber'	off[0m
+[38;2;248;248;242m    'rightleft'		off[0m
+[38;2;248;248;242m    'scrollbind'	off[0m
+[38;2;248;248;242m    'spell'		off[0m
+
+[38;2;248;248;242mJump to specific subjects by using tags.  This can be done in two ways:[0m
+[38;2;248;248;242m- Use the "CTRL-]" command while standing on the name of a command or option.[0m
+[38;2;248;248;242m  This only works when the tag is a keyword.  "<C-Leftmouse>" and[0m
+[38;2;248;248;242m  "g<LeftMouse>" work just like "CTRL-]".[0m
+[38;2;248;248;242m- use the ":ta {subject}" command.  This also works with non-keyword[0m
+[38;2;248;248;242m  characters.[0m
+
+[38;2;248;248;242mUse CTRL-T or CTRL-O to jump back.[0m
+[38;2;248;248;242mUse ":q" to close the help window.[0m
+
+[38;2;248;248;242mIf there are several matches for an item you are looking for, this is how you[0m
+[38;2;248;248;242mcan jump to each one of them:[0m
+[38;2;248;248;242m1. Open a help window[0m
+[38;2;248;248;242m2. Use the ":tag" command with a slash prepended to the tag.  E.g.: >[0m
+[38;2;248;248;242m	:tag /min[0m
+[38;2;248;248;242m3. Use ":tnext" to jump to the next matching tag.[0m
+
+[38;2;248;248;242mIt is possible to add help files for plugins and other items.  You don't need[0m
+[38;2;248;248;242mto change the distributed help files for that.  See |add-local-help|.[0m
+
+[38;2;248;248;242mTo write a local help file, see |write-local-help|.[0m
+
+[38;2;248;248;242mNote that the title lines from the local help files are automagically added to[0m
+[38;2;248;248;242mthe "LOCAL ADDITIONS" section in the "help.txt" help file |local-additions|.[0m
+[38;2;248;248;242mThis is done when viewing the file in Vim, the file itself is not changed.  It[0m
+[38;2;248;248;242mis done by going through all help files and obtaining the first line of each[0m
+[38;2;248;248;242mfile.  The files in $VIMRUNTIME/doc are skipped.[0m
+
+[38;2;248;248;242m					*:helpt* *:helptags*[0m
+[38;2;248;248;242m			*E150* *E151* *E152* *E153* *E154* *E670* *E856*[0m
+[38;2;248;248;242m:helpt[ags] [++t] {dir}[0m
+[38;2;248;248;242m			Generate the help tags file(s) for directory {dir}.[0m
+[38;2;248;248;242m			When {dir} is ALL then all "doc" directories in[0m
+[38;2;248;248;242m			'runtimepath' will be used.[0m
+
+[38;2;248;248;242m			All "*.txt" and "*.??x" files in the directory and[0m
+[38;2;248;248;242m			sub-directories are scanned for a help tag definition[0m
+[38;2;248;248;242m			in between stars.  The "*.??x" files are for[0m
+[38;2;248;248;242m			translated docs, they generate the "tags-??" file, see[0m
+[38;2;248;248;242m			|help-translated|.  The generated tags files are[0m
+[38;2;248;248;242m			sorted.[0m
+[38;2;248;248;242m			When there are duplicates an error message is given.[0m
+[38;2;248;248;242m			An existing tags file is silently overwritten.[0m
+
+[38;2;248;248;242m			The optional "++t" argument forces adding the[0m
+[38;2;248;248;242m			"help-tags" tag.  This is also done when the {dir} is[0m
+[38;2;248;248;242m			equal to $VIMRUNTIME/doc.[0m
+
+[38;2;248;248;242m			To rebuild the help tags in the runtime directory[0m
+[38;2;248;248;242m			(requires write permission there): >[0m
+[38;2;248;248;242m				:helptags $VIMRUNTIME/doc[0m
+[38;2;248;248;242m<[0m
+
+
+[38;2;248;248;242m==============================================================================[0m
+[38;2;248;248;242m2. Translated help files				*help-translated*[0m
+
+[38;2;248;248;242mIt is possible to add translated help files, next to the original English help[0m
+[38;2;248;248;242mfiles.  Vim will search for all help in "doc" directories in 'runtimepath'.[0m
+
+[38;2;248;248;242mAt this moment translations are available for:[0m
+[38;2;248;248;242m	Chinese  - multiple authors[0m
+[38;2;248;248;242m	French   - translated by David Blanchet[0m
+[38;2;248;248;242m	Italian  - translated by Antonio Colombo[0m
+[38;2;248;248;242m	Japanese - multiple authors[0m
+[38;2;248;248;242m	Polish   - translated by Mikolaj Machowski[0m
+[38;2;248;248;242m	Russian  - translated by Vassily Ragosin[0m
+[38;2;248;248;242mSee the Vim website to find them: http://www.vim.org/translations.php[0m
+
+[38;2;248;248;242mA set of translated help files consists of these files:[0m
+
+[38;2;248;248;242m	help.abx[0m
+[38;2;248;248;242m	howto.abx[0m
+[38;2;248;248;242m	...[0m
+[38;2;248;248;242m	tags-ab[0m
+
+[38;2;248;248;242m"ab" is the two-letter language code.  Thus for Italian the names are:[0m
+
+[38;2;248;248;242m	help.itx[0m
+[38;2;248;248;242m	howto.itx[0m
+[38;2;248;248;242m	...[0m
+[38;2;248;248;242m	tags-it[0m
+
+[38;2;248;248;242mThe 'helplang' option can be set to the preferred language(s).  The default is[0m
+[38;2;248;248;242mset according to the environment.  Vim will first try to find a matching tag[0m
+[38;2;248;248;242min the preferred language(s).  English is used when it cannot be found.[0m
+
+[38;2;248;248;242mTo find a tag in a specific language, append "@ab" to a tag, where "ab" is the[0m
+[38;2;248;248;242mtwo-letter language code.  Example: >[0m
+[38;2;248;248;242m	:he user-manual@it[0m
+[38;2;248;248;242m	:he user-manual@en[0m
+[38;2;248;248;242mThe first one finds the Italian user manual, even when 'helplang' is empty.[0m
+[38;2;248;248;242mThe second one finds the English user manual, even when 'helplang' is set to[0m
+[38;2;248;248;242m"it".[0m
+
+[38;2;248;248;242mWhen using command-line completion for the ":help" command, the "@en"[0m
+[38;2;248;248;242mextension is only shown when a tag exists for multiple languages.  When the[0m
+[38;2;248;248;242mtag only exists for English "@en" is omitted.  When the first candidate has an[0m
+[38;2;248;248;242m"@ab" extension and it matches the first language in 'helplang' "@ab" is also[0m
+[38;2;248;248;242momitted.[0m
+
+[38;2;248;248;242mWhen using |CTRL-]| or ":help!" in a non-English help file Vim will try to[0m
+[38;2;248;248;242mfind the tag in the same language.  If not found then 'helplang' will be used[0m
+[38;2;248;248;242mto select a language.[0m
+
+[38;2;248;248;242mHelp files must use latin1 or utf-8 encoding.  Vim assumes the encoding is[0m
+[38;2;248;248;242mutf-8 when finding non-ASCII characters in the first line.  Thus you must[0m
+[38;2;248;248;242mtranslate the header with "For Vim version".[0m
+
+[38;2;248;248;242mThe same encoding must be used for the help files of one language in one[0m
+[38;2;248;248;242mdirectory.  You can use a different encoding for different languages and use[0m
+[38;2;248;248;242ma different encoding for help files of the same language but in a different[0m
+[38;2;248;248;242mdirectory.[0m
+
+[38;2;248;248;242mHints for translators:[0m
+[38;2;248;248;242m- Do not translate the tags.  This makes it possible to use 'helplang' to[0m
+[38;2;248;248;242m  specify the preferred language.  You may add new tags in your language.[0m
+[38;2;248;248;242m- When you do not translate a part of a file, add tags to the English version,[0m
+[38;2;248;248;242m  using the "tag@en" notation.[0m
+[38;2;248;248;242m- Make a package with all the files and the tags file available for download.[0m
+[38;2;248;248;242m  Users can drop it in one of the "doc" directories and start use it.[0m
+[38;2;248;248;242m  Report this to Bram, so that he can add a link on www.vim.org.[0m
+[38;2;248;248;242m- Use the |:helptags| command to generate the tags files.  It will find all[0m
+[38;2;248;248;242m  languages in the specified directory.[0m
+
+[38;2;248;248;242m==============================================================================[0m
+[38;2;248;248;242m3. Writing help files					*help-writing*[0m
+
+[38;2;248;248;242mFor ease of use, a Vim help file for a plugin should follow the format of the[0m
+[38;2;248;248;242mstandard Vim help files, except for the first line.  If you are writing a new[0m
+[38;2;248;248;242mhelp file it's best to copy one of the existing files and use it as a[0m
+[38;2;248;248;242mtemplate.[0m
+
+[38;2;248;248;242mThe first line in a help file should have the following format:[0m
+
+[38;2;248;248;242m*plugin_name.txt*	{short description of the plugin}[0m
+
+[38;2;248;248;242mThe first field is a help tag where ":help plugin_name" will jump to.  The[0m
+[38;2;248;248;242mremainder of the line, after a Tab, describes the plugin purpose in a short[0m
+[38;2;248;248;242mway.  This will show up in the "LOCAL ADDITIONS" section of the main help[0m
+[38;2;248;248;242mfile.  Check there that it shows up properly: |local-additions|.[0m
+
+[38;2;248;248;242mIf you want to add a version number or last modification date, put it in the[0m
+[38;2;248;248;242msecond line, right aligned.[0m
+
+[38;2;248;248;242mAt the bottom of the help file, place a Vim modeline to set the 'textwidth'[0m
+[38;2;248;248;242mand 'tabstop' options and the 'filetype' to "help".  Never set a global option[0m
+[38;2;248;248;242min such a modeline, that can have undesired consequences.[0m
+
+
+[38;2;248;248;242mTAGS[0m
+
+[38;2;248;248;242mTo define a help tag, place the name between asterisks (*tag-name*).  The[0m
+[38;2;248;248;242mtag-name should be different from all the Vim help tag names and ideally[0m
+[38;2;248;248;242mshould begin with the name of the Vim plugin.  The tag name is usually right[0m
+[38;2;248;248;242maligned on a line.[0m
+
+[38;2;248;248;242mWhen referring to an existing help tag and to create a hot-link, place the[0m
+[38;2;248;248;242mname between two bars (|) eg. |help-writing|.[0m
+
+[38;2;248;248;242mWhen referring to a Vim command and to create a hot-link, place the[0m
+[38;2;248;248;242mname between two backticks, eg. inside `:filetype`.  You will see this is[0m
+[38;2;248;248;242mhighlighted as a command, like a code block (see below).[0m
+
+[38;2;248;248;242mWhen referring to a Vim option in the help file, place the option name between[0m
+[38;2;248;248;242mtwo single quotes, eg. 'statusline'[0m
+
+[38;2;248;248;242mWhen referring to any other technical term, such as a filename or function[0m
+[38;2;248;248;242mparameter, surround it in backticks, eg. `~/.path/to/init.vim`.[0m
+
+
+[38;2;248;248;242mHIGHLIGHTING[0m
+
+[38;2;248;248;242mTo define a column heading, use a tilde character at the end of the line.[0m
+[38;2;248;248;242mThis will highlight the column heading in a different color.  E.g.[0m
+
+[38;2;248;248;242mColumn heading~[0m
+
+[38;2;248;248;242mTo separate sections in a help file, place a series of '=' characters in a[0m
+[38;2;248;248;242mline starting from the first column.  The section separator line is highlighted[0m
+[38;2;248;248;242mdifferently.[0m
+
+[38;2;248;248;242m							      *help-codeblock*[0m
+[38;2;248;248;242mTo quote a block of ex-commands verbatim, place a greater than (>) character[0m
+[38;2;248;248;242mat the end of the line before the block and a less than (<) character as the[0m
+[38;2;248;248;242mfirst non-blank on a line following the block.  Any line starting in column 1[0m
+[38;2;248;248;242malso implicitly stops the block of ex-commands before it.  E.g. >[0m
+[38;2;248;248;242m    function Example_Func()[0m
+[38;2;248;248;242m	echo "Example"[0m
+[38;2;248;248;242m    endfunction[0m
+[38;2;248;248;242m<[0m
+
+[38;2;248;248;242mThe following are highlighted differently in a Vim help file:[0m
+[38;2;248;248;242m  - a special key name expressed either in <> notation as in <PageDown>, or[0m
+[38;2;248;248;242m    as a Ctrl character as in CTRL-X[0m
+[38;2;248;248;242m  - anything between {braces}, e.g. {lhs} and {rhs}[0m
+
+[38;2;248;248;242mThe word "Note", "Notes" and similar automagically receive distinctive[0m
+[38;2;248;248;242mhighlighting.  So do these:[0m
+[38;2;248;248;242m	*Todo	something to do[0m
+[38;2;248;248;242m	*Error	something wrong[0m
+
+[38;2;248;248;242mYou can find the details in $VIMRUNTIME/syntax/help.vim[0m
+
+
+[38;2;248;248;242m vim:tw=78:ts=8:noet:ft=help:norl:[0m
