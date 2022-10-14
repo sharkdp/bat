@@ -1501,17 +1501,12 @@ fn ignored_suffix_arg() {
 
 #[test]
 fn no_line_wrapping_when_set_to_never() {
-    let expected =
-"───────┬────────────────────────────────────────────────────────────────────────
-       │ File: 80-columns.txt
-       │ Size: 101 B
-───────┼────────────────────────────────────────────────────────────────────────
-   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz
-───────┴────────────────────────────────────────────────────────────────────────
+    let expected = "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz
 ";
 
     bat()
-        .arg("--style=full")
+        .arg("--style=rule")
+        .arg("--color=never")
         .arg("--decorations=always")
         .arg("--wrap=never")
         .arg("--terminal-width=80")
@@ -1525,17 +1520,13 @@ fn no_line_wrapping_when_set_to_never() {
 #[test]
 fn line_wrapping_when_auto() {
     let expected =
-        "───────┬────────────────────────────────────────────────────────────────────────
-       │ File: 80-columns.txt
-       │ Size: 101 B
-───────┼────────────────────────────────────────────────────────────────────────
-   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
-       │ vxyzabcdefghigklmnopqrstuvxyz
-───────┴────────────────────────────────────────────────────────────────────────
+        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde
+fghigklmnopqrstuvxyz
 ";
 
     bat()
-        .arg("--style=full")
+        .arg("--color=never")
+        .arg("--style=rule")
         .arg("--decorations=always")
         .arg("--wrap=auto")
         .arg("--terminal-width=80")
@@ -1547,19 +1538,13 @@ fn line_wrapping_when_auto() {
 }
 
 #[test]
-fn line_wrapping_with_s_flag() {
+fn no_line_wrapping_with_s_flag() {
     let expected =
-        "───────┬────────────────────────────────────────────────────────────────────────
-       │ File: 80-columns.txt
-       │ Size: 101 B
-───────┼────────────────────────────────────────────────────────────────────────
-   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
-       │ vxyzabcdefghigklmnopqrstuvxyz
-───────┴────────────────────────────────────────────────────────────────────────
-";
+        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
 
     bat()
-        .arg("--style=full")
+        .arg("--color=never")
+        .arg("--style=rule")
         .arg("--decorations=always")
         .arg("-S")
         .arg("--terminal-width=80")
@@ -1571,19 +1556,13 @@ fn line_wrapping_with_s_flag() {
 }
 
 #[test]
-fn chop_long_lines_when_specified() {
+fn no_wrapping_with_chop_long_lines() {
     let expected =
-        "───────┬────────────────────────────────────────────────────────────────────────
-       │ File: 80-columns.txt
-       │ Size: 101 B
-───────┼────────────────────────────────────────────────────────────────────────
-   1   │ abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstu
-       │ vxyzabcdefghigklmnopqrstuvxyz
-───────┴────────────────────────────────────────────────────────────────────────
-";
+        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
 
     bat()
-        .arg("--style=full")
+        .arg("--color=never")
+        .arg("--style=rule")
         .arg("--decorations=always")
         .arg("--chop-long-lines")
         .arg("--terminal-width=80")

@@ -175,7 +175,7 @@ impl App {
                         _ => unreachable!("other values for --wrap are not allowed"),
                     }
                 } else {
-                    WrappingMode::Character
+                    WrappingMode::NoWrapping(true)
                 }
             } else {
                 // We don't have the tty width when piping to another program.

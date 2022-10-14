@@ -206,7 +206,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("chop-long-lines")
                 .short('S')
                 .takes_value(false)
-                .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
+                .help("Truncate all lines longer than screen width. Alias for '--wrap=character'."),
         )
         .arg(
             Arg::new("terminal-width")
