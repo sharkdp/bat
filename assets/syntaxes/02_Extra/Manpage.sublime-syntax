@@ -75,7 +75,7 @@ contexts:
 
   options:
     # command-line options like --option=value, --some-flag, or -x
-    - match: '^[ ]{7}(?=-)'
+    - match: '^[ ]{7}(?=-|\+)'
       push: expect-command-line-option
     - match: '(?:[^a-zA-Z0-9_-]|^|\s){{command_line_option}}'
       captures:
@@ -96,7 +96,7 @@ contexts:
     - include: env-var
 
   expect-command-line-option:
-    - match: '[A-Za-z0-9-]+'
+    - match: '[A-Za-z0-9-\.\?:#\$\+]+'
       scope: entity.name.command-line-option.man
     - match: '(\[)(=)'
       captures:
@@ -122,7 +122,7 @@ contexts:
       pop: true
 
   expect-parameter:
-    - match: '[A-Za-z0-9-]+'
+    - match: '[A-Za-z0-9-_]+'
       scope: variable.parameter.man
     - match: (?=\s+\|)
       pop: true

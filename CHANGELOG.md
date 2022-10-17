@@ -18,6 +18,7 @@
 ## Bugfixes
 
 - Bring back pre-processing of ANSI escape characters to so that some common `bat` use cases starts working again. See #2308 (@Enselic)
+- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu)
 
 
 # v0.22.0
