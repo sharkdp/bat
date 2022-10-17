@@ -1499,78 +1499,45 @@ fn ignored_suffix_arg() {
         .stderr("");
 }
 
-#[test]
-fn no_line_wrapping_when_set_to_never() {
-    let expected = "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz
-";
+fn wrapping_test(wrap_flag: &str, expect_wrap: bool) {
+    let expected = match expect_wrap {
+        true =>
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n",
+        false =>
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n",
+    };
 
     bat()
+        .arg(wrap_flag)
         .arg("--style=rule")
         .arg("--color=never")
         .arg("--decorations=always")
-        .arg("--wrap=never")
         .arg("--terminal-width=80")
-        .arg("80-columns.txt")
+        .arg("long-single-line.txt")
         .assert()
         .success()
-        .stdout(expected)
+        .stdout(expected.to_owned())
         .stderr("");
+}
+
+#[test]
+fn no_line_wrapping_when_set_to_never() {
+    wrapping_test("--wrap=never", false);
 }
 
 #[test]
 fn line_wrapping_when_auto() {
-    let expected =
-        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde
-fghigklmnopqrstuvxyz
-";
-
-    bat()
-        .arg("--color=never")
-        .arg("--style=rule")
-        .arg("--decorations=always")
-        .arg("--wrap=auto")
-        .arg("--terminal-width=80")
-        .arg("80-columns.txt")
-        .assert()
-        .success()
-        .stdout(expected)
-        .stderr("");
+    wrapping_test("--wrap=auto", true);
 }
 
 #[test]
 fn no_line_wrapping_with_s_flag() {
-    let expected =
-        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
-
-    bat()
-        .arg("--color=never")
-        .arg("--style=rule")
-        .arg("--decorations=always")
-        .arg("-S")
-        .arg("--terminal-width=80")
-        .arg("80-columns.txt")
-        .assert()
-        .success()
-        .stdout(expected)
-        .stderr("");
+    wrapping_test("-S", false);
 }
 
 #[test]
 fn no_wrapping_with_chop_long_lines() {
-    let expected =
-        "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
-
-    bat()
-        .arg("--color=never")
-        .arg("--style=rule")
-        .arg("--decorations=always")
-        .arg("--chop-long-lines")
-        .arg("--terminal-width=80")
-        .arg("80-columns.txt")
-        .assert()
-        .success()
-        .stdout(expected)
-        .stderr("");
+    wrapping_test("--chop-long-lines", false);
 }
 
 #[test]
