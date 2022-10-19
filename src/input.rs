@@ -258,7 +258,11 @@ pub(crate) struct InputReader<'a> {
 impl<'a> InputReader<'a> {
     fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
         let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line).ok();
+        reader
+            .by_ref()
+            .take(1024)
+            .read_until(b'\n', &mut first_line)
+            .ok();
 
         let content_type = if first_line.is_empty() {
             None
@@ -268,6 +272,8 @@ impl<'a> InputReader<'a> {
 
         if content_type == Some(ContentType::UTF_16LE) {
             reader.read_until(0x00, &mut first_line).ok();
+        } else if content_type != Some(ContentType::BINARY) {
+            reader.read_until(b'\n', &mut first_line).ok();
         }
 
         InputReader {

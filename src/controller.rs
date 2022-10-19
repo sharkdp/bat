@@ -15,6 +15,7 @@ use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
+use content_inspector::ContentType;
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -171,6 +172,11 @@ impl<'b> Controller<'b> {
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input, add_header_padding)?;
+        }
+
+        if !self.config.show_nonprintable && input.reader.content_type == Some(ContentType::BINARY)
+        {
+            return Ok(());
         }
 
         if !input.reader.first_line.is_empty() {
