@@ -272,7 +272,7 @@ impl<'a> InputReader<'a> {
 
         if content_type == Some(ContentType::UTF_16LE) {
             reader.read_until(0x00, &mut first_line).ok();
-        } else if content_type != Some(ContentType::BINARY) {
+        } else if content_type != Some(ContentType::BINARY) && first_line.last() != Some(&b'\n') {
             reader.read_until(b'\n', &mut first_line).ok();
         }
 
