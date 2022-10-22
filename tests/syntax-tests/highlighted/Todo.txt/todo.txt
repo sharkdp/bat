@@ -1,0 +1,65 @@
+[38;2;248;248;242mRule 1.1: Priority[0m
+
+[38;2;248;248;242m/// Should have priority ///[0m
+[38;2;248;248;242m(A) Thank Mom for the meatballs @phone[0m
+[38;2;248;248;242m(B) Schedule Goodwill pickup +GarageSale @phone[0m
+
+[38;2;248;248;242m/// Should not have priority ///[0m
+[38;2;248;248;242mReally gotta call Mom (A) @phone @someday[0m
+[38;2;248;248;242m(b) Get back to the boss[0m
+[38;2;248;248;242m(B)->Submit TPS report[0m
+
+
+[38;2;248;248;242mRule 1.2: Creation date[0m
+
+[38;2;248;248;242m/// Date should be after priority ///[0m
+[38;2;248;248;242m2011-03-02 Document +TodoTxt task format[0m
+[38;2;248;248;242m(A) 2011-03-02 Call Mom[0m
+
+[38;2;248;248;242m/// Should not have creation date ///[0m
+[38;2;248;248;242m(A) Call Mom 2011-03-02[0m
+
+
+[38;2;248;248;242mRule 1.3: Context and Projects [0m
+
+[38;2;248;248;242m/// Contexts and projects can appear anywhere ///[0m
+[38;2;248;248;242m(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone to celebrate![0m
+
+[38;2;248;248;242m/// No context ///[0m
+[38;2;248;248;242mEmail SoAndSo at soandso@example.com[0m
+
+[38;2;248;248;242m/// No project ///[0m
+[38;2;248;248;242mLearn how to add 2+2[0m
+
+
+[38;2;248;248;242mRule 2.1: Completed task[0m
+
+[38;2;248;248;242m/// Complete task ///[0m
+[38;2;248;248;242mx 2011-03-03 Call Mom[0m
+[38;2;248;248;242mx With @contexts +projects and key:value[0m
+
+[38;2;248;248;242m/// Not completed tasks ///[0m
+[38;2;248;248;242mxylophone lesson[0m
+[38;2;248;248;242mX 2012-01-01 Make resolutions[0m
+[38;2;248;248;242m(A) x Find ticket prices[0m
+
+
+[38;2;248;248;242mRule 2.2: Completion date[0m
+
+[38;2;248;248;242m/// Only completion date is valuable ///[0m
+[38;2;248;248;242mx Completion date is optional[0m
+[38;2;248;248;242mx 2022-10-21 But you can specify it[0m
+[38;2;248;248;242mx 2011-03-02 2011-03-01 [0m
+
+
+[38;2;248;248;242mAdditional definition[0m
+
+[38;2;248;248;242m/// Properties ///[0m
+[38;2;248;248;242mDecide on present for Mom due:2022-01-01 pri:1[0m
+
+
+
+[38;2;248;248;242mUnspecified[0m
+
+[38;2;248;248;242m/// Delayed tasks with WAIT keyword ///[0m
+[38;2;248;248;242mWAIT for @Patric to finish his task with +program[0m

@@ -1,0 +1,65 @@
+Rule 1.1: Priority
+
+/// Should have priority ///
+(A) Thank Mom for the meatballs @phone
+(B) Schedule Goodwill pickup +GarageSale @phone
+
+/// Should not have priority ///
+Really gotta call Mom (A) @phone @someday
+(b) Get back to the boss
+(B)->Submit TPS report
+
+
+Rule 1.2: Creation date
+
+/// Date should be after priority ///
+2011-03-02 Document +TodoTxt task format
+(A) 2011-03-02 Call Mom
+
+/// Should not have creation date ///
+(A) Call Mom 2011-03-02
+
+
+Rule 1.3: Context and Projects 
+
+/// Contexts and projects can appear anywhere ///
+(A) Call Mom +Family +PeaceLoveAndHappiness @iphone @phone to celebrate!
+
+/// No context ///
+Email SoAndSo at soandso@example.com
+
+/// No project ///
+Learn how to add 2+2
+
+
+Rule 2.1: Completed task
+
+/// Complete task ///
+x 2011-03-03 Call Mom
+x With @contexts +projects and key:value
+
+/// Not completed tasks ///
+xylophone lesson
+X 2012-01-01 Make resolutions
+(A) x Find ticket prices
+
+
+Rule 2.2: Completion date
+
+/// Only completion date is valuable ///
+x Completion date is optional
+x 2022-10-21 But you can specify it
+x 2011-03-02 2011-03-01 
+
+
+Additional definition
+
+/// Properties ///
+Decide on present for Mom due:2022-01-01 pri:1
+
+
+
+Unspecified
+
+/// Delayed tasks with WAIT keyword ///
+WAIT for @Patric to finish his task with +program
