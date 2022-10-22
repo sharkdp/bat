@@ -244,3 +244,6 @@
 	url = https://github.com/victor-gp/cmd-help-sublime-syntax.git
 	branch = main
 	shallow = true
+[submodule "assets/syntaxes/02_Extra/TodoTxt"]
+	path = assets/syntaxes/02_Extra/TodoTxt
+	url = https://github.com/dertuxmalwieder/SublimeTodoTxt
