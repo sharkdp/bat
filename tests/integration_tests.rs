@@ -509,6 +509,17 @@ fn pager_basic() {
 }
 
 #[test]
+fn pager_basic_arg() {
+    bat()
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
 fn pager_overwrite() {
     bat()
         .env("PAGER", "echo other-pager")
@@ -530,6 +541,45 @@ fn pager_disable() {
         .assert()
         .success()
         .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
+fn pager_arg_override_env() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo another-pager")
+        .env("BAT_PAGER", "echo other-pager")
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_env_bat_pager_override_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_env_pager_nooverride_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo other-pager")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
 #[test]

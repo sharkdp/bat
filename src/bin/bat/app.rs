@@ -1,13 +1,12 @@
 use std::collections::HashSet;
 use std::env;
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 
 use atty::{self, Stream};
 
 use crate::{
     clap_app,
-    config::{get_args_from_config_file, get_args_from_env_var},
+    config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
 use clap::ArgMatches;
 
@@ -60,15 +59,20 @@ impl App {
             let mut cli_args = wild::args_os();
 
             // Read arguments from bats config file
-            let mut args = get_args_from_env_var()
+            let mut args = get_args_from_env_opts_var()
                 .unwrap_or_else(get_args_from_config_file)
                 .map_err(|_| "Could not parse configuration file")?;
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
 
+            // env vars supersede config vars
+            get_args_from_env_vars()
+                .iter()
+                .for_each(|a| args.push(a.into()));
+
             // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
+            cli_args.for_each(|a| args.push(a.into()));
 
             args
         };
@@ -203,7 +207,6 @@ impl App {
                 .matches
                 .get_one::<String>("tabs")
                 .map(String::from)
-                .or_else(|| env::var("BAT_TABS").ok())
                 .and_then(|t| t.parse().ok())
                 .unwrap_or(
                     if style_components.plain() && paging_mode == PagingMode::Never {
@@ -216,7 +219,6 @@ impl App {
                 .matches
                 .get_one::<String>("theme")
                 .map(String::from)
-                .or_else(|| env::var("BAT_THEME").ok())
                 .map(|s| {
                     if s == "default" {
                         String::from(HighlightingAssets::default_theme())
@@ -321,16 +323,6 @@ impl App {
             } else if 0 < matches.get_count("plain") {
                 [StyleComponent::Plain].iter().cloned().collect()
             } else {
-                let env_style_components: Option<Vec<StyleComponent>> = env::var("BAT_STYLE")
-                    .ok()
-                    .map(|style_str| {
-                        style_str
-                            .split(',')
-                            .map(StyleComponent::from_str)
-                            .collect::<Result<Vec<StyleComponent>>>()
-                    })
-                    .transpose()?;
-
                 matches
                     .get_one::<String>("style")
                     .map(|styles| {
@@ -340,7 +332,6 @@ impl App {
                             .filter_map(|style| style.ok())
                             .collect::<Vec<_>>()
                     })
-                    .or(env_style_components)
                     .unwrap_or_else(|| vec![StyleComponent::Default])
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))

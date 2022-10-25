@@ -1,5 +1,7 @@
 # unreleased
 
+- Allow env vars to override config files, but not command-line arguments, see #1152, #1281, and #2381 (@aaronkollasch)
+
 ## Features
 
 - Implemented `-S` and `--chop-long-lines` flags as aliases for `--wrap=never`. See #2309 (@johnmatthiggins)
