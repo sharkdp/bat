@@ -892,6 +892,95 @@ fn config_read_arguments_from_file() {
         .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
+// ignore this test for now as cargo cache --clear only targets the default projects dir
+#[cfg(unix)]
+#[test]
+#[ignore]
+fn cache_clear() {
+    let src_dir = "cache_source";
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let themes_filename = "themes.bin";
+    let syntaxes_filename = "syntaxes.bin";
+    let metadata_filename = "metadata.yaml";
+    [themes_filename, syntaxes_filename, metadata_filename]
+        .iter()
+        .map(|filename| {
+            let fp = tmp_dir.path().join(filename);
+            let mut file = File::create(fp).expect("can create temporary file");
+            writeln!(file, "dummy content").expect("can write to file");
+        })
+        .count();
+
+    // Clear the targeted cache
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_THEME", "1337")
+        .arg("cache")
+        .arg("--clear")
+        .arg("--source")
+        .arg(".")
+        .arg("--target")
+        .arg(tmp_dir.path().to_str().unwrap())
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match(
+                "Clearing theme set cache ... okay
+Clearing syntax set cache ... okay
+Clearing metadata file ... okay",
+            )
+            .unwrap(),
+        );
+
+    // We expect these files to be removed
+    assert!(!tmp_dir.path().join(themes_filename).exists());
+    assert!(!tmp_dir.path().join(syntaxes_filename).exists());
+    assert!(!tmp_dir.path().join(metadata_filename).exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn cache_build() {
+    let src_dir = "cache_source";
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_themes_path = tmp_dir.path().join("themes.bin");
+    let tmp_syntaxes_path = tmp_dir.path().join("syntaxes.bin");
+    let tmp_acknowledgements_path = tmp_dir.path().join("acknowledgements.bin");
+    let tmp_metadata_path = tmp_dir.path().join("metadata.yaml");
+
+    // Build the cache
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_THEME", "1337")
+        .arg("cache")
+        .arg("--build")
+        .arg("--blank")
+        .arg("--source")
+        .arg(".")
+        .arg("--target")
+        .arg(tmp_dir.path().to_str().unwrap())
+        .arg("--acknowledgements")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match(
+                "Writing theme set to .*/themes.bin ... okay
+Writing syntax set to .*/syntaxes.bin ... okay
+Writing acknowledgements to .*/acknowledgements.bin ... okay
+Writing metadata to folder .* ... okay",
+            )
+            .unwrap(),
+        );
+
+    // Now we expect the files to exist. If they exist, we assume contents are correct
+    assert!(tmp_themes_path.exists());
+    assert!(tmp_syntaxes_path.exists());
+    assert!(tmp_acknowledgements_path.exists());
+    assert!(tmp_metadata_path.exists());
+}
+
 #[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
