@@ -54,7 +54,18 @@ impl App {
         {
             // Skip the arguments in bats config file
 
-            wild::args_os().collect::<Vec<_>>()
+            let mut cli_args = wild::args_os();
+
+            // Load selected env vars
+            let mut args = get_args_from_env_vars();
+
+            // Put the zero-th CLI argument (program name) first
+            args.insert(0, cli_args.next().unwrap());
+
+            // .. and the rest at the end
+            cli_args.for_each(|a| args.push(a));
+
+            args
         } else {
             let mut cli_args = wild::args_os();
 
@@ -68,11 +79,11 @@ impl App {
 
             // env vars supersede config vars
             get_args_from_env_vars()
-                .iter()
-                .for_each(|a| args.push(a.into()));
+                .into_iter()
+                .for_each(|a| args.push(a));
 
             // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a.into()));
+            cli_args.for_each(|a| args.push(a));
 
             args
         };

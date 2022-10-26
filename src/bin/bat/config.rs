@@ -145,8 +145,9 @@ pub fn get_args_from_env_vars() -> Vec<OsString> {
         ("--style", "BAT_STYLE"),
     ]
     .iter()
-    .filter_map(|(flag, key)| env::var(key).ok().map(|var| [flag.into(), var.into()]))
+    .filter_map(|(flag, key)| env::var(key).ok().map(|var| [flag.to_string(), var]))
     .flatten()
+    .map(|a| a.into())
     .collect()
 }
 

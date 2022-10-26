@@ -478,6 +478,79 @@ fn tabs_8() {
 }
 
 #[test]
+fn tabs_4_env_overrides_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-tabs.conf")
+        .env("BAT_TABS", "4")
+        .arg("tabs.txt")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
+fn tabs_4_arg_overrides_env() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-tabs.conf")
+        .env("BAT_TABS", "6")
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
+fn tabs_4_arg_overrides_env_noconfig() {
+    bat()
+        .env("BAT_TABS", "6")
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }
@@ -544,9 +617,22 @@ fn pager_disable() {
 }
 
 #[test]
-fn pager_arg_override_env() {
+fn pager_arg_override_env_withconfig() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo another-pager")
+        .env("BAT_PAGER", "echo other-pager")
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_arg_override_env_noconfig() {
+    bat()
         .env("PAGER", "echo another-pager")
         .env("BAT_PAGER", "echo other-pager")
         .arg("--pager=echo pager-output")
@@ -1028,6 +1114,35 @@ fn header_full_basic() {
         .assert()
         .success()
         .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_env_basic() {
+    bat_with_config()
+        .env("BAT_STYLE", "header-filename,header-filesize")
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_arg_overrides_env() {
+    bat_with_config()
+        .env("BAT_STYLE", "header-filesize")
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header-filename")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\n")
         .stderr("");
 }
 
