@@ -1795,6 +1795,64 @@ fn no_wrapping_with_chop_long_lines() {
 }
 
 #[test]
+fn theme_arg_overrides_env() {
+    bat()
+        .env("BAT_THEME", "TwoDark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
+fn theme_arg_overrides_env_withconfig() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-theme.conf")
+        .env("BAT_THEME", "TwoDark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
+fn theme_env_overrides_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-theme.conf")
+        .env("BAT_THEME", "ansi")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
 fn highlighting_is_skipped_on_long_lines() {
     let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
         "\u{1b}" +
