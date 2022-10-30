@@ -1,0 +1,13 @@
+diff --git syntaxes/02_Extra/TodoTxt/TodoTxt.sublime-syntax syntaxes/02_Extra/TodoTxt/TodoTxt.sublime-syntax
+index 6c75dbb..0115978 100644
+--- syntaxes/02_Extra/TodoTxt/TodoTxt.sublime-syntax
++++ syntaxes/02_Extra/TodoTxt/TodoTxt.sublime-syntax
+@@ -68,7 +68,7 @@ contexts:
+ 
+     - match: (\s+[^\s:]+:[^\s:]+)+\s*$
+       comment: Custom attributes
+-      scope: variable.annotation.todotxt.attribute
++      scope: variable.other.todotxt.attribute
+ 
+   comments:
+     # Comments begin with a '//' and finish at the end of the line.
