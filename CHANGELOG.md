@@ -1,13 +1,19 @@
 # unreleased
 
 ## Features
+
 - Implemented `-S` and `--chop-long-lines` flags as aliases for `--wrap=never`. See #2309 (@johnmatthiggins)
 
 ## Bugfixes
 
 ## Other
 
+- Various bash completion improvements, see #2310 (@scop)
+
 ## Syntaxes
+
+- Added support for Ada, see #1300 and #2316 (@dkm)
+- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu)
 
 ## Themes
 
@@ -19,8 +25,6 @@
 ## Bugfixes
 
 - Bring back pre-processing of ANSI escape characters to so that some common `bat` use cases starts working again. See #2308 (@Enselic)
-- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu)
-
 
 # v0.22.0
 
