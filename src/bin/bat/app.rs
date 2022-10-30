@@ -161,7 +161,7 @@ impl App {
                 }),
             show_nonprintable: self.matches.get_flag("show-all"),
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
-                if !self.matches.contains_id("chop-long-lines") {
+                if !self.matches.get_flag("chop-long-lines") {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
                         Some("never") => WrappingMode::NoWrapping(true),
@@ -225,7 +225,9 @@ impl App {
                     }
                 })
                 .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
-            visible_lines: match self.matches.contains_id("diff") && self.matches.get_flag("diff") {
+            visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
+                && self.matches.get_flag("diff")
+            {
                 #[cfg(feature = "git")]
                 true => VisibleLines::DiffContext(
                     self.matches
