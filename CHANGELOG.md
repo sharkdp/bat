@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Implemented `-S` and `--chop-long-lines` flags as aliases for `--wrap=never`. See #2309 (@johnmatthiggins)
 
 ## Bugfixes
 
