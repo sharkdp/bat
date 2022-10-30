@@ -1499,6 +1499,47 @@ fn ignored_suffix_arg() {
         .stderr("");
 }
 
+fn wrapping_test(wrap_flag: &str, expect_wrap: bool) {
+    let expected = match expect_wrap {
+        true =>
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n",
+        false =>
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n",
+    };
+
+    bat()
+        .arg(wrap_flag)
+        .arg("--style=rule")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout(expected.to_owned())
+        .stderr("");
+}
+
+#[test]
+fn no_line_wrapping_when_set_to_never() {
+    wrapping_test("--wrap=never", false);
+}
+
+#[test]
+fn line_wrapping_when_auto() {
+    wrapping_test("--wrap=auto", true);
+}
+
+#[test]
+fn no_line_wrapping_with_s_flag() {
+    wrapping_test("-S", false);
+}
+
+#[test]
+fn no_wrapping_with_chop_long_lines() {
+    wrapping_test("--chop-long-lines", false);
+}
+
 #[test]
 fn highlighting_is_skipped_on_long_lines() {
     let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
