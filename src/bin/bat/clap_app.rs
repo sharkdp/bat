@@ -1,6 +1,5 @@
 use clap::{
-    crate_name, crate_version, value_parser, AppSettings, Arg, ArgAction, ArgGroup, ColorChoice,
-    Command,
+    crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
 };
 use once_cell::sync::Lazy;
 use std::env;
@@ -19,7 +18,7 @@ static VERSION: Lazy<String> = Lazy::new(|| {
     }
 });
 
-pub fn build_app(interactive_output: bool) -> Command<'static> {
+pub fn build_app(interactive_output: bool) -> Command {
     let color_when = if interactive_output && env::var_os("NO_COLOR").is_none() {
         ColorChoice::Auto
     } else {
@@ -29,20 +28,12 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
     let mut app = Command::new(crate_name!())
         .version(VERSION.as_str())
         .color(color_when)
-        .global_setting(AppSettings::DeriveDisplayOrder)
         .hide_possible_values(true)
         .args_conflicts_with_subcommands(true)
         .allow_external_subcommands(true)
         .disable_help_subcommand(true)
         .max_term_width(100)
-        .about(
-            "A cat(1) clone with wings.\n\n\
-             Use '--help' instead of '-h' to see a more detailed version of the help text.",
-        )
-        .after_help(
-            "Note: `bat -h` prints a short and concise overview while `bat --help` gives all \
-                 details.",
-        )
+        .about("A cat(1) clone with wings.")
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
         .arg(
             Arg::new("FILE")
@@ -51,8 +42,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     "File(s) to print / concatenate. Use a dash ('-') or no argument at all \
                      to read from standard input.",
                 )
-                .takes_value(true)
-                .multiple_values(true)
+                .num_args(1..)
                 .value_parser(value_parser!(PathBuf)),
         )
         .arg(
@@ -94,14 +84,12 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                      specified as a name (like 'C++' or 'LaTeX') or possible file extension \
                      (like 'cpp', 'hpp' or 'md'). Use '--list-languages' to show all supported \
                      language names and file extensions.",
-                )
-                .takes_value(true),
+                ),
         )
         .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
-                .takes_value(true)
                 .action(ArgAction::Append)
                 .value_name("N:M")
                 .help("Highlight lines N through M.")
@@ -118,7 +106,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("file-name")
                 .long("file-name")
-                .takes_value(true)
                 .action(ArgAction::Append)
                 .value_name("name")
                 .value_parser(value_parser!(PathBuf))
@@ -150,7 +137,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("diff-context")
                         .long("diff-context")
                         .overrides_with("diff-context")
-                        .takes_value(true)
                         .value_name("N")
                         .value_parser(
                             |n: &str| {
@@ -171,7 +157,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         Arg::new("tabs")
             .long("tabs")
             .overrides_with("tabs")
-            .takes_value(true)
             .value_name("T")
             .value_parser(
                 |t: &str| {
@@ -191,7 +176,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("wrap")
                 .long("wrap")
                 .overrides_with("wrap")
-                .takes_value(true)
                 .value_name("mode")
                 .value_parser(["auto", "never", "character"])
                 .default_value("auto")
@@ -202,9 +186,15 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                            control the output width."),
         )
         .arg(
+            Arg::new("chop-long-lines")
+                .long("chop-long-lines")
+                .short('S')
+                .action(ArgAction::SetTrue)
+                .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
+        )
+        .arg(
             Arg::new("terminal-width")
                 .long("terminal-width")
-                .takes_value(true)
                 .value_name("width")
                 .hide_short_help(true)
                 .allow_hyphen_values(true)
@@ -242,7 +232,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("color")
                 .long("color")
                 .overrides_with("color")
-                .takes_value(true)
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .hide_default_value(true)
@@ -258,7 +247,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("italic-text")
                 .long("italic-text")
-                .takes_value(true)
                 .value_name("when")
                 .value_parser(["always", "never"])
                 .default_value("never")
@@ -270,7 +258,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("decorations")
                 .long("decorations")
                 .overrides_with("decorations")
-                .takes_value(true)
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .default_value("auto")
@@ -300,7 +287,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("paging")
                 .overrides_with("paging")
                 .overrides_with("no-paging")
-                .takes_value(true)
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .default_value("auto")
@@ -328,7 +314,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("pager")
                 .long("pager")
                 .overrides_with("pager")
-                .takes_value(true)
                 .value_name("command")
                 .hide_short_help(true)
                 .help("Determine which pager to use.")
@@ -344,7 +329,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .short('m')
                 .long("map-syntax")
                 .action(ArgAction::Append)
-                .takes_value(true)
                 .value_name("glob:syntax")
                 .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
                 .long_help(
@@ -354,12 +338,10 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                      '.myignore' with the Git Ignore syntax, use -m '.myignore:Git Ignore'. Note \
                      that the right-hand side is the *name* of the syntax, not a file extension.",
                 )
-                .takes_value(true),
         )
         .arg(
             Arg::new("ignored-suffix")
                 .action(ArgAction::Append)
-                .takes_value(true)
                 .long("ignored-suffix")
                 .hide_short_help(true)
                 .help(
@@ -371,7 +353,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("theme")
                 .long("theme")
                 .overrides_with("theme")
-                .takes_value(true)
                 .help("Set the color theme for syntax highlighting.")
                 .long_help(
                     "Set the theme for syntax highlighting. Use '--list-themes' to \
@@ -392,10 +373,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("style")
                 .long("style")
                 .value_name("components")
-                // Need to turn this off for overrides_with to work as we want. See the bottom most
-                // example at https://docs.rs/clap/2.32.0/clap/struct.Arg.html#method.overrides_with
-                .use_value_delimiter(false)
-                .takes_value(true)
                 .overrides_with("style")
                 .overrides_with("plain")
                 .overrides_with("number")
@@ -458,7 +435,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .long("line-range")
                 .short('r')
                 .action(ArgAction::Append)
-                .takes_value(true)
                 .value_name("N:M")
                 .help("Only print the lines from N to M.")
                 .long_help(
@@ -484,6 +460,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
             Arg::new("unbuffered")
                 .short('u')
                 .long("unbuffered")
+                .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .long_help(
                     "This option exists for POSIX-compliance reasons ('u' is for \
@@ -494,6 +471,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
         .arg(
             Arg::new("no-config")
                 .long("no-config")
+                .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Do not use the configuration file"),
         )
@@ -550,8 +528,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show acknowledgements."),
-        )
-        .mut_arg("help", |arg| arg.help("Print this help message."));
+        );
 
     // Check if the current directory contains a file name cache. Otherwise,
     // enable the 'bat cache' subcommand.
@@ -560,6 +537,7 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
     } else {
         app.subcommand(
             Command::new("cache")
+                .hide(true)
                 .about("Modify the syntax-definition and theme cache")
                 .arg(
                     Arg::new("build")
@@ -588,7 +566,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("source")
                         .long("source")
                         .requires("build")
-                        .takes_value(true)
                         .value_name("dir")
                         .help("Use a different directory to load syntaxes and themes from."),
                 )
@@ -596,7 +573,6 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                     Arg::new("target")
                         .long("target")
                         .requires("build")
-                        .takes_value(true)
                         .value_name("dir")
                         .help(
                             "Use a different directory to store the cached syntax and theme set.",
@@ -619,6 +595,10 @@ pub fn build_app(interactive_output: bool) -> Command<'static> {
                         .requires("build")
                         .help("Build acknowledgements.bin."),
                 ),
+        )
+        .after_long_help(
+            "You can use 'bat cache' to customize syntaxes and themes. \
+            See 'bat cache --help' for more information",
         )
     }
 }

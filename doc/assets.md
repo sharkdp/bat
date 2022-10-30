@@ -79,7 +79,8 @@ The following files have been manually modified after converting from a `.tmLang
 
 * `Apache.sublime_syntax`=> removed `conf` and `CONF` file types.
 * `Dart.sublime-syntax` => removed `#regex.dart` include.
-* `INI.sublime-syntax` => added `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers.
+* `DotENV.sublime-syntax` => added `.env.template`, `env` and `env.*` file types ([upstream PR](https://github.com/zaynali53/DotENV/pull/17)).
+* `INI.sublime-syntax` => added `.coveragerc`, `.pylintrc`, `.gitlint`, `.hgrc`, `hgrc`, and `desktop` file types and support for comments after section headers.
 * `Org mode.sublime-syntax` => removed `task` file type.
 * `Robot.sublime_syntax` => changed name to "Robot Framework", added `.resource` extension.
 * `SML.sublime_syntax` => removed `ml` file type.

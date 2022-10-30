@@ -8,6 +8,7 @@ file_extensions:
   - .env.local
   - .env.sample
   - .env.example
+  - .env.template
   - .env.test
   - .env.test.local
   - .env.testing
@@ -23,6 +24,10 @@ file_extensions:
   - .env.defaults
   - .envrc
   - .flaskenv
+  - env
+  - env.example
+  - env.sample
+  - env.template
 scope: source.env
 contexts:
   main:

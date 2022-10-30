@@ -16,6 +16,9 @@ file_extensions:
   - url
   - URL
   - .editorconfig
+  - .coveragerc
+  - .pylintrc
+  - .gitlint
   - .hgrc
   - hgrc
 scope: source.ini

@@ -33,7 +33,7 @@ section in the README.
 
 Please consider opening a
 [feature request ticket](https://github.com/sharkdp/bat/issues/new?assignees=&labels=feature-request&template=feature_request.md)
-first in order to give us a chance to discuss the feature first.
+first in order to give us a chance to discuss the details and specifics of the potential new feature before you go and build it.
 
 
 ## Adding new syntaxes/languages or themes
@@ -50,12 +50,12 @@ first.
 
 ## Regression tests
 
-You are strongly encouraged to add regression tests. Regression tests are great,
+You are **strongly encouraged** to add regression tests. Regression tests are great,
 not least because they:
 
-* ensure that your contribution will never completely stop working,
+* ensure that your contribution will never completely stop working.
 
-* makes code review easier, because it becomes very clear what the code is
+* makes code reviews easier, because it becomes very clear what the code is
   supposed to do.
 
 For functional changes, you most likely want to add a test to
