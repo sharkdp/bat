@@ -35,24 +35,6 @@ pub fn build_app(interactive_output: bool) -> Command {
         .max_term_width(100)
         .about("A cat(1) clone with wings.")
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
-        // Force commands to go last
-        .help_template(
-            "\
-{before-help}{about-with-newline}
-{usage-heading} {usage}
-
-Arguments:
-{positionals}
-
-Options:
-{options}
-
-Commands:
-{subcommands}{after-help}
-",
-        )
-        // Doesn't play well with `help_template`
-        .disable_colored_help(true)
         .arg(
             Arg::new("FILE")
                 .help("File(s) to print / concatenate. Use '-' for standard input.")
@@ -548,6 +530,7 @@ Commands:
     } else {
         app.subcommand(
             Command::new("cache")
+                .hide(true)
                 .about("Modify the syntax-definition and theme cache")
                 .arg(
                     Arg::new("build")
@@ -605,6 +588,10 @@ Commands:
                         .requires("build")
                         .help("Build acknowledgements.bin."),
                 ),
+        )
+        .after_long_help(
+            "You can use 'bat cache' to customize syntaxes and themes. \
+            See 'bat cache --help' for more information",
         )
     }
 }
