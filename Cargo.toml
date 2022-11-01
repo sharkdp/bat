@@ -46,7 +46,7 @@ ansi_colours = "^1.1"
 bincode = "1.0"
 console = "0.15.2"
 flate2 = "1.0"
-once_cell = "1.15"
+once_cell = "1.16"
 thiserror = "1.0"
 wild = { version = "2.1", optional = true }
 content_inspector = "0.2.4"
