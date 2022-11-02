@@ -892,7 +892,7 @@ fn config_read_arguments_from_file() {
         .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
-// ignore this test for now as cargo cache --clear only targets the default projects dir
+// ignore this test for now as bat cache --clear only targets the default projects dir
 #[cfg(unix)]
 #[test]
 #[ignore]
