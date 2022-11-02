@@ -1,0 +1,120 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Requirements.txt
+scope: source.requirements-txt
+# https://pip.pypa.io/en/stable/reference/requirements-file-format/
+# https://github.com/raimon49/requirements.txt.vim/blob/f246bd10155fbc3b1a9e2fff6c95b21521b09116/ftdetect/requirements.vim
+file_extensions:
+  - requirements.txt
+  - requirements.in
+  - pip
+# https://github.com/sublimehq/Packages/pull/2760/files
+first_line_match: |-
+  (?xi:
+    ^ \#! .* \bpip                                        # shebang
+  | ^ \s* \# .*? -\*- .*? \bpip-requirements\b .*? -\*-   # editorconfig
+  | ^ \s* \# (vim?|ex): .*? \brequirements\b              # modeline
+  )
+# pip install -r
+# pip-compile
+
+variables:
+  operator: '===?|<=?|>=?|~=|!='
+
+contexts:
+  main:
+    - match: '(?i)\d+[\da-z\-_\.\*]*'
+      scope: constant.other.version-control.requirements-txt
+    - match: '(?i)^\[?--?[\da-z\-]*\]?'
+      scope: entity.name.function.option.requirements-txt
+    - match: '{{operator}}'
+      scope: keyword.operator.logical.requirements-txt
+    - match: '(\[)'
+      captures:
+        1: punctuation.section.braces.begin.requirements-txt
+      push:
+        - meta_scope: variable.function.extra.requirements-txt
+        - match: ','
+          scope: punctuation.separator.requirements-txt
+        - match: '(\])'
+          captures:
+            1: punctuation.section.braces.end.requirements-txt
+          pop: true
+    - match: '(git\+?|hg\+|svn\+|bzr\+).*://.\S+'
+      scope: markup.underline.link.versioncontrols.requirements-txt
+    - match: '(@\s)?(https?|ftp|gopher)://?[^\s/$.?#].\S*'
+      scope: markup.underline.link.url.requirements-txt
+      captures:
+        1: punctuation.definition.keyword.requirements-txt
+    - match: '(?i)^[a-z\d_\-\.]*[a-z\d]'
+      scope: variable.parameter.package-name.requirements-txt
+    - match: '(;)'
+      captures:
+        1: punctuation.definition.annotation.requirements-txt
+      push:
+        - meta_scope: meta.annotation.requirements-txt
+        # https://pip.pypa.io/en/stable/reference/inspect-report/#example
+        - match: |-
+            (?x:
+              implementation_name
+            | implementation_version
+            | os_name
+            | platform_machine
+            | platform_release
+            | platform_system
+            | platform_version
+            | python_full_version
+            | platform_python_implementation
+            | python_version
+            | sys_platform
+            )
+          scope: variable.language.requirements-txt
+        - match: '{{operator}}'
+          scope: keyword.operator.logical.requirements-txt
+          # https://pip.pypa.io/en/stable/reference/requirement-specifiers/#examples
+        - match: '(")'
+          captures:
+            1: punctuation.definition.string.begin.double.requirements-txt
+          push:
+            - meta_scope: string.quoted.double.requirements-txt
+            - match: '\\"'
+              scope: constant.character.escape.double.requirements-txt
+            - match: '(")'
+              captures:
+                1: punctuation.definition.string.end.double.requirements-txt
+              pop: true
+        - match: "(')"
+          captures:
+            1: punctuation.definition.string.begin.single.requirements-txt
+          push:
+            - meta_scope: string.quoted.single.requirements-txt
+            - match: '\\'''
+              scope: constant.character.escape.single.requirements-txt
+            - match: "(')"
+              captures:
+                1: punctuation.definition.string.end.single.requirements-txt
+              pop: true
+        - match: '(.(?=#)|$)'
+          pop: true
+    - match: '(\$)(\{)'
+      captures:
+        1: punctuation.definition.keyword.requirements-txt
+        2: punctuation.definition.begin.parameter.requirements-txt
+      push:
+        - meta_scope: variable.parameter.requirements-txt
+        - match: '(\})'
+          captures:
+            1: punctuation.definition.end.parameter.requirements-txt
+          pop: true
+    - match: '(#)'
+      captures:
+        1: punctuation.definition.comment.requirements-txt
+      push:
+        - meta_scope: comment.line.requirements-txt
+        - match: '(-*-) coding: .* (-*-)'
+          captures:
+            1: punctuation.definition.begin.pep263.requirements-txt
+            2: punctuation.definition.end.pep263.requirements-txt
+        - match: '$'
+          pop: true
