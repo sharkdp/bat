@@ -478,6 +478,79 @@ fn tabs_8() {
 }
 
 #[test]
+fn tabs_4_env_overrides_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-tabs.conf")
+        .env("BAT_TABS", "4")
+        .arg("tabs.txt")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
+fn tabs_4_arg_overrides_env() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-tabs.conf")
+        .env("BAT_TABS", "6")
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
+fn tabs_4_arg_overrides_env_noconfig() {
+    bat()
+        .env("BAT_TABS", "6")
+        .arg("tabs.txt")
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(
+            "    1   2   3   4
+1   ?
+22  ?
+333 ?
+4444    ?
+55555   ?
+666666  ?
+7777777 ?
+88888888    ?
+",
+        );
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }
@@ -509,6 +582,17 @@ fn pager_basic() {
 }
 
 #[test]
+fn pager_basic_arg() {
+    bat()
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
 fn pager_overwrite() {
     bat()
         .env("PAGER", "echo other-pager")
@@ -530,6 +614,58 @@ fn pager_disable() {
         .assert()
         .success()
         .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
+fn pager_arg_override_env_withconfig() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo another-pager")
+        .env("BAT_PAGER", "echo other-pager")
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_arg_override_env_noconfig() {
+    bat()
+        .env("PAGER", "echo another-pager")
+        .env("BAT_PAGER", "echo other-pager")
+        .arg("--pager=echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_env_bat_pager_override_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo other-pager")
+        .env("BAT_PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn pager_env_pager_nooverride_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("PAGER", "echo other-pager")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
 #[test]
@@ -756,6 +892,102 @@ fn config_read_arguments_from_file() {
         .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
+// Ignore this test for now as `bat cache --clear` only targets the default cache dir.
+// `bat cache --clear` must clear the `--target` dir for this test to pass.
+#[cfg(unix)]
+#[test]
+#[ignore]
+fn cache_clear() {
+    let src_dir = "cache_source";
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let themes_filename = "themes.bin";
+    let syntaxes_filename = "syntaxes.bin";
+    let metadata_filename = "metadata.yaml";
+    [themes_filename, syntaxes_filename, metadata_filename]
+        .iter()
+        .map(|filename| {
+            let fp = tmp_dir.path().join(filename);
+            let mut file = File::create(fp).expect("can create temporary file");
+            writeln!(file, "dummy content").expect("can write to file");
+        })
+        .count();
+
+    // Clear the targeted cache
+    // Include the BAT_CONFIG_PATH and BAT_THEME environment variables to ensure that
+    // options loaded from a config or the environment are not inserted
+    // before the cache subcommand, which would break it.
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_THEME", "1337")
+        .arg("cache")
+        .arg("--clear")
+        .arg("--source")
+        .arg(".")
+        .arg("--target")
+        .arg(tmp_dir.path().to_str().unwrap())
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match(
+                "Clearing theme set cache ... okay
+Clearing syntax set cache ... okay
+Clearing metadata file ... okay",
+            )
+            .unwrap(),
+        );
+
+    // We expect these files to be removed
+    assert!(!tmp_dir.path().join(themes_filename).exists());
+    assert!(!tmp_dir.path().join(syntaxes_filename).exists());
+    assert!(!tmp_dir.path().join(metadata_filename).exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn cache_build() {
+    let src_dir = "cache_source";
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_themes_path = tmp_dir.path().join("themes.bin");
+    let tmp_syntaxes_path = tmp_dir.path().join("syntaxes.bin");
+    let tmp_acknowledgements_path = tmp_dir.path().join("acknowledgements.bin");
+    let tmp_metadata_path = tmp_dir.path().join("metadata.yaml");
+
+    // Build the cache
+    // Include the BAT_CONFIG_PATH and BAT_THEME environment variables to ensure that
+    // options loaded from a config or the environment are not inserted
+    // before the cache subcommand, which would break it.
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_THEME", "1337")
+        .arg("cache")
+        .arg("--build")
+        .arg("--blank")
+        .arg("--source")
+        .arg(".")
+        .arg("--target")
+        .arg(tmp_dir.path().to_str().unwrap())
+        .arg("--acknowledgements")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match(
+                "Writing theme set to .*/themes.bin ... okay
+Writing syntax set to .*/syntaxes.bin ... okay
+Writing acknowledgements to .*/acknowledgements.bin ... okay
+Writing metadata to folder .* ... okay",
+            )
+            .unwrap(),
+        );
+
+    // Now we expect the files to exist. If they exist, we assume contents are correct
+    assert!(tmp_themes_path.exists());
+    assert!(tmp_syntaxes_path.exists());
+    assert!(tmp_acknowledgements_path.exists());
+    assert!(tmp_metadata_path.exists());
+}
+
 #[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
@@ -978,6 +1210,35 @@ fn header_full_basic() {
         .assert()
         .success()
         .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_env_basic() {
+    bat_with_config()
+        .env("BAT_STYLE", "header-filename,header-filesize")
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\nSize: 12 B\n")
+        .stderr("");
+}
+
+#[test]
+fn header_arg_overrides_env() {
+    bat_with_config()
+        .env("BAT_STYLE", "header-filesize")
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header-filename")
+        .arg("-r=0:0")
+        .arg("--file-name=foo")
+        .assert()
+        .success()
+        .stdout("File: foo\n")
         .stderr("");
 }
 
@@ -1538,6 +1799,64 @@ fn no_line_wrapping_with_s_flag() {
 #[test]
 fn no_wrapping_with_chop_long_lines() {
     wrapping_test("--chop-long-lines", false);
+}
+
+#[test]
+fn theme_arg_overrides_env() {
+    bat()
+        .env("BAT_THEME", "TwoDark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
+fn theme_arg_overrides_env_withconfig() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-theme.conf")
+        .env("BAT_THEME", "TwoDark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--theme=ansi")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
+}
+
+#[test]
+fn theme_env_overrides_config() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-theme.conf")
+        .env("BAT_THEME", "ansi")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Ansi Underscore Test\nAnother Line")
+        .assert()
+        .success()
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stderr("");
 }
 
 #[test]

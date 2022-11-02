@@ -117,7 +117,7 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
     get_args_from_str(&config)
 }
 
-pub fn get_args_from_env_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
+pub fn get_args_from_env_opts_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
     env::var("BAT_OPTS").ok().map(|s| get_args_from_str(&s))
 }
 
@@ -135,6 +135,20 @@ fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseE
         .flatten()
         .map(|line| line.into())
         .collect())
+}
+
+pub fn get_args_from_env_vars() -> Vec<OsString> {
+    [
+        ("--tabs", "BAT_TABS"),
+        ("--theme", "BAT_THEME"),
+        ("--pager", "BAT_PAGER"),
+        ("--style", "BAT_STYLE"),
+    ]
+    .iter()
+    .filter_map(|(flag, key)| env::var(key).ok().map(|var| [flag.to_string(), var]))
+    .flatten()
+    .map(|a| a.into())
+    .collect()
 }
 
 #[test]
