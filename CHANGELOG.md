@@ -15,6 +15,7 @@
 - Added support for Ada, see #1300 and #2316 (@dkm)
 - Added `todo.txt` syntax, see #2375 (@BANOnotIT)
 - Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu)
+- Added a new `requirements.txt` syntax, see #2361 (@Freed-Wu)
 
 ## Themes
 
