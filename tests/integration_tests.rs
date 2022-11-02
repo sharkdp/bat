@@ -892,7 +892,8 @@ fn config_read_arguments_from_file() {
         .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
 
-// ignore this test for now as bat cache --clear only targets the default projects dir
+// Ignore this test for now as `bat cache --clear` only targets the default cache dir.
+// `bat cache --clear` must clear the `--target` dir for this test to pass.
 #[cfg(unix)]
 #[test]
 #[ignore]
@@ -912,6 +913,9 @@ fn cache_clear() {
         .count();
 
     // Clear the targeted cache
+    // Include the BAT_CONFIG_PATH and BAT_THEME environment variables to ensure that
+    // options loaded from a config or the environment are not inserted
+    // before the cache subcommand, which would break it.
     bat_with_config()
         .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
         .env("BAT_CONFIG_PATH", "bat.conf")
@@ -950,6 +954,9 @@ fn cache_build() {
     let tmp_metadata_path = tmp_dir.path().join("metadata.yaml");
 
     // Build the cache
+    // Include the BAT_CONFIG_PATH and BAT_THEME environment variables to ensure that
+    // options loaded from a config or the environment are not inserted
+    // before the cache subcommand, which would break it.
     bat_with_config()
         .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
         .env("BAT_CONFIG_PATH", "bat.conf")
