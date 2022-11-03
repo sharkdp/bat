@@ -1,31 +1,24 @@
-use std::borrow::Cow;
 use std::fs;
 use std::io;
+use std::path::Path;
+use std::path::PathBuf;
 
 use clap::crate_version;
-
-use crate::directories::PROJECT_DIRS;
 
 use bat::assets::HighlightingAssets;
 use bat::assets_metadata::AssetsMetadata;
 use bat::error::*;
 
-pub fn config_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.config_dir().to_string_lossy()
+pub fn clear_assets(cache_dir: &Path) {
+    clear_asset(cache_dir.join("themes.bin"), "theme set cache");
+    clear_asset(cache_dir.join("syntaxes.bin"), "syntax set cache");
+    clear_asset(cache_dir.join("metadata.yaml"), "metadata file");
 }
 
-pub fn cache_dir() -> Cow<'static, str> {
-    PROJECT_DIRS.cache_dir().to_string_lossy()
-}
-
-pub fn clear_assets() {
-    clear_asset("themes.bin", "theme set cache");
-    clear_asset("syntaxes.bin", "syntax set cache");
-    clear_asset("metadata.yaml", "metadata file");
-}
-
-pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<HighlightingAssets> {
-    let cache_dir = PROJECT_DIRS.cache_dir();
+pub fn assets_from_cache_or_binary(
+    use_custom_assets: bool,
+    cache_dir: &Path,
+) -> Result<HighlightingAssets> {
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
             return Err(format!(
@@ -50,9 +43,8 @@ pub fn assets_from_cache_or_binary(use_custom_assets: bool) -> Result<Highlighti
     Ok(custom_assets.unwrap_or_else(HighlightingAssets::from_binary))
 }
 
-fn clear_asset(filename: &str, description: &str) {
+fn clear_asset(path: PathBuf, description: &str) {
     print!("Clearing {} ... ", description);
-    let path = PROJECT_DIRS.cache_dir().join(filename);
     match fs::remove_file(&path) {
         Err(err) if err.kind() == io::ErrorKind::NotFound => {
             println!("skipped (not present)");
