@@ -1,0 +1,104 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+scope: source.vimhelp
+file_extensions:
+  # shortname
+  - vimhelp
+
+# $VIMRUNTIME/syntax/help.vim
+contexts:
+  main:
+    - match: '(?<=^\s*)(vim?|ex):\s*([a-z]+(=[^\s:]+)?(\s+|:))+'
+      scope: comment.line.modeline.vimhelp
+    - match: '^[-A-Z .][-A-Z0-9 .()_]*(?=\s+\*|$)'
+      scope: markup.heading.headline.vimhelp
+    - match: '^(===.*===)$'
+      captures:
+        1: punctuation.definition.heading.1.setext.vimhelp
+      push:
+        - meta_scope: markup.heading.1.setext.vimhelp
+        - match: '\t|  '
+          pop: true
+    - match: '^(---.*---)$'
+      captures:
+        1: punctuation.definition.heading.2.setext.vimhelp
+      push:
+        - meta_scope: markup.heading.2.setext.vimhelp
+        - match: '\t|  '
+          pop: true
+    - match: '(?:^| )(>)$'
+      captures:
+        1: punctuation.definition.blockquote.begin.vimhelp
+      push:
+        - meta_scope: markup.quote.vimhelp
+        - match: '^(<)'
+          captures:
+            1: punctuation.definition.blockquote.end.vimhelp
+          pop: true
+        - match: '^(?=\S)'
+          pop: true
+    - match: '(?<!\\)(\|)([#-)!+-~]+)(\|)'
+      captures:
+        1: punctuation.definition.link.begin.vimhelp
+        2: markup.underline.link.vimhelp
+        3: punctuation.definition.link.end.vimhelp
+    - match: '(\*)([#-)!+-~]+)(\*)(?:\s|$)'
+      captures:
+        1: punctuation.definition.constant.begin.vimhelp
+        2: entity.name.reference.link.vimhelp
+        3: punctuation.definition.constant.end.vimhelp
+    - match: '\bVim version [0-9][0-9.a-z]*'
+      scope: variable.language.vimhelp
+    - match: 'N?VIM REFERENCE.*'
+      scope: variable.language.vimhelp
+    - match: '('')([a-z]{2,}|t_..)('')'
+      captures:
+        1: punctuation.definition.link.option.begin.vimhelp
+        2: markup.underline.link.option.vimhelp
+        3: punctuation.definition.link.option.end.vimhelp
+    - match: '(`)([^` \t]+)(`)'
+      captures:
+        1: punctuation.definition.link.command.begin.vimhelp
+        2: markup.underline.link.command.vimhelp
+        3: punctuation.definition.link.command.end.vimhelp
+    - match: '(?<=^|[^a-z"\[])(`)([^`]+)(`)(?=[^a-z\t."'']|$)'
+      captures:
+        1: punctuation.definition.link.command.begin.vimhelp
+        2: markup.underline.link.command.vimhelp
+        3: punctuation.definition.link.command.end.vimhelp
+    - match: '(?<=\s*)(.*?)(?=\s?)(~)$'
+      captures:
+        1: markup.heading.header.vimhelp
+        2: punctuation.definition.keyword.vimhelp
+    - match: '(.*) (?=`$)'
+      captures:
+        1: variable.other.graphic.vimhelp
+        2: punctuation.definition.keyword.vimhelp
+    - match: '\b(note:?|Note:?|NOTE:?|Notes:?)\b'
+      scope: constant.other.note.vimhelp
+    - match: '\b(WARNING:?|Warning:)\b'
+      scope: constant.other.warning.vimhelp
+    - match: '\b(DEPRECATED:?|Deprecated:)\b'
+      scope: constant.other.deprecated.vimhelp
+    - match: '(\{)([-_a-zA-Z0-9''"*+/:%#=\[\]<>.,]+)(\})'
+      captures:
+        1: punctuation.definition.constant.begin.vimhelp
+        2: constant.numeric.vimhelp
+        3: punctuation.definition.constant.end.vimhelp
+    - match: '\[(range|line|count|offset|\+?cmd|(\+|-|)num|\+\+opt)\]'
+      scope: constant.numeric.vimhelp
+    - match: '\[(arg(uments)?|ident|addr|group)\]'
+      scope: constant.numeric.vimhelp
+    - match: '\[(readonly|fifo|socket|converted|crypted)\]'
+      scope: constant.numeric.vimhelp
+    - match: '<[-a-zA-Z0-9_]+>'
+      scope: markup.underline.link.key.vimhelp
+    - match: '<[SCM]-.>'
+      scope: markup.underline.link.key.vimhelp
+    - match: 'CTRL-((SHIFT-)?.|Break|PageUp|PageDown|Insert|Del|\{char\})'
+      scope: markup.underline.link.key.vimhelp
+    - match: '(META|ALT)-.'
+      scope: markup.underline.link.key.vimhelp
+    - match: '\b(((https?|ftp|gopher)://|(mailto|file|news):)[^'' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^'' 	<>"]+)[a-zA-Z0-9/]'
+      scope: markup.underline.link.url.vimhelp
