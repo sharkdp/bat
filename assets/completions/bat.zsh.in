@@ -82,9 +82,12 @@ _{{PROJECT_EXECUTABLE}}_main() {
 
 # first positional argument
 if (( ${#words} == 2 )); then
-    local -a subcommands
-    subcommands=('cache:Modify the syntax-definition and theme cache')
-    _describe subcommand subcommands
+    ## Completion of the 'cache' command itself is disabled for better UX
+    ## See https://github.com/sharkdp/bat/issues/2085#issuecomment-1271646802
+    #local -a subcommands
+    #subcommands=('cache:Modify the syntax-definition and theme cache')
+    #_describe subcommand subcommands
+    
     _{{PROJECT_EXECUTABLE}}_main
 else
     case $words[2] in
