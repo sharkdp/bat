@@ -33,6 +33,8 @@
 
 ## `bat` as a library
 
+- `PrettyPrinter::header` correctly displays a header with the filename, see #2378 and #2406 (@cstyles)
+
 
 # v0.22.1
 
