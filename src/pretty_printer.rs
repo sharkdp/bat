@@ -19,7 +19,7 @@ use crate::paging::PagingMode;
 
 #[derive(Default)]
 struct ActiveStyleComponents {
-    header: bool,
+    header_filename: bool,
     #[cfg(feature = "git")]
     vcs_modification_markers: bool,
     grid: bool,
@@ -140,7 +140,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Whether to show a header with the file name
     pub fn header(&mut self, yes: bool) -> &mut Self {
-        self.active_style_components.header = yes;
+        self.active_style_components.header_filename = yes;
         self
     }
 
@@ -277,8 +277,10 @@ impl<'a> PrettyPrinter<'a> {
         if self.active_style_components.rule {
             self.config.style_components.insert(StyleComponent::Rule);
         }
-        if self.active_style_components.header {
-            self.config.style_components.insert(StyleComponent::Header);
+        if self.active_style_components.header_filename {
+            self.config
+                .style_components
+                .insert(StyleComponent::HeaderFilename);
         }
         if self.active_style_components.line_numbers {
             self.config
