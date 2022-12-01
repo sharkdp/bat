@@ -89,7 +89,7 @@ wait-timeout = "0.2.0"
 tempfile = "3.3.0"
 
 [target.'cfg(unix)'.dev-dependencies]
-nix = { version = "0.25.0", default-features = false, features = ["term"] }
+nix = { version = "0.26.1", default-features = false, features = ["term"] }
 
 [build-dependencies.clap]
 version = "4.0.2"
