@@ -821,9 +821,9 @@ dependencies = [
 
 [[package]]
 name = "predicates"
-version = "2.1.1"
+version = "2.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5aab5be6e4732b473071984b3164dbbfb7a3674d30ea5ff44410b6bcd960c3c"
+checksum = "ed6bd09a7f7e68f3f0bf710fb7ab9c4615a488b58b5f653382a687701e458c92"
 dependencies = [
  "difflib",
  "float-cmp",
