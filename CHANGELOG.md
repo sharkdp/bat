@@ -21,6 +21,7 @@
 - Added a new `requirements.txt` syntax, see #2361 (@Freed-Wu)
 - Added a new VimHelp syntax, see #2366 (@Freed-Wu)
 - Associate `pdm.lock` with `TOML` syntax, see #2410
+- `Todo.txt`: Fix highlighting of contexts and projects at beginning of done.txt, see #2411
 
 ## Themes
 
