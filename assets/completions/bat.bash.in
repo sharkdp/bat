@@ -185,8 +185,6 @@ _bat() {
 
 	_filedir
 	
-	## Completion of the 'cache' command itself is disabled for better UX
+	## Completion of the 'cache' command itself is removed for better UX
 	## See https://github.com/sharkdp/bat/issues/2085#issuecomment-1271646802
-	#((cword == 1)) && COMPREPLY+=($(compgen -W cache -- "$cur"))
-
 } && complete -F _bat {{PROJECT_EXECUTABLE}}
