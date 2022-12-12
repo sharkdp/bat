@@ -10,6 +10,7 @@
 ## Other
 
 - Various bash completion improvements, see #2310 (@scop)
+- Disable completion of `cache` subcommand, see #2399 (@cyqsimon)
 
 ## Syntaxes
 
