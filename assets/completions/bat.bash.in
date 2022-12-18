@@ -184,6 +184,7 @@ _bat() {
 	fi
 
 	_filedir
-	((cword == 1)) && COMPREPLY+=($(compgen -W cache -- "$cur"))
-
+	
+	## Completion of the 'cache' command itself is removed for better UX
+	## See https://github.com/sharkdp/bat/issues/2085#issuecomment-1271646802
 } && complete -F _bat {{PROJECT_EXECUTABLE}}

@@ -198,7 +198,8 @@ complete -c $bat -s V -l version -f -d "Show version information" -n __fish_is_f
 complete -c $bat -l wrap -x -a "$wrap_opts" -d "Text-wrapping mode" -n __bat_no_excl_args
 
 # Sub-command 'cache' completions
-complete -c $bat -a cache -d "Modify the syntax/language definition cache" -n __fish_use_subcommand
+## Completion of the 'cache' command itself is removed for better UX
+## See https://github.com/sharkdp/bat/issues/2085#issuecomment-1271646802
 
 complete -c $bat -l build -f -d "Parse new definitions into cache" -n __bat_cache_no_excl
 

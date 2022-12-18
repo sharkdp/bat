@@ -80,20 +80,14 @@ _{{PROJECT_EXECUTABLE}}_main() {
     esac
 }
 
-# first positional argument
-if (( ${#words} == 2 )); then
-    local -a subcommands
-    subcommands=('cache:Modify the syntax-definition and theme cache')
-    _describe subcommand subcommands
-    _{{PROJECT_EXECUTABLE}}_main
-else
-    case $words[2] in
-        cache)
-            _{{PROJECT_EXECUTABLE}}_cache_subcommand
-        ;;
+case $words[2] in
+    cache)
+        ## Completion of the 'cache' command itself is removed for better UX
+        ## See https://github.com/sharkdp/bat/issues/2085#issuecomment-1271646802
+        _{{PROJECT_EXECUTABLE}}_cache_subcommand
+    ;;
 
-        *)
-            _{{PROJECT_EXECUTABLE}}_main
-        ;;
-    esac
-fi
+    *)
+        _{{PROJECT_EXECUTABLE}}_main
+    ;;
+esac
