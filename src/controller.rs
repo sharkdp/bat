@@ -6,6 +6,8 @@ use crate::config::{Config, VisibleLines};
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
 use crate::input::{Input, InputReader, OpenedInput};
+#[cfg(feature = "lessopen")]
+use crate::lessopen::LessOpenPreprocessor;
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
 use crate::line_range::{LineRanges, RangeCheckResult};
@@ -19,11 +21,18 @@ use clircle::{Clircle, Identifier};
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
+    #[cfg(feature = "lessopen")]
+    preprocessor: Option<LessOpenPreprocessor>,
 }
 
 impl<'b> Controller<'b> {
     pub fn new<'a>(config: &'a Config, assets: &'a HighlightingAssets) -> Controller<'a> {
-        Controller { config, assets }
+        Controller {
+            config,
+            assets,
+            #[cfg(feature = "lessopen")]
+            preprocessor: LessOpenPreprocessor::new().ok(),
+        }
     }
 
     pub fn run(
@@ -123,7 +132,18 @@ impl<'b> Controller<'b> {
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
     ) -> Result<()> {
-        let mut opened_input = input.open(stdin, stdout_identifier)?;
+        let mut opened_input = {
+            #[cfg(feature = "lessopen")]
+            match self.preprocessor {
+                Some(ref preprocessor) if self.config.use_lessopen => {
+                    preprocessor.open(input, stdin, stdout_identifier)?
+                }
+                _ => input.open(stdin, stdout_identifier)?,
+            }
+
+            #[cfg(not(feature = "lessopen"))]
+            input.open(stdin, stdout_identifier)?
+        };
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())

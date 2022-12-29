@@ -28,6 +28,12 @@ pub enum Error {
     InvalidPagerValueBat,
     #[error("{0}")]
     Msg(String),
+    #[cfg(feature = "lessopen")]
+    #[error(transparent)]
+    VarError(#[from] ::std::env::VarError),
+    #[cfg(feature = "lessopen")]
+    #[error(transparent)]
+    CommandParseError(#[from] ::shell_words::ParseError),
 }
 
 impl From<&'static str> for Error {
