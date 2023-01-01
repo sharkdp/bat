@@ -84,7 +84,7 @@ features = ["wrap_help", "cargo"]
 [dev-dependencies]
 assert_cmd = "2.0.5"
 serial_test = "0.6.0"
-predicates = "2.1.3"
+predicates = "2.1.5"
 wait-timeout = "0.2.0"
 tempfile = "3.3.0"
 
