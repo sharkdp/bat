@@ -81,6 +81,10 @@ version = "4.0.2"
 optional = true
 features = ["wrap_help", "cargo"]
 
+[target.'cfg(target_os = "macos")'.dependencies]
+dirs-next = "2.0.0"
+plist = "1.3"
+
 [dev-dependencies]
 assert_cmd = "2.0.5"
 serial_test = "0.6.0"

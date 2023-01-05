@@ -96,6 +96,7 @@ dependencies = [
  "nix",
  "once_cell",
  "path_abs",
+ "plist",
  "predicates",
  "regex",
  "semver",

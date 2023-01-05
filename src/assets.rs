@@ -401,11 +401,21 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
 
 #[cfg(target_os = "macos")]
 fn macos_dark_mode_active() -> bool {
-    let mut defaults_cmd = std::process::Command::new("defaults");
-    defaults_cmd.args(&["read", "-globalDomain", "AppleInterfaceStyle"]);
-    match defaults_cmd.output() {
-        Ok(output) => output.stdout == b"Dark\n",
-        Err(_) => true,
+    const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
+    const STYLE_KEY: &str = "AppleInterfaceStyle";
+
+    let preferences_file = dirs_next::home_dir()
+        .map(|home| home.join(PREFERENCES_FILE))
+        .expect("Could not get home directory");
+
+    match plist::Value::from_file(preferences_file).map(|file| file.into_dictionary()) {
+        Ok(Some(preferences)) => match preferences.get(STYLE_KEY).and_then(|val| val.as_string()) {
+            Some(value) => value == "Dark",
+            // If the key does not exist, then light theme is currently in use.
+            None => false,
+        },
+        // Unreachable, in theory. All macOS users have a home directory and preferences file setup.
+        Ok(None) | Err(_) => true,
     }
 }
 
