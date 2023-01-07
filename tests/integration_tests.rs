@@ -1606,6 +1606,17 @@ fn show_all_extends_tab_markers_to_next_tabstop_width_8() {
 }
 
 #[test]
+fn show_all_with_caret_notation() {
+    bat()
+        .arg("--show-all")
+        .arg("--caret-notation")
+        .arg("nonprintable.txt")
+        .assert()
+        .stdout("hello·world^J\n├──┤^M^@^G^H^[")
+        .stderr("");
+}
+
+#[test]
 fn no_paging_arg() {
     bat()
         .arg("--no-paging")
