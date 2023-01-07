@@ -49,7 +49,7 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
 }
 
-pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
+pub fn replace_nonprintable(input: &[u8], tab_width: usize, use_caret: bool) -> String {
     let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
@@ -77,21 +77,6 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                         output.push('┤');
                     }
                 }
-                // line feed
-                '\x0A' => {
-                    output.push_str("␊\x0A");
-                    line_idx = 0;
-                }
-                // carriage return
-                '\x0D' => output.push('␍'),
-                // null
-                '\x00' => output.push('␀'),
-                // bell
-                '\x07' => output.push('␇'),
-                // backspace
-                '\x08' => output.push('␈'),
-                // escape
-                '\x1B' => output.push('␛'),
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
                     || c.is_ascii_punctuation()
@@ -100,7 +85,53 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                     output.push(c)
                 }
                 // everything else
-                c => output.push_str(&c.escape_unicode().collect::<String>()),
+                chr => {
+                    if use_caret {
+                        // Replace LF, CR, NUL, BEL, BS, ESC using caret notation
+                        match chr {
+                            // line feed
+                            '\x0A' => {
+                                output.push_str("^J\x0A");
+                                line_idx = 0;
+                            }
+                            // carriage return
+                            '\x0D' => output.push_str("^M"),
+                            // null
+                            '\x00' => output.push_str("^@"),
+                            // bell
+                            '\x07' => output.push_str("^G"),
+                            // backspace
+                            '\x08' => output.push_str("^H"),
+                            // escape
+                            '\x1B' => output.push_str("^["),
+
+                            // everything else
+                            c => output.push_str(&c.escape_unicode().collect::<String>())
+                        }
+                    } else {
+                        // Replace LF, CR, NUL, BEL, BS, ESC using unicode control pictures
+                        match chr {
+                            // line feed
+                            '\x0A' => {
+                                output.push_str("␊\x0A");
+                                line_idx = 0;
+                            }
+                            // carriage return
+                            '\x0D' => output.push('␍'),
+                            // null
+                            '\x00' => output.push('␀'),
+                            // bell
+                            '\x07' => output.push('␇'),
+                            // backspace
+                            '\x08' => output.push('␈'),
+                            // escape
+                            '\x1B' => output.push('␛'),
+
+                            // everything else
+                            c => output.push_str(&c.escape_unicode().collect::<String>())
+                        }
+                    }
+                }
             }
         } else {
             write!(output, "\\x{:02X}", input[idx]).ok();

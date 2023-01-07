@@ -173,6 +173,7 @@ impl App {
                     }
                 }),
             show_nonprintable: self.matches.get_flag("show-all"),
+            caret_notation: self.matches.get_flag("caret-notation"),
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 if !self.matches.get_flag("chop-long-lines") {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {

@@ -39,6 +39,9 @@ pub struct Config<'a> {
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
+    /// Whether or not to use caret notation to show non-printable characters.
+    pub caret_notation: bool,
+
     /// The character width of the terminal
     pub term_width: usize,
 

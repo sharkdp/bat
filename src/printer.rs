@@ -93,7 +93,7 @@ impl<'a> Printer for SimplePrinter<'a> {
     ) -> Result<()> {
         if !out_of_range {
             if self.config.show_nonprintable {
-                let line = replace_nonprintable(line_buffer, self.config.tab_width);
+                let line = replace_nonprintable(line_buffer, self.config.tab_width, self.config.caret_notation);
                 write!(handle, "{}", line)?;
             } else {
                 handle.write_all(line_buffer)?
@@ -422,7 +422,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         line_buffer: &[u8],
     ) -> Result<()> {
         let line = if self.config.show_nonprintable {
-            replace_nonprintable(line_buffer, self.config.tab_width)
+            replace_nonprintable(line_buffer, self.config.tab_width, self.config.caret_notation)
         } else {
             let line = match self.content_type {
                 Some(ContentType::BINARY) | None => {
