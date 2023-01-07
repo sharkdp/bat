@@ -106,7 +106,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize, use_caret: bool) -> 
                             '\x1B' => output.push_str("^["),
 
                             // everything else
-                            c => output.push_str(&c.escape_unicode().collect::<String>())
+                            c => output.push_str(&c.escape_unicode().collect::<String>()),
                         }
                     } else {
                         // Replace LF, CR, NUL, BEL, BS, ESC using unicode control pictures
@@ -128,7 +128,7 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize, use_caret: bool) -> 
                             '\x1B' => output.push('␛'),
 
                             // everything else
-                            c => output.push_str(&c.escape_unicode().collect::<String>())
+                            c => output.push_str(&c.escape_unicode().collect::<String>()),
                         }
                     }
                 }

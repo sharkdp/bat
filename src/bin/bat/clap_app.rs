@@ -68,8 +68,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Show non-printable characters using caret notation (^G, ^J, ^@, ..).")
                 .long_help(
                     "Show non-printable characters using caret notation (^G, ^J, ^@, ..). \
-                    This option can only be used together with --show-all/-A."
-                )
+                    This option can only be used together with --show-all/-A.",
+                ),
         )
         .arg(
             Arg::new("plain")
