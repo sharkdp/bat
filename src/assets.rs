@@ -84,7 +84,7 @@ impl HighlightingAssets {
     /// platform, the default theme depends on
     /// ```bash
     /// defaults read -globalDomain AppleInterfaceStyle
-    /// ````
+    /// ```
     /// To avoid the overhead of the check on macOS, simply specify a theme
     /// explicitly via `--theme`, `BAT_THEME`, or `~/.config/bat`.
     ///
