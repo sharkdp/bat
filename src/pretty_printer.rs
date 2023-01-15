@@ -10,7 +10,7 @@ use crate::{
     error::Result,
     input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
-    style::{StyleComponent, StyleComponents},
+    style::StyleComponent,
     SyntaxMapping, WrappingMode,
 };
 
@@ -20,6 +20,7 @@ use crate::paging::PagingMode;
 #[derive(Default)]
 struct ActiveStyleComponents {
     header: bool,
+    #[cfg(feature = "git")]
     vcs_modification_markers: bool,
     grid: bool,
     rule: bool,
@@ -269,31 +270,31 @@ impl<'a> PrettyPrinter<'a> {
             .term_width
             .unwrap_or_else(|| Term::stdout().size().1 as usize);
 
-        let mut style_components = vec![];
+        self.config.style_components.clear();
         if self.active_style_components.grid {
-            style_components.push(StyleComponent::Grid);
+            self.config.style_components.insert(StyleComponent::Grid);
         }
         if self.active_style_components.rule {
-            style_components.push(StyleComponent::Rule);
+            self.config.style_components.insert(StyleComponent::Rule);
         }
         if self.active_style_components.header {
-            style_components.push(StyleComponent::Header);
+            self.config.style_components.insert(StyleComponent::Header);
         }
         if self.active_style_components.line_numbers {
-            style_components.push(StyleComponent::LineNumbers);
+            self.config
+                .style_components
+                .insert(StyleComponent::LineNumbers);
         }
         if self.active_style_components.snip {
-            style_components.push(StyleComponent::Snip);
+            self.config.style_components.insert(StyleComponent::Snip);
         }
+        #[cfg(feature = "git")]
         if self.active_style_components.vcs_modification_markers {
-            #[cfg(feature = "git")]
-            style_components.push(StyleComponent::Changes);
+            self.config.style_components.insert(StyleComponent::Changes);
         }
-        self.config.style_components = StyleComponents::new(&style_components);
 
         // Collect the inputs to print
-        let mut inputs: Vec<Input> = vec![];
-        std::mem::swap(&mut inputs, &mut self.inputs);
+        let inputs = std::mem::take(&mut self.inputs);
 
         // Run the controller
         let controller = Controller::new(&self.config, &self.assets);

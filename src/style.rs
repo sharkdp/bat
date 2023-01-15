@@ -129,4 +129,12 @@ impl StyleComponents {
     pub fn plain(&self) -> bool {
         self.0.iter().all(|c| c == &StyleComponent::Plain)
     }
+
+    pub fn insert(&mut self, component: StyleComponent) {
+        self.0.insert(component);
+    }
+
+    pub fn clear(&mut self) {
+        self.0.clear();
+    }
 }
