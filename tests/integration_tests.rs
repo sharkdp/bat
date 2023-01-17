@@ -200,6 +200,24 @@ fn line_range_multiple() {
         .stdout("line 1\nline 2\nline 4\n");
 }
 
+#[test]
+#[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
+fn short_help() {
+    test_help("-h", "../doc/short-help.txt");
+}
+
+#[test]
+#[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
+fn long_help() {
+    test_help("--help", "../doc/long-help.txt");
+}
+
+fn test_help(arg: &str, expect_file: &str) {
+    let assert = bat().arg(arg).assert();
+    expect_test::expect_file![expect_file]
+        .assert_eq(&String::from_utf8_lossy(&assert.get_output().stdout));
+}
+
 #[cfg(unix)]
 fn setup_temp_file(content: &[u8]) -> io::Result<(PathBuf, tempfile::TempDir)> {
     let dir = tempfile::tempdir().expect("Couldn't create tempdir");
