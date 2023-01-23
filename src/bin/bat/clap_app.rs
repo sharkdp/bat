@@ -62,7 +62,6 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("caret-notation")
                 .long("caret-notation")
-                .alias("caret")
                 .action(ArgAction::SetTrue)
                 .requires("show-all")
                 .help("Show non-printable characters using caret notation (^G, ^J, ^@, ..).")
