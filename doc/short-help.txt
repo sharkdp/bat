@@ -8,6 +8,8 @@ Arguments:
 
 Options:
   -A, --show-all                  Show non-printable characters (space, tab, newline, ..).
+      --caret-notation            Show non-printable characters using caret notation (^G, ^J, ^@,
+                                  ..).
   -p, --plain...                  Show plain style (alias for '--style=plain').
   -l, --language <language>       Set the language for syntax highlighting.
   -H, --highlight-line <N:M>      Highlight lines N through M.
