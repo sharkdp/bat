@@ -40,7 +40,7 @@
 [38;2;248;248;242m              ables    automatic    paging    (alias    for     '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mplain[0m
 [38;2;248;248;242m              [0m[38;2;166;226;46m--pager[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mnever'[0m[38;2;248;248;242m).[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m-l[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--language[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mlanguage[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-l[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--language[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mlanguage[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Explicitly  set  the  language for syntax highlighting. The lan‐[0m
 [38;2;248;248;242m              guage can be specified as a name (like 'C++' or 'LaTeX') or pos‐[0m
@@ -65,18 +65,18 @@
 [38;2;248;248;242m              [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m 40:[0m
 [38;2;248;248;242m                     highlights lines 40 to the end of the file[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--tabs[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mT[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--tabs[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mT[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Set the tab width to T spaces. Use a width of  0  to  pass  tabs[0m
 [38;2;248;248;242m              through directly[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--wrap[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mmode[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--wrap[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmode[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Specify  the  text-wrapping mode (*auto*, never, character). The[0m
 [38;2;248;248;242m              '[0m[38;2;166;226;46m--terminal-width[0m[38;2;248;248;242m' option can be used in addition to control the[0m
 [38;2;248;248;242m              output width.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--terminal-width[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--terminal-width[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Explicitly  set the width of the terminal instead of determining[0m
 [38;2;248;248;242m              it automatically. If prefixed with '+' or '-', the value will be[0m
@@ -88,18 +88,18 @@
 [38;2;248;248;242m              Only show line numbers, no other decorations. This is  an  alias[0m
 [38;2;248;248;242m              for '[0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mnumbers'[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--color[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--color[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Specify  when to use colored output. The automatic mode only en‐[0m
 [38;2;248;248;242m              ables colors if an interactive terminal  is  detected.  Possible[0m
 [38;2;248;248;242m              values: *auto*, never, always.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--italic-text[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--italic-text[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Specify  when  to use ANSI sequences for italic text in the out‐[0m
 [38;2;248;248;242m              put. Possible values: always, *never*.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--decorations[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--decorations[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Specify when to use the decorations that have been specified via[0m
 [38;2;248;248;242m              '[0m[38;2;166;226;46m--style[0m[38;2;248;248;242m'. The automatic mode only enables decorations if an in‐[0m
@@ -112,7 +112,7 @@
 [38;2;248;248;242m              if the output of bat is piped to another program, but  you  want[0m
 [38;2;248;248;242m              to keep the colorization/decorations.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--paging[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--paging[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwhen[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Specify when to use the pager. To disable the pager, use '[0m[38;2;166;226;46m--pag[0m[38;2;248;248;242m‐[0m
 [38;2;248;248;242m              ing=never' or its alias, [0m[38;2;166;226;46m-P[0m[38;2;248;248;242m. To disable the  pager  permanently,[0m
@@ -120,7 +120,7 @@
 [38;2;248;248;242m              used, see the '[0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m' option. Possible values: *auto*,  never,[0m
 [38;2;248;248;242m              always.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--pager[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Determine  which  pager  is  used. This option will override the[0m
 [38;2;248;248;242m              PAGER and BAT_PAGER environment variables. The default pager  is[0m
@@ -135,7 +135,7 @@
 [38;2;248;248;242m              '*.build:Python'.  To highlight files named '.myignore' with the[0m
 [38;2;248;248;242m              Git Ignore syntax, use [0m[38;2;166;226;46m-m[0m[38;2;248;248;242m '.myignore:Git Ignore'.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--theme[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mtheme[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--theme[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mtheme[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Set the theme for syntax highlighting.  Use  '[0m[38;2;166;226;46m--list-themes[0m[38;2;248;248;242m'  to[0m
 [38;2;248;248;242m              see  all  available  themes.   To  set  a default theme, add the[0m
@@ -146,7 +146,7 @@
 
 [38;2;248;248;242m              Display a list of supported themes for syntax highlighting.[0m
 
-[38;2;248;248;242m       [0m[38;2;166;226;46m--style[0m[38;2;248;248;242m <[0m[3;38;2;253;151;31mstyle-components[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--style[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mstyle-components[0m[38;2;248;248;242m>[0m
 
 [38;2;248;248;242m              Configure  which elements (line numbers, file headers, grid bor‐[0m
 [38;2;248;248;242m              ders, Git modifications, ..) to display in addition to the  file[0m

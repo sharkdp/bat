@@ -468,12 +468,12 @@
 [38;2;248;248;242m       Note that most options have the opposite versions with [0m[38;2;166;226;46m--no-[0m[38;2;248;248;242m prefix.[0m
 
 [38;2;253;151;31mENVIRONMENT VARIABLES[0m
-[38;2;248;248;242m       FZF_DEFAULT_COMMAND[0m
-[38;2;248;248;242m              Default  command to use when input is tty. On *nix systems, fzf runs the command with [0m[38;2;255;255;255m$[0m[38;2;190;132;255mSHELL[0m[38;2;248;248;242m [0m[38;2;166;226;46m-c[0m[38;2;248;248;242m if SHELL is set, otherwise with sh [0m[38;2;166;226;46m-c[0m[38;2;248;248;242m, so in this case make sure that the command[0m
+[38;2;248;248;242m       [0m[38;2;102;217;239mFZF_DEFAULT_COMMAND[0m
+[38;2;248;248;242m              Default  command to use when input is tty. On *nix systems, fzf runs the command with $SHELL -c if SHELL is set, otherwise with sh -c, so in this case make sure that the command[0m
 [38;2;248;248;242m              is POSIX-compliant.[0m
 
-[38;2;248;248;242m       FZF_DEFAULT_OPTS[0m
-[38;2;248;248;242m              Default options. e.g. export FZF_DEFAULT_OPTS="[0m[38;2;166;226;46m--extended[0m[38;2;248;248;242m [0m[38;2;166;226;46m--cycle[0m[38;2;248;248;242m"[0m
+[38;2;248;248;242m       [0m[38;2;102;217;239mFZF_DEFAULT_OPTS[0m
+[38;2;248;248;242m              Default options. e.g. export FZF_DEFAULT_OPTS="--extended --cycle"[0m
 
 [38;2;253;151;31mEXIT STATUS[0m
 [38;2;248;248;242m       0      Normal exit[0m
