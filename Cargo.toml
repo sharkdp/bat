@@ -82,7 +82,7 @@ optional = true
 features = ["wrap_help", "cargo"]
 
 [dev-dependencies]
-assert_cmd = "2.0.5"
+assert_cmd = "2.0.8"
 expect-test = "1.4.0"
 serial_test = "0.6.0"
 predicates = "2.1.5"
