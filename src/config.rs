@@ -40,7 +40,7 @@ pub struct Config<'a> {
     pub show_nonprintable: bool,
 
     /// Whether or not to use caret notation to show non-printable characters.
-    pub caret_notation: bool,
+    pub nonprinting_notation: String,
 
     /// The character width of the terminal
     pub term_width: usize,

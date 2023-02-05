@@ -49,7 +49,7 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
 }
 
-pub fn replace_nonprintable(input: &[u8], tab_width: usize, use_caret: bool) -> String {
+pub fn replace_nonprintable(input: &[u8], tab_width: usize, nonprinting_notation: &str) -> String {
     let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
@@ -79,19 +79,43 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize, use_caret: bool) -> 
                 }
                 // line feed
                 '\x0A' => {
-                    output.push_str(if use_caret { "^J\x0A" } else { "␊\x0A" });
+                    output.push_str(if nonprinting_notation == "caret" {
+                        "^J\x0A"
+                    } else {
+                        "␊\x0A"
+                    });
                     line_idx = 0;
                 }
                 // carriage return
-                '\x0D' => output.push_str(if use_caret { "^M" } else { "␍" }),
+                '\x0D' => output.push_str(if nonprinting_notation == "caret" {
+                    "^M"
+                } else {
+                    "␍"
+                }),
                 // null
-                '\x00' => output.push_str(if use_caret { "^@" } else { "␀" }),
+                '\x00' => output.push_str(if nonprinting_notation == "caret" {
+                    "^@"
+                } else {
+                    "␀"
+                }),
                 // bell
-                '\x07' => output.push_str(if use_caret { "^G" } else { "␇" }),
+                '\x07' => output.push_str(if nonprinting_notation == "caret" {
+                    "^G"
+                } else {
+                    "␇"
+                }),
                 // backspace
-                '\x08' => output.push_str(if use_caret { "^H" } else { "␈" }),
+                '\x08' => output.push_str(if nonprinting_notation == "caret" {
+                    "^H"
+                } else {
+                    "␈"
+                }),
                 // escape
-                '\x1B' => output.push_str(if use_caret { "^[" } else { "␛" }),
+                '\x1B' => output.push_str(if nonprinting_notation == "caret" {
+                    "^["
+                } else {
+                    "␛"
+                }),
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
                     || c.is_ascii_punctuation()
