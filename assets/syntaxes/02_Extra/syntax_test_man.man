@@ -210,6 +210,55 @@ COMMANDS
            wordexp(3) for details). The same include file can only be included
            once; subsequent attempts will be ignored.
 
+       The following commands cannot be used directly in the configuration
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+       file. They are expected to be used with bindsym or at runtime through
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+       swaymsg(1).
+
+       border none|normal|csd|pixel [<n>]
+           Set border style for focused window. normal includes a border of
+           thickness n and a title bar. pixel is a border without title bar n
+           pixels thick. Default is normal with border thickness 2. csd is
+           short for client-side-decorations, which allows the client to draw
+           its own decorations.
+
+       border toggle
+#      ^^^^^^ entity.name.command
+           Cycles through the available border styles.
+
+       exit
+#      ^^^^ entity.name.command
+           Exit sway and end your Wayland session.
+
+       floating enable|disable|toggle
+           Make focused view floating, non-floating, or the opposite of what
+           it is now.
+
+       <criteria> focus
+#      ^ punctuation.definition.generic.begin
+#       ^^^^^^^^ variable.parameter
+#               ^ punctuation.definition.generic.end
+#                 ^^^^^ variable.parameter
+           Moves focus to the container that matches the specified criteria.
+
+       gaps inner|outer|horizontal|vertical|top|right|bottom|left all|current
+       set|plus|minus|toggle <amount>
+#      ^^^ variable.parameter
+#         ^ keyword.operator.logical
+           Changes the inner or outer gaps for either all workspaces or the
+           current workspace. outer gaps can be altered per side with top,
+           right, bottom, and left or per direction with horizontal and verti‐
+           cal.
+
+       layout toggle [split|tabbed|stacking|splitv|splith]
+       [split|tabbed|stacking|splitv|splith]...
+#      ^ punctuation.section.brackets.begin
+#       ^^^^^ variable.parameter
+#            ^ keyword.operator.logical
+           Cycles the layout mode of the focused container through a list of
+           layouts.
+
 SEE ALSO
        The systemd Homepage[11], systemd-system.conf(5), locale.conf(5)
 #                                ^^^^^^^^^^^^^^^^^^^ entity.name.function
