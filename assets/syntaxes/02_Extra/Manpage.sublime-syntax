@@ -185,15 +185,16 @@ contexts:
       push: command-line-option-or-pipe
 
   commands-start:
-    - match: '^[ ]{7}(?=.*(?:[ ]<|[|]))'
+    - match: (?=^[ ]{7}.*(?:[ ]<|[|]))
       push: commands
 
   commands:
-    - match: '[-\w]+'
-      scope: entity.name.command.man
+    - match: '^[ ]{7}([a-z_\-]+)(?=[ ]|$)'
+      captures:
+        1: entity.name.command.man
       push: expect-parameter
-    - match: $
-      pop: true
+    - match: '^[ ]{7}(?=[\[<]|\w+[|\]])'
+      push: expect-parameter
 
   environment-variables:
     - match: '^[ ]{7}([A-Z_]+)\b'
