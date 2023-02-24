@@ -147,7 +147,7 @@ of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style (
 To set a default style, add the '\-\-style=".."' option to the configuration file or
 export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
 values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
-rule, numbers, snip.
+rule, numbers, snip, background.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP

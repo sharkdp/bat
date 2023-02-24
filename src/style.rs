@@ -16,6 +16,7 @@ pub enum StyleComponent {
     HeaderFilesize,
     LineNumbers,
     Snip,
+    Background,
     Full,
     Default,
     Plain,
@@ -40,6 +41,7 @@ impl StyleComponent {
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
+            StyleComponent::Background => &[StyleComponent::Background],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
@@ -48,6 +50,7 @@ impl StyleComponent {
                 StyleComponent::HeaderFilesize,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
+                StyleComponent::Background,
             ],
             StyleComponent::Default => &[
                 #[cfg(feature = "git")]
@@ -77,6 +80,7 @@ impl FromStr for StyleComponent {
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
+            "background" => Ok(StyleComponent::Background),
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
@@ -124,6 +128,10 @@ impl StyleComponents {
 
     pub fn snip(&self) -> bool {
         self.0.contains(&StyleComponent::Snip)
+    }
+
+    pub fn background(&self) -> bool {
+        self.0.contains(&StyleComponent::Background)
     }
 
     pub fn plain(&self) -> bool {

@@ -131,6 +131,7 @@ Options:
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.
+            * background: use background color provided by theme
 
   -r, --line-range <N:M>
           Only print the specified range of lines for each file. For example:

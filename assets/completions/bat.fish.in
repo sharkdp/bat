@@ -85,7 +85,8 @@ function __bat_style_opts
         "grid,lines b/w sidebar/header/content" \
         "numbers,line numbers in sidebar" \
         "rule,separate files" \
-        "snip,separate ranges"
+        "snip,separate ranges" \
+        "backgroundd,theme background color"
 
     string replace , \t $style_opts
 end

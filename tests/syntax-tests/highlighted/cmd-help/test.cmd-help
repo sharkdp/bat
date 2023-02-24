@@ -31,7 +31,7 @@
 [38;2;248;248;242m        [0m[38;2;166;226;46m--list-themes[0m[38;2;248;248;242m                 Display all supported highlighting themes.[0m
 [38;2;248;248;242m        [0m[38;2;166;226;46m--style[0m[38;2;248;248;242m [0m[38;2;249;38;114m<components>[0m[38;2;248;248;242m          Comma-separated list of style elements to display (*default*,[0m
 [38;2;248;248;242m                                      auto, full, plain, changes, header, header-filename,[0m
-[38;2;248;248;242m                                      header-filesize, grid, rule, numbers, snip).[0m
+[38;2;248;248;242m                                      header-filesize, grid, rule, numbers, snip, background).[0m
 [38;2;248;248;242m    [0m[38;2;166;226;46m-r[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--line-range[0m[38;2;248;248;242m [0m[38;2;249;38;114m<N:M>[0m[38;2;248;248;242m            Only print the lines from N to M.[0m
 [38;2;248;248;242m    [0m[38;2;166;226;46m-L[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--list-languages[0m[38;2;248;248;242m              Display all supported languages.[0m
 [38;2;248;248;242m    [0m[38;2;166;226;46m-h[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--help[0m[38;2;248;248;242m                        Print this help message.[0m

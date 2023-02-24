@@ -31,7 +31,7 @@ OPTIONS:
         --list-themes                 Display all supported highlighting themes.
         --style <components>          Comma-separated list of style elements to display (*default*,
                                       auto, full, plain, changes, header, header-filename,
-                                      header-filesize, grid, rule, numbers, snip).
+                                      header-filesize, grid, rule, numbers, snip, background).
     -r, --line-range <N:M>            Only print the lines from N to M.
     -L, --list-languages              Display all supported languages.
     -h, --help                        Print this help message.

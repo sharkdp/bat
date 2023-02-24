@@ -391,6 +391,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                             "rule",
                             "numbers",
                             "snip",
+                            "background",
                             #[cfg(feature = "git")]
                             "changes",
                         ].contains(style)
@@ -404,7 +405,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip, background).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -427,7 +428,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
                      * numbers: show line numbers in the side bar.\n  \
-                     * snip: draw separation lines between distinct line ranges.",
+                     * snip: draw separation lines between distinct line ranges.\n  \
+                     * background: use background color provided by theme",
                 ),
         )
         .arg(

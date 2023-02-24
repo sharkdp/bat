@@ -128,6 +128,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    background_color: Option<Color>,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -140,6 +141,14 @@ impl<'a> InteractivePrinter<'a> {
         let theme = assets.get_theme(&config.theme);
 
         let background_color_highlight = theme.settings.line_highlight;
+
+        // let background_color = if config.style_components.background() {
+        //     theme.settings.background
+        // } else {
+        //     None
+        // };
+        let background_color = theme.settings.background
+            .filter(|_| config.style_components.background());
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -211,6 +220,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            background_color,
         })
     }
 
@@ -488,9 +498,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.ansi_style.update("^[4m");
         }
 
-        let background_color = self
-            .background_color_highlight
-            .filter(|_| highlight_this_line);
+        // let set_background = false;
+
+        // let background_color =
+        //     if highlight_this_line {self.background_color_highlight}
+        //     else if set_background {self.background_color}
+        //     else {None};
+        
+        let background_color =
+            if highlight_this_line {self.background_color_highlight}
+            else {self.background_color};
+
+        // panic!("{:#?}", background_color);
 
         // Line decorations.
         if self.panel_width > 0 {
