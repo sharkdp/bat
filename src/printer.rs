@@ -142,12 +142,9 @@ impl<'a> InteractivePrinter<'a> {
 
         let background_color_highlight = theme.settings.line_highlight;
 
-        // let background_color = if config.style_components.background() {
-        //     theme.settings.background
-        // } else {
-        //     None
-        // };
-        let background_color = theme.settings.background
+        let background_color = theme
+            .settings
+            .background
             .filter(|_| config.style_components.background());
 
         let colors = if config.colored_output {
@@ -498,18 +495,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.ansi_style.update("^[4m");
         }
 
-        // let set_background = false;
-
-        // let background_color =
-        //     if highlight_this_line {self.background_color_highlight}
-        //     else if set_background {self.background_color}
-        //     else {None};
-        
-        let background_color =
-            if highlight_this_line {self.background_color_highlight}
-            else {self.background_color};
-
-        // panic!("{:#?}", background_color);
+        let background_color = if highlight_this_line {
+            self.background_color_highlight
+        } else {
+            self.background_color
+        };
 
         // Line decorations.
         if self.panel_width > 0 {
