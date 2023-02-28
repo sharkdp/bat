@@ -13,7 +13,7 @@ Options:
           Show non-printable characters like space, tab or newline. This option can also be used to
           print binary files. Use '--tabs' to control the width of the tab-placeholders.
 
-      --nonprinting-notation <notation>
+      --nonprintable-notation <notation>
           Set notation for non-printable characters.
           
           Possible values:

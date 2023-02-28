@@ -9,7 +9,7 @@ Arguments:
 Options:
   -A, --show-all
           Show non-printable characters (space, tab, newline, ..).
-      --nonprinting-notation <notation>
+      --nonprintable-notation <notation>
           Set notation for non-printable characters.
   -p, --plain...
           Show plain style (alias for '--style=plain').

@@ -21,7 +21,7 @@ use bat::{
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
-    MappingTarget, NonprintingNotation, PagingMode, SyntaxMapping, WrappingMode,
+    MappingTarget, NonprintableNotation, PagingMode, SyntaxMapping, WrappingMode,
 };
 
 fn is_truecolor_terminal() -> bool {
@@ -173,14 +173,14 @@ impl App {
                     }
                 }),
             show_nonprintable: self.matches.get_flag("show-all"),
-            nonprinting_notation: match self
+            nonprintable_notation: match self
                 .matches
-                .get_one::<String>("nonprinting-notation")
+                .get_one::<String>("nonprintable-notation")
                 .map(|s| s.as_str())
             {
-                Some("unicode") => NonprintingNotation::Unicode,
-                Some("caret") => NonprintingNotation::Caret,
-                _ => unreachable!("other values for --nonprinting-notation are not allowed"),
+                Some("unicode") => NonprintableNotation::Unicode,
+                Some("caret") => NonprintableNotation::Caret,
+                _ => unreachable!("other values for --nonprintable-notation are not allowed"),
             },
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 if !self.matches.get_flag("chop-long-lines") {

@@ -1627,7 +1627,7 @@ fn show_all_extends_tab_markers_to_next_tabstop_width_8() {
 fn show_all_with_caret_notation() {
     bat()
         .arg("--show-all")
-        .arg("--nonprinting-notation=caret")
+        .arg("--nonprintable-notation=caret")
         .arg("nonprintable.txt")
         .assert()
         .stdout("hello·world^J\n├──┤^M^@^G^H^[")

@@ -60,8 +60,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
-            Arg::new("nonprinting-notation")
-                .long("nonprinting-notation")
+            Arg::new("nonprintable-notation")
+                .long("nonprintable-notation")
                 .action(ArgAction::Set)
                 .default_value("unicode")
                 .value_parser(["unicode", "caret"])

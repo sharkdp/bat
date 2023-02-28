@@ -96,7 +96,7 @@ impl<'a> Printer for SimplePrinter<'a> {
                 let line = replace_nonprintable(
                     line_buffer,
                     self.config.tab_width,
-                    self.config.nonprinting_notation,
+                    self.config.nonprintable_notation,
                 );
                 write!(handle, "{}", line)?;
             } else {
@@ -429,7 +429,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             replace_nonprintable(
                 line_buffer,
                 self.config.tab_width,
-                self.config.nonprinting_notation,
+                self.config.nonprintable_notation,
             )
         } else {
             let line = match self.content_type {
