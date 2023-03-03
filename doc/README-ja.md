@@ -366,7 +366,7 @@ ansible-galaxy install aeimer.install_bat
 ### From source
 
 
-`bat` をソースからビルドしたいならば、Rust 1.60.0 以上の環境が必要です。
+`bat` をソースからビルドしたいならば、Rust 1.62.0 以上の環境が必要です。
 `cargo` を使用してビルドすることができます:
 
 ```bash
