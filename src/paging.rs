@@ -1,12 +1,7 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum PagingMode {
     Always,
     QuitIfOneScreen,
+    #[default]
     Never,
-}
-
-impl Default for PagingMode {
-    fn default() -> Self {
-        PagingMode::Never
-    }
 }

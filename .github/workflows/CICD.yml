@@ -1,7 +1,7 @@
 name: CICD
 
 env:
-  MIN_SUPPORTED_RUST_VERSION: "1.60.0"
+  MIN_SUPPORTED_RUST_VERSION: "1.62.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on:
