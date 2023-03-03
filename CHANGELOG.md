@@ -14,6 +14,7 @@
 - Various bash completion improvements, see #2310 (@scop)
 - Disable completion of `cache` subcommand, see #2399 (@cyqsimon)
 - Signifigantly improve startup performance on macOS, see #2442 (@BlackHoleFox)
+- Bump MSRV to 1.62, see #2496 (@Enselic)
 
 ## Syntaxes
 
