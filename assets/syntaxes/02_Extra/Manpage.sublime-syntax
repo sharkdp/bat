@@ -53,6 +53,16 @@ contexts:
       embed: synopsis
       escape: '(?={{section_heading}})'
 
+    - match: '^(?:COMMANDS)\b'
+      scope: markup.heading.commands.man
+      embed: commands-start
+      escape: '(?={{section_heading}})'
+
+    - match: '^(?:ENVIRONMENT\s+VARIABLES)'
+      scope: markup.heading.env.man
+      embed: environment-variables
+      escape: '(?={{section_heading}})'
+
     - match: '{{section_heading}}'
       scope: markup.heading.other.man
       embed: options # some man pages put command line options under the description heading
@@ -135,6 +145,10 @@ contexts:
           scope: punctuation.section.brackets.end.man
           pop: true
         - include: expect-parameter
+    - match: '<'
+      scope: punctuation.definition.generic.begin.man
+    - match: '>'
+      scope: punctuation.definition.generic.end.man
     - match: '$|(?=[],]|{{command_line_option}})'
       pop: true
 
@@ -169,3 +183,19 @@ contexts:
     - match: \[
       scope: punctuation.section.brackets.begin.man
       push: command-line-option-or-pipe
+
+  commands-start:
+    - match: '^[ ]{7}(?=.*(?:[ ]<|[|]))'
+      push: commands
+
+  commands:
+    - match: '[-\w]+'
+      scope: entity.name.command.man
+      push: expect-parameter
+    - match: $
+      pop: true
+
+  environment-variables:
+    - match: '^[ ]{7}([A-Z_]+)\b'
+      captures:
+        1: support.constant.environment-variable.man

@@ -14,12 +14,13 @@
 
 - Various bash completion improvements, see #2310 (@scop)
 - Disable completion of `cache` subcommand, see #2399 (@cyqsimon)
+- Signifigantly improve startup performance on macOS, see #2442 (@BlackHoleFox)
 
 ## Syntaxes
 
 - Added support for Ada, see #1300 and #2316 (@dkm)
 - Added `todo.txt` syntax, see #2375 (@BANOnotIT)
-- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu)
+- Improve Manpage.sublime-syntax. See #2364 (@Freed-Wu) and #2461 (@keith-hall)
 - Added a new `requirements.txt` syntax, see #2361 (@Freed-Wu)
 - Added a new VimHelp syntax, see #2366 (@Freed-Wu)
 - Associate `pdm.lock` with `TOML` syntax, see #2410

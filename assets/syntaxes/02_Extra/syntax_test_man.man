@@ -157,6 +157,59 @@ ENVIRONMENT
            systemd reads the log level from this environment variable. This
            can be overridden with --log-level=.
 
+ENVIRONMENT VARIABLES
+       Various Git commands use the following environment variables:
+
+   The Git Repository
+       These environment variables apply to all core Git commands. Nb: it is
+       worth noting that they may be used/overridden by SCMS sitting above Git
+       so take care if using a foreign front-end.
+
+       GIT_INDEX_FILE
+#      ^^^^^^^^^^^^^^ support.constant.environment-variable
+           This environment allows the specification of an alternate index
+           file. If not specified, the default of $GIT_DIR/index is used.
+
+       GIT_INDEX_VERSION
+#      ^^^^^^^^^^^^^^^^^ support.constant.environment-variable
+           This environment variable allows the specification of an index
+           version for new repositories. It won’t affect existing index files.
+           By default index file version 2 or 3 is used. See git-update-
+           index(1) for more information.
+
+COMMANDS
+       This section only lists general commands. For input and output com‐
+       mands, refer to sway-input(5) and sway-output(5).
+
+       The following commands may only be used in the configuration file.
+
+       bar [<bar-id>] <bar-subcommands...>
+#      ^^^ entity.name.command
+#          ^ punctuation.section.brackets.begin
+#           ^ punctuation.definition.generic.begin
+#            ^^^^^^ variable.parameter
+#                  ^ punctuation.definition.generic.end
+#                   ^ punctuation.section.brackets.end
+#                     ^ punctuation.definition.generic.begin
+#                      ^^^^^^^^^^^^^^^ variable.parameter
+#                                        ^ punctuation.definition.generic.end
+           For details on bar subcommands, see sway-bar(5).
+
+       default_orientation horizontal|vertical|auto
+#      ^^^^^^^^^^^^^^^^^^^ entity.name.command
+#                          ^^^^^^^^^^ variable.parameter
+#                                    ^ keyword.operator.logical
+#                                     ^^^^^^^^ variable.parameter
+#                                             ^ keyword.operator.logical
+#                                              ^^^^ variable.parameter
+           Sets the default container layout for tiled containers.
+
+       include <path>
+           Includes another file from path. path can be either a full path or
+           a path relative to the parent config, and expands shell syntax (see
+           wordexp(3) for details). The same include file can only be included
+           once; subsequent attempts will be ignored.
+
 SEE ALSO
        The systemd Homepage[11], systemd-system.conf(5), locale.conf(5)
 #                                ^^^^^^^^^^^^^^^^^^^ entity.name.function
