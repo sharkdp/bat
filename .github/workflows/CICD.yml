@@ -215,8 +215,8 @@ jobs:
         fi
 
         # Let subsequent steps know where to find the (stripped) bin
-        echo ::set-output name=BIN_PATH::${BIN_PATH}
-        echo ::set-output name=BIN_NAME::${BIN_NAME}
+        echo "BIN_PATH=${BIN_PATH}" >> $GITHUB_OUTPUT
+        echo "BIN_NAME=${BIN_NAME}" >> $GITHUB_OUTPUT
 
     - name: Set testing options
       id: test-options
@@ -225,7 +225,7 @@ jobs:
         # test only library unit tests and binary for arm-type targets
         unset CARGO_TEST_OPTIONS
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${PROJECT_NAME}" ;; esac;
-        echo ::set-output name=CARGO_TEST_OPTIONS::${CARGO_TEST_OPTIONS}
+        echo "CARGO_TEST_OPTIONS=${CARGO_TEST_OPTIONS}" >> $GITHUB_OUTPUT
 
     - name: Run tests
       shell: bash
@@ -266,7 +266,7 @@ jobs:
         PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
         PKG_BASENAME=${PROJECT_NAME}-v${PROJECT_VERSION}-${{ matrix.job.target }}
         PKG_NAME=${PKG_BASENAME}${PKG_suffix}
-        echo ::set-output name=PKG_NAME::${PKG_NAME}
+        echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
 
         PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
         ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
@@ -297,7 +297,7 @@ jobs:
         popd >/dev/null
 
         # Let subsequent steps know where to find the compressed package
-        echo ::set-output name=PKG_PATH::"${PKG_STAGING}/${PKG_NAME}"
+        echo "PKG_PATH=${PKG_STAGING}/${PKG_NAME}" >> $GITHUB_OUTPUT
 
     - name: Create Debian package
       id: debian-package
@@ -324,7 +324,7 @@ jobs:
         esac;
 
         DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb"
-        echo ::set-output name=DPKG_NAME::${DPKG_NAME}
+        echo "DPKG_NAME=${DPKG_NAME}" >> $GITHUB_OUTPUT
 
         # Binary
         install -Dm755 "${{ steps.strip.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.strip.outputs.BIN_NAME }}"
@@ -403,7 +403,7 @@ jobs:
         EOF
 
         DPKG_PATH="${DPKG_STAGING}/${DPKG_NAME}"
-        echo ::set-output name=DPKG_PATH::${DPKG_PATH}
+        echo "DPKG_PATH=${DPKG_PATH}" >> $GITHUB_OUTPUT
 
         # build dpkg
         fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
@@ -426,7 +426,7 @@ jobs:
       shell: bash
       run: |
         unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
-        echo ::set-output name=IS_RELEASE::${IS_RELEASE}
+        echo "IS_RELEASE=${IS_RELEASE}" >> $GITHUB_OUTPUT
 
     - name: Publish archives and packages
       uses: softprops/action-gh-release@v1
