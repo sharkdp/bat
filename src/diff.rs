@@ -17,11 +17,11 @@ pub enum LineChange {
 pub type LineChanges = HashMap<u32, LineChange>;
 
 pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
-    let repo = Repository::discover(&filename).ok()?;
+    let repo = Repository::discover(filename).ok()?;
 
     let repo_path_absolute = fs::canonicalize(repo.workdir()?).ok()?;
 
-    let filepath_absolute = fs::canonicalize(&filename).ok()?;
+    let filepath_absolute = fs::canonicalize(filename).ok()?;
     let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_path_absolute).ok()?;
 
     let mut diff_options = DiffOptions::new();
