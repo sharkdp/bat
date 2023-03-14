@@ -2,6 +2,8 @@ use std::fmt::Write;
 
 use console::AnsiCodeIterator;
 
+use crate::nonprintable_notation::NonprintableNotation;
+
 /// Expand tabs like an ANSI-enabled expand(1).
 pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
@@ -49,7 +51,11 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
 }
 
-pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
+pub fn replace_nonprintable(
+    input: &[u8],
+    tab_width: usize,
+    nonprintable_notation: NonprintableNotation,
+) -> String {
     let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
@@ -79,19 +85,37 @@ pub fn replace_nonprintable(input: &[u8], tab_width: usize) -> String {
                 }
                 // line feed
                 '\x0A' => {
-                    output.push_str("␊\x0A");
+                    output.push_str(match nonprintable_notation {
+                        NonprintableNotation::Caret => "^J\x0A",
+                        NonprintableNotation::Unicode => "␊\x0A",
+                    });
                     line_idx = 0;
                 }
                 // carriage return
-                '\x0D' => output.push('␍'),
+                '\x0D' => output.push_str(match nonprintable_notation {
+                    NonprintableNotation::Caret => "^M",
+                    NonprintableNotation::Unicode => "␍",
+                }),
                 // null
-                '\x00' => output.push('␀'),
+                '\x00' => output.push_str(match nonprintable_notation {
+                    NonprintableNotation::Caret => "^@",
+                    NonprintableNotation::Unicode => "␀",
+                }),
                 // bell
-                '\x07' => output.push('␇'),
+                '\x07' => output.push_str(match nonprintable_notation {
+                    NonprintableNotation::Caret => "^G",
+                    NonprintableNotation::Unicode => "␇",
+                }),
                 // backspace
-                '\x08' => output.push('␈'),
+                '\x08' => output.push_str(match nonprintable_notation {
+                    NonprintableNotation::Caret => "^H",
+                    NonprintableNotation::Unicode => "␈",
+                }),
                 // escape
-                '\x1B' => output.push('␛'),
+                '\x1B' => output.push_str(match nonprintable_notation {
+                    NonprintableNotation::Caret => "^[",
+                    NonprintableNotation::Unicode => "␛",
+                }),
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
                     || c.is_ascii_punctuation()

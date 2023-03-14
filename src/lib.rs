@@ -35,6 +35,7 @@ pub mod error;
 pub mod input;
 mod less;
 pub mod line_range;
+pub(crate) mod nonprintable_notation;
 mod output;
 #[cfg(feature = "paging")]
 mod pager;
@@ -49,6 +50,7 @@ mod terminal;
 mod vscreen;
 pub(crate) mod wrapping;
 
+pub use nonprintable_notation::NonprintableNotation;
 pub use pretty_printer::{Input, PrettyPrinter, Syntax};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
 pub use wrapping::WrappingMode;

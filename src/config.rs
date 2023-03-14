@@ -1,4 +1,5 @@
 use crate::line_range::{HighlightedLineRanges, LineRanges};
+use crate::nonprintable_notation::NonprintableNotation;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::style::StyleComponents;
@@ -38,6 +39,9 @@ pub struct Config<'a> {
 
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
+
+    /// The configured notation for non-printable characters
+    pub nonprintable_notation: NonprintableNotation,
 
     /// The character width of the terminal
     pub term_width: usize,

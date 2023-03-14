@@ -13,6 +13,13 @@ Options:
           Show non-printable characters like space, tab or newline. This option can also be used to
           print binary files. Use '--tabs' to control the width of the tab-placeholders.
 
+      --nonprintable-notation <notation>
+          Set notation for non-printable characters.
+          
+          Possible values:
+            * unicode (␇, ␊, ␀, ..)
+            * caret   (^G, ^J, ^@, ..)
+
   -p, --plain...
           Only show plain style, no decorations. This is an alias for '--style=plain'. When '-p' is
           used twice ('-pp'), it also disables automatic paging (alias for '--style=plain
