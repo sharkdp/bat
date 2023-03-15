@@ -1,7 +1,6 @@
 name: CICD
 
 env:
-  MIN_SUPPORTED_RUST_VERSION: "1.62.0"
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
 
 on:
@@ -42,10 +41,13 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v3
 
-    - name: Install rust toolchain (v${{ env.MIN_SUPPORTED_RUST_VERSION }})
+    - name: Get the MSRV from the package metadata
+      id: msrv
+      run: cargo metadata --no-deps --format-version 1 | jq -r '"version=" + (.packages[] | select(.name = "bat").rust_version)' >> $GITHUB_OUTPUT
+    - name: Install rust toolchain (v${{ steps.msrv.outputs.version }})
       uses: dtolnay/rust-toolchain@master
       with:
-        toolchain: ${{ env.MIN_SUPPORTED_RUST_VERSION }}
+        toolchain: ${{ steps.msrv.outputs.version }}
         components: clippy
     - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
       run: cargo clippy --locked --all-targets ${{ env.MSRV_FEATURES }}
