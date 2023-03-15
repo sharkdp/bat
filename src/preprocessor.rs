@@ -22,7 +22,7 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
                     // Add tab.
                     let spaces = width - (*cursor % width);
                     *cursor += spaces;
-                    buffer.push_str(&*" ".repeat(spaces));
+                    buffer.push_str(&" ".repeat(spaces));
 
                     // Next.
                     text = &text[index + 1..text.len()];

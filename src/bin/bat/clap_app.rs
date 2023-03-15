@@ -575,7 +575,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 )
                 .group(
                     ArgGroup::new("cache-actions")
-                        .args(&["build", "clear"])
+                        .args(["build", "clear"])
                         .required(true),
                 )
                 .arg(
