@@ -10,7 +10,7 @@ version = "0.22.1"
 exclude = ["assets/syntaxes/*", "assets/themes/*"]
 build = "build.rs"
 edition = '2018'
-rust-version = "1.62"
+rust-version = "1.64"
 
 [features]
 default = ["application"]
@@ -78,7 +78,7 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "4.0.32"
+version = "4.1.8"
 optional = true
 features = ["wrap_help", "cargo"]
 
@@ -98,7 +98,7 @@ tempfile = "3.3.0"
 nix = { version = "0.26.2", default-features = false, features = ["term"] }
 
 [build-dependencies.clap]
-version = "4.0.32"
+version = "4.1.8"
 optional = true
 features = ["wrap_help", "cargo"]
 

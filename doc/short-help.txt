@@ -51,6 +51,6 @@ Options:
   -L, --list-languages
           Display all supported languages.
   -h, --help
-          Print help information (use `--help` for more detail)
+          Print help (see more with '--help')
   -V, --version
-          Print version information
+          Print version
