@@ -43,7 +43,7 @@ jobs:
 
     - name: Get the MSRV from the package metadata
       id: msrv
-      run: cargo metadata --no-deps --format-version 1 | jq -r '"version=" + (.packages[] | select(.name = "bat").rust_version)' >> $GITHUB_OUTPUT
+      run: cargo metadata --no-deps --format-version 1 | jq -r '"version=" + (.packages[] | select(.name == "bat")).rust_version' >> $GITHUB_OUTPUT
     - name: Install rust toolchain (v${{ steps.msrv.outputs.version }})
       uses: dtolnay/rust-toolchain@master
       with:
