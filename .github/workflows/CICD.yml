@@ -184,8 +184,8 @@ jobs:
       shell: bash
       run: $BUILD_CMD build --locked --release --target=${{ matrix.job.target }}
 
-    - name: Strip debug information from executable
-      id: strip
+    - name: Set bin name & path
+      id: bin
       shell: bash
       run: |
         # Figure out suffix of binary
@@ -194,29 +194,11 @@ jobs:
           *-pc-windows-*) EXE_suffix=".exe" ;;
         esac;
 
-        # Figure out what strip tool to use if any
-        STRIP="strip"
-        case ${{ matrix.job.target }} in
-          arm-unknown-linux-*) STRIP="arm-linux-gnueabihf-strip" ;;
-          aarch64-unknown-linux-gnu) STRIP="aarch64-linux-gnu-strip" ;;
-          *-pc-windows-msvc) STRIP="" ;;
-        esac;
-
         # Setup paths
-        BIN_DIR="${{ env.CICD_INTERMEDIATES_DIR }}/stripped-release-bin/"
-        mkdir -p "${BIN_DIR}"
         BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
-        BIN_PATH="${BIN_DIR}/${BIN_NAME}"
+        BIN_PATH="target/${{ matrix.job.target }}/release/${BIN_NAME}"
 
-        # Copy the release build binary to the result location
-        cp "target/${{ matrix.job.target }}/release/${BIN_NAME}" "${BIN_DIR}"
-
-        # Also strip if possible
-        if [ -n "${STRIP}" ]; then
-          "${STRIP}" "${BIN_PATH}"
-        fi
-
-        # Let subsequent steps know where to find the (stripped) bin
+        # Let subsequent steps know where to find the bin
         echo "BIN_PATH=${BIN_PATH}" >> $GITHUB_OUTPUT
         echo "BIN_NAME=${BIN_NAME}" >> $GITHUB_OUTPUT
 
@@ -276,7 +258,7 @@ jobs:
         mkdir -p "${ARCHIVE_DIR}/autocomplete"
 
         # Binary
-        cp "${{ steps.strip.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
+        cp "${{ steps.bin.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
 
         # Man page
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
@@ -329,7 +311,7 @@ jobs:
         echo "DPKG_NAME=${DPKG_NAME}" >> $GITHUB_OUTPUT
 
         # Binary
-        install -Dm755 "${{ steps.strip.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.strip.outputs.BIN_NAME }}"
+        install -Dm755 "${{ steps.bin.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.bin.outputs.BIN_NAME }}"
 
         # Man page
         install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ env.PROJECT_NAME }}.1"
