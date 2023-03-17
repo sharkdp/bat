@@ -1,0 +1,8 @@
+0 2 * * * /bin/sh backup.sh
+*/10 * * * * /home/maverick/check-disk-space
+0 5,17 * * * /scripts/script.sh
+0 2 * * sun  [ $(date +%d) -le 07 ] && /script/script.sh
+@daily /scripts/script.sh
+@reboot /scripts/script.sh
+
+MAIL=bob
