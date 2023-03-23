@@ -43,7 +43,7 @@ impl From<String> for Error {
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
-    use ansi_term::Colour::Red;
+    use nu_ansi_term::Color::Red;
 
     match error {
         Error::Io(ref io_error) if io_error.kind() == ::std::io::ErrorKind::BrokenPipe => {

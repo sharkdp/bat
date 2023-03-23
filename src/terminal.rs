@@ -1,9 +1,9 @@
-use ansi_term::Color::{self, Fixed, RGB};
-use ansi_term::{self, Style};
+use nu_ansi_term::Color::{self, Fixed, Rgb};
+use nu_ansi_term::{self, Style};
 
 use syntect::highlighting::{self, FontStyle};
 
-pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<ansi_term::Color> {
+pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<nu_ansi_term::Color> {
     if color.a == 0 {
         // Themes can specify one of the user-configurable terminal colors by
         // encoding them as #RRGGBBAA with AA set to 00 (transparent) and RR set
@@ -38,7 +38,7 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<ans
         // 01. The built-in theme ansi uses this.
         None
     } else if true_color {
-        Some(RGB(color.r, color.g, color.b))
+        Some(Rgb(color.r, color.g, color.b))
     } else {
         Some(Fixed(ansi_colours::ansi256_from_rgb((
             color.r, color.g, color.b,

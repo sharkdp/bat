@@ -1,8 +1,8 @@
 use std::io::Write;
 use std::vec::Vec;
 
-use ansi_term::Colour::{Fixed, Green, Red, Yellow};
-use ansi_term::Style;
+use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
+use nu_ansi_term::Style;
 
 use bytesize::ByteSize;
 

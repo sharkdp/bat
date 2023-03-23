@@ -1,7 +1,7 @@
 #[cfg(feature = "git")]
 use crate::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
-use ansi_term::Style;
+use nu_ansi_term::Style;
 
 #[derive(Debug, Clone)]
 pub(crate) struct DecorationText {
