@@ -251,3 +251,6 @@
 	path = assets/syntaxes/02_Extra/Ada
 	url = https://github.com/wiremoons/ada-sublime-syntax
   
+[submodule "assets/syntaxes/02_Extra/Crontab"]
+	path = assets/syntaxes/02_Extra/Crontab
+	url = https://github.com/michaelblyons/SublimeSyntax-Crontab
