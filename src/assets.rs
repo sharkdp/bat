@@ -404,7 +404,7 @@ fn macos_dark_mode_active() -> bool {
     const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
     const STYLE_KEY: &str = "AppleInterfaceStyle";
 
-    let preferences_file = dirs_next::home_dir()
+    let preferences_file = dirs::home_dir()
         .map(|home| home.join(PREFERENCES_FILE))
         .expect("Could not get home directory");
 
