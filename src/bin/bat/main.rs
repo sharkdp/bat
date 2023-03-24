@@ -14,8 +14,8 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
-use ansi_term::Colour::Green;
-use ansi_term::Style;
+use nu_ansi_term::Color::Green;
+use nu_ansi_term::Style;
 
 use crate::{
     app::App,

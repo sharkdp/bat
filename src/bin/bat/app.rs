@@ -38,7 +38,7 @@ pub struct App {
 impl App {
     pub fn new() -> Result<Self> {
         #[cfg(windows)]
-        let _ = ansi_term::enable_ansi_support();
+        let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = atty::is(Stream::Stdout);
 
