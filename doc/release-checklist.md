@@ -5,7 +5,7 @@
 - [ ] Update version in `Cargo.toml`. Run `cargo build` to update `Cargo.lock`.
       Make sure to `git add` the `Cargo.lock` changes as well.
 - [ ] Find the current min. supported Rust version by running
-      `grep '^\s*MIN_SUPPORTED_RUST_VERSION' .github/workflows/CICD.yml`.
+      `cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].rust_version'`.
 - [ ] Update the version and the min. supported Rust version in `README.md` and
       `doc/README-*.md`. Check with
       `git grep -i -e 'rust.*1\.' -e '1\..*rust' | grep README | grep -v tests/`.
