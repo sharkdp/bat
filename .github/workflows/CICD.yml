@@ -2,6 +2,7 @@ name: CICD
 
 env:
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
+  MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
 
 on:
   workflow_dispatch:
@@ -23,20 +24,9 @@ jobs:
     - uses: actions/checkout@v3
     - run: cargo fmt -- --check
 
-  license_checks:
-    name: License checks
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true # we especially want to perform license checks on submodules
-    - run: tests/scripts/license-checks.sh
-
   min_version:
     name: Minimum supported rust version
     runs-on: ubuntu-20.04
-    env:
-      MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
     steps:
     - name: Checkout source code
       uses: actions/checkout@v3
@@ -53,6 +43,15 @@ jobs:
       run: cargo clippy --locked --all-targets ${{ env.MSRV_FEATURES }}
     - name: Run tests
       run: cargo test --locked ${{ env.MSRV_FEATURES }}
+
+  license_checks:
+    name: License checks
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true # we especially want to perform license checks on submodules
+    - run: tests/scripts/license-checks.sh
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
@@ -127,7 +126,7 @@ jobs:
           - { target: i686-pc-windows-msvc        , os: windows-2019                  }
           - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04, use-cross: true }
           - { target: i686-unknown-linux-musl     , os: ubuntu-20.04, use-cross: true }
-          - { target: x86_64-apple-darwin         , os: macos-10.15                   }
+          - { target: x86_64-apple-darwin         , os: macos-12                      }
           - { target: x86_64-pc-windows-gnu       , os: windows-2019                  }
           - { target: x86_64-pc-windows-msvc      , os: windows-2019                  }
           - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04, use-cross: true }
@@ -184,7 +183,7 @@ jobs:
       shell: bash
       run: $BUILD_CMD build --locked --release --target=${{ matrix.job.target }}
 
-    - name: Set bin name & path
+    - name: Set binary name & path
       id: bin
       shell: bash
       run: |
@@ -198,7 +197,7 @@ jobs:
         BIN_NAME="${{ env.PROJECT_NAME }}${EXE_suffix}"
         BIN_PATH="target/${{ matrix.job.target }}/release/${BIN_NAME}"
 
-        # Let subsequent steps know where to find the bin
+        # Let subsequent steps know where to find the binary
         echo "BIN_PATH=${BIN_PATH}" >> $GITHUB_OUTPUT
         echo "BIN_NAME=${BIN_NAME}" >> $GITHUB_OUTPUT
 
@@ -260,11 +259,11 @@ jobs:
         # Binary
         cp "${{ steps.bin.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
 
-        # Man page
-        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
-
         # README, LICENSE and CHANGELOG files
         cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
+
+        # Man page
+        cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
 
         # Autocompletion files
         cp 'target/${{ matrix.job.target }}/release/build/${{ env.PROJECT_NAME }}'-*/out/assets/completions/bat.bash "$ARCHIVE_DIR/autocomplete/${{ env.PROJECT_NAME }}.bash"
