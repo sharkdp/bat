@@ -1,4 +1,4 @@
-# unreleased
+# v0.23.0
 
 ## Features
 
