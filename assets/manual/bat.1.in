@@ -25,6 +25,18 @@ either '--language value', '--language=value', '-l value' or '-lvalue'.
 Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
 control the width of the tab\-placeholders.
 .HP
+\fB\-\-nonprintable\-notation\fR
+.IP
+Specify how to display non-printable characters when using \-\-show\-all.
+
+Possible values:
+.RS
+.IP "caret"
+Use character sequences like ^G, ^J, ^@, .. to identify non-printable characters
+.IP "unicode"
+Use special Unicode code points to identify non-printable characters
+.RE
+.HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
 Only show plain style, no decorations. This is an alias for
