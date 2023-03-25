@@ -1,3 +1,19 @@
+# unreleased
+
+## Features
+
+## Bugfixes
+
+## Other
+
+## Syntaxes
+
+## Themes
+
+## `bat` as a library
+
+
+
 # v0.23.0
 
 ## Features
