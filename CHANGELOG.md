@@ -6,6 +6,8 @@
 
 ## Other
 
+- Output directory for generated assets (completion, manual) can be customized, see #2515 (@tranzystorek-io)
+
 ## Syntaxes
 
 ## Themes
