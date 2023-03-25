@@ -25,7 +25,7 @@ either '--language value', '--language=value', '-l value' or '-lvalue'.
 Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
 control the width of the tab\-placeholders.
 .HP
-\fB\-\-nonprintable\-notation\fR
+\fB\-\-nonprintable\-notation\fR <notation>
 .IP
 Specify how to display non-printable characters when using \-\-show\-all.
 
