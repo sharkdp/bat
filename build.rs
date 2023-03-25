@@ -43,7 +43,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     variables.insert("PROJECT_EXECUTABLE_UPPERCASE", &executable_name_uppercase);
     variables.insert("PROJECT_VERSION", PROJECT_VERSION);
 
-    let out_dir_env = std::env::var_os("OUT_DIR").expect("OUT_DIR to be set in build.rs");
+    let out_dir_env = std::env::var_os("BAT_ASSETS_GEN_DIR")
+        .or_else(|| std::env::var_os("OUT_DIR"))
+        .expect("BAT_ASSETS_GEN_DIR or OUT_DIR to be set in build.rs");
     let out_dir = Path::new(&out_dir_env);
 
     fs::create_dir_all(out_dir.join("assets/manual")).unwrap();
