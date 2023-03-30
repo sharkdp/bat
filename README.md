@@ -404,6 +404,13 @@ You can install `bat` via [scoop](https://scoop.sh/):
 scoop install bat
 ```
 
+#### With Winget
+
+You can install `bat` via [Winget](https://learn.microsoft.com/en-us/windows/package-manager/):
+```bash
+winget install sharkdp.bat
+```
+
 #### From prebuilt binaries:
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
