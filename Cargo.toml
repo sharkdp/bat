@@ -92,7 +92,7 @@ expect-test = "1.4.0"
 serial_test = "0.6.0"
 predicates = "2.1.5"
 wait-timeout = "0.2.0"
-tempfile = "3.3.0"
+tempfile = "3.5.0"
 
 [target.'cfg(unix)'.dev-dependencies]
 nix = { version = "0.26.2", default-features = false, features = ["term"] }
