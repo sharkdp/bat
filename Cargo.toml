@@ -65,7 +65,7 @@ dirs = { version = "5.0.0", optional = true }
 grep-cli = { version = "0.1.7", optional = true }
 regex = { version = "1.7.0", optional = true }
 walkdir = { version = "2.3", optional = true }
-bytesize = { version = "1.1.0" }
+bytesize = { version = "1.2.0" }
 
 [dependencies.git2]
 version = "0.16"
