@@ -25,7 +25,7 @@ application = [
 # Mainly for developers that want to iterate quickly
 # Be aware that the included features might change in the future
 minimal-application = [
-    "atty",
+    "is-terminal",
     "clap",
     "dirs",
     "paging",
@@ -41,7 +41,7 @@ regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
-atty = { version = "0.2.14", optional = true }
+is-terminal = { version = "0.4.4", optional = true }
 nu-ansi-term = "0.47.0"
 ansi_colours = "^1.2"
 bincode = "1.0"
