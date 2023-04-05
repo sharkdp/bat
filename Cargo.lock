@@ -69,7 +69,6 @@ version = "0.23.0"
 dependencies = [
  "ansi_colours",
  "assert_cmd",
- "atty",
  "bincode",
  "bugreport",
  "bytesize",
@@ -84,6 +83,7 @@ dependencies = [
  "git2",
  "globset",
  "grep-cli",
+ "is-terminal",
  "nix",
  "nu-ansi-term",
  "once_cell",

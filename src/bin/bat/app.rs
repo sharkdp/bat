@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::env;
 use std::path::{Path, PathBuf};
 
-use atty::{self, Stream};
+use is_terminal::IsTerminal;
 
 use crate::{
     clap_app,
@@ -40,7 +40,7 @@ impl App {
         #[cfg(windows)]
         let _ = nu_ansi_term::enable_ansi_support();
 
-        let interactive_output = atty::is(Stream::Stdout);
+        let interactive_output = std::io::stdout().is_terminal();
 
         Ok(App {
             matches: Self::matches(interactive_output)?,
@@ -104,7 +104,7 @@ impl App {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
-                    if self.interactive_output && !atty::is(Stream::Stdin) {
+                    if self.interactive_output && std::io::stdin().is_terminal() {
                         PagingMode::QuitIfOneScreen
                     } else {
                         PagingMode::Never
