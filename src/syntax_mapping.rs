@@ -89,8 +89,7 @@ impl<'a> SyntaxMapping<'a> {
         for glob in &[
             "/etc/nginx/**/*.conf",
             "/etc/nginx/sites-*/**/*",
-            "nginx.conf",
-            "mime.types",
+            "**nginx.conf",
         ] {
             mapping.insert(glob, MappingTarget::MapTo("nginx")).unwrap();
         }
