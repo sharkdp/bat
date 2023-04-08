@@ -32,7 +32,7 @@ __bat_escape_completions()
 }
 
 _bat() {
-	local cur prev words cword split=false
+	local cur prev words split=false
 	if declare -F _init_completion >/dev/null 2>&1; then
 		_init_completion -s || return 0
 	else
