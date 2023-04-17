@@ -1163,6 +1163,20 @@ fn bom_stripped_when_no_color_and_not_loop_through() {
         );
 }
 
+// Regression test for https://github.com/sharkdp/bat/issues/2541
+#[test]
+fn no_broken_osc_emit_with_line_wrapping() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("regression_tests/issue_2541.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 1));
+}
+
 #[test]
 fn can_print_file_named_cache() {
     bat_with_config()
