@@ -458,9 +458,54 @@ impl<'a> Iterator for EscapeSequenceOffsetsIterator<'a> {
     }
 }
 
+/// Strips problematic ANSI escape sequences from a string.
+///
+/// Ideally, this will be replaced with something that uses [[Attributes]] to create a table of char offsets
+/// -> absolute styles and style deltas. Something like that would let us simplify the printer (and support
+/// re-printing OSC hyperlink commands).
+pub fn strip_problematic_sequences(text: &str) -> String {
+    use EscapeSequenceOffsets::*;
+
+    let mut buffer = String::with_capacity(text.len());
+    for seq in EscapeSequenceOffsetsIterator::new(text) {
+        match seq {
+            Text { start, end } => buffer.push_str(&text[start..end]),
+            Unknown { start, end } => buffer.push_str(&text[start..end]),
+
+            NF {
+                start_sequence: start,
+                start: _,
+                end,
+            } => buffer.push_str(&text[start..end]),
+
+            CSI {
+                start_sequence: start,
+                start_parameters: _,
+                start_intermediates: _,
+                start_final_byte: _,
+                end,
+            } => buffer.push_str(&text[start..end]),
+
+            OSC {
+                start_sequence: _,
+                start_command: _,
+                start_terminator: _,
+                end: _,
+            } => {
+                // TODO(eth-p): Support re-printing hyperlinks.
+                // In the meantime, strip these.
+            }
+        }
+    }
+
+    buffer
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator};
+    use crate::vscreen::{
+        strip_problematic_sequences, EscapeSequenceOffsets, EscapeSequenceOffsetsIterator,
+    };
 
     #[test]
     fn test_escape_sequence_offsets_iterator_parses_text() {
@@ -682,5 +727,13 @@ mod tests {
             })
         );
         assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_strip_problematic_sequences() {
+        assert_eq!(
+            strip_problematic_sequences("text\x1B[33m\x1B]OSC\x1B\\\x1B(0"),
+            "text\x1B[33m\x1B(0"
+        );
     }
 }

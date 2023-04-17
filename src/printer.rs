@@ -33,7 +33,7 @@ use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::vscreen::AnsiStyle;
+use crate::vscreen::{strip_problematic_sequences, AnsiStyle};
 use crate::wrapping::WrappingMode;
 
 pub enum OutputHandle<'a> {
@@ -581,7 +581,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let text = strip_problematic_sequences(region);
+                let ansi_iterator = AnsiCodeIterator::new(&text);
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
@@ -634,7 +635,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         } else {
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let text = strip_problematic_sequences(region);
+                let ansi_iterator = AnsiCodeIterator::new(&text);
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
