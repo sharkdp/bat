@@ -458,6 +458,68 @@ impl<'a> Iterator for EscapeSequenceOffsetsIterator<'a> {
     }
 }
 
+/// An iterator over ANSI/VT escape sequences within a string.
+///
+/// ## Example
+///
+/// ```ignore
+/// let iter = EscapeSequenceIterator::new("\x1B[33mThis is yellow text.\x1B[m");
+/// ```
+pub struct EscapeSequenceIterator<'a> {
+    text: &'a str,
+    offset_iter: EscapeSequenceOffsetsIterator<'a>,
+}
+
+impl<'a> EscapeSequenceIterator<'a> {
+    pub fn new(text: &'a str) -> EscapeSequenceIterator<'a> {
+        return EscapeSequenceIterator {
+            text,
+            offset_iter: EscapeSequenceOffsetsIterator::new(text),
+        };
+    }
+}
+
+impl<'a> Iterator for EscapeSequenceIterator<'a> {
+    type Item = EscapeSequence<'a>;
+    fn next(&mut self) -> Option<Self::Item> {
+        use EscapeSequenceOffsets::*;
+        self.offset_iter.next().map(|offsets| match offsets {
+            Unknown { start, end } => EscapeSequence::Unknown(&self.text[start..end]),
+            Text { start, end } => EscapeSequence::Text(&self.text[start..end]),
+            NF {
+                start_sequence,
+                start,
+                end,
+            } => EscapeSequence::NF {
+                raw_sequence: &self.text[start_sequence..end],
+                nf_sequence: &self.text[start..end],
+            },
+            OSC {
+                start_sequence,
+                start_command,
+                start_terminator,
+                end,
+            } => EscapeSequence::OSC {
+                raw_sequence: &self.text[start_sequence..end],
+                command: &self.text[start_command..start_terminator],
+                terminator: &self.text[start_terminator..end],
+            },
+            CSI {
+                start_sequence,
+                start_parameters,
+                start_intermediates,
+                start_final_byte,
+                end,
+            } => EscapeSequence::CSI {
+                raw_sequence: &self.text[start_sequence..end],
+                parameters: &self.text[start_parameters..start_intermediates],
+                intermediates: &self.text[start_intermediates..start_final_byte],
+                final_byte: &self.text[start_final_byte..end],
+            },
+        })
+    }
+}
+
 /// Strips problematic ANSI escape sequences from a string.
 ///
 /// Ideally, this will be replaced with something that uses [[Attributes]] to create a table of char offsets
@@ -501,10 +563,46 @@ pub fn strip_problematic_sequences(text: &str) -> String {
     buffer
 }
 
+/// A parsed ANSI/VT100 escape sequence.
+#[derive(Debug, PartialEq)]
+pub enum EscapeSequence<'a> {
+    Text(&'a str),
+    Unknown(&'a str),
+    NF {
+        raw_sequence: &'a str,
+        nf_sequence: &'a str,
+    },
+    OSC {
+        raw_sequence: &'a str,
+        command: &'a str,
+        terminator: &'a str,
+    },
+    CSI {
+        raw_sequence: &'a str,
+        parameters: &'a str,
+        intermediates: &'a str,
+        final_byte: &'a str,
+    },
+}
+
+impl<'a> EscapeSequence<'a> {
+    pub fn raw(&self) -> &'a str {
+        use EscapeSequence::*;
+        match *self {
+            Text(raw) => raw,
+            Unknown(raw) => raw,
+            NF { raw_sequence, .. } => raw_sequence,
+            OSC { raw_sequence, .. } => raw_sequence,
+            CSI { raw_sequence, .. } => raw_sequence,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::vscreen::{
-        strip_problematic_sequences, EscapeSequenceOffsets, EscapeSequenceOffsetsIterator,
+        strip_problematic_sequences, EscapeSequence, EscapeSequenceIterator, EscapeSequenceOffsets,
+        EscapeSequenceOffsetsIterator,
     };
 
     #[test]
@@ -735,5 +833,44 @@ mod tests {
             strip_problematic_sequences("text\x1B[33m\x1B]OSC\x1B\\\x1B(0"),
             "text\x1B[33m\x1B(0"
         );
+    }
+
+    #[test]
+    fn test_escape_sequence_iterator_iterates() {
+        let mut iter = EscapeSequenceIterator::new("text\x1B[33m\x1B]OSC\x07\x1B]OSC\x1B\\\x1B(0");
+        assert_eq!(iter.next(), Some(EscapeSequence::Text("text")));
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequence::CSI {
+                raw_sequence: "\x1B[33m",
+                parameters: "33",
+                intermediates: "",
+                final_byte: "m",
+            })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequence::OSC {
+                raw_sequence: "\x1B]OSC\x07",
+                command: "OSC",
+                terminator: "\x07",
+            })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequence::OSC {
+                raw_sequence: "\x1B]OSC\x1B\\",
+                command: "OSC",
+                terminator: "\x1B\\",
+            })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequence::NF {
+                raw_sequence: "\x1B(0",
+                nf_sequence: "(0",
+            })
+        );
+        assert_eq!(iter.next(), None);
     }
 }
