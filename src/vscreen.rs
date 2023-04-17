@@ -1,4 +1,8 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    iter::Peekable,
+    str::CharIndices,
+};
 
 // Wrapper to avoid unnecessary branching when input doesn't have ANSI escape sequences.
 pub struct AnsiStyle {
@@ -209,4 +213,474 @@ fn join(
         .map(|i| i.to_string())
         .collect::<Vec<String>>()
         .join(delimiter)
+}
+
+/// A range of indices for a raw ANSI escape sequence.
+#[derive(Debug, PartialEq)]
+enum EscapeSequenceOffsets {
+    Text {
+        start: usize,
+        end: usize,
+    },
+    Unknown {
+        start: usize,
+        end: usize,
+    },
+    NF {
+        // https://en.wikipedia.org/wiki/ANSI_escape_code#nF_Escape_sequences
+        start_sequence: usize,
+        start: usize,
+        end: usize,
+    },
+    OSC {
+        // https://en.wikipedia.org/wiki/ANSI_escape_code#OSC_(Operating_System_Command)_sequences
+        start_sequence: usize,
+        start_command: usize,
+        start_terminator: usize,
+        end: usize,
+    },
+    CSI {
+        // https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_(Control_Sequence_Introducer)_sequences
+        start_sequence: usize,
+        start_parameters: usize,
+        start_intermediates: usize,
+        start_final_byte: usize,
+        end: usize,
+    },
+}
+
+/// An iterator over the offests of ANSI/VT escape sequences within a string.
+///
+/// ## Example
+///
+/// ```ignore
+/// let iter = EscapeSequenceOffsetsIterator::new("\x1B[33mThis is yellow text.\x1B[m");
+/// ```
+struct EscapeSequenceOffsetsIterator<'a> {
+    text: &'a str,
+    chars: Peekable<CharIndices<'a>>,
+}
+
+impl<'a> EscapeSequenceOffsetsIterator<'a> {
+    pub fn new(text: &'a str) -> EscapeSequenceOffsetsIterator<'a> {
+        return EscapeSequenceOffsetsIterator {
+            text,
+            chars: text.char_indices().peekable(),
+        };
+    }
+
+    /// Takes values from the iterator while the predicate returns true.
+    /// If the predicate returns false, that value is left.
+    fn chars_take_while(&mut self, pred: impl Fn(char) -> bool) -> Option<(usize, usize)> {
+        if self.chars.peek().is_none() {
+            return None;
+        }
+
+        let start = self.chars.peek().unwrap().0;
+        let mut end: usize = start;
+        while let Some((i, c)) = self.chars.peek() {
+            if !pred(*c) {
+                break;
+            }
+
+            end = *i + c.len_utf8();
+            self.chars.next();
+        }
+
+        Some((start, end))
+    }
+
+    fn next_text(&mut self) -> Option<EscapeSequenceOffsets> {
+        match self.chars_take_while(|c| c != '\x1B') {
+            None => None,
+            Some((start, end)) => Some(EscapeSequenceOffsets::Text { start, end }),
+        }
+    }
+
+    fn next_sequence(&mut self) -> Option<EscapeSequenceOffsets> {
+        let (start_sequence, c) = self.chars.next().expect("to not be finished");
+        match self.chars.peek() {
+            None => Some(EscapeSequenceOffsets::Unknown {
+                start: start_sequence,
+                end: start_sequence + c.len_utf8(),
+            }),
+
+            Some((_, ']')) => self.next_osc(start_sequence),
+            Some((_, '[')) => self.next_csi(start_sequence),
+            Some((i, c)) => match c {
+                '\x20'..='\x2F' => self.next_nf(start_sequence),
+                c => Some(EscapeSequenceOffsets::Unknown {
+                    start: start_sequence,
+                    end: i + c.len_utf8(),
+                }),
+            },
+        }
+    }
+
+    fn next_osc(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
+        let (osc_open_index, osc_open_char) = self.chars.next().expect("to not be finished");
+        debug_assert_eq!(osc_open_char, ']');
+
+        let mut start_terminator: usize;
+        let mut end_sequence: usize;
+
+        loop {
+            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B')) {
+                None => {
+                    start_terminator = self.text.len();
+                    end_sequence = start_terminator;
+                    break;
+                }
+
+                Some((_, end)) => {
+                    start_terminator = end;
+                    end_sequence = end;
+                }
+            }
+
+            match self.chars.next() {
+                Some((ti, '\x07')) => {
+                    end_sequence = ti + '\x07'.len_utf8();
+                    break;
+                }
+
+                Some((ti, '\x1B')) => {
+                    match self.chars.next() {
+                        Some((i, '\\')) => {
+                            end_sequence = i + '\\'.len_utf8();
+                            break;
+                        }
+
+                        None => {
+                            end_sequence = ti + '\x1B'.len_utf8();
+                            break;
+                        }
+
+                        _ => {
+                            // Repeat, since `\\`(anything) isn't a valid ST.
+                        }
+                    }
+                }
+
+                None => {
+                    // Prematurely ends.
+                    break;
+                }
+
+                Some((_, tc)) => {
+                    panic!("this should not be reached: char {:?}", tc)
+                }
+            }
+        }
+
+        Some(EscapeSequenceOffsets::OSC {
+            start_sequence,
+            start_command: osc_open_index + osc_open_char.len_utf8(),
+            start_terminator: start_terminator,
+            end: end_sequence,
+        })
+    }
+
+    fn next_csi(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
+        let (csi_open_index, csi_open_char) = self.chars.next().expect("to not be finished");
+        debug_assert_eq!(csi_open_char, '[');
+
+        let start_parameters: usize = csi_open_index + csi_open_char.len_utf8();
+
+        // Keep iterating while within the range of `0x30-0x3F`.
+        let mut start_intermediates: usize = start_parameters;
+        if let Some((_, end)) = self.chars_take_while(|c| matches!(c, '\x30'..='\x3F')) {
+            start_intermediates = end;
+        }
+
+        // Keep iterating while within the range of `0x20-0x2F`.
+        let mut start_final_byte: usize = start_intermediates;
+        if let Some((_, end)) = self.chars_take_while(|c| matches!(c, '\x20'..='\x2F')) {
+            start_final_byte = end;
+        }
+
+        // Take the last char.
+        let end_of_sequence = match self.chars.next() {
+            None => start_final_byte,
+            Some((i, c)) => i + c.len_utf8(),
+        };
+
+        Some(EscapeSequenceOffsets::CSI {
+            start_sequence,
+            start_parameters,
+            start_intermediates,
+            start_final_byte,
+            end: end_of_sequence,
+        })
+    }
+
+    fn next_nf(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
+        let (nf_open_index, nf_open_char) = self.chars.next().expect("to not be finished");
+        debug_assert!(matches!(nf_open_char, '\x20'..='\x2F'));
+
+        let start: usize = nf_open_index;
+        let mut end: usize = start;
+
+        // Keep iterating while within the range of `0x20-0x2F`.
+        match self.chars_take_while(|c| matches!(c, '\x20'..='\x2F')) {
+            Some((_, i)) => end = i,
+            None => {
+                return Some(EscapeSequenceOffsets::NF {
+                    start_sequence,
+                    start,
+                    end,
+                })
+            }
+        }
+
+        // Get the final byte.
+        match self.chars.next() {
+            Some((i, c)) => end = i + c.len_utf8(),
+            None => {}
+        }
+
+        Some(EscapeSequenceOffsets::NF {
+            start_sequence,
+            start,
+            end,
+        })
+    }
+}
+
+impl<'a> Iterator for EscapeSequenceOffsetsIterator<'a> {
+    type Item = EscapeSequenceOffsets;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.chars.peek() {
+            Some((_, '\x1B')) => self.next_sequence(),
+            Some((_, _)) => self.next_text(),
+            None => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator};
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_text() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("text");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Text { start: 0, end: 4 })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_text_stops_at_esc() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("text\x1B[ming");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Text { start: 0, end: 4 })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_osc_with_bel() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B]abc\x07");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::OSC {
+                start_sequence: 0,
+                start_command: 2,
+                start_terminator: 5,
+                end: 6,
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_osc_with_st() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B]abc\x1B\\");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::OSC {
+                start_sequence: 0,
+                start_command: 2,
+                start_terminator: 5,
+                end: 7,
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_osc_thats_broken() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B]ab");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::OSC {
+                start_sequence: 0,
+                start_command: 2,
+                start_terminator: 4,
+                end: 4,
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_csi() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[m");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 2,
+                start_final_byte: 2,
+                end: 3
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_csi_with_parameters() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[1;34m");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 6,
+                start_final_byte: 6,
+                end: 7
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_csi_with_intermediates() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[$m");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 2,
+                start_final_byte: 3,
+                end: 4
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_csi_with_parameters_and_intermediates() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[1$m");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 3,
+                start_final_byte: 4,
+                end: 5
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_csi_thats_broken() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 2,
+                start_final_byte: 2,
+                end: 2
+            })
+        );
+
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[1");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 3,
+                start_final_byte: 3,
+                end: 3
+            })
+        );
+
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B[1$");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 3,
+                start_final_byte: 4,
+                end: 4
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_nf() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B($0");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::NF {
+                start_sequence: 0,
+                start: 1,
+                end: 4
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_nf_thats_broken() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1B(");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::NF {
+                start_sequence: 0,
+                start: 1,
+                end: 1
+            })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_iterates() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("text\x1B[33m\x1B]OSC\x07\x1B(0");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Text { start: 0, end: 4 })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 4,
+                start_parameters: 6,
+                start_intermediates: 8,
+                start_final_byte: 8,
+                end: 9
+            })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::OSC {
+                start_sequence: 9,
+                start_command: 11,
+                start_terminator: 14,
+                end: 15
+            })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::NF {
+                start_sequence: 15,
+                start: 16,
+                end: 18
+            })
+        );
+        assert_eq!(iter.next(), None);
+    }
 }
