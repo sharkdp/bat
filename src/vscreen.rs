@@ -14,7 +14,7 @@ impl AnsiStyle {
         AnsiStyle { attributes: None }
     }
 
-    pub fn update(&mut self, sequence: &str) -> bool {
+    pub fn update(&mut self, sequence: EscapeSequence) -> bool {
         match &mut self.attributes {
             Some(a) => a.update(sequence),
             None => {
@@ -85,26 +85,36 @@ impl Attributes {
 
     /// Update the attributes with an escape sequence.
     /// Returns `false` if the sequence is unsupported.
-    pub fn update(&mut self, sequence: &str) -> bool {
-        let mut chars = sequence.char_indices().skip(1);
-
-        if let Some((_, t)) = chars.next() {
-            match t {
-                '(' => self.update_with_charset('(', chars.map(|(_, c)| c)),
-                ')' => self.update_with_charset(')', chars.map(|(_, c)| c)),
-                '[' => {
-                    if let Some((i, last)) = chars.last() {
-                        // SAFETY: Always starts with ^[ and ends with m.
-                        self.update_with_csi(last, &sequence[2..i])
-                    } else {
-                        false
+    pub fn update(&mut self, sequence: EscapeSequence) -> bool {
+        use EscapeSequence::*;
+        match sequence {
+            Text(_) => return false,
+            Unknown(_) => { /* defer to update_with_unsupported */ }
+            OSC { .. } => return false,
+            CSI {
+                final_byte,
+                parameters,
+                ..
+            } => {
+                match final_byte {
+                    "m" => return self.update_with_sgr(parameters),
+                    _ => {
+                        // NOTE(eth-p): We might want to ignore these, since they involve cursor or buffer manipulation.
+                        /* defer to update_with_unsupported */
                     }
                 }
-                _ => self.update_with_unsupported(sequence),
             }
-        } else {
-            false
+            NF { nf_sequence, .. } => {
+                let mut iter = nf_sequence.chars();
+                match iter.next() {
+                    Some('(') => return self.update_with_charset('(', iter),
+                    Some(')') => return self.update_with_charset(')', iter),
+                    _ => { /* defer to update_with_unsupported */ }
+                }
+            }
         }
+
+        self.update_with_unsupported(sequence.raw())
     }
 
     fn sgr_reset(&mut self) {
@@ -151,14 +161,6 @@ impl Attributes {
         }
 
         true
-    }
-
-    fn update_with_csi(&mut self, finalizer: char, sequence: &str) -> bool {
-        if finalizer == 'm' {
-            self.update_with_sgr(sequence)
-        } else {
-            false
-        }
     }
 
     fn update_with_unsupported(&mut self, sequence: &str) -> bool {
@@ -520,49 +522,6 @@ impl<'a> Iterator for EscapeSequenceIterator<'a> {
     }
 }
 
-/// Strips problematic ANSI escape sequences from a string.
-///
-/// Ideally, this will be replaced with something that uses [[Attributes]] to create a table of char offsets
-/// -> absolute styles and style deltas. Something like that would let us simplify the printer (and support
-/// re-printing OSC hyperlink commands).
-pub fn strip_problematic_sequences(text: &str) -> String {
-    use EscapeSequenceOffsets::*;
-
-    let mut buffer = String::with_capacity(text.len());
-    for seq in EscapeSequenceOffsetsIterator::new(text) {
-        match seq {
-            Text { start, end } => buffer.push_str(&text[start..end]),
-            Unknown { start, end } => buffer.push_str(&text[start..end]),
-
-            NF {
-                start_sequence: start,
-                start: _,
-                end,
-            } => buffer.push_str(&text[start..end]),
-
-            CSI {
-                start_sequence: start,
-                start_parameters: _,
-                start_intermediates: _,
-                start_final_byte: _,
-                end,
-            } => buffer.push_str(&text[start..end]),
-
-            OSC {
-                start_sequence: _,
-                start_command: _,
-                start_terminator: _,
-                end: _,
-            } => {
-                // TODO(eth-p): Support re-printing hyperlinks.
-                // In the meantime, strip these.
-            }
-        }
-    }
-
-    buffer
-}
-
 /// A parsed ANSI/VT100 escape sequence.
 #[derive(Debug, PartialEq)]
 pub enum EscapeSequence<'a> {
@@ -601,7 +560,7 @@ impl<'a> EscapeSequence<'a> {
 #[cfg(test)]
 mod tests {
     use crate::vscreen::{
-        strip_problematic_sequences, EscapeSequence, EscapeSequenceIterator, EscapeSequenceOffsets,
+        EscapeSequence, EscapeSequenceIterator, EscapeSequenceOffsets,
         EscapeSequenceOffsetsIterator,
     };
 
@@ -825,14 +784,6 @@ mod tests {
             })
         );
         assert_eq!(iter.next(), None);
-    }
-
-    #[test]
-    fn test_strip_problematic_sequences() {
-        assert_eq!(
-            strip_problematic_sequences("text\x1B[33m\x1B]OSC\x1B\\\x1B(0"),
-            "text\x1B[33m\x1B(0"
-        );
     }
 
     #[test]
