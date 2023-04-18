@@ -23,6 +23,13 @@ impl AnsiStyle {
             }
         }
     }
+
+    pub fn to_reset_sequence(&mut self) -> String {
+        match &mut self.attributes {
+            Some(a) => a.to_reset_sequence(),
+            None => String::new(),
+        }
+    }
 }
 
 impl Display for AnsiStyle {
@@ -35,6 +42,8 @@ impl Display for AnsiStyle {
 }
 
 struct Attributes {
+    has_sgr_sequences: bool,
+
     foreground: String,
     background: String,
     underlined: String,
@@ -67,16 +76,18 @@ struct Attributes {
     strike: String,
 
     /// The hyperlink sequence.
-    /// FORMAT: \x1B]8;<ID>;<HREF>\e\\
+    /// FORMAT: \x1B]8;{ID};{URL}\e\\
     ///
     /// `\e\\` may be replaced with BEL `\x07`.
-    /// Setting both <ID> and <HREF> to an empty string represents no hyperlink.
+    /// Setting both {ID} and {URL} to an empty string represents no hyperlink.
     hyperlink: String,
 }
 
 impl Attributes {
     pub fn new() -> Self {
         Attributes {
+            has_sgr_sequences: false,
+
             foreground: "".to_owned(),
             background: "".to_owned(),
             underlined: "".to_owned(),
@@ -135,6 +146,8 @@ impl Attributes {
     }
 
     fn sgr_reset(&mut self) {
+        self.has_sgr_sequences = false;
+
         self.foreground.clear();
         self.background.clear();
         self.underlined.clear();
@@ -152,6 +165,7 @@ impl Attributes {
             .map(|p| p.parse::<u16>())
             .map(|p| p.unwrap_or(0)); // Treat errors as 0.
 
+        self.has_sgr_sequences = true;
         while let Some(p) = iter.next() {
             match p {
                 0 => self.sgr_reset(),
@@ -213,6 +227,28 @@ impl Attributes {
             9 => "".to_owned(),
             _ => format!("\x1B[{}m", color),
         }
+    }
+
+    /// Gets an ANSI escape sequence to reset all the known attributes.
+    pub fn to_reset_sequence(&self) -> String {
+        let mut buf = String::with_capacity(17);
+
+        // TODO: Enable me in a later pull request.
+        // if self.has_sgr_sequences {
+        //     buf.push_str("\x1B[m");
+        // }
+
+        if !self.hyperlink.is_empty() {
+            buf.push_str("\x1B]8;;\x1B\\"); // Disable hyperlink.
+        }
+
+        // TODO: Enable me in a later pull request.
+        // if !self.charset.is_empty() {
+        //     // https://espterm.github.io/docs/VT100%20escape%20codes.html
+        //     buf.push_str("\x1B(B\x1B)B"); // setusg0 and setusg1
+        // }
+
+        buf
     }
 }
 

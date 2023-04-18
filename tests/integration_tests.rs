@@ -1966,7 +1966,7 @@ fn ansi_hyperlink_emitted_when_wrapped() {
         .write_stdin("\x1B]8;;http://example.com/\x1B\\Hyperlinks..........Wrap across lines.\n")
         .assert()
         .success()
-        .stdout("\x1B]8;;http://example.com/\x1B\\\x1B]8;;http://example.com/\x1B\\Hyperlinks..........\n\x1B]8;;http://example.com/\x1B\\Wrap across lines.\n")
+        .stdout("\x1B]8;;http://example.com/\x1B\\\x1B]8;;http://example.com/\x1B\\Hyperlinks..........\x1B]8;;\x1B\\\n\x1B]8;;http://example.com/\x1B\\Wrap across lines.\n")
         // FIXME:                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ should not be emitted twice.
         .stderr("");
 }

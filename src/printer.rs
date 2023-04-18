@@ -598,12 +598,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // Regular text.
                         EscapeSequence::Text(text) => {
-                            let text = &*self.preprocess(text, &mut cursor_total);
+                            let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
 
                             write!(
                                 handle,
-                                "{}",
+                                "{}{}",
                                 as_terminal_escaped(
                                     style,
                                     &format!("{}{}", self.ansi_style, text_trimmed),
@@ -611,9 +611,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     colored_output,
                                     italics,
                                     background_color
-                                )
+                                ),
+                                self.ansi_style.to_reset_sequence(),
                             )?;
 
+                            // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
                                 if let Some(background_color) = background_color {
                                     let ansi_style = Style {
@@ -693,7 +695,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     // It wraps.
                                     write!(
                                         handle,
-                                        "{}\n{}",
+                                        "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
                                             &format!("{}{}", self.ansi_style, line_buf),
@@ -702,6 +704,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             self.config.use_italic_text,
                                             background_color
                                         ),
+                                        self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
                                     )?;
 
