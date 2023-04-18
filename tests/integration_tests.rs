@@ -1952,6 +1952,25 @@ fn ansi_sgr_emitted_when_wrapped() {
         .stderr("");
 }
 
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_hyperlink_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B]8;;http://example.com/\x1B\\Hyperlinks..........Wrap across lines.\n")
+        .assert()
+        .success()
+        .stdout("\x1B]8;;http://example.com/\x1B\\\x1B]8;;http://example.com/\x1B\\Hyperlinks..........\n\x1B]8;;http://example.com/\x1B\\Wrap across lines.\n")
+        // FIXME:                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
 // Ensure that multiple ANSI sequence SGR attributes are combined when emitted on wrapped lines.
 #[test]
 fn ansi_sgr_joins_attributes_when_wrapped() {

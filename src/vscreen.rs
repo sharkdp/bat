@@ -65,6 +65,13 @@ struct Attributes {
     /// ON:  ^[9m
     /// OFF: ^[29m
     strike: String,
+
+    /// The hyperlink sequence.
+    /// FORMAT: \x1B]8;<ID>;<HREF>\e\\
+    ///
+    /// `\e\\` may be replaced with BEL `\x07`.
+    /// Setting both <ID> and <HREF> to an empty string represents no hyperlink.
+    hyperlink: String,
 }
 
 impl Attributes {
@@ -80,6 +87,7 @@ impl Attributes {
             underline: "".to_owned(),
             italic: "".to_owned(),
             strike: "".to_owned(),
+            hyperlink: "".to_owned(),
         }
     }
 
@@ -90,7 +98,16 @@ impl Attributes {
         match sequence {
             Text(_) => return false,
             Unknown(_) => { /* defer to update_with_unsupported */ }
-            OSC { .. } => return false,
+            OSC {
+                raw_sequence,
+                command,
+                ..
+            } => {
+                if command.starts_with("8;") {
+                    return self.update_with_hyperlink(raw_sequence);
+                }
+                /* defer to update_with_unsupported */
+            }
             CSI {
                 final_byte,
                 parameters,
@@ -168,6 +185,18 @@ impl Attributes {
         false
     }
 
+    fn update_with_hyperlink(&mut self, sequence: &str) -> bool {
+        if sequence == "8;;" {
+            // Empty hyperlink ID and HREF -> end of hyperlink.
+            self.hyperlink.clear();
+        } else {
+            self.hyperlink.clear();
+            self.hyperlink.push_str(sequence);
+        }
+
+        true
+    }
+
     fn update_with_charset(&mut self, kind: char, set: impl Iterator<Item = char>) -> bool {
         self.charset = format!("\x1B{}{}", kind, set.take(1).collect::<String>());
         true
@@ -191,7 +220,7 @@ impl Display for Attributes {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}{}{}",
             self.foreground,
             self.background,
             self.underlined,
@@ -201,6 +230,7 @@ impl Display for Attributes {
             self.underline,
             self.italic,
             self.strike,
+            self.hyperlink,
         )
     }
 }
