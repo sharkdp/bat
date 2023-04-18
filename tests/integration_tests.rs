@@ -1933,6 +1933,43 @@ fn ansi_passthrough_emit() {
     }
 }
 
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_sgr_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B[33mColor...............Also color.\n")
+        .assert()
+        .success()
+        .stdout("\x1B[33m\x1B[33mColor...............\n\x1B[33mAlso color.\n")
+        // FIXME:              ~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
+// Ensure that multiple ANSI sequence SGR attributes are combined when emitted on wrapped lines.
+#[test]
+fn ansi_sgr_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[1mBold.........Also bold and color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[1m\x1B[33m\x1B[1mBold.........\n\x1B[33m\x1B[1mAlso bold and color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
 #[test]
 fn ignored_suffix_arg() {
     bat()
