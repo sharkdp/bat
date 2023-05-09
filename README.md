@@ -684,7 +684,7 @@ Windows 10 natively supports colors in both `conhost.exe` (Command Prompt) and P
 well as in newer versions of bash. On earlier versions of Windows, you can use
 [Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
 
-**Note:** Old versions of `less` do not correctly interpret colors on Windows, to fix this you can add optional unix tools to path when installing Git. If you don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never` or by setting `BAT_PAGER` to an empty string.
+**Note:** Old versions of `less` do not correctly interpret colors on Windows. To fix this, you can add the optional Unix tools to your PATH when installing Git. If you don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never` or by setting `BAT_PAGER` to an empty string.
 
 ### Cygwin
 
