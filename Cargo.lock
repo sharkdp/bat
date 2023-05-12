@@ -121,6 +121,7 @@ name = "bat"
 version = "0.24.0"
 dependencies = [
  "ansi_colours",
+ "anstyle-query",
  "assert_cmd",
  "bincode",
  "bugreport",

@@ -41,6 +41,7 @@ regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
+anstyle-query = "1.0.0"
 nu-ansi-term = "0.49.0"
 ansi_colours = "^1.2"
 bincode = "1.0"

@@ -36,8 +36,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> Result<Self> {
-        #[cfg(windows)]
-        let _ = nu_ansi_term::enable_ansi_support();
+        anstyle_query::windows::enable_ansi_colors();
 
         let interactive_output = std::io::stdout().is_terminal();
 
