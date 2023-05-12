@@ -1,7 +1,9 @@
+use anstyle::Style;
+
 #[cfg(feature = "git")]
 use crate::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
-use nu_ansi_term::Style;
+use crate::terminal::StyledExt;
 
 #[derive(Debug, Clone)]
 pub(crate) struct DecorationText {
@@ -31,7 +33,7 @@ impl LineNumberDecoration {
             color: colors.line_number,
             cached_wrap_invalid_at: 10000,
             cached_wrap: DecorationText {
-                text: colors.line_number.paint(" ".repeat(4)).to_string(),
+                text: " ".repeat(4).styled(colors.line_number).to_string(),
                 width: 4,
             },
         }
@@ -49,7 +51,7 @@ impl Decoration for LineNumberDecoration {
             if line_number > self.cached_wrap_invalid_at {
                 let new_width = self.cached_wrap.width + 1;
                 return DecorationText {
-                    text: self.color.paint(" ".repeat(new_width)).to_string(),
+                    text: " ".repeat(new_width).styled(self.color).to_string(),
                     width: new_width,
                 };
             }
@@ -59,7 +61,7 @@ impl Decoration for LineNumberDecoration {
             let plain: String = format!("{:4}", line_number);
             DecorationText {
                 width: plain.len(),
-                text: self.color.paint(plain).to_string(),
+                text: plain.styled(self.color).to_string(),
             }
         }
     }
@@ -83,7 +85,7 @@ impl LineChangesDecoration {
     #[inline]
     fn generate_cached(style: Style, text: &str) -> DecorationText {
         DecorationText {
-            text: style.paint(text).to_string(),
+            text: text.styled(style).to_string(),
             width: text.chars().count(),
         }
     }
@@ -135,7 +137,7 @@ impl GridBorderDecoration {
     pub(crate) fn new(colors: &Colors) -> Self {
         GridBorderDecoration {
             cached: DecorationText {
-                text: colors.grid.paint("│").to_string(),
+                text: "│".styled(colors.grid).to_string(),
                 width: 1,
             },
         }

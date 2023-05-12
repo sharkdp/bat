@@ -14,8 +14,8 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
-use nu_ansi_term::Color::Green;
-use nu_ansi_term::Style;
+use anstyle::AnsiColor::Green;
+use anstyle::Style;
 
 use crate::{
     app::App,
@@ -149,7 +149,7 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
         let desired_width = config.term_width - longest - separator.len();
 
         let style = if config.colored_output {
-            Green.normal()
+            Green.on_default()
         } else {
             Style::default()
         };
@@ -170,7 +170,14 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
                 }
 
                 num_chars += new_chars;
-                write!(result, "{}", style.paint(&word[..])).ok();
+                write!(
+                    result,
+                    "{}{}{}",
+                    style.render(),
+                    &word[..],
+                    style.render_reset()
+                )
+                .ok();
                 if extension.peek().is_some() {
                     result += comma_separator;
                 }
@@ -198,11 +205,13 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     let mut stdout = stdout.lock();
 
     if config.colored_output {
+        let bold = Style::new().bold();
         for theme in assets.themes() {
             writeln!(
                 stdout,
-                "Theme: {}\n",
-                Style::new().bold().paint(theme.to_string())
+                "Theme: {}{theme}{}\n",
+                bold.render(),
+                bold.render_reset(),
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)

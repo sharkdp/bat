@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! bat_warning {
     ($($arg:tt)*) => ({
-        use nu_ansi_term::Color::Yellow;
-        eprintln!("{}: {}", Yellow.paint("[bat warning]"), format!($($arg)*));
+        let style = anstyle::AnsiColor::Yellow.on_default();
+        eprintln!("{}[bat warning]{}: {}", style.render(), style.render_reset(), format!($($arg)*));
     })
 }

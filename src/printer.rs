@@ -2,8 +2,7 @@ use std::fmt;
 use std::io;
 use std::vec::Vec;
 
-use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
-use nu_ansi_term::Style;
+use anstyle::{AnsiColor, Style};
 
 use bytesize::ByteSize;
 
@@ -32,7 +31,7 @@ use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
-use crate::terminal::{as_terminal_escaped, to_ansi_color};
+use crate::terminal::{as_terminal_escaped, to_ansi_color, StyledExt};
 use crate::vscreen::AnsiStyle;
 use crate::wrapping::WrappingMode;
 
@@ -252,7 +251,7 @@ impl<'a> InteractivePrinter<'a> {
         writeln!(
             handle,
             "{}",
-            style.paint("─".repeat(self.config.term_width))
+            "─".repeat(self.config.term_width).styled(style),
         )?;
         Ok(())
     }
@@ -263,7 +262,7 @@ impl<'a> InteractivePrinter<'a> {
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
-            writeln!(handle, "{}", self.colors.grid.paint(hline))?;
+            writeln!(handle, "{}", hline.styled(self.colors.grid))?;
         }
 
         Ok(())
@@ -293,9 +292,7 @@ impl<'a> InteractivePrinter<'a> {
                 handle,
                 "{}{}",
                 " ".repeat(self.panel_width),
-                self.colors
-                    .grid
-                    .paint(if self.panel_width > 0 { "│ " } else { "" }),
+                if self.panel_width > 0 { "│ " } else { "" }.styled(self.colors.grid),
             )
         } else {
             write!(handle, "{}", " ".repeat(self.panel_width))
@@ -330,7 +327,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     "{}: Binary content from {} will not be printed to the terminal \
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
                      to show the binary file contents.",
-                    Yellow.paint("[bat warning]"),
+                    "[bat warning]".styled(AnsiColor::Yellow.on_default()),
                     input.description.summary(),
                 )?;
             } else if self.config.style_components.grid() {
@@ -388,7 +385,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .kind()
                         .map(|kind| format!("{}: ", kind))
                         .unwrap_or_else(|| "".into()),
-                    self.colors.header_value.paint(description.title()),
+                    description.title().styled(self.colors.header_value),
                     mode
                 ),
 
@@ -397,7 +394,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
                         .unwrap_or_else(|| "-".into());
-                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
+                    writeln!(handle, "Size: {}", bsize.styled(self.colors.header_value))
                 }
                 _ => Ok(()),
             }
@@ -440,9 +437,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         writeln!(
             handle,
             "{}",
-            self.colors
-                .grid
-                .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
+            format!("{}{}{}{}", panel, snip_left, title, snip_right).styled(self.colors.grid),
         )?;
 
         Ok(())
@@ -577,17 +572,15 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                             if text.len() != text_trimmed.len() {
                                 if let Some(background_color) = background_color {
-                                    let ansi_style = Style {
-                                        background: to_ansi_color(background_color, true_color),
-                                        ..Default::default()
-                                    };
+                                    let ansi_style = Style::new()
+                                        .bg_color(to_ansi_color(background_color, true_color));
 
                                     let width = if cursor_total <= cursor_max {
                                         cursor_max - cursor_total + 1
                                     } else {
                                         0
                                     };
-                                    write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
+                                    write!(handle, "{}", " ".repeat(width).styled(ansi_style))?;
                                 }
                                 write!(handle, "{}", &text[text_trimmed.len()..])?;
                             }
@@ -696,15 +689,13 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
 
             if let Some(background_color) = background_color {
-                let ansi_style = Style {
-                    background: to_ansi_color(background_color, self.config.true_color),
-                    ..Default::default()
-                };
+                let ansi_style =
+                    Style::new().bg_color(to_ansi_color(background_color, self.config.true_color));
 
                 write!(
                     handle,
                     "{}",
-                    ansi_style.paint(" ".repeat(cursor_max - cursor))
+                    " ".repeat(cursor_max - cursor).styled(ansi_style),
                 )?;
             }
             writeln!(handle)?;
@@ -738,26 +729,23 @@ impl Colors {
     }
 
     fn colored(theme: &Theme, true_color: bool) -> Self {
-        let gutter_style = Style {
-            foreground: match theme.settings.gutter_foreground {
-                // If the theme provides a gutter foreground color, use it.
-                // Note: It might be the special value #00000001, in which case
-                // to_ansi_color returns None and we use an empty Style
-                // (resulting in the terminal's default foreground color).
-                Some(c) => to_ansi_color(c, true_color),
-                // Otherwise, use a specific fallback color.
-                None => Some(Fixed(DEFAULT_GUTTER_COLOR)),
-            },
-            ..Style::default()
-        };
+        let gutter_style = Style::new().fg_color(match theme.settings.gutter_foreground {
+            // If the theme provides a gutter foreground color, use it.
+            // Note: It might be the special value #00000001, in which case
+            // to_ansi_color returns None and we use an empty Style
+            // (resulting in the terminal's default foreground color).
+            Some(c) => to_ansi_color(c, true_color),
+            // Otherwise, use a specific fallback color.
+            None => Some(anstyle::Color::from(DEFAULT_GUTTER_COLOR)),
+        });
 
         Colors {
             grid: gutter_style,
             rule: gutter_style,
             header_value: Style::new().bold(),
-            git_added: Green.normal(),
-            git_removed: Red.normal(),
-            git_modified: Yellow.normal(),
+            git_added: AnsiColor::Green.on_default(),
+            git_removed: AnsiColor::Red.on_default(),
+            git_modified: AnsiColor::Yellow.on_default(),
             line_number: gutter_style,
         }
     }
