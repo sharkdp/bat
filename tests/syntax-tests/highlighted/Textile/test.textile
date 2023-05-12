@@ -35,6 +35,6 @@
 
 [38;2;249;38;114mp[0m[38;2;166;226;46m{color:red}[0m[38;2;249;38;114m.[0m[38;2;248;248;242m This line will be red.[0m
 
-[3;38;2;228;46;112m%span%[0m[38;2;248;248;242m are enclosed in percent symbols.[0m
+[3m[38;2;228;46;112m%span%[0m[38;2;248;248;242m are enclosed in percent symbols.[0m
 
 [38;2;248;248;242mdiv. This is a new div element[0m
