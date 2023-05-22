@@ -104,7 +104,7 @@ impl App {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
-                    if self.interactive_output && std::io::stdin().is_terminal() {
+                    if self.interactive_output && !std::io::stdin().is_terminal() {
                         PagingMode::QuitIfOneScreen
                     } else {
                         PagingMode::Never
