@@ -62,7 +62,7 @@ path_abs = { version = "0.5", default-features = false }
 clircle = "0.4"
 bugreport = { version = "0.5.0", optional = true }
 dirs = { version = "5.0.0", optional = true }
-grep-cli = { version = "0.1.7", optional = true }
+grep-cli = { version = "0.1.9", optional = true }
 regex = { version = "1.8.3", optional = true }
 walkdir = { version = "2.3", optional = true }
 bytesize = { version = "1.2.0" }

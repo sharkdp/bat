@@ -114,6 +114,8 @@ impl OutputType {
                 p.args(args);
             }
             p.env("LESSCHARSET", "UTF-8");
+        } else if pager.kind == PagerKind::More && cfg!(windows) && args.is_empty() {
+            p.arg("/E"); // Enable extended features of Windows' 'more' by default
         } else {
             p.args(args);
         };
