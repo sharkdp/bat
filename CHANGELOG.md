@@ -10,6 +10,8 @@
 
 ## Syntaxes
 
+- Associate `os-release` with `bash` syntax, see #2587 (@cyqsimon)
+
 ## Themes
 
 ## `bat` as a library
