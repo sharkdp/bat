@@ -14,6 +14,23 @@ on:
       - '*'
 
 jobs:
+  all-jobs:
+    if: always() # Otherwise this job is skipped if the matrix job fails
+    name: all-jobs
+    runs-on: ubuntu-latest
+    needs:
+      - crate_metadata
+      - ensure_cargo_fmt
+      - min_version
+      - license_checks
+      - test_with_new_syntaxes_and_themes
+      - test_with_system_config
+      - documentation
+      - cargo-audit
+      - build
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+
   crate_metadata:
     name: Extract crate metadata
     runs-on: ubuntu-latest
