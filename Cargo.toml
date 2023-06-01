@@ -87,7 +87,7 @@ dirs = "5.0.0"
 plist = "1.4.3"
 
 [dev-dependencies]
-assert_cmd = "2.0.10"
+assert_cmd = "2.0.11"
 expect-test = "1.4.0"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.0.3"
