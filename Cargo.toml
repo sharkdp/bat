@@ -68,7 +68,7 @@ walkdir = { version = "2.3", optional = true }
 bytesize = { version = "1.2.0" }
 
 [dependencies.git2]
-version = "0.16"
+version = "0.17"
 optional = true
 default-features = false
 
