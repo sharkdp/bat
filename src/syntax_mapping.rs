@@ -64,6 +64,12 @@ impl<'a> SyntaxMapping<'a> {
             )
             .unwrap();
         mapping
+            .insert(
+                "os-release",
+                MappingTarget::MapTo("Bourne Again Shell (bash)"),
+            )
+            .unwrap();
+        mapping
             .insert("*.pac", MappingTarget::MapTo("JavaScript (Babel)"))
             .unwrap();
         mapping
