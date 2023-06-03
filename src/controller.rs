@@ -46,8 +46,9 @@ impl<'b> Controller<'b> {
             let mut paging_mode = self.config.paging_mode;
             if self.config.paging_mode != PagingMode::Never {
                 let call_pager = inputs.iter().any(|input| {
-                    if let InputKind::OrdinaryFile(ref path) = input.kind {
-                        Path::new(path).exists()
+                    if let InputKind::OrdinaryFile(ref path_str) = input.kind {
+                        let path = Path::new(path_str);
+                        path.exists() && path.is_file()
                     } else {
                         true
                     }
