@@ -3,6 +3,7 @@
 ## Features
 
 ## Bugfixes
+- Set PagerMode to Never when none of input files exists, see #2590 (@saguywalker)
 
 ## Other
 
