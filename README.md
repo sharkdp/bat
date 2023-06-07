@@ -390,6 +390,14 @@ take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
 You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
 
+#### With WinGet
+
+You can install `bat` via [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget):
+
+```bash
+winget install --id=sharkdp.bat -e
+```
+
 #### With Chocolatey
 
 You can install `bat` via [Chocolatey](https://chocolatey.org/packages/Bat):
