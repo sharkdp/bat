@@ -20,7 +20,9 @@ impl Default for IgnoredSuffixes<'_> {
                 ".orig",
                 // Debian and derivatives apt/dpkg/ucf backups
                 ".dpkg-dist",
+                ".dpkg-new",
                 ".dpkg-old",
+                ".dpkg-tmp",
                 ".ucf-dist",
                 ".ucf-new",
                 ".ucf-old",
