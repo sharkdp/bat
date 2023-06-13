@@ -242,6 +242,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// The width of line number decoration
+    pub fn line_number_width(&mut self, line_number_width: Option<usize>) -> &mut Self {
+        self.config.line_number_width = line_number_width.unwrap_or(5);
+        self
+    }
+
     pub fn themes(&self) -> impl Iterator<Item = &str> {
         self.assets.themes()
     }

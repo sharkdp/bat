@@ -67,6 +67,18 @@ impl InputDescription {
             Some(kind) => format!("{} '{}'", kind.to_lowercase(), self.name),
         })
     }
+
+    pub fn file_num_lines(&self) -> Result<usize> {
+        let file = File::open(&self.name)
+            .map_err(|e| format!("file open error : {}",  e))?;
+        let file_reader = BufReader::new(file);
+        let mut total_lines = 0;
+        for _ in  file_reader.lines() {
+            total_lines += 1;
+        }
+        Ok(total_lines)
+    }
+
 }
 
 pub(crate) enum InputKind<'a> {
@@ -221,7 +233,6 @@ impl<'a> Input<'a> {
                     if file.metadata()?.is_dir() {
                         return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
                     }
-
                     if let Some(stdout) = stdout_identifier {
                         let input_identifier = Identifier::try_from(file).map_err(|e| {
                             format!("{}: Error identifying file: {}", path.to_string_lossy(), e)
@@ -235,7 +246,6 @@ impl<'a> Input<'a> {
                         }
                         file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
-
                     InputReader::new(BufReader::new(file))
                 },
             }),
@@ -291,6 +301,7 @@ impl<'a> InputReader<'a> {
 
         Ok(res)
     }
+
 }
 
 #[test]

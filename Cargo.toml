@@ -16,22 +16,10 @@ rust-version = "1.64"
 default = ["application"]
 # Feature required for bat the application. Should be disabled when depending on
 # bat as a library.
-application = [
-    "bugreport",
-    "build-assets",
-    "git",
-    "minimal-application",
-]
+application = ["bugreport", "build-assets", "git", "minimal-application"]
 # Mainly for developers that want to iterate quickly
 # Be aware that the included features might change in the future
-minimal-application = [
-    "is-terminal",
-    "clap",
-    "dirs",
-    "paging",
-    "regex-onig",
-    "wild",
-]
+minimal-application = ["is-terminal", "clap", "dirs", "paging", "regex-onig", "wild"]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
@@ -66,6 +54,7 @@ grep-cli = { version = "0.1.7", optional = true }
 regex = { version = "1.8.3", optional = true }
 walkdir = { version = "2.3", optional = true }
 bytesize = { version = "1.2.0" }
+ilog = "1.0.1"
 
 [dependencies.git2]
 version = "0.16"

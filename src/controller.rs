@@ -5,6 +5,7 @@ use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
+use ilog::IntLog;
 use crate::input::{Input, InputReader, OpenedInput};
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
@@ -138,12 +139,16 @@ impl<'b> Controller<'b> {
         } else {
             None
         };
-
+        let mut config:  Config = self.config.clone();
+        let num_of_lines = opened_input.description.file_num_lines();
+        let n = (num_of_lines.unwrap()) as u32;
+        config.line_number_width = n.log10()+1;
+         
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
-            Box::new(SimplePrinter::new(self.config))
+            Box::new(SimplePrinter::new(&config))
         } else {
             Box::new(InteractivePrinter::new(
-                self.config,
+                &config,
                 self.assets,
                 &mut opened_input,
                 #[cfg(feature = "git")]
@@ -191,7 +196,6 @@ impl<'b> Controller<'b> {
                     LineRanges::from(line_ranges)
                 }
             };
-
             self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
         }
         printer.print_footer(writer, input)?;
