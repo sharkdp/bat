@@ -17,6 +17,8 @@ use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
 
+const TAB_WIDTH: usize = 4;
+
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
@@ -140,9 +142,22 @@ impl<'b> Controller<'b> {
             None
         };
         let mut config:  Config = self.config.clone();
-        let num_of_lines = opened_input.description.file_num_lines();
-        let n = (num_of_lines.unwrap()) as u32;
-        config.line_number_width = n.log10()+1;
+        config.line_number_width = match opened_input.metadata.size {
+            Some(size) => {
+                let mut ret = TAB_WIDTH;
+                if size>1000{
+                    let num_of_lines = opened_input.description.file_num_lines().unwrap() as u32;
+                    ret = if  num_of_lines > 9999 {
+                        num_of_lines.log10()+1
+                    } else{
+                        TAB_WIDTH
+                    };
+                }
+                ret
+            },
+                None => TAB_WIDTH
+        };
+        
          
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
             Box::new(SimplePrinter::new(&config))
