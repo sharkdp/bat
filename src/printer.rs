@@ -155,7 +155,10 @@ impl<'a> InteractivePrinter<'a> {
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
 
         if config.style_components.numbers() {
-            decorations.push(Box::new(LineNumberDecoration::new(&colors,config.line_number_width)));
+            decorations.push(Box::new(LineNumberDecoration::new(
+                &colors,
+                config.line_number_width,
+            )));
         }
 
         #[cfg(feature = "git")]

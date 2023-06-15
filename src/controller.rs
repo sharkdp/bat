@@ -5,7 +5,6 @@ use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
-use ilog::IntLog;
 use crate::input::{Input, InputReader, OpenedInput};
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
@@ -14,8 +13,8 @@ use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
-
 use clircle::{Clircle, Identifier};
+use ilog::IntLog;
 
 const TAB_WIDTH: usize = 4;
 
@@ -141,24 +140,22 @@ impl<'b> Controller<'b> {
         } else {
             None
         };
-        let mut config:  Config = self.config.clone();
+        let mut config: Config = self.config.clone();
         config.line_number_width = match opened_input.metadata.size {
             Some(size) => {
                 let mut ret = TAB_WIDTH;
-                if size>1000{
+                if size > 1000 {
                     let num_of_lines = opened_input.description.file_num_lines().unwrap() as u32;
-                    ret = if  num_of_lines > 9999 {
-                        num_of_lines.log10()+1
-                    } else{
+                    ret = if num_of_lines > 9999 {
+                        num_of_lines.log10() + 1
+                    } else {
                         TAB_WIDTH
                     };
                 }
                 ret
-            },
-                None => TAB_WIDTH
+            }
+            None => TAB_WIDTH,
         };
-        
-         
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
             Box::new(SimplePrinter::new(&config))
         } else {

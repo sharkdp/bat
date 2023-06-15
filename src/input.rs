@@ -69,16 +69,14 @@ impl InputDescription {
     }
 
     pub fn file_num_lines(&self) -> Result<usize> {
-        let file = File::open(&self.name)
-            .map_err(|e| format!("file open error : {}",  e))?;
+        let file = File::open(&self.name).map_err(|e| format!("file open error : {}", e))?;
         let file_reader = BufReader::new(file);
         let mut total_lines = 0;
-        for _ in  file_reader.lines() {
+        for _ in file_reader.lines() {
             total_lines += 1;
         }
         Ok(total_lines)
     }
-
 }
 
 pub(crate) enum InputKind<'a> {
@@ -301,7 +299,6 @@ impl<'a> InputReader<'a> {
 
         Ok(res)
     }
-
 }
 
 #[test]
