@@ -17,10 +17,20 @@ fn get_mocked_pagers_dir() -> PathBuf {
 /// On Unix: 'most' -> 'most'
 /// On Windows: 'most' -> 'most.bat'
 pub fn from(base: &str) -> String {
-    if cfg!(windows) {
-        format!("{}.bat", base)
-    } else {
-        String::from(base)
+    let mut cmd_and_args = base.split(" ");
+    let suffix = if cfg!(windows) { ".bat" } else { "" };
+    match cmd_and_args.next() {
+        Some(s) => {
+            let mut out_cmd = format!("{}{}", s, suffix);
+            let remainder: Vec<&str> = cmd_and_args.collect();
+            if (remainder.len() > 0) {
+                out_cmd.push_str(" ");
+                out_cmd.push_str(remainder.join(" ").as_str());
+            }
+
+            out_cmd
+        }
+        None => String::from(base),
     }
 }
 
@@ -62,6 +72,11 @@ pub fn with_mocked_versions_of_more_and_most_in_path(actual_test: fn()) {
         .assert()
         .success()
         .stdout(predicate::str::contains("I am most"));
+    Command::new(from("echo"))
+        .arg("foobar")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("foobar"));
 
     // Now run the actual test
     actual_test();
