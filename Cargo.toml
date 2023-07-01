@@ -42,7 +42,7 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
 is-terminal = { version = "0.4.4", optional = true }
-nu-ansi-term = "0.47.0"
+nu-ansi-term = "0.48.0"
 ansi_colours = "^1.2"
 bincode = "1.0"
 console = "0.15.5"
