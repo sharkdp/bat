@@ -88,7 +88,7 @@ plist = "1.4.3"
 
 [dev-dependencies]
 assert_cmd = "2.0.10"
-expect-test = "1.4.0"
+expect-test = "1.4.1"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.0.3"
 wait-timeout = "0.2.0"
