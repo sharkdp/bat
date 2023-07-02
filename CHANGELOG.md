@@ -11,6 +11,7 @@
 ## Syntaxes
 
 - Associate `os-release` with `bash` syntax, see #2587 (@cyqsimon)
+- Associate `Containerfile` with `Dockerfile` syntax, see #2606 (@einfachIrgendwer0815)
 
 ## Themes
 
