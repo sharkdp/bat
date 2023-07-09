@@ -461,7 +461,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.colors
                 .grid
                 .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
-        );
+        )?;
 
         Ok(())
     }
