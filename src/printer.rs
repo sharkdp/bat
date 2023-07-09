@@ -71,18 +71,18 @@ macro_rules! writeln_handle {
 pub(crate) trait Printer {
     fn print_header(
         &mut self,
-        handle: OutputHandle,
+        handle: &mut OutputHandle,
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()>;
-    fn print_footer(&mut self, handle: OutputHandle, input: &OpenedInput) -> Result<()>;
+    fn print_footer(&mut self, handle: &mut OutputHandle, input: &OpenedInput) -> Result<()>;
 
-    fn print_snip(&mut self, handle: OutputHandle) -> Result<()>;
+    fn print_snip(&mut self, handle: &mut OutputHandle) -> Result<()>;
 
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: OutputHandle,
+        handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()>;
@@ -101,25 +101,25 @@ impl<'a> SimplePrinter<'a> {
 impl<'a> Printer for SimplePrinter<'a> {
     fn print_header(
         &mut self,
-        _handle: OutputHandle,
+        _handle: &mut OutputHandle,
         _input: &OpenedInput,
         _add_header_padding: bool,
     ) -> Result<()> {
         Ok(())
     }
 
-    fn print_footer(&mut self, _handle: OutputHandle, _input: &OpenedInput) -> Result<()> {
+    fn print_footer(&mut self, _handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         Ok(())
     }
 
-    fn print_snip(&mut self, _handle: OutputHandle) -> Result<()> {
+    fn print_snip(&mut self, _handle: &mut OutputHandle) -> Result<()> {
         Ok(())
     }
 
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: OutputHandle,
+        handle: &mut OutputHandle,
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
@@ -253,7 +253,11 @@ impl<'a> InteractivePrinter<'a> {
         })
     }
 
-    fn print_horizontal_line_term(&mut self, handle: OutputHandle, style: Style) -> Result<()> {
+    fn print_horizontal_line_term(
+        &mut self,
+        handle: &mut OutputHandle,
+        style: Style,
+    ) -> Result<()> {
         writeln_handle!(
             handle,
             "{}",
@@ -262,7 +266,7 @@ impl<'a> InteractivePrinter<'a> {
         Ok(())
     }
 
-    fn print_horizontal_line(&mut self, handle: OutputHandle, grid_char: char) -> Result<()> {
+    fn print_horizontal_line(&mut self, handle: &mut OutputHandle, grid_char: char) -> Result<()> {
         if self.panel_width == 0 {
             self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
@@ -292,7 +296,7 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
-    fn print_header_component_indent(&mut self, handle: OutputHandle) -> Result<()> {
+    fn print_header_component_indent(&mut self, handle: &mut OutputHandle) -> Result<()> {
         if self.config.style_components.grid() {
             write_handle!(
                 handle,
@@ -320,7 +324,7 @@ impl<'a> InteractivePrinter<'a> {
 impl<'a> Printer for InteractivePrinter<'a> {
     fn print_header(
         &mut self,
-        handle: OutputHandle,
+        handle: &mut OutputHandle,
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
@@ -419,7 +423,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         Ok(())
     }
 
-    fn print_footer(&mut self, handle: OutputHandle, _input: &OpenedInput) -> Result<()> {
+    fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
             && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
         {
@@ -429,7 +433,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
     }
 
-    fn print_snip(&mut self, handle: OutputHandle) -> Result<()> {
+    fn print_snip(&mut self, handle: &mut OutputHandle) -> Result<()> {
         let panel = self.create_fake_panel(" ...");
         let panel_count = panel.chars().count();
 
@@ -456,7 +460,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
     fn print_line(
         &mut self,
         out_of_range: bool,
-        handle: OutputHandle,
+        handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {

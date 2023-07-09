@@ -80,7 +80,7 @@ impl<'b> Controller<'b> {
         };
 
         //let writer = output_type.handle()?;
-        let writer = output_buffer.map_or_else(
+        let mut writer = output_buffer.map_or_else(
             || OutputHandle::IoWrite(output_type.handle().unwrap()),
             |buf| OutputHandle::FmtWrite(buf),
         );
@@ -91,15 +91,15 @@ impl<'b> Controller<'b> {
             let identifier = stdout_identifier.as_ref();
             let is_first = index == 0;
             let result = if input.is_stdin() {
-                self.print_input(input, writer, io::stdin().lock(), identifier, is_first)
+                self.print_input(input, &mut writer, io::stdin().lock(), identifier, is_first)
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
-                self.print_input(input, writer, io::empty(), identifier, is_first)
+                self.print_input(input, &mut writer, io::empty(), identifier, is_first)
             };
             if let Err(error) = result {
                 match writer {
                     OutputHandle::FmtWrite(writer) => todo!(),
-                    OutputHandle::IoWrite(writer) => {
+                    OutputHandle::IoWrite(ref mut writer) => {
                         if attached_to_pager {
                             handle_error(&error, writer);
                         } else {
@@ -117,7 +117,7 @@ impl<'b> Controller<'b> {
     fn print_input<R: BufRead>(
         &self,
         input: Input,
-        writer: OutputHandle,
+        writer: &mut OutputHandle,
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
@@ -178,7 +178,7 @@ impl<'b> Controller<'b> {
     fn print_file(
         &self,
         printer: &mut dyn Printer,
-        writer: OutputHandle,
+        writer: &mut OutputHandle,
         input: &mut OpenedInput,
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
@@ -216,7 +216,7 @@ impl<'b> Controller<'b> {
     fn print_file_ranges(
         &self,
         printer: &mut dyn Printer,
-        writer: OutputHandle,
+        writer: &mut OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {

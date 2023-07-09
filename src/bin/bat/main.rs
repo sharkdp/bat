@@ -206,7 +206,7 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![theme_preview_file()])
+                .run(vec![theme_preview_file()], None)
                 .ok();
             writeln!(stdout)?;
         }
@@ -230,7 +230,7 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
-    controller.run(inputs)
+    controller.run(inputs, None)
 }
 
 #[cfg(feature = "bugreport")]
