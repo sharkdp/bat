@@ -12,7 +12,7 @@ use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
-use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
+use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
 
@@ -26,13 +26,18 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
-    pub fn run(&self, inputs: Vec<Input>) -> Result<bool> {
-        self.run_with_error_handler(inputs, default_error_handler)
+    pub fn run(
+        &self,
+        inputs: Vec<Input>,
+        output_buffer: Option<&mut dyn std::fmt::Write>,
+    ) -> Result<bool> {
+        self.run_with_error_handler(inputs, output_buffer, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
+        output_buffer: Option<&mut dyn std::fmt::Write>,
         handle_error: impl Fn(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -74,7 +79,11 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
-        let writer = output_type.handle()?;
+        //let writer = output_type.handle()?;
+        let writer = output_buffer.map_or_else(
+            || OutputHandle::IoWrite(output_type.handle().unwrap()),
+            |buf| OutputHandle::FmtWrite(buf),
+        );
         let mut no_errors: bool = true;
         let stderr = io::stderr();
 
@@ -88,10 +97,15 @@ impl<'b> Controller<'b> {
                 self.print_input(input, writer, io::empty(), identifier, is_first)
             };
             if let Err(error) = result {
-                if attached_to_pager {
-                    handle_error(&error, writer);
-                } else {
-                    handle_error(&error, &mut stderr.lock());
+                match writer {
+                    OutputHandle::FmtWrite(writer) => todo!(),
+                    OutputHandle::IoWrite(writer) => {
+                        if attached_to_pager {
+                            handle_error(&error, writer);
+                        } else {
+                            handle_error(&error, &mut stderr.lock());
+                        }
+                    }
                 }
                 no_errors = false;
             }
@@ -103,7 +117,7 @@ impl<'b> Controller<'b> {
     fn print_input<R: BufRead>(
         &self,
         input: Input,
-        writer: &mut dyn Write,
+        writer: OutputHandle,
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
@@ -164,7 +178,7 @@ impl<'b> Controller<'b> {
     fn print_file(
         &self,
         printer: &mut dyn Printer,
-        writer: &mut dyn Write,
+        writer: OutputHandle,
         input: &mut OpenedInput,
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
@@ -202,7 +216,7 @@ impl<'b> Controller<'b> {
     fn print_file_ranges(
         &self,
         printer: &mut dyn Printer,
-        writer: &mut dyn Write,
+        writer: OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
