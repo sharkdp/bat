@@ -79,11 +79,10 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
-        //let writer = output_type.handle()?;
-        let mut writer = output_buffer.map_or_else(
-            || OutputHandle::IoWrite(output_type.handle().unwrap()),
-            |buf| OutputHandle::FmtWrite(buf),
-        );
+        let mut writer = match output_buffer {
+            Some(buf) => OutputHandle::FmtWrite(buf),
+            None => OutputHandle::IoWrite(output_type.handle()?),
+        };
         let mut no_errors: bool = true;
         let stderr = io::stderr();
 
