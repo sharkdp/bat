@@ -1,0 +1,17 @@
+use bat::{assets::HighlightingAssets, config::Config, controller::Controller, Input};
+
+fn main() {
+    let mut buffer = String::new();
+    let config = Config {
+        colored_output: true,
+        ..Default::default()
+    };
+    let assets = HighlightingAssets::from_binary();
+    let controller = Controller::new(&config, &assets);
+    let input = Input::from_file(file!());
+    controller
+        .run(vec![input.into()], Some(&mut buffer))
+        .unwrap();
+
+    println!("{buffer}");
+}
