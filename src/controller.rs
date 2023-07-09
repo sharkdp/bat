@@ -98,7 +98,9 @@ impl<'b> Controller<'b> {
             };
             if let Err(error) = result {
                 match writer {
-                    OutputHandle::FmtWrite(writer) => todo!(),
+                    // It doesn't make much sense to send errors straight to stderr if the user
+                    // provided their own buffer, so we just return it.
+                    OutputHandle::FmtWrite(_) => return Err(error),
                     OutputHandle::IoWrite(ref mut writer) => {
                         if attached_to_pager {
                             handle_error(&error, writer);

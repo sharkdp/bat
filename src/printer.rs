@@ -134,7 +134,16 @@ impl<'a> Printer for SimplePrinter<'a> {
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
-                    OutputHandle::FmtWrite(handle) => todo!(),
+                    OutputHandle::FmtWrite(handle) => {
+                        write!(
+                            handle,
+                            "{}",
+                            std::str::from_utf8(line_buffer).map_err(|_| Error::Msg(
+                                "encountered invalid utf8 while printing to non-io buffer"
+                                    .to_string()
+                            ))?
+                        )?;
+                    }
                 }
             };
         }
