@@ -228,6 +228,15 @@ help() {
 
 Then you can do `$ help cp` or `$ help git commit`.
 
+Alternatively, you can also use global aliases to override `-h` and `--help` entirely:
+
+```bash
+alias -g -- -h='-h | bat --language=help --style=plain'
+alias -g -- --help='--help | bat --language=help --style=plain'
+```
+
+This way, you can keep on using `cp --help`, but get colorized help pages.
+
 Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
 
