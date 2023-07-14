@@ -86,6 +86,10 @@ impl<'a> SyntaxMapping<'a> {
             .insert("rails", MappingTarget::MapToUnknown)
             .unwrap();
 
+        mapping
+            .insert("Containerfile", MappingTarget::MapTo("Dockerfile"))
+            .unwrap();
+
         // Nginx and Apache syntax files both want to style all ".conf" files
         // see #1131 and #1137
         mapping
