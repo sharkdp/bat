@@ -290,6 +290,15 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 dnf install bat
 ```
 
+### On RedHat Enterprise Linux 8 (RHEL8), Almalinux 8, EuroLinux 8 or Rocky Linux 8
+
+You can install [the `bat` package](https://copr.fedorainfracloud.org/coprs/tkbcopr/bat/) from Fedora Copr.
+
+```bash
+dnf copr enable tkbcopr/bat
+dnf install bat
+```
+
 ### On Funtoo Linux
 
 You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
