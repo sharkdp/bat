@@ -15,8 +15,7 @@ use syntect::parsing::SyntaxSet;
 
 use content_inspector::ContentType;
 
-use encoding::all::{UTF_16BE, UTF_16LE};
-use encoding::{DecoderTrap, Encoding};
+use encoding_rs::{UTF_16BE, UTF_16LE};
 
 use unicode_width::UnicodeWidthChar;
 
@@ -431,27 +430,25 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 self.config.tab_width,
                 self.config.nonprintable_notation,
             )
+            .into()
         } else {
-            let line = match self.content_type {
+            match self.content_type {
                 Some(ContentType::BINARY) | None => {
                     return Ok(());
                 }
-                Some(ContentType::UTF_16LE) => UTF_16LE
-                    .decode(line_buffer, DecoderTrap::Replace)
-                    .map_err(|_| "Invalid UTF-16LE")?,
-                Some(ContentType::UTF_16BE) => UTF_16BE
-                    .decode(line_buffer, DecoderTrap::Replace)
-                    .map_err(|_| "Invalid UTF-16BE")?,
-                _ => String::from_utf8_lossy(line_buffer).to_string(),
-            };
-            // Remove byte order mark from the first line if it exists
-            if line_number == 1 {
-                match line.strip_prefix('\u{feff}') {
-                    Some(stripped) => stripped.to_string(),
-                    None => line,
+                Some(ContentType::UTF_16LE) => UTF_16LE.decode_with_bom_removal(line_buffer).0,
+                Some(ContentType::UTF_16BE) => UTF_16BE.decode_with_bom_removal(line_buffer).0,
+                _ => {
+                    let line = String::from_utf8_lossy(line_buffer);
+                    if line_number == 1 {
+                        match line.strip_prefix('\u{feff}') {
+                            Some(stripped) => stripped.to_string().into(),
+                            None => line,
+                        }
+                    } else {
+                        line
+                    }
                 }
-            } else {
-                line
             }
         };
 
