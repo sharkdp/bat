@@ -314,6 +314,7 @@ fn no_args_doesnt_break() {
     let stdout = Stdio::from(stdout_file);
 
     let mut child = bat_raw_command()
+        .arg("--theme=ansi")
         .stdin(stdin)
         .stdout(stdout)
         .spawn()

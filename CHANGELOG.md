@@ -2,6 +2,8 @@
 
 ## Features
 
+- Make the default theme depend on the terminal background, when available, see #2797 (@aykevl).
+
 ## Bugfixes
 
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
