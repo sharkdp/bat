@@ -2,6 +2,8 @@
 
 ## Features
 
+- Make the default theme depend on the terminal background, when available, see #1746 (@aykevl).
+
 ## Bugfixes
 
 ## Other

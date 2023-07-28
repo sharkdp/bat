@@ -74,8 +74,12 @@ impl HighlightingAssets {
     /// ### Windows and Linux
     ///
     /// Windows and most Linux distributions has a dark terminal theme by
-    /// default. On these platforms, this function always returns a theme that
-    /// looks good on a dark background.
+    /// default. However, it is possible to configure the terminal to have a
+    /// light background instead.
+    /// Detecting whether a dark or light theme is in use is not entirely
+    /// straightforward and isn't supported by all terminals. Luckily, the
+    /// termbg crate has this all figured out already so we simply rely on its
+    /// detection mechanism instead.
     ///
     /// ### macOS
     ///
@@ -93,10 +97,23 @@ impl HighlightingAssets {
     pub fn default_theme() -> &'static str {
         #[cfg(not(target_os = "macos"))]
         {
-            Self::default_dark_theme()
+            // Try to detect the color scheme from the terminal.
+            let timeout = std::time::Duration::from_millis(100);
+            if let Ok(theme) = termbg::theme(timeout) {
+                // We found a color scheme for this terminal, so use it.
+                match theme {
+                    termbg::Theme::Dark => Self::default_dark_theme(),
+                    termbg::Theme::Light => Self::default_light_theme(),
+                }
+            } else {
+                // No color scheme found, default to the dark theme.
+                Self::default_dark_theme()
+            }
         }
         #[cfg(target_os = "macos")]
         {
+            // TODO: perhaps we sould use the same detection mechanism here as
+            // for Linux/Windows?
             if macos_dark_mode_active() {
                 Self::default_dark_theme()
             } else {
@@ -115,7 +132,6 @@ impl HighlightingAssets {
     /**
      * The default theme that looks good on a light background.
      */
-    #[cfg(target_os = "macos")]
     fn default_light_theme() -> &'static str {
         "Monokai Extended Light"
     }
