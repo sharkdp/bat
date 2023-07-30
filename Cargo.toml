@@ -73,6 +73,8 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
+git = "https://github.com/trishume/syntect.git"
+branch = "master"
 version = "5.0.0"
 default-features = false
 features = ["parsing"]
