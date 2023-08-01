@@ -78,7 +78,7 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "4.3.0"
+version = "4.3.19"
 optional = true
 features = ["wrap_help", "cargo"]
 
