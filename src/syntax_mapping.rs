@@ -90,6 +90,10 @@ impl<'a> SyntaxMapping<'a> {
             .insert("Containerfile", MappingTarget::MapTo("Dockerfile"))
             .unwrap();
 
+        mapping
+            .insert("*.ksh", MappingTarget::MapTo("Bourne Again Shell (bash)"))
+            .unwrap();
+
         // Nginx and Apache syntax files both want to style all ".conf" files
         // see #1131 and #1137
         mapping
