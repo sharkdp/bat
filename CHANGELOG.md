@@ -2,6 +2,8 @@
 
 ## Features
 
+- Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
+
 ## Bugfixes
 
 - Fix `more` not being found on Windows when provided via `BAT_PAGER`, see #2570, #2580, and #2651 (@mataha)
