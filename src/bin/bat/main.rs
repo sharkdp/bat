@@ -255,6 +255,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "LANG",
             "LC_ALL",
             "BAT_PAGER",
+            "BAT_PAGING",
             "BAT_CACHE_PATH",
             "BAT_CONFIG_PATH",
             "BAT_OPTS",

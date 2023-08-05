@@ -2,6 +2,8 @@
 
 ## Features
 
+- Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
+
 ## Bugfixes
 
 ## Other

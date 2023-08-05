@@ -89,8 +89,8 @@ Options:
 
       --paging <when>
           Specify when to use the pager. To disable the pager, use --paging=never' or its
-          alias,'-P'. To disable the pager permanently, set BAT_PAGER to an empty string. To control
-          which pager is used, see the '--pager' option. Possible values: *auto*, never, always.
+          alias,'-P'. To disable the pager permanently, set BAT_PAGING to 'never'. To control which
+          pager is used, see the '--pager' option. Possible values: *auto*, never, always.
 
       --pager <command>
           Determine which pager is used. This option will override the PAGER and BAT_PAGER
