@@ -844,6 +844,17 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
+fn env_var_bat_paging() {
+    bat()
+        .env("BAT_PAGER", "echo pager-output")
+        .env("BAT_PAGING", "always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n"));
+}
+
+#[test]
 fn diagnostic_sanity_check() {
     bat()
         .arg("--diagnostic")
