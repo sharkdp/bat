@@ -156,7 +156,6 @@ fn normalize_license_text(license_text: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(test)]
     use super::*;
 
     #[test]
