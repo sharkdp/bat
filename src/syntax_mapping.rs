@@ -152,10 +152,6 @@ impl<'a> SyntaxMapping<'a> {
             .insert("*.hook", MappingTarget::MapTo("INI"))
             .unwrap();
 
-        mapping
-            .insert("*.ron", MappingTarget::MapTo("Rust"))
-            .unwrap();
-
         // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
         // See e.g. https://git-scm.com/docs/git-config#FILES
         if let Some(xdg_config_home) =
