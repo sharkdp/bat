@@ -238,48 +238,52 @@ impl<'a> SyntaxMapping<'a> {
     }
 }
 
-#[test]
-fn basic() {
-    let mut map = SyntaxMapping::empty();
-    map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
-        .ok();
-    map.insert("/path/to/.ignore", MappingTarget::MapTo("Git Ignore"))
-        .ok();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn basic() {
+        let mut map = SyntaxMapping::empty();
+        map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
+            .ok();
+        map.insert("/path/to/.ignore", MappingTarget::MapTo("Git Ignore"))
+            .ok();
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/Cargo.lock"),
-        Some(MappingTarget::MapTo("TOML"))
-    );
-    assert_eq!(map.get_syntax_for("/path/to/other.lock"), None);
+        assert_eq!(
+            map.get_syntax_for("/path/to/Cargo.lock"),
+            Some(MappingTarget::MapTo("TOML"))
+        );
+        assert_eq!(map.get_syntax_for("/path/to/other.lock"), None);
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/.ignore"),
-        Some(MappingTarget::MapTo("Git Ignore"))
-    );
-}
+        assert_eq!(
+            map.get_syntax_for("/path/to/.ignore"),
+            Some(MappingTarget::MapTo("Git Ignore"))
+        );
+    }
 
-#[test]
-fn user_can_override_builtin_mappings() {
-    let mut map = SyntaxMapping::builtin();
+    #[test]
+    fn user_can_override_builtin_mappings() {
+        let mut map = SyntaxMapping::builtin();
 
-    assert_eq!(
-        map.get_syntax_for("/etc/profile"),
-        Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
-    );
-    map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
-        .ok();
-    assert_eq!(
-        map.get_syntax_for("/etc/profile"),
-        Some(MappingTarget::MapTo("My Syntax"))
-    );
-}
+        assert_eq!(
+            map.get_syntax_for("/etc/profile"),
+            Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
+        );
+        map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
+            .ok();
+        assert_eq!(
+            map.get_syntax_for("/etc/profile"),
+            Some(MappingTarget::MapTo("My Syntax"))
+        );
+    }
 
-#[test]
-fn builtin_mappings() {
-    let map = SyntaxMapping::builtin();
+    #[test]
+    fn builtin_mappings() {
+        let map = SyntaxMapping::builtin();
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/build"),
-        Some(MappingTarget::MapToUnknown)
-    );
+        assert_eq!(
+            map.get_syntax_for("/path/to/build"),
+            Some(MappingTarget::MapToUnknown)
+        );
+    }
 }
