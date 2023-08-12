@@ -118,7 +118,7 @@ use `bat`s `--color=always` option to force colorized output. You can also use `
 option to restrict the load times for long files:
 
 ```bash
-fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
 ```
 
 For more information, see [`fzf`'s `README`](https://github.com/junegunn/fzf#preview-window).
