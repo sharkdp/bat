@@ -286,4 +286,20 @@ mod tests {
             Some(MappingTarget::MapToUnknown)
         );
     }
+
+    #[test]
+    /// verifies that SyntaxMapping::builtin() doesn't repeat `Glob`-based keys
+    fn no_duplicate_builtin_keys() {
+        let mappings = SyntaxMapping::builtin().mappings;
+        for i in 0..mappings.len() {
+            let mut tail = mappings[i + 1..].into_iter();
+            match tail.find(|item| item.0.glob() == mappings[i].0.glob()) {
+                Some(duplicate) => panic!(
+                    "duplicate in SyntaxMapping::builtin() for glob {}",
+                    duplicate.0.glob().glob()
+                ),
+                None => (),
+            }
+        }
+    }
 }
