@@ -154,17 +154,24 @@ impl<'a> SyntaxMapping<'a> {
 
         // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
         // See e.g. https://git-scm.com/docs/git-config#FILES
-        if let Some(xdg_config_home) =
-            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty())
-        {
-            insert_git_config_global(&mut mapping, &xdg_config_home);
-        }
-        if let Some(default_config_home) = std::env::var_os("HOME")
-            .filter(|val| !val.is_empty())
-            .map(|home| Path::new(&home).join(".config"))
-        {
-            insert_git_config_global(&mut mapping, &default_config_home);
-        }
+        match (
+            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty()),
+            std::env::var_os("HOME")
+                .filter(|val| !val.is_empty())
+                .map(|home| Path::new(&home).join(".config")),
+        ) {
+            (Some(xdg_config_home), Some(default_config_home)) => {
+                if xdg_config_home == default_config_home {
+                    insert_git_config_global(&mut mapping, &xdg_config_home)
+                } else {
+                    insert_git_config_global(&mut mapping, &xdg_config_home);
+                    insert_git_config_global(&mut mapping, &default_config_home)
+                }
+            }
+            (Some(config_home), None) => insert_git_config_global(&mut mapping, &config_home),
+            (None, Some(config_home)) => insert_git_config_global(&mut mapping, &config_home),
+            (None, None) => (),
+        };
 
         fn insert_git_config_global(mapping: &mut SyntaxMapping, config_home: impl AsRef<Path>) {
             let git_config_path = config_home.as_ref().join("git");
