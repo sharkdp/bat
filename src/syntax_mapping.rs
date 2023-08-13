@@ -160,13 +160,13 @@ impl<'a> SyntaxMapping<'a> {
                 .filter(|val| !val.is_empty())
                 .map(|home| Path::new(&home).join(".config")),
         ) {
-            (Some(xdg_config_home), Some(default_config_home)) => {
-                if xdg_config_home == default_config_home {
-                    insert_git_config_global(&mut mapping, &xdg_config_home)
-                } else {
-                    insert_git_config_global(&mut mapping, &xdg_config_home);
-                    insert_git_config_global(&mut mapping, &default_config_home)
-                }
+            (Some(xdg_config_home), Some(default_config_home))
+                if xdg_config_home == default_config_home => {
+                insert_git_config_global(&mut mapping, &xdg_config_home)
+            }
+            (Some(xdg_config_home), Some(default_config_home)) /* else guard */ => {
+                insert_git_config_global(&mut mapping, &xdg_config_home);
+                insert_git_config_global(&mut mapping, &default_config_home)
             }
             (Some(config_home), None) => insert_git_config_global(&mut mapping, &config_home),
             (None, Some(config_home)) => insert_git_config_global(&mut mapping, &config_home),
