@@ -288,14 +288,22 @@ mod tests {
     fn no_duplicate_builtin_keys() {
         let mappings = SyntaxMapping::builtin().mappings;
         for i in 0..mappings.len() {
-            let mut tail = mappings[i + 1..].into_iter();
-            match tail.find(|item| item.0.glob() == mappings[i].0.glob()) {
-                Some(duplicate) => panic!(
-                    "duplicate in SyntaxMapping::builtin() for glob {}",
-                    duplicate.0.glob().glob()
-                ),
-                None => (),
-            }
+            let tail = mappings[i + 1..].into_iter();
+            let (dupl, _): (Vec<_>, Vec<_>) =
+                tail.partition(|item| item.0.glob() == mappings[i].0.glob());
+
+            // emit repeats on failure
+            assert_eq!(
+                dupl.len(),
+                0,
+                "Glob pattern `{}` mapped to multiple: {:?}",
+                mappings[i].0.glob().glob(),
+                {
+                    let (_, mut dupl_targets): (Vec<GlobMatcher>, Vec<MappingTarget>) =
+                        dupl.into_iter().cloned().unzip();
+                    dupl_targets.push(mappings[i].1)
+                },
+            )
         }
     }
 }
