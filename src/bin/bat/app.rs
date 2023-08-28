@@ -1,8 +1,7 @@
 use std::collections::HashSet;
 use std::env;
+use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
-
-use is_terminal::IsTerminal;
 
 use crate::{
     clap_app,
