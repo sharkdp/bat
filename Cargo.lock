@@ -449,13 +449,13 @@ checksum = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
 
 [[package]]
 name = "errno"
-version = "0.3.0"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50d6a0976c999d473fe89ad888d5a284e55366d9dc9038b1ba2aa15128c4afa0"
+checksum = "136526188508e25c6fef639d7927dfb3e0e3084488bf202267829cf7fc23dbdd"
 dependencies = [
  "errno-dragonfly",
  "libc",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -490,12 +490,9 @@ dependencies = [
 
 [[package]]
 name = "fastrand"
-version = "1.8.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7a407cfaa3385c4ae6b23e84623d48c2798d06e3e6a1878f7f59f17b3f86499"
-dependencies = [
- "instant",
-]
+checksum = "6999dc1837253364c2ebb0704ba97994bd874e8f195d665c50b7548f6ea92764"
 
 [[package]]
 name = "flate2"
@@ -639,15 +636,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "instant"
-version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
-dependencies = [
- "cfg-if",
-]
-
-[[package]]
 name = "io-lifetimes"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -689,9 +677,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.137"
+version = "0.2.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
+checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
 
 [[package]]
 name = "libgit2-sys"
@@ -737,6 +725,12 @@ name = "linux-raw-sys"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d59d8c75012853d2e872fb56bc8a2e53718e2cafe1a4c823143141c6d90c322f"
+
+[[package]]
+name = "linux-raw-sys"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57bcfdad1b858c2db7c38303a6d2ad4dfaf5eb53dfeb0910128b2c26d6158503"
 
 [[package]]
 name = "lock_api"
@@ -1044,8 +1038,21 @@ dependencies = [
  "errno",
  "io-lifetimes",
  "libc",
- "linux-raw-sys",
+ "linux-raw-sys 0.3.1",
  "windows-sys 0.45.0",
+]
+
+[[package]]
+name = "rustix"
+version = "0.38.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c0c3dde1fc030af041adc40e79c0e7fbcf431dd24870053d187d7c66e4b87453"
+dependencies = [
+ "bitflags 2.4.0",
+ "errno",
+ "libc",
+ "linux-raw-sys 0.4.5",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -1241,15 +1248,15 @@ dependencies = [
 
 [[package]]
 name = "tempfile"
-version = "3.5.0"
+version = "3.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9fbec84f381d5795b08656e4912bec604d162bff9291d6189a78f4c8ab87998"
+checksum = "cb94d2f3cc536af71caac6b6fcebf65860b347e7ce0cc9ebe8f70d3e521054ef"
 dependencies = [
  "cfg-if",
  "fastrand",
  "redox_syscall 0.3.5",
- "rustix",
- "windows-sys 0.45.0",
+ "rustix 0.38.11",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -1267,7 +1274,7 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8e6bf6f19e9f8ed8d4048dc22981458ebcf406d67e94cd422e5ecd73d63b3237"
 dependencies = [
- "rustix",
+ "rustix 0.37.3",
  "windows-sys 0.48.0",
 ]
 
