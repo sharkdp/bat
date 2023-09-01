@@ -12,7 +12,7 @@ use crate::line_range::{LineRanges, RangeCheckResult};
 use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
-use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
+use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
 
@@ -26,13 +26,18 @@ impl<'b> Controller<'b> {
         Controller { config, assets }
     }
 
-    pub fn run(&self, inputs: Vec<Input>) -> Result<bool> {
-        self.run_with_error_handler(inputs, default_error_handler)
+    pub fn run(
+        &self,
+        inputs: Vec<Input>,
+        output_buffer: Option<&mut dyn std::fmt::Write>,
+    ) -> Result<bool> {
+        self.run_with_error_handler(inputs, output_buffer, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
+        output_buffer: Option<&mut dyn std::fmt::Write>,
         handle_error: impl Fn(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -74,7 +79,10 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
-        let writer = output_type.handle()?;
+        let mut writer = match output_buffer {
+            Some(buf) => OutputHandle::FmtWrite(buf),
+            None => OutputHandle::IoWrite(output_type.handle()?),
+        };
         let mut no_errors: bool = true;
         let stderr = io::stderr();
 
@@ -82,16 +90,23 @@ impl<'b> Controller<'b> {
             let identifier = stdout_identifier.as_ref();
             let is_first = index == 0;
             let result = if input.is_stdin() {
-                self.print_input(input, writer, io::stdin().lock(), identifier, is_first)
+                self.print_input(input, &mut writer, io::stdin().lock(), identifier, is_first)
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
-                self.print_input(input, writer, io::empty(), identifier, is_first)
+                self.print_input(input, &mut writer, io::empty(), identifier, is_first)
             };
             if let Err(error) = result {
-                if attached_to_pager {
-                    handle_error(&error, writer);
-                } else {
-                    handle_error(&error, &mut stderr.lock());
+                match writer {
+                    // It doesn't make much sense to send errors straight to stderr if the user
+                    // provided their own buffer, so we just return it.
+                    OutputHandle::FmtWrite(_) => return Err(error),
+                    OutputHandle::IoWrite(ref mut writer) => {
+                        if attached_to_pager {
+                            handle_error(&error, writer);
+                        } else {
+                            handle_error(&error, &mut stderr.lock());
+                        }
+                    }
                 }
                 no_errors = false;
             }
@@ -103,7 +118,7 @@ impl<'b> Controller<'b> {
     fn print_input<R: BufRead>(
         &self,
         input: Input,
-        writer: &mut dyn Write,
+        writer: &mut OutputHandle,
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
@@ -164,7 +179,7 @@ impl<'b> Controller<'b> {
     fn print_file(
         &self,
         printer: &mut dyn Printer,
-        writer: &mut dyn Write,
+        writer: &mut OutputHandle,
         input: &mut OpenedInput,
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
@@ -202,7 +217,7 @@ impl<'b> Controller<'b> {
     fn print_file_ranges(
         &self,
         printer: &mut dyn Printer,
-        writer: &mut dyn Write,
+        writer: &mut OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {

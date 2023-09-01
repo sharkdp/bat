@@ -7,6 +7,8 @@ pub enum Error {
     #[error(transparent)]
     Io(#[from] ::std::io::Error),
     #[error(transparent)]
+    Fmt(#[from] ::std::fmt::Error),
+    #[error(transparent)]
     SyntectError(#[from] ::syntect::Error),
     #[error(transparent)]
     SyntectLoadingError(#[from] ::syntect::LoadingError),
