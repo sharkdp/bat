@@ -1,12 +1,11 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
+use etcetera::BaseStrategy;
 use once_cell::sync::Lazy;
 
-/// Wrapper for 'dirs' that treats MacOS more like Linux, by following the XDG specification.
-/// The `XDG_CACHE_HOME` environment variable is checked first. `BAT_CONFIG_DIR`
-///  is then checked before the `XDG_CONFIG_HOME` environment variable.
-///  The fallback directories are `~/.cache/bat` and `~/.config/bat`, respectively.
+/// Wrapper for 'etcetera' that checks BAT_CACHE_PATH and BAT_CONFIG_DIR and falls back to the
+/// Windows known folder locations on Windows & the XDG Base Directory Specification everywhere else.
 pub struct BatProjectDirs {
     cache_dir: PathBuf,
     config_dir: PathBuf,
@@ -14,49 +13,29 @@ pub struct BatProjectDirs {
 
 impl BatProjectDirs {
     fn new() -> Option<BatProjectDirs> {
-        let cache_dir = BatProjectDirs::get_cache_dir()?;
+        let basedirs = etcetera::choose_base_strategy().ok()?;
 
-        // Checks whether or not $BAT_CONFIG_DIR exists. If it doesn't, set our config dir
-        // to our system's default configuration home.
-        let config_dir =
-            if let Some(config_dir_op) = env::var_os("BAT_CONFIG_DIR").map(PathBuf::from) {
-                config_dir_op
-            } else {
-                #[cfg(target_os = "macos")]
-                let config_dir_op = env::var_os("XDG_CONFIG_HOME")
-                    .map(PathBuf::from)
-                    .filter(|p| p.is_absolute())
-                    .or_else(|| dirs::home_dir().map(|d| d.join(".config")));
+        // Checks whether or not `$BAT_CACHE_PATH` exists. If it doesn't, set the cache dir to our
+        // system's default cache home.
+        let cache_dir = if let Some(cache_dir) = env::var_os("BAT_CACHE_PATH").map(PathBuf::from) {
+            cache_dir
+        } else {
+            basedirs.cache_dir().join("bat")
+        };
 
-                #[cfg(not(target_os = "macos"))]
-                let config_dir_op = dirs::config_dir();
-
-                config_dir_op.map(|d| d.join("bat"))?
-            };
+        // Checks whether or not `$BAT_CONFIG_DIR` exists. If it doesn't, set the config dir to our
+        // system's default configuration home.
+        let config_dir = if let Some(config_dir) = env::var_os("BAT_CONFIG_DIR").map(PathBuf::from)
+        {
+            config_dir
+        } else {
+            basedirs.config_dir().join("bat")
+        };
 
         Some(BatProjectDirs {
             cache_dir,
             config_dir,
         })
-    }
-
-    fn get_cache_dir() -> Option<PathBuf> {
-        // on all OS prefer BAT_CACHE_PATH if set
-        let cache_dir_op = env::var_os("BAT_CACHE_PATH").map(PathBuf::from);
-        if cache_dir_op.is_some() {
-            return cache_dir_op;
-        }
-
-        #[cfg(target_os = "macos")]
-        let cache_dir_op = env::var_os("XDG_CACHE_HOME")
-            .map(PathBuf::from)
-            .filter(|p| p.is_absolute())
-            .or_else(|| dirs::home_dir().map(|d| d.join(".cache")));
-
-        #[cfg(not(target_os = "macos"))]
-        let cache_dir_op = dirs::cache_dir();
-
-        cache_dir_op.map(|d| d.join("bat"))
     }
 
     pub fn cache_dir(&self) -> &Path {
