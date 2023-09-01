@@ -162,17 +162,24 @@ impl<'a> SyntaxMapping<'a> {
 
         // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
         // See e.g. https://git-scm.com/docs/git-config#FILES
-        if let Some(xdg_config_home) =
-            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty())
-        {
-            insert_git_config_global(&mut mapping, &xdg_config_home);
-        }
-        if let Some(default_config_home) = std::env::var_os("HOME")
-            .filter(|val| !val.is_empty())
-            .map(|home| Path::new(&home).join(".config"))
-        {
-            insert_git_config_global(&mut mapping, &default_config_home);
-        }
+        match (
+            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty()),
+            std::env::var_os("HOME")
+                .filter(|val| !val.is_empty())
+                .map(|home| Path::new(&home).join(".config")),
+        ) {
+            (Some(xdg_config_home), Some(default_config_home))
+                if xdg_config_home == default_config_home => {
+                insert_git_config_global(&mut mapping, &xdg_config_home)
+            }
+            (Some(xdg_config_home), Some(default_config_home)) /* else guard */ => {
+                insert_git_config_global(&mut mapping, &xdg_config_home);
+                insert_git_config_global(&mut mapping, &default_config_home)
+            }
+            (Some(config_home), None) => insert_git_config_global(&mut mapping, &config_home),
+            (None, Some(config_home)) => insert_git_config_global(&mut mapping, &config_home),
+            (None, None) => (),
+        };
 
         fn insert_git_config_global(mapping: &mut SyntaxMapping, config_home: impl AsRef<Path>) {
             let git_config_path = config_home.as_ref().join("git");
@@ -242,48 +249,76 @@ impl<'a> SyntaxMapping<'a> {
     }
 }
 
-#[test]
-fn basic() {
-    let mut map = SyntaxMapping::empty();
-    map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
-        .ok();
-    map.insert("/path/to/.ignore", MappingTarget::MapTo("Git Ignore"))
-        .ok();
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn basic() {
+        let mut map = SyntaxMapping::empty();
+        map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
+            .ok();
+        map.insert("/path/to/.ignore", MappingTarget::MapTo("Git Ignore"))
+            .ok();
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/Cargo.lock"),
-        Some(MappingTarget::MapTo("TOML"))
-    );
-    assert_eq!(map.get_syntax_for("/path/to/other.lock"), None);
+        assert_eq!(
+            map.get_syntax_for("/path/to/Cargo.lock"),
+            Some(MappingTarget::MapTo("TOML"))
+        );
+        assert_eq!(map.get_syntax_for("/path/to/other.lock"), None);
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/.ignore"),
-        Some(MappingTarget::MapTo("Git Ignore"))
-    );
-}
+        assert_eq!(
+            map.get_syntax_for("/path/to/.ignore"),
+            Some(MappingTarget::MapTo("Git Ignore"))
+        );
+    }
 
-#[test]
-fn user_can_override_builtin_mappings() {
-    let mut map = SyntaxMapping::builtin();
+    #[test]
+    fn user_can_override_builtin_mappings() {
+        let mut map = SyntaxMapping::builtin();
 
-    assert_eq!(
-        map.get_syntax_for("/etc/profile"),
-        Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
-    );
-    map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
-        .ok();
-    assert_eq!(
-        map.get_syntax_for("/etc/profile"),
-        Some(MappingTarget::MapTo("My Syntax"))
-    );
-}
+        assert_eq!(
+            map.get_syntax_for("/etc/profile"),
+            Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
+        );
+        map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
+            .ok();
+        assert_eq!(
+            map.get_syntax_for("/etc/profile"),
+            Some(MappingTarget::MapTo("My Syntax"))
+        );
+    }
 
-#[test]
-fn builtin_mappings() {
-    let map = SyntaxMapping::builtin();
+    #[test]
+    fn builtin_mappings() {
+        let map = SyntaxMapping::builtin();
 
-    assert_eq!(
-        map.get_syntax_for("/path/to/build"),
-        Some(MappingTarget::MapToUnknown)
-    );
+        assert_eq!(
+            map.get_syntax_for("/path/to/build"),
+            Some(MappingTarget::MapToUnknown)
+        );
+    }
+
+    #[test]
+    /// verifies that SyntaxMapping::builtin() doesn't repeat `Glob`-based keys
+    fn no_duplicate_builtin_keys() {
+        let mappings = SyntaxMapping::builtin().mappings;
+        for i in 0..mappings.len() {
+            let tail = mappings[i + 1..].into_iter();
+            let (dupl, _): (Vec<_>, Vec<_>) =
+                tail.partition(|item| item.0.glob() == mappings[i].0.glob());
+
+            // emit repeats on failure
+            assert_eq!(
+                dupl.len(),
+                0,
+                "Glob pattern `{}` mapped to multiple: {:?}",
+                mappings[i].0.glob().glob(),
+                {
+                    let (_, mut dupl_targets): (Vec<GlobMatcher>, Vec<MappingTarget>) =
+                        dupl.into_iter().cloned().unzip();
+                    dupl_targets.push(mappings[i].1)
+                },
+            )
+        }
+    }
 }
