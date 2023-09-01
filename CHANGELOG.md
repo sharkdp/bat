@@ -10,6 +10,7 @@
 
 - Output directory for generated assets (completion, manual) can be customized, see #2515 (@tranzystorek-io)
 - Bump MSRV to 1.70, see #2651 (@mataha)
+- `more` on Windows now has extended features enabled, see #2657 (@mataha)
 
 ## Syntaxes
 

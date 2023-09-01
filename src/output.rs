@@ -110,6 +110,8 @@ impl OutputType {
                     }
                     _ => {}
                 }
+            } else if pager.kind == PagerKind::More && cfg!(windows) && args.is_empty() {
+                p.arg("/E");
             } else {
                 p.args(args);
             }
