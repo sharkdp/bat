@@ -59,6 +59,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--unbuffered', 'unbuffered', [CompletionResultType]::ParameterName, 'unbuffered')
             [CompletionResult]::new('--no-config', 'no-config', [CompletionResultType]::ParameterName, 'Do not use the configuration file')
             [CompletionResult]::new('--no-custom-assets', 'no-custom-assets', [CompletionResultType]::ParameterName, 'Do not load custom assets')
+            [CompletionResult]::new('--no-lessopen', 'no-lessopen', [CompletionResultType]::ParameterName, 'Do not use the $LESSOPEN preprocessor')
             [CompletionResult]::new('--config-file', 'config-file', [CompletionResultType]::ParameterName, 'Show path to the configuration file.')
             [CompletionResult]::new('--generate-config-file', 'generate-config-file', [CompletionResultType]::ParameterName, 'Generates a default configuration file.')
             [CompletionResult]::new('--config-dir', 'config-dir', [CompletionResultType]::ParameterName, 'Show bat''s configuration directory.')

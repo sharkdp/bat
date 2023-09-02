@@ -34,6 +34,8 @@ mod diff;
 pub mod error;
 pub mod input;
 mod less;
+#[cfg(feature = "lessopen")]
+mod lessopen;
 pub mod line_range;
 pub(crate) mod nonprintable_notation;
 mod output;

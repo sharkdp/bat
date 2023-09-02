@@ -17,6 +17,9 @@ pub fn bat_raw_command_with_config() -> Command {
     cmd.env_remove("COLORTERM");
     cmd.env_remove("NO_COLOR");
     cmd.env_remove("PAGER");
+    cmd.env_remove("LESSOPEN");
+    cmd.env_remove("LESSCLOSE");
+    cmd.env_remove("SHELL");
     cmd
 }
 

@@ -256,7 +256,7 @@ pub(crate) struct InputReader<'a> {
 }
 
 impl<'a> InputReader<'a> {
-    fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
+    pub(crate) fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
         let mut first_line = vec![];
         reader.read_until(b'\n', &mut first_line).ok();
 

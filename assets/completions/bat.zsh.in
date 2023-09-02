@@ -46,6 +46,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(: --list-themes --list-languages -L)'{-L,--list-languages}'[Display all supported languages]'
         '(: --no-config)'--no-config'[Do not use the configuration file]'
         '(: --no-custom-assets)'--no-custom-assets'[Do not load custom assets]'
+        '(: --no-lessopen)'--no-lessopen'[Do not use the $LESSOPEN preprocessor]'
         '(: --config-dir)'--config-dir'[Show bat'"'"'s configuration directory]'
         '(: --config-file)'--config-file'[Show path to the configuration file]'
         '(: --generate-config-file)'--generate-config-file'[Generates a default configuration file]'

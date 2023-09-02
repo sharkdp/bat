@@ -243,6 +243,17 @@ If you ever want to remove the custom languages, you can clear the cache with `\
 Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
 These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`, and are added to the cache with
 `\fB{{PROJECT_EXECUTABLE}} cache --build`.
+
+.SH "INPUT PREPROCESSOR"
+Much like less(1) does, {{PROJECT_EXECUTABLE}} supports input preprocessors via the LESSOPEN and LESSCLOSE environment variables.
+In addition, {{PROJECT_EXECUTABLE}} attempts to be as compatible with less's preprocessor implementation as possible.
+
+To run {{PROJECT_EXECUTABLE}} without using the preprocessor, call:
+
+\fB{{PROJECT_EXECUTABLE}} --no-lessopen\fR
+
+For more information, see the "INPUT PREPROCESSOR" section of less(1).  
+
 .SH "MORE INFORMATION"
 
 For more information and up-to-date documentation, visit the {{PROJECT_EXECUTABLE}} repo:
