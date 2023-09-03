@@ -247,7 +247,13 @@ jobs:
 
     - name: Run tests
       shell: bash
-      run: $BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+      run: |
+        if [[ ${{ matrix.job.os }} = windows-* ]]
+        then
+          powershell.exe -command "$BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}"
+        else
+          $BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        fi
 
     - name: Run bat
       shell: bash
