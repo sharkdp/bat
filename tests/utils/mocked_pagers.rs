@@ -17,21 +17,16 @@ fn get_mocked_pagers_dir() -> PathBuf {
 /// On Unix: 'most' -> 'most'
 /// On Windows: 'most' -> 'most.bat'
 pub fn from(base: &str) -> String {
-    let mut cmd_and_args = base.split(" ");
+    let mut cmd_and_args = shell_words::split(base).unwrap();
     let suffix = if cfg!(windows) { ".bat" } else { "" };
-    match cmd_and_args.next() {
-        Some(s) => {
-            let mut out_cmd = format!("{}{}", s, suffix);
-            let remainder: Vec<&str> = cmd_and_args.collect();
-            if (remainder.len() > 0) {
-                out_cmd.push_str(" ");
-                out_cmd.push_str(remainder.join(" ").as_str());
-            }
+    let mut out_cmd = format!("{}{}", cmd_and_args.first().unwrap(), suffix);
 
-            out_cmd
-        }
-        None => String::from(base),
+    if (cmd_and_args.len() > 1) {
+        out_cmd.push(' ');
+        out_cmd.push_str(cmd_and_args[1..].to_vec().join(" ").as_str());
     }
+
+    out_cmd
 }
 
 /// Prepends a directory to the PATH environment variable

@@ -885,14 +885,17 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
+#[serial]
 fn env_var_bat_paging() {
-    bat()
-        .env("BAT_PAGER", "echo pager-output")
-        .env("BAT_PAGING", "always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n"));
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("BAT_PAGER", mocked_pagers::from("echo pager-output"))
+            .env("BAT_PAGING", "always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
