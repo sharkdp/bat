@@ -114,6 +114,10 @@ impl OutputType {
                 p.args(args);
             }
             p.env("LESSCHARSET", "UTF-8");
+
+            #[cfg(feature = "lessopen")]
+            // Ensures that 'less' does not preprocess input again if '$LESSOPEN' is set.
+            p.arg("--no-lessopen");
         } else {
             p.args(args);
         };
