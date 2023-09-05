@@ -21,7 +21,6 @@ application = [
     "build-assets",
     "git",
     "minimal-application",
-    "lessopen",
 ]
 # Mainly for developers that want to iterate quickly
 # Be aware that the included features might change in the future
