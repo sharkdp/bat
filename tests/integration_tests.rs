@@ -2107,7 +2107,8 @@ fn lessopen_and_lessclose_file_temp() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In this case, the original file and the temporary file returned by $LESSOPEN
     bat()
-        .env("LESSOPEN", "echo empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "echo empty.txt && echo %s >/dev/null")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
         .arg("test.txt")
@@ -2125,16 +2126,16 @@ fn lessopen_and_lessclose_file_piped() {
     // In these cases, the original file and a dash
     bat()
         // This test will not work properly if $LESSOPEN does not output anything
-        .env("LESSOPEN", "|cat test.txt ")
+        .env("LESSOPEN", "|cat %s")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
-        .arg("empty.txt")
+        .arg("test.txt")
         .assert()
         .success()
-        .stdout("hello world\nlessclose: empty.txt -\n");
+        .stdout("hello world\nlessclose: test.txt -\n");
 
     bat()
-        .env("LESSOPEN", "||cat empty.txt")
+        .env("LESSOPEN", "||cat %s")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
         .arg("empty.txt")
@@ -2151,7 +2152,8 @@ fn lessopen_and_lessclose_stdin_temp() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In this case, a dash and the temporary file returned by $LESSOPEN
     bat()
-        .env("LESSOPEN", "-echo empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "-echo empty.txt && echo %s >/dev/null")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
         .write_stdin("test.txt")
@@ -2169,7 +2171,8 @@ fn lessopen_and_lessclose_stdin_piped() {
     // In these cases, two dashes
     bat()
         // This test will not work properly if $LESSOPEN does not output anything
-        .env("LESSOPEN", "|-cat test.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "|-cat test.txt && echo %s >/dev/null")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
         .write_stdin("empty.txt")
@@ -2178,7 +2181,8 @@ fn lessopen_and_lessclose_stdin_piped() {
         .stdout("hello world\nlessclose: - -\n");
 
     bat()
-        .env("LESSOPEN", "||-cat empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "||-cat empty.txt && echo %s >/dev/null")
         .env("LESSCLOSE", "echo lessclose: %s %s")
         .arg("--lessopen")
         .write_stdin("empty.txt")
@@ -2192,7 +2196,8 @@ fn lessopen_and_lessclose_stdin_piped() {
 #[test]
 fn lessopen_handling_empty_output_file() {
     bat()
-        .env("LESSOPEN", "|cat empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "|cat empty.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .arg("test.txt")
         .assert()
@@ -2200,7 +2205,8 @@ fn lessopen_handling_empty_output_file() {
         .stdout("hello world\n");
 
     bat()
-        .env("LESSOPEN", "|cat nonexistent.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "|cat nonexistent.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .arg("test.txt")
         .assert()
@@ -2208,7 +2214,8 @@ fn lessopen_handling_empty_output_file() {
         .stdout("hello world\n");
 
     bat()
-        .env("LESSOPEN", "||cat empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "||cat empty.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .arg("test.txt")
         .assert()
@@ -2216,7 +2223,8 @@ fn lessopen_handling_empty_output_file() {
         .stdout("");
 
     bat()
-        .env("LESSOPEN", "||cat nonexistent.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "||cat nonexistent.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .arg("test.txt")
         .assert()
@@ -2227,9 +2235,11 @@ fn lessopen_handling_empty_output_file() {
 #[cfg(unix)] // Expected output assumed that tests are run on a Unix-like system
 #[cfg(feature = "lessopen")]
 #[test]
+// FIXME
 fn lessopen_handling_empty_output_stdin() {
     bat()
-        .env("LESSOPEN", "|-cat empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "|-cat empty.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
@@ -2237,7 +2247,8 @@ fn lessopen_handling_empty_output_stdin() {
         .stdout("hello world\n");
 
     bat()
-        .env("LESSOPEN", "|-cat nonexistent.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "|-cat nonexistent.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
@@ -2245,7 +2256,8 @@ fn lessopen_handling_empty_output_stdin() {
         .stdout("hello world\n");
 
     bat()
-        .env("LESSOPEN", "||-cat empty.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "||-cat empty.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
@@ -2253,7 +2265,8 @@ fn lessopen_handling_empty_output_stdin() {
         .stdout("");
 
     bat()
-        .env("LESSOPEN", "||-cat nonexistent.txt")
+        // Need a %s for $LESSOPEN to be valid
+        .env("LESSOPEN", "||-cat nonexistent.txt && echo %s >/dev/null")
         .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
@@ -2298,4 +2311,40 @@ fn do_not_use_lessopen_if_overridden() {
         .assert()
         .success()
         .stdout("hello world\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "lessopen")]
+#[test]
+fn lessopen_validity() {
+    bat()
+        .env("LESSOPEN", "|echo File is test.txt")
+        .arg("--lessopen")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n")
+        .stderr(
+            "\u{1b}[33m[bat warning]\u{1b}[0m: LESSOPEN ignored: must contain exactly one %s\n",
+        );
+
+    bat()
+        .env("LESSOPEN", "|echo File is %s")
+        .arg("--lessopen")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("File is test.txt\n")
+        .stderr("");
+
+    bat()
+        .env("LESSOPEN", "|echo %s is %s")
+        .arg("--lessopen")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n")
+        .stderr(
+            "\u{1b}[33m[bat warning]\u{1b}[0m: LESSOPEN ignored: must contain exactly one %s\n",
+        );
 }

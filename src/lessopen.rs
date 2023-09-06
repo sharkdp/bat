@@ -12,7 +12,10 @@ use os_str_bytes::RawOsString;
 use run_script::{IoOptions, ScriptOptions};
 
 use crate::error::Result;
-use crate::input::{Input, InputKind, InputReader, OpenedInput, OpenedInputKind};
+use crate::{
+    bat_warning,
+    input::{Input, InputKind, InputReader, OpenedInput, OpenedInputKind},
+};
 
 /// Preprocess files and/or stdin using $LESSOPEN and $LESSCLOSE
 pub(crate) struct LessOpenPreprocessor {
@@ -32,9 +35,17 @@ enum LessOpenKind {
 
 impl LessOpenPreprocessor {
     /// Create a new instance of LessOpenPreprocessor
-    /// Will return Ok if and only if $LESSOPEN is set
+    /// Will return Ok if and only if $LESSOPEN is set and contains exactly one %s
     pub(crate) fn new() -> Result<LessOpenPreprocessor> {
         let lessopen = env::var("LESSOPEN")?;
+
+        // Ignore $LESSOPEN if it does not contains exactly one %s
+        // Note that $LESSCLOSE has no such requirement
+        if lessopen.match_indices("%s").count() != 1 {
+            let error_msg = "LESSOPEN ignored: must contain exactly one %s";
+            bat_warning!("{}", error_msg);
+            return Err(error_msg.into());
+        }
 
         // "||" means pipe directly to bat without making a temporary file
         // Also, if preprocessor output is empty and exit code is zero, use the empty output
