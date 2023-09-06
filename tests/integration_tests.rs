@@ -2079,6 +2079,7 @@ fn acknowledgements() {
 fn lessopen_file_piped() {
     bat()
         .env("LESSOPEN", "|echo File is %s")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2091,6 +2092,7 @@ fn lessopen_file_piped() {
 fn lessopen_stdin_piped() {
     bat()
         .env("LESSOPEN", "|cat")
+        .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
         .success()
@@ -2107,6 +2109,7 @@ fn lessopen_and_lessclose_file_temp() {
     bat()
         .env("LESSOPEN", "echo empty.txt")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2124,6 +2127,7 @@ fn lessopen_and_lessclose_file_piped() {
         // This test will not work properly if $LESSOPEN does not output anything
         .env("LESSOPEN", "|cat test.txt ")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .arg("empty.txt")
         .assert()
         .success()
@@ -2132,6 +2136,7 @@ fn lessopen_and_lessclose_file_piped() {
     bat()
         .env("LESSOPEN", "||cat empty.txt")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .arg("empty.txt")
         .assert()
         .success()
@@ -2148,6 +2153,7 @@ fn lessopen_and_lessclose_stdin_temp() {
     bat()
         .env("LESSOPEN", "-echo empty.txt")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .write_stdin("test.txt")
         .assert()
         .success()
@@ -2165,6 +2171,7 @@ fn lessopen_and_lessclose_stdin_piped() {
         // This test will not work properly if $LESSOPEN does not output anything
         .env("LESSOPEN", "|-cat test.txt")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .write_stdin("empty.txt")
         .assert()
         .success()
@@ -2173,6 +2180,7 @@ fn lessopen_and_lessclose_stdin_piped() {
     bat()
         .env("LESSOPEN", "||-cat empty.txt")
         .env("LESSCLOSE", "echo lessclose: %s %s")
+        .arg("--lessopen")
         .write_stdin("empty.txt")
         .assert()
         .success()
@@ -2185,6 +2193,7 @@ fn lessopen_and_lessclose_stdin_piped() {
 fn lessopen_handling_empty_output_file() {
     bat()
         .env("LESSOPEN", "|cat empty.txt")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2192,6 +2201,7 @@ fn lessopen_handling_empty_output_file() {
 
     bat()
         .env("LESSOPEN", "|cat nonexistent.txt")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2199,6 +2209,7 @@ fn lessopen_handling_empty_output_file() {
 
     bat()
         .env("LESSOPEN", "||cat empty.txt")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2206,6 +2217,7 @@ fn lessopen_handling_empty_output_file() {
 
     bat()
         .env("LESSOPEN", "||cat nonexistent.txt")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2218,6 +2230,7 @@ fn lessopen_handling_empty_output_file() {
 fn lessopen_handling_empty_output_stdin() {
     bat()
         .env("LESSOPEN", "|-cat empty.txt")
+        .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
         .success()
@@ -2225,6 +2238,7 @@ fn lessopen_handling_empty_output_stdin() {
 
     bat()
         .env("LESSOPEN", "|-cat nonexistent.txt")
+        .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
         .success()
@@ -2232,6 +2246,7 @@ fn lessopen_handling_empty_output_stdin() {
 
     bat()
         .env("LESSOPEN", "||-cat empty.txt")
+        .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
         .success()
@@ -2239,6 +2254,7 @@ fn lessopen_handling_empty_output_stdin() {
 
     bat()
         .env("LESSOPEN", "||-cat nonexistent.txt")
+        .arg("--lessopen")
         .write_stdin("hello world\n")
         .assert()
         .success()
@@ -2251,6 +2267,7 @@ fn lessopen_handling_empty_output_stdin() {
 fn lessopen_uses_shell() {
     bat()
         .env("LESSOPEN", "|cat < %s")
+        .arg("--lessopen")
         .arg("test.txt")
         .assert()
         .success()
@@ -2260,9 +2277,22 @@ fn lessopen_uses_shell() {
 #[cfg(unix)]
 #[cfg(feature = "lessopen")]
 #[test]
-fn do_not_use_lessopen() {
+fn do_not_use_lessopen_by_default() {
     bat()
         .env("LESSOPEN", "|echo File is %s")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "lessopen")]
+#[test]
+fn do_not_use_lessopen_if_overridden() {
+    bat()
+        .env("LESSOPEN", "|echo File is %s")
+        .arg("--lessopen")
         .arg("--no-lessopen")
         .arg("test.txt")
         .assert()

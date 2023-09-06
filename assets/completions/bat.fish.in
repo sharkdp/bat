@@ -163,6 +163,8 @@ complete -c $bat -l italic-text -x -a "$italic_text_opts" -d "When to use italic
 
 complete -c $bat -s l -l language -x -k -a "(__bat_complete_list_languages)" -d "Set the syntax highlighting language" -n __bat_no_excl_args
 
+complete -c $bat -l lessopen -d "Enable the $LESSOPEN preprocessor" -n __fish_is_first_arg
+
 complete -c $bat -s r -l line-range -x -d "Only print lines [M]:[N] (either optional)" -n __bat_no_excl_args
 
 complete -c $bat -l list-languages -f -d "List syntax highlighting languages" -n __fish_is_first_arg

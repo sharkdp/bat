@@ -78,6 +78,7 @@ _bat() {
 	--list-themes | \
 	--line-range | \
 	-L | --list-languages | \
+	--lessopen | \
 	--diagnostic | \
 	--acknowledgements | \
 	-h | --help | \
@@ -171,6 +172,7 @@ _bat() {
 			--style
 			--line-range
 			--list-languages
+			--lessopen
 			--diagnostic
 			--acknowledgements
 			--help
