@@ -874,6 +874,18 @@ fn disable_pager_if_disable_paging_flag_comes_after_paging() {
 }
 
 #[test]
+fn disable_pager_if_disable_pp_flag_comes_after_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("-pp")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
+}
+
+#[test]
 fn enable_pager_if_disable_paging_flag_comes_before_paging() {
     bat()
         .env("PAGER", "echo pager-output")
@@ -883,6 +895,18 @@ fn enable_pager_if_disable_paging_flag_comes_before_paging() {
         .assert()
         .success()
         .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn disable_pager_if_disable_pp_flag_comes_before_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("-pp")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
