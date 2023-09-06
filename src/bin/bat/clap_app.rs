@@ -501,13 +501,21 @@ pub fn build_app(interactive_output: bool) -> Command {
 
     #[cfg(feature = "lessopen")]
     {
-        app = app.arg(
-            Arg::new("no-lessopen")
-                .long("no-lessopen")
-                .action(ArgAction::SetTrue)
-                .hide(true)
-                .help("Do not use the $LESSOPEN preprocessor"),
-        )
+        app = app
+            .arg(
+                Arg::new("lessopen")
+                    .long("lessopen")
+                    .action(ArgAction::SetTrue)
+                    .help("Enable the $LESSOPEN preprocessor"),
+            )
+            .arg(
+                Arg::new("no-lessopen")
+                    .long("no-lessopen")
+                    .action(ArgAction::SetTrue)
+                    .overrides_with("lessopen")
+                    .hide(true)
+                    .help("Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)"),
+            )
     }
 
     app = app

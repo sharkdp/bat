@@ -248,7 +248,13 @@ These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`,
 Much like less(1) does, {{PROJECT_EXECUTABLE}} supports input preprocessors via the LESSOPEN and LESSCLOSE environment variables.
 In addition, {{PROJECT_EXECUTABLE}} attempts to be as compatible with less's preprocessor implementation as possible.
 
-To run {{PROJECT_EXECUTABLE}} without using the preprocessor, call:
+To use the preprocessor, call:
+
+\fB{{PROJECT_EXECUTABLE}} --lessopen\fR
+
+Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file. 
+
+To temporarily disable the preprocessor if it is enabled by default, call:
 
 \fB{{PROJECT_EXECUTABLE}} --no-lessopen\fR
 
