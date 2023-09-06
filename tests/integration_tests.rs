@@ -898,7 +898,7 @@ fn enable_pager_if_disable_paging_flag_comes_before_paging() {
 }
 
 #[test]
-fn disable_pager_if_disable_pp_flag_comes_before_paging() {
+fn enable_pager_if_disable_pp_flag_comes_before_paging() {
     bat()
         .env("PAGER", "echo pager-output")
         .arg("-pp")
@@ -906,7 +906,7 @@ fn disable_pager_if_disable_pp_flag_comes_before_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::eq("pager-output\n").normalize());
 }
 
 #[test]
