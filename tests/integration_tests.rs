@@ -874,7 +874,7 @@ fn disable_pager_if_disable_paging_flag_comes_after_paging() {
 }
 
 #[test]
-fn disable_pager_if_disable_pp_flag_comes_after_paging() {
+fn disable_pager_if_pp_flag_comes_after_paging() {
     bat()
         .env("PAGER", "echo pager-output")
         .arg("--paging=always")
@@ -898,7 +898,7 @@ fn enable_pager_if_disable_paging_flag_comes_before_paging() {
 }
 
 #[test]
-fn enable_pager_if_disable_pp_flag_comes_before_paging() {
+fn enable_pager_if_pp_flag_comes_before_paging() {
     bat()
         .env("PAGER", "echo pager-output")
         .arg("-pp")
