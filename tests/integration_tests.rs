@@ -874,6 +874,18 @@ fn disable_pager_if_disable_paging_flag_comes_after_paging() {
 }
 
 #[test]
+fn enable_pager_if_disable_paging_flag_comes_before_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("-P")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
 fn pager_failed_to_parse() {
     bat()
         .env("BAT_PAGER", "mismatched-quotes 'a")
