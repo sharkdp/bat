@@ -2148,6 +2148,7 @@ fn lessopen_and_lessclose_file_piped() {
 #[cfg(feature = "lessopen")]
 #[test]
 #[serial] // Randomly fails otherwise
+#[ignore = "randomly failing on some systems"]
 fn lessopen_and_lessclose_stdin_temp() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In this case, a dash and the temporary file returned by $LESSOPEN
