@@ -34,6 +34,14 @@ use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
+fn get_config() -> &'static str {
+    if cfg!(windows) {
+        "bat-windows.conf"
+    } else {
+        "bat.conf"
+    }
+}
+
 #[test]
 fn basic() {
     bat()
@@ -589,37 +597,49 @@ fn do_not_exit_directory() {
 }
 
 #[test]
+#[serial]
 fn pager_basic() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn pager_basic_arg() {
-    bat()
-        .arg("--pager=echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg(format!(
+                "--pager={}",
+                mocked_pagers::from("echo pager-output")
+            ))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn pager_overwrite() {
-    bat()
-        .env("PAGER", "echo other-pager")
-        .env("BAT_PAGER", "echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo other-pager"))
+            .env("BAT_PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -635,55 +655,73 @@ fn pager_disable() {
 }
 
 #[test]
+#[serial]
 fn pager_arg_override_env_withconfig() {
-    bat_with_config()
-        .env("BAT_CONFIG_PATH", "bat.conf")
-        .env("PAGER", "echo another-pager")
-        .env("BAT_PAGER", "echo other-pager")
-        .arg("--pager=echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", get_config())
+            .env("PAGER", mocked_pagers::from("echo another-pager"))
+            .env("BAT_PAGER", mocked_pagers::from("echo other-pager"))
+            .arg(format!(
+                "--pager={}",
+                mocked_pagers::from("echo pager-output")
+            ))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn pager_arg_override_env_noconfig() {
-    bat()
-        .env("PAGER", "echo another-pager")
-        .env("BAT_PAGER", "echo other-pager")
-        .arg("--pager=echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo another-pager"))
+            .env("BAT_PAGER", mocked_pagers::from("echo other-pager"))
+            .arg(format!(
+                "--pager={}",
+                mocked_pagers::from("echo pager-output")
+            ))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn pager_env_bat_pager_override_config() {
-    bat_with_config()
-        .env("BAT_CONFIG_PATH", "bat.conf")
-        .env("PAGER", "echo other-pager")
-        .env("BAT_PAGER", "echo pager-output")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", get_config())
+            .env("PAGER", mocked_pagers::from("echo other-pager"))
+            .env("BAT_PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn pager_env_pager_nooverride_config() {
-    bat_with_config()
-        .env("BAT_CONFIG_PATH", "bat.conf")
-        .env("PAGER", "echo other-pager")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", get_config())
+            .env("PAGER", mocked_pagers::from("echo other-pager"))
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("dummy-pager-from-config\n").normalize());
+    });
 }
 
 #[test]
@@ -809,15 +847,18 @@ fn alias_pager_disable() {
 }
 
 #[test]
+#[serial]
 fn alias_pager_disable_long_overrides_short() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("-P")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("-P")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -844,14 +885,17 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
+#[serial]
 fn env_var_bat_paging() {
-    bat()
-        .env("BAT_PAGER", "echo pager-output")
-        .env("BAT_PAGING", "always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n"));
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("BAT_PAGER", mocked_pagers::from("echo pager-output"))
+            .env("BAT_PAGING", "always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -912,13 +956,16 @@ fn config_location_from_bat_config_dir_variable() {
 }
 
 #[test]
+#[serial]
 fn config_read_arguments_from_file() {
-    bat_with_config()
-        .env("BAT_CONFIG_PATH", "bat.conf")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", get_config())
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("dummy-pager-from-config\n").normalize());
+    });
 }
 
 #[cfg(unix)]
