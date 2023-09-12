@@ -994,14 +994,12 @@ fn config_location_from_bat_config_dir_variable() {
 #[test]
 #[serial]
 fn config_read_arguments_from_file() {
-    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
-        bat_with_config()
-            .env("BAT_CONFIG_PATH", get_config())
-            .arg("test.txt")
-            .assert()
-            .success()
-            .stdout(predicate::str::contains("dummy-pager-from-config\n").normalize());
-    });
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", get_config())
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("dummy-pager-from-config\n").normalize());
 }
 
 #[cfg(unix)]
