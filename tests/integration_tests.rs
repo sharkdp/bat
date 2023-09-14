@@ -2397,7 +2397,8 @@ fn highlighting_independant_from_map_syntax_case() {
         .arg("map-syntax_case.Config")
         .assert()
         .get_output()
-        .stdout.clone();
+        .stdout
+        .clone();
 
     bat()
         .arg("-f")
