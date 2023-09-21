@@ -308,8 +308,10 @@ fn no_args_doesnt_break() {
     // this test exists.
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
     let mut master = unsafe { File::from_raw_fd(master) };
-    let stdin = unsafe { Stdio::from_raw_fd(slave) };
-    let stdout = unsafe { Stdio::from_raw_fd(slave) };
+    let stdin_file = unsafe { File::from_raw_fd(slave) };
+    let stdout_file = stdin_file.try_clone().unwrap();
+    let stdin = Stdio::from(stdin_file);
+    let stdout = Stdio::from(stdout_file);
 
     let mut child = bat_raw_command()
         .stdin(stdin)
