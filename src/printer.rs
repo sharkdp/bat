@@ -227,19 +227,7 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         // Create decorations.
-        let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
-
-        if config.style_components.numbers() {
-            decorations.push(Box::new(LineNumberDecoration::new(&colors)));
-        }
-
-        #[cfg(feature = "git")]
-        {
-            if config.style_components.changes() {
-                decorations.push(Box::new(LineChangesDecoration::new(&colors)));
-            }
-        }
-
+        let mut decorations: Vec<Box<dyn Decoration>> = Self::get_decorations(config, assets);
         let mut panel_width: usize =
             decorations.len() + decorations.iter().fold(0, |a, x| a + x.width());
 
@@ -294,6 +282,40 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
         })
+    }
+
+    fn get_decorations(
+        config: &'a Config,
+        assets: &'a HighlightingAssets,
+    ) -> Vec<Box<dyn Decoration>> {
+        let theme = assets.get_theme(&config.theme);
+        let colors = if config.colored_output {
+            Colors::colored(theme, config.true_color)
+        } else {
+            Colors::plain()
+        };
+
+        // Create decorations.
+        let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
+
+        if config.style_components.numbers() {
+            decorations.push(Box::new(LineNumberDecoration::new(&colors)));
+        }
+
+        #[cfg(feature = "git")]
+        {
+            if config.style_components.changes() {
+                decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+            }
+        }
+
+        return decorations;
+    }
+
+    pub(crate) fn get_panel_width(config: &'a Config, assets: &'a HighlightingAssets) -> usize {
+        let decorations = Self::get_decorations(config, assets);
+
+        return decorations.len() + decorations.iter().fold(0, |a, x| a + x.width());
     }
 
     fn print_horizontal_line_term(

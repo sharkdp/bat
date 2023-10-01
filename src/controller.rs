@@ -49,6 +49,11 @@ impl<'b> Controller<'b> {
         output_buffer: Option<&mut dyn std::fmt::Write>,
         mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
+        let panel_width = if self.config.loop_through {
+            0
+        } else {
+            InteractivePrinter::get_panel_width(self.config, self.assets)
+        };
         let mut output_type;
 
         #[cfg(feature = "paging")]
@@ -73,7 +78,8 @@ impl<'b> Controller<'b> {
 
             let wrapping_mode = self.config.wrapping_mode;
 
-            output_type = OutputType::from_mode(paging_mode, wrapping_mode, self.config.pager)?;
+            output_type =
+                OutputType::from_mode(paging_mode, wrapping_mode, self.config, panel_width)?;
         }
 
         #[cfg(not(feature = "paging"))]
@@ -92,6 +98,7 @@ impl<'b> Controller<'b> {
             Some(buf) => OutputHandle::FmtWrite(buf),
             None => OutputHandle::IoWrite(output_type.handle()?),
         };
+
         let mut no_errors: bool = true;
         let stderr = io::stderr();
 
@@ -144,6 +151,7 @@ impl<'b> Controller<'b> {
             #[cfg(not(feature = "lessopen"))]
             input.open(stdin, stdout_identifier)?
         };
+
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())

@@ -71,6 +71,7 @@
 - Fix arithmetic overflow in `LineRange::from` and `LineRange::parse_range`, see #2674, #2698 (@skoriop)
 - Fix paging not happening when stdout is interactive but stdin is not, see #2574 (@Nigecat)
 - Make `-pp` override `--paging` and vice versa when passed as a later argument, see #2660 (@J-Kappes)
+- Fix search features not ignore file name, file size and line numbers when using `less` #2675 (@tdtrung17693)
 
 ## Other
 
