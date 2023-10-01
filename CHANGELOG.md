@@ -9,7 +9,7 @@
 
 - Fix `more` not being found on Windows when provided via `BAT_PAGER`, see #2570, #2580, and #2651 (@mataha)
 - Switched default behavior of `--map-syntax` to be case insensitive #2520
-
+- Updated version of `serde_yaml` to `0.9`. See #2627 (@Raghav-Bell)
 ## Other
 
 - Output directory for generated assets (completion, manual) can be customized, see #2515 (@tranzystorek-io)

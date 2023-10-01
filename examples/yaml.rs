@@ -23,7 +23,8 @@ fn main() {
         }],
     };
 
-    let bytes = serde_yaml::to_vec(&person).unwrap();
+    let mut bytes = Vec::with_capacity(128);
+    serde_yaml::to_writer(&mut bytes, &person).unwrap();
     PrettyPrinter::new()
         .language("yaml")
         .line_numbers(true)
