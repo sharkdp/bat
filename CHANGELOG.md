@@ -4,6 +4,7 @@
 
 - Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
 - Add support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
+- Add support for windows/ARM64 platform. See #2644 (@Raghav-Bell)
 
 ## Bugfixes
 
