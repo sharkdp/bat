@@ -257,3 +257,6 @@
 [submodule "assets/syntaxes/02_Extra/NSIS"]
 	path = assets/syntaxes/02_Extra/NSIS
 	url = https://github.com/SublimeText/NSIS
+[submodule "assets/syntaxes/02_Extra/vscode-wgsl"]
+	path = assets/syntaxes/02_Extra/vscode-wgsl
+	url = https://github.com/PolyMeilex/vscode-wgsl.git

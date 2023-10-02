@@ -22,6 +22,7 @@
 - Replaced quotes with double quotes so fzf integration example script works on windows and linux. see #2095 (@johnmatthiggins)
 - Associate `ksh` files with `bash` syntax, see #2633 (@johnmatthiggins)
 - Associate `ron` files with `rust` syntax, see #2427 (@YeungOnion)
+- Add support for [WebGPU Shader Language](https://www.w3.org/TR/WGSL/), see #2692 (@rhysd)
 
 ## Themes
 

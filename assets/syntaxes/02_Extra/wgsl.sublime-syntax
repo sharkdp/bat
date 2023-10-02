@@ -1,0 +1,198 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: WGSL
+file_extensions:
+  - wgsl
+scope: source.wgsl
+contexts:
+  main:
+    - include: line_comments
+    - include: block_comments
+    - include: keywords
+    - include: attributes
+    - include: functions
+    - include: function_calls
+    - include: constants
+    - include: types
+    - include: variables
+    - include: punctuation
+  attributes:
+    - match: '(@)([A-Za-z_]+)'
+      comment: attribute declaration
+      scope: meta.attribute.wgsl
+      captures:
+        1: keyword.operator.attribute.at
+        2: entity.name.attribute.wgsl
+  block_comments:
+    - match: /\*\*/
+      comment: empty block comments
+      scope: comment.block.wgsl
+    - match: /\*\*
+      comment: block documentation comments
+      push:
+        - meta_scope: comment.block.documentation.wgsl
+        - match: \*/
+          pop: true
+        - include: block_comments
+    - match: /\*(?!\*)
+      comment: block comments
+      push:
+        - meta_scope: comment.block.wgsl
+        - match: \*/
+          pop: true
+        - include: block_comments
+  constants:
+    - match: '(-?\b[0-9][0-9]*\.[0-9][0-9]*)([eE][+-]?[0-9]+)?\b'
+      comment: decimal float literal
+      scope: constant.numeric.float.wgsl
+    - match: '-?\b0x[0-9a-fA-F]+\b|\b0\b|-?\b[1-9][0-9]*\b'
+      comment: int literal
+      scope: constant.numeric.decimal.wgsl
+    - match: '\b0x[0-9a-fA-F]+u\b|\b0u\b|\b[1-9][0-9]*u\b'
+      comment: uint literal
+      scope: constant.numeric.decimal.wgsl
+    - match: \b(true|false)\b
+      comment: boolean constant
+      scope: constant.language.boolean.wgsl
+  function_calls:
+    - match: '([A-Za-z0-9_]+)(\()'
+      comment: function/method calls
+      captures:
+        1: entity.name.function.wgsl
+        2: punctuation.brackets.round.wgsl
+      push:
+        - meta_scope: meta.function.call.wgsl
+        - match: \)
+          captures:
+            0: punctuation.brackets.round.wgsl
+          pop: true
+        - include: line_comments
+        - include: block_comments
+        - include: keywords
+        - include: attributes
+        - include: function_calls
+        - include: constants
+        - include: types
+        - include: variables
+        - include: punctuation
+  functions:
+    - match: '\b(fn)\s+([A-Za-z0-9_]+)((\()|(<))'
+      comment: function definition
+      captures:
+        1: keyword.other.fn.wgsl
+        2: entity.name.function.wgsl
+        4: punctuation.brackets.round.wgsl
+      push:
+        - meta_scope: meta.function.definition.wgsl
+        - match: '\{'
+          captures:
+            0: punctuation.brackets.curly.wgsl
+          pop: true
+        - include: line_comments
+        - include: block_comments
+        - include: keywords
+        - include: attributes
+        - include: function_calls
+        - include: constants
+        - include: types
+        - include: variables
+        - include: punctuation
+  keywords:
+    - match: \b(bitcast|block|break|case|continue|continuing|default|discard|else|elseif|enable|fallthrough|for|function|if|loop|private|read|read_write|return|storage|switch|uniform|while|workgroup|write)\b
+      comment: other keywords
+      scope: keyword.control.wgsl
+    - match: \b(asm|const|do|enum|handle|mat|premerge|regardless|typedef|unless|using|vec|void)\b
+      comment: reserved keywords
+      scope: keyword.control.wgsl
+    - match: \b(let|var)\b
+      comment: storage keywords
+      scope: keyword.other.wgsl storage.type.wgsl
+    - match: \b(type)\b
+      comment: type keyword
+      scope: keyword.declaration.type.wgsl storage.type.wgsl
+    - match: \b(enum)\b
+      comment: enum keyword
+      scope: keyword.declaration.enum.wgsl storage.type.wgsl
+    - match: \b(struct)\b
+      comment: struct keyword
+      scope: keyword.declaration.struct.wgsl storage.type.wgsl
+    - match: \bfn\b
+      comment: fn
+      scope: keyword.other.fn.wgsl
+    - match: (\^|\||\|\||&&|<<|>>|!)(?!=)
+      comment: logical operators
+      scope: keyword.operator.logical.wgsl
+    - match: '&(?![&=])'
+      comment: logical AND, borrow references
+      scope: keyword.operator.borrow.and.wgsl
+    - match: (\+=|-=|\*=|/=|%=|\^=|&=|\|=|<<=|>>=)
+      comment: assignment operators
+      scope: keyword.operator.assignment.wgsl
+    - match: '(?<![<>])=(?!=|>)'
+      comment: single equal
+      scope: keyword.operator.assignment.equal.wgsl
+    - match: (=(=)?(?!>)|!=|<=|(?<!=)>=)
+      comment: comparison operators
+      scope: keyword.operator.comparison.wgsl
+    - match: '(([+%]|(\*(?!\w)))(?!=))|(-(?!>))|(/(?!/))'
+      comment: math operators
+      scope: keyword.operator.math.wgsl
+    - match: \.(?!\.)
+      comment: dot access
+      scope: keyword.operator.access.dot.wgsl
+    - match: '->'
+      comment: dashrocket, skinny arrow
+      scope: keyword.operator.arrow.skinny.wgsl
+  line_comments:
+    - match: \s*//.*
+      comment: single line comment
+      scope: comment.line.double-slash.wgsl
+  punctuation:
+    - match: ','
+      comment: comma
+      scope: punctuation.comma.wgsl
+    - match: '[{}]'
+      comment: curly braces
+      scope: punctuation.brackets.curly.wgsl
+    - match: '[()]'
+      comment: parentheses, round brackets
+      scope: punctuation.brackets.round.wgsl
+    - match: ;
+      comment: semicolon
+      scope: punctuation.semi.wgsl
+    - match: '[\[\]]'
+      comment: square brackets
+      scope: punctuation.brackets.square.wgsl
+    - match: '(?<![=-])[<>]'
+      comment: angle brackets
+      scope: punctuation.brackets.angle.wgsl
+  types:
+    - match: \b(bool|i32|u32|f32)\b
+      comment: scalar Types
+      scope: storage.type.wgsl
+    - match: \b(i64|u64|f64)\b
+      comment: reserved scalar Types
+      scope: storage.type.wgsl
+    - match: \b(vec2i|vec3i|vec4i|vec2u|vec3u|vec4u|vec2f|vec3f|vec4f|vec2h|vec3h|vec4h)\b
+      comment: vector type aliasses
+      scope: storage.type.wgsl
+    - match: \b(mat2x2f|mat2x3f|mat2x4f|mat3x2f|mat3x3f|mat3x4f|mat4x2f|mat4x3f|mat4x4f|mat2x2h|mat2x3h|mat2x4h|mat3x2h|mat3x3h|mat3x4h|mat4x2h|mat4x3h|mat4x4h)\b
+      comment: matrix type aliasses
+      scope: storage.type.wgsl
+    - match: '\b(vec[2-4]|mat[2-4]x[2-4])\b'
+      comment: vector/matrix types
+      scope: storage.type.wgsl
+    - match: \b(atomic)\b
+      comment: atomic types
+      scope: storage.type.wgsl
+    - match: \b(array)\b
+      comment: array types
+      scope: storage.type.wgsl
+    - match: '\b([A-Z][A-Za-z0-9]*)\b'
+      comment: Custom type
+      scope: entity.name.type.wgsl
+  variables:
+    - match: '\b(?<!(?<!\.)\.)(?:r#(?!(crate|[Ss]elf|super)))?[a-z0-9_]+\b'
+      comment: variables
+      scope: variable.other.wgsl
