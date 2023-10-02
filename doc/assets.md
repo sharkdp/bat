@@ -84,6 +84,7 @@ The following files have been manually modified after converting from a `.tmLang
 * `Org mode.sublime-syntax` => removed `task` file type.
 * `Robot.sublime_syntax` => changed name to "Robot Framework", added `.resource` extension.
 * `SML.sublime_syntax` => removed `ml` file type.
+* `wgsl.sublime-syntax` => added `wgsl` file extension.
 
 ### Non-submodule additions
 
