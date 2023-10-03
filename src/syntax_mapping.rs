@@ -76,9 +76,9 @@ impl<'a> SyntaxMapping<'a> {
             .insert("fish_history", MappingTarget::MapTo("YAML"))
             .unwrap();
 
-        mapping
-            .insert("*.jsonl", MappingTarget::MapTo("JSON"))
-            .unwrap();
+        for glob in ["*.jsonl", "*.sarif"] {
+            mapping.insert(glob, MappingTarget::MapTo("JSON")).unwrap();
+        }
 
         // See #2151, https://nmap.org/book/nse-language.html
         mapping
