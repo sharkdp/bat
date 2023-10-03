@@ -8,11 +8,13 @@ import os
 import argparse
 from multiprocessing import Pool
 
+# Avoid 'default' theme because it can choose a different theme based on
+# the appearance settings on macOS.
 BAT_OPTIONS = [
     "--no-config",
     "--style=plain",
     "--color=always",
-    "--theme=default",
+    "--theme=Monokai Extended",
     "--italic-text=always",
 ]
 
