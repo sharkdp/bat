@@ -53,7 +53,7 @@ impl LineRange {
                     let more_lines = &line_numbers[1][1..]
                         .parse()
                         .map_err(|_| "Invalid character after +")?;
-                    new_range.lower + more_lines
+                    new_range.lower.saturating_add(*more_lines)
                 } else if first_byte == Some(b'-') {
                     // this will prevent values like "-+5" even though "+5" is valid integer
                     if line_numbers[1][1..].bytes().next() == Some(b'+') {
