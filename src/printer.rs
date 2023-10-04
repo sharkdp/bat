@@ -41,28 +41,11 @@ pub enum OutputHandle<'a> {
     FmtWrite(&'a mut dyn fmt::Write),
 }
 
-macro_rules! write_handle {
-    ($dst:expr, $($arg:tt)*) => {
-        match $dst {
-            OutputHandle::IoWrite(ref mut handle) => {
-                write!(handle, $($arg)*).map_err(|e| Error::from(e))
-            }
-            OutputHandle::FmtWrite(ref mut handle) => {
-                write!(handle, $($arg)*).map_err(|e| Error::from(e))
-            }
-        }
-    }
-}
-
-macro_rules! writeln_handle {
-    ($dst:expr, $($arg:tt)*) => {
-        match $dst {
-            OutputHandle::IoWrite(ref mut handle) => {
-                writeln!(handle, $($arg)*).map_err(|e| Error::from(e))
-            }
-            OutputHandle::FmtWrite(ref mut handle) => {
-                writeln!(handle, $($arg)*).map_err(|e| Error::from(e))
-            }
+impl<'a> OutputHandle<'a> {
+    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
+        match self {
+            Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
+            Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
         }
     }
 }
@@ -129,7 +112,7 @@ impl<'a> Printer for SimplePrinter<'a> {
                     self.config.tab_width,
                     self.config.nonprintable_notation,
                 );
-                write_handle!(handle, "{}", line)?;
+                write!(handle, "{}", line)?;
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
@@ -266,7 +249,7 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         style: Style,
     ) -> Result<()> {
-        writeln_handle!(
+        writeln!(
             handle,
             "{}",
             style.paint("─".repeat(self.config.term_width))
@@ -280,7 +263,7 @@ impl<'a> InteractivePrinter<'a> {
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
-            writeln_handle!(handle, "{}", self.colors.grid.paint(hline))?;
+            writeln!(handle, "{}", self.colors.grid.paint(hline))?;
         }
 
         Ok(())
@@ -306,7 +289,7 @@ impl<'a> InteractivePrinter<'a> {
 
     fn print_header_component_indent(&mut self, handle: &mut OutputHandle) -> Result<()> {
         if self.config.style_components.grid() {
-            write_handle!(
+            write!(
                 handle,
                 "{}{}",
                 " ".repeat(self.panel_width),
@@ -315,7 +298,7 @@ impl<'a> InteractivePrinter<'a> {
                     .paint(if self.panel_width > 0 { "│ " } else { "" }),
             )
         } else {
-            write_handle!(handle, "{}", " ".repeat(self.panel_width))
+            write!(handle, "{}", " ".repeat(self.panel_width))
         }
     }
 
@@ -342,7 +325,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         if !self.config.style_components.header() {
             if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
-                writeln_handle!(
+                writeln!(
                     handle,
                     "{}: Binary content from {} will not be printed to the terminal \
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
@@ -390,7 +373,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         } else {
             // Only pad space between files, if we haven't already drawn a horizontal rule
             if add_header_padding && !self.config.style_components.rule() {
-                writeln_handle!(handle,)?;
+                writeln!(handle)?;
             }
         }
 
@@ -398,7 +381,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.print_header_component_indent(handle)?;
 
             match component {
-                StyleComponent::HeaderFilename => writeln_handle!(
+                StyleComponent::HeaderFilename => writeln!(
                     handle,
                     "{}{}{}",
                     description
@@ -414,7 +397,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
                         .unwrap_or_else(|| "-".into());
-                    writeln_handle!(handle, "Size: {}", self.colors.header_value.paint(bsize))
+                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
                 }
                 _ => Ok(()),
             }
@@ -454,7 +437,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let snip_right =
             " ─".repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
 
-        writeln_handle!(
+        writeln!(
             handle,
             "{}",
             self.colors
@@ -553,7 +536,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 .map(|d| d.generate(line_number, false, self));
 
             for deco in decorations {
-                write_handle!(handle, "{} ", deco.text)?;
+                write!(handle, "{} ", deco.text)?;
                 cursor_max -= deco.width + 1;
             }
         }
@@ -571,7 +554,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         // ANSI escape passthrough.
                         (ansi, true) => {
                             self.ansi_style.update(ansi);
-                            write_handle!(handle, "{}", ansi)?;
+                            write!(handle, "{}", ansi)?;
                         }
 
                         // Regular text.
@@ -579,7 +562,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                             let text = &*self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
 
-                            write_handle!(
+                            write!(
                                 handle,
                                 "{}",
                                 as_terminal_escaped(
@@ -604,13 +587,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     } else {
                                         0
                                     };
-                                    write_handle!(
-                                        handle,
-                                        "{}",
-                                        ansi_style.paint(" ".repeat(width))
-                                    )?;
+                                    write!(handle, "{}", ansi_style.paint(" ".repeat(width)))?;
                                 }
-                                write_handle!(handle, "{}", &text[text_trimmed.len()..])?;
+                                write!(handle, "{}", &text[text_trimmed.len()..])?;
                             }
                         }
                     }
@@ -618,7 +597,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
 
             if !self.config.style_components.plain() && line.bytes().next_back() != Some(b'\n') {
-                writeln_handle!(handle,)?;
+                writeln!(handle)?;
             }
         } else {
             for &(style, region) in &regions {
@@ -628,7 +607,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         // ANSI escape passthrough.
                         (ansi, true) => {
                             self.ansi_style.update(ansi);
-                            write_handle!(handle, "{}", ansi)?;
+                            write!(handle, "{}", ansi)?;
                         }
 
                         // Regular text.
@@ -673,7 +652,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     }
 
                                     // It wraps.
-                                    write_handle!(
+                                    write!(
                                         handle,
                                         "{}\n{}",
                                         as_terminal_escaped(
@@ -699,7 +678,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
                             // flush the buffer
                             cursor += current_width;
-                            write_handle!(
+                            write!(
                                 handle,
                                 "{}",
                                 as_terminal_escaped(
@@ -722,18 +701,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     ..Default::default()
                 };
 
-                write_handle!(
+                write!(
                     handle,
                     "{}",
                     ansi_style.paint(" ".repeat(cursor_max - cursor))
                 )?;
             }
-            writeln_handle!(handle,)?;
+            writeln!(handle)?;
         }
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update("^[24m");
-            write_handle!(handle, "\x1B[24m")?;
+            write!(handle, "\x1B[24m")?;
         }
 
         Ok(())
