@@ -129,6 +129,13 @@ fn test_parse_plus() {
 }
 
 #[test]
+fn test_parse_plus_overflow() {
+    let range = LineRange::from("18446744073709551615:+1").expect("Shouldn't fail on test!");
+    assert_eq!(18446744073709551615, range.lower);
+    assert_eq!(18446744073709551615, range.upper);
+}
+
+#[test]
 fn test_parse_plus_fail() {
     let range = LineRange::from("40:+z");
     assert!(range.is_err());
