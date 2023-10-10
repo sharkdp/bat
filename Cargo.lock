@@ -118,7 +118,7 @@ checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bat"
-version = "0.23.0"
+version = "0.24.0"
 dependencies = [
  "ansi_colours",
  "assert_cmd",
