@@ -1,4 +1,4 @@
-# unreleased
+# v0.24.0
 
 ## Features
 
@@ -35,8 +35,6 @@
 - Update `Julia` syntax, see #2553 (@dependabot)
 - add `NSIS` support, see #2577 (@idleberg)
 - Update `ssh-config`, see #2697 (@mrmeszaros)
-
-## Themes
 
 ## `bat` as a library
 
