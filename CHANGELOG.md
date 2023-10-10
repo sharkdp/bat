@@ -3,18 +3,22 @@
 ## Features
 
 - Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
-- Add support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
+- Add opt-in (`--features lessopen`) support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
 
 ## Bugfixes
 
 - Fix `more` not being found on Windows when provided via `BAT_PAGER`, see #2570, #2580, and #2651 (@mataha)
 - Switched default behavior of `--map-syntax` to be case insensitive #2520
 - Updated version of `serde_yaml` to `0.9`. See #2627 (@Raghav-Bell)
-- Fixed arithmetic overflow in `LineRange::from`, see #2674 (@skoriop)
+- Fix arithmetic overflow in `LineRange::from` and `LineRange::parse_range`, see #2674, #2698 (@skoriop)
+- Fix paging not happening when stdout is interactive but stdin is not, see #2574 (@Nigecat)
+- Make `-pp` override `--paging` and vice versa when passed as a later argument, see #2660 (@J-Kappes)
 
 ## Other
 
 - Output directory for generated assets (completion, manual) can be customized, see #2515 (@tranzystorek-io)
+- Use the `is-terminal` crate instead of `atty`, see #2530 (@nickelc)
+- Add Winget Releaser workflow, see #2519 (@sitiom)
 - Bump MSRV to 1.70, see #2651 (@mataha)
 
 ## Syntaxes
@@ -26,11 +30,17 @@
 - Associate `sarif` files with `JSON` syntax, see #2695 (@rhysd)
 - Associate `ron` files with `rust` syntax, see #2427 (@YeungOnion)
 - Add support for [WebGPU Shader Language](https://www.w3.org/TR/WGSL/), see #2692 (@rhysd)
+- Add `.dpkg-new` and `.dpkg-tmp` to ignored suffixe, see #2595 (@scop)
+- fix: Add syntax mapping `*.jsonl` => `json`, see #2539 (@WinterCore)
+- Update `Julia` syntax, see #2553 (@dependabot)
+- add `NSIS` support, see #2577 (@idleberg)
+- Update `ssh-config`, see #2697 (@mrmeszaros)
 
 ## Themes
 
 ## `bat` as a library
 
+- Add optional output_buffer arg to `Controller::run()` and `Controller::run_with_error_handler()`, see #2618 (@Piturnah)
 
 
 # v0.23.0
