@@ -1728,6 +1728,25 @@ fn show_all_with_caret_notation() {
         .assert()
         .stdout("hello·world^J\n├──┤^M^@^G^H^[")
         .stderr("");
+
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=caret")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H├─┤^J\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+}
+
+#[test]
+fn show_all_with_unicode() {
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=unicode")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("␀␁␂␃␄␅␆␇␈├─┤␊\n␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␡")
+        .stderr("");
 }
 
 #[test]

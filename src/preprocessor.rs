@@ -91,31 +91,27 @@ pub fn replace_nonprintable(
                     });
                     line_idx = 0;
                 }
-                // carriage return
-                '\x0D' => output.push_str(match nonprintable_notation {
-                    NonprintableNotation::Caret => "^M",
-                    NonprintableNotation::Unicode => "␍",
-                }),
-                // null
-                '\x00' => output.push_str(match nonprintable_notation {
-                    NonprintableNotation::Caret => "^@",
-                    NonprintableNotation::Unicode => "␀",
-                }),
-                // bell
-                '\x07' => output.push_str(match nonprintable_notation {
-                    NonprintableNotation::Caret => "^G",
-                    NonprintableNotation::Unicode => "␇",
-                }),
-                // backspace
-                '\x08' => output.push_str(match nonprintable_notation {
-                    NonprintableNotation::Caret => "^H",
-                    NonprintableNotation::Unicode => "␈",
-                }),
-                // escape
-                '\x1B' => output.push_str(match nonprintable_notation {
-                    NonprintableNotation::Caret => "^[",
-                    NonprintableNotation::Unicode => "␛",
-                }),
+                // ASCII control characters
+                '\x00'..='\x1F' => {
+                    let c = u32::from(chr);
+
+                    match nonprintable_notation {
+                        NonprintableNotation::Caret => {
+                            let caret_character = char::from_u32(0x40 + c).unwrap();
+                            write!(output, "^{caret_character}").ok();
+                        }
+
+                        NonprintableNotation::Unicode => {
+                            let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
+                            output.push(replacement_symbol)
+                        }
+                    }
+                }
+                // delete
+                '\x7F' => match nonprintable_notation {
+                    NonprintableNotation::Caret => output.push_str("^?"),
+                    NonprintableNotation::Unicode => output.push('\u{2421}'),
+                },
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
                     || c.is_ascii_punctuation()
