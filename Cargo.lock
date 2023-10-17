@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "ansi_colours"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7db9d9767fde724f83933a716ee182539788f293828244e9d999695ce0f7ba1e"
+checksum = "6a1558bd2075d341b9ca698ec8eb6fcc55a746b1fc4255585aad5b141d918a80"
 dependencies = [
  "rgb",
 ]
