@@ -3,8 +3,8 @@ updates:
 - package-ecosystem: cargo
   directory: "/"
   schedule:
-    interval: daily
-    time: "16:00"
+    interval: monthly
+    time: "04:00"
     timezone: Europe/Berlin
   ignore:
   - dependency-name: git2
@@ -13,8 +13,8 @@ updates:
 - package-ecosystem: gitsubmodule
   directory: "/"
   schedule:
-    interval: daily
-    time: "16:00"
+    interval: monthly
+    time: "04:00"
     timezone: Europe/Berlin
 - package-ecosystem: "github-actions"
   directory: "/"
