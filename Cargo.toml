@@ -74,7 +74,7 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "5.0.0"
+version = "5.1.0"
 default-features = false
 features = ["parsing"]
 
