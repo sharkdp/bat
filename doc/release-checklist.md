@@ -9,7 +9,16 @@
 - [ ] Update the version and the min. supported Rust version in `README.md` and
       `doc/README-*.md`. Check with
       `git grep -i -e 'rust.*1\.' -e '1\..*rust' | grep README | grep -v tests/`.
-- [ ] Update `CHANGELOG.md`. Introduce a section for the new release.
+
+## CHANGELOG.md updates
+
+- [ ] Go to https://github.com/sharkdp/bat/releases/new, click "Choose a tag",
+  type the name of the tag that will be created later, click "Generate release
+  notes". DO NOT ACTUALLY CREATE ANY RELEASE IN THIS STEP.
+- [ ] Compare current `CHANGELOG.md` with auto-generated release notes and add
+  missing entries. Expect in particular dependabot PRs to not be in
+  `CHANGELOG.md` since they are [auto-merged] if CI passes.
+- [ ] Introduce a section for the new release and perform final touch-ups.
 
 ## Update syntaxes and themes (build assets)
 
@@ -71,3 +80,5 @@
 
 
 ```
+
+[auto-merged]: https://github.com/sharkdp/bat/blob/master/.github/workflows/Auto-merge-dependabot-PRs.yml
