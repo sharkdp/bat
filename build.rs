@@ -10,24 +10,26 @@ fn main() -> anyhow::Result<()> {
 /// Generate manpage and shell completions for the bat application.
 #[cfg(feature = "application")]
 fn gen_man_and_comp() -> anyhow::Result<()> {
+    use std::{env, path::PathBuf};
+
     // Read environment variables.
-    let project_name = option_env!("PROJECT_NAME").unwrap_or("bat");
-    let executable_name = option_env!("PROJECT_EXECUTABLE").unwrap_or(project_name);
+    let project_name = env::var("PROJECT_NAME").unwrap_or("bat".into());
+    let executable_name = env::var("PROJECT_EXECUTABLE").unwrap_or(project_name.clone());
     let executable_name_uppercase = executable_name.to_uppercase();
-    static PROJECT_VERSION: &str = env!("CARGO_PKG_VERSION");
+    let project_version = env::var("CARGO_PKG_VERSION")?;
 
     let mut variables = HashMap::new();
     variables.insert("PROJECT_NAME", project_name);
     variables.insert("PROJECT_EXECUTABLE", executable_name);
-    variables.insert("PROJECT_EXECUTABLE_UPPERCASE", &executable_name_uppercase);
-    variables.insert("PROJECT_VERSION", PROJECT_VERSION);
+    variables.insert("PROJECT_EXECUTABLE_UPPERCASE", executable_name_uppercase);
+    variables.insert("PROJECT_VERSION", project_version);
 
-    let Some(out_dir_env) =
-        std::env::var_os("BAT_ASSETS_GEN_DIR").or_else(|| std::env::var_os("OUT_DIR"))
+    let Some(out_dir) = env::var_os("BAT_ASSETS_GEN_DIR")
+        .or_else(|| env::var_os("OUT_DIR"))
+        .map(PathBuf::from)
     else {
         anyhow::bail!("BAT_ASSETS_GEN_DIR or OUT_DIR should be set for build.rs");
     };
-    let out_dir = Path::new(&out_dir_env);
 
     fs::create_dir_all(out_dir.join("assets/manual")).unwrap();
     fs::create_dir_all(out_dir.join("assets/completions")).unwrap();
@@ -64,7 +66,7 @@ fn gen_man_and_comp() -> anyhow::Result<()> {
 /// Generates a file from a template.
 #[allow(dead_code)]
 fn render_template(
-    variables: &HashMap<&str, &str>,
+    variables: &HashMap<&str, String>,
     in_file: &str,
     out_file: impl AsRef<Path>,
 ) -> anyhow::Result<()> {
