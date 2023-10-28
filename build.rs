@@ -18,11 +18,14 @@ fn gen_man_and_comp() -> anyhow::Result<()> {
     let executable_name_uppercase = executable_name.to_uppercase();
     let project_version = env::var("CARGO_PKG_VERSION")?;
 
-    let mut variables = HashMap::new();
-    variables.insert("PROJECT_NAME", project_name);
-    variables.insert("PROJECT_EXECUTABLE", executable_name);
-    variables.insert("PROJECT_EXECUTABLE_UPPERCASE", executable_name_uppercase);
-    variables.insert("PROJECT_VERSION", project_version);
+    let variables = [
+        ("PROJECT_NAME", project_name),
+        ("PROJECT_EXECUTABLE", executable_name),
+        ("PROJECT_EXECUTABLE_UPPERCASE", executable_name_uppercase),
+        ("PROJECT_VERSION", project_version),
+    ]
+    .into_iter()
+    .collect();
 
     let Some(out_dir) = env::var_os("BAT_ASSETS_GEN_DIR")
         .or_else(|| env::var_os("OUT_DIR"))
