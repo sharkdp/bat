@@ -6,6 +6,8 @@
 
 ## Other
 
+- Upgrade to Rust 2021 edition
+
 ## Syntaxes
 
 ## Themes
