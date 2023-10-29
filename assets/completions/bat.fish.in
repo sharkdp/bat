@@ -147,6 +147,8 @@ complete -c $bat -s d -l diff -d "Only show lines with Git changes" -n __bat_no_
 
 complete -c $bat -l diff-context -x -d "Show N context lines around Git changes" -n "__fish_seen_argument -s d -l diff"
 
+complete -c $bat -l generate-config-file -f -d "Generates a default configuration file" -n __fish_is_first_arg
+
 complete -c $bat -l file-name -x -d "Specify the display name" -n __bat_no_excl_args
 
 complete -c $bat -s f -l force-colorization -d "Force color and decorations" -n __bat_no_excl_args
@@ -172,6 +174,12 @@ complete -c $bat -l list-languages -f -d "List syntax highlighting languages" -n
 complete -c $bat -l list-themes -f -d "List syntax highlighting themes" -n __fish_is_first_arg
 
 complete -c $bat -s m -l map-syntax -x -a "(__bat_complete_map_syntax)" -d "Map <glob pattern>:<language syntax>" -n __bat_no_excl_args
+
+complete -c $bat -l no-config -d "Do not use the configuration file"
+
+complete -c $bat -l no-custom-assets -d "Do not load custom assets"
+
+complete -c $bat -l no-lessopen -d "Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)"
 
 complete -c $bat -s n -l number -d "Only show line numbers, no other decorations" -n __bat_no_excl_args
 
