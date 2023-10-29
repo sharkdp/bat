@@ -77,7 +77,7 @@ fn render_template(
 
     for (variable_name, value) in variables {
         // Replace {{variable_name}} by the value
-        let pattern = format!("{{{{{variable_name}}}}}", variable_name = variable_name);
+        let pattern = format!("{{{{{variable_name}}}}}");
         content = content.replace(&pattern, value);
     }
 
