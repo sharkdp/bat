@@ -56,6 +56,9 @@ pub struct Config<'a> {
     /// Whether or not the output should be colorized
     pub colored_output: bool,
 
+    /// Whether to visualize hexadecimal RGB color values
+    pub render_hex_colors: bool,
+
     /// Whether or not the output terminal supports true color
     pub true_color: bool,
 

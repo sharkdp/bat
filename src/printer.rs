@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt;
 use std::io;
 use std::vec::Vec;
@@ -30,6 +31,7 @@ use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
+use crate::postprocessor;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -498,10 +500,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
             let mut highlighted_line = highlighter_from_set
                 .highlighter
-                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?
+                .into_iter()
+                .map(|(style, text)| (style, text.into()))
+                .collect::<Vec<(_, Cow<str>)>>();
+
+            if self.config.render_hex_colors {
+                postprocessor::render_hex_colors(&mut highlighted_line);
+            }
 
             if too_long {
-                highlighted_line[0].1 = &line;
+                highlighted_line[0].1 = line.clone();
             }
 
             highlighted_line
@@ -547,8 +556,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;
 
-            for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+            for (style, region) in regions {
+                let ansi_iterator = AnsiCodeIterator::new(&region);
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.
@@ -600,8 +609,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                 writeln!(handle)?;
             }
         } else {
-            for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+            for (style, region) in regions {
+                let ansi_iterator = AnsiCodeIterator::new(&region);
                 for chunk in ansi_iterator {
                     match chunk {
                         // ANSI escape passthrough.

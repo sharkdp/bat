@@ -158,6 +158,14 @@ impl App {
                 }
             });
 
+        let colored_output = self.matches.get_flag("force-colorization")
+            || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => true,
+                Some("never") => false,
+                Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
+                _ => unreachable!("other values for --color are not allowed"),
+            };
+
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self
@@ -203,13 +211,10 @@ impl App {
                 // There's no point in wrapping when this is the case.
                 WrappingMode::NoWrapping(false)
             },
-            colored_output: self.matches.get_flag("force-colorization")
-                || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
-                    Some("always") => true,
-                    Some("never") => false,
-                    Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
-                    _ => unreachable!("other values for --color are not allowed"),
-                },
+            colored_output,
+            render_hex_colors: colored_output
+                && is_truecolor_terminal()
+                && self.matches.get_flag("render-hex-colors"),
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output

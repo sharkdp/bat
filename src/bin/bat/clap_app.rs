@@ -262,6 +262,16 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("render-hex-colors")
+                .long("render-hex-colors")
+                .action(ArgAction::SetTrue)
+                .help("Visualize hexadecimal RGB color values (e.g. #f2a023, #fa2, ...).")
+                .long_help(
+                    "Visualize hexadecimal RGB color values (e.g. #f2a023, #fa2, ...). \
+                     This requires stdout to be connected to a true-color terminal \
+                     and colorful output to be enabled.")
+        )
+        .arg(
             Arg::new("italic-text")
                 .long("italic-text")
                 .value_name("when")
