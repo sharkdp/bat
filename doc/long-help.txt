@@ -74,6 +74,10 @@ Options:
           a pipe.
           Possible values: *auto*, never, always.
 
+      --render-hex-colors
+          Visualize hexadecimal RGB color values (e.g. #f2a023, #fa2, ...). This requires stdout to
+          be connected to a true-color terminal and colorful output to be enabled.
+
       --italic-text <when>
           Specify when to use ANSI sequences for italic text in the output. Possible values: always,
           *never*.

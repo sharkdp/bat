@@ -31,6 +31,8 @@ Options:
           Show line numbers (alias for '--style=numbers').
       --color <when>
           When to use colors (*auto*, never, always).
+      --render-hex-colors
+          Visualize hexadecimal RGB color values (e.g. #f2a023, #fa2, ...).
       --italic-text <when>
           Use italics in output (always, *never*)
       --decorations <when>

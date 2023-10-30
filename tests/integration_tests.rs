@@ -1664,6 +1664,33 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
 }
 
 #[test]
+fn hex_colors() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--color=always")
+        .arg("--decorations=always")
+        .arg("--render-hex-colors")
+        .arg("hex_colors.txt")
+        .assert()
+        .success()
+        .stdout(predicate::path::eq_file(
+            "tests/examples/hex_colors_output.txt",
+        ));
+
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--color=always")
+        .arg("--plain")
+        .arg("--render-hex-colors")
+        .arg("hex_colors.txt")
+        .assert()
+        .success()
+        .stdout(predicate::path::eq_file(
+            "tests/examples/hex_colors_output_plain.txt",
+        ));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
