@@ -6,7 +6,7 @@
 
 ## Other
 
-- Upgrade to Rust 2021 edition
+- Upgrade to Rust 2021 edition #2748 (@cyqsimon)
 
 ## Syntaxes
 
