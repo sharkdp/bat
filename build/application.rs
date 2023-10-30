@@ -1,17 +1,9 @@
-use std::{collections::HashMap, fs, path::Path};
+use std::{env, fs, path::PathBuf};
 
-fn main() -> anyhow::Result<()> {
-    #[cfg(feature = "application")]
-    gen_man_and_comp()?;
-
-    Ok(())
-}
+use crate::util::render_template;
 
 /// Generate manpage and shell completions for the bat application.
-#[cfg(feature = "application")]
-fn gen_man_and_comp() -> anyhow::Result<()> {
-    use std::{env, path::PathBuf};
-
+pub fn gen_man_and_comp() -> anyhow::Result<()> {
     // Read environment variables.
     let project_name = env::var("PROJECT_NAME").unwrap_or("bat".into());
     let executable_name = env::var("PROJECT_EXECUTABLE").unwrap_or(project_name.clone());
@@ -63,24 +55,5 @@ fn gen_man_and_comp() -> anyhow::Result<()> {
         out_dir.join("assets/completions/bat.zsh"),
     )?;
 
-    Ok(())
-}
-
-/// Generates a file from a template.
-#[allow(dead_code)]
-fn render_template(
-    variables: &HashMap<&str, String>,
-    in_file: &str,
-    out_file: impl AsRef<Path>,
-) -> anyhow::Result<()> {
-    let mut content = fs::read_to_string(in_file)?;
-
-    for (variable_name, value) in variables {
-        // Replace {{variable_name}} by the value
-        let pattern = format!("{{{{{variable_name}}}}}");
-        content = content.replace(&pattern, value);
-    }
-
-    fs::write(out_file, content)?;
     Ok(())
 }
