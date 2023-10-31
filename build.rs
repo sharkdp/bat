@@ -4,9 +4,8 @@
 fn main() {}
 
 #[cfg(feature = "application")]
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> anyhow::Result<()> {
     use std::collections::HashMap;
-    use std::error::Error;
     use std::fs;
     use std::path::Path;
 
@@ -21,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         variables: &HashMap<&str, &str>,
         in_file: &str,
         out_file: impl AsRef<Path>,
-    ) -> Result<(), Box<dyn Error>> {
+    ) -> anyhow::Result<()> {
         let mut content = fs::read_to_string(in_file)?;
 
         for (variable_name, value) in variables {
@@ -40,9 +39,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     variables.insert("PROJECT_EXECUTABLE_UPPERCASE", &executable_name_uppercase);
     variables.insert("PROJECT_VERSION", PROJECT_VERSION);
 
-    let out_dir_env = std::env::var_os("BAT_ASSETS_GEN_DIR")
-        .or_else(|| std::env::var_os("OUT_DIR"))
-        .expect("BAT_ASSETS_GEN_DIR or OUT_DIR to be set in build.rs");
+    let Some(out_dir_env) =
+        std::env::var_os("BAT_ASSETS_GEN_DIR").or_else(|| std::env::var_os("OUT_DIR"))
+    else {
+        anyhow::bail!("BAT_ASSETS_GEN_DIR or OUT_DIR should be set for build.rs");
+    };
     let out_dir = Path::new(&out_dir_env);
 
     fs::create_dir_all(out_dir.join("assets/manual")).unwrap();
