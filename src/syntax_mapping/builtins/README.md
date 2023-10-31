@@ -19,7 +19,8 @@ by the TOML files within this directory, and embed them into the binary.
 ## File syntax
 
 Each TOML file should contain a single section named `mappings`, with each of
-its keys being a language identifier (first column of `bat -L`).
+its keys being a language identifier (first column of `bat -L`; also referred to
+as "target").
 
 The value of each key should be an array of strings, with each item being a glob
 matcher. We will call each of these items a "rule".
@@ -104,5 +105,6 @@ mapping `*.conf` files to unknown.
 Generally this should not be much of a concern, since rules should be written as
 specifically as possible for each application.
 
-Rules within each TOML file are inserted (and therefore processed) in the order
-in which they are defined.
+Rules within each TOML file are processed (and therefore matched) in the order
+in which they are defined. At runtime, the syntax selection algorithm will
+short-circuit and return the target of the first matching rule.
