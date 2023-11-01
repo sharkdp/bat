@@ -164,7 +164,7 @@ jobs:
       matrix:
         job:
           - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04  , use-cross: true }
-          - { target: aarch64-apple-darwin        , os: macos-13-arm64, use-cross: true }
+          - { target: aarch64-apple-darwin        , os: macos-latest-xlarge, use-cross: true }
           - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04  , use-cross: true }
           - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04  , use-cross: true }
           - { target: i686-pc-windows-msvc        , os: windows-2019                    }
