@@ -85,7 +85,7 @@ features = ["wrap_help", "cargo"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 home = "0.5.4"
-plist = "1.5.0"
+plist = "1.5.1"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"
