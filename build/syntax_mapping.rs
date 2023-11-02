@@ -69,7 +69,7 @@ impl MappingList {
         let len = array_items.len();
 
         format!(
-            "static STATIC_RULES: [(&'static str, &'static str); {len}] = [\n{items}\n];",
+            "static STATIC_RULES: [(&str, MappingTarget); {len}] = [\n{items}\n];",
             items = array_items.join(",\n")
         )
     }
