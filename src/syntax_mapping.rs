@@ -1,9 +1,10 @@
-use std::path::Path;
+use std::{env, path::Path};
 
 use crate::error::Result;
 use ignored_suffixes::IgnoredSuffixes;
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
+use once_cell::sync::Lazy;
 
 pub mod ignored_suffixes;
 
@@ -13,6 +14,60 @@ include!(concat!(
     env!("OUT_DIR"),
     "/codegen_static_syntax_mappings.rs"
 ));
+
+/// A glob matcher generated from analysing the matcher string at compile time.
+///
+/// This is so that the string searches are moved from run time to compile time,
+/// thus improving startup performance.
+#[derive(Debug)]
+enum BuiltinMatcher {
+    /// A plaintext matcher.
+    Fixed(&'static str),
+    /// A matcher that needs dynamic environment variable replacement.
+    ///
+    /// Evaluates to `None` when any environment variable replacement fails.
+    Dynamic(Lazy<Option<String>>),
+}
+impl BuiltinMatcher {
+    /// Finalise into a glob matcher.
+    ///
+    /// Returns `None` if any environment variable replacement fails (only
+    /// possible for dynamic matchers).
+    fn to_glob_matcher(&self) -> Option<GlobMatcher> {
+        let glob_str = match self {
+            Self::Fixed(s) => *s,
+            Self::Dynamic(s) => s.as_ref()?.as_str(),
+        };
+        Some(make_glob_matcher(glob_str).expect("A builtin glob matcher failed to compile"))
+    }
+}
+
+/// Join a list of matcher segments, replacing all environment variables.
+/// Returns `None` if any replacement fails.
+///
+/// Used internally by `BuiltinMatcher::Dynamic`'s lazy evaluation closure.
+fn join_segments(segs: &[MatcherSegment]) -> Option<String> {
+    let mut buf = String::new();
+    for seg in segs {
+        match seg {
+            MatcherSegment::Text(s) => buf.push_str(s),
+            MatcherSegment::Env(var) => {
+                let replaced = env::var(var).ok()?;
+                buf.push_str(&replaced);
+            }
+        }
+    }
+    Some(buf)
+}
+
+/// A segment of a dynamic builtin matcher.
+///
+/// Used internally by `BuiltinMatcher::Dynamic`'s lazy evaluation closure.
+#[derive(Clone, Debug)]
+enum MatcherSegment {
+    Text(&'static str),
+    Env(&'static str),
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -32,6 +87,15 @@ pub enum MappingTarget<'a> {
     /// then that association will have higher precedence, and the mapping will
     /// be ignored.
     MapExtensionToUnknown,
+}
+
+fn make_glob_matcher(from: &str) -> Result<GlobMatcher> {
+    let matcher = GlobBuilder::new(from)
+        .case_insensitive(true)
+        .literal_separator(true)
+        .build()?
+        .compile_matcher();
+    Ok(matcher)
 }
 
 #[derive(Debug, Clone, Default)]
@@ -217,11 +281,8 @@ impl<'a> SyntaxMapping<'a> {
     }
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
-        let glob = GlobBuilder::new(from)
-            .case_insensitive(true)
-            .literal_separator(true)
-            .build()?;
-        self.mappings.push((glob.compile_matcher(), to));
+        let matcher = make_glob_matcher(from)?;
+        self.mappings.push((matcher, to));
         Ok(())
     }
 

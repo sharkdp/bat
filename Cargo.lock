@@ -145,6 +145,7 @@ dependencies = [
  "grep-cli",
  "home",
  "indexmap 2.1.0",
+ "itertools",
  "nix",
  "nu-ansi-term",
  "once_cell",
