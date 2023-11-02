@@ -7,6 +7,13 @@ use globset::{Candidate, GlobBuilder, GlobMatcher};
 
 pub mod ignored_suffixes;
 
+// Static syntax mappings generated from /src/syntax_mapping/builtins/ by the
+// build script (/build/syntax_mapping.rs).
+include!(concat!(
+    env!("OUT_DIR"),
+    "/codegen_static_syntax_mappings.rs"
+));
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum MappingTarget<'a> {
