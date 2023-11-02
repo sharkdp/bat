@@ -79,6 +79,7 @@ fn read_all_mappings() -> anyhow::Result<MappingList> {
     let mut all_mappings = vec![];
 
     for entry in WalkDir::new("src/syntax_mapping/builtins")
+        .sort_by_file_name()
         .into_iter()
         .map(|entry| entry.unwrap_or_else(|err| panic!("failed to visit a file: {err}")))
         .filter(|entry| {
