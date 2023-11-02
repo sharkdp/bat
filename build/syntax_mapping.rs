@@ -42,8 +42,9 @@ struct MappingDefModel {
     mappings: IndexMap<MappingTarget, Vec<String>>,
 }
 impl MappingDefModel {
-    fn into_mapping_list(self) -> Vec<(String, MappingTarget)> {
-        self.mappings
+    fn into_mapping_list(self) -> MappingList {
+        let list = self
+            .mappings
             .into_iter()
             .flat_map(|(target, matcher)| {
                 matcher
@@ -51,7 +52,8 @@ impl MappingDefModel {
                     .map(|rule| (rule, target.clone()))
                     .collect::<Vec<_>>()
             })
-            .collect()
+            .collect();
+        MappingList(list)
     }
 }
 
@@ -86,7 +88,7 @@ fn read_all_mappings() -> anyhow::Result<MappingList> {
     {
         let toml_string = fs::read_to_string(entry.path())?;
         let mappings = toml::from_str::<MappingDefModel>(&toml_string)?.into_mapping_list();
-        all_mappings.extend(mappings);
+        all_mappings.extend(mappings.0);
     }
 
     Ok(MappingList(all_mappings))
