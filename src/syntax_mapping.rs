@@ -42,11 +42,11 @@ impl BuiltinMatcher {
     }
 }
 
-/// Join a list of matcher segments, replacing all environment variables.
-/// Returns `None` if any replacement fails.
+/// Join a list of matcher segments to create a glob string, replacing all
+/// environment variables. Returns `None` if any replacement fails.
 ///
 /// Used internally by `BuiltinMatcher::Dynamic`'s lazy evaluation closure.
-fn join_segments(segs: &[MatcherSegment]) -> Option<String> {
+fn build_glob_string(segs: &[MatcherSegment]) -> Option<String> {
     let mut buf = String::new();
     for seg in segs {
         match seg {

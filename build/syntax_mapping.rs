@@ -138,7 +138,7 @@ impl Matcher {
             // parser logic ensures that this case can only happen when there are dynamic segments
             _ => {
                 let segments_codegen = self.0.iter().map(MatcherSegment::codegen).join(", ");
-                let closure = format!("|| join_segments(&[{segments_codegen}])");
+                let closure = format!("|| build_glob_string(&[{segments_codegen}])");
                 format!("BuiltinMatcher::Dynamic(Lazy::new({closure}))")
             }
         }
