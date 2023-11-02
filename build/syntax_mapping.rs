@@ -172,10 +172,10 @@ impl MappingDefModel {
         let list = self
             .mappings
             .into_iter()
-            .flat_map(|(target, matcher)| {
-                matcher
+            .flat_map(|(target, matchers)| {
+                matchers
                     .into_iter()
-                    .map(|rule| (rule, target.clone()))
+                    .map(|matcher| (matcher, target.clone()))
                     .collect::<Vec<_>>()
             })
             .collect();

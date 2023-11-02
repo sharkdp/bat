@@ -51,7 +51,8 @@ handle things like [XDG](https://specifications.freedesktop.org/basedir-spec/lat
 All environment variables intended to be replaced at runtime must be enclosed in
 `${}`, for example `"/foo/*/${YOUR_ENV}-suffix/*.log"`. Note that this is the
 **only** admissible syntax; other variable substitution syntaxes are not
-supported and are thus treated as plain text.
+supported and will either cause a compile time error, or be treated as plain
+text.
 
 For example, if `foo-application` also supports per-user configuration files, we
 could write something like this:
