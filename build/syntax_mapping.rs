@@ -199,6 +199,8 @@ fn read_all_mappings() -> anyhow::Result<MappingList> {
 /// Build the static syntax mappings defined in /src/syntax_mapping/builtins/
 /// into a .rs source file, which is to be inserted with `include!`.
 pub fn build_static_mappings() -> anyhow::Result<()> {
+    println!("cargo:rerun-if-changed=src/syntax_mapping/builtins/");
+
     let mappings = read_all_mappings()?;
 
     let codegen_path = Path::new(&env::var_os("OUT_DIR").ok_or(anyhow!("OUT_DIR is unset"))?)
