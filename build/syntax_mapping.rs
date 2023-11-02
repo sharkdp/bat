@@ -3,6 +3,8 @@ use std::{convert::Infallible, env, fs, path::Path, str::FromStr};
 use anyhow::{anyhow, bail};
 use indexmap::IndexMap;
 use itertools::Itertools;
+use once_cell::sync::Lazy;
+use regex::Regex;
 use serde::Deserialize;
 use serde_with::DeserializeFromStr;
 use walkdir::WalkDir;
@@ -43,8 +45,10 @@ impl MappingTarget {
 struct Matcher(Vec<MatcherSegment>);
 /// Parse a matcher.
 ///
-/// Note that this implementation is rather strict: when it sees a '$', '{', or
-/// '}' where it does not make sense, it will immediately hard-error.
+/// Note that this implementation is rather strict: it will greedily interpret
+/// every valid environment variable replacement as such, then immediately
+/// hard-error if it finds a '$', '{', or '}' anywhere in the remaining text
+/// segments.
 ///
 /// The reason for this strictness is I currently cannot think of a valid reason
 /// why you would ever need '$', '{', or '}' as plaintext in a glob pattern.
@@ -55,72 +59,41 @@ impl FromStr for Matcher {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use MatcherSegment as Seg;
+        static VAR_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\$\{([\w\d_\-]+)\}").unwrap());
 
-        if s.is_empty() {
-            bail!("Empty string is not a valid glob matcher");
+        let mut segments = vec![];
+        let mut text_start = 0;
+        for capture in VAR_REGEX.captures_iter(s) {
+            let match_0 = capture.get(0).unwrap();
+
+            // text before this var
+            let text_end = match_0.start();
+            segments.push(Seg::Text(s[text_start..text_end].into()));
+            text_start = match_0.end();
+
+            // this var
+            segments.push(Seg::Env(capture.get(1).unwrap().as_str().into()));
+        }
+        // possible trailing text
+        segments.push(Seg::Text(s[text_start..].into()));
+
+        // cleanup empty text segments
+        let non_empty_segments = segments
+            .into_iter()
+            .filter(|seg| match seg {
+                Seg::Text(t) => !t.is_empty(),
+                Seg::Env(_) => true,
+            })
+            .collect_vec();
+
+        if non_empty_segments.iter().any(|seg| match seg {
+            Seg::Text(t) => t.contains(['$', '{', '}']),
+            Seg::Env(_) => false,
+        }) {
+            bail!(r#"Invalid matcher: "{s}""#);
         }
 
-        let mut segments = Vec::new();
-        let mut buf = String::new();
-        let mut is_in_var = false;
-
-        let mut char_it = s.chars();
-        loop {
-            match char_it.next() {
-                Some('$') => {
-                    if is_in_var {
-                        bail!(r#"Saw a '$' when already in a variable: "{s}""#);
-                    }
-                    match char_it.next() {
-                        Some('{') => {
-                            // push text unless empty
-                            if !buf.is_empty() {
-                                segments.push(Seg::Text(buf.clone()));
-                                buf.clear();
-                            }
-                            // open var
-                            is_in_var = true;
-                        }
-                        Some(_) | None => {
-                            bail!(r#"Expected a '{{' after '$': "{s}""#);
-                        }
-                    }
-                }
-                Some('{') => {
-                    bail!(r#"Saw a hanging '{{': "{s}""#);
-                }
-                Some('}') => {
-                    if !is_in_var {
-                        bail!(r#"Saw a '}}' when not in a variable: "{s}""#);
-                    }
-                    if buf.is_empty() {
-                        // `${}`
-                        bail!(r#"Variable name cannot be empty: "{s}""#);
-                    }
-                    // push variable
-                    segments.push(Seg::Env(buf.clone()));
-                    buf.clear();
-                    // close var
-                    is_in_var = false;
-                }
-                Some(' ') if is_in_var => {
-                    bail!(r#"' ' Cannot be part of a variable's name: "{s}""#);
-                }
-                Some(c) => {
-                    // either plaintext or variable name
-                    buf.push(c);
-                }
-                None => {
-                    if is_in_var {
-                        bail!(r#"Variable unclosed: "{s}""#);
-                    }
-                    segments.push(Seg::Text(buf.clone()));
-                    break;
-                }
-            }
-        }
-
-        Ok(Self(segments))
+        Ok(Self(non_empty_segments))
     }
 }
 impl Matcher {
