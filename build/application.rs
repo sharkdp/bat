@@ -4,6 +4,14 @@ use crate::util::render_template;
 
 /// Generate manpage and shell completions for the bat application.
 pub fn gen_man_and_comp() -> anyhow::Result<()> {
+    println!("cargo:rerun-if-changed=assets/manual/");
+    println!("cargo:rerun-if-changed=assets/completions/");
+
+    println!("cargo:rerun-if-env-changed=PROJECT_NAME");
+    println!("cargo:rerun-if-env-changed=PROJECT_EXECUTABLE");
+    println!("cargo:rerun-if-env-changed=CARGO_PKG_VERSION");
+    println!("cargo:rerun-if-env-changed=BAT_ASSETS_GEN_DIR");
+
     // Read environment variables.
     let project_name = env::var("PROJECT_NAME").unwrap_or("bat".into());
     let executable_name = env::var("PROJECT_EXECUTABLE").unwrap_or(project_name.clone());
