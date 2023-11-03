@@ -7,6 +7,7 @@
 ## Other
 
 - Upgrade to Rust 2021 edition #2748 (@cyqsimon)
+- Refactor and cleanup build script #2756 (@cyqsimon)
 
 ## Syntaxes
 
