@@ -7,6 +7,8 @@ jobs:
   check-changelog:
     name: Check for changelog entry
     runs-on: ubuntu-latest
+    # dependabot PRs are automerged if CI passes; we shouldn't block these
+    if: github.actor != 'dependabot[bot]'
     env:
       PR_SUBMITTER: ${{ github.actor }}
       PR_NUMBER: ${{ github.event.number }}
