@@ -1,0 +1,26 @@
+name: Changelog
+
+on:
+  pull_request:
+
+jobs:
+  check-changelog:
+    name: Check for changelog entry
+    runs-on: ubuntu-latest
+    # dependabot PRs are automerged if CI passes; we shouldn't block these
+    if: github.actor != 'dependabot[bot]'
+    env:
+      PR_SUBMITTER: ${{ github.actor }}
+      PR_NUMBER: ${{ github.event.number }}
+      PR_BASE: ${{ github.base_ref }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch PR base
+        run: git fetch --no-tags --prune --depth=1 origin
+      - name: Search for added line in changelog
+        run: |
+          ADDED=$(git diff -U0 "origin/${PR_BASE}" HEAD -- CHANGELOG.md | grep -P '^\+[^\+].+$')
+          echo "Added lines in CHANGELOG.md:"
+          echo "$ADDED"
+          echo "Grepping for PR info:"
+          grep "#${PR_NUMBER}\\b.*@${PR_SUBMITTER}\\b" <<< "$ADDED"
