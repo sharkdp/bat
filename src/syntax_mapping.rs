@@ -56,30 +56,35 @@ impl<'a> SyntaxMapping<'a> {
         Ok(())
     }
 
-    /// Returns all mappings. User-defined mappings are listed before builtin
-    /// mappings; mappings in front have higher precedence.
+    /// Returns an iterator over all mappings. User-defined mappings are listed
+    /// before builtin mappings; mappings in front have higher precedence.
+    ///
+    /// Builtin mappings' `GlobMatcher`s are lazily compiled.
     ///
     /// Note that this function ignores builtin mappings that are invalid under
     /// the current environment (i.e. their rules require an environment
     /// variable that is unset).
-    pub fn all_mappings(&self) -> Vec<(&GlobMatcher, &MappingTarget<'a>)> {
+    pub fn all_mappings(&self) -> impl Iterator<Item = (&GlobMatcher, &MappingTarget<'a>)> {
         self.custom_mappings()
             .iter()
             .map(|(matcher, target)| (matcher, target)) // as_ref
             .chain(self.builtin_mappings())
-            .collect()
     }
 
-    /// Returns all valid builtin mappings. Mappings in front have higher
-    /// precedence.
+    // IMPRV: ideally `Item` should be `(&'static GlobMatcher, &'static MappingTarget<'static>)`
+    // but `Iterator::chain` (used in `SyntaxMapping::all_mappings`) asserts `Item = Self::Item`
+    // so we need a lifetime downcast, which I'm not sure how to perform
+    /// Returns an iterator over all valid builtin mappings. Mappings in front
+    /// have higher precedence.
+    ///
+    /// The `GlabMatcher`s are lazily compiled.
     ///
     /// If a mapping rule requires an environment variable that is unset, it
     /// will be ignored.
-    pub fn builtin_mappings(&self) -> Vec<(&'static GlobMatcher, &'static MappingTarget<'static>)> {
+    pub fn builtin_mappings(&self) -> impl Iterator<Item = (&GlobMatcher, &MappingTarget<'a>)> {
         BUILTIN_MAPPINGS
             .iter()
             .filter_map(|(matcher, target)| matcher.as_ref().map(|glob| (glob, target)))
-            .collect()
     }
 
     /// Returns all user-defined mappings.
@@ -91,7 +96,7 @@ impl<'a> SyntaxMapping<'a> {
         // Try matching on the file name as-is.
         let candidate = Candidate::new(&path);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
-        for (glob, syntax) in self.all_mappings().into_iter() {
+        for (glob, syntax) in self.all_mappings() {
             if glob.is_match_candidate(&candidate)
                 || candidate_filename
                     .as_ref()
