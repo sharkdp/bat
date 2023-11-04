@@ -29,6 +29,10 @@ fn is_truecolor_terminal() -> bool {
         .unwrap_or(false)
 }
 
+pub fn env_no_color() -> bool {
+    env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
+}
+
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
@@ -207,7 +211,7 @@ impl App {
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") => env::var_os("NO_COLOR").is_none() && self.interactive_output,
+                    Some("auto") => !env_no_color() && self.interactive_output,
                     _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,

@@ -19,7 +19,7 @@ static VERSION: Lazy<String> = Lazy::new(|| {
 });
 
 pub fn build_app(interactive_output: bool) -> Command {
-    let color_when = if interactive_output && env::var_os("NO_COLOR").is_none() {
+    let color_when = if interactive_output && !crate::app::env_no_color() {
         ColorChoice::Auto
     } else {
         ColorChoice::Never

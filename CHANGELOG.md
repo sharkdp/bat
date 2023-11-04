@@ -4,6 +4,8 @@
 
 ## Bugfixes
 
+- Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+
 ## Other
 
 - Upgrade to Rust 2021 edition #2748 (@cyqsimon)
