@@ -52,7 +52,7 @@ include!(concat!(
 ///
 /// A failure to compile is a fatal error.
 ///
-/// Used internally by `Lazy<GlobMatcher>`'s lazy evaluation closure.
+/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
 fn build_matcher_fixed(from: &str) -> GlobMatcher {
     make_glob_matcher(from).expect("A builtin fixed glob matcher failed to compile")
 }
@@ -63,7 +63,7 @@ fn build_matcher_fixed(from: &str) -> GlobMatcher {
 /// Returns `None` if any replacement fails, or if the joined glob string fails
 /// to compile.
 ///
-/// Used internally by `Lazy<GlobMatcher>`'s lazy evaluation closure.
+/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
 fn build_matcher_dynamic(segs: &[MatcherSegment]) -> Option<GlobMatcher> {
     // join segments
     let mut buf = String::new();
@@ -83,7 +83,7 @@ fn build_matcher_dynamic(segs: &[MatcherSegment]) -> Option<GlobMatcher> {
 
 /// A segment of a dynamic builtin matcher.
 ///
-/// Used internally by `Lazy<GlobMatcher>`'s lazy evaluation closure.
+/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
 #[derive(Clone, Debug)]
 enum MatcherSegment {
     Text(&'static str),

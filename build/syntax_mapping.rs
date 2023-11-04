@@ -41,7 +41,7 @@ impl MappingTarget {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, DeserializeFromStr)]
 /// A single matcher.
 ///
-/// Codegen converts this into a `Lazy<GlobMatcher>`.
+/// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
 struct Matcher(Vec<MatcherSegment>);
 /// Parse a matcher.
 ///
