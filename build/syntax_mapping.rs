@@ -41,7 +41,7 @@ impl MappingTarget {
 #[derive(Clone, Debug, DeserializeFromStr)]
 /// A single matcher.
 ///
-/// Corresponds to `syntax_mapping::BuiltinMatcher`.
+/// Codegen converts this into a `Lazy<GlobMatcher>`.
 struct Matcher(Vec<MatcherSegment>);
 /// Parse a matcher.
 ///
@@ -110,13 +110,12 @@ impl Matcher {
                 let MatcherSegment::Text(ref s) = self.0[0] else {
                     unreachable!()
                 };
-                format!(r###"BuiltinMatcher::Fixed(r#"{s}"#)"###)
+                format!(r###"Lazy::new(|| Some(build_matcher_fixed(r#"{s}"#)))"###)
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
             _ => {
-                let segments_codegen = self.0.iter().map(MatcherSegment::codegen).join(", ");
-                let closure = format!("|| build_glob_string(&[{segments_codegen}])");
-                format!("BuiltinMatcher::Dynamic(Lazy::new({closure}))")
+                let segs = self.0.iter().map(MatcherSegment::codegen).join(", ");
+                format!(r###"Lazy::new(|| build_matcher_dynamic(&[{segs}]))"###)
             }
         }
     }
@@ -174,7 +173,7 @@ impl MappingList {
         let len = array_items.len();
 
         format!(
-            "static BUILTIN_MAPPINGS: [(BuiltinMatcher, MappingTarget); {len}] = [\n{items}\n];",
+            "static BUILTIN_MAPPINGS: [(Lazy<Option<GlobMatcher>>, MappingTarget); {len}] = [\n{items}\n];",
             items = array_items.join(",\n")
         )
     }
