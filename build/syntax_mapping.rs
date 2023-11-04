@@ -174,7 +174,7 @@ impl MappingList {
         let len = array_items.len();
 
         format!(
-            "static STATIC_RULES: [(BuiltinMatcher, MappingTarget); {len}] = [\n{items}\n];",
+            "static BUILTIN_MAPPINGS: [(BuiltinMatcher, MappingTarget); {len}] = [\n{items}\n];",
             items = array_items.join(",\n")
         )
     }
