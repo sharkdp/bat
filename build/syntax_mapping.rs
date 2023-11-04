@@ -38,7 +38,7 @@ impl MappingTarget {
     }
 }
 
-#[derive(Clone, Debug, DeserializeFromStr)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, DeserializeFromStr)]
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<GlobMatcher>`.
@@ -124,7 +124,7 @@ impl Matcher {
 /// A segment in a matcher.
 ///
 /// Corresponds to `syntax_mapping::MatcherSegment`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum MatcherSegment {
     Text(String),
     Env(String),
@@ -194,6 +194,14 @@ fn read_all_mappings() -> anyhow::Result<MappingList> {
         let toml_string = fs::read_to_string(entry.path())?;
         let mappings = toml::from_str::<MappingDefModel>(&toml_string)?.into_mapping_list();
         all_mappings.extend(mappings.0);
+    }
+
+    let duplicates = all_mappings
+        .iter()
+        .duplicates_by(|(matcher, _)| matcher)
+        .collect_vec();
+    if !duplicates.is_empty() {
+        bail!("Rules with duplicate matchers found: {duplicates:?}");
     }
 
     Ok(MappingList(all_mappings))
