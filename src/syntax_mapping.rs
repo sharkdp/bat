@@ -290,7 +290,7 @@ impl<'a> SyntaxMapping<'a> {
         &self.mappings
     }
 
-    pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
+    pub fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         // Try matching on the file name as-is.
         let candidate = Candidate::new(&path);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
