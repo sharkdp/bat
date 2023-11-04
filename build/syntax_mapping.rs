@@ -86,6 +86,10 @@ impl FromStr for Matcher {
             })
             .collect_vec();
 
+        if non_empty_segments.is_empty() {
+            bail!(r#"Parsed an empty matcher: "{s}""#);
+        }
+
         if non_empty_segments.iter().any(|seg| match seg {
             Seg::Text(t) => t.contains(['$', '{', '}']),
             Seg::Env(_) => false,
