@@ -173,7 +173,7 @@ impl MappingList {
         let len = array_items.len();
 
         format!(
-            "static BUILTIN_MAPPINGS: [(Lazy<Option<GlobMatcher>>, MappingTarget); {len}] = [\n{items}\n];",
+            "pub(crate) static BUILTIN_MAPPINGS: [(Lazy<Option<GlobMatcher>>, MappingTarget); {len}] = [\n{items}\n];",
             items = array_items.join(",\n")
         )
     }
