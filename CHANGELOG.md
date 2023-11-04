@@ -15,6 +15,7 @@
 - Minor benchmark script improvements #2768 (@cyqsimon)
 - Update Arch Linux package URL in README files #2779 (@brunobell)
 - Update and improve `zsh` completion, see #2772 (@okapia)
+- More extensible syntax mapping mechanism #2755 (@cyqsimon)
 
 ## Syntaxes
 
