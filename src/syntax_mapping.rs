@@ -61,9 +61,8 @@ impl<'a> SyntaxMapping<'a> {
     ///
     /// Builtin mappings' `GlobMatcher`s are lazily compiled.
     ///
-    /// Note that this function ignores builtin mappings that are invalid under
-    /// the current environment (i.e. their rules require an environment
-    /// variable that is unset).
+    /// Note that this function only returns mappings that are valid under the
+    /// current environment. For details see [`Self::builtin_mappings`].
     pub fn all_mappings(&self) -> impl Iterator<Item = (&GlobMatcher, &MappingTarget<'a>)> {
         self.custom_mappings()
             .iter()
@@ -83,8 +82,10 @@ impl<'a> SyntaxMapping<'a> {
     ///
     /// The `GlabMatcher`s are lazily compiled.
     ///
-    /// If a mapping rule requires an environment variable that is unset, it
-    /// will be ignored.
+    /// Mappings that are invalid under the current environment (i.e. rule
+    /// requires environment variable(s) that is unset, or the joined string
+    /// after variable(s) replacement is not a valid glob expression) are
+    /// ignored.
     pub fn builtin_mappings(
         &self,
     ) -> impl Iterator<Item = (&'static GlobMatcher, &'static MappingTarget<'static>)> {

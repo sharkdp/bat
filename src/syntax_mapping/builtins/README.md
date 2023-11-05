@@ -76,7 +76,8 @@ could write something like this:
 ```
 
 If any environment variable replacement in a rule fails (for example when a
-variable is unset), the entire rule will be ignored.
+variable is unset), or if the glob string after replacements is invalid, the
+entire rule will be ignored.
 
 ### Explicitly mapping to unknown
 
