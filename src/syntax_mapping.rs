@@ -68,12 +68,16 @@ impl<'a> SyntaxMapping<'a> {
         self.custom_mappings()
             .iter()
             .map(|(matcher, target)| (matcher, target)) // as_ref
-            .chain(self.builtin_mappings())
+            .chain(
+                // we need a map with a closure to "do" the lifetime variance
+                // see: https://discord.com/channels/273534239310479360/1120124565591425034/1170543402870382653
+                // also, clippy false positive:
+                // see: https://github.com/rust-lang/rust-clippy/issues/9280
+                #[allow(clippy::map_identity)]
+                self.builtin_mappings().map(|rule| rule),
+            )
     }
 
-    // IMPRV: ideally `Item` should be `(&'static GlobMatcher, &'static MappingTarget<'static>)`
-    // but `Iterator::chain` (used in `SyntaxMapping::all_mappings`) asserts `Item = Self::Item`
-    // so we need a lifetime downcast, which I'm not sure how to perform
     /// Returns an iterator over all valid builtin mappings. Mappings in front
     /// have higher precedence.
     ///
@@ -81,7 +85,9 @@ impl<'a> SyntaxMapping<'a> {
     ///
     /// If a mapping rule requires an environment variable that is unset, it
     /// will be ignored.
-    pub fn builtin_mappings(&self) -> impl Iterator<Item = (&GlobMatcher, &MappingTarget<'a>)> {
+    pub fn builtin_mappings(
+        &self,
+    ) -> impl Iterator<Item = (&'static GlobMatcher, &'static MappingTarget<'static>)> {
         BUILTIN_MAPPINGS
             .iter()
             .filter_map(|(matcher, target)| matcher.as_ref().map(|glob| (glob, target)))
