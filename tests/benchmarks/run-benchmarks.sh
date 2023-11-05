@@ -49,8 +49,8 @@ REPORT="$RESULT_DIR/report.md"
 TARGET_DIR="$(get_cargo_target_dir)"
 TARGET_RELEASE="${TARGET_DIR}/release/bat"
 
-WARMUP_COUNT=3
-RUN_COUNT=10
+: ${WARMUP_COUNT:=3}
+: ${RUN_COUNT:=10}
 
 # Determine which target to benchmark.
 BAT=''
