@@ -50,6 +50,7 @@ TARGET_DIR="$(get_cargo_target_dir)"
 TARGET_RELEASE="${TARGET_DIR}/release/bat"
 
 WARMUP_COUNT=3
+RUN_COUNT=10
 
 # Determine which target to benchmark.
 BAT=''
@@ -88,6 +89,7 @@ hyperfine \
 	"$(printf "%q" "$BAT") --no-config" \
 	--command-name "bat" \
 	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time.md" \
     --export-json "$RESULT_DIR/startup-time.json"
 cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
@@ -98,6 +100,7 @@ hyperfine \
 	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-CpuInfo-file.cpuinfo" \
 	--command-name "bat … small-CpuInfo-file.cpuinfo" \
 	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
     --export-json "$RESULT_DIR/startup-time-with-syntax-highlighting.json"
 cat "$RESULT_DIR/startup-time-with-syntax-highlighting.md" >> "$REPORT"
@@ -108,6 +111,7 @@ hyperfine \
 	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-Markdown-file.md" \
 	--command-name "bat … small-Markdown-file.md" \
 	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" \
     --export-json "$RESULT_DIR/startup-time-with-syntax-with-dependencies.json"
 cat "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" >> "$REPORT"
@@ -118,6 +122,7 @@ hyperfine \
 	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain highlighting-speed-src/numpy_test_multiarray.py" \
 	--command-name 'bat … --language=txt numpy_test_multiarray.py' \
 	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/plain-text-speed.md" \
     --export-json "$RESULT_DIR/plain-text-speed.json"
 cat "$RESULT_DIR/plain-text-speed.md" >> "$REPORT"
@@ -129,6 +134,7 @@ for wrap in character never; do
 
 		heading "Syntax highlighting speed --wrap=${wrap}: \`$filename\`"
 		hyperfine --warmup "$WARMUP_COUNT" \
+    		--runs "$RUN_COUNT" \
 			"$(printf "%q" "$BAT") --no-config --style=full --color=always --wrap=${wrap} --terminal-width=80 '$SRC'" \
 			--command-name "bat … ${filename}" \
 			--export-markdown "$RESULT_DIR/syntax-highlighting-speed-${filename}.md" \
@@ -143,6 +149,7 @@ hyperfine \
 	"$(printf "%q" "$BAT") --no-config --language=txt --style=plain many-small-files/*.txt" \
 	--command-name 'bat … --language=txt *.txt' \
 	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/many-small-files-speed.md" \
     --export-json "$RESULT_DIR/many-small-files-speed.json"
 cat "$RESULT_DIR/many-small-files-speed.md" >> "$REPORT"
