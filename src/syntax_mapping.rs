@@ -153,13 +153,13 @@ mod tests {
         let mut map = SyntaxMapping::new();
 
         assert_eq!(
-            map.get_syntax_for("/etc/profile"),
-            Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
+            map.get_syntax_for("/path/to/httpd.conf"),
+            Some(MappingTarget::MapTo("Apache Conf"))
         );
-        map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
+        map.insert("httpd.conf", MappingTarget::MapTo("My Syntax"))
             .ok();
         assert_eq!(
-            map.get_syntax_for("/etc/profile"),
+            map.get_syntax_for("/path/to/httpd.conf"),
             Some(MappingTarget::MapTo("My Syntax"))
         );
     }
