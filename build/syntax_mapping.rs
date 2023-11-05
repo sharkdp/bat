@@ -12,6 +12,7 @@ use walkdir::WalkDir;
 /// Known mapping targets.
 ///
 /// Corresponds to `syntax_mapping::MappingTarget`.
+#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Debug, Eq, PartialEq, Hash, DeserializeFromStr)]
 pub enum MappingTarget {
     MapTo(String),
