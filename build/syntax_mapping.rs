@@ -1,4 +1,9 @@
-use std::{convert::Infallible, env, fs, path::Path, str::FromStr};
+use std::{
+    convert::Infallible,
+    env, fs,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use anyhow::{anyhow, bail};
 use indexmap::IndexMap;
@@ -181,19 +186,56 @@ impl MappingList {
     }
 }
 
+/// Get the list of paths to all mapping definition files that should be
+/// included for the current target platform.
+fn get_def_paths() -> anyhow::Result<Vec<PathBuf>> {
+    let source_subdirs = [
+        "common",
+        #[cfg(target_family = "unix")]
+        "unix-family",
+        #[cfg(any(
+            target_os = "freebsd",
+            target_os = "netbsd",
+            target_os = "openbsd",
+            target_os = "macos"
+        ))]
+        "bsd-family",
+        #[cfg(target_os = "linux")]
+        "linux",
+        #[cfg(target_os = "macos")]
+        "macos",
+        #[cfg(target_os = "windows")]
+        "windows",
+    ];
+
+    let mut toml_paths = vec![];
+    for subdir in source_subdirs {
+        let wd = WalkDir::new(Path::new("src/syntax_mapping/builtins").join(subdir));
+        let paths = wd
+            .into_iter()
+            .filter_map_ok(|entry| {
+                let path = entry.path();
+                (path.is_file() && path.extension().map(|ext| ext == "toml").unwrap_or(false))
+                    .then(|| path.to_owned())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        toml_paths.extend(paths);
+    }
+
+    toml_paths.sort_by_key(|path| {
+        path.file_name()
+            .expect("file name should not terminate in ..")
+            .to_owned()
+    });
+
+    Ok(toml_paths)
+}
+
 fn read_all_mappings() -> anyhow::Result<MappingList> {
     let mut all_mappings = vec![];
 
-    for entry in WalkDir::new("src/syntax_mapping/builtins")
-        .sort_by_file_name()
-        .into_iter()
-        .map(|entry| entry.unwrap_or_else(|err| panic!("failed to visit a file: {err}")))
-        .filter(|entry| {
-            let path = entry.path();
-            path.is_file() && path.extension().map(|ext| ext == "toml").unwrap_or(false)
-        })
-    {
-        let toml_string = fs::read_to_string(entry.path())?;
+    for path in get_def_paths()? {
+        let toml_string = fs::read_to_string(path)?;
         let mappings = toml::from_str::<MappingDefModel>(&toml_string)?.into_mapping_list();
         all_mappings.extend(mappings.0);
     }

@@ -13,8 +13,10 @@ What defines "a single application" here is deliberately vague, since the
 file-splitting is purely for maintainability reasons. (Technically, we could
 just as well use a single TOML file.) So just use common sense.
 
-At compile time, the build script will collect all the syntax mappings defined
-by the TOML files within this directory, and embed them into the binary.
+TOML files should reside in the corresponding subdirectory of the platform(s)
+that they intend to target. At compile time, the build script will go through
+each subdirectory that is applicable to the compilation target, collect the
+syntax mappings defined by all TOML files, and embed them into the binary.
 
 ## File syntax
 
