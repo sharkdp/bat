@@ -65,7 +65,7 @@ impl FromStr for Matcher {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use MatcherSegment as Seg;
-        static VAR_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\$\{([\w\d_\-]+)\}").unwrap());
+        static VAR_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\$\{([\w\d_]+)\}").unwrap());
 
         let mut segments = vec![];
         let mut text_start = 0;
