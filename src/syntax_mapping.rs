@@ -149,6 +149,23 @@ mod tests {
     }
 
     #[test]
+    fn builtin_mappings_matcher_only_compile_once() {
+        let map = SyntaxMapping::new();
+
+        let two_iterations: Vec<_> = (0..2)
+            .map(|_| {
+                // addresses of every matcher
+                map.builtin_mappings()
+                    .map(|(matcher, _)| matcher as *const _ as usize)
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+
+        // if the matchers are only compiled once, their address should remain the same
+        assert_eq!(two_iterations[0], two_iterations[1]);
+    }
+
+    #[test]
     fn custom_mappings_work() {
         let mut map = SyntaxMapping::new();
         map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
