@@ -86,19 +86,27 @@ impl FromStr for Matcher {
         // cleanup empty text segments
         let non_empty_segments = segments
             .into_iter()
-            .filter(|seg| match seg {
-                Seg::Text(t) => !t.is_empty(),
-                Seg::Env(_) => true,
-            })
+            .filter(|seg| seg.text().map(|t| !t.is_empty()).unwrap_or(true))
             .collect_vec();
 
+        // sanity check
+        if non_empty_segments
+            .windows(2)
+            .any(|segs| segs[0].is_text() && segs[1].is_text())
+        {
+            unreachable!("Parsed into consecutive text segments: {non_empty_segments:?}");
+        }
+
+        // guard empty case
         if non_empty_segments.is_empty() {
             bail!(r#"Parsed an empty matcher: "{s}""#);
         }
 
-        if non_empty_segments.iter().any(|seg| match seg {
-            Seg::Text(t) => t.contains(['$', '{', '}']),
-            Seg::Env(_) => false,
+        // guard variable syntax leftover fragments
+        if non_empty_segments.iter().any(|seg| {
+            seg.text()
+                .map(|t| t.contains(['$', '{', '}']))
+                .unwrap_or(false)
         }) {
             bail!(r#"Invalid matcher: "{s}""#);
         }
@@ -112,8 +120,8 @@ impl Matcher {
             0 => unreachable!("0-length matcher should never be created"),
             // if-let guard would be ideal here
             // see: https://github.com/rust-lang/rust/issues/51114
-            1 if matches!(self.0[0], MatcherSegment::Text(_)) => {
-                let MatcherSegment::Text(ref s) = self.0[0] else {
+            1 if self.0[0].is_text() => {
+                let Some(s) = self.0[0].text() else {
                     unreachable!()
                 };
                 format!(r###"Lazy::new(|| Some(build_matcher_fixed(r#"{s}"#)))"###)
@@ -135,7 +143,26 @@ enum MatcherSegment {
     Text(String),
     Env(String),
 }
+#[allow(dead_code)]
 impl MatcherSegment {
+    fn is_text(&self) -> bool {
+        matches!(self, Self::Text(_))
+    }
+    fn is_env(&self) -> bool {
+        matches!(self, Self::Env(_))
+    }
+    fn text(&self) -> Option<&str> {
+        match self {
+            Self::Text(t) => Some(t),
+            Self::Env(_) => None,
+        }
+    }
+    fn env(&self) -> Option<&str> {
+        match self {
+            Self::Text(_) => None,
+            Self::Env(t) => Some(t),
+        }
+    }
     fn codegen(&self) -> String {
         match self {
             Self::Text(s) => format!(r###"MatcherSegment::Text(r#"{s}"#)"###),
