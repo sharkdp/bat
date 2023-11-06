@@ -174,4 +174,13 @@ mod tests {
             Some(MappingTarget::MapToUnknown)
         );
     }
+
+    #[test]
+    fn all_fixed_builtin_mappings_can_compile() {
+        let map = SyntaxMapping::new();
+
+        // collect call evaluates all lazy closures
+        // fixed builtin mappings will panic if they fail to compile
+        let _mappings = map.builtin_mappings().collect::<Vec<_>>();
+    }
 }
