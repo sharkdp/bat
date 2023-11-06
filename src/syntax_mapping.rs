@@ -130,7 +130,26 @@ impl<'a> SyntaxMapping<'a> {
 mod tests {
     use super::*;
     #[test]
-    fn basic() {
+    fn builtin_mappings_work() {
+        let map = SyntaxMapping::new();
+
+        assert_eq!(
+            map.get_syntax_for("/path/to/build"),
+            Some(MappingTarget::MapToUnknown)
+        );
+    }
+
+    #[test]
+    fn all_fixed_builtin_mappings_can_compile() {
+        let map = SyntaxMapping::new();
+
+        // collect call evaluates all lazy closures
+        // fixed builtin mappings will panic if they fail to compile
+        let _mappings = map.builtin_mappings().collect::<Vec<_>>();
+    }
+
+    #[test]
+    fn custom_mappings_work() {
         let mut map = SyntaxMapping::new();
         map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
             .ok();
@@ -150,7 +169,7 @@ mod tests {
     }
 
     #[test]
-    fn user_can_override_builtin_mappings() {
+    fn custom_mappings_override_builtin() {
         let mut map = SyntaxMapping::new();
 
         assert_eq!(
@@ -163,24 +182,5 @@ mod tests {
             map.get_syntax_for("/path/to/httpd.conf"),
             Some(MappingTarget::MapTo("My Syntax"))
         );
-    }
-
-    #[test]
-    fn builtin_mappings() {
-        let map = SyntaxMapping::new();
-
-        assert_eq!(
-            map.get_syntax_for("/path/to/build"),
-            Some(MappingTarget::MapToUnknown)
-        );
-    }
-
-    #[test]
-    fn all_fixed_builtin_mappings_can_compile() {
-        let map = SyntaxMapping::new();
-
-        // collect call evaluates all lazy closures
-        // fixed builtin mappings will panic if they fail to compile
-        let _mappings = map.builtin_mappings().collect::<Vec<_>>();
     }
 }
