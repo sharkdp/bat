@@ -183,4 +183,18 @@ mod tests {
             Some(MappingTarget::MapTo("My Syntax"))
         );
     }
+
+    #[test]
+    fn custom_mappings_precedence() {
+        let mut map = SyntaxMapping::new();
+
+        map.insert("/path/to/foo", MappingTarget::MapTo("alpha"))
+            .ok();
+        map.insert("/path/to/foo", MappingTarget::MapTo("bravo"))
+            .ok();
+        assert_eq!(
+            map.get_syntax_for("/path/to/foo"),
+            Some(MappingTarget::MapTo("alpha"))
+        );
+    }
 }
