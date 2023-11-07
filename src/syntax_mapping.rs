@@ -151,6 +151,8 @@ mod tests {
         let _mappings = map.builtin_mappings().collect::<Vec<_>>();
     }
 
+    // disabled for ARM builds because of an issue with `rusty_fork`
+    #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
     // lazy initialisation test needs to be run on a separate instance because
     // it will race with other tests
     // see: https://github.com/rust-lang/rust/issues/47506
