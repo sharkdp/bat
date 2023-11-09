@@ -214,7 +214,7 @@ man 2 select
 
 ## 설치
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg)](https://repology.org/project/bat-cat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### Ubuntu에서 (`apt` 사용)
 *... 그리고 다른 Debian 기반의 Linux 배포판들에서.*
