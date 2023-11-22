@@ -7,6 +7,7 @@ use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
+use bat::line_range;
 use clap::ArgMatches;
 
 use console::Term;
@@ -255,14 +256,42 @@ impl App {
                         .unwrap_or(2),
                 ),
 
-                _ => VisibleLines::Ranges(
-                    self.matches
+                _ => VisibleLines::Ranges({
+                    let line_range = self
+                        .matches
                         .get_many::<String>("line-range")
                         .map(|vs| vs.map(|s| LineRange::from(s.as_str())).collect())
                         .transpose()?
-                        .map(LineRanges::from)
-                        .unwrap_or_default(),
-                ),
+                        .map(LineRanges::from);
+
+                    let context = self
+                        .matches
+                        .get_one::<String>("context-around-highlight")
+                        .and_then(|s| usize::from_str_radix(s, 10).ok())
+                        .unwrap_or_else(|| 0);
+                    let range_due_to_highlighted_lines = self
+                        .matches
+                        .get_many::<String>("highlight-line")
+                        .map(|ws| {
+                            ws.map(|s| {
+                                let lr = LineRange::from(s.as_str());
+                                lr.map(|line_range| {
+                                    LineRange::new(
+                                        line_range.get_lower().saturating_sub(context),
+                                        line_range.get_upper().saturating_add(context),
+                                    )
+                                })
+                            })
+                            .collect()
+                        })
+                        .transpose()?
+                        .map(LineRanges::from);
+                    match ( line_range, range_due_to_highlighted_lines )  {
+                        ( Some(range), None ) | ( None, Some(range) ) => range,
+                        ( None, None ) => LineRanges::default(),
+                        _ => unreachable!("line-range and context-around-highlight are conflicting, so this is impossible")
+                    }
+                }),
             },
             style_components,
             syntax_mapping,
