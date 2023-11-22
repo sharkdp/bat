@@ -10,6 +10,7 @@
 - Refactor and cleanup build script #2756 (@cyqsimon)
 - Checks changelog has been written to for PRs in CI #2766 (@cyqsimon)
 - Minor benchmark script improvements #2768 (@cyqsimon)
+- Update Arch Linux package URL in README files #2779 (@brunobell)
 
 ## Syntaxes
 

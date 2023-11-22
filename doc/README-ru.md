@@ -201,7 +201,7 @@ apk add bat
 
 ### Arch Linux
 
-Вы можете установить [`bat`](https://www.archlinux.org/packages/community/x86_64/bat/) из официального источника:
+Вы можете установить [`bat`](https://www.archlinux.org/packages/extra/x86_64/bat/) из официального источника:
 
 ```bash
 pacman -S bat
