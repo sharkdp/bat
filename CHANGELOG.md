@@ -2,6 +2,8 @@
 
 ## Features
 
+- Add support for visualizing hexadecimal RGB color values (`--render-hex-colors`), see #2705 (@einfachIrgendwer0815)
+
 ## Bugfixes
 
 ## Other
