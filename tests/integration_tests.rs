@@ -1669,6 +1669,7 @@ fn hex_colors() {
         .env("COLORTERM", "truecolor")
         .arg("--color=always")
         .arg("--decorations=always")
+        .arg("--style=header,grid,numbers")
         .arg("--render-hex-colors")
         .arg("hex_colors.txt")
         .assert()
