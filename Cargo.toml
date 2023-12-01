@@ -79,7 +79,7 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "4.4.6"
+version = "4.4.10"
 optional = true
 features = ["wrap_help", "cargo"]
 
@@ -102,7 +102,7 @@ nix = { version = "0.26.4", default-features = false, features = ["term"] }
 anyhow = "1.0.75"
 
 [build-dependencies.clap]
-version = "4.4.6"
+version = "4.4.10"
 optional = true
 features = ["wrap_help", "cargo"]
 
