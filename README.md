@@ -296,7 +296,7 @@ apk add bat
 
 ### On Arch Linux
 
-You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
+You can install [the `bat` package](https://www.archlinux.org/packages/extra/x86_64/bat/)
 from the official sources:
 
 ```bash

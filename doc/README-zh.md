@@ -232,7 +232,7 @@ apk add bat
 
 ### Arch Linux
 
-你可以用下面下列命令从官方源中安装[`bat`包](https://www.archlinux.org/packages/community/x86_64/bat/)：
+你可以用下面下列命令从官方源中安装[`bat`包](https://www.archlinux.org/packages/extra/x86_64/bat/)：
 
 ```bash
 pacman -S bat

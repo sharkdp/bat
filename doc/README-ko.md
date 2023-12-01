@@ -264,7 +264,7 @@ apk add bat
 ### Arch Linux에서
 
 공식 소스를 통해
-[`bat` 패키지](https://www.archlinux.org/packages/community/x86_64/bat/)를
+[`bat` 패키지](https://www.archlinux.org/packages/extra/x86_64/bat/)를
 설치할 수 있습니다:
 
 ```bash

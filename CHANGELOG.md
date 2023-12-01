@@ -11,6 +11,7 @@
 - Checks changelog has been written to for PRs in CI #2766 (@cyqsimon)
   - Use GitHub API to get correct PR submitter #2791 (@cyqsimon)
 - Minor benchmark script improvements #2768 (@cyqsimon)
+- Update Arch Linux package URL in README files #2779 (@brunobell)
 - Update and improve `zsh` completion, see #2772 (@okapia)
 
 ## Syntaxes

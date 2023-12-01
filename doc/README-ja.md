@@ -219,7 +219,7 @@ apk add bat
 
 ###  On Arch Linux
 
-[Arch Linuxの公式リソース](https://www.archlinux.org/packages/community/x86_64/bat/)
+[Arch Linuxの公式リソース](https://www.archlinux.org/packages/extra/x86_64/bat/)
 からインストールできます。
 
 ```bash
