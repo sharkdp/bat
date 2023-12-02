@@ -254,7 +254,7 @@ Please report any issues with the help syntax in [this repository](https://githu
 
 ## Installation
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?columns=3&exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### On Ubuntu (using `apt`)
 *... and other Debian-based Linux distributions.*
@@ -296,7 +296,7 @@ apk add bat
 
 ### On Arch Linux
 
-You can install [the `bat` package](https://www.archlinux.org/packages/community/x86_64/bat/)
+You can install [the `bat` package](https://www.archlinux.org/packages/extra/x86_64/bat/)
 from the official sources:
 
 ```bash

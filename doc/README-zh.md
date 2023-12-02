@@ -191,7 +191,7 @@ man 2 select
 
 ## 安装
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?columns=3&exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### Ubuntu (使用 `apt`)
 
@@ -232,7 +232,7 @@ apk add bat
 
 ### Arch Linux
 
-你可以用下面下列命令从官方源中安装[`bat`包](https://www.archlinux.org/packages/community/x86_64/bat/)：
+你可以用下面下列命令从官方源中安装[`bat`包](https://www.archlinux.org/packages/extra/x86_64/bat/)：
 
 ```bash
 pacman -S bat

@@ -214,7 +214,7 @@ man 2 select
 
 ## 설치
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?columns=3&exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### Ubuntu에서 (`apt` 사용)
 *... 그리고 다른 Debian 기반의 Linux 배포판들에서.*
@@ -264,7 +264,7 @@ apk add bat
 ### Arch Linux에서
 
 공식 소스를 통해
-[`bat` 패키지](https://www.archlinux.org/packages/community/x86_64/bat/)를
+[`bat` 패키지](https://www.archlinux.org/packages/extra/x86_64/bat/)를
 설치할 수 있습니다:
 
 ```bash
