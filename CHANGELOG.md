@@ -29,6 +29,7 @@
 
 - Add environment variable `BAT_PAGING`, see #2629 (@einfachIrgendwer0815)
 - Add opt-in (`--features lessopen`) support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
+- Add basic fuzz-testing support. See #2794 (@silvergasp)
 
 ## Bugfixes
 
