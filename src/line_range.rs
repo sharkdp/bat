@@ -1,6 +1,7 @@
 use crate::error::*;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct LineRange {
     lower: usize,
     upper: usize,
@@ -188,6 +189,7 @@ pub enum RangeCheckResult {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct LineRanges {
     ranges: Vec<LineRange>,
     largest_upper_bound: usize,
@@ -232,6 +234,7 @@ impl Default for LineRanges {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct HighlightedLineRanges(pub LineRanges);
 
 impl Default for HighlightedLineRanges {

@@ -9,6 +9,7 @@ pub mod ignored_suffixes;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum MappingTarget<'a> {
     /// For mapping a path to a specific syntax.
     MapTo(&'a str),
@@ -28,7 +29,9 @@ pub enum MappingTarget<'a> {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct SyntaxMapping<'a> {
+    #[cfg_attr(feature = "arbitrary", arbitrary(default))]
     mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
     pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 }

@@ -1,0 +1,29 @@
+[package]
+name = "bat-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+arbitrary = { version = "1.3.2", features = ["derive"] }
+libfuzzer-sys = "0.4"
+
+[dependencies.bat]
+path = ".."
+features = ["arbitrary"]
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fuzz_buffer"
+path = "fuzz_targets/fuzz_buffer.rs"
+test = false
+doc = false

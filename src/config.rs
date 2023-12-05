@@ -7,6 +7,7 @@ use crate::syntax_mapping::SyntaxMapping;
 use crate::wrapping::WrappingMode;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum VisibleLines {
     /// Show all lines which are included in the line ranges
     Ranges(LineRanges),
@@ -33,6 +34,7 @@ impl Default for VisibleLines {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct Config<'a> {
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
@@ -43,9 +45,11 @@ pub struct Config<'a> {
     /// The configured notation for non-printable characters
     pub nonprintable_notation: NonprintableNotation,
 
+    #[cfg_attr(feature = "arbitrary", arbitrary(with = |u: &mut arbitrary::Unstructured| u.int_in_range(0..=4048)))]
     /// The character width of the terminal
     pub term_width: usize,
 
+    #[cfg_attr(feature = "arbitrary", arbitrary(with = |u: &mut arbitrary::Unstructured| u.int_in_range(0..=48)))]
     /// The width of tab characters.
     /// Currently, a value of 0 will cause tabs to be passed through without expanding them.
     pub tab_width: usize,
@@ -67,6 +71,7 @@ pub struct Config<'a> {
 
     /// Pager or STDOUT
     #[cfg(feature = "paging")]
+    #[cfg_attr(feature = "arbitrary", arbitrary(default))]
     pub paging_mode: PagingMode,
 
     /// Specifies which lines should be printed
@@ -76,6 +81,7 @@ pub struct Config<'a> {
     pub theme: String,
 
     /// File extension/name mappings
+    #[cfg_attr(feature = "arbitrary", arbitrary(default))]
     pub syntax_mapping: SyntaxMapping<'a>,
 
     /// Command to start the pager

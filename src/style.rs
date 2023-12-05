@@ -5,6 +5,7 @@ use crate::error::*;
 
 #[non_exhaustive]
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Hash)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub enum StyleComponent {
     Auto,
     #[cfg(feature = "git")]
@@ -86,6 +87,7 @@ impl FromStr for StyleComponent {
 }
 
 #[derive(Debug, Clone, Default)]
+#[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
 pub struct StyleComponents(pub HashSet<StyleComponent>);
 
 impl StyleComponents {
