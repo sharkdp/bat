@@ -88,6 +88,7 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
+
         let mut writer = match output_buffer {
             Some(buf) => OutputHandle::FmtWrite(buf),
             None => OutputHandle::IoWrite(output_type.handle()?),

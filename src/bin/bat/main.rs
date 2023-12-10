@@ -227,9 +227,19 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     Ok(())
 }
 
+fn set_terminal_title_to_inputs_names(inputs: &Vec<Input>) {
+    let mut input_names = "bat: ".to_string();
+    for input in inputs.iter() {
+        input_names = input_names + &input.description.name.to_string() + ", "
+    }
+    print!("\x1b]2;{}\x07", input_names);
+    io::stdout().flush().unwrap();
+}
+
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
+    set_terminal_title_to_inputs_names(&inputs);
     controller.run(inputs, None)
 }
 
