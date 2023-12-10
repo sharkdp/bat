@@ -1,5 +1,5 @@
 use shell_words::ParseError;
-use std::{env};
+use std::env;
 
 /// If we use a pager, this enum tells us from where we were told to use it.
 #[derive(Debug, PartialEq)]
