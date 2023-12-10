@@ -229,8 +229,11 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
 
 fn set_terminal_title_to_inputs_names(inputs: &Vec<Input>) {
     let mut input_names = "bat: ".to_string();
-    for input in inputs.iter() {
-        input_names = input_names + &input.description.name.to_string() + ", "
+    for (index, input) in inputs.iter().enumerate() {
+        input_names += &input.description.name.to_string();
+        if index < inputs.len() - 1 {
+            input_names += ", ";
+        }
     }
     print!("\x1b]2;{}\x07", input_names);
     io::stdout().flush().unwrap();
