@@ -1,5 +1,6 @@
 use shell_words::ParseError;
-use std::env;
+use std::{env, io};
+use std::io::Write;
 
 /// If we use a pager, this enum tells us from where we were told to use it.
 #[derive(Debug, PartialEq)]
@@ -34,6 +35,16 @@ pub(crate) enum PagerKind {
 
     /// A pager we don't know about
     Unknown,
+}
+
+fn set_terminal_title(title: &str) {
+    print!("\x1b]2;{}\x07", title);
+    io::stdout().flush().unwrap();
+}
+
+fn restore_terminal_title() {
+    print!("\x1b]2;\x07");
+    io::stdout().flush().unwrap();
 }
 
 impl PagerKind {
@@ -102,6 +113,7 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
     };
 
     let parts = shell_words::split(cmd)?;
+    set_terminal_title("test");
     match parts.split_first() {
         Some((bin, args)) => {
             let kind = PagerKind::from_bin(bin);
