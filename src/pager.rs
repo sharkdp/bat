@@ -42,11 +42,6 @@ fn set_terminal_title(title: &str) {
     io::stdout().flush().unwrap();
 }
 
-fn restore_terminal_title() {
-    print!("\x1b]2;\x07");
-    io::stdout().flush().unwrap();
-}
-
 impl PagerKind {
     fn from_bin(bin: &str) -> PagerKind {
         use std::path::Path;
