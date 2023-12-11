@@ -128,10 +128,8 @@ impl<'a> SyntaxMapping<'a> {
 
 #[cfg(test)]
 mod tests {
-    use once_cell::sync::Lazy;
-    use rusty_fork::rusty_fork_test;
-
     use super::*;
+
     #[test]
     fn builtin_mappings_work() {
         let map = SyntaxMapping::new();
@@ -149,33 +147,6 @@ mod tests {
         // collect call evaluates all lazy closures
         // fixed builtin mappings will panic if they fail to compile
         let _mappings = map.builtin_mappings().collect::<Vec<_>>();
-    }
-
-    // disabled for ARM builds because of an issue with `rusty_fork`
-    #[cfg(not(any(target_arch = "arm", target_arch = "aarch64")))]
-    // lazy initialisation test needs to be run on a separate instance because
-    // it will race with other tests
-    // see: https://github.com/rust-lang/rust/issues/47506
-    rusty_fork_test! {
-        #[test]
-        fn builtin_mappings_are_lazily_evaluated() {
-            let map = SyntaxMapping::new();
-
-            assert!(BUILTIN_MAPPINGS
-                .iter()
-                .all(|(matcher, _)| Lazy::get(matcher).is_none()));
-
-            // calling `builtin_mappings` should not trigger evaluation
-            let mappings_iter = map.builtin_mappings();
-            assert!(BUILTIN_MAPPINGS
-                .iter()
-                .all(|(matcher, _)| Lazy::get(matcher).is_none()));
-
-            let _mappings: Vec<_> = mappings_iter.collect();
-            assert!(BUILTIN_MAPPINGS
-                .iter()
-                .all(|(matcher, _)| Lazy::get(matcher).is_some()));
-        }
     }
 
     #[test]

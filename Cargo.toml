@@ -93,7 +93,6 @@ expect-test = "1.4.1"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.0.4"
 wait-timeout = "0.2.0"
-rusty-fork = "0.3.0"
 tempfile = "3.8.1"
 
 [target.'cfg(unix)'.dev-dependencies]
