@@ -242,7 +242,9 @@ fn set_terminal_title_to_inputs_names(inputs: &Vec<Input>) {
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
-    set_terminal_title_to_inputs_names(&inputs);
+    if config.paging_mode != PagingMode::Never {
+        set_terminal_title_to_inputs_names(&inputs);
+    }
     controller.run(inputs, None)
 }
 
