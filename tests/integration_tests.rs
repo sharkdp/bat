@@ -48,7 +48,7 @@ fn basic() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.txt\x07hello world\n")
+        .stdout("hello world\n")
         .stderr("");
 }
 
@@ -58,7 +58,7 @@ fn stdin() {
         .write_stdin("foo\nbar\n")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: STDIN\x07foo\nbar\n");
+        .stdout("foo\nbar\n");
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn concatenate() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.txt, test.txt\x07hello world\nhello world\n");
+        .stdout("hello world\nhello world\n");
 }
 
 #[test]
@@ -80,7 +80,7 @@ fn concatenate_stdin() {
         .write_stdin("stdin\n")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.txt, STDIN, test.txt\x07hello world\nstdin\nhello world\n");
+        .stdout("hello world\nstdin\nhello world\n");
 }
 
 #[test]
@@ -90,7 +90,7 @@ fn concatenate_empty_first() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: empty.txt, test.txt\x07hello world\n");
+        .stdout("hello world\n");
 }
 
 #[test]
@@ -100,7 +100,7 @@ fn concatenate_empty_last() {
         .arg("empty.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.txt, empty.txt\x07hello world\n");
+        .stdout("hello world\n");
 }
 
 #[test]
@@ -110,7 +110,7 @@ fn concatenate_empty_both() {
         .arg("empty.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: empty.txt, empty.txt\x07");
+        .stdout("");
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn concatenate_empty_between() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.txt, empty.txt, test.txt\x07hello world\nhello world\n");
+        .stdout("hello world\nhello world\n");
 }
 
 #[test]
@@ -132,7 +132,7 @@ fn concatenate_empty_first_and_last() {
         .arg("empty.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: empty.txt, test.txt, empty.txt\x07hello world\n");
+        .stdout("hello world\n");
 }
 
 #[test]
@@ -142,7 +142,7 @@ fn concatenate_single_line() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt, single-line.txt\x07Single LineSingle Line");
+        .stdout("Single LineSingle Line");
 }
 
 #[test]
@@ -153,7 +153,7 @@ fn concatenate_single_line_empty() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt, empty.txt, single-line.txt\x07Single LineSingle Line");
+        .stdout("Single LineSingle Line");
 }
 
 #[test]
@@ -164,7 +164,7 @@ fn line_numbers() {
         .arg("--decorations=always")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: multiline.txt\x07   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n");
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n");
 }
 
 #[test]
@@ -174,7 +174,7 @@ fn line_range_2_3() {
         .arg("--line-range=2:3")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: multiline.txt\x07line 2\nline 3\n");
+        .stdout("line 2\nline 3\n");
 }
 
 #[test]
@@ -184,7 +184,7 @@ fn line_range_first_two() {
         .arg("--line-range=:2")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: multiline.txt\x07line 1\nline 2\n");
+        .stdout("line 1\nline 2\n");
 }
 
 #[test]
@@ -194,7 +194,7 @@ fn line_range_last_3() {
         .arg("--line-range=2:")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: multiline.txt\x07line 2\nline 3\nline 4\n");
+        .stdout("line 2\nline 3\nline 4\n");
 }
 
 #[test]
@@ -205,7 +205,7 @@ fn line_range_multiple() {
         .arg("--line-range=4:4")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: multiline.txt\x07line 1\nline 2\nline 4\n");
+        .stdout("line 1\nline 2\nline 4\n");
 }
 
 #[test]
@@ -354,7 +354,7 @@ fn tabs_numbers() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07   1     1   2   3   4
+            "   1     1   2   3   4
    2 1   ?
    3 22  ?
    4 333 ?
@@ -377,7 +377,7 @@ fn tabs_passthrough_wrapped() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07	1	2	3	4
+            "	1	2	3	4
 1	?
 22	?
 333	?
@@ -400,7 +400,7 @@ fn tabs_4_wrapped() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07    1   2   3   4
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -423,7 +423,7 @@ fn tabs_8_wrapped() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07        1       2       3       4
+            "        1       2       3       4
 1       ?
 22      ?
 333     ?
@@ -446,7 +446,7 @@ fn tabs_passthrough() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07	1	2	3	4
+            "	1	2	3	4
 1	?
 22	?
 333	?
@@ -469,7 +469,7 @@ fn tabs_4() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07    1   2   3   4
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -492,7 +492,7 @@ fn tabs_8() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07        1       2       3       4
+            "        1       2       3       4
 1       ?
 22      ?
 333     ?
@@ -516,7 +516,7 @@ fn tabs_4_env_overrides_config() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07    1   2   3   4
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -541,7 +541,7 @@ fn tabs_4_arg_overrides_env() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07    1   2   3   4
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -565,7 +565,7 @@ fn tabs_4_arg_overrides_env_noconfig() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07    1   2   3   4
+            "    1   2   3   4
 1   ?
 22  ?
 333 ?
@@ -594,7 +594,7 @@ fn do_not_exit_directory() {
         .arg("sub_directory")
         .arg("test.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: sub_directory, test.txt\x07hello world\n")
+        .stdout("hello world\n")
         .failure();
 }
 
@@ -845,7 +845,7 @@ fn alias_pager_disable() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]2;bat: test.txt\x07hello world\n").normalize());
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -872,7 +872,7 @@ fn disable_pager_if_disable_paging_flag_comes_after_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]2;bat: test.txt\x07hello world\n").normalize());
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -884,7 +884,7 @@ fn disable_pager_if_pp_flag_comes_after_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]2;bat: test.txt\x07hello world\n").normalize());
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -1111,7 +1111,7 @@ fn utf16() {
         .arg("test_UTF-16LE.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test_UTF-16LE.txt\x07hello world\n");
+        .stdout("hello world\n");
 }
 
 // Regression test for https://github.com/sharkdp/bat/issues/1922
@@ -1124,7 +1124,7 @@ fn bom_not_stripped_in_loop_through_mode() {
         .arg("test_BOM.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test_BOM.txt\x07\u{feff}hello world\n");
+        .stdout("\u{feff}hello world\n");
 }
 
 // Regression test for https://github.com/sharkdp/bat/issues/1922
@@ -1153,7 +1153,7 @@ fn bom_stripped_when_no_color_and_not_loop_through() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: test_BOM.txt\x07\
+            "\
 ─────┬──────────────────────────────────────────────────────────────────────────
      │ File: test_BOM.txt
 ─────┼──────────────────────────────────────────────────────────────────────────
@@ -1169,7 +1169,7 @@ fn can_print_file_named_cache() {
         .arg("cache")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: cache\x07test\n")
+        .stdout("test\n")
         .stderr("");
 }
 
@@ -1180,7 +1180,7 @@ fn can_print_file_named_cache_with_additional_argument() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: cache, test.txt\x07test\nhello world\n")
+        .stdout("test\nhello world\n")
         .stderr("");
 }
 
@@ -1190,7 +1190,7 @@ fn can_print_file_starting_with_cache() {
         .arg("cache.c")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: cache.c\x07test\n")
+        .stdout("test\n")
         .stderr("");
 }
 
@@ -1220,7 +1220,7 @@ fn unicode_wrap() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: unicode-wrap.txt\x07   1 ビタミンA  ビタミンD  ビタミンE  ビ
+            "   1 ビタミンA  ビタミンD  ビタミンE  ビ
      タミンK  ビタミンB1  ビタミンB2  ナ
      イアシン  パントテン酸  ビタミンB6 
       ビタミンB12  葉酸  ビオチン  ビタ
@@ -1264,7 +1264,7 @@ fn snip() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: multiline.txt\x07   1 line 1
+            "   1 line 1
    2 line 2
  ...─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ 8< ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
    4 line 4
@@ -1281,7 +1281,7 @@ fn empty_file_leads_to_empty_output_with_grid_enabled() {
         .arg("--terminal-width=80")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: empty.txt\x07");
+        .stdout("");
 }
 
 #[test]
@@ -1293,7 +1293,7 @@ fn empty_file_leads_to_empty_output_with_rule_enabled() {
         .arg("--terminal-width=80")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: empty.txt\x07");
+        .stdout("");
 }
 
 #[test]
@@ -1306,7 +1306,7 @@ fn header_basic() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo\n")
+        .stdout("File: foo\n")
         .stderr("");
 }
 
@@ -1320,7 +1320,7 @@ fn header_full_basic() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo\nSize: 12 B\n")
+        .stdout("File: foo\nSize: 12 B\n")
         .stderr("");
 }
 
@@ -1334,7 +1334,7 @@ fn header_env_basic() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo\nSize: 12 B\n")
+        .stdout("File: foo\nSize: 12 B\n")
         .stderr("");
 }
 
@@ -1349,7 +1349,7 @@ fn header_arg_overrides_env() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo\n")
+        .stdout("File: foo\n")
         .stderr("");
 }
 
@@ -1363,7 +1363,7 @@ fn header_binary() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo   <BINARY>\n")
+        .stdout("File: foo   <BINARY>\n")
         .stderr("");
 }
 
@@ -1377,7 +1377,7 @@ fn header_full_binary() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo   <BINARY>\nSize: 4 B\n")
+        .stdout("File: foo   <BINARY>\nSize: 4 B\n")
         .stderr("");
 }
 
@@ -1395,7 +1395,7 @@ fn header_default() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: single-line.txt\x07\
+            "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
 ───────┼────────────────────────────────────────────────────────────────────────
@@ -1419,7 +1419,7 @@ fn header_default_is_default() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: single-line.txt\x07\
+            "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
 ───────┼────────────────────────────────────────────────────────────────────────
@@ -1441,7 +1441,7 @@ fn filename_stdin() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo\n")
+        .stdout("File: foo\n")
         .stderr("");
 }
 
@@ -1455,7 +1455,7 @@ fn filename_stdin_binary() {
         .arg("--file-name=foo")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo\x07File: foo   <BINARY>\n")
+        .stdout("File: foo   <BINARY>\n")
         .stderr("");
 }
 
@@ -1471,7 +1471,7 @@ fn filename_multiple_ok() {
         .arg("--file-name=bar")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: foo, bar\x07File: foo\n\nFile: bar\n")
+        .stdout("File: foo\n\nFile: bar\n")
         .stderr("");
 }
 
@@ -1496,7 +1496,7 @@ fn header_padding() {
         .arg("test.txt")
         .arg("single-line.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: test.txt, single-line.txt\x07File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
+        .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
         .stderr("");
 }
 
@@ -1508,7 +1508,7 @@ fn header_full_padding() {
         .arg("test.txt")
         .arg("single-line.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: test.txt, single-line.txt\x07File: test.txt\nSize: 12 B\nhello world\n\nFile: single-line.txt\nSize: 11 B\nSingle Line\n")
+        .stdout("File: test.txt\nSize: 12 B\nhello world\n\nFile: single-line.txt\nSize: 11 B\nSingle Line\n")
         .stderr("");
 }
 
@@ -1522,7 +1522,7 @@ fn header_padding_rule() {
         .arg("single-line.txt")
         .assert()
         .stdout(
-            "\u{1b}]2;bat: test.txt, single-line.txt\x07File: test.txt
+            "File: test.txt
 hello world
 ────────────────────────────────────────────────────────────────────────────────
 File: single-line.txt
@@ -1542,7 +1542,7 @@ fn header_full_padding_rule() {
         .arg("single-line.txt")
         .assert()
         .stdout(
-            "\u{1b}]2;bat: test.txt, single-line.txt\x07File: test.txt
+            "File: test.txt
 Size: 12 B
 hello world
 ────────────────────────────────────────────────────────────────────────────────
@@ -1564,7 +1564,7 @@ fn grid_overrides_rule() {
         .arg("single-line.txt")
         .assert()
         .stdout(
-            "\u{1b}]2;bat: test.txt, single-line.txt\x07\
+            "\
 ────────────────────────────────────────────────────────────────────────────────
 hello world
 ────────────────────────────────────────────────────────────────────────────────
@@ -1669,7 +1669,7 @@ fn show_all_mode() {
         .arg("--show-all")
         .arg("nonprintable.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: nonprintable.txt\x07hello·world␊\n├──┤␍␀␇␈␛")
+        .stdout("hello·world␊\n├──┤␍␀␇␈␛")
         .stderr("");
 }
 
@@ -1683,7 +1683,7 @@ fn show_all_extends_tab_markers_to_next_tabstop() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07├──┤1├─┤2├─┤3├─┤4␊
+            "├──┤1├─┤2├─┤3├─┤4␊
 1├─┤?␊
 22├┤?␊
 333↹?␊
@@ -1706,7 +1706,7 @@ fn show_all_extends_tab_markers_to_next_tabstop_width_8() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: tabs.txt\x07├──────┤1├─────┤2├─────┤3├─────┤4␊
+            "├──────┤1├─────┤2├─────┤3├─────┤4␊
 1├─────┤?␊
 22├────┤?␊
 333├───┤?␊
@@ -1726,7 +1726,7 @@ fn show_all_with_caret_notation() {
         .arg("--nonprintable-notation=caret")
         .arg("nonprintable.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: nonprintable.txt\x07hello·world^J\n├──┤^M^@^G^H^[")
+        .stdout("hello·world^J\n├──┤^M^@^G^H^[")
         .stderr("");
 
     bat()
@@ -1734,7 +1734,7 @@ fn show_all_with_caret_notation() {
         .arg("--nonprintable-notation=caret")
         .arg("control_characters.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: control_characters.txt\x07^@^A^B^C^D^E^F^G^H├─┤^J\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stdout("^@^A^B^C^D^E^F^G^H├─┤^J\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
         .stderr("");
 }
 
@@ -1745,7 +1745,7 @@ fn show_all_with_unicode() {
         .arg("--nonprintable-notation=unicode")
         .arg("control_characters.txt")
         .assert()
-        .stdout("\u{1b}]2;bat: control_characters.txt\x07␀␁␂␃␄␅␆␇␈├─┤␊\n␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␡")
+        .stdout("␀␁␂␃␄␅␆␇␈├─┤␊\n␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␡")
         .stderr("");
 }
 
@@ -1758,7 +1758,7 @@ fn no_paging_arg() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt\x07Single Line");
+        .stdout("Single Line");
 }
 
 #[test]
@@ -1770,7 +1770,7 @@ fn no_paging_short_arg() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt\x07Single Line");
+        .stdout("Single Line");
 }
 
 #[test]
@@ -1782,7 +1782,7 @@ fn no_pager_arg() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt\x07Single Line");
+        .stdout("Single Line");
 }
 
 #[test]
@@ -1795,7 +1795,7 @@ fn plain_mode_does_not_add_nonexisting_newline() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: single-line.txt\x07Single Line");
+        .stdout("Single Line");
 }
 
 // Regression test for https://github.com/sharkdp/bat/issues/299
@@ -1813,7 +1813,7 @@ fn grid_for_file_without_newline() {
         .assert()
         .success()
         .stdout(
-            "\u{1b}]2;bat: single-line.txt\x07\
+            "\
 ───────┬────────────────────────────────────────────────────────────────────────
        │ File: single-line.txt
        │ Size: 11 B
@@ -1840,7 +1840,7 @@ fn ansi_highlight_underline() {
         .write_stdin("Ansi Underscore Test\nAnother Line")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: STDIN\x07\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
 }
 
@@ -1859,7 +1859,7 @@ fn ansi_passthrough_emit() {
             .write_stdin("\x1B[33mColor\nColor \x1B[m\nPlain\n")
             .assert()
             .success()
-            .stdout("\u{1b}]2;bat: STDIN\x07\x1B[33m\x1B[33mColor\n\x1B[33mColor \x1B[m\nPlain\n")
+            .stdout("\x1B[33m\x1B[33mColor\n\x1B[33mColor \x1B[m\nPlain\n")
             .stderr("");
     }
 }
@@ -1874,7 +1874,7 @@ fn ignored_suffix_arg() {
         .arg("test.json~")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.json~\x07\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
 
     bat()
@@ -1886,7 +1886,7 @@ fn ignored_suffix_arg() {
         .arg("test.json.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.json.suffix\x07\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
 
     bat()
@@ -1897,16 +1897,16 @@ fn ignored_suffix_arg() {
         .arg("test.json.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.json.suffix\x07\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
         .stderr("");
 }
 
 fn wrapping_test(wrap_flag: &str, expect_wrap: bool) {
     let expected = match expect_wrap {
         true =>
-            "\u{1b}]2;bat: long-single-line.txt\x07abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n",
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n",
         false =>
-            "\u{1b}]2;bat: long-single-line.txt\x07abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n",
+            "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n",
     };
 
     bat()
@@ -1957,7 +1957,7 @@ fn theme_arg_overrides_env() {
         .write_stdin("Ansi Underscore Test\nAnother Line")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: STDIN\x07\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
 }
 
@@ -1977,7 +1977,7 @@ fn theme_arg_overrides_env_withconfig() {
         .write_stdin("Ansi Underscore Test\nAnother Line")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: STDIN\x07\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
 }
 
@@ -1996,13 +1996,13 @@ fn theme_env_overrides_config() {
         .write_stdin("Ansi Underscore Test\nAnother Line")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: STDIN\x07\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
+        .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
 }
 
 #[test]
 fn highlighting_is_skipped_on_long_lines() {
-    let expected = "\u{1b}]2;bat: longline.json\x07\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
+    let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
         "\u{1b}" +
         r#"[38;5;231m    {"ANGLE_instanced_arrays":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"drawArraysInstancedANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/drawArraysInstancedANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"drawElementsInstancedANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/drawElementsInstancedANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"vertexAttribDivisorANGLE":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/ANGLE_instanced_arrays/vertexAttribDivisorANGLE","spec_url":"https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/","support":{"chrome":{"version_added":"32"},"chrome_android":{"version_added":"32"},"edge":{"version_added":"12"},"firefox":{"version_added":"47"},"firefox_android":{"version_added":true},"ie":{"version_added":"11"},"opera":{"version_added":"19"},"opera_android":{"version_added":"19"},"safari":{"version_added":"8"},"safari_ios":{"version_added":"8"},"samsunginternet_android":{"version_added":"2.0"},"webview_android":{"version_added":"4.4"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbortController":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController","spec_url":"https://dom.spec.whatwg.org/#interface-abortcontroller","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}},"AbortController":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/AbortController","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-abortcontroller①","description":"<code>AbortController()</code> constructor","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}},"abort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/abort","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-abortcontroller①","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}},"signal":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortController/signal","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortcontroller-signal②","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":[{"version_added":"12.1"},{"version_added":"11.1","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"safari_ios":[{"version_added":"12.2"},{"version_added":"11.3","partial_implementation":true,"notes":"Even though <code>window.AbortController</code> is defined, it doesn't really abort <code>fetch</code> requests. See <a href='https://webkit.org/b/174980'>bug 174980</a>."}],"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":true,"standard_track":true,"deprecated":false}}}},"AbortPaymentEvent":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}},"AbortPaymentEvent":{"__compat":{"description":"<code>AbortPaymentEvent()</code> constructor","mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent/AbortPaymentEvent","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}}},"respondWith":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortPaymentEvent/respondWith","support":{"chrome":{"version_added":"70"},"chrome_android":{"version_added":"70"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"57"},"opera_android":{"version_added":"49"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"10.0"},"webview_android":{"version_added":false}},"status":{"experimental":true,"standard_track":false,"deprecated":false}}}},"AbortSignal":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal","spec_url":"https://dom.spec.whatwg.org/#interface-AbortSignal","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"abort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/abort","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortsignal-abort①","support":{"chrome":{"version_added":false},"chrome_android":{"version_added":false},"edge":{"version_added":false},"firefox":{"version_added":"88"},"firefox_android":{"version_added":"88"},"ie":{"version_added":false},"nodejs":{"version_added":false},"opera":{"version_added":false},"opera_android":{"version_added":false},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":false},"webview_android":{"version_added":false}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"abort_event":{"__compat":{"description":"<code>abort</code> event","mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/abort_event","spec_url":"https://dom.spec.whatwg.org/#eventdef-abortsignal-abort","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"aborted":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/aborted","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-abortsignal-aborted①","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}},"onabort":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbortSignal/onabort","spec_url":"https://dom.spec.whatwg.org/#abortsignal-onabort","support":{"chrome":{"version_added":"66"},"chrome_android":{"version_added":"66"},"edge":{"version_added":"16"},"firefox":{"version_added":"57"},"firefox_android":{"version_added":"57"},"ie":{"version_added":false},"nodejs":{"version_added":"15.0.0"},"opera":{"version_added":"53"},"opera_android":{"version_added":"47"},"safari":{"version_added":"11.1"},"safari_ios":{"version_added":"11.3"},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"66"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbsoluteOrientationSensor":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbsoluteOrientationSensor","spec_url":"https://w3c.github.io/orientation-sensor/#absoluteorientationsensor-interface","support":{"chrome":{"version_added":"67"},"chrome_android":{"version_added":"67"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"54"},"opera_android":{"version_added":"48"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"67"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"AbsoluteOrientationSensor":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbsoluteOrientationSensor/AbsoluteOrientationSensor","spec_url":"https://w3c.github.io/orientation-sensor/#dom-absoluteorientationsensor-absoluteorientationsensor","description":"<code>AbsoluteOrientationSensor()</code> constructor","support":{"chrome":{"version_added":"67"},"chrome_android":{"version_added":"67"},"edge":{"version_added":"79"},"firefox":{"version_added":false},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":"54"},"opera_android":{"version_added":"48"},"safari":{"version_added":false},"safari_ios":{"version_added":false},"samsunginternet_android":{"version_added":"9.0"},"webview_android":{"version_added":"67"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}}}},"AbstractRange":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbstractRange","spec_url":"https://dom.spec.whatwg.org/#interface-abstractrange","support":{"chrome":{"version_added":"90"},"chrome_android":{"version_added":"90"},"edge":[{"version_added":"90"},{"version_added":"18","version_removed":"79"}],"firefox":{"version_added":"69"},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":false},"opera_android":{"version_added":false},"safari":{"version_added":"14.1"},"safari_ios":{"version_added":"14.5"},"samsunginternet_android":{"version_added":false},"webview_android":{"version_added":"90"}},"status":{"experimental":false,"standard_track":true,"deprecated":false}},"collapsed":{"__compat":{"mdn_url":"https://developer.mozilla.org/docs/Web/API/AbstractRange/collapsed","spec_url":"https://dom.spec.whatwg.org/#ref-for-dom-range-collapsed①","support":{"chrome":{"version_added":"90"},"chrome_android":{"version_added":"90"},"edge":[{"version_added":"90"},{"version_added":"18","version_removed":"79"}],"firefox":{"version_added":"69"},"firefox_android":{"version_added":false},"ie":{"version_added":false},"opera":{"version_added":false},"opera_android":"# +
         "\u{1b}[0m\n\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mversion_added\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;141mfalse\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m\n";
@@ -2036,7 +2036,7 @@ fn all_global_git_config_locations_syntax_mapping_work() {
         .arg("git/.config/git/config")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: git/.config/git/config\x07".to_owned() + expected)
+        .stdout(expected)
         .stderr("");
 
     bat()
@@ -2048,7 +2048,7 @@ fn all_global_git_config_locations_syntax_mapping_work() {
         .arg("git/.config/git/config")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: git/.config/git/config\x07".to_owned() + expected)
+        .stdout(expected)
         .stderr("");
 
     bat()
@@ -2060,7 +2060,7 @@ fn all_global_git_config_locations_syntax_mapping_work() {
         .arg("git/.gitconfig")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: git/.gitconfig\x07".to_owned() + expected)
+        .stdout(expected)
         .stderr("");
 }
 
@@ -2076,7 +2076,7 @@ fn map_syntax_and_ignored_suffix_work_together() {
         .arg("test.demo.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.demo.suffix\x07\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
 
     bat()
@@ -2090,7 +2090,7 @@ fn map_syntax_and_ignored_suffix_work_together() {
         .arg("test.demo.foo.suffix")
         .assert()
         .success()
-        .stdout("\u{1b}]2;bat: test.demo.foo.suffix\x07\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
+        .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
 }
 
