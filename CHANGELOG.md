@@ -2,6 +2,8 @@
 
 ## Features
 
+- Set terminal title to file names when Paging is not Paging::Never #2783 (@Oliver-Looney)
+
 ## Bugfixes
 
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
