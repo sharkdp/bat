@@ -12,7 +12,7 @@ fn use_systemwide_config() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("dummy-pager-from-system-config\n").normalize());
+        .stdout(predicate::eq("\u{1b}]2;bat: test.txt\x07dummy-pager-from-system-config\n").normalize());
 }
 
 // This test is ignored, as it needs a special system wide config put into place
@@ -25,5 +25,5 @@ fn config_overrides_system_config() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
+        .stdout(predicate::eq("\u{1b}]2;bat: test.txt\x07dummy-pager-from-config\n").normalize());
 }
