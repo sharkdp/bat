@@ -16,6 +16,7 @@
 - Update Arch Linux package URL in README files #2779 (@brunobell)
 - Update and improve `zsh` completion, see #2772 (@okapia)
 - Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
+- Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 
 ## Syntaxes
 
