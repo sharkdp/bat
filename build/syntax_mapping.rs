@@ -10,7 +10,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::Deserialize;
+use serde_derive::Deserialize;
 use serde_with::DeserializeFromStr;
 use walkdir::WalkDir;
 
