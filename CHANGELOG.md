@@ -18,7 +18,7 @@
 - Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
-- Update `plist` to 1.6
+- Update `plist` to 1.6, see #3248 (@cgmossa)
 
 ## Syntaxes
 
