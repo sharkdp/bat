@@ -227,23 +227,27 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     Ok(())
 }
 
-fn set_terminal_title_to_inputs_names(inputs: &Vec<Input>) {
-    let mut input_names = "bat: ".to_string();
+fn set_terminal_title_to(new_terminal_title: String) {
+    print!("\x1b]2;{}\x07", new_terminal_title);
+    io::stdout().flush().unwrap();
+}
+
+fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
+    let mut new_terminal_title = "bat: ".to_string();
     for (index, input) in inputs.iter().enumerate() {
-        input_names += &input.description.name.to_string();
+        new_terminal_title += &input.description.name.to_string();
         if index < inputs.len() - 1 {
-            input_names += ", ";
+            new_terminal_title += ", ";
         }
     }
-    print!("\x1b]2;{}\x07", input_names);
-    io::stdout().flush().unwrap();
+    new_terminal_title
 }
 
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
     if config.paging_mode != PagingMode::Never {
-        set_terminal_title_to_inputs_names(&inputs);
+        set_terminal_title_to(get_new_terminal_title(&inputs));
     }
     controller.run(inputs, None)
 }
