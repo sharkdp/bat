@@ -228,7 +228,12 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
 }
 
 fn set_terminal_title_to(new_terminal_title: String) {
-    print!("\x1b]2;{}\x07", new_terminal_title);
+    let osc_command_for_setting_terminal_title = "\x1b]0;";
+    let osc_end_command = "\x07";
+    print!(
+        "{}{}{}",
+        osc_command_for_setting_terminal_title, new_terminal_title, osc_end_command
+    );
     io::stdout().flush().unwrap();
 }
 
