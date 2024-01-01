@@ -84,7 +84,7 @@ optional = true
 features = ["wrap_help", "cargo"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
-home = "0.5.4"
+home = "0.5.9"
 plist = "1.5.1"
 
 [dev-dependencies]
