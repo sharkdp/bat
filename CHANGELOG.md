@@ -23,6 +23,8 @@
 
 ## Syntaxes
 
+- `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
+
 ## Themes
 
 ## `bat` as a library
