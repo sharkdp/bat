@@ -3,7 +3,7 @@
 ## Features
 
 ## Bugfixes
-- issue 2561, send all [bat error]s to stderr in default_error_handler match default.
+- Send all [bat error]s to stderr in default_error_handler match default, see #2561 (@deboard)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
 
 ## Other
