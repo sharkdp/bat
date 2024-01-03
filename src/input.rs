@@ -172,7 +172,7 @@ impl<'a> Input<'a> {
 
     fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
         if let Some(name) = provided_name {
-            self.description.name = name.to_string_lossy().to_string()
+            self.description.name = name.to_string_lossy().to_string();
         }
 
         self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());

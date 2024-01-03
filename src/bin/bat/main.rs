@@ -283,7 +283,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "Less version",
             resolved_path,
             &["--version"],
-        ))
+        ));
     };
 
     report.print::<Markdown>();

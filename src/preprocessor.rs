@@ -103,7 +103,7 @@ pub fn replace_nonprintable(
 
                         NonprintableNotation::Unicode => {
                             let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
-                            output.push(replacement_symbol)
+                            output.push(replacement_symbol);
                         }
                     }
                 }
@@ -117,7 +117,7 @@ pub fn replace_nonprintable(
                     || c.is_ascii_punctuation()
                     || c.is_ascii_graphic() =>
                 {
-                    output.push(c)
+                    output.push(c);
                 }
                 // everything else
                 c => output.push_str(&c.escape_unicode().collect::<String>()),

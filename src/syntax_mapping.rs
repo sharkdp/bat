@@ -148,7 +148,7 @@ impl<'a> SyntaxMapping<'a> {
 
         // unix mail spool
         for glob in &["/var/spool/mail/*", "/var/mail/*"] {
-            mapping.insert(glob, MappingTarget::MapTo("Email")).unwrap()
+            mapping.insert(glob, MappingTarget::MapTo("Email")).unwrap();
         }
 
         // pacman hooks
@@ -170,11 +170,11 @@ impl<'a> SyntaxMapping<'a> {
         ) {
             (Some(xdg_config_home), Some(default_config_home))
                 if xdg_config_home == default_config_home => {
-                insert_git_config_global(&mut mapping, &xdg_config_home)
+                insert_git_config_global(&mut mapping, &xdg_config_home);
             }
             (Some(xdg_config_home), Some(default_config_home)) /* else guard */ => {
                 insert_git_config_global(&mut mapping, &xdg_config_home);
-                insert_git_config_global(&mut mapping, &default_config_home)
+                insert_git_config_global(&mut mapping, &default_config_home);
             }
             (Some(config_home), None) => insert_git_config_global(&mut mapping, &config_home),
             (None, Some(config_home)) => insert_git_config_global(&mut mapping, &config_home),
@@ -316,9 +316,9 @@ mod tests {
                 {
                     let (_, mut dupl_targets): (Vec<GlobMatcher>, Vec<MappingTarget>) =
                         dupl.into_iter().cloned().unzip();
-                    dupl_targets.push(mappings[i].1)
+                    dupl_targets.push(mappings[i].1);
                 },
-            )
+            );
         }
     }
 }

@@ -37,7 +37,7 @@ pub fn build_acknowledgements(
                 &mut acknowledgements,
                 &path_and_stem.relative_path,
                 &license_text,
-            )
+            );
         }
     }
 

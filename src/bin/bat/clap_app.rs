@@ -167,7 +167,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long_help(
                             "Include N lines of context around added/removed/modified lines when using '--diff'.",
                         ),
-                )
+                );
     }
 
     app = app.arg(

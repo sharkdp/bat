@@ -245,7 +245,7 @@ impl HighlightingAssets {
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{}', using default.", theme)
+                    bat_warning!("Unknown theme '{}', using default.", theme);
                 }
                 self.get_theme_set()
                     .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
@@ -515,7 +515,7 @@ mod tests {
             if !consistent {
                 eprintln!(
                     "Inconsistent syntax detection:\nFor File: {as_file}\nFor Reader: {as_reader}"
-                )
+                );
             }
 
             consistent
