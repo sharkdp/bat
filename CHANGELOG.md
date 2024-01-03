@@ -3,7 +3,7 @@
 ## Features
 
 ## Bugfixes
-- Send all bat error messages to stderr, see #2561 (@deboard)
+- Send all bat error messages to stderr, see #2827 (@deboard)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
 
 ## Other
