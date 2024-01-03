@@ -21,6 +21,8 @@
 
 ## Syntaxes
 
+- Upgrade JQ syntax, see #2820 (@dependabot[bot])
+
 ## Themes
 
 ## `bat` as a library
