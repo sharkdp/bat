@@ -271,7 +271,7 @@ impl<'a> InteractivePrinter<'a> {
 
     fn create_fake_panel(&self, text: &str) -> String {
         if self.panel_width == 0 {
-            return "".to_string();
+            return String::new();
         }
 
         let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
@@ -385,7 +385,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     handle,
                     "{}{}{}",
                     description
-                        .kind().map_or_else(|| "".into(), |kind| format!("{kind}: ")),
+                        .kind().map_or_else(String::new, |kind| format!("{kind}: ")),
                     self.colors.header_value.paint(description.title()),
                     mode
                 ),
@@ -643,7 +643,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                                     .join(" ")
                                             ))
                                         } else {
-                                            Some("".to_string())
+                                            Some(String::new())
                                         }
                                     }
 

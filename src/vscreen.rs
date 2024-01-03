@@ -66,16 +66,16 @@ struct Attributes {
 impl Attributes {
     pub fn new() -> Self {
         Attributes {
-            foreground: "".to_owned(),
-            background: "".to_owned(),
-            underlined: "".to_owned(),
-            charset: "".to_owned(),
-            unknown_buffer: "".to_owned(),
-            bold: "".to_owned(),
-            dim: "".to_owned(),
-            underline: "".to_owned(),
-            italic: "".to_owned(),
-            strike: "".to_owned(),
+            foreground: String::new(),
+            background: String::new(),
+            underlined: String::new(),
+            charset: String::new(),
+            unknown_buffer: String::new(),
+            bold: String::new(),
+            dim: String::new(),
+            underline: String::new(),
+            italic: String::new(),
+            strike: String::new(),
         }
     }
 
@@ -173,9 +173,9 @@ impl Attributes {
                 Some(5) /* 256-color */ => format!("\x1B[{};5;{}m", color, join(";", 1, parameters)),
                 Some(2) /* 24-bit color */ => format!("\x1B[{};2;{}m", color, join(";", 3, parameters)),
                 Some(c) => format!("\x1B[{color};{c}m"),
-                _ => "".to_owned(),
+                _ => String::new(),
             },
-            9 => "".to_owned(),
+            9 => String::new(),
             _ => format!("\x1B[{color}m"),
         }
     }
