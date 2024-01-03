@@ -43,7 +43,7 @@ impl LessOpenPreprocessor {
         // Note that $LESSCLOSE has no such requirement
         if lessopen.match_indices("%s").count() != 1 {
             let error_msg = "LESSOPEN ignored: must contain exactly one %s";
-            bat_warning!("{}", error_msg);
+            bat_warning!("{error_msg}");
             return Err(error_msg.into());
         }
 

@@ -241,11 +241,11 @@ impl HighlightingAssets {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
-                    bat_warning!("Theme '{}' is deprecated, using 'ansi' instead.", theme);
+                    bat_warning!("Theme '{theme}' is deprecated, using 'ansi' instead.");
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{}', using default.", theme);
+                    bat_warning!("Unknown theme '{theme}', using default.");
                 }
                 self.get_theme_set()
                     .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
