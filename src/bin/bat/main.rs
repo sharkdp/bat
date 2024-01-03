@@ -43,7 +43,8 @@ const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.
 #[cfg(feature = "build-assets")]
 fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path) -> Result<()> {
     let source_dir = matches
-        .get_one::<String>("source").map_or_else(|| config_dir, Path::new);
+        .get_one::<String>("source")
+        .map_or_else(|| config_dir, Path::new);
 
     bat::assets::build(
         source_dir,
@@ -60,7 +61,8 @@ fn run_cache_subcommand(
     default_cache_dir: &Path,
 ) -> Result<()> {
     let cache_dir = matches
-        .get_one::<String>("target").map_or_else(|| default_cache_dir, Path::new);
+        .get_one::<String>("target")
+        .map_or_else(|| default_cache_dir, Path::new);
 
     if matches.get_flag("build") {
         #[cfg(feature = "build-assets")]

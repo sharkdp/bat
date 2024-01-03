@@ -24,7 +24,8 @@ pub fn system_config_file() -> PathBuf {
 
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
-        .ok().map_or_else(|| PROJECT_DIRS.config_dir().join("config"), PathBuf::from)
+        .ok()
+        .map_or_else(|| PROJECT_DIRS.config_dir().join("config"), PathBuf::from)
 }
 
 pub fn generate_config_file() -> bat::error::Result<()> {

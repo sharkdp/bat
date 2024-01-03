@@ -123,7 +123,8 @@ impl OutputType {
         };
 
         Ok(p.stdin(Stdio::piped())
-            .spawn().map_or_else(|_| OutputType::stdout(), OutputType::Pager))
+            .spawn()
+            .map_or_else(|_| OutputType::stdout(), OutputType::Pager))
     }
 
     pub(crate) fn stdout() -> Self {

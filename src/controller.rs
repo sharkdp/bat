@@ -154,9 +154,7 @@ impl<'b> Controller<'b> {
 
                     // Skip files without Git modifications
                     if self.config.visible_lines.diff_mode()
-                        && diff
-                            .as_ref()
-                            .is_some_and(|changes| changes.is_empty())
+                        && diff.as_ref().is_some_and(|changes| changes.is_empty())
                     {
                         return Ok(());
                     }
