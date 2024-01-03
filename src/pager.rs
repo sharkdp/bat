@@ -49,8 +49,7 @@ impl PagerKind {
 
         // Check if the current running binary is set to be our pager.
         let is_current_bin_pager = current_bin
-            .map(|s| Path::new(&s).file_stem() == pager_bin)
-            .unwrap_or(false);
+            .is_some_and(|s| Path::new(&s).file_stem() == pager_bin);
 
         match pager_bin.map(|s| s.to_string_lossy()).as_deref() {
             Some("less") => PagerKind::Less,

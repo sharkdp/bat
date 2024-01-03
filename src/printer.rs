@@ -385,18 +385,14 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     handle,
                     "{}{}{}",
                     description
-                        .kind()
-                        .map(|kind| format!("{kind}: "))
-                        .unwrap_or_else(|| "".into()),
+                        .kind().map_or_else(|| "".into(), |kind| format!("{kind}: ")),
                     self.colors.header_value.paint(description.title()),
                     mode
                 ),
 
                 StyleComponent::HeaderFilesize => {
                     let bsize = metadata
-                        .size
-                        .map(|s| format!("{}", ByteSize(s)))
-                        .unwrap_or_else(|| "-".into());
+                        .size.map_or_else(|| "-".into(), |s| format!("{}", ByteSize(s)));
                     writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
                 }
                 _ => Ok(()),

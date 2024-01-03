@@ -236,18 +236,16 @@ impl App {
                         4
                     },
                 ),
-            theme: self
-                .matches
-                .get_one::<String>("theme")
-                .map(String::from)
-                .map(|s| {
+            theme: self.matches.get_one::<String>("theme").map_or_else(
+                || String::from(HighlightingAssets::default_theme()),
+                |s| {
                     if s == "default" {
                         String::from(HighlightingAssets::default_theme())
                     } else {
-                        s
+                        s.to_string()
                     }
-                })
-                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+                },
+            ),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -348,14 +346,16 @@ impl App {
             } else {
                 matches
                     .get_one::<String>("style")
-                    .map(|styles| {
-                        styles
-                            .split(',')
-                            .map(|style| style.parse::<StyleComponent>())
-                            .filter_map(|style| style.ok())
-                            .collect::<Vec<_>>()
-                    })
-                    .unwrap_or_else(|| vec![StyleComponent::Default])
+                    .map_or_else(
+                        || vec![StyleComponent::Default],
+                        |styles| {
+                            styles
+                                .split(',')
+                                .map(|style| style.parse::<StyleComponent>())
+                                .filter_map(|style| style.ok())
+                                .collect::<Vec<_>>()
+                        },
+                    )
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {

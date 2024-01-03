@@ -453,9 +453,7 @@ mod tests {
             mapping: &SyntaxMapping,
         ) -> String {
             self.assets
-                .get_syntax(language, input, mapping)
-                .map(|syntax_in_set| syntax_in_set.syntax.name.clone())
-                .unwrap_or_else(|_| "!no syntax!".to_owned())
+                .get_syntax(language, input, mapping).map_or_else(|_| "!no syntax!".to_owned(), |syntax_in_set| syntax_in_set.syntax.name.clone())
         }
 
         fn syntax_for_real_file_with_content_os(

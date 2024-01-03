@@ -156,8 +156,7 @@ impl<'b> Controller<'b> {
                     if self.config.visible_lines.diff_mode()
                         && diff
                             .as_ref()
-                            .map(|changes| changes.is_empty())
-                            .unwrap_or(false)
+                            .is_some_and(|changes| changes.is_empty())
                     {
                         return Ok(());
                     }
