@@ -303,7 +303,7 @@ mod tests {
     fn no_duplicate_builtin_keys() {
         let mappings = SyntaxMapping::builtin().mappings;
         for i in 0..mappings.len() {
-            let tail = mappings[i + 1..].into_iter();
+            let tail = mappings[i + 1..].iter();
             let (dupl, _): (Vec<_>, Vec<_>) =
                 tail.partition(|item| item.0.glob() == mappings[i].0.glob());
 

@@ -124,10 +124,10 @@ impl Attributes {
         while let Some(p) = iter.next() {
             match p {
                 0 => self.sgr_reset(),
-                1 => self.bold = format!("\x1B[{}m", parameters),
-                2 => self.dim = format!("\x1B[{}m", parameters),
-                3 => self.italic = format!("\x1B[{}m", parameters),
-                4 => self.underline = format!("\x1B[{}m", parameters),
+                1 => self.bold = format!("\x1B[{parameters}m"),
+                2 => self.dim = format!("\x1B[{parameters}m"),
+                3 => self.italic = format!("\x1B[{parameters}m"),
+                4 => self.underline = format!("\x1B[{parameters}m"),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
                 22 => {
@@ -172,11 +172,11 @@ impl Attributes {
             8 => match parameters.next() {
                 Some(5) /* 256-color */ => format!("\x1B[{};5;{}m", color, join(";", 1, parameters)),
                 Some(2) /* 24-bit color */ => format!("\x1B[{};2;{}m", color, join(";", 3, parameters)),
-                Some(c) => format!("\x1B[{};{}m", color, c),
+                Some(c) => format!("\x1B[{color};{c}m"),
                 _ => "".to_owned(),
             },
             9 => "".to_owned(),
-            _ => format!("\x1B[{}m", color),
+            _ => format!("\x1B[{color}m"),
         }
     }
 }

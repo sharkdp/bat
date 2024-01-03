@@ -44,7 +44,7 @@ pub fn assets_from_cache_or_binary(
 }
 
 fn clear_asset(path: PathBuf, description: &str) {
-    print!("Clearing {} ... ", description);
+    print!("Clearing {description} ... ");
     match fs::remove_file(&path) {
         Err(err) if err.kind() == io::ErrorKind::NotFound => {
             println!("skipped (not present)");

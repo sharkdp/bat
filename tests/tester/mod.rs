@@ -22,14 +22,14 @@ impl BatTester {
     pub fn test_snapshot(&self, name: &str, style: &str) {
         let output = Command::new(&self.exe)
             .current_dir(self.temp_dir.path())
-            .args(&[
+            .args([
                 "sample.rs",
                 "--no-config",
                 "--paging=never",
                 "--color=never",
                 "--decorations=always",
                 "--terminal-width=80",
-                &format!("--style={}", style),
+                &format!("--style={style}"),
             ])
             .output()
             .expect("bat failed");
@@ -40,7 +40,7 @@ impl BatTester {
             .replace("tests/snapshots/", "");
 
         let mut expected = String::new();
-        let mut file = File::open(format!("tests/snapshots/output/{}.snapshot.txt", name))
+        let mut file = File::open(format!("tests/snapshots/output/{name}.snapshot.txt"))
             .expect("snapshot file missing");
         file.read_to_string(&mut expected)
             .expect("could not read snapshot file");

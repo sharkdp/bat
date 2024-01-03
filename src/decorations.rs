@@ -56,7 +56,7 @@ impl Decoration for LineNumberDecoration {
 
             self.cached_wrap.clone()
         } else {
-            let plain: String = format!("{:4}", line_number);
+            let plain: String = format!("{line_number:4}");
             DecorationText {
                 width: plain.len(),
                 text: self.color.paint(plain).to_string(),

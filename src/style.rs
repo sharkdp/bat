@@ -80,7 +80,7 @@ impl FromStr for StyleComponent {
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
-            _ => Err(format!("Unknown style '{}'", s).into()),
+            _ => Err(format!("Unknown style '{s}'").into()),
         }
     }
 }

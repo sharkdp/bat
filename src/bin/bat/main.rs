@@ -220,7 +220,7 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
         )?;
     } else {
         for theme in assets.themes() {
-            writeln!(stdout, "{}", theme)?;
+            writeln!(stdout, "{theme}")?;
         }
     }
 

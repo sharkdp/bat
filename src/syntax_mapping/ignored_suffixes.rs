@@ -73,7 +73,7 @@ fn internal_suffixes() {
     let file_names = ignored_suffixes
         .values
         .iter()
-        .map(|suffix| format!("test.json{}", suffix));
+        .map(|suffix| format!("test.json{suffix}"));
     for file_name_str in file_names {
         let file_name = OsStr::new(&file_name_str);
         let expected_stripped_file_name = OsStr::new("test.json");
@@ -95,7 +95,7 @@ fn external_suffixes() {
     let file_names = ignored_suffixes
         .values
         .iter()
-        .map(|suffix| format!("test.json{}", suffix));
+        .map(|suffix| format!("test.json{suffix}"));
     for file_name_str in file_names {
         let file_name = OsStr::new(&file_name_str);
         let expected_stripped_file_name = OsStr::new("test.json");
