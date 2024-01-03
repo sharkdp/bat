@@ -340,9 +340,9 @@ impl App {
             if matches.get_one::<String>("decorations").map(|s| s.as_str()) == Some("never") {
                 HashSet::new()
             } else if matches.get_flag("number") {
-                [StyleComponent::LineNumbers].iter().cloned().collect()
+                [StyleComponent::LineNumbers].iter().copied().collect()
             } else if 0 < matches.get_count("plain") {
-                [StyleComponent::Plain].iter().cloned().collect()
+                [StyleComponent::Plain].iter().copied().collect()
             } else {
                 matches
                     .get_one::<String>("style")
@@ -359,7 +359,7 @@ impl App {
                     .into_iter()
                     .map(|style| style.components(self.interactive_output))
                     .fold(HashSet::new(), |mut acc, components| {
-                        acc.extend(components.iter().cloned());
+                        acc.extend(components.iter().copied());
                         acc
                     })
             },

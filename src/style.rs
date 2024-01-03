@@ -90,7 +90,7 @@ pub struct StyleComponents(pub HashSet<StyleComponent>);
 
 impl StyleComponents {
     pub fn new(components: &[StyleComponent]) -> StyleComponents {
-        StyleComponents(components.iter().cloned().collect())
+        StyleComponents(components.iter().copied().collect())
     }
 
     #[cfg(feature = "git")]
