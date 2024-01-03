@@ -4,8 +4,8 @@
 [38;2;248;248;242mUse '--help' instead of '-h' to see a more detailed version of the help text.[0m
 
 [38;2;246;170;17mUSAGE:[0m
-[38;2;248;248;242m    bat [OPTIONS] [FILE]...[0m
-[38;2;248;248;242m    bat <SUBCOMMAND>[0m
+[38;2;248;248;242m    [0m[38;2;190;132;255mbat[0m[38;2;248;248;242m [OPTIONS] [FILE]...[0m
+[38;2;248;248;242m    [0m[38;2;190;132;255mbat[0m[38;2;248;248;242m <SUBCOMMAND>[0m
 
 [38;2;246;170;17mARGS:[0m
 [38;2;248;248;242m    [0m[38;2;249;38;114m<FILE>...[0m[38;2;248;248;242m    File(s) to print / concatenate. Use '-' for standard input.[0m

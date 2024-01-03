@@ -46,7 +46,7 @@ ansi_colours = "^1.2"
 bincode = "1.0"
 console = "0.15.7"
 flate2 = "1.0"
-once_cell = "1.18"
+once_cell = "1.19"
 thiserror = "1.0"
 wild = { version = "2.2", optional = true }
 content_inspector = "0.2.4"
@@ -79,12 +79,12 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "4.4.10"
+version = "4.4.12"
 optional = true
 features = ["wrap_help", "cargo"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
-home = "0.5.4"
+home = "0.5.9"
 plist = "1.5.1"
 
 [dev-dependencies]
@@ -99,10 +99,10 @@ tempfile = "3.8.1"
 nix = { version = "0.26.4", default-features = false, features = ["term"] }
 
 [build-dependencies]
-anyhow = "1.0.75"
+anyhow = "1.0.78"
 
 [build-dependencies.clap]
-version = "4.4.10"
+version = "4.4.12"
 optional = true
 features = ["wrap_help", "cargo"]
 
