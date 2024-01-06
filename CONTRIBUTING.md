@@ -15,12 +15,12 @@ The top of the `CHANGELOG` contains a *"unreleased"* section with a few
 subsections (Features, Bugfixes, …). Please add your entry to the subsection
 that best describes your change.
 
-Entries follow this format:
+Entries must follow this format:
 ```
 - Short description of what has been changed, see #123 (@user)
 ```
-Here, `#123` is the number of the original issue and/or your pull request.
-Please replace `@user` by your GitHub username.
+Please replace `#123` with the number of your pull request (not issue) and
+`@user` by your GitHub username.
 
 
 ## Development
