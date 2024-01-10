@@ -28,6 +28,7 @@
 
 ## `bat` as a library
 
+- Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
 
 # v0.24.0
 
