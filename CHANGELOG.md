@@ -5,6 +5,7 @@
 ## Bugfixes
 
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+- Fix bugs in `$LESSOPEN` support, see #2805 (@Anomalocaridid)
 
 ## Other
 
