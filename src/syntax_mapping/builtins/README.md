@@ -100,14 +100,16 @@ like this:
 
 ## Ordering
 
-At compile time, all TOML files are processed in lexicographical filename order.
-So `00-foo.toml` takes precedence over `10-bar.toml`, which takes precedence
-over `20-baz.toml`, and so on. This may be occasionally useful for creating
-high/low priority rules, such as in the aforementioned example of explicitly
-mapping `*.conf` files to unknown.
+At compile time, all TOML files applicable to the target are processed in
+lexicographical filename order. So `00-foo.toml` takes precedence over
+`10-bar.toml`, which takes precedence over `20-baz.toml`, and so on. Note that
+**only** the filenames of the TOML files are taken into account; the
+subdirectories they are placed in have no influence on ordering.
 
-Generally this should not be much of a concern, since rules should be written as
-specifically as possible for each application.
+This behaviour can be occasionally useful for creating high/low priority rules,
+such as in the aforementioned example of explicitly mapping `*.conf` files to
+unknown. Generally this should not be much of a concern though, since rules
+should be written as specifically as possible for each application.
 
 Rules within each TOML file are processed (and therefore matched) in the order
 in which they are defined. At runtime, the syntax selection algorithm will
