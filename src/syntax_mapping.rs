@@ -41,6 +41,8 @@ pub enum MappingTarget<'a> {
 #[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping<'a> {
     /// User-defined mappings at run time.
+    ///
+    /// Rules in front have precedence.
     custom_mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
     pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 }

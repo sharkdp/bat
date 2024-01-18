@@ -16,8 +16,6 @@
 - Update Arch Linux package URL in README files #2779 (@brunobell)
 - Update and improve `zsh` completion, see #2772 (@okapia)
 - More extensible syntax mapping mechanism #2755 (@cyqsimon)
-  - [BREAKING] Precedence order of user-defined syntax mappings (using `-m/--map-syntax`) has been reversed
-    - `-m '*.foo:alpha' -m '*.foo:bravo'` now maps `bar.foo` to `alpha`
 
 ## Syntaxes
 
