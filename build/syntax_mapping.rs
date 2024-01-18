@@ -103,11 +103,11 @@ impl FromStr for Matcher {
         }
 
         // guard variable syntax leftover fragments
-        if non_empty_segments.iter().any(|seg| {
-            seg.text()
-                .map(|t| t.contains(['$', '{', '}']))
-                .unwrap_or(false)
-        }) {
+        if non_empty_segments
+            .iter()
+            .filter_map(Seg::text)
+            .any(|t| t.contains(['$', '{', '}']))
+        {
             bail!(r#"Invalid matcher: "{s}""#);
         }
 
@@ -121,9 +121,7 @@ impl Matcher {
             // if-let guard would be ideal here
             // see: https://github.com/rust-lang/rust/issues/51114
             1 if self.0[0].is_text() => {
-                let Some(s) = self.0[0].text() else {
-                    unreachable!()
-                };
+                let s = self.0[0].text().unwrap();
                 format!(r###"Lazy::new(|| Some(build_matcher_fixed(r#"{s}"#)))"###)
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
