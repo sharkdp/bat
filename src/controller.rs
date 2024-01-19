@@ -47,7 +47,7 @@ impl<'b> Controller<'b> {
         &self,
         inputs: Vec<Input>,
         output_buffer: Option<&mut dyn std::fmt::Write>,
-        handle_error: impl Fn(&Error, &mut dyn Write),
+        mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
 
