@@ -302,6 +302,23 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
+    fn print_header_component_with_indent(&mut self, handle: &mut OutputHandle, content: &str) -> Result<()> {
+        self.print_header_component_indent(handle)?;
+        writeln!(handle, "{}", content)
+    }
+
+    fn print_header_multiline_component(&mut self, handle: &mut OutputHandle, content: &str) -> Result<()> {
+        let mut content = content;
+        let panel_width = if self.panel_width > 0 { self.panel_width + 2 } else { 0 };
+        let content_width = self.config.term_width - panel_width;
+        while content.len() > content_width {
+            let (content_line, remaining) = content.split_at(content_width);
+            self.print_header_component_with_indent(handle, content_line)?;
+            content = remaining;
+        }
+        self.print_header_component_with_indent(handle, content)
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
@@ -378,26 +395,26 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         header_components.iter().try_for_each(|component| {
-            self.print_header_component_indent(handle)?;
-
             match component {
-                StyleComponent::HeaderFilename => writeln!(
-                    handle,
-                    "{}{}{}",
-                    description
-                        .kind()
-                        .map(|kind| format!("{}: ", kind))
-                        .unwrap_or_else(|| "".into()),
-                    self.colors.header_value.paint(description.title()),
-                    mode
-                ),
-
+                StyleComponent::HeaderFilename => {
+                    let header_filename = format!(
+                        "{}{}{}",
+                        description
+                            .kind()
+                            .map(|kind| format!("{}: ", kind))
+                            .unwrap_or_else(|| "".into()),
+                        self.colors.header_value.paint(description.title()),
+                        mode
+                    );
+                    self.print_header_multiline_component(handle, &header_filename)
+                }
                 StyleComponent::HeaderFilesize => {
                     let bsize = metadata
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
                         .unwrap_or_else(|| "-".into());
-                    writeln!(handle, "Size: {}", self.colors.header_value.paint(bsize))
+                    let header_filesize = format!("Size: {}", self.colors.header_value.paint(bsize));
+                    self.print_header_multiline_component(handle, &header_filesize)
                 }
                 _ => Ok(()),
             }

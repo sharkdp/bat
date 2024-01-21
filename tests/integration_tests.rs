@@ -1382,6 +1382,61 @@ fn header_full_binary() {
 }
 
 #[test]
+fn header_narrow_terminal() {
+    bat()
+        .arg("--terminal-width=30")
+        .arg("--decorations=always")
+        .arg("this-file-path-is-really-long-and-would-have-broken-the-layout-of-the-header.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+───────┬──────────────────────
+       │ File: this-file-path-
+       │ is-really-long-and-wo
+       │ uld-have-broken-the-l
+       │ ayout-of-the-header.t
+       │ xt
+───────┼──────────────────────
+   1   │ The header is not bro
+       │ ken
+───────┴──────────────────────
+",
+        )
+        .stderr("");
+}
+
+#[test]
+fn header_very_narrow_terminal() {
+    bat()
+        .arg("--terminal-width=10")
+        .arg("--decorations=always")
+        .arg("this-file-path-is-really-long-and-would-have-broken-the-layout-of-the-header.txt")
+        .assert()
+        .success()
+        .stdout(
+            "\
+──────────
+File: this
+-file-path
+-is-really
+-long-and-
+would-have
+-broken-th
+e-layout-o
+f-the-head
+er.txt
+──────────
+The header
+ is not br
+oken
+──────────
+",
+        )
+        .stderr("");
+}
+
+#[test]
 #[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default() {
     bat()
