@@ -4,6 +4,7 @@
 
 ## Bugfixes
 
+- Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
 
 ## Other
