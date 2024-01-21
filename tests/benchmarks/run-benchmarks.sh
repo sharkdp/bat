@@ -9,6 +9,13 @@ if ! command -v hyperfine > /dev/null 2>&1; then
 	exit 1
 fi
 
+# Check that jq is installed.
+if ! command -v jq > /dev/null 2>&1; then
+	echo "'jq' does not seem to be installed."
+	echo "You can get it here: https://jqlang.github.io/jq/download/"
+	exit 1
+fi
+
 # Check that python3 is installed.
 if ! command -v python3 > /dev/null 2>&1; then
 	echo "'python3' does not seem to be installed."
@@ -95,10 +102,20 @@ hyperfine \
 cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 
+heading "Startup time without syntax highlighting"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config startup-time-src/small-CpuInfo-file.cpuinfo" \
+	--command-name "bat … small-CpuInfo-file.cpuinfo" \
+	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-without-syntax-highlighting.md" \
+    --export-json "$RESULT_DIR/startup-time-without-syntax-highlighting.json"
+cat "$RESULT_DIR/startup-time-without-syntax-highlighting.md" >> "$REPORT"
+
 heading "Startup time with syntax highlighting"
 hyperfine \
 	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-CpuInfo-file.cpuinfo" \
-	--command-name "bat … small-CpuInfo-file.cpuinfo" \
+	--command-name "bat … --color=always small-CpuInfo-file.cpuinfo" \
 	--warmup "$WARMUP_COUNT" \
     --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
@@ -115,6 +132,40 @@ hyperfine \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" \
     --export-json "$RESULT_DIR/startup-time-with-syntax-with-dependencies.json"
 cat "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" >> "$REPORT"
+
+
+heading "Startup time with indeterminant syntax"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/mystery-file" \
+	--shell none \
+	--command-name 'bat … mystery-file' \
+	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-with-indeterminant-syntax.md" \
+    --export-json "$RESULT_DIR/startup-time-with-indeterminant-syntax.json"
+cat "$RESULT_DIR/startup-time-with-indeterminant-syntax.md" >> "$REPORT"
+
+heading "Startup time with manually set syntax"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --color=always --language=Dockerfile startup-time-src/mystery-file" \
+	--shell none \
+	--command-name 'bat … --language=Dockerfile mystery-file' \
+	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-with-manually-set-syntax.md" \
+    --export-json "$RESULT_DIR/startup-time-with-manually-set-syntax.json"
+cat "$RESULT_DIR/startup-time-with-manually-set-syntax.md" >> "$REPORT"
+
+heading "Startup time with mapped syntax"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/Containerfile" \
+	--shell none \
+	--command-name 'bat … Containerfile' \
+	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-with-mapped-syntax.md" \
+    --export-json "$RESULT_DIR/startup-time-with-mapped-syntax.json"
+cat "$RESULT_DIR/startup-time-with-mapped-syntax.md" >> "$REPORT"
 
 
 heading "Plain-text speed"

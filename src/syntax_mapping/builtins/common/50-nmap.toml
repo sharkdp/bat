@@ -1,0 +1,3 @@
+[mappings]
+# See #2151, https://nmap.org/book/nse-language.html
+"Lua" = ["*.nse"]
