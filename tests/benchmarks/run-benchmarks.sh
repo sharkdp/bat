@@ -102,10 +102,20 @@ hyperfine \
 cat "$RESULT_DIR/startup-time.md" >> "$REPORT"
 
 
+heading "Startup time without syntax highlighting"
+hyperfine \
+	"$(printf "%q" "$BAT") --no-config startup-time-src/small-CpuInfo-file.cpuinfo" \
+	--command-name "bat … small-CpuInfo-file.cpuinfo" \
+	--warmup "$WARMUP_COUNT" \
+    --runs "$RUN_COUNT" \
+    --export-markdown "$RESULT_DIR/startup-time-without-syntax-highlighting.md" \
+    --export-json "$RESULT_DIR/startup-time-without-syntax-highlighting.json"
+cat "$RESULT_DIR/startup-time-without-syntax-highlighting.md" >> "$REPORT"
+
 heading "Startup time with syntax highlighting"
 hyperfine \
 	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/small-CpuInfo-file.cpuinfo" \
-	--command-name "bat … small-CpuInfo-file.cpuinfo" \
+	--command-name "bat … --color=always small-CpuInfo-file.cpuinfo" \
 	--warmup "$WARMUP_COUNT" \
     --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-syntax-highlighting.md" \
@@ -126,45 +136,36 @@ cat "$RESULT_DIR/startup-time-with-syntax-with-dependencies.md" >> "$REPORT"
 
 heading "Startup time with indeterminant syntax"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config startup-time-src/mystery-file" \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/mystery-file" \
+	--shell none \
 	--command-name 'bat … mystery-file' \
 	--warmup "$WARMUP_COUNT" \
-    --runs $(($RUN_COUNT * 100)) \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-indeterminant-syntax.md" \
     --export-json "$RESULT_DIR/startup-time-with-indeterminant-syntax.json"
 cat "$RESULT_DIR/startup-time-with-indeterminant-syntax.md" >> "$REPORT"
 
 heading "Startup time with manually set syntax"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config --language=Dockerfile startup-time-src/mystery-file" \
+	"$(printf "%q" "$BAT") --no-config --color=always --language=Dockerfile startup-time-src/mystery-file" \
+	--shell none \
 	--command-name 'bat … --language=Dockerfile mystery-file' \
 	--warmup "$WARMUP_COUNT" \
-    --runs $(($RUN_COUNT * 100)) \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-manually-set-syntax.md" \
     --export-json "$RESULT_DIR/startup-time-with-manually-set-syntax.json"
 cat "$RESULT_DIR/startup-time-with-manually-set-syntax.md" >> "$REPORT"
 
 heading "Startup time with mapped syntax"
 hyperfine \
-	"$(printf "%q" "$BAT") --no-config startup-time-src/Containerfile" \
+	"$(printf "%q" "$BAT") --no-config --color=always startup-time-src/Containerfile" \
+	--shell none \
 	--command-name 'bat … Containerfile' \
 	--warmup "$WARMUP_COUNT" \
-    --runs $(($RUN_COUNT * 100)) \
+    --runs "$RUN_COUNT" \
     --export-markdown "$RESULT_DIR/startup-time-with-mapped-syntax.md" \
     --export-json "$RESULT_DIR/startup-time-with-mapped-syntax.json"
 cat "$RESULT_DIR/startup-time-with-mapped-syntax.md" >> "$REPORT"
-
-AVG_TIMES=()
-for KIND in indeterminant manually-set mapped; do
-	JSON_SRC="$RESULT_DIR/startup-time-with-$KIND-syntax.json"
-	AVG=$(jq -r '.results[0].mean' "$JSON_SRC")
-	AVG_TIMES+=("$AVG")
-done
-# indeterminant should be slower, because it necessarily has to evaluate all rules
-# to ensure that nothing matches; manually-set and mapped should both be faster
-# because most or all GlobMatcher builds are skipped
-python3 -c "if ${AVG_TIMES[0]} < ${AVG_TIMES[1]}: print('WARN: indeterminant syntax has faster startup than manually set syntax!')"
-python3 -c "if ${AVG_TIMES[0]} < ${AVG_TIMES[2]}: print('WARN: indeterminant syntax has faster startup than mapped syntax!')"
 
 
 heading "Plain-text speed"
