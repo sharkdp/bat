@@ -287,6 +287,14 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
+    fn get_header_component_indent_length(&self) -> usize {
+        if self.config.style_components.grid() && self.panel_width > 0 {
+            self.panel_width + 2
+        } else {
+            self.panel_width
+        }
+    }
+
     fn print_header_component_indent(&mut self, handle: &mut OutputHandle) -> Result<()> {
         if self.config.style_components.grid() {
             write!(
@@ -317,12 +325,7 @@ impl<'a> InteractivePrinter<'a> {
         content: &str,
     ) -> Result<()> {
         let mut content = content;
-        let panel_width = if self.panel_width > 0 {
-            self.panel_width + 2
-        } else {
-            0
-        };
-        let content_width = self.config.term_width - panel_width;
+        let content_width = self.config.term_width - self.get_header_component_indent_length();
         while content.len() > content_width {
             let (content_line, remaining) = content.split_at(content_width);
             self.print_header_component_with_indent(handle, content_line)?;
