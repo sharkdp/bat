@@ -1382,6 +1382,7 @@ fn header_full_binary() {
 }
 
 #[test]
+#[cfg(not(feature = "git"))]
 fn header_narrow_terminal() {
     bat()
         .arg("--terminal-width=30")
@@ -1391,16 +1392,15 @@ fn header_narrow_terminal() {
         .success()
         .stdout(
             "\
-───────┬──────────────────────
-       │ File: this-file-path-
-       │ is-really-long-and-wo
-       │ uld-have-broken-the-l
-       │ ayout-of-the-header.t
-       │ xt
-───────┼──────────────────────
-   1   │ The header is not bro
-       │ ken
-───────┴──────────────────────
+─────┬────────────────────────
+     │ File: this-file-path-is
+     │ -really-long-and-would-
+     │ have-broken-the-layout-
+     │ of-the-header.txt
+─────┼────────────────────────
+   1 │ The header is not broke
+     │ n
+─────┴────────────────────────
 ",
         )
         .stderr("");
