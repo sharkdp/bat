@@ -302,14 +302,26 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
-    fn print_header_component_with_indent(&mut self, handle: &mut OutputHandle, content: &str) -> Result<()> {
+    fn print_header_component_with_indent(
+        &mut self,
+        handle: &mut OutputHandle,
+        content: &str,
+    ) -> Result<()> {
         self.print_header_component_indent(handle)?;
         writeln!(handle, "{}", content)
     }
 
-    fn print_header_multiline_component(&mut self, handle: &mut OutputHandle, content: &str) -> Result<()> {
+    fn print_header_multiline_component(
+        &mut self,
+        handle: &mut OutputHandle,
+        content: &str,
+    ) -> Result<()> {
         let mut content = content;
-        let panel_width = if self.panel_width > 0 { self.panel_width + 2 } else { 0 };
+        let panel_width = if self.panel_width > 0 {
+            self.panel_width + 2
+        } else {
+            0
+        };
         let content_width = self.config.term_width - panel_width;
         while content.len() > content_width {
             let (content_line, remaining) = content.split_at(content_width);
@@ -394,8 +406,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         }
 
-        header_components.iter().try_for_each(|component| {
-            match component {
+        header_components
+            .iter()
+            .try_for_each(|component| match component {
                 StyleComponent::HeaderFilename => {
                     let header_filename = format!(
                         "{}{}{}",
@@ -413,12 +426,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         .size
                         .map(|s| format!("{}", ByteSize(s)))
                         .unwrap_or_else(|| "-".into());
-                    let header_filesize = format!("Size: {}", self.colors.header_value.paint(bsize));
+                    let header_filesize =
+                        format!("Size: {}", self.colors.header_value.paint(bsize));
                     self.print_header_multiline_component(handle, &header_filesize)
                 }
                 _ => Ok(()),
-            }
-        })?;
+            })?;
 
         if self.config.style_components.grid() {
             if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
