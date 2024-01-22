@@ -3,7 +3,7 @@ use std::path::Path;
 use globset::{Candidate, GlobBuilder, GlobMatcher};
 
 use crate::error::Result;
-use builtin::BUILTIN_MAPPINGS;
+use builtin::OffloadIter;
 use ignored_suffixes::IgnoredSuffixes;
 
 mod builtin;
@@ -91,8 +91,7 @@ impl<'a> SyntaxMapping<'a> {
     pub fn builtin_mappings(
         &self,
     ) -> impl Iterator<Item = (&'static GlobMatcher, &'static MappingTarget<'static>)> {
-        BUILTIN_MAPPINGS
-            .iter()
+        OffloadIter::new()
             .filter_map(|(matcher, target)| matcher.as_ref().map(|glob| (glob, target)))
     }
 
