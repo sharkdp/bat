@@ -756,7 +756,6 @@ fn bat_error_to_stderr() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("[bat error]"));
-
 }
 
 #[test]
@@ -1206,8 +1205,7 @@ fn can_print_file_starting_with_cache() {
 }
 
 #[test]
-fn send_all_bat_error_to_stderr() {
-}
+fn send_all_bat_error_to_stderr() {}
 
 #[test]
 fn does_not_print_unwanted_file_named_cache() {
