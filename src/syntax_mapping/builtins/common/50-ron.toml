@@ -1,0 +1,3 @@
+# Rusty Object Notation #2427
+[mappings]
+"Rust" = ["*.ron"]
