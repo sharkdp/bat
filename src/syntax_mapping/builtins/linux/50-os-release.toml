@@ -1,0 +1,7 @@
+[mappings]
+"Bourne Again Shell (bash)" = [
+    "/etc/os-release",
+    "/usr/lib/os-release",
+    "/etc/initrd-release",
+    "/usr/lib/extension-release.d/extension-release.*",
+]
