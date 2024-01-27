@@ -8,9 +8,11 @@ use utils::command::bat_with_config;
 #[test]
 #[ignore]
 fn use_systemwide_config() {
-    bat_with_config().arg("test.txt").assert().success().stdout(
-        predicate::eq("dummy-pager-from-system-config\n").normalize(),
-    );
+    bat_with_config()
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("dummy-pager-from-system-config\n").normalize());
 }
 
 // This test is ignored, as it needs a special system wide config put into place
