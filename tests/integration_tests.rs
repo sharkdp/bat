@@ -653,7 +653,7 @@ fn pager_disable() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07hello world\n").normalize());
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -734,7 +734,7 @@ fn env_var_pager_value_bat() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07hello world\n").normalize());
+        .stdout(predicate::eq("hello world\n").normalize());
 }
 
 #[test]
@@ -772,7 +772,7 @@ fn pager_most_from_pager_env_var() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07hello world\n").normalize());
+            .stdout(predicate::eq("hello world\n").normalize());
     });
 }
 
@@ -818,7 +818,7 @@ fn pager_most_with_arg() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07hello world\n").normalize());
+            .stdout(predicate::eq("hello world\n").normalize());
     });
 }
 
@@ -833,7 +833,7 @@ fn pager_more() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07hello world\n").normalize());
+            .stdout(predicate::eq("hello world\n").normalize());
     });
 }
 
@@ -896,7 +896,7 @@ fn enable_pager_if_disable_paging_flag_comes_before_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize());
+        .stdout(predicate::eq("pager-output\n").normalize());
 }
 
 #[test]
@@ -908,7 +908,7 @@ fn enable_pager_if_pp_flag_comes_before_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize());
+        .stdout(predicate::eq("pager-output\n").normalize());
 }
 
 #[test]

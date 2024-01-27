@@ -21,6 +21,8 @@ Options:
           Specify the name to display for a file.
   -d, --diff
           Only show lines that have been added/removed/modified.
+      --set_terminal_title
+          Sets terminal title when using a pager
       --tabs <T>
           Set the tab width to T spaces.
       --wrap <mode>

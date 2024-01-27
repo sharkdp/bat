@@ -50,6 +50,9 @@ Options:
       --diff-context <N>
           Include N lines of context around added/removed/modified lines when using '--diff'.
 
+      --set_terminal_title
+          Sets terminal title to filenames when using a pager.
+
       --tabs <T>
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
