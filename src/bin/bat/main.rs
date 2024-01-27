@@ -251,7 +251,7 @@ fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
-    if config.paging_mode != PagingMode::Never {
+    if config.paging_mode != PagingMode::Never && config.set_terminal_title {
         set_terminal_title_to(get_new_terminal_title(&inputs));
     }
     controller.run(inputs, None)
