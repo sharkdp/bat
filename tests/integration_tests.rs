@@ -209,6 +209,19 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn list_themes() {
+    bat()
+        .arg("--color=always")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize())
+        .stdout(predicate::str::contains("Monokai Extended").normalize())
+        .stdout(predicate::str::contains("Output the square of a number.").normalize())
+        .stdout(predicate::str::contains(" (default)").normalize());
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
