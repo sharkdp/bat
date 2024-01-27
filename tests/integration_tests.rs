@@ -932,10 +932,11 @@ fn pager_set_terminal_title() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::str::contains("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize());
+            .stdout(
+                predicate::str::contains("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize(),
+            );
     });
 }
-
 
 #[test]
 #[serial]
@@ -2445,5 +2446,3 @@ fn highlighting_independant_from_map_syntax_case() {
         .stdout(expected)
         .stderr("");
 }
-
-
