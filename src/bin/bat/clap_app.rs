@@ -168,12 +168,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                             "Include N lines of context around added/removed/modified lines when using '--diff'.",
                         ),
                 )
-            .arg(
-                Arg::new("set_terminal_title")
-                    .long("set_terminal_title")
-                    .action(ArgAction::SetTrue)
-                    .help("Sets terminal title when using a pager")
-                    .long_help("Sets terminal title to filenames when using a pager."),)
     }
 
     app = app.arg(
