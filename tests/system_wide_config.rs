@@ -9,7 +9,7 @@ use utils::command::bat_with_config;
 #[ignore]
 fn use_systemwide_config() {
     bat_with_config().arg("test.txt").assert().success().stdout(
-        predicate::eq("\u{1b}]0;bat: test.txt\x07dummy-pager-from-system-config\n").normalize(),
+        predicate::eq("dummy-pager-from-system-config\n").normalize(),
     );
 }
 
@@ -23,5 +23,5 @@ fn config_overrides_system_config() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("\u{1b}]0;bat: test.txt\x07dummy-pager-from-config\n").normalize());
+        .stdout(predicate::eq("dummy-pager-from-config\n").normalize());
 }
