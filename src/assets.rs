@@ -441,7 +441,7 @@ mod tests {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
-                syntax_mapping: SyntaxMapping::builtin(),
+                syntax_mapping: SyntaxMapping::new(),
                 temp_dir: TempDir::new().expect("creation of temporary directory"),
             }
         }

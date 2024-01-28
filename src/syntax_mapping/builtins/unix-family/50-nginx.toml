@@ -1,0 +1,2 @@
+[mappings]
+"nginx" = ["/etc/nginx/**/*.conf", "/etc/nginx/sites-*/**/*"]
