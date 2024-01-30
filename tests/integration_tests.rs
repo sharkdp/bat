@@ -924,18 +924,14 @@ fn pager_failed_to_parse() {
 
 #[test]
 fn pager_set_terminal_title() {
-    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
-        bat()
-            .env("PAGER", mocked_pagers::from("echo pager-output"))
-            .arg("--paging=always")
-            .arg("--set_terminal_title")
-            .arg("test.txt")
-            .assert()
-            .success()
-            .stdout(
-                predicate::str::contains("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize(),
-            );
-    });
+    bat()
+        .env("PAGER", mocked_pagers::from("echo pager-output"))
+        .arg("--paging=always")
+        .arg("--set_terminal_title")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize());
 }
 
 #[test]
