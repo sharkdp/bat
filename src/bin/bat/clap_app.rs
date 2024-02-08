@@ -569,8 +569,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Show acknowledgements."),
         )
         .arg(
-            Arg::new("set_terminal_title")
-                .long("set_terminal_title")
+            Arg::new("set-terminal-title")
+                .long("set-terminal-title")
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Sets terminal title to filenames when using a pager."),

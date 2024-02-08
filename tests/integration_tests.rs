@@ -927,7 +927,7 @@ fn pager_set_terminal_title() {
     bat()
         .env("PAGER", mocked_pagers::from("echo pager-output"))
         .arg("--paging=always")
-        .arg("--set_terminal_title")
+        .arg("--set-terminal-title")
         .arg("test.txt")
         .assert()
         .success()

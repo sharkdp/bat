@@ -160,7 +160,7 @@ Options:
       --acknowledgements
           Show acknowledgements.
 
-      --set_terminal_title
+      --set-terminal-title
           Sets terminal title to filenames when using a pager.
 
   -h, --help
