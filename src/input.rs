@@ -13,7 +13,7 @@ use crate::error::*;
 /// This tells bat how to refer to the input.
 #[derive(Clone)]
 pub struct InputDescription {
-    pub name: String,
+    pub(crate) name: String,
 
     /// The input title.
     /// This replaces the name if provided.
@@ -94,7 +94,7 @@ pub(crate) struct InputMetadata {
 pub struct Input<'a> {
     pub(crate) kind: InputKind<'a>,
     pub(crate) metadata: InputMetadata,
-    pub description: InputDescription,
+    pub(crate) description: InputDescription,
 }
 
 pub(crate) enum OpenedInputKind {

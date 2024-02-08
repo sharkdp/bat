@@ -240,7 +240,7 @@ fn set_terminal_title_to(new_terminal_title: String) {
 fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
     let mut new_terminal_title = "bat: ".to_string();
     for (index, input) in inputs.iter().enumerate() {
-        new_terminal_title += &input.description.name.to_string();
+        new_terminal_title += input.description().title();
         if index < inputs.len() - 1 {
             new_terminal_title += ", ";
         }
