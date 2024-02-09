@@ -35,6 +35,7 @@
   - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
   - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
 - Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
+- Improve compile time by 20%, see #2815 (@dtolnay)
 
 # v0.24.0
 
