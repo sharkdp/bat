@@ -1,5 +1,5 @@
 #[cfg(feature = "git")]
-use crate::diff::LineChange;
+use crate::diff::{LineChange};
 use crate::printer::{Colors, InteractivePrinter};
 use nu_ansi_term::Style;
 
@@ -124,6 +124,63 @@ impl Decoration for LineChangesDecoration {
 
     fn width(&self) -> usize {
         self.cached_none.width
+    }
+}
+
+#[cfg(feature = "git")]
+pub(crate) struct LineBlamesDecoration {
+    color: Style,
+    max_length: usize,
+}
+
+#[cfg(feature = "git")]
+impl LineBlamesDecoration {
+    #[inline]
+    fn generate_cached(style: Style, text: &str, length: usize) -> DecorationText {
+        DecorationText {
+            text: style.paint(text).to_string(),
+            width: length,
+        }
+    }
+
+    pub(crate) fn new(colors: &Colors, max_length: usize) -> Self {
+        LineBlamesDecoration {
+            color: colors.git_blame,
+            max_length: max_length,
+        }
+    }
+}
+
+#[cfg(feature = "git")]
+impl Decoration for LineBlamesDecoration {
+    fn generate(
+        &self,
+        line_number: usize,
+        continuation: bool,
+        printer: &InteractivePrinter,
+    ) -> DecorationText {
+        if !continuation {
+            if let Some(ref changes) = printer.line_blames {
+                let result = changes.get(&(line_number as u32));
+                if let Some(result) = result {
+                    let length = self.width();
+                    if result.len() < length {
+                        return Self::generate_cached(
+                            self.color,
+                            format!("{: <width$}", result, width = length).as_str(),
+                            length,
+                        );
+                    }
+                    return Self::generate_cached(self.color, result, length);
+                }
+            }
+        }
+
+        Self::generate_cached(Style::default(), " ", self.width())
+    }
+
+    fn width(&self) -> usize {
+        self.max_length
     }
 }
 

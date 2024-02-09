@@ -289,6 +289,12 @@ impl App {
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
+            #[cfg(feature = "git")]
+            blame_format: self
+                .matches
+                .get_one::<String>("blame-format")
+                .map(String::from)
+                .unwrap_or_else(|| String::from("%h: %an <%ae>")),
         })
     }
 

@@ -1,9 +1,8 @@
 use std::io::{self, BufRead, Write};
-
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
-use crate::diff::{get_git_diff, LineChanges};
+use crate::diff::{get_git_diff, LineChanges, get_blame_file};
 use crate::error::*;
 use crate::input::{Input, InputReader, OpenedInput};
 #[cfg(feature = "lessopen")]
@@ -174,6 +173,30 @@ impl<'b> Controller<'b> {
             None
         };
 
+        #[cfg(feature = "git")]
+        let line_blames = if !self.config.loop_through && self.config.style_components.blame()
+        {
+            match opened_input.kind {
+                crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
+                    let blame_format = self.config.blame_format.clone();
+                    let blames = get_blame_file(path, &blame_format);
+
+                    // Skip files without Git modifications
+                    if blames
+                            .as_ref()
+                            .map(|changes| changes.is_empty())
+                            .unwrap_or(false)
+                    {
+                        return Ok(());
+                    }
+                    blames
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
+
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
             Box::new(SimplePrinter::new(self.config))
         } else {
@@ -183,6 +206,8 @@ impl<'b> Controller<'b> {
                 &mut opened_input,
                 #[cfg(feature = "git")]
                 &line_changes,
+                #[cfg(feature = "git")]
+                &line_blames,
             )?)
         };
 
@@ -222,11 +247,9 @@ impl<'b> Controller<'b> {
                                 .push(LineRange::new(line.saturating_sub(context), line + context));
                         }
                     }
-
                     LineRanges::from(line_ranges)
                 }
             };
-
             self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
         }
         printer.print_footer(writer, input)?;
@@ -268,7 +291,6 @@ impl<'b> Controller<'b> {
                             printer.print_snip(writer)?;
                         }
                     }
-
                     printer.print_line(false, writer, line_number, &line_buffer)?;
                 }
                 RangeCheckResult::AfterLastRange => {

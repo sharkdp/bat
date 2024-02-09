@@ -23,10 +23,11 @@ use unicode_width::UnicodeWidthChar;
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
 #[cfg(feature = "git")]
-use crate::decorations::LineChangesDecoration;
+use crate::decorations::{LineChangesDecoration, LineBlamesDecoration};
+#[cfg(feature = "git")]
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
-use crate::diff::LineChanges;
+use crate::diff::{LineChanges, LineBlames};
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
@@ -156,6 +157,8 @@ pub(crate) struct InteractivePrinter<'a> {
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
+    #[cfg(feature = "git")]
+    pub line_blames: &'a Option<LineBlames>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
 }
@@ -166,6 +169,7 @@ impl<'a> InteractivePrinter<'a> {
         assets: &'a HighlightingAssets,
         input: &mut OpenedInput,
         #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
+        #[cfg(feature = "git")] line_blames: &'a Option<LineBlames>,
     ) -> Result<Self> {
         let theme = assets.get_theme(&config.theme);
 
@@ -179,6 +183,17 @@ impl<'a> InteractivePrinter<'a> {
 
         // Create decorations.
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
+
+        #[cfg(feature = "git")]
+        {
+            if config.style_components.blame() {
+                let longest_key = line_blames
+                    .as_ref()
+                    .map(|blames| blames.values().map(|s| s.len()).max().unwrap_or(0))
+                    .unwrap_or(0);
+                decorations.push(Box::new(LineBlamesDecoration::new(&colors, longest_key)));
+            }
+        }
 
         if config.style_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
@@ -239,6 +254,8 @@ impl<'a> InteractivePrinter<'a> {
             ansi_style: AnsiStyle::new(),
             #[cfg(feature = "git")]
             line_changes,
+            #[cfg(feature = "git")]
+            line_blames,
             highlighter_from_set,
             background_color_highlight,
         })
@@ -762,6 +779,7 @@ pub struct Colors {
     pub git_added: Style,
     pub git_removed: Style,
     pub git_modified: Style,
+    pub git_blame: Style,
     pub line_number: Style,
 }
 
@@ -791,6 +809,7 @@ impl Colors {
             git_added: Green.normal(),
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
+            git_blame: Red.normal(),
             line_number: gutter_style,
         }
     }
