@@ -22,6 +22,8 @@
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
+- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
+- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 
 ## Syntaxes
 
