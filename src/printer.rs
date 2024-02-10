@@ -7,8 +7,6 @@ use nu_ansi_term::Style;
 
 use bytesize::ByteSize;
 
-use console::AnsiCodeIterator;
-
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
 use syntect::highlighting::Theme;
@@ -33,8 +31,22 @@ use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::vscreen::AnsiStyle;
+use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
+
+const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
+    raw_sequence: "\x1B[4m",
+    parameters: "4",
+    intermediates: "",
+    final_byte: "m",
+};
+
+const ANSI_UNDERLINE_DISABLE: EscapeSequence = EscapeSequence::CSI {
+    raw_sequence: "\x1B[24m",
+    parameters: "24",
+    intermediates: "",
+    final_byte: "m",
+};
 
 pub enum OutputHandle<'a> {
     IoWrite(&'a mut dyn io::Write),
@@ -554,7 +566,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[4m");
+            self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
         }
 
         let background_color = self
@@ -581,23 +593,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
-
                         // Regular text.
-                        (text, false) => {
-                            let text = &*self.preprocess(text, &mut cursor_total);
+                        EscapeSequence::Text(text) => {
+                            let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
 
                             write!(
                                 handle,
-                                "{}",
+                                "{}{}",
                                 as_terminal_escaped(
                                     style,
                                     &format!("{}{}", self.ansi_style, text_trimmed),
@@ -605,9 +611,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     colored_output,
                                     italics,
                                     background_color
-                                )
+                                ),
+                                self.ansi_style.to_reset_sequence(),
                             )?;
 
+                            // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
                                 if let Some(background_color) = background_color {
                                     let ansi_style = Style {
@@ -625,6 +633,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 write!(handle, "{}", &text[text_trimmed.len()..])?;
                             }
                         }
+
+                        // ANSI escape passthrough.
+                        _ => {
+                            write!(handle, "{}", chunk.raw())?;
+                            self.ansi_style.update(chunk);
+                        }
                     }
                 }
             }
@@ -634,17 +648,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         } else {
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
-
                         // Regular text.
-                        (text, false) => {
+                        EscapeSequence::Text(text) => {
                             let text = self.preprocess(
                                 text.trim_end_matches(|c| c == '\r' || c == '\n'),
                                 &mut cursor_total,
@@ -687,7 +695,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     // It wraps.
                                     write!(
                                         handle,
-                                        "{}\n{}",
+                                        "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
                                             &format!("{}{}", self.ansi_style, line_buf),
@@ -696,6 +704,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             self.config.use_italic_text,
                                             background_color
                                         ),
+                                        self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
                                     )?;
 
@@ -724,6 +733,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 )
                             )?;
                         }
+
+                        // ANSI escape passthrough.
+                        _ => {
+                            write!(handle, "{}", chunk.raw())?;
+                            self.ansi_style.update(chunk);
+                        }
                     }
                 }
             }
@@ -744,8 +759,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[24m");
-            write!(handle, "\x1B[24m")?;
+            write!(handle, "{}", ANSI_UNDERLINE_DISABLE.raw())?;
+            self.ansi_style.update(ANSI_UNDERLINE_DISABLE);
         }
 
         Ok(())

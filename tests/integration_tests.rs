@@ -1163,6 +1163,20 @@ fn bom_stripped_when_no_color_and_not_loop_through() {
         );
 }
 
+// Regression test for https://github.com/sharkdp/bat/issues/2541
+#[test]
+fn no_broken_osc_emit_with_line_wrapping() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("regression_tests/issue_2541.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 1));
+}
+
 #[test]
 fn can_print_file_named_cache() {
     bat_with_config()
@@ -1917,6 +1931,62 @@ fn ansi_passthrough_emit() {
             .stdout("\x1B[33m\x1B[33mColor\n\x1B[33mColor \x1B[m\nPlain\n")
             .stderr("");
     }
+}
+
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_sgr_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B[33mColor...............Also color.\n")
+        .assert()
+        .success()
+        .stdout("\x1B[33m\x1B[33mColor...............\n\x1B[33mAlso color.\n")
+        // FIXME:              ~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_hyperlink_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B]8;;http://example.com/\x1B\\Hyperlinks..........Wrap across lines.\n")
+        .assert()
+        .success()
+        .stdout("\x1B]8;;http://example.com/\x1B\\\x1B]8;;http://example.com/\x1B\\Hyperlinks..........\x1B]8;;\x1B\\\n\x1B]8;;http://example.com/\x1B\\Wrap across lines.\n")
+        // FIXME:                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
+// Ensure that multiple ANSI sequence SGR attributes are combined when emitted on wrapped lines.
+#[test]
+fn ansi_sgr_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[1mBold.........Also bold and color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[1m\x1B[33m\x1B[1mBold.........\n\x1B[33m\x1B[1mAlso bold and color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
 }
 
 #[test]
