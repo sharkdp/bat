@@ -20,6 +20,7 @@
 - Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
+- Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 
 ## Syntaxes
 
