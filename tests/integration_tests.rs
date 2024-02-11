@@ -923,18 +923,6 @@ fn pager_failed_to_parse() {
 }
 
 #[test]
-fn pager_set_terminal_title() {
-    bat()
-        .env("PAGER", mocked_pagers::from("echo pager-output"))
-        .arg("--paging=always")
-        .arg("--set-terminal-title")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("\u{1b}]0;bat: test.txt\x07pager-output\n").normalize());
-}
-
-#[test]
 #[serial]
 fn env_var_bat_paging() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
@@ -946,6 +934,18 @@ fn env_var_bat_paging() {
             .success()
             .stdout(predicate::str::contains("pager-output\n").normalize());
     });
+}
+
+#[test]
+fn basic_set_terminal_title() {
+    bat()
+        .arg("--paging=always")
+        .arg("--set-terminal-title")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stderr("");
 }
 
 #[test]
