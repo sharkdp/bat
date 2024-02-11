@@ -3,8 +3,7 @@ use super::*;
 use std::collections::BTreeMap;
 use std::convert::TryFrom;
 
-use serde::Deserialize;
-use serde::Serialize;
+use serde_derive::{Deserialize, Serialize};
 
 use once_cell::unsync::OnceCell;
 

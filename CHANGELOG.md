@@ -6,6 +6,7 @@
 
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+- Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
 
 ## Other
 
@@ -21,6 +22,7 @@
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Display which theme is the default one, see #2838 (@sblondon)
+- Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 
 ## Syntaxes
 
@@ -36,6 +38,7 @@
   - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
   - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
 - Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
+- Improve compile time by 20%, see #2815 (@dtolnay)
 
 # v0.24.0
 
