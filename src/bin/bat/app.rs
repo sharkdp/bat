@@ -121,7 +121,7 @@ impl App {
             _ => unreachable!("other values for --paging are not allowed"),
         };
 
-        let mut syntax_mapping = SyntaxMapping::builtin();
+        let mut syntax_mapping = SyntaxMapping::new();
 
         if let Some(values) = self.matches.get_many::<String>("ignored-suffix") {
             for suffix in values {
@@ -130,7 +130,9 @@ impl App {
         }
 
         if let Some(values) = self.matches.get_many::<String>("map-syntax") {
-            for from_to in values {
+            // later args take precedence over earlier ones, hence `.rev()`
+            // see: https://github.com/sharkdp/bat/pull/2755#discussion_r1456416875
+            for from_to in values.rev() {
                 let parts: Vec<_> = from_to.split(':').collect();
 
                 if parts.len() != 2 {

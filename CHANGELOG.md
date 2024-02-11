@@ -6,7 +6,9 @@
 
 ## Bugfixes
 
+- Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+- Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
 
 ## Other
 
@@ -17,18 +19,27 @@
 - Minor benchmark script improvements #2768 (@cyqsimon)
 - Update Arch Linux package URL in README files #2779 (@brunobell)
 - Update and improve `zsh` completion, see #2772 (@okapia)
+- More extensible syntax mapping mechanism #2755 (@cyqsimon)
 - Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
+- Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 
 ## Syntaxes
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
+- Upgrade JQ syntax, see #2820 (@dependabot[bot])
 
 ## Themes
 
 ## `bat` as a library
 
+- Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
+  - `SyntaxMapping::get_syntax_for` is now correctly public
+  - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
+  - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
+- Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
+- Improve compile time by 20%, see #2815 (@dtolnay)
 
 # v0.24.0
 

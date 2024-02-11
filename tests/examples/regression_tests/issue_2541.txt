@@ -1,0 +1,1 @@
+]8;;http://example.com\This is a link]8;;\n

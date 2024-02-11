@@ -1,11 +1,22 @@
 use std::path::Path;
 
-use crate::error::Result;
-use ignored_suffixes::IgnoredSuffixes;
-
 use globset::{Candidate, GlobBuilder, GlobMatcher};
 
+use crate::error::Result;
+use builtin::BUILTIN_MAPPINGS;
+use ignored_suffixes::IgnoredSuffixes;
+
+mod builtin;
 pub mod ignored_suffixes;
+
+fn make_glob_matcher(from: &str) -> Result<GlobMatcher> {
+    let matcher = GlobBuilder::new(from)
+        .case_insensitive(true)
+        .literal_separator(true)
+        .build()?
+        .compile_matcher();
+    Ok(matcher)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
@@ -29,204 +40,72 @@ pub enum MappingTarget<'a> {
 
 #[derive(Debug, Clone, Default)]
 pub struct SyntaxMapping<'a> {
-    mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
+    /// User-defined mappings at run time.
+    ///
+    /// Rules in front have precedence.
+    custom_mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
     pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 }
 
 impl<'a> SyntaxMapping<'a> {
-    pub fn empty() -> SyntaxMapping<'a> {
+    pub fn new() -> SyntaxMapping<'a> {
         Default::default()
     }
 
-    pub fn builtin() -> SyntaxMapping<'a> {
-        let mut mapping = Self::empty();
-        mapping.insert("*.h", MappingTarget::MapTo("C++")).unwrap();
-        mapping
-            .insert(".clang-format", MappingTarget::MapTo("YAML"))
-            .unwrap();
-        mapping.insert("*.fs", MappingTarget::MapTo("F#")).unwrap();
-        mapping
-            .insert("build", MappingTarget::MapToUnknown)
-            .unwrap();
-        mapping
-            .insert("**/.ssh/config", MappingTarget::MapTo("SSH Config"))
-            .unwrap();
-        mapping
-            .insert(
-                "**/bat/config",
-                MappingTarget::MapTo("Bourne Again Shell (bash)"),
-            )
-            .unwrap();
-        mapping
-            .insert(
-                "/etc/profile",
-                MappingTarget::MapTo("Bourne Again Shell (bash)"),
-            )
-            .unwrap();
-        mapping
-            .insert(
-                "os-release",
-                MappingTarget::MapTo("Bourne Again Shell (bash)"),
-            )
-            .unwrap();
-        mapping
-            .insert("*.pac", MappingTarget::MapTo("JavaScript (Babel)"))
-            .unwrap();
-        mapping
-            .insert("fish_history", MappingTarget::MapTo("YAML"))
-            .unwrap();
-
-        for glob in ["*.jsonl", "*.sarif"] {
-            mapping.insert(glob, MappingTarget::MapTo("JSON")).unwrap();
-        }
-
-        // See #2151, https://nmap.org/book/nse-language.html
-        mapping
-            .insert("*.nse", MappingTarget::MapTo("Lua"))
-            .unwrap();
-
-        // See #1008
-        mapping
-            .insert("rails", MappingTarget::MapToUnknown)
-            .unwrap();
-
-        mapping
-            .insert("Containerfile", MappingTarget::MapTo("Dockerfile"))
-            .unwrap();
-
-        mapping
-            .insert("*.ksh", MappingTarget::MapTo("Bourne Again Shell (bash)"))
-            .unwrap();
-
-        // Nginx and Apache syntax files both want to style all ".conf" files
-        // see #1131 and #1137
-        mapping
-            .insert("*.conf", MappingTarget::MapExtensionToUnknown)
-            .unwrap();
-
-        for glob in &[
-            "/etc/nginx/**/*.conf",
-            "/etc/nginx/sites-*/**/*",
-            "nginx.conf",
-            "mime.types",
-        ] {
-            mapping.insert(glob, MappingTarget::MapTo("nginx")).unwrap();
-        }
-
-        for glob in &[
-            "/etc/apache2/**/*.conf",
-            "/etc/apache2/sites-*/**/*",
-            "httpd.conf",
-        ] {
-            mapping
-                .insert(glob, MappingTarget::MapTo("Apache Conf"))
-                .unwrap();
-        }
-
-        for glob in &[
-            "**/systemd/**/*.conf",
-            "**/systemd/**/*.example",
-            "*.automount",
-            "*.device",
-            "*.dnssd",
-            "*.link",
-            "*.mount",
-            "*.netdev",
-            "*.network",
-            "*.nspawn",
-            "*.path",
-            "*.service",
-            "*.scope",
-            "*.slice",
-            "*.socket",
-            "*.swap",
-            "*.target",
-            "*.timer",
-        ] {
-            mapping.insert(glob, MappingTarget::MapTo("INI")).unwrap();
-        }
-
-        // unix mail spool
-        for glob in &["/var/spool/mail/*", "/var/mail/*"] {
-            mapping.insert(glob, MappingTarget::MapTo("Email")).unwrap()
-        }
-
-        // pacman hooks
-        mapping
-            .insert("*.hook", MappingTarget::MapTo("INI"))
-            .unwrap();
-
-        mapping
-            .insert("*.ron", MappingTarget::MapTo("Rust"))
-            .unwrap();
-
-        // Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
-        // See e.g. https://git-scm.com/docs/git-config#FILES
-        match (
-            std::env::var_os("XDG_CONFIG_HOME").filter(|val| !val.is_empty()),
-            std::env::var_os("HOME")
-                .filter(|val| !val.is_empty())
-                .map(|home| Path::new(&home).join(".config")),
-        ) {
-            (Some(xdg_config_home), Some(default_config_home))
-                if xdg_config_home == default_config_home => {
-                insert_git_config_global(&mut mapping, &xdg_config_home)
-            }
-            (Some(xdg_config_home), Some(default_config_home)) /* else guard */ => {
-                insert_git_config_global(&mut mapping, &xdg_config_home);
-                insert_git_config_global(&mut mapping, &default_config_home)
-            }
-            (Some(config_home), None) => insert_git_config_global(&mut mapping, &config_home),
-            (None, Some(config_home)) => insert_git_config_global(&mut mapping, &config_home),
-            (None, None) => (),
-        };
-
-        fn insert_git_config_global(mapping: &mut SyntaxMapping, config_home: impl AsRef<Path>) {
-            let git_config_path = config_home.as_ref().join("git");
-
-            mapping
-                .insert(
-                    &git_config_path.join("config").to_string_lossy(),
-                    MappingTarget::MapTo("Git Config"),
-                )
-                .ok();
-
-            mapping
-                .insert(
-                    &git_config_path.join("ignore").to_string_lossy(),
-                    MappingTarget::MapTo("Git Ignore"),
-                )
-                .ok();
-
-            mapping
-                .insert(
-                    &git_config_path.join("attributes").to_string_lossy(),
-                    MappingTarget::MapTo("Git Attributes"),
-                )
-                .ok();
-        }
-
-        mapping
-    }
-
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
-        let glob = GlobBuilder::new(from)
-            .case_insensitive(true)
-            .literal_separator(true)
-            .build()?;
-        self.mappings.push((glob.compile_matcher(), to));
+        let matcher = make_glob_matcher(from)?;
+        self.custom_mappings.push((matcher, to));
         Ok(())
     }
 
-    pub fn mappings(&self) -> &[(GlobMatcher, MappingTarget<'a>)] {
-        &self.mappings
+    /// Returns an iterator over all mappings. User-defined mappings are listed
+    /// before builtin mappings; mappings in front have higher precedence.
+    ///
+    /// Builtin mappings' `GlobMatcher`s are lazily compiled.
+    ///
+    /// Note that this function only returns mappings that are valid under the
+    /// current environment. For details see [`Self::builtin_mappings`].
+    pub fn all_mappings(&self) -> impl Iterator<Item = (&GlobMatcher, &MappingTarget<'a>)> {
+        self.custom_mappings()
+            .iter()
+            .map(|(matcher, target)| (matcher, target)) // as_ref
+            .chain(
+                // we need a map with a closure to "do" the lifetime variance
+                // see: https://discord.com/channels/273534239310479360/1120124565591425034/1170543402870382653
+                // also, clippy false positive:
+                // see: https://github.com/rust-lang/rust-clippy/issues/9280
+                #[allow(clippy::map_identity)]
+                self.builtin_mappings().map(|rule| rule),
+            )
     }
 
-    pub(crate) fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
+    /// Returns an iterator over all valid builtin mappings. Mappings in front
+    /// have higher precedence.
+    ///
+    /// The `GlabMatcher`s are lazily compiled.
+    ///
+    /// Mappings that are invalid under the current environment (i.e. rule
+    /// requires environment variable(s) that is unset, or the joined string
+    /// after variable(s) replacement is not a valid glob expression) are
+    /// ignored.
+    pub fn builtin_mappings(
+        &self,
+    ) -> impl Iterator<Item = (&'static GlobMatcher, &'static MappingTarget<'static>)> {
+        BUILTIN_MAPPINGS
+            .iter()
+            .filter_map(|(matcher, target)| matcher.as_ref().map(|glob| (glob, target)))
+    }
+
+    /// Returns all user-defined mappings.
+    pub fn custom_mappings(&self) -> &[(GlobMatcher, MappingTarget<'a>)] {
+        &self.custom_mappings
+    }
+
+    pub fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         // Try matching on the file name as-is.
         let candidate = Candidate::new(&path);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
-        for (ref glob, ref syntax) in self.mappings.iter().rev() {
+        for (glob, syntax) in self.all_mappings() {
             if glob.is_match_candidate(&candidate)
                 || candidate_filename
                     .as_ref()
@@ -252,9 +131,46 @@ impl<'a> SyntaxMapping<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
-    fn basic() {
-        let mut map = SyntaxMapping::empty();
+    fn builtin_mappings_work() {
+        let map = SyntaxMapping::new();
+
+        assert_eq!(
+            map.get_syntax_for("/path/to/build"),
+            Some(MappingTarget::MapToUnknown)
+        );
+    }
+
+    #[test]
+    fn all_fixed_builtin_mappings_can_compile() {
+        let map = SyntaxMapping::new();
+
+        // collect call evaluates all lazy closures
+        // fixed builtin mappings will panic if they fail to compile
+        let _mappings = map.builtin_mappings().collect::<Vec<_>>();
+    }
+
+    #[test]
+    fn builtin_mappings_matcher_only_compile_once() {
+        let map = SyntaxMapping::new();
+
+        let two_iterations: Vec<_> = (0..2)
+            .map(|_| {
+                // addresses of every matcher
+                map.builtin_mappings()
+                    .map(|(matcher, _)| matcher as *const _ as usize)
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+
+        // if the matchers are only compiled once, their address should remain the same
+        assert_eq!(two_iterations[0], two_iterations[1]);
+    }
+
+    #[test]
+    fn custom_mappings_work() {
+        let mut map = SyntaxMapping::new();
         map.insert("/path/to/Cargo.lock", MappingTarget::MapTo("TOML"))
             .ok();
         map.insert("/path/to/.ignore", MappingTarget::MapTo("Git Ignore"))
@@ -273,52 +189,32 @@ mod tests {
     }
 
     #[test]
-    fn user_can_override_builtin_mappings() {
-        let mut map = SyntaxMapping::builtin();
+    fn custom_mappings_override_builtin() {
+        let mut map = SyntaxMapping::new();
 
         assert_eq!(
-            map.get_syntax_for("/etc/profile"),
-            Some(MappingTarget::MapTo("Bourne Again Shell (bash)"))
+            map.get_syntax_for("/path/to/httpd.conf"),
+            Some(MappingTarget::MapTo("Apache Conf"))
         );
-        map.insert("/etc/profile", MappingTarget::MapTo("My Syntax"))
+        map.insert("httpd.conf", MappingTarget::MapTo("My Syntax"))
             .ok();
         assert_eq!(
-            map.get_syntax_for("/etc/profile"),
+            map.get_syntax_for("/path/to/httpd.conf"),
             Some(MappingTarget::MapTo("My Syntax"))
         );
     }
 
     #[test]
-    fn builtin_mappings() {
-        let map = SyntaxMapping::builtin();
+    fn custom_mappings_precedence() {
+        let mut map = SyntaxMapping::new();
 
+        map.insert("/path/to/foo", MappingTarget::MapTo("alpha"))
+            .ok();
+        map.insert("/path/to/foo", MappingTarget::MapTo("bravo"))
+            .ok();
         assert_eq!(
-            map.get_syntax_for("/path/to/build"),
-            Some(MappingTarget::MapToUnknown)
+            map.get_syntax_for("/path/to/foo"),
+            Some(MappingTarget::MapTo("alpha"))
         );
-    }
-
-    #[test]
-    /// verifies that SyntaxMapping::builtin() doesn't repeat `Glob`-based keys
-    fn no_duplicate_builtin_keys() {
-        let mappings = SyntaxMapping::builtin().mappings;
-        for i in 0..mappings.len() {
-            let tail = mappings[i + 1..].into_iter();
-            let (dupl, _): (Vec<_>, Vec<_>) =
-                tail.partition(|item| item.0.glob() == mappings[i].0.glob());
-
-            // emit repeats on failure
-            assert_eq!(
-                dupl.len(),
-                0,
-                "Glob pattern `{}` mapped to multiple: {:?}",
-                mappings[i].0.glob().glob(),
-                {
-                    let (_, mut dupl_targets): (Vec<GlobMatcher>, Vec<MappingTarget>) =
-                        dupl.into_iter().cloned().unzip();
-                    dupl_targets.push(mappings[i].1)
-                },
-            )
-        }
     }
 }

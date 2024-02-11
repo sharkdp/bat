@@ -78,9 +78,11 @@ fn run_cache_subcommand(
     Ok(())
 }
 
-fn get_syntax_mapping_to_paths<'a>(
-    mappings: &[(GlobMatcher, MappingTarget<'a>)],
-) -> HashMap<&'a str, Vec<String>> {
+fn get_syntax_mapping_to_paths<'r, 't, I>(mappings: I) -> HashMap<&'t str, Vec<String>>
+where
+    I: IntoIterator<Item = (&'r GlobMatcher, &'r MappingTarget<'t>)>,
+    't: 'r, // target text outlives rule
+{
     let mut map = HashMap::new();
     for mapping in mappings {
         if let (matcher, MappingTarget::MapTo(s)) = mapping {
@@ -123,7 +125,7 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
 
     languages.sort_by_key(|lang| lang.name.to_uppercase());
 
-    let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.mappings());
+    let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.all_mappings());
 
     for lang in &mut languages {
         if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
