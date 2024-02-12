@@ -890,4 +890,37 @@ mod tests {
         );
         assert_eq!(iter.next(), None);
     }
+
+    #[test]
+    fn test_sgr_attributes_do_not_leak_into_wrong_field() {
+        let mut attrs = crate::vscreen::Attributes::new();
+
+        // Bold, Dim, Italic, Underline, Foreground, Background
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[1;2;3;4;31;41m",
+            parameters: "1;2;3;4;31;41",
+            intermediates: "",
+            final_byte: "m",
+        });
+
+        assert_eq!(attrs.bold, "\x1B[1m");
+        assert_eq!(attrs.dim, "\x1B[2m");
+        assert_eq!(attrs.italic, "\x1B[3m");
+        assert_eq!(attrs.underline, "\x1B[4m");
+        assert_eq!(attrs.foreground, "\x1B[31m");
+        assert_eq!(attrs.background, "\x1B[41m");
+
+        // Bold, Bright Foreground, Bright Background
+        attrs.sgr_reset();
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[1;94;103m",
+            parameters: "1;94;103",
+            intermediates: "",
+            final_byte: "m",
+        });
+
+        assert_eq!(attrs.bold, "\x1B[1m");
+        assert_eq!(attrs.foreground, "\x1B[94m");
+        assert_eq!(attrs.background, "\x1B[103m");
+    }
 }
