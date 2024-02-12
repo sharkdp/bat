@@ -1,5 +1,5 @@
 #[cfg(feature = "git")]
-use crate::diff::{LineChange};
+use crate::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
 use nu_ansi_term::Style;
 

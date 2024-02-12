@@ -1,8 +1,7 @@
-use std::io::{self, BufRead, Write};
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
-use crate::diff::{get_git_diff, LineChanges, get_blame_file};
+use crate::diff::{get_blame_file, get_git_diff, LineChanges};
 use crate::error::*;
 use crate::input::{Input, InputReader, OpenedInput};
 #[cfg(feature = "lessopen")]
@@ -14,6 +13,7 @@ use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
+use std::io::{self, BufRead, Write};
 
 use clircle::{Clircle, Identifier};
 
@@ -174,8 +174,7 @@ impl<'b> Controller<'b> {
         };
 
         #[cfg(feature = "git")]
-        let line_blames = if !self.config.loop_through && self.config.style_components.blame()
-        {
+        let line_blames = if !self.config.loop_through && self.config.style_components.blame() {
             match opened_input.kind {
                 crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
                     let blame_format = self.config.blame_format.clone();
@@ -183,9 +182,9 @@ impl<'b> Controller<'b> {
 
                     // Skip files without Git modifications
                     if blames
-                            .as_ref()
-                            .map(|changes| changes.is_empty())
-                            .unwrap_or(false)
+                        .as_ref()
+                        .map(|changes| changes.is_empty())
+                        .unwrap_or(false)
                     {
                         return Ok(());
                     }

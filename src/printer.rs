@@ -23,11 +23,11 @@ use unicode_width::UnicodeWidthChar;
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
 #[cfg(feature = "git")]
-use crate::decorations::{LineChangesDecoration, LineBlamesDecoration};
-#[cfg(feature = "git")]
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
-use crate::diff::{LineChanges, LineBlames};
+use crate::decorations::{LineBlamesDecoration, LineChangesDecoration};
+#[cfg(feature = "git")]
+use crate::diff::{LineBlames, LineChanges};
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
