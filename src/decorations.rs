@@ -46,7 +46,7 @@ impl Decoration for LineNumberDecoration {
         _printer: &InteractivePrinter,
     ) -> DecorationText {
         if continuation {
-            if line_number > self.cached_wrap_invalid_at {
+            if line_number >= self.cached_wrap_invalid_at {
                 let new_width = self.cached_wrap.width + 1;
                 return DecorationText {
                     text: self.color.paint(" ".repeat(new_width)).to_string(),
