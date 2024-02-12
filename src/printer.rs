@@ -346,6 +346,31 @@ impl<'a> InteractivePrinter<'a> {
         self.print_header_component_with_indent(handle, content)
     }
 
+    fn highlight_regions_for_line<'b>(
+        &mut self,
+        line: &'b str,
+    ) -> Result<Vec<(syntect::highlighting::Style, &'b str)>> {
+        let highlighter_from_set = match self.highlighter_from_set {
+            Some(ref mut highlighter_from_set) => highlighter_from_set,
+            _ => return Ok(vec![(EMPTY_SYNTECT_STYLE, line)]),
+        };
+
+        // skip syntax highlighting on long lines
+        let too_long = line.len() > 1024 * 16;
+
+        let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+        let mut highlighted_line = highlighter_from_set
+            .highlighter
+            .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+        if too_long {
+            highlighted_line[0].1 = &line;
+        }
+
+        Ok(highlighted_line)
+    }
+
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
@@ -528,30 +553,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         };
 
-        let regions = {
-            let highlighter_from_set = match self.highlighter_from_set {
-                Some(ref mut highlighter_from_set) => highlighter_from_set,
-                _ => {
-                    return Ok(());
-                }
-            };
-
-            // skip syntax highlighting on long lines
-            let too_long = line.len() > 1024 * 16;
-
-            let for_highlighting: &str = if too_long { "\n" } else { &line };
-
-            let mut highlighted_line = highlighter_from_set
-                .highlighter
-                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
-
-            if too_long {
-                highlighted_line[0].1 = &line;
-            }
-
-            highlighted_line
-        };
-
+        let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
         }
