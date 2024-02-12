@@ -22,7 +22,6 @@ use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
-#[cfg(feature = "git")]
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
 use crate::decorations::{LineBlamesDecoration, LineChangesDecoration};
