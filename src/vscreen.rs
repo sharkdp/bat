@@ -169,10 +169,10 @@ impl Attributes {
         while let Some(p) = iter.next() {
             match p {
                 0 => self.sgr_reset(),
-                1 => self.bold = format!("\x1B[{}m", parameters),
-                2 => self.dim = format!("\x1B[{}m", parameters),
-                3 => self.italic = format!("\x1B[{}m", parameters),
-                4 => self.underline = format!("\x1B[{}m", parameters),
+                1 => self.bold = "\x1B[1m".to_owned(),
+                2 => self.dim = "\x1B[2m".to_owned(),
+                3 => self.italic = "\x1B[3m".to_owned(),
+                4 => self.underline = "\x1B[4m".to_owned(),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
                 22 => {
@@ -183,7 +183,7 @@ impl Attributes {
                 40..=49 => self.background = Self::parse_color(p, &mut iter),
                 58..=59 => self.underlined = Self::parse_color(p, &mut iter),
                 90..=97 => self.foreground = Self::parse_color(p, &mut iter),
-                100..=107 => self.foreground = Self::parse_color(p, &mut iter),
+                100..=107 => self.background = Self::parse_color(p, &mut iter),
                 _ => {
                     // Unsupported SGR sequence.
                     // Be compatible and pretend one just wasn't was provided.
