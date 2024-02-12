@@ -204,19 +204,19 @@ bat main.cpp | xclip
 `MANPAGER` environment variable:
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
 man 2 select
 ```
 (replace `bat` with `batcat` if you are on Debian or Ubuntu)
 
-It might also be necessary to set `MANROFFOPT="-c"` if you experience
-formatting problems.
-
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
-Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+> [!WARNING]  
+> This will [not work](https://github.com/sharkdp/bat/issues/1145) out of the box with Mandoc's `man` implementation.
+>
+> Please either use `batman`, or convert the shell script to a [shebang executable](https://en.wikipedia.org/wiki/Shebang_(Unix)) and point `MANPAGER` to that.
 
-Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145) with Mandocs `man` implementation.
+Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
