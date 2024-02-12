@@ -9,6 +9,7 @@ use bytesize::ByteSize;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
+use syntect::highlighting::FontStyle;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -46,6 +47,22 @@ const ANSI_UNDERLINE_DISABLE: EscapeSequence = EscapeSequence::CSI {
     parameters: "24",
     intermediates: "",
     final_byte: "m",
+};
+
+const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting::Style {
+    foreground: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    background: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    font_style: FontStyle::empty(),
 };
 
 pub enum OutputHandle<'a> {
@@ -222,11 +239,13 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter_from_set = if input
+        // Get the highlighter for the output.
+        let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
-        {
+            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+
+        let highlighter_from_set = if is_printing_binary || config.colored_output == false {
             None
         } else {
             // Determine the type of syntax for highlighting
