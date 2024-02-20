@@ -411,6 +411,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                             "snip",
                             #[cfg(feature = "git")]
                             "changes",
+                            #[cfg(feature = "git")]
+                            "blame",
                         ].contains(style)
                     });
 
@@ -422,7 +424,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip, blame).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -445,7 +447,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
                      * numbers: show line numbers in the side bar.\n  \
-                     * snip: draw separation lines between distinct line ranges.",
+                     * snip: draw separation lines between distinct line ranges.\n  \
+                     * blame: show Git blame information.",
                 ),
         )
         .arg(
@@ -517,6 +520,23 @@ pub fn build_app(interactive_output: bool) -> Command {
                     .overrides_with("lessopen")
                     .hide(true)
                     .help("Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)"),
+            )
+    }
+
+    #[cfg(feature = "git")]
+    {
+        app = app
+            .arg(
+                Arg::new("blame-format")
+                    .long("blame-format")
+                    .value_name("format")
+                    .help("Specify a format for the git-blame content.")
+                    .long_help(
+                        "Set the format for the Git blame output. The format string \
+                         can contain placeholders like '%h' (abbreviated commit hash), '%an' (author name), \
+                         '%H' (full commit hash), '%s' (summary), '%d' (ref names), '%m' (message), \
+                         '%ae' (author email), '%cn' (committer name), '%ce' (committer email)",
+                    ),
             )
     }
 

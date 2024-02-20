@@ -138,6 +138,7 @@ Options:
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.
+            * blame: show Git blame information.
 
   -r, --line-range <N:M>
           Only print the specified range of lines for each file. For example:
@@ -153,6 +154,12 @@ Options:
   -u, --unbuffered
           This option exists for POSIX-compliance reasons ('u' is for 'unbuffered'). The output is
           always unbuffered - this option is simply ignored.
+
+      --blame-format <format>
+          Set the format for the Git blame output. The format string can contain placeholders like
+          '%h' (abbreviated commit hash), '%an' (author name), '%H' (full commit hash), '%s'
+          (summary), '%d' (ref names), '%m' (message), '%ae' (author email), '%cn' (committer name),
+          '%ce' (committer email)
 
       --diagnostic
           Show diagnostic information for bug reports.

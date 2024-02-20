@@ -45,11 +45,13 @@ Options:
           Display all supported highlighting themes.
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
-          header, header-filename, header-filesize, grid, rule, numbers, snip).
+          header, header-filename, header-filesize, grid, rule, numbers, snip, blame).
   -r, --line-range <N:M>
           Only print the lines from N to M.
   -L, --list-languages
           Display all supported languages.
+      --blame-format <format>
+          Specify a format for the git-blame content.
   -h, --help
           Print help (see more with '--help')
   -V, --version
