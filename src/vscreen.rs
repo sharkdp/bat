@@ -24,9 +24,9 @@ impl AnsiStyle {
         }
     }
 
-    pub fn to_reset_sequence(&mut self) -> String {
-        match &mut self.attributes {
-            Some(a) => a.to_reset_sequence(),
+    pub fn to_reset_sequence(&self) -> String {
+        match self.attributes {
+            Some(ref a) => a.to_reset_sequence(),
             None => String::new(),
         }
     }
@@ -294,12 +294,14 @@ enum EscapeSequenceOffsets {
         start: usize,
         end: usize,
     },
+    #[allow(clippy::upper_case_acronyms)]
     NF {
         // https://en.wikipedia.org/wiki/ANSI_escape_code#nF_Escape_sequences
         start_sequence: usize,
         start: usize,
         end: usize,
     },
+    #[allow(clippy::upper_case_acronyms)]
     OSC {
         // https://en.wikipedia.org/wiki/ANSI_escape_code#OSC_(Operating_System_Command)_sequences
         start_sequence: usize,
@@ -307,6 +309,7 @@ enum EscapeSequenceOffsets {
         start_terminator: usize,
         end: usize,
     },
+    #[allow(clippy::upper_case_acronyms)]
     CSI {
         // https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_(Control_Sequence_Introducer)_sequences
         start_sequence: usize,
@@ -340,9 +343,7 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     /// Takes values from the iterator while the predicate returns true.
     /// If the predicate returns false, that value is left.
     fn chars_take_while(&mut self, pred: impl Fn(char) -> bool) -> Option<(usize, usize)> {
-        if self.chars.peek().is_none() {
-            return None;
-        }
+        self.chars.peek()?;
 
         let start = self.chars.peek().unwrap().0;
         let mut end: usize = start;
@@ -359,10 +360,8 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 
     fn next_text(&mut self) -> Option<EscapeSequenceOffsets> {
-        match self.chars_take_while(|c| c != '\x1B') {
-            None => None,
-            Some((start, end)) => Some(EscapeSequenceOffsets::Text { start, end }),
-        }
+        self.chars_take_while(|c| c != '\x1B')
+            .map(|(start, end)| EscapeSequenceOffsets::Text { start, end })
     }
 
     fn next_sequence(&mut self) -> Option<EscapeSequenceOffsets> {
@@ -444,7 +443,7 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
         Some(EscapeSequenceOffsets::OSC {
             start_sequence,
             start_command: osc_open_index + osc_open_char.len_utf8(),
-            start_terminator: start_terminator,
+            start_terminator,
             end: end_sequence,
         })
     }
@@ -502,9 +501,8 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
         }
 
         // Get the final byte.
-        match self.chars.next() {
-            Some((i, c)) => end = i + c.len_utf8(),
-            None => {}
+        if let Some((i, c)) = self.chars.next() {
+            end = i + c.len_utf8()
         }
 
         Some(EscapeSequenceOffsets::NF {
@@ -593,15 +591,18 @@ impl<'a> Iterator for EscapeSequenceIterator<'a> {
 pub enum EscapeSequence<'a> {
     Text(&'a str),
     Unknown(&'a str),
+    #[allow(clippy::upper_case_acronyms)]
     NF {
         raw_sequence: &'a str,
         nf_sequence: &'a str,
     },
+    #[allow(clippy::upper_case_acronyms)]
     OSC {
         raw_sequence: &'a str,
         command: &'a str,
         terminator: &'a str,
     },
+    #[allow(clippy::upper_case_acronyms)]
     CSI {
         raw_sequence: &'a str,
         parameters: &'a str,
