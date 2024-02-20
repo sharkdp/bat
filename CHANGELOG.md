@@ -30,6 +30,7 @@
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
+- Add syntax mapping for quadman quadlets #2866 (@cyqsimon)
 
 ## Themes
 
