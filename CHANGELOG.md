@@ -25,6 +25,7 @@
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 - Apply clippy fixes #2864 (@cyqsimon)
+- Faster startup by offloading glob matcher building to a worker thread #2868 (@cyqsimon)
 
 ## Syntaxes
 
