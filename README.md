@@ -162,6 +162,16 @@ batgrep needle src/
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
+You can also add an alias `batlog`` to read any logfile
+
+```bash
+alias batlog='bat --paging=never -l log'
+
+tail -f /var/log/pacman.log | batlog
+
+batlog /var/log/pacman.log
+```
+
 
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
