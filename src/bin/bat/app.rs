@@ -122,6 +122,10 @@ impl App {
         };
 
         let mut syntax_mapping = SyntaxMapping::new();
+        // start building glob matchers for builtin mappings immediately
+        // this is an appropriate approach because it's statistically likely that
+        // all the custom mappings need to be checked
+        syntax_mapping.start_offload_build_all();
 
         if let Some(values) = self.matches.get_many::<String>("ignored-suffix") {
             for suffix in values {
