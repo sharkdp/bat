@@ -937,6 +937,18 @@ fn env_var_bat_paging() {
 }
 
 #[test]
+fn basic_set_terminal_title() {
+    bat()
+        .arg("--paging=always")
+        .arg("--set-terminal-title")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stderr("");
+}
+
+#[test]
 fn diagnostic_sanity_check() {
     bat()
         .arg("--diagnostic")

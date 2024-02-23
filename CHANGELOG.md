@@ -2,11 +2,15 @@
 
 ## Features
 
+- Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
+
 ## Bugfixes
 
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
 - Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
+- Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
+- Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 
 ## Other
 
@@ -23,6 +27,7 @@
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 - Improve performance when color output disabled, see #2397 and #2857 (@eth-p)
+- Apply clippy fixes #2864 (@cyqsimon)
 
 ## Syntaxes
 
