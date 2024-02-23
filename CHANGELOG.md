@@ -27,12 +27,18 @@
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
 - Improve performance when color output disabled, see #2397 and #2857 (@eth-p)
+- Relax syntax mapping rule restrictions to allow brace expansion #2865 (@cyqsimon)
 - Apply clippy fixes #2864 (@cyqsimon)
 
 ## Syntaxes
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
+- Add syntax mapping for quadman quadlets #2866 (@cyqsimon)
+- Map containers .conf files to TOML syntax #2867 (@cyqsimon)
+- Associate `xsh` files with `xonsh` syntax that is Python, see #2840 (@anki-code).
+- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
+- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 
 ## Themes
 
