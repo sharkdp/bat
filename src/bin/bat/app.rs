@@ -289,6 +289,7 @@ impl App {
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
+            set_terminal_title: self.matches.get_flag("set-terminal-title"),
         })
     }
 
