@@ -22,7 +22,7 @@ impl BatTester {
     pub fn test_snapshot(&self, name: &str, style: &str) {
         let output = Command::new(&self.exe)
             .current_dir(self.temp_dir.path())
-            .args(&[
+            .args([
                 "sample.rs",
                 "--no-config",
                 "--paging=never",
