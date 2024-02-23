@@ -7,6 +7,8 @@
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
 - Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
+- Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
+- Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 
 ## Other
 
@@ -22,13 +24,14 @@
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
-- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
-- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
+- Apply clippy fixes #2864 (@cyqsimon)
 
 ## Syntaxes
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
+- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
+- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 
 ## Themes
 
