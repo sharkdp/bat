@@ -32,6 +32,8 @@
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
+- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
+- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 
 ## Themes
 
