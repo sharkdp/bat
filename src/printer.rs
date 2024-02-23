@@ -9,6 +9,7 @@ use bytesize::ByteSize;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
+use syntect::highlighting::FontStyle;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -46,6 +47,22 @@ const ANSI_UNDERLINE_DISABLE: EscapeSequence = EscapeSequence::CSI {
     parameters: "24",
     intermediates: "",
     final_byte: "m",
+};
+
+const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting::Style {
+    foreground: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    background: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    font_style: FontStyle::empty(),
 };
 
 pub enum OutputHandle<'a> {
@@ -222,11 +239,13 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter_from_set = if input
+        // Get the highlighter for the output.
+        let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
-        {
+            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+
+        let highlighter_from_set = if is_printing_binary || config.colored_output == false {
             None
         } else {
             // Determine the type of syntax for highlighting
@@ -344,6 +363,31 @@ impl<'a> InteractivePrinter<'a> {
             content = remaining;
         }
         self.print_header_component_with_indent(handle, content)
+    }
+
+    fn highlight_regions_for_line<'b>(
+        &mut self,
+        line: &'b str,
+    ) -> Result<Vec<(syntect::highlighting::Style, &'b str)>> {
+        let highlighter_from_set = match self.highlighter_from_set {
+            Some(ref mut highlighter_from_set) => highlighter_from_set,
+            _ => return Ok(vec![(EMPTY_SYNTECT_STYLE, line)]),
+        };
+
+        // skip syntax highlighting on long lines
+        let too_long = line.len() > 1024 * 16;
+
+        let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+        let mut highlighted_line = highlighter_from_set
+            .highlighter
+            .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+        if too_long {
+            highlighted_line[0].1 = &line;
+        }
+
+        Ok(highlighted_line)
     }
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
@@ -528,30 +572,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         };
 
-        let regions = {
-            let highlighter_from_set = match self.highlighter_from_set {
-                Some(ref mut highlighter_from_set) => highlighter_from_set,
-                _ => {
-                    return Ok(());
-                }
-            };
-
-            // skip syntax highlighting on long lines
-            let too_long = line.len() > 1024 * 16;
-
-            let for_highlighting: &str = if too_long { "\n" } else { &line };
-
-            let mut highlighted_line = highlighter_from_set
-                .highlighter
-                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
-
-            if too_long {
-                highlighted_line[0].1 = &line;
-            }
-
-            highlighted_line
-        };
-
+        let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
         }

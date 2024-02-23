@@ -26,6 +26,7 @@
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
 - Update git2 dependency to v0.18.2, see #2852 (@eth-p)
+- Improve performance when color output disabled, see #2397 and #2857 (@eth-p)
 - Relax syntax mapping rule restrictions to allow brace expansion #2865 (@cyqsimon)
 - Apply clippy fixes #2864 (@cyqsimon)
 
