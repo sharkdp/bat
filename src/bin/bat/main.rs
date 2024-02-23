@@ -30,6 +30,7 @@ use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
 use bat::{
+    assets::HighlightingAssets,
     config::Config,
     controller::Controller,
     error::*,
@@ -200,11 +201,18 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     let mut stdout = stdout.lock();
 
     if config.colored_output {
+        let default_theme = HighlightingAssets::default_theme();
         for theme in assets.themes() {
+            let default_theme_info = if default_theme == theme {
+                " (default)"
+            } else {
+                ""
+            };
             writeln!(
                 stdout,
-                "Theme: {}\n",
-                Style::new().bold().paint(theme.to_string())
+                "Theme: {}{}\n",
+                Style::new().bold().paint(theme.to_string()),
+                default_theme_info
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
