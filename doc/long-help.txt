@@ -123,6 +123,9 @@ Options:
           set a default style, add the '--style=".."' option to the configuration file or export the
           BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
           
+          By default, the following components are enabled:
+            changes, grid, header-filename, numbers, snip
+          
           Possible values:
           
             * default: enables recommended style components (default).
@@ -159,6 +162,9 @@ Options:
 
       --acknowledgements
           Show acknowledgements.
+
+      --set-terminal-title
+          Sets terminal title to filenames when using a pager.
 
   -h, --help
           Print help (see a summary with '-h')

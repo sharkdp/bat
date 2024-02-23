@@ -432,6 +432,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     By default, the following components are enabled:\n  \
+                        changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
                      * default: enables recommended style components (default).\n  \
                      * full: enables all available components.\n  \
@@ -567,6 +569,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show acknowledgements."),
+        )
+        .arg(
+            Arg::new("set-terminal-title")
+                .long("set-terminal-title")
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
+                .help("Sets terminal title to filenames when using a pager."),
         );
 
     // Check if the current directory contains a file name cache. Otherwise,
