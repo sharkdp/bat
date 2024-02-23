@@ -2,10 +2,15 @@
 
 ## Features
 
+- Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
+
 ## Bugfixes
 
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
+- Fix handling of inputs with OSC ANSI escape sequences, see #2541 and #2544 (@eth-p)
+- Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
+- Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 
 ## Other
 
@@ -20,12 +25,16 @@
 - Use proper Architecture for Debian packages built for musl, see #2811 (@Enselic)
 - Pull in fix for unsafe-libyaml security advisory, see #2812 (@dtolnay)
 - Update git-version dependency to use Syn v2, see #2816 (@dtolnay)
+- Update git2 dependency to v0.18.2, see #2852 (@eth-p)
+- Apply clippy fixes #2864 (@cyqsimon)
 
 ## Syntaxes
 
 - `cmd-help`: scope subcommands followed by other terms, and other misc improvements, see #2819 (@victor-gp)
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
 - Associate `xsh` files with `xonsh` syntax that is Python, see #2840 (@anki-code).
+- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
+- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 
 ## Themes
 
@@ -36,6 +45,7 @@
   - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
   - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
 - Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
+- Improve compile time by 20%, see #2815 (@dtolnay)
 
 # v0.24.0
 
