@@ -2,6 +2,8 @@
 
 ## Features
 
+- Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
+
 ## Bugfixes
 
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)

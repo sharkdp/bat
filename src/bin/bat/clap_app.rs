@@ -567,6 +567,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show acknowledgements."),
+        )
+        .arg(
+            Arg::new("set-terminal-title")
+                .long("set-terminal-title")
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
+                .help("Sets terminal title to filenames when using a pager."),
         );
 
     // Check if the current directory contains a file name cache. Otherwise,
