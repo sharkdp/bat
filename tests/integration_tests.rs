@@ -209,20 +209,20 @@ fn line_range_multiple() {
 }
 
 #[test]
-fn squeeze() {
+fn squeeze_blank() {
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .assert()
         .success()
         .stdout("line 1\n\nline 5\n\nline 20\nline 21\n\nline 24\n\nline 26\n\nline 30\n");
 }
 
 #[test]
-fn squeeze_line_numbers() {
+fn squeeze_blank_line_numbers() {
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .arg("--decorations=always")
         .arg("--number")
         .assert()
@@ -234,7 +234,7 @@ fn squeeze_line_numbers() {
 fn squeeze_limit() {
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .arg("--squeeze-limit=2")
         .assert()
         .success()
@@ -242,7 +242,7 @@ fn squeeze_limit() {
 
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .arg("--squeeze-limit=5")
         .assert()
         .success()
@@ -253,7 +253,7 @@ fn squeeze_limit() {
 fn squeeze_limit_line_numbers() {
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .arg("--squeeze-limit=2")
         .arg("--decorations=always")
         .arg("--number")
@@ -263,7 +263,7 @@ fn squeeze_limit_line_numbers() {
 
     bat()
         .arg("empty_lines.txt")
-        .arg("--squeeze")
+        .arg("--squeeze-blank")
         .arg("--squeeze-limit=5")
         .arg("--decorations=always")
         .arg("--number")

@@ -43,7 +43,7 @@ Options:
           Set the color theme for syntax highlighting.
       --list-themes
           Display all supported highlighting themes.
-  -s, --squeeze
+  -s, --squeeze-blank
           Squeeze consecutive empty lines.
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
