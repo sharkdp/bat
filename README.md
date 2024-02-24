@@ -486,10 +486,10 @@ even when truecolor support is available:
 
 - `ansi` looks decent on any terminal. It uses 3-bit colors: black, red, green,
   yellow, blue, magenta, cyan, and white.
-- `base16` is designed for [base16](https://github.com/chriskempson/base16) terminal themes. It uses
+- `base16` is designed for [base16](https://github.com/tinted-theming/home) terminal themes. It uses
   4-bit colors (3-bit colors plus bright variants) in accordance with the
-  [base16 styling guidelines](https://github.com/chriskempson/base16/blob/master/styling.md).
-- `base16-256` is designed for [base16-shell](https://github.com/chriskempson/base16-shell).
+  [base16 styling guidelines](https://github.com/tinted-theming/home/blob/main/styling.md).
+- `base16-256` is designed for [base16-shell](https://github.com/tinted-theming/base16-shell).
   It replaces certain bright colors with 8-bit colors from 16 to 21. **Do not** use this simply
   because you have a 256-color terminal but are not using base16-shell.
 

@@ -461,11 +461,11 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 - `ansi`는 어떤 터미널에서도 무난하게 보입니다. 이는 3비트 색상을 사용합니다:
   검정, 빨강, 녹색, 노랑, 파랑, 마젠타, 시안, 하양.
-- `base16`은 [base16](https://github.com/chriskempson/base16) 터미널 테마를 위해
+- `base16`은 [base16](https://github.com/tinted-theming/home) 터미널 테마를 위해
   디자인되었습니다.
-  이는 [base16 스타일 가이드라인](https://github.com/chriskempson/base16/blob/master/styling.md)에
+  이는 [base16 스타일 가이드라인](https://github.com/tinted-theming/home/blob/main/styling.md)에
   따라 4비트 색상(3비트 색상에 밝은 변형 추가)을 사용합니다.
-- `base16-256`는 [base16-shell](https://github.com/chriskempson/base16-shell)을
+- `base16-256`는 [base16-shell](https://github.com/tinted-theming/base16-shell)을
   위해 디자인되었습니다.
   이는 16부터 21의 일부 밝은 색상을 8비트 색상으로 대치합니다.
   단지 256-색상 터미널을 쓰지만 base16-shell을 쓰지 않는다고 해서 이것을
