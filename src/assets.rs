@@ -380,7 +380,7 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
     } else {
         bincode::deserialize_from(contents)
     }
-    .map_err(|_| format!("Could not parse {}", description).into())
+    .map_err(|_| format!("Could not parse {description}").into())
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(
@@ -396,7 +396,7 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
         )
     })?;
     asset_from_contents(&contents[..], description, compressed)
-        .map_err(|_| format!("Could not parse cached {}", description).into())
+        .map_err(|_| format!("Could not parse cached {description}").into())
 }
 
 #[cfg(target_os = "macos")]
@@ -466,7 +466,7 @@ mod tests {
             let file_path = self.temp_dir.path().join(file_name);
             {
                 let mut temp_file = File::create(&file_path).unwrap();
-                writeln!(temp_file, "{}", first_line).unwrap();
+                writeln!(temp_file, "{first_line}").unwrap();
             }
 
             let input = Input::ordinary_file(&file_path);
@@ -514,8 +514,7 @@ mod tests {
 
             if !consistent {
                 eprintln!(
-                    "Inconsistent syntax detection:\nFor File: {}\nFor Reader: {}",
-                    as_file, as_reader
+                    "Inconsistent syntax detection:\nFor File: {as_file}\nFor Reader: {as_reader}"
                 )
             }
 

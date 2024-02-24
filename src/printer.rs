@@ -160,7 +160,7 @@ impl<'a> Printer for SimplePrinter<'a> {
                     self.config.tab_width,
                     self.config.nonprintable_notation,
                 );
-                write!(handle, "{}", line)?;
+                write!(handle, "{line}")?;
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
@@ -333,7 +333,7 @@ impl<'a> InteractivePrinter<'a> {
             " ".repeat(self.panel_width - 1 - text_truncated.len())
         );
         if self.config.style_components.grid() {
-            format!("{} │ ", text_filled)
+            format!("{text_filled} │ ")
         } else {
             text_filled
         }
@@ -368,7 +368,7 @@ impl<'a> InteractivePrinter<'a> {
         content: &str,
     ) -> Result<()> {
         self.print_header_component_indent(handle)?;
-        writeln!(handle, "{}", content)
+        writeln!(handle, "{content}")
     }
 
     fn print_header_multiline_component(
@@ -494,7 +494,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         "{}{}{}",
                         description
                             .kind()
-                            .map(|kind| format!("{}: ", kind))
+                            .map(|kind| format!("{kind}: "))
                             .unwrap_or_else(|| "".into()),
                         self.colors.header_value.paint(description.title()),
                         mode
@@ -552,7 +552,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             "{}",
             self.colors
                 .grid
-                .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
+                .paint(format!("{panel}{snip_left}{title}{snip_right}"))
         )?;
 
         Ok(())

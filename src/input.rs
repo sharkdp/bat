@@ -197,7 +197,7 @@ impl<'a> Input<'a> {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
                     let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
-                        .map_err(|e| format!("Stdin: Error identifying file: {}", e))?;
+                        .map_err(|e| format!("Stdin: Error identifying file: {e}"))?;
                     if stdout.surely_conflicts_with(&input_identifier) {
                         return Err("IO circle detected. The input from stdin is also an output. Aborting to avoid infinite loop.".into());
                     }

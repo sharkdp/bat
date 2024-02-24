@@ -221,11 +221,11 @@ impl Attributes {
             8 => match parameters.next() {
                 Some(5) /* 256-color */ => format!("\x1B[{};5;{}m", color, join(";", 1, parameters)),
                 Some(2) /* 24-bit color */ => format!("\x1B[{};2;{}m", color, join(";", 3, parameters)),
-                Some(c) => format!("\x1B[{};{}m", color, c),
+                Some(c) => format!("\x1B[{color};{c}m"),
                 _ => "".to_owned(),
             },
             9 => "".to_owned(),
-            _ => format!("\x1B[{}m", color),
+            _ => format!("\x1B[{color}m"),
         }
     }
 
@@ -435,7 +435,7 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
                 }
 
                 Some((_, tc)) => {
-                    panic!("this should not be reached: char {:?}", tc)
+                    panic!("this should not be reached: char {tc:?}")
                 }
             }
         }
