@@ -13,6 +13,6 @@ fn main() {
 
     println!("Themes:");
     for theme in printer.themes() {
-        println!("- {}", theme);
+        println!("- {theme}");
     }
 }

@@ -430,7 +430,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                     });
 
                     if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{}'", invalid))
+                        Err(format!("Unknown style, '{invalid}'"))
                     } else {
                         Ok(val.to_owned())
                     }
