@@ -399,8 +399,8 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("squeeze-limit")
                 .long("squeeze-limit")
                 .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
-                .help("The maximum number of consecutive empty lines.")
                 .long_help("Set the maximum number of consecutive empty lines to be printed.")
+                .hide_short_help(true)
         )
         .arg(
             Arg::new("style")

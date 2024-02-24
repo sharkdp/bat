@@ -45,8 +45,6 @@ Options:
           Display all supported highlighting themes.
   -s, --squeeze
           Squeeze consecutive empty lines.
-      --squeeze-limit <squeeze-limit>
-          The maximum number of consecutive empty lines.
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
           header, header-filename, header-filesize, grid, rule, numbers, snip).
