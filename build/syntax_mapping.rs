@@ -10,7 +10,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::Deserialize;
+use serde_derive::Deserialize;
 use serde_with::DeserializeFromStr;
 use walkdir::WalkDir;
 
@@ -53,14 +53,16 @@ struct Matcher(Vec<MatcherSegment>);
 ///
 /// Note that this implementation is rather strict: it will greedily interpret
 /// every valid environment variable replacement as such, then immediately
-/// hard-error if it finds a '$', '{', or '}' anywhere in the remaining text
-/// segments.
+/// hard-error if it finds a '$' anywhere in the remaining text segments.
 ///
 /// The reason for this strictness is I currently cannot think of a valid reason
-/// why you would ever need '$', '{', or '}' as plaintext in a glob pattern.
-/// Therefore any such occurrences are likely human errors.
+/// why you would ever need '$' as plaintext in a glob pattern. Therefore any
+/// such occurrences are likely human errors.
 ///
 /// If we later discover some edge cases, it's okay to make it more permissive.
+///
+/// Revision history:
+/// - 2024-02-20: allow `{` and `}` (glob brace expansion)
 impl FromStr for Matcher {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -106,7 +108,7 @@ impl FromStr for Matcher {
         if non_empty_segments
             .iter()
             .filter_map(Seg::text)
-            .any(|t| t.contains(['$', '{', '}']))
+            .any(|t| t.contains('$'))
         {
             bail!(r#"Invalid matcher: "{s}""#);
         }

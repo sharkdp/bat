@@ -116,12 +116,21 @@ Options:
       --list-themes
           Display a list of supported themes for syntax highlighting.
 
+  -s, --squeeze-blank
+          Squeeze consecutive empty lines into a single empty line.
+
+      --squeeze-limit <squeeze-limit>
+          Set the maximum number of consecutive empty lines to be printed.
+
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
           to display in addition to the file contents. The argument is a comma-separated list of
           components to display (e.g. 'numbers,changes,grid') or a pre-defined style ('full'). To
           set a default style, add the '--style=".."' option to the configuration file or export the
           BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
+          
+          By default, the following components are enabled:
+            changes, grid, header-filename, numbers, snip
           
           Possible values:
           
@@ -159,6 +168,9 @@ Options:
 
       --acknowledgements
           Show acknowledgements.
+
+      --set-terminal-title
+          Sets terminal title to filenames when using a pager.
 
   -h, --help
           Print help (see a summary with '-h')

@@ -209,6 +209,70 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn squeeze_blank() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .assert()
+        .success()
+        .stdout("line 1\n\nline 5\n\nline 20\nline 21\n\nline 24\n\nline 26\n\nline 30\n");
+}
+
+#[test]
+fn squeeze_blank_line_numbers() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   5 line 5\n   6 \n  20 line 20\n  21 line 21\n  22 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  30 line 30\n");
+}
+
+#[test]
+fn squeeze_limit() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=2")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\nline 5\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\nline 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=5")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+}
+
+#[test]
+fn squeeze_limit_line_numbers() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=2")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   3 \n   5 line 5\n   6 \n   7 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  30 line 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=5")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   3 \n   4 \n   5 line 5\n   6 \n   7 \n   8 \n   9 \n  10 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  29 \n  30 line 30\n");
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
@@ -937,6 +1001,18 @@ fn env_var_bat_paging() {
 }
 
 #[test]
+fn basic_set_terminal_title() {
+    bat()
+        .arg("--paging=always")
+        .arg("--set-terminal-title")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stderr("");
+}
+
+#[test]
 fn diagnostic_sanity_check() {
     bat()
         .arg("--diagnostic")
@@ -1161,6 +1237,20 @@ fn bom_stripped_when_no_color_and_not_loop_through() {
 ─────┴──────────────────────────────────────────────────────────────────────────
 ",
         );
+}
+
+// Regression test for https://github.com/sharkdp/bat/issues/2541
+#[test]
+fn no_broken_osc_emit_with_line_wrapping() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("regression_tests/issue_2541.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 1));
 }
 
 #[test]
@@ -1917,6 +2007,62 @@ fn ansi_passthrough_emit() {
             .stdout("\x1B[33m\x1B[33mColor\n\x1B[33mColor \x1B[m\nPlain\n")
             .stderr("");
     }
+}
+
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_sgr_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B[33mColor...............Also color.\n")
+        .assert()
+        .success()
+        .stdout("\x1B[33m\x1B[33mColor...............\n\x1B[33mAlso color.\n")
+        // FIXME:              ~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
+// Ensure that a simple ANSI sequence passthrough is emitted properly on wrapped lines.
+// This also helps ensure that escape sequences are counted as part of the visible characters when wrapping.
+#[test]
+fn ansi_hyperlink_emitted_when_wrapped() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=20")
+        .arg("--wrap=character")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .write_stdin("\x1B]8;;http://example.com/\x1B\\Hyperlinks..........Wrap across lines.\n")
+        .assert()
+        .success()
+        .stdout("\x1B]8;;http://example.com/\x1B\\\x1B]8;;http://example.com/\x1B\\Hyperlinks..........\x1B]8;;\x1B\\\n\x1B]8;;http://example.com/\x1B\\Wrap across lines.\n")
+        // FIXME:                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ should not be emitted twice.
+        .stderr("");
+}
+
+// Ensure that multiple ANSI sequence SGR attributes are combined when emitted on wrapped lines.
+#[test]
+fn ansi_sgr_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[1mBold.........Also bold and color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[1m\x1B[33m\x1B[1mBold.........\n\x1B[33m\x1B[1mAlso bold and color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
 }
 
 #[test]

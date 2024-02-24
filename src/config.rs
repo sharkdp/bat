@@ -94,6 +94,12 @@ pub struct Config<'a> {
     // Whether or not to use $LESSOPEN if set
     #[cfg(feature = "lessopen")]
     pub use_lessopen: bool,
+
+    // Weather or not to set terminal title when using a pager
+    pub set_terminal_title: bool,
+
+    /// The maximum number of consecutive empty lines to display
+    pub squeeze_lines: Option<usize>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

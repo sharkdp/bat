@@ -7,10 +7,9 @@ use nu_ansi_term::Style;
 
 use bytesize::ByteSize;
 
-use console::AnsiCodeIterator;
-
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
+use syntect::highlighting::FontStyle;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -33,8 +32,38 @@ use crate::line_range::RangeCheckResult;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
-use crate::vscreen::AnsiStyle;
+use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
+
+const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
+    raw_sequence: "\x1B[4m",
+    parameters: "4",
+    intermediates: "",
+    final_byte: "m",
+};
+
+const ANSI_UNDERLINE_DISABLE: EscapeSequence = EscapeSequence::CSI {
+    raw_sequence: "\x1B[24m",
+    parameters: "24",
+    intermediates: "",
+    final_byte: "m",
+};
+
+const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting::Style {
+    foreground: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    background: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    font_style: FontStyle::empty(),
+};
 
 pub enum OutputHandle<'a> {
     IoWrite(&'a mut dyn io::Write),
@@ -72,11 +101,15 @@ pub(crate) trait Printer {
 
 pub struct SimplePrinter<'a> {
     config: &'a Config<'a>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> SimplePrinter<'a> {
     pub fn new(config: &'a Config) -> Self {
-        SimplePrinter { config }
+        SimplePrinter {
+            config,
+            consecutive_empty_lines: 0,
+        }
     }
 }
 
@@ -105,6 +138,21 @@ impl<'a> Printer for SimplePrinter<'a> {
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if String::from_utf8_lossy(line_buffer)
+                .trim_end_matches(|c| c == '\r' || c == '\n')
+                .is_empty()
+            {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
+        }
+
         if !out_of_range {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(
@@ -158,6 +206,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -210,11 +259,13 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter_from_set = if input
+        // Get the highlighter for the output.
+        let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
-        {
+            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+
+        let highlighter_from_set = if is_printing_binary || config.colored_output == false {
             None
         } else {
             // Determine the type of syntax for highlighting
@@ -241,6 +292,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            consecutive_empty_lines: 0,
         })
     }
 
@@ -332,6 +384,31 @@ impl<'a> InteractivePrinter<'a> {
             content = remaining;
         }
         self.print_header_component_with_indent(handle, content)
+    }
+
+    fn highlight_regions_for_line<'b>(
+        &mut self,
+        line: &'b str,
+    ) -> Result<Vec<(syntect::highlighting::Style, &'b str)>> {
+        let highlighter_from_set = match self.highlighter_from_set {
+            Some(ref mut highlighter_from_set) => highlighter_from_set,
+            _ => return Ok(vec![(EMPTY_SYNTECT_STYLE, line)]),
+        };
+
+        // skip syntax highlighting on long lines
+        let too_long = line.len() > 1024 * 16;
+
+        let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+        let mut highlighted_line = highlighter_from_set
+            .highlighter
+            .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+        if too_long {
+            highlighted_line[0].1 = &line;
+        }
+
+        Ok(highlighted_line)
     }
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
@@ -516,32 +593,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         };
 
-        let regions = {
-            let highlighter_from_set = match self.highlighter_from_set {
-                Some(ref mut highlighter_from_set) => highlighter_from_set,
-                _ => {
-                    return Ok(());
-                }
-            };
-
-            // skip syntax highlighting on long lines
-            let too_long = line.len() > 1024 * 16;
-
-            let for_highlighting: &str = if too_long { "\n" } else { &line };
-
-            let mut highlighted_line = highlighter_from_set
-                .highlighter
-                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
-
-            if too_long {
-                highlighted_line[0].1 = &line;
-            }
-
-            highlighted_line
-        };
-
+        let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
+        }
+
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
         }
 
         let mut cursor: usize = 0;
@@ -554,7 +620,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[4m");
+            self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
         }
 
         let background_color = self
@@ -581,23 +647,17 @@ impl<'a> Printer for InteractivePrinter<'a> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
-
                         // Regular text.
-                        (text, false) => {
-                            let text = &*self.preprocess(text, &mut cursor_total);
+                        EscapeSequence::Text(text) => {
+                            let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
 
                             write!(
                                 handle,
-                                "{}",
+                                "{}{}",
                                 as_terminal_escaped(
                                     style,
                                     &format!("{}{}", self.ansi_style, text_trimmed),
@@ -605,9 +665,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     colored_output,
                                     italics,
                                     background_color
-                                )
+                                ),
+                                self.ansi_style.to_reset_sequence(),
                             )?;
 
+                            // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
                                 if let Some(background_color) = background_color {
                                     let ansi_style = Style {
@@ -625,6 +687,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 write!(handle, "{}", &text[text_trimmed.len()..])?;
                             }
                         }
+
+                        // ANSI escape passthrough.
+                        _ => {
+                            write!(handle, "{}", chunk.raw())?;
+                            self.ansi_style.update(chunk);
+                        }
                     }
                 }
             }
@@ -634,17 +702,11 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         } else {
             for &(style, region) in &regions {
-                let ansi_iterator = AnsiCodeIterator::new(region);
+                let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
-                        // ANSI escape passthrough.
-                        (ansi, true) => {
-                            self.ansi_style.update(ansi);
-                            write!(handle, "{}", ansi)?;
-                        }
-
                         // Regular text.
-                        (text, false) => {
+                        EscapeSequence::Text(text) => {
                             let text = self.preprocess(
                                 text.trim_end_matches(|c| c == '\r' || c == '\n'),
                                 &mut cursor_total,
@@ -687,7 +749,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                     // It wraps.
                                     write!(
                                         handle,
-                                        "{}\n{}",
+                                        "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
                                             &format!("{}{}", self.ansi_style, line_buf),
@@ -696,6 +758,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                             self.config.use_italic_text,
                                             background_color
                                         ),
+                                        self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
                                     )?;
 
@@ -724,6 +787,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
                                 )
                             )?;
                         }
+
+                        // ANSI escape passthrough.
+                        _ => {
+                            write!(handle, "{}", chunk.raw())?;
+                            self.ansi_style.update(chunk);
+                        }
                     }
                 }
             }
@@ -744,8 +813,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         if highlight_this_line && self.config.theme == "ansi" {
-            self.ansi_style.update("^[24m");
-            write!(handle, "\x1B[24m")?;
+            write!(handle, "{}", ANSI_UNDERLINE_DISABLE.raw())?;
+            self.ansi_style.update(ANSI_UNDERLINE_DISABLE);
         }
 
         Ok(())
