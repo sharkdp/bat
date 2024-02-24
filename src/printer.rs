@@ -101,11 +101,15 @@ pub(crate) trait Printer {
 
 pub struct SimplePrinter<'a> {
     config: &'a Config<'a>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> SimplePrinter<'a> {
     pub fn new(config: &'a Config) -> Self {
-        SimplePrinter { config }
+        SimplePrinter {
+            config,
+            consecutive_empty_lines: 0,
+        }
     }
 }
 
@@ -134,6 +138,21 @@ impl<'a> Printer for SimplePrinter<'a> {
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if String::from_utf8_lossy(line_buffer)
+                .trim_end_matches(|c| c == '\r' || c == '\n')
+                .is_empty()
+            {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
+        }
+
         if !out_of_range {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(
@@ -187,6 +206,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -272,6 +292,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            consecutive_empty_lines: 0,
         })
     }
 
@@ -575,6 +596,18 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
+        }
+
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
         }
 
         let mut cursor: usize = 0;

@@ -97,6 +97,9 @@ pub struct Config<'a> {
 
     // Weather or not to set terminal title when using a pager
     pub set_terminal_title: bool,
+
+    /// The maximum number of consecutive empty lines to display
+    pub squeeze_lines: Option<usize>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

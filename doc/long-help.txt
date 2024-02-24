@@ -116,6 +116,12 @@ Options:
       --list-themes
           Display a list of supported themes for syntax highlighting.
 
+  -s, --squeeze-blank
+          Squeeze consecutive empty lines into a single empty line.
+
+      --squeeze-limit <squeeze-limit>
+          Set the maximum number of consecutive empty lines to be printed.
+
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
           to display in addition to the file contents. The argument is a comma-separated list of

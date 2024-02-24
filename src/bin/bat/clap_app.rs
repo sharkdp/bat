@@ -388,6 +388,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
+            Arg::new("squeeze-blank")
+                .long("squeeze-blank")
+                .short('s')
+                .action(ArgAction::SetTrue)
+                .help("Squeeze consecutive empty lines.")
+                .long_help("Squeeze consecutive empty lines into a single empty line.")
+        )
+        .arg(
+            Arg::new("squeeze-limit")
+                .long("squeeze-limit")
+                .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
+                .long_help("Set the maximum number of consecutive empty lines to be printed.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .value_name("components")
