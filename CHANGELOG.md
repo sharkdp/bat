@@ -32,7 +32,7 @@
 - Improve performance when color output disabled, see #2397 and #2857 (@eth-p)
 - Relax syntax mapping rule restrictions to allow brace expansion #2865 (@cyqsimon)
 - Apply clippy fixes #2864 (@cyqsimon)
-- Updated alias for cat (to preserve the default behavior) and added batlog #2870 (nazdridoy)
+- Updated alias for cat (to preserve the default behavior) and added batlog #2870 (@nazdridoy)
 
 ## Syntaxes
 
