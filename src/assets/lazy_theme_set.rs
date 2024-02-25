@@ -88,7 +88,7 @@ impl TryFrom<ThemeSet> for LazyThemeSet {
             let lazy_theme = LazyTheme {
                 serialized: crate::assets::build_assets::asset_to_contents(
                     &theme,
-                    &format!("theme {}", name),
+                    &format!("theme {name}"),
                     COMPRESS_LAZY_THEMES,
                 )?,
                 deserialized: OnceCell::new(),

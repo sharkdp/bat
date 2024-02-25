@@ -93,7 +93,7 @@ fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
     if !missing_contexts.is_empty() {
         println!("Some referenced contexts could not be found!");
         for context in missing_contexts {
-            println!("- {}", context);
+            println!("- {context}");
         }
     }
 }
@@ -152,7 +152,7 @@ pub(crate) fn asset_to_contents<T: serde::Serialize>(
     } else {
         bincode::serialize_into(&mut contents, asset)
     }
-    .map_err(|_| format!("Could not serialize {}", description))?;
+    .map_err(|_| format!("Could not serialize {description}"))?;
     Ok(contents)
 }
 

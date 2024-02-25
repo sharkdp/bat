@@ -222,16 +222,37 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
         )?;
     } else {
         for theme in assets.themes() {
-            writeln!(stdout, "{}", theme)?;
+            writeln!(stdout, "{theme}")?;
         }
     }
 
     Ok(())
 }
 
+fn set_terminal_title_to(new_terminal_title: String) {
+    let osc_command_for_setting_terminal_title = "\x1b]0;";
+    let osc_end_command = "\x07";
+    print!("{osc_command_for_setting_terminal_title}{new_terminal_title}{osc_end_command}");
+    io::stdout().flush().unwrap();
+}
+
+fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
+    let mut new_terminal_title = "bat: ".to_string();
+    for (index, input) in inputs.iter().enumerate() {
+        new_terminal_title += input.description().title();
+        if index < inputs.len() - 1 {
+            new_terminal_title += ", ";
+        }
+    }
+    new_terminal_title
+}
+
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
+    if config.paging_mode != PagingMode::Never && config.set_terminal_title {
+        set_terminal_title_to(get_new_terminal_title(&inputs));
+    }
     controller.run(inputs, None)
 }
 

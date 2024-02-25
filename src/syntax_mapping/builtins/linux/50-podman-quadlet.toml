@@ -1,0 +1,7 @@
+# see `man quadlet`
+[mappings]
+"INI" = [
+    "**/containers/systemd/*.{container,volume,network,kube,image}",
+    "**/containers/systemd/users/*.{container,volume,network,kube,image}",
+    "**/containers/systemd/users/*/*.{container,volume,network,kube,image}",
+]

@@ -9,6 +9,7 @@ use bytesize::ByteSize;
 
 use syntect::easy::HighlightLines;
 use syntect::highlighting::Color;
+use syntect::highlighting::FontStyle;
 use syntect::highlighting::Theme;
 use syntect::parsing::SyntaxSet;
 
@@ -48,6 +49,22 @@ const ANSI_UNDERLINE_DISABLE: EscapeSequence = EscapeSequence::CSI {
     final_byte: "m",
 };
 
+const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting::Style {
+    foreground: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    background: Color {
+        r: 127,
+        g: 127,
+        b: 127,
+        a: 255,
+    },
+    font_style: FontStyle::empty(),
+};
+
 pub enum OutputHandle<'a> {
     IoWrite(&'a mut dyn io::Write),
     FmtWrite(&'a mut dyn fmt::Write),
@@ -84,11 +101,15 @@ pub(crate) trait Printer {
 
 pub struct SimplePrinter<'a> {
     config: &'a Config<'a>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> SimplePrinter<'a> {
     pub fn new(config: &'a Config) -> Self {
-        SimplePrinter { config }
+        SimplePrinter {
+            config,
+            consecutive_empty_lines: 0,
+        }
     }
 }
 
@@ -117,6 +138,21 @@ impl<'a> Printer for SimplePrinter<'a> {
         _line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if String::from_utf8_lossy(line_buffer)
+                .trim_end_matches(|c| c == '\r' || c == '\n')
+                .is_empty()
+            {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
+        }
+
         if !out_of_range {
             if self.config.show_nonprintable {
                 let line = replace_nonprintable(
@@ -124,7 +160,7 @@ impl<'a> Printer for SimplePrinter<'a> {
                     self.config.tab_width,
                     self.config.nonprintable_notation,
                 );
-                write!(handle, "{}", line)?;
+                write!(handle, "{line}")?;
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
@@ -170,6 +206,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    consecutive_empty_lines: usize,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -222,11 +259,13 @@ impl<'a> InteractivePrinter<'a> {
             panel_width = 0;
         }
 
-        let highlighter_from_set = if input
+        // Get the highlighter for the output.
+        let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable)
-        {
+            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+
+        let highlighter_from_set = if is_printing_binary || config.colored_output == false {
             None
         } else {
             // Determine the type of syntax for highlighting
@@ -253,6 +292,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            consecutive_empty_lines: 0,
         })
     }
 
@@ -293,7 +333,7 @@ impl<'a> InteractivePrinter<'a> {
             " ".repeat(self.panel_width - 1 - text_truncated.len())
         );
         if self.config.style_components.grid() {
-            format!("{} │ ", text_filled)
+            format!("{text_filled} │ ")
         } else {
             text_filled
         }
@@ -328,7 +368,7 @@ impl<'a> InteractivePrinter<'a> {
         content: &str,
     ) -> Result<()> {
         self.print_header_component_indent(handle)?;
-        writeln!(handle, "{}", content)
+        writeln!(handle, "{content}")
     }
 
     fn print_header_multiline_component(
@@ -344,6 +384,31 @@ impl<'a> InteractivePrinter<'a> {
             content = remaining;
         }
         self.print_header_component_with_indent(handle, content)
+    }
+
+    fn highlight_regions_for_line<'b>(
+        &mut self,
+        line: &'b str,
+    ) -> Result<Vec<(syntect::highlighting::Style, &'b str)>> {
+        let highlighter_from_set = match self.highlighter_from_set {
+            Some(ref mut highlighter_from_set) => highlighter_from_set,
+            _ => return Ok(vec![(EMPTY_SYNTECT_STYLE, line)]),
+        };
+
+        // skip syntax highlighting on long lines
+        let too_long = line.len() > 1024 * 16;
+
+        let for_highlighting: &str = if too_long { "\n" } else { &line };
+
+        let mut highlighted_line = highlighter_from_set
+            .highlighter
+            .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
+
+        if too_long {
+            highlighted_line[0].1 = &line;
+        }
+
+        Ok(highlighted_line)
     }
 
     fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
@@ -429,7 +494,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         "{}{}{}",
                         description
                             .kind()
-                            .map(|kind| format!("{}: ", kind))
+                            .map(|kind| format!("{kind}: "))
                             .unwrap_or_else(|| "".into()),
                         self.colors.header_value.paint(description.title()),
                         mode
@@ -487,7 +552,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             "{}",
             self.colors
                 .grid
-                .paint(format!("{}{}{}{}", panel, snip_left, title, snip_right))
+                .paint(format!("{panel}{snip_left}{title}{snip_right}"))
         )?;
 
         Ok(())
@@ -528,32 +593,21 @@ impl<'a> Printer for InteractivePrinter<'a> {
             }
         };
 
-        let regions = {
-            let highlighter_from_set = match self.highlighter_from_set {
-                Some(ref mut highlighter_from_set) => highlighter_from_set,
-                _ => {
-                    return Ok(());
-                }
-            };
-
-            // skip syntax highlighting on long lines
-            let too_long = line.len() > 1024 * 16;
-
-            let for_highlighting: &str = if too_long { "\n" } else { &line };
-
-            let mut highlighted_line = highlighter_from_set
-                .highlighter
-                .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
-
-            if too_long {
-                highlighted_line[0].1 = &line;
-            }
-
-            highlighted_line
-        };
-
+        let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
+        }
+
+        // Skip squeezed lines.
+        if let Some(squeeze_limit) = self.config.squeeze_lines {
+            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+                self.consecutive_empty_lines += 1;
+                if self.consecutive_empty_lines > squeeze_limit {
+                    return Ok(());
+                }
+            } else {
+                self.consecutive_empty_lines = 0;
+            }
         }
 
         let mut cursor: usize = 0;

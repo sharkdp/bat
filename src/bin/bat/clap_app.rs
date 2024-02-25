@@ -388,6 +388,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help("Display a list of supported themes for syntax highlighting."),
         )
         .arg(
+            Arg::new("squeeze-blank")
+                .long("squeeze-blank")
+                .short('s')
+                .action(ArgAction::SetTrue)
+                .help("Squeeze consecutive empty lines.")
+                .long_help("Squeeze consecutive empty lines into a single empty line.")
+        )
+        .arg(
+            Arg::new("squeeze-limit")
+                .long("squeeze-limit")
+                .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
+                .long_help("Set the maximum number of consecutive empty lines to be printed.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .value_name("components")
@@ -415,7 +430,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                     });
 
                     if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{}'", invalid))
+                        Err(format!("Unknown style, '{invalid}'"))
                     } else {
                         Ok(val.to_owned())
                     }
@@ -432,6 +447,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     By default, the following components are enabled:\n  \
+                        changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
                      * default: enables recommended style components (default).\n  \
                      * full: enables all available components.\n  \
@@ -567,6 +584,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Show acknowledgements."),
+        )
+        .arg(
+            Arg::new("set-terminal-title")
+                .long("set-terminal-title")
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
+                .help("Sets terminal title to filenames when using a pager."),
         );
 
     // Check if the current directory contains a file name cache. Otherwise,

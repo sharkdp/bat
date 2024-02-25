@@ -209,6 +209,70 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn squeeze_blank() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .assert()
+        .success()
+        .stdout("line 1\n\nline 5\n\nline 20\nline 21\n\nline 24\n\nline 26\n\nline 30\n");
+}
+
+#[test]
+fn squeeze_blank_line_numbers() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   5 line 5\n   6 \n  20 line 20\n  21 line 21\n  22 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  30 line 30\n");
+}
+
+#[test]
+fn squeeze_limit() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=2")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\nline 5\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\nline 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=5")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+}
+
+#[test]
+fn squeeze_limit_line_numbers() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=2")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   3 \n   5 line 5\n   6 \n   7 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  30 line 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=5")
+        .arg("--decorations=always")
+        .arg("--number")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 \n   3 \n   4 \n   5 line 5\n   6 \n   7 \n   8 \n   9 \n  10 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  29 \n  30 line 30\n");
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
@@ -934,6 +998,18 @@ fn env_var_bat_paging() {
             .success()
             .stdout(predicate::str::contains("pager-output\n").normalize());
     });
+}
+
+#[test]
+fn basic_set_terminal_title() {
+    bat()
+        .arg("--paging=always")
+        .arg("--set-terminal-title")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stderr("");
 }
 
 #[test]
@@ -1682,7 +1758,7 @@ fn do_not_panic_regression_tests() {
     ] {
         bat()
             .arg("--color=always")
-            .arg(&format!("regression_tests/{}", filename))
+            .arg(&format!("regression_tests/{filename}"))
             .assert()
             .success();
     }
@@ -1695,7 +1771,7 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
     let cmd_for_file = bat()
         .arg("--color=always")
         .arg("--map-syntax=*.js:Markdown")
-        .arg(&format!("--file-name={}", file))
+        .arg(&format!("--file-name={file}"))
         .arg("--style=plain")
         .arg(file)
         .assert()
@@ -1705,7 +1781,7 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
         .arg("--color=always")
         .arg("--map-syntax=*.js:Markdown")
         .arg("--style=plain")
-        .arg(&format!("--file-name={}", file))
+        .arg(&format!("--file-name={file}"))
         .pipe_stdin(Path::new(EXAMPLES_DIR).join(file))
         .unwrap()
         .assert()
@@ -1724,7 +1800,7 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
     bat()
         .arg("--color=always")
         .arg("--map-syntax=*.invalid-syntax:InvalidSyntax")
-        .arg(&format!("--file-name={}", file))
+        .arg(&format!("--file-name={file}"))
         .arg("--style=plain")
         .arg(file)
         .assert()
@@ -1922,7 +1998,7 @@ fn ansi_passthrough_emit() {
             .arg("--paging=never")
             .arg("--color=never")
             .arg("--terminal-width=80")
-            .arg(format!("--wrap={}", wrapping))
+            .arg(format!("--wrap={wrapping}"))
             .arg("--decorations=always")
             .arg("--style=plain")
             .write_stdin("\x1B[33mColor\nColor \x1B[m\nPlain\n")
