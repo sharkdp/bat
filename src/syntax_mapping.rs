@@ -89,6 +89,11 @@ impl<'a> SyntaxMapping<'a> {
                 Lazy::force(matcher);
             }
         });
+        // Note that this thread is not joined upon completion because there's
+        // no shared resources that need synchronization to be safely dropped.
+        // If we later add code into this thread that requires interesting
+        // resources (e.g. IO), it would be a good idea to store the handle
+        // and join it on drop.
     }
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
