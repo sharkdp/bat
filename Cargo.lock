@@ -130,7 +130,7 @@ dependencies = [
  "grep-cli",
  "home",
  "indexmap",
- "itertools",
+ "itertools 0.12.1",
  "nix",
  "nu-ansi-term",
  "once_cell",
@@ -666,6 +666,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -925,7 +934,7 @@ dependencies = [
  "anstyle",
  "difflib",
  "float-cmp",
- "itertools",
+ "itertools 0.11.0",
  "normalize-line-endings",
  "predicates-core",
  "regex",
