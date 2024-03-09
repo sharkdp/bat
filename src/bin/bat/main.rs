@@ -288,6 +288,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "NO_COLOR",
             "PAGER",
             "SHELL",
+            "TERM",
             "XDG_CACHE_HOME",
             "XDG_CONFIG_HOME",
         ]))
