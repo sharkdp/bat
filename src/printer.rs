@@ -21,6 +21,7 @@ use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
+use crate::decorations;
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
@@ -99,6 +100,13 @@ pub(crate) trait Printer {
         handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
+    ) -> Result<()>;
+
+    fn print_replaced_line(
+        &mut self,
+        handle: &mut OutputHandle,
+        line_number: usize,
+        replace_text: &str,
     ) -> Result<()>;
 }
 
@@ -180,6 +188,15 @@ impl<'a> Printer for SimplePrinter<'a> {
                 }
             };
         }
+        Ok(())
+    }
+
+    fn print_replaced_line(
+        &mut self,
+        _handle: &mut OutputHandle,
+        _line_number: usize,
+        _replace_text: &str,
+    ) -> Result<()> {
         Ok(())
     }
 }
@@ -863,6 +880,54 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         Ok(())
     }
+
+    fn print_replaced_line(
+        &mut self,
+        handle: &mut OutputHandle,
+        line_number: usize,
+        replace_text: &str,
+    ) -> Result<()> {
+        if let Some(ContentType::BINARY) | None = self.content_type {
+            return Ok(());
+        }
+
+        if self.panel_width > 0 {
+            let mut width = 0;
+            if self.config.style_components.numbers() {
+                let line_numbers = decorations::LineNumberDecoration::new(&self.colors);
+
+                width += line_numbers.width();
+                write!(
+                    handle,
+                    "{} ",
+                    line_numbers.generate(line_number, false, self).text
+                )?;
+            }
+
+            if self.config.style_components.grid() {
+                write!(handle, "{}", self.colors.error_indicator.paint("!"))?;
+            }
+
+            if width < self.panel_width {
+                write!(
+                    handle,
+                    "{}",
+                    " ".repeat(self.panel_width.saturating_sub(width).saturating_sub(2))
+                )?;
+            }
+
+            if self.config.style_components.grid() {
+                let grid = decorations::GridBorderDecoration::new(&self.colors);
+                write!(handle, "{} ", grid.generate(line_number, false, self).text)?;
+            }
+        }
+        writeln!(
+            handle,
+            "{}",
+            self.colors.error_indicator.paint(replace_text)
+        )?;
+        Ok(())
+    }
 }
 
 const DEFAULT_GUTTER_COLOR: u8 = 238;
@@ -876,6 +941,7 @@ pub struct Colors {
     pub git_removed: Style,
     pub git_modified: Style,
     pub line_number: Style,
+    pub error_indicator: Style,
 }
 
 impl Colors {
@@ -905,6 +971,7 @@ impl Colors {
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
             line_number: gutter_style,
+            error_indicator: Red.normal(),
         }
     }
 }

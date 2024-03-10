@@ -28,6 +28,8 @@ pub enum Error {
     InvalidPagerValueBat,
     #[error("{0}")]
     Msg(String),
+    #[error("Line {0} is too long")]
+    LineTooLong(usize),
     #[cfg(feature = "lessopen")]
     #[error(transparent)]
     VarError(#[from] ::std::env::VarError),
