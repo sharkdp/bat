@@ -398,7 +398,7 @@ impl<'a> InteractivePrinter<'a> {
         // skip syntax highlighting on long lines
         let too_long = line.len() > 1024 * 16;
 
-        let for_highlighting: &str = if too_long { "\n" } else { &line };
+        let for_highlighting: &str = if too_long { "\n" } else { line };
 
         let mut highlighted_line = highlighter_from_set
             .highlighter
