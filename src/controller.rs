@@ -5,7 +5,7 @@ use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
 use crate::diff::{get_git_diff, LineChanges};
 use crate::error::*;
-use crate::input::{Input, InputReader, OpenedInput};
+use crate::input::{Input, InputReader, OpenedInput, ReaderError};
 #[cfg(feature = "lessopen")]
 use crate::lessopen::LessOpenPreprocessor;
 #[cfg(feature = "git")]
@@ -249,13 +249,30 @@ impl<'b> Controller<'b> {
 
         let style_snip = self.config.style_components.snip();
 
-        while reader.read_line(&mut line_buffer)? {
+        loop {
+            let mut soft_limit_hit = false;
+            let read_result = reader.read_line(&mut line_buffer);
+            match read_result {
+                Ok(res) => {
+                    if !res {
+                        break;
+                    }
+                }
+                Err(err) => match err {
+                    ReaderError::IoError(io_err) => return Err(io_err.into()),
+                    ReaderError::SoftLimitHit => soft_limit_hit = true,
+                    ReaderError::HardLimitHit => return Err(Error::LineTooLong(line_number)),
+                },
+            };
+
             match line_ranges.check(line_number) {
                 RangeCheckResult::BeforeOrBetweenRanges => {
-                    // Call the printer in case we need to call the syntax highlighter
-                    // for this line. However, set `out_of_range` to `true`.
-                    printer.print_line(true, writer, line_number, &line_buffer)?;
-                    mid_range = false;
+                    if !soft_limit_hit {
+                        // Call the printer in case we need to call the syntax highlighter
+                        // for this line. However, set `out_of_range` to `true`.
+                        printer.print_line(true, writer, line_number, &line_buffer)?;
+                        mid_range = false;
+                    }
                 }
 
                 RangeCheckResult::InRange => {
@@ -268,8 +285,11 @@ impl<'b> Controller<'b> {
                             printer.print_snip(writer)?;
                         }
                     }
-
-                    printer.print_line(false, writer, line_number, &line_buffer)?;
+                    if soft_limit_hit {
+                        printer.print_replaced_line(writer, line_number, "<line too long>")?;
+                    } else {
+                        printer.print_line(false, writer, line_number, &line_buffer)?;
+                    }
                 }
                 RangeCheckResult::AfterLastRange => {
                     break;

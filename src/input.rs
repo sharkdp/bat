@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
+use once_cell::unsync::Lazy;
 
 use crate::error::*;
 
@@ -250,34 +251,50 @@ impl<'a> Input<'a> {
 }
 
 pub(crate) struct InputReader<'a> {
-    inner: Box<dyn BufRead + 'a>,
+    inner: LimitBuf<'a>,
     pub(crate) first_line: Vec<u8>,
     pub(crate) content_type: Option<ContentType>,
 }
 
 impl<'a> InputReader<'a> {
-    pub(crate) fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
-        let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line).ok();
+    pub(crate) fn new<R: Read + 'a>(reader: R) -> InputReader<'a> {
+        let mut input_reader = InputReader {
+            inner: LimitBuf::new(reader, 4096, 1024 * 64, 1024 * 256),
+            first_line: vec![],
+            content_type: None,
+        };
 
-        let content_type = if first_line.is_empty() {
+        input_reader.read_first_line().ok();
+
+        let content_type = if input_reader.first_line.is_empty() {
             None
         } else {
-            Some(content_inspector::inspect(&first_line[..]))
+            Some(content_inspector::inspect(&input_reader.first_line[..]))
         };
 
         if content_type == Some(ContentType::UTF_16LE) {
-            reader.read_until(0x00, &mut first_line).ok();
+            input_reader
+                .inner
+                .read_until(0x00, &mut input_reader.first_line)
+                .ok();
         }
 
-        InputReader {
-            inner: Box::new(reader),
-            first_line,
-            content_type,
-        }
+        input_reader.content_type = content_type;
+        input_reader
     }
 
-    pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+    fn read_first_line(&mut self) -> std::result::Result<bool, ReaderError> {
+        let mut first_line = vec![];
+        let res = self.read_line(&mut first_line);
+        self.first_line = first_line;
+
+        res
+    }
+
+    pub(crate) fn read_line(
+        &mut self,
+        buf: &mut Vec<u8>,
+    ) -> std::result::Result<bool, ReaderError> {
         if !self.first_line.is_empty() {
             buf.append(&mut self.first_line);
             return Ok(true);
@@ -290,6 +307,95 @@ impl<'a> InputReader<'a> {
         }
 
         Ok(res)
+    }
+}
+
+struct LimitBuf<'a> {
+    reader: Box<dyn Read + 'a>,
+    inner: Box<[u8]>,
+    start: usize,
+    len: usize,
+    soft_limit: usize,
+    hard_limit: usize,
+}
+
+impl<'a> LimitBuf<'a> {
+    pub fn new<R: Read + 'a>(
+        reader: R,
+        buf_size: usize,
+        soft_limit: usize,
+        hard_limit: usize,
+    ) -> Self {
+        Self {
+            reader: Box::new(reader),
+            inner: vec![0u8; buf_size].into_boxed_slice(),
+            start: 0,
+            len: 0,
+            soft_limit,
+            hard_limit,
+        }
+    }
+
+    pub fn read_until(
+        &mut self,
+        byte: u8,
+        buf: &mut Vec<u8>,
+    ) -> std::result::Result<usize, ReaderError> {
+        let mut end_byte_reached = false;
+        let mut total_bytes = 0;
+
+        let mut soft_limit_hit = false;
+        let capacity = self.inner.len();
+        let mut drop_buf = Lazy::new(|| Vec::with_capacity(capacity));
+
+        while !end_byte_reached {
+            if self.len == 0 {
+                let bytes = self.reader.read(&mut self.inner)?;
+                self.len += bytes;
+                self.start = 0;
+
+                if bytes == 0 {
+                    break;
+                }
+            }
+
+            let bytes = (&self.inner[self.start..self.start + self.len])
+                .read_until(byte, if soft_limit_hit { &mut drop_buf } else { buf })?;
+            end_byte_reached = self.inner[self.start + bytes - 1] == byte;
+
+            if soft_limit_hit {
+                drop_buf.clear();
+            }
+
+            self.len -= bytes;
+            self.start += bytes;
+            total_bytes += bytes;
+
+            if total_bytes > self.hard_limit {
+                return Err(ReaderError::HardLimitHit);
+            } else if total_bytes > self.soft_limit {
+                soft_limit_hit = true;
+            }
+        }
+
+        if soft_limit_hit {
+            Err(ReaderError::SoftLimitHit)
+        } else {
+            Ok(total_bytes)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum ReaderError {
+    SoftLimitHit,
+    HardLimitHit,
+    IoError(io::Error),
+}
+
+impl From<io::Error> for ReaderError {
+    fn from(value: io::Error) -> Self {
+        Self::IoError(value)
     }
 }
 
