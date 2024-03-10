@@ -77,6 +77,12 @@ impl LineRange {
             ),
         }
     }
+    pub fn get_lower(&self) -> usize {
+        self.lower
+    }
+    pub fn get_upper(&self) -> usize {
+        self.upper
+    }
 
     pub(crate) fn is_inside(&self, line: usize) -> bool {
         line >= self.lower && line <= self.upper

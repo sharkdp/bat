@@ -121,6 +121,16 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("context-around-highlight")
+                .long("context-around-highlight")
+                .action(ArgAction::Set)
+                .requires("highlight-line")
+                .conflicts_with("line-range")
+                .conflicts_with("diff")
+                .value_name("N")
+                .help("Show lines from highlighted line - N through highlighted line + N"),
+        )
+        .arg(
             Arg::new("file-name")
                 .long("file-name")
                 .action(ArgAction::Append)
