@@ -265,7 +265,7 @@ impl<'a> InteractivePrinter<'a> {
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
 
-        let highlighter_from_set = if is_printing_binary || config.colored_output == false {
+        let highlighter_from_set = if is_printing_binary || !config.colored_output {
             None
         } else {
             // Determine the type of syntax for highlighting
