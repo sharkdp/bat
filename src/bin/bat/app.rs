@@ -8,9 +8,7 @@ use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
-use bat::theme::{
-    theme, ColorScheme, ColorSchemeDetector, DetectColorScheme, ThemeOptions, ThemeRequest,
-};
+use bat::theme::{theme, DetectColorScheme, ThemeOptions, ThemeRequest};
 use clap::ArgMatches;
 
 use console::Term;
@@ -245,7 +243,7 @@ impl App {
                         4
                     },
                 ),
-            theme: theme(self.theme_options(), &TerminalColorSchemeDetector),
+            theme: theme(self.theme_options()),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -411,44 +409,5 @@ impl App {
             theme_light,
             detect_color_scheme,
         }
-    }
-}
-
-struct TerminalColorSchemeDetector;
-
-#[cfg(feature = "detect-color-scheme")]
-impl ColorSchemeDetector for TerminalColorSchemeDetector {
-    fn should_detect(&self) -> bool {
-        // Querying the terminal for its colors via OSC 10 / OSC 11 requires "exclusive" access
-        // since we read/write from the terminal and enable/disable raw mode.
-        // This causes race conditions with pagers such as less when they are attached to the
-        // same terminal as us.
-        //
-        // This is usually only an issue when the output is manually piped to a pager.
-        // For example: `bat Cargo.toml | less`.
-        // Otherwise, if we start the pager ourselves, then there's no race condition
-        // since the pager is started *after* the color is detected.
-        std::io::stdout().is_terminal()
-    }
-
-    fn detect(&self) -> Option<ColorScheme> {
-        use terminal_colorsaurus::{color_scheme, QueryOptions};
-        let colors = color_scheme(QueryOptions::default()).ok()?;
-        if colors.is_light_on_dark() {
-            Some(ColorScheme::Dark)
-        } else {
-            Some(ColorScheme::Light)
-        }
-    }
-}
-
-#[cfg(not(feature = "detect-color-scheme"))]
-impl ColorSchemeDetector for TerminalColorSchemeDetector {
-    fn should_detect(&self) -> bool {
-        false
-    }
-
-    fn detect(&self) -> Option<ColorScheme> {
-        None
     }
 }
