@@ -32,7 +32,9 @@ fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option
     should_detect.then(|| detector.detect()).flatten()
 }
 
-pub(crate) const fn default_theme(color_scheme: ColorScheme) -> &'static str {
+/// The default theme, suitable for the given color scheme.
+/// Use [`theme`], if you want to automatically detect the color scheme from the terminal.
+pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
     match color_scheme {
         ColorScheme::Dark => "Monokai Extended",
         ColorScheme::Light => "Monokai Extended Light",
