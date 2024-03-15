@@ -329,6 +329,18 @@ impl App {
             } else {
                 None
             },
+            soft_line_limit: self
+                .matches
+                .get_one::<usize>("soft-line-limit")
+                .copied()
+                .filter(|l| l != &0)
+                .filter(|_| !self.matches.get_flag("disable-line-limits")),
+            hard_line_limit: self
+                .matches
+                .get_one::<usize>("hard-line-limit")
+                .copied()
+                .filter(|l| l != &0)
+                .filter(|_| !self.matches.get_flag("disable-line-limits")),
         })
     }
 
