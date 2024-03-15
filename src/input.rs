@@ -192,6 +192,8 @@ impl<'a> Input<'a> {
         self,
         stdin: R,
         stdout_identifier: Option<&Identifier>,
+        soft_limit: Option<usize>,
+        hard_limit: Option<usize>,
     ) -> Result<OpenedInput<'a>> {
         let description = self.description().clone();
         match self.kind {
@@ -208,7 +210,7 @@ impl<'a> Input<'a> {
                     kind: OpenedInputKind::StdIn,
                     description,
                     metadata: self.metadata,
-                    reader: InputReader::new(stdin),
+                    reader: InputReader::new(stdin, soft_limit, hard_limit),
                 })
             }
 
@@ -237,14 +239,14 @@ impl<'a> Input<'a> {
                         file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
-                    InputReader::new(BufReader::new(file))
+                    InputReader::new(BufReader::new(file), soft_limit, hard_limit)
                 },
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
-                reader: InputReader::new(BufReader::new(reader)),
+                reader: InputReader::new(BufReader::new(reader), soft_limit, hard_limit),
             }),
         }
     }
@@ -257,9 +259,18 @@ pub(crate) struct InputReader<'a> {
 }
 
 impl<'a> InputReader<'a> {
-    pub(crate) fn new<R: Read + 'a>(reader: R) -> InputReader<'a> {
+    pub(crate) fn new<R: Read + 'a>(
+        reader: R,
+        soft_limit: Option<usize>,
+        hard_limit: Option<usize>,
+    ) -> InputReader<'a> {
         let mut input_reader = InputReader {
-            inner: LimitBuf::new(reader, 4096, 1024 * 64, 1024 * 256),
+            inner: LimitBuf::new(
+                reader,
+                4096,
+                soft_limit.unwrap_or(usize::MAX),
+                hard_limit.unwrap_or(usize::MAX),
+            ),
             first_line: vec![],
             content_type: None,
         };
@@ -402,7 +413,7 @@ impl From<io::Error> for ReaderError {
 #[test]
 fn basic() {
     let content = b"#!/bin/bash\necho hello";
-    let mut reader = InputReader::new(&content[..]);
+    let mut reader = InputReader::new(&content[..], None, None);
 
     assert_eq!(b"#!/bin/bash\n", &reader.first_line[..]);
 
@@ -431,7 +442,7 @@ fn basic() {
 #[test]
 fn utf16le() {
     let content = b"\xFF\xFE\x73\x00\x0A\x00\x64\x00";
-    let mut reader = InputReader::new(&content[..]);
+    let mut reader = InputReader::new(&content[..], None, None);
 
     assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &reader.first_line[..]);
 
