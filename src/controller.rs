@@ -142,7 +142,12 @@ impl<'b> Controller<'b> {
             }
 
             #[cfg(not(feature = "lessopen"))]
-            input.open(stdin, stdout_identifier)?
+            input.open(
+                stdin,
+                stdout_identifier,
+                self.config.soft_line_limit,
+                self.config.hard_line_limit,
+            )?
         };
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
