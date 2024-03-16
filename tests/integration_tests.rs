@@ -313,6 +313,84 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn soft_line_limit() {
+    bat()
+        .arg("too-long-lines.txt")
+        .arg("--soft-line-limit=10")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout(
+            "───────┬────────────────────────────────────────────────────────────────────────
+       │ File: too-long-lines.txt
+───────┼────────────────────────────────────────────────────────────────────────
+   1   │ a
+   2   │ bb
+   3   │ ccc
+   4   │ dddd
+   5   │ eeeee
+   6   │ ffffff
+   7   │ ggggggg
+   8   │ hhhhhhhh
+   9   │ iiiiiiiii
+  10 ! │ <line too long>
+  11   │ kkkkkkkkk
+  12   │ llllllll
+  13   │ mmmmmmm
+  14   │ nnnnnn
+  15   │ ooooo
+  16   │ pppp
+  17   │ qqq
+  18   │ rr
+  19   │ s
+───────┴────────────────────────────────────────────────────────────────────────
+",
+        );
+}
+
+#[test]
+fn soft_line_limit_style_plain() {
+    bat()
+        .arg("too-long-lines.txt")
+        .arg("--soft-line-limit=10")
+        .arg("--style=plain")
+        .assert()
+        .success()
+        .stdout(
+            "a
+bb
+ccc
+dddd
+eeeee
+ffffff
+ggggggg
+hhhhhhhh
+iiiiiiiii
+kkkkkkkkk
+llllllll
+mmmmmmm
+nnnnnn
+ooooo
+pppp
+qqq
+rr
+s
+",
+        );
+}
+
+#[test]
+fn hard_line_limit() {
+    bat()
+        .arg("too-long-lines.txt")
+        .arg("--hard-line-limit=10")
+        .assert()
+        .failure()
+        .stderr("\u{1b}[31m[bat error]\u{1b}[0m: Line 10 is too long\n");
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
