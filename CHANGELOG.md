@@ -50,6 +50,9 @@
 
 ## `bat` as a library
 
+- Add `theme::theme` for choosing an appropriate theme based on the
+  terminal's color scheme, see #2896 (@bash)
+  - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
 - Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
   - `SyntaxMapping::get_syntax_for` is now correctly public
   - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
