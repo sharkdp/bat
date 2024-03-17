@@ -41,7 +41,7 @@ fail_test() {
 
 echo_step "TEST: Make sure 'BatTestCustomAssets' is not part of integrated syntaxes"
 bat -f "${custom_syntax_args[@]}" &&
-    fail_test "EXPECTED: 'unknown syntax' error ACTUAL: no error occured"
+    fail_test "EXPECTED: 'unknown syntax' error ACTUAL: no error occurred"
 
 echo_step "PREPARE: Install custom syntax 'BatTestCustomAssets'"
 custom_syntaxes_dir="$(bat --config-dir)/syntaxes"
@@ -62,7 +62,7 @@ bat -f "${integrated_syntax_args[@]}" ||
 
 echo_step "TEST: 'BatTestCustomAssets' is an unknown syntax with --no-custom-assets"
 bat -f --no-custom-assets "${custom_syntax_args[@]}" &&
-    fail_test "EXPECTED: 'unknown syntax' error because of --no-custom-assets ACTUAL: no error occured"
+    fail_test "EXPECTED: 'unknown syntax' error because of --no-custom-assets ACTUAL: no error occurred"
 
 echo_step "TEST: 'bat cache --clear' removes all files"
 bat cache --clear
