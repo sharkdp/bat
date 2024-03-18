@@ -156,3 +156,33 @@ impl Decoration for GridBorderDecoration {
         self.cached.width
     }
 }
+
+pub(crate) struct PlaceholderDecoration {
+    cached: DecorationText,
+}
+
+impl PlaceholderDecoration {
+    pub(crate) fn new(length: usize) -> Self {
+        Self {
+            cached: DecorationText {
+                text: " ".repeat(length),
+                width: length,
+            },
+        }
+    }
+}
+
+impl Decoration for PlaceholderDecoration {
+    fn generate(
+        &self,
+        _line_number: usize,
+        _continuation: bool,
+        _printer: &InteractivePrinter,
+    ) -> DecorationText {
+        self.cached.clone()
+    }
+
+    fn width(&self) -> usize {
+        self.cached.width
+    }
+}
