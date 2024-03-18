@@ -13,6 +13,7 @@
 - Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
 - Make shell completions available via `--completion <shell>`, see issue #2057 and PR #3126 (@einfachIrgendwer0815)
 - Syntax highlighting for puppet code blocks within Markdown files, see #3152 (@liliwilson)
+- Add line length soft/hard limits to prevent out-of-memory events, see issue #636 and PR #2902 (@einfachIrgendwer0815)
 
 ## Bugfixes
 
