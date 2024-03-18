@@ -24,6 +24,7 @@ use crate::config::Config;
 use crate::decorations;
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
+use crate::decorations::PlaceholderDecoration;
 use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
 #[cfg(feature = "git")]
 use crate::diff::LineChanges;
@@ -259,6 +260,28 @@ impl<'a> InteractivePrinter<'a> {
             if config.style_components.changes() {
                 decorations.push(Box::new(LineChangesDecoration::new(&colors)));
             }
+        }
+
+        let insert_placeholder = {
+            let git_feature_enabled = cfg!(feature = "git");
+            let changes_component;
+            #[cfg(feature = "git")]
+            {
+                changes_component = config.style_components.changes();
+            }
+            #[cfg(not(feature = "git"))]
+            {
+                changes_component = false;
+            }
+
+            let soft_limit_active = config.soft_line_limit.is_some();
+            let numbers_and_grid =
+                config.style_components.grid() && config.style_components.numbers();
+
+            (!git_feature_enabled || !changes_component) && numbers_and_grid && soft_limit_active
+        };
+        if insert_placeholder {
+            decorations.push(Box::new(PlaceholderDecoration::new(1)))
         }
 
         let mut panel_width: usize =
