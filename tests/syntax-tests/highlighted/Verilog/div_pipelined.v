@@ -13,7 +13,7 @@
 [38;2;117;113;94m//[0m[38;2;117;113;94m limitations under the License.[0m
 
 [38;2;117;113;94m//[0m[38;2;117;113;94m Implements a fixed-point parameterized pipelined division[0m
-[38;2;117;113;94m//[0m[38;2;117;113;94m operation. Outputs are expected to be on range [-1,1), techincally[0m
+[38;2;117;113;94m//[0m[38;2;117;113;94m operation. Outputs are expected to be on range [-1,1), technically[0m
 [38;2;117;113;94m//[0m[38;2;117;113;94m [-1,2^(BITS-1)-1/2^(BITS-1)]. There is no convergent rounding.[0m
 [38;2;117;113;94m//[0m
 [38;2;117;113;94m//[0m[38;2;117;113;94m [TODO] Implement optional convergent rounding and some form of[0m
