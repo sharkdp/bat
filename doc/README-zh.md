@@ -412,7 +412,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 ### 输出样式
 
-你可以用`--style`参数来控制`bat`输出的样式。使用`--style=numbers,chanegs`可以只开启 Git 修改和行号显示而不添加其他内容。`BAT_STYLE`环境变量具有相同功能。
+你可以用`--style`参数来控制`bat`输出的样式。使用`--style=numbers,changes`可以只开启 Git 修改和行号显示而不添加其他内容。`BAT_STYLE`环境变量具有相同功能。
 
 ### 添加新的语言和语法
 
