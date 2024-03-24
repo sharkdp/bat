@@ -6,6 +6,7 @@
 - `bat --squeeze-blank`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze-blank`, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
+- Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
 
 ## Bugfixes
 
@@ -49,6 +50,9 @@
 
 ## `bat` as a library
 
+- Add `theme::theme` for choosing an appropriate theme based on the
+  terminal's color scheme, see #2896 (@bash)
+  - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
 - Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
   - `SyntaxMapping::get_syntax_for` is now correctly public
   - [BREAKING] `SyntaxMapping::{empty,builtin}` are removed; use `SyntaxMapping::new` instead
