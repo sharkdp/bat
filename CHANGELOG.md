@@ -6,6 +6,7 @@
 - `bat --squeeze-blank`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze-blank`, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
+- Add line length soft/hard limits to prevent out-of-memory events, see issue #636 and PR #2902 (@einfachIrgendwer0815)
 
 ## Bugfixes
 

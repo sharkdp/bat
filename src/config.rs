@@ -100,6 +100,12 @@ pub struct Config<'a> {
 
     /// The maximum number of consecutive empty lines to display
     pub squeeze_lines: Option<usize>,
+
+    /// Line length (in bytes) at which a line of input will be ignored
+    pub soft_line_limit: Option<usize>,
+
+    /// Line length (in bytes) at which an error will be thrown
+    pub hard_line_limit: Option<usize>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
