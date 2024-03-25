@@ -87,7 +87,7 @@ where
     for mapping in mappings {
         if let (matcher, MappingTarget::MapTo(s)) = mapping {
             let globs = map.entry(*s).or_insert_with(Vec::new);
-            globs.push(matcher.glob().glob().into());
+            globs.push(matcher.glob().to_string());
         }
     }
     map
