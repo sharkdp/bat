@@ -1,0 +1,14 @@
+Submodule assets/syntaxes/01_Packages contains modified content
+diff --git syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
+index 05a4fed6..78a7bf55 100644
+--- syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
++++ syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
+@@ -5,7 +5,7 @@ name: JavaScript
+ file_extensions:
+   - js
+   - htc
+-first_line_match: ^#!\s*/.*\b(node|js)\b
++first_line_match: ^#!\s*/.*\b(node|bun|js)\b
+ scope: source.js
+ variables:
+   bin_digit: '[01_]'
