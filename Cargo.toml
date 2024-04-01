@@ -108,7 +108,7 @@ once_cell = "1.18"
 regex = "1.10.2"
 serde = "1.0"
 serde_derive = "1.0"
-serde_with = { version = "3.6.1", default-features = false, features = ["macros"] }
+serde_with = { version = "3.7.0", default-features = false, features = ["macros"] }
 toml = { version = "0.8.9", features = ["preserve_order"] }
 walkdir = "2.4"
 
