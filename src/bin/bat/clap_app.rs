@@ -1,9 +1,11 @@
+use bat::style::StyleComponentList;
 use clap::{
     crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
 };
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 static VERSION: Lazy<String> = Lazy::new(|| {
     #[cfg(feature = "bugreport")]
@@ -419,34 +421,13 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("style")
                 .long("style")
+                .action(ArgAction::Append)
                 .value_name("components")
-                .overrides_with("style")
-                .overrides_with("plain")
-                .overrides_with("number")
                 // Cannot use claps built in validation because we have to turn off clap's delimiters
                 .value_parser(|val: &str| {
-                    let mut invalid_vals = val.split(',').filter(|style| {
-                        !&[
-                            "auto",
-                            "full",
-                            "default",
-                            "plain",
-                            "header",
-                            "header-filename",
-                            "header-filesize",
-                            "grid",
-                            "rule",
-                            "numbers",
-                            "snip",
-                            #[cfg(feature = "git")]
-                            "changes",
-                        ].contains(style)
-                    });
-
-                    if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{invalid}'"))
-                    } else {
-                        Ok(val.to_owned())
+                    match StyleComponentList::from_str(val) {
+                        Err(err) => Err(err),
+                        Ok(_) => Ok(val.to_owned()),
                     }
                 })
                 .help(
