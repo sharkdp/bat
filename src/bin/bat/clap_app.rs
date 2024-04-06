@@ -442,6 +442,12 @@ pub fn build_app(interactive_output: bool) -> Command {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     When styles are specified in multiple places, the \"nearest\" set \
+                     of styles take precedence. The command-line arguments are the highest \
+                     priority, followed by the BAT_STYLE environment variable, and then \
+                     the configuration file. If any set of styles consists entirely of \
+                     components prefixed with \"+\" or \"-\", it will modify the \
+                     previous set of styles instead of replacing them.\n\n\
                      By default, the following components are enabled:\n  \
                         changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
