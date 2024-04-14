@@ -33,6 +33,7 @@
 - Relax syntax mapping rule restrictions to allow brace expansion #2865 (@cyqsimon)
 - Apply clippy fixes #2864 (@cyqsimon)
 - Faster startup by offloading glob matcher building to a worker thread #2868 (@cyqsimon)
+- Update base16 README links to community driven base16 work #2871 (@JamyGolden)
 
 ## Syntaxes
 
