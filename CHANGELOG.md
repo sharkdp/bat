@@ -9,6 +9,7 @@
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
 
 ## Bugfixes
 
