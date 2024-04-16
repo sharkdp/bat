@@ -19,6 +19,11 @@ pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
     }
 }
 
+/// Detects the color scheme from the terminal.
+pub fn color_scheme(when: DetectColorScheme) -> ColorScheme {
+    detect(when, &TerminalColorSchemeDetector).unwrap_or_default()
+}
+
 /// Options for configuring the theme used for syntax highlighting.
 /// Used together with [`theme`].
 #[derive(Debug, Default, PartialEq, Eq)]
