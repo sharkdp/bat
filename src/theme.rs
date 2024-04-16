@@ -124,7 +124,6 @@ trait ColorSchemeDetector {
 
 struct TerminalColorSchemeDetector;
 
-#[cfg(feature = "detect-color-scheme")]
 impl ColorSchemeDetector for TerminalColorSchemeDetector {
     fn should_detect(&self) -> bool {
         // Querying the terminal for its colors via OSC 10 / OSC 11 requires "exclusive" access
@@ -145,17 +144,6 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
             ColorsaurusScheme::Dark => Some(ColorScheme::Dark),
             ColorsaurusScheme::Light => Some(ColorScheme::Light),
         }
-    }
-}
-
-#[cfg(not(feature = "detect-color-scheme"))]
-impl ColorSchemeDetector for TerminalColorSchemeDetector {
-    fn should_detect(&self) -> bool {
-        false
-    }
-
-    fn detect(&self) -> Option<ColorScheme> {
-        None
     }
 }
 
