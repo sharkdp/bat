@@ -13,14 +13,13 @@ edition = '2021'
 rust-version = "1.70"
 
 [features]
-default = ["application"]
+default = ["application", "detect-color-scheme"]
 # Feature required for bat the application. Should be disabled when depending on
 # bat as a library.
 application = [
     "bugreport",
     "build-assets",
     "git",
-    "detect-color-scheme",
     "minimal-application",
 ]
 # Mainly for developers that want to iterate quickly
