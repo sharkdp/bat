@@ -405,6 +405,7 @@ fn no_args_doesnt_break() {
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
     // not exit, because in this case it is safe to read and write to the same fd, which is why
     // this test exists.
+
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
     let mut master = unsafe { File::from_raw_fd(master) };
     let stdin_file = unsafe { File::from_raw_fd(slave) };
@@ -415,6 +416,7 @@ fn no_args_doesnt_break() {
     let mut child = bat_raw_command()
         .stdin(stdin)
         .stdout(stdout)
+        .env("TERM", "dumb") // Suppresses color detection
         .spawn()
         .expect("Failed to start.");
 
