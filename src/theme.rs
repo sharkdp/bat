@@ -11,7 +11,7 @@ pub fn theme(options: ThemeOptions) -> String {
 }
 
 /// The default theme, suitable for the given color scheme.
-/// Use [`theme`], if you want to automatically detect the color scheme from the terminal.
+/// Use [`theme`] if you want to automatically detect the color scheme from the terminal.
 pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
     match color_scheme {
         ColorScheme::Dark => "Monokai Extended",
@@ -21,7 +21,7 @@ pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
 
 /// Options for configuring the theme used for syntax highlighting.
 /// Used together with [`theme`].
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct ThemeOptions {
     /// Always use this theme regardless of the terminal's background color.
     pub theme: Option<ThemeRequest>,
@@ -34,7 +34,14 @@ pub struct ThemeOptions {
 }
 
 /// The name of a theme or the default theme.
-#[derive(Debug)]
+///
+/// ```
+/// # use bat::theme::ThemeRequest;
+/// # use std::str::FromStr as _;
+/// assert_eq!(ThemeRequest::Default, ThemeRequest::from_str("default").unwrap());
+/// assert_eq!(ThemeRequest::Named("example".to_string()), ThemeRequest::from_str("example").unwrap());
+/// ```
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum ThemeRequest {
     Named(String),
     Default,
@@ -61,7 +68,7 @@ impl ThemeRequest {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DetectColorScheme {
     /// Only query the terminal for its colors when appropriate (i.e. when the the output is not redirected).
     #[default]
@@ -73,7 +80,7 @@ pub enum DetectColorScheme {
 }
 
 /// The color scheme used to pick a fitting theme. Defaults to [`ColorScheme::Dark`].
-#[derive(Default, Copy, Clone)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ColorScheme {
     #[default]
     Dark,
