@@ -99,6 +99,7 @@ set -l color_opts '
 '
 set -l decorations_opts $color_opts
 set -l paging_opts $color_opts
+set -l detect_color_scheme_opts $color_opts
 
 # Include some examples so we can indicate the default.
 set -l pager_opts '
@@ -142,6 +143,8 @@ complete -c $bat -l config-dir -f -d "Display location of configuration director
 complete -c $bat -l config-file -f -d "Display location of configuration file" -n __fish_is_first_arg
 
 complete -c $bat -l decorations -x -a "$decorations_opts" -d "When to use --style decorations" -n __bat_no_excl_args
+
+complete -c $bat -l detect-color-scheme -x -a "$detect_color_scheme_opts" -d "When to detect the terminal's color scheme" -n __bat_no_excl_args
 
 complete -c $bat -l diagnostic -d "Print diagnostic info for bug reports" -n __fish_is_first_arg
 
@@ -204,6 +207,10 @@ complete -c $bat -l tabs -x -a "$tabs_opts" -d "Set tab width" -n __bat_no_excl_
 complete -c $bat -l terminal-width -x -d "Set terminal <width>, +<offset>, or -<offset>" -n __bat_no_excl_args
 
 complete -c $bat -l theme -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme" -n __bat_no_excl_args
+
+complete -c $bat -l theme-dark -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for dark backgrounds" -n __bat_no_excl_args
+
+complete -c $bat -l theme-light -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for light backgrounds" -n __bat_no_excl_args
 
 complete -c $bat -s V -l version -f -d "Show version information" -n __fish_is_first_arg
 

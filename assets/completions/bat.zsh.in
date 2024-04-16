@@ -40,9 +40,12 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --color='[specify when to use colors]:when:(auto never always)'
         --italic-text='[use italics in output]:when:(always never)'
         --decorations='[specify when to show the decorations]:when:(auto never always)'
+        --detect-color-scheme="[specify when to detect the terminal's color scheme]:when:(auto never always)"
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->themes'
+        '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
+        '(--theme-light)'--theme-light='[set the color theme for syntax highlighting for light backgrounds]:theme:->themes'
         '(: --list-themes --list-languages -L)'--list-themes'[show all supported highlighting themes]'
         --style='[comma-separated list of style elements to display]: : _values "style [default]"
             default auto full plain changes header header-filename header-filesize grid rule numbers snip'

@@ -100,7 +100,7 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never character" -- "$cur"))
 		return 0
 		;;
-	--color | --decorations | --paging)
+	--color | --decorations | --paging | --detect-color-scheme)
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
@@ -112,7 +112,9 @@ _bat() {
 		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
 		;;
-	--theme)
+	--theme | \
+	--theme-dark | \
+	--theme-light)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
                 __bat_escape_completions
@@ -164,12 +166,15 @@ _bat() {
 			--color
 			--italic-text
 			--decorations
+			--detect-color-scheme
 			--force-colorization
 			--paging
 			--pager
 			--map-syntax
 			--ignored-suffix
 			--theme
+			--theme-dark
+			--theme-light
 			--list-themes
 			--squeeze-blank
 			--squeeze-limit
