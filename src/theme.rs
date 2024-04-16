@@ -1,35 +1,13 @@
+//! Utilities for choosing an appropriate theme for syntax highlighting.
+
 use std::convert::Infallible;
+use std::io::IsTerminal as _;
 use std::str::FromStr;
 
 /// Chooses an appropriate theme or falls back to a default theme
 /// based on the user-provided options and the color scheme of the terminal.
-pub fn theme(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> String {
-    // Implementation note: This function is mostly pure (i.e. it has no side effects) for the sake of testing.
-    // All the side effects (e.g. querying the terminal for its colors) are performed in the detector.
-    if let Some(theme) = options.theme {
-        theme.into_theme(ColorScheme::default())
-    } else {
-        let color_scheme = detect(options.detect_color_scheme, detector).unwrap_or_default();
-        choose_theme(options, color_scheme)
-            .map(|t| t.into_theme(color_scheme))
-            .unwrap_or_else(|| default_theme(color_scheme).to_owned())
-    }
-}
-
-fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<ThemeRequest> {
-    match color_scheme {
-        ColorScheme::Dark => options.theme_dark,
-        ColorScheme::Light => options.theme_light,
-    }
-}
-
-fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option<ColorScheme> {
-    let should_detect = match when {
-        DetectColorScheme::Auto => detector.should_detect(),
-        DetectColorScheme::Always => true,
-        DetectColorScheme::Never => false,
-    };
-    should_detect.then(|| detector.detect()).flatten()
+pub fn theme(options: ThemeOptions) -> String {
+    theme_from_detector(options, &TerminalColorSchemeDetector)
 }
 
 pub(crate) const fn default_theme(color_scheme: ColorScheme) -> &'static str {
@@ -40,6 +18,7 @@ pub(crate) const fn default_theme(color_scheme: ColorScheme) -> &'static str {
 }
 
 /// Options for configuring the theme used for syntax highlighting.
+/// Used together with [`theme`].
 #[derive(Debug, Default)]
 pub struct ThemeOptions {
     /// Always use this theme regardless of the terminal's background color.
@@ -48,7 +27,7 @@ pub struct ThemeOptions {
     pub theme_dark: Option<ThemeRequest>,
     /// The theme to use in case the terminal uses a light background with dark text.
     pub theme_light: Option<ThemeRequest>,
-    /// Detect whether or not the terminal is dark or light by querying for its colors.
+    /// Whether or not to test if the terminal is dark or light by querying for its colors.
     pub detect_color_scheme: DetectColorScheme,
 }
 
@@ -82,7 +61,7 @@ impl ThemeRequest {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum DetectColorScheme {
-    /// Only query the terminal for its colors when appropriate (e.g. when the the output is not redirected).
+    /// Only query the terminal for its colors when appropriate (i.e. when the the output is not redirected).
     #[default]
     Auto,
     /// Always query the terminal for its colors.
@@ -99,10 +78,76 @@ pub enum ColorScheme {
     Light,
 }
 
-pub trait ColorSchemeDetector {
+fn theme_from_detector(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> String {
+    // Implementation note: This function is mostly pure (i.e. it has no side effects) for the sake of testing.
+    // All the side effects (e.g. querying the terminal for its colors) are performed in the detector.
+    if let Some(theme) = options.theme {
+        theme.into_theme(ColorScheme::default())
+    } else {
+        let color_scheme = detect(options.detect_color_scheme, detector).unwrap_or_default();
+        choose_theme(options, color_scheme)
+            .map(|t| t.into_theme(color_scheme))
+            .unwrap_or_else(|| default_theme(color_scheme).to_owned())
+    }
+}
+
+fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<ThemeRequest> {
+    match color_scheme {
+        ColorScheme::Dark => options.theme_dark,
+        ColorScheme::Light => options.theme_light,
+    }
+}
+
+fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option<ColorScheme> {
+    let should_detect = match when {
+        DetectColorScheme::Auto => detector.should_detect(),
+        DetectColorScheme::Always => true,
+        DetectColorScheme::Never => false,
+    };
+    should_detect.then(|| detector.detect()).flatten()
+}
+
+trait ColorSchemeDetector {
     fn should_detect(&self) -> bool;
 
     fn detect(&self) -> Option<ColorScheme>;
+}
+
+struct TerminalColorSchemeDetector;
+
+#[cfg(feature = "detect-color-scheme")]
+impl ColorSchemeDetector for TerminalColorSchemeDetector {
+    fn should_detect(&self) -> bool {
+        // Querying the terminal for its colors via OSC 10 / OSC 11 requires "exclusive" access
+        // since we read/write from the terminal and enable/disable raw mode.
+        // This causes race conditions with pagers such as less when they are attached to the
+        // same terminal as us.
+        //
+        // This is usually only an issue when the output is manually piped to a pager.
+        // For example: `bat Cargo.toml | less`.
+        // Otherwise, if we start the pager ourselves, then there's no race condition
+        // since the pager is started *after* the color is detected.
+        std::io::stdout().is_terminal()
+    }
+
+    fn detect(&self) -> Option<ColorScheme> {
+        use terminal_colorsaurus::{color_scheme, ColorScheme as ColorsaurusScheme, QueryOptions};
+        match color_scheme(QueryOptions::default()).ok()? {
+            ColorsaurusScheme::Dark => Some(ColorScheme::Dark),
+            ColorsaurusScheme::Light => Some(ColorScheme::Light),
+        }
+    }
+}
+
+#[cfg(not(feature = "detect-color-scheme"))]
+impl ColorSchemeDetector for TerminalColorSchemeDetector {
+    fn should_detect(&self) -> bool {
+        false
+    }
+
+    fn detect(&self) -> Option<ColorScheme> {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -134,7 +179,7 @@ mod tests {
                 detect_color_scheme: Never,
                 ..Default::default()
             };
-            _ = theme(options, &detector);
+            _ = theme_from_detector(options, &detector);
             assert!(!detector.was_called.get());
         }
 
@@ -149,7 +194,7 @@ mod tests {
                     detect_color_scheme: Always,
                     ..Default::default()
                 };
-                _ = theme(options, &detector);
+                _ = theme_from_detector(options, &detector);
                 assert!(detector.was_called.get());
             }
         }
@@ -157,14 +202,14 @@ mod tests {
         #[test]
         fn called_for_auto_if_should_detect() {
             let detector = DetectorStub::should_detect(Some(Dark));
-            _ = theme(ThemeOptions::default(), &detector);
+            _ = theme_from_detector(ThemeOptions::default(), &detector);
             assert!(detector.was_called.get());
         }
 
         #[test]
         fn not_called_for_auto_if_not_should_detect() {
             let detector = DetectorStub::should_not_detect();
-            _ = theme(ThemeOptions::default(), &detector);
+            _ = theme_from_detector(ThemeOptions::default(), &detector);
             assert!(!detector.was_called.get());
         }
     }
@@ -188,7 +233,7 @@ mod tests {
                     },
                 ] {
                     let detector = ConstantDetector(color_scheme);
-                    assert_eq!("Theme", theme(options, &detector));
+                    assert_eq!("Theme", theme_from_detector(options, &detector));
                 }
             }
         }
@@ -200,7 +245,7 @@ mod tests {
                 ..Default::default()
             };
             let detector = DetectorStub::should_detect(Some(Dark));
-            _ = theme(options, &detector);
+            _ = theme_from_detector(options, &detector);
             assert!(!detector.was_called.get());
         }
     }
@@ -213,7 +258,7 @@ mod tests {
             let detector = ConstantDetector(None);
             assert_eq!(
                 default_theme(ColorScheme::Dark),
-                theme(ThemeOptions::default(), &detector)
+                theme_from_detector(ThemeOptions::default(), &detector)
             );
         }
 
@@ -227,7 +272,10 @@ mod tests {
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
-                assert_eq!(default_theme(ColorScheme::Dark), theme(options, &detector));
+                assert_eq!(
+                    default_theme(ColorScheme::Dark),
+                    theme_from_detector(options, &detector)
+                );
             }
         }
 
@@ -243,7 +291,10 @@ mod tests {
                     },
                 ] {
                     let detector = ConstantDetector(Some(color_scheme));
-                    assert_eq!(default_theme(color_scheme), theme(options, &detector));
+                    assert_eq!(
+                        default_theme(color_scheme),
+                        theme_from_detector(options, &detector)
+                    );
                 }
             }
         }
@@ -261,7 +312,7 @@ mod tests {
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
-                assert_eq!("Dark", theme(options, &detector));
+                assert_eq!("Dark", theme_from_detector(options, &detector));
             }
         }
 
@@ -273,7 +324,7 @@ mod tests {
                 ..Default::default()
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));
-            assert_eq!("Light", theme(options, &detector));
+            assert_eq!("Light", theme_from_detector(options, &detector));
         }
     }
 
