@@ -13,6 +13,7 @@ use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
+use crate::theme::{default_theme, ColorScheme};
 use crate::{bat_warning, SyntaxMapping};
 
 use lazy_theme_set::LazyThemeSet;
@@ -94,31 +95,16 @@ impl HighlightingAssets {
     pub fn default_theme() -> &'static str {
         #[cfg(not(target_os = "macos"))]
         {
-            Self::default_dark_theme()
+            default_theme(ColorScheme::Dark)
         }
         #[cfg(target_os = "macos")]
         {
             if macos_dark_mode_active() {
-                Self::default_dark_theme()
+                default_theme(ColorScheme::Dark)
             } else {
-                Self::default_light_theme()
+                default_theme(ColorScheme::Light)
             }
         }
-    }
-
-    /**
-     * The default theme that looks good on a dark background.
-     */
-    fn default_dark_theme() -> &'static str {
-        "Monokai Extended"
-    }
-
-    /**
-     * The default theme that looks good on a light background.
-     */
-    #[cfg(target_os = "macos")]
-    fn default_light_theme() -> &'static str {
-        "Monokai Extended Light"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
@@ -249,7 +235,10 @@ impl HighlightingAssets {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 self.get_theme_set()
-                    .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
+                    .get(
+                        self.fallback_theme
+                            .unwrap_or_else(|| default_theme(ColorScheme::Dark)),
+                    )
                     .expect("something is very wrong if the default theme is missing")
             }
         }

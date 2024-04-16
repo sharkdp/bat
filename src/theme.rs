@@ -32,7 +32,7 @@ fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option
     should_detect.then(|| detector.detect()).flatten()
 }
 
-const fn default_theme(color_scheme: ColorScheme) -> &'static str {
+pub(crate) const fn default_theme(color_scheme: ColorScheme) -> &'static str {
     match color_scheme {
         ColorScheme::Dark => "Monokai Extended",
         ColorScheme::Light => "Monokai Extended Light",
