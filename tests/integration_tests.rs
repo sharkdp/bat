@@ -354,6 +354,15 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn list_languages() {
+    bat()
+        .arg("--list-languages")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Rust").normalize());
+}
+
+#[test]
 #[cfg_attr(
     any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
     ignore

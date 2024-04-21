@@ -23,6 +23,7 @@
 - CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
 - CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
+- Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 
 ## Syntaxes
 
