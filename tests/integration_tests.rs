@@ -273,6 +273,41 @@ fn squeeze_limit_line_numbers() {
 }
 
 #[test]
+fn list_themes_with_colors() {
+    #[cfg(target_os = "macos")]
+    let default_theme_chunk = "Monokai Extended Light\x1B[0m (default)";
+
+    #[cfg(not(target_os = "macos"))]
+    let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
+
+    bat()
+        .arg("--color=always")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize())
+        .stdout(predicate::str::contains(default_theme_chunk).normalize())
+        .stdout(predicate::str::contains("Output the square of a number.").normalize());
+}
+
+#[test]
+fn list_themes_without_colors() {
+    #[cfg(target_os = "macos")]
+    let default_theme_chunk = "Monokai Extended Light (default)";
+
+    #[cfg(not(target_os = "macos"))]
+    let default_theme_chunk = "Monokai Extended (default)";
+
+    bat()
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize())
+        .stdout(predicate::str::contains(default_theme_chunk).normalize());
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");

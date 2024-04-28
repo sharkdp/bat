@@ -30,6 +30,7 @@ use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
 use bat::{
+    assets::HighlightingAssets,
     config::Config,
     controller::Controller,
     error::*,
@@ -199,19 +200,31 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 
-    if config.colored_output {
-        for theme in assets.themes() {
+    let default_theme = HighlightingAssets::default_theme();
+    for theme in assets.themes() {
+        let default_theme_info = if default_theme == theme {
+            " (default)"
+        } else {
+            ""
+        };
+        if config.colored_output {
             writeln!(
                 stdout,
-                "Theme: {}\n",
-                Style::new().bold().paint(theme.to_string())
+                "Theme: {}{}\n",
+                Style::new().bold().paint(theme.to_string()),
+                default_theme_info
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
                 .run(vec![theme_preview_file()], None)
                 .ok();
             writeln!(stdout)?;
+        } else {
+            writeln!(stdout, "{theme}{default_theme_info}")?;
         }
+    }
+
+    if config.colored_output {
         writeln!(
             stdout,
             "Further themes can be installed to '{}', \
@@ -220,10 +233,6 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
             https://github.com/sharkdp/bat#adding-new-themes",
             config_dir.join("themes").to_string_lossy()
         )?;
-    } else {
-        for theme in assets.themes() {
-            writeln!(stdout, "{theme}")?;
-        }
     }
 
     Ok(())
@@ -272,24 +281,25 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
         .info(OperatingSystem::default())
         .info(CommandLine::default())
         .info(EnvironmentVariables::list(&[
-            "SHELL",
-            "PAGER",
-            "LESS",
-            "LANG",
-            "LC_ALL",
-            "BAT_PAGER",
-            "BAT_PAGING",
             "BAT_CACHE_PATH",
             "BAT_CONFIG_PATH",
             "BAT_OPTS",
+            "BAT_PAGER",
+            "BAT_PAGING",
             "BAT_STYLE",
             "BAT_TABS",
             "BAT_THEME",
-            "XDG_CONFIG_HOME",
-            "XDG_CACHE_HOME",
             "COLORTERM",
-            "NO_COLOR",
+            "LANG",
+            "LC_ALL",
+            "LESS",
             "MANPAGER",
+            "NO_COLOR",
+            "PAGER",
+            "SHELL",
+            "TERM",
+            "XDG_CACHE_HOME",
+            "XDG_CONFIG_HOME",
         ]))
         .info(FileContent::new("System Config file", system_config_file()))
         .info(FileContent::new("Config file", config_file()))
