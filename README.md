@@ -505,7 +505,7 @@ You can use the `--style` option to control the appearance of `bat`s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
 and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
 variable to make these changes permanent or use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+[configuration file](https://github.com/sharkdp/bat#configuration-file). Possible values: `auto`, `changes`, `grid`, `rule`, `header`, `header-filename`, `header-filesize`, `numbers`, `snip`, `full`, `default`, `plain`.
 
 ### Adding new syntaxes / language definitions
 
