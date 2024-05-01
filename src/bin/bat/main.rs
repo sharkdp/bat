@@ -189,7 +189,12 @@ fn theme_preview_file<'a>() -> Input<'a> {
     Input::from_reader(Box::new(BufReader::new(THEME_PREVIEW_DATA)))
 }
 
-pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<()> {
+pub fn list_themes(
+    cfg: &Config,
+    config_dir: &Path,
+    cache_dir: &Path,
+    detect_color_scheme: DetectColorScheme,
+) -> Result<()> {
     let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
@@ -200,7 +205,7 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 
-    let default_theme_name = default_theme(color_scheme(DetectColorScheme::Auto));
+    let default_theme_name = default_theme(color_scheme(detect_color_scheme));
     for theme in assets.themes() {
         let default_theme_info = if default_theme_name == theme {
             " (default)"
@@ -375,7 +380,7 @@ fn run() -> Result<bool> {
                 };
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-                list_themes(&config, config_dir, cache_dir)?;
+                list_themes(&config, config_dir, cache_dir, app.detect_color_scheme())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());
