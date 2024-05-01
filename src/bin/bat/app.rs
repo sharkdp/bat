@@ -427,7 +427,16 @@ impl App {
             .matches
             .get_one::<String>("theme-light")
             .map(|t| ThemeRequest::from_str(t).unwrap());
-        let detect_color_scheme = match self
+        ThemeOptions {
+            theme,
+            theme_dark,
+            theme_light,
+            detect_color_scheme: self.detect_color_scheme(),
+        }
+    }
+
+    pub(crate) fn detect_color_scheme(&self) -> DetectColorScheme {
+        match self
             .matches
             .get_one::<String>("detect-color-scheme")
             .map(|s| s.as_str())
@@ -436,12 +445,6 @@ impl App {
             Some("never") => DetectColorScheme::Never,
             Some("always") => DetectColorScheme::Always,
             _ => unreachable!("other values for --detect-color-scheme are not allowed"),
-        };
-        ThemeOptions {
-            theme,
-            theme_dark,
-            theme_light,
-            detect_color_scheme,
         }
     }
 }
