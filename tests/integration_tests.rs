@@ -2647,7 +2647,7 @@ fn lessopen_validity() {
 // Syntax highlighting should be the same regardless of
 // --map-syntax' case or file extension's case
 #[test]
-fn highlighting_independant_from_map_syntax_case() {
+fn highlighting_independent_from_map_syntax_case() {
     let expected = bat()
         .arg("-f")
         .arg("--map-syntax=*.config:JSON")
