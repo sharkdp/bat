@@ -1,7 +1,7 @@
-diff --git a/Lisp/Lisp.sublime-syntax b/Lisp/Lisp.sublime-syntax
+diff --git syntaxes/01_Packages/Lisp/Lisp.sublime-syntax syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
 index 50e5dad3..44a9795d 100644
---- a/Lisp/Lisp.sublime-syntax
-+++ b/Lisp/Lisp.sublime-syntax
+--- syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
++++ syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
 @@ -1,11 +1,14 @@
  %YAML 1.2
  ---
