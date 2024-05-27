@@ -36,6 +36,7 @@
 - Faster startup by offloading glob matcher building to a worker thread #2868 (@cyqsimon)
 - Display which theme is the default one in basic output (no colors), see #2937 (@sblondon)
 - Display which theme is the default one in colored output, see #2838 (@sblondon)
+- Add aarch64-apple-darwin ("Apple Silicon") binary tarballs to releases, see #2967 (@someposer)
 
 ## Syntaxes
 
