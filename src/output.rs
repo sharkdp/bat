@@ -89,7 +89,7 @@ impl OutputType {
                 }
 
                 if wrapping_mode == WrappingMode::NoWrapping(true) {
-                    p.arg("-S"); // Short version of --chop-long-lines for compatibility
+                    p.arg("-Sc"); // Short version of --chop-long-lines --clear-screen for compatibility
                 }
 
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
