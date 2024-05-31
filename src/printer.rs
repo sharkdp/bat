@@ -35,6 +35,7 @@ use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
+use crate::BinaryBehavior;
 use crate::StripAnsiMode;
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
@@ -458,7 +459,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         if !self.config.style_components.header() {
-            if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
+            if Some(ContentType::BINARY) == self.content_type
+                && !self.config.show_nonprintable
+                && !matches!(self.config.binary, BinaryBehavior::AsText)
+            {
                 writeln!(
                     handle,
                     "{}: Binary content from {} will not be printed to the terminal \
@@ -539,7 +543,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
             })?;
 
         if self.config.style_components.grid() {
-            if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
+            if self.content_type.map_or(false, |c| c.is_text())
+                || self.config.show_nonprintable
+                || matches!(self.config.binary, BinaryBehavior::AsText)
+            {
                 self.print_horizontal_line(handle, '┼')?;
             } else {
                 self.print_horizontal_line(handle, '┴')?;
@@ -551,7 +558,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
-            && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
+            && (self.content_type.map_or(false, |c| c.is_text())
+                || self.config.show_nonprintable
+                || matches!(self.config.binary, BinaryBehavior::AsText))
         {
             self.print_horizontal_line(handle, '┴')
         } else {
@@ -599,7 +608,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
             .into()
         } else {
             let mut line = match self.content_type {
-                Some(ContentType::BINARY) | None => {
+                Some(ContentType::BINARY) | None
+                    if !matches!(self.config.binary, BinaryBehavior::AsText) =>
+                {
                     return Ok(());
                 }
                 Some(ContentType::UTF_16LE) => UTF_16LE.decode_with_bom_removal(line_buffer).0,

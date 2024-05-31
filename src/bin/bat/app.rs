@@ -9,6 +9,7 @@ use crate::{
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
 use bat::style::StyleComponentList;
+use bat::BinaryBehavior;
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -192,6 +193,11 @@ impl App {
                 Some("unicode") => NonprintableNotation::Unicode,
                 Some("caret") => NonprintableNotation::Caret,
                 _ => unreachable!("other values for --nonprintable-notation are not allowed"),
+            },
+            binary: match self.matches.get_one::<String>("binary").map(|s| s.as_str()) {
+                Some("as-text") => BinaryBehavior::AsText,
+                Some("no-printing") => BinaryBehavior::NoPrinting,
+                _ => unreachable!("other values for --binary are not allowed"),
             },
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 if !self.matches.get_flag("chop-long-lines") {

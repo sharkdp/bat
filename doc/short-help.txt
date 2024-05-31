@@ -11,6 +11,8 @@ Options:
           Show non-printable characters (space, tab, newline, ..).
       --nonprintable-notation <notation>
           Set notation for non-printable characters.
+      --binary <behavior>
+          How to treat binary content. (default: no-printing)
   -p, --plain...
           Show plain style (alias for '--style=plain').
   -l, --language <language>
