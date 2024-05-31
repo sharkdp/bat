@@ -52,7 +52,7 @@ mod terminal;
 mod vscreen;
 pub(crate) mod wrapping;
 
-pub use nonprintable_notation::NonprintableNotation;
+pub use nonprintable_notation::{BinaryBehavior, NonprintableNotation};
 pub use preprocessor::StripAnsiMode;
 pub use pretty_printer::{Input, PrettyPrinter, Syntax};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};
