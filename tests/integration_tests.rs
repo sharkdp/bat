@@ -48,7 +48,7 @@ fn basic() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("hello world\n")
+        .stdout("   1 hello world\n")
         .stderr("");
 }
 
@@ -58,7 +58,7 @@ fn stdin() {
         .write_stdin("foo\nbar\n")
         .assert()
         .success()
-        .stdout("foo\nbar\n");
+        .stdout("   1 foo\n   2 bar\n");
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn concatenate() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("hello world\nhello world\n");
+        .stdout("   1 hello world\n   1 hello world\n");
 }
 
 #[test]
@@ -80,7 +80,7 @@ fn concatenate_stdin() {
         .write_stdin("stdin\n")
         .assert()
         .success()
-        .stdout("hello world\nstdin\nhello world\n");
+        .stdout("   1 hello world\n   1 stdin\n   1 hello world\n");
 }
 
 #[test]
@@ -90,7 +90,7 @@ fn concatenate_empty_first() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("hello world\n");
+        .stdout("   1 hello world\n");
 }
 
 #[test]
@@ -100,7 +100,7 @@ fn concatenate_empty_last() {
         .arg("empty.txt")
         .assert()
         .success()
-        .stdout("hello world\n");
+        .stdout("   1 hello world\n");
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn concatenate_empty_between() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("hello world\nhello world\n");
+        .stdout("   1 hello world\n   1 hello world\n");
 }
 
 #[test]
@@ -132,7 +132,7 @@ fn concatenate_empty_first_and_last() {
         .arg("empty.txt")
         .assert()
         .success()
-        .stdout("hello world\n");
+        .stdout("   1 hello world\n");
 }
 
 #[test]
@@ -142,7 +142,7 @@ fn concatenate_single_line() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("Single LineSingle Line");
+        .stdout("   1 Single Line   1 Single Line");
 }
 
 #[test]
@@ -153,7 +153,7 @@ fn concatenate_single_line_empty() {
         .arg("single-line.txt")
         .assert()
         .success()
-        .stdout("Single LineSingle Line");
+        .stdout("   1 Single Line   1 Single Line");
 }
 
 #[test]
@@ -174,7 +174,7 @@ fn line_range_2_3() {
         .arg("--line-range=2:3")
         .assert()
         .success()
-        .stdout("line 2\nline 3\n");
+        .stdout("   2 line 2\n   3 line 3\n");
 }
 
 #[test]
@@ -184,7 +184,7 @@ fn line_range_first_two() {
         .arg("--line-range=:2")
         .assert()
         .success()
-        .stdout("line 1\nline 2\n");
+        .stdout("   1 line 1\n   2 line 2\n");
 }
 
 #[test]
@@ -194,7 +194,7 @@ fn line_range_last_3() {
         .arg("--line-range=2:")
         .assert()
         .success()
-        .stdout("line 2\nline 3\nline 4\n");
+        .stdout("   2 line 2\n   3 line 3\n   4 line 4\n");
 }
 
 #[test]
@@ -205,7 +205,7 @@ fn line_range_multiple() {
         .arg("--line-range=4:4")
         .assert()
         .success()
-        .stdout("line 1\nline 2\nline 4\n");
+        .stdout("   1 line 1\n   2 line 2\n   4 line 4\n");
 }
 
 #[test]
@@ -215,7 +215,7 @@ fn squeeze_blank() {
         .arg("--squeeze-blank")
         .assert()
         .success()
-        .stdout("line 1\n\nline 5\n\nline 20\nline 21\n\nline 24\n\nline 26\n\nline 30\n");
+        .stdout("   1 line 1\n   2 \n   5 line 5\n   6 \n  20 line 20\n  21 line 21\n  22 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  30 line 30\n");
 }
 
 #[test]
@@ -238,7 +238,7 @@ fn squeeze_limit() {
         .arg("--squeeze-limit=2")
         .assert()
         .success()
-        .stdout("line 1\n\n\nline 5\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\nline 30\n");
+        .stdout("   1 line 1\n   2 \n   3 \n   5 line 5\n   6 \n   7 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  30 line 30\n");
 
     bat()
         .arg("empty_lines.txt")
@@ -246,7 +246,7 @@ fn squeeze_limit() {
         .arg("--squeeze-limit=5")
         .assert()
         .success()
-        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+        .stdout("   1 line 1\n   2 \n   3 \n   4 \n   5 line 5\n   6 \n   7 \n   8 \n   9 \n  10 \n  20 line 20\n  21 line 21\n  22 \n  23 \n  24 line 24\n  25 \n  26 line 26\n  27 \n  28 \n  29 \n  30 line 30\n");
 }
 
 #[test]
@@ -693,7 +693,7 @@ fn do_not_exit_directory() {
         .arg("sub_directory")
         .arg("test.txt")
         .assert()
-        .stdout("hello world\n")
+        .stdout("   1 hello world\n")
         .failure();
 }
 
@@ -752,7 +752,7 @@ fn pager_disable() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::eq("   1 hello world\n").normalize());
 }
 
 #[test]
@@ -833,7 +833,7 @@ fn env_var_pager_value_bat() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::eq("   1 hello world\n").normalize());
 }
 
 #[test]
@@ -871,7 +871,7 @@ fn pager_most_from_pager_env_var() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::eq("   1 hello world\n").normalize());
     });
 }
 
@@ -917,7 +917,7 @@ fn pager_most_with_arg() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::eq("   1 hello world\n").normalize());
     });
 }
 
@@ -932,7 +932,7 @@ fn pager_more() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::eq("   1 hello world\n").normalize());
     });
 }
 
@@ -944,7 +944,7 @@ fn alias_pager_disable() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::eq("   1 hello world\n").normalize());
 }
 
 #[test]
@@ -971,7 +971,7 @@ fn disable_pager_if_disable_paging_flag_comes_after_paging() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::eq("   1 hello world\n").normalize());
 }
 
 #[test]
@@ -1043,7 +1043,7 @@ fn basic_set_terminal_title() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stdout("\u{1b}]0;bat: test.txt\x07   1 hello world\n")
         .stderr("");
 }
 
@@ -1294,7 +1294,7 @@ fn can_print_file_named_cache() {
         .arg("cache")
         .assert()
         .success()
-        .stdout("test\n")
+        .stdout("   1 test\n")
         .stderr("");
 }
 
@@ -1305,7 +1305,7 @@ fn can_print_file_named_cache_with_additional_argument() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("test\nhello world\n")
+        .stdout("   1 test\n   1 hello world\n")
         .stderr("");
 }
 
@@ -1315,7 +1315,7 @@ fn can_print_file_starting_with_cache() {
         .arg("cache.c")
         .assert()
         .success()
-        .stdout("test\n")
+        .stdout("   1 test\n")
         .stderr("");
 }
 
