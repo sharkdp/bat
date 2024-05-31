@@ -269,7 +269,8 @@ impl<'a> InteractivePrinter<'a> {
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
 
-        let needs_to_match_syntax = !is_printing_binary
+        let needs_to_match_syntax = (!is_printing_binary
+            || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
         let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
