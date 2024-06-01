@@ -166,15 +166,13 @@ impl<'a> Printer for SimplePrinter<'a> {
                     OutputHandle::IoWrite(handle) => {
                         if self.config.style_components.numbers() {
                             handle.write_all(
-                                format!(
-                                    "{line_number:4} {}",
-                                    String::from_utf8_lossy(line_buffer)
-                                ).as_bytes()
+                                format!("{line_number:4} {}", String::from_utf8_lossy(line_buffer))
+                                    .as_bytes(),
                             )?;
                         } else {
                             handle.write_all(line_buffer)?;
                         }
-                    },
+                    }
                     OutputHandle::FmtWrite(handle) => {
                         write!(
                             handle,
