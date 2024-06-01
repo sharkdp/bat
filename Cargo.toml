@@ -103,7 +103,7 @@ nix = { version = "0.26.4", default-features = false, features = ["term"] }
 [build-dependencies]
 anyhow = "1.0.78"
 indexmap = { version = "2.2.6", features = ["serde"] }
-itertools = "0.12.1"
+itertools = "0.13.0"
 once_cell = "1.18"
 regex = "1.10.2"
 serde = "1.0"
