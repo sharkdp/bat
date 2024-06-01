@@ -1,5 +1,6 @@
 use std::fmt;
 use std::io;
+use std::io::IsTerminal;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -164,7 +165,8 @@ impl<'a> Printer for SimplePrinter<'a> {
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => {
-                        if self.config.style_components.numbers() {
+                        if self.config.style_components.numbers() && !std::io::stdout().is_terminal()
+                        {
                             handle.write_all(
                                 format!("{line_number:4} {}", String::from_utf8_lossy(line_buffer))
                                     .as_bytes(),
