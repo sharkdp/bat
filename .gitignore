@@ -2,6 +2,7 @@
 **/*.rs.bk
 
 # Generated files
+/assets/completions/_bat.ps1
 /assets/completions/bat.bash
 /assets/completions/bat.fish
 /assets/completions/bat.zsh
