@@ -1779,7 +1779,7 @@ fn file_with_invalid_utf8_filename() {
         .arg(file_path.as_os_str())
         .assert()
         .success()
-        .stdout("dummy content\n");
+        .stdout("   1 dummy content\n");
 }
 
 #[test]
