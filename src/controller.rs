@@ -15,7 +15,6 @@ use crate::output::OutputType;
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
-use crate::style::{StyleComponent, StyleComponents};
 
 use clircle::{Clircle, Identifier};
 
@@ -175,19 +174,8 @@ impl<'b> Controller<'b> {
             None
         };
 
-        let mut config = self.config.clone();
-
-        if self.config.loop_through {
-            config = Config {
-                style_components: StyleComponents(
-                    [StyleComponent::Plain].iter().cloned().collect(),
-                ),
-                ..self.config.clone()
-            };
-        }
-
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
-            Box::new(SimplePrinter::new(&config))
+            Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(
                 self.config,
