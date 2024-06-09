@@ -76,6 +76,7 @@ _bat() {
 	-m | --map-syntax | \
 	--ignored-suffix | \
 	--list-themes | \
+	--squeeze-limit | \
 	--line-range | \
 	-L | --list-languages | \
 	--lessopen | \
@@ -157,6 +158,7 @@ _bat() {
 			--diff-context
 			--tabs
 			--wrap
+			--chop-long-lines
 			--terminal-width
 			--number
 			--color
@@ -169,18 +171,24 @@ _bat() {
 			--ignored-suffix
 			--theme
 			--list-themes
+			--squeeze-blank
+			--squeeze-limit
 			--style
 			--line-range
 			--list-languages
 			--lessopen
 			--diagnostic
 			--acknowledgements
+			--set-terminal-title
 			--help
 			--version
 			--cache-dir
 			--config-dir
 			--config-file
 			--generate-config-file
+			--no-config
+			--no-custom-assets
+			--no-lessopen
 		" -- "$cur"))
 		return 0
 	fi
