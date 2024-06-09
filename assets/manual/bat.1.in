@@ -87,6 +87,10 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
 can be used in addition to control the output width.
 .HP
+\fB\-S\fR, \fB\-\-chop\-long\-lines\fR
+.IP
+Truncate all lines longer than screen width. Alias for '\-\-wrap=never'.
+.HP
 \fB\-\-terminal\-width\fR <width>
 .IP
 Explicitly set the width of the terminal instead of determining it automatically. If
@@ -141,6 +145,11 @@ use -m '*.build:Python'. To highlight files named '.myignore' with the Git Ignor
 syntax, use -m '.myignore:Git Ignore'.
 Note that the right-hand side is the *name* of the syntax, not a file extension.
 .HP
+\fB\-\-ignored\-suffix\fR <ignored-suffix>
+.IP
+Ignore extension. For example: 'bat \-\-ignored-suffix ".dev" my_file.json.dev'
+will use JSON syntax, and ignore '.dev'
+.HP
 \fB\-\-theme\fR <theme>
 .IP
 Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
@@ -150,6 +159,14 @@ export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
 \fB\-\-list\-themes\fR
 .IP
 Display a list of supported themes for syntax highlighting.
+.HP
+\fB\-s\fR, \fB\-\-squeeze\-blank\fR
+.IP
+Squeeze consecutive empty lines into a single empty line.
+.HP
+\fB\-\-squeeze\-limit\fR <squeeze-limit>
+.IP
+Set the maximum number of consecutive empty lines to be printed.
 .HP
 \fB\-\-style\fR <style\-components>
 .IP
@@ -183,6 +200,18 @@ Display a list of supported languages for syntax highlighting.
 .IP
 This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
 always unbuffered \- this option is simply ignored.
+.HP
+\fB\-\-diagnostic\fR
+.IP
+Show diagnostic information for bug reports.
+.HP
+\fB\-\-acknowledgements\fR
+.IP
+Show acknowledgements.
+.HP
+\fB\-\-set\-terminal\-title\fR
+.IP
+Sets terminal title to filenames when using a pager.
 .HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
