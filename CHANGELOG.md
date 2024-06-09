@@ -38,6 +38,7 @@
 - Display which theme is the default one in colored output, see #2838 (@sblondon)
 - Add aarch64-apple-darwin ("Apple Silicon") binary tarballs to releases, see #2967 (@someposer)
 - Update the Lisp syntax, see #2970 (@ccqpein)
+- Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 
 ## Syntaxes
 
