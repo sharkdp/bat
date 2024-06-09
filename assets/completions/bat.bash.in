@@ -186,6 +186,9 @@ _bat() {
 			--config-dir
 			--config-file
 			--generate-config-file
+			--no-config
+			--no-custom-assets
+			--no-lessopen
 		" -- "$cur"))
 		return 0
 	fi
