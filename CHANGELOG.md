@@ -75,6 +75,8 @@
 
 ## Themes
 
+- Patched/improved themes for better Manpage syntax highlighting support, see #2994 (@keith-hall).
+
 ## `bat` as a library
 
 - Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
