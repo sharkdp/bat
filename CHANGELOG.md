@@ -42,6 +42,7 @@
 - Update the Lisp syntax, see #2970 (@ccqpein)
 - Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
+- Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 
 ## Syntaxes
 
