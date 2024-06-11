@@ -403,6 +403,18 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("strip-ansi")
+                .long("strip-ansi")
+                .overrides_with("strip-ansi")
+                .value_name("when")
+                .value_parser(["always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Strip colors from the input (always, *never*)")
+                .long_help("Specify when to strip ANSI escape sequences from the input. Possible values: always, *never*.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .value_name("components")

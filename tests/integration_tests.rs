@@ -2666,3 +2666,77 @@ fn highlighting_independant_from_map_syntax_case() {
         .stdout(expected)
         .stderr("");
 }
+
+#[test]
+fn strip_ansi_always_strips_ansi() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--strip-ansi=always")
+        .write_stdin("\x1B[33mYellow\x1B[m")
+        .assert()
+        .success()
+        .stdout("Yellow");
+}
+
+#[test]
+fn strip_ansi_never_does_not_strip_ansi() {
+    let output = String::from_utf8(
+        bat()
+            .arg("--style=plain")
+            .arg("--decorations=always")
+            .arg("--color=never")
+            .arg("--strip-ansi=never")
+            .write_stdin("\x1B[33mYellow\x1B[m")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    assert!(output.contains("\x1B[33mYellow"))
+}
+
+#[test]
+fn strip_ansi_does_not_affect_simple_printer() {
+    let output = String::from_utf8(
+        bat()
+            .arg("--style=plain")
+            .arg("--decorations=never")
+            .arg("--color=never")
+            .arg("--strip-ansi=always")
+            .write_stdin("\x1B[33mYellow\x1B[m")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    assert!(output.contains("\x1B[33mYellow"))
+}
+
+#[test]
+fn strip_ansi_does_not_strip_when_show_nonprintable() {
+    let output = String::from_utf8(
+        bat()
+            .arg("--style=plain")
+            .arg("--decorations=never")
+            .arg("--color=always")
+            .arg("--strip-ansi=always")
+            .arg("--show-nonprintable")
+            .write_stdin("\x1B[33mY")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    assert!(output.contains("␛"))
+}
