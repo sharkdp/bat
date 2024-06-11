@@ -405,7 +405,7 @@ impl App {
                     .map(|v| StyleComponentList::from_str(v))
                     .collect::<Result<Vec<StyleComponentList>>>()?;
 
-                StyleComponentList::to_components(lists, self.interactive_output)
+                StyleComponentList::to_components(lists, self.interactive_output, true)
             }
 
             // Use the default.

@@ -189,22 +189,27 @@ impl StyleComponentList {
     /// [numbers,grid] + [header,changes]  -> [header,changes]
     /// [numbers,grid] + [+header,-grid]   -> [numbers,header]
     /// ```
+    ///
+    /// ## Parameters
+    ///  - `with_default`: If true, the styles lists will build upon the StyleComponent::Auto style.
     pub fn to_components(
         lists: impl IntoIterator<Item = StyleComponentList>,
         interactive_terminal: bool,
+        with_default: bool,
     ) -> StyleComponents {
-        StyleComponents(
-            lists
-                .into_iter()
-                .fold(HashSet::new(), |mut components, list| {
-                    if list.contains_override() {
-                        components.clear();
-                    }
+        let mut components: HashSet<StyleComponent> = HashSet::new();
+        if with_default {
+            components.extend(StyleComponent::Auto.components(interactive_terminal))
+        }
 
-                    list.expand_into(&mut components, interactive_terminal);
-                    components
-                }),
-        )
+        StyleComponents(lists.into_iter().fold(components, |mut components, list| {
+            if list.contains_override() {
+                components.clear();
+            }
+
+            list.expand_into(&mut components, interactive_terminal);
+            components
+        }))
     }
 }
 
@@ -233,6 +238,7 @@ mod test {
     use std::str::FromStr;
 
     use super::ComponentAction::*;
+    use super::StyleComponent;
     use super::StyleComponent::*;
     use super::StyleComponentList;
 
@@ -261,6 +267,7 @@ mod test {
         assert_eq!(
             StyleComponentList::to_components(
                 vec![StyleComponentList::from_str("grid,numbers").expect("no error")],
+                false,
                 false
             )
             .0,
@@ -273,6 +280,7 @@ mod test {
         assert_eq!(
             StyleComponentList::to_components(
                 vec![StyleComponentList::from_str("grid,numbers,-grid").expect("no error")],
+                false,
                 false
             )
             .0,
@@ -285,6 +293,7 @@ mod test {
         assert_eq!(
             StyleComponentList::to_components(
                 vec![StyleComponentList::from_str("full").expect("no error")],
+                false,
                 false
             )
             .0,
@@ -296,7 +305,8 @@ mod test {
     pub fn style_component_list_expand_negates_subcomponents() {
         assert!(!StyleComponentList::to_components(
             vec![StyleComponentList::from_str("full,-numbers").expect("no error")],
-            true
+            true,
+            false
         )
         .numbers());
     }
@@ -309,6 +319,7 @@ mod test {
                     StyleComponentList::from_str("grid").expect("no error"),
                     StyleComponentList::from_str("numbers").expect("no error"),
                 ],
+                false,
                 false
             )
             .0,
@@ -325,10 +336,29 @@ mod test {
                     StyleComponentList::from_str("-grid").expect("no error"),
                     StyleComponentList::from_str("+numbers").expect("no error"),
                 ],
+                false,
                 false
             )
             .0,
             HashSet::from([HeaderFilename, LineNumbers])
+        );
+    }
+
+    #[test]
+    pub fn style_component_list_default_builds_on_auto() {
+        assert_eq!(
+            StyleComponentList::to_components(
+                vec![StyleComponentList::from_str("-numbers").expect("no error"),],
+                true,
+                true
+            )
+            .0,
+            {
+                let mut expected: HashSet<StyleComponent> = HashSet::new();
+                expected.extend(Auto.components(true));
+                expected.remove(&LineNumbers);
+                expected
+            }
         );
     }
 }
