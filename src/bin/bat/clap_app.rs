@@ -407,11 +407,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("strip-ansi")
                 .overrides_with("strip-ansi")
                 .value_name("when")
-                .value_parser(["always", "never"])
+                .value_parser(["auto", "always", "never"])
                 .default_value("never")
                 .hide_default_value(true)
-                .help("Strip colors from the input (always, *never*)")
-                .long_help("Specify when to strip ANSI escape sequences from the input. Possible values: always, *never*.")
+                .help("Strip colors from the input (auto, always, *never*)")
+                .long_help("Specify when to strip ANSI escape sequences from the input. \
+                The automatic mode will remove escape sequences unless the syntax highlighting \
+                language is plain text. Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(

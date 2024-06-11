@@ -123,8 +123,9 @@ Options:
           Set the maximum number of consecutive empty lines to be printed.
 
       --strip-ansi <when>
-          Specify when to strip ANSI escape sequences from the input. Possible values: always,
-          *never*.
+          Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
+          escape sequences unless the syntax highlighting language is plain text. Possible values:
+          auto, always, *never*.
 
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)

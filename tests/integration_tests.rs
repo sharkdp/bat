@@ -2740,3 +2740,73 @@ fn strip_ansi_does_not_strip_when_show_nonprintable() {
 
     assert!(output.contains("␛"))
 }
+
+#[test]
+fn strip_ansi_auto_strips_ansi_when_detected_syntax_by_filename() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--strip-ansi=auto")
+        .arg("--file-name=test.rs")
+        .write_stdin("fn \x1B[33mYellow\x1B[m() -> () {}")
+        .assert()
+        .success()
+        .stdout("fn Yellow() -> () {}");
+}
+
+#[test]
+fn strip_ansi_auto_strips_ansi_when_provided_syntax_by_option() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--strip-ansi=auto")
+        .arg("--language=rust")
+        .write_stdin("fn \x1B[33mYellow\x1B[m() -> () {}")
+        .assert()
+        .success()
+        .stdout("fn Yellow() -> () {}");
+}
+
+#[test]
+fn strip_ansi_auto_does_not_strip_when_plain_text_by_filename() {
+    let output = String::from_utf8(
+        bat()
+            .arg("--style=plain")
+            .arg("--decorations=always")
+            .arg("--color=never")
+            .arg("--strip-ansi=auto")
+            .arg("--file-name=ansi.txt")
+            .write_stdin("\x1B[33mYellow\x1B[m")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    assert!(output.contains("\x1B[33mYellow"))
+}
+
+#[test]
+fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
+    let output = String::from_utf8(
+        bat()
+            .arg("--style=plain")
+            .arg("--decorations=always")
+            .arg("--color=never")
+            .arg("--strip-ansi=auto")
+            .arg("--language=txt")
+            .write_stdin("\x1B[33mYellow\x1B[m")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    assert!(output.contains("\x1B[33mYellow"))
+}

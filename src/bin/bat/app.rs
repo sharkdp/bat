@@ -250,6 +250,7 @@ impl App {
             {
                 Some("never") => StripAnsiMode::Never,
                 Some("always") => StripAnsiMode::Always,
+                Some("auto") => StripAnsiMode::Auto,
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
             theme: self

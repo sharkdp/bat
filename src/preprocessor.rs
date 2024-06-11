@@ -154,6 +154,7 @@ pub enum StripAnsiMode {
     #[default]
     Never,
     Always,
+    Auto,
 }
 
 #[test]
