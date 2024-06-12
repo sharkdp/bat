@@ -373,6 +373,14 @@ You can install `bat` using the [nix package manager](https://nixos.org/nix):
 nix-env -i bat
 ```
 
+### Via flox
+
+You can install `bat` using [Flox](https://flox.dev)
+
+```bash
+flox install bat
+```
+
 ### On openSUSE
 
 You can install `bat` with zypper:
