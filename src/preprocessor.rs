@@ -1,17 +1,18 @@
 use std::fmt::Write;
 
-use console::AnsiCodeIterator;
-
-use crate::nonprintable_notation::NonprintableNotation;
+use crate::{
+    nonprintable_notation::NonprintableNotation,
+    vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
+};
 
 /// Expand tabs like an ANSI-enabled expand(1).
 pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
 
-    for chunk in AnsiCodeIterator::new(line) {
-        match chunk {
-            (text, true) => buffer.push_str(text),
-            (mut text, false) => {
+    for seq in EscapeSequenceOffsetsIterator::new(line) {
+        match seq {
+            EscapeSequenceOffsets::Text { .. } => {
+                let mut text = &line[seq.index_of_start()..seq.index_past_end()];
                 while let Some(index) = text.find('\t') {
                     // Add previous text.
                     if index > 0 {
@@ -30,6 +31,10 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
 
                 *cursor += text.len();
                 buffer.push_str(text);
+            }
+            _ => {
+                // Copy the ANSI escape sequence.
+                buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()])
             }
         }
     }
