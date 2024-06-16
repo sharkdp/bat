@@ -39,6 +39,7 @@
 - Add aarch64-apple-darwin ("Apple Silicon") binary tarballs to releases, see #2967 (@someposer)
 - Update the Lisp syntax, see #2970 (@ccqpein)
 - Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
+- Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 
 ## Syntaxes
 
