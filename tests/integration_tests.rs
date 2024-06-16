@@ -2666,3 +2666,71 @@ fn highlighting_independant_from_map_syntax_case() {
         .stdout(expected)
         .stderr("");
 }
+
+// Tests that style components can be removed with `-component`.
+#[test]
+fn style_components_can_be_removed() {
+    bat()
+        .arg({
+            #[cfg(not(feature = "git"))]
+            {
+                "--style=full,-grid"
+            }
+            #[cfg(feature = "git")]
+            {
+                "--style=full,-grid,-changes"
+            }
+        })
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n     Size: -\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components are chosen based on the rightmost `--style` argument.
+#[test]
+fn style_components_can_be_overidden() {
+    bat()
+        .arg("--style=full")
+        .arg("--style=header,numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components can be merged across multiple `--style` arguments.
+#[test]
+fn style_components_will_merge() {
+    bat()
+        .arg("--style=header,grid")
+        .arg("--style=-grid,+numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components can be merged with the `BAT_STYLE` environment variable.
+#[test]
+fn style_components_will_merge_with_env_var() {
+    bat()
+        .env("BAT_STYLE", "header,grid")
+        .arg("--style=-grid,+numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
+}
