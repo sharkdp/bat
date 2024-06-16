@@ -2666,3 +2666,16 @@ fn highlighting_independant_from_map_syntax_case() {
         .stdout(expected)
         .stderr("");
 }
+
+#[test]
+fn piped_output_with_lines() {
+    let expected = "   1 hello\n   2 world\n";
+
+    bat()
+        .arg("-n")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}

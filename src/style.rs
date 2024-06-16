@@ -22,13 +22,17 @@ pub enum StyleComponent {
 }
 
 impl StyleComponent {
-    pub fn components(self, interactive_terminal: bool) -> &'static [StyleComponent] {
+    pub fn components(
+        self,
+        interactive_terminal: bool,
+        loop_through: bool,
+    ) -> &'static [StyleComponent] {
         match self {
             StyleComponent::Auto => {
                 if interactive_terminal {
-                    StyleComponent::Default.components(interactive_terminal)
+                    StyleComponent::Default.components(interactive_terminal, loop_through)
                 } else {
-                    StyleComponent::Plain.components(interactive_terminal)
+                    StyleComponent::Plain.components(interactive_terminal, loop_through)
                 }
             }
             #[cfg(feature = "git")]
@@ -49,14 +53,24 @@ impl StyleComponent {
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
-            StyleComponent::Default => &[
-                #[cfg(feature = "git")]
-                StyleComponent::Changes,
-                StyleComponent::Grid,
-                StyleComponent::HeaderFilename,
-                StyleComponent::LineNumbers,
-                StyleComponent::Snip,
-            ],
+            StyleComponent::Default => {
+                if loop_through {
+                    return &[
+                        #[cfg(feature = "git")]
+                        StyleComponent::Changes,
+                        StyleComponent::Plain,
+                    ];
+                } else {
+                    return &[
+                        #[cfg(feature = "git")]
+                        StyleComponent::Changes,
+                        StyleComponent::Grid,
+                        StyleComponent::HeaderFilename,
+                        StyleComponent::LineNumbers,
+                        StyleComponent::Snip,
+                    ];
+                }
+            }
             StyleComponent::Plain => &[],
         }
     }

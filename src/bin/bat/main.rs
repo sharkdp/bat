@@ -365,7 +365,9 @@ fn run() -> Result<bool> {
                 let languages: String = get_languages(&config, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
                 let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+                    style_components: StyleComponents::new(
+                        StyleComponent::Plain.components(false, config.loop_through),
+                    ),
                     paging_mode: PagingMode::QuitIfOneScreen,
                     ..Default::default()
                 };
