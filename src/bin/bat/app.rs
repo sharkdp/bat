@@ -7,6 +7,7 @@ use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
+use bat::StripAnsiMode;
 use clap::ArgMatches;
 
 use console::Term;
@@ -242,6 +243,16 @@ impl App {
                         4
                     },
                 ),
+            strip_ansi: match self
+                .matches
+                .get_one::<String>("strip-ansi")
+                .map(|s| s.as_str())
+            {
+                Some("never") => StripAnsiMode::Never,
+                Some("always") => StripAnsiMode::Always,
+                Some("auto") => StripAnsiMode::Auto,
+                _ => unreachable!("other values for --strip-ansi are not allowed"),
+            },
             theme: self
                 .matches
                 .get_one::<String>("theme")

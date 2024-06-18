@@ -29,11 +29,13 @@ use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
+use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
+use crate::StripAnsiMode;
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
     raw_sequence: "\x1B[4m",
@@ -207,6 +209,7 @@ pub(crate) struct InteractivePrinter<'a> {
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
+    strip_ansi: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -265,20 +268,41 @@ impl<'a> InteractivePrinter<'a> {
             .content_type
             .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
 
-        let highlighter_from_set = if is_printing_binary || !config.colored_output {
-            None
-        } else {
-            // Determine the type of syntax for highlighting
-            let syntax_in_set =
-                match assets.get_syntax(config.language, input, &config.syntax_mapping) {
-                    Ok(syntax_in_set) => syntax_in_set,
-                    Err(Error::UndetectedSyntax(_)) => assets
-                        .find_syntax_by_name("Plain Text")?
-                        .expect("A plain text syntax is available"),
-                    Err(e) => return Err(e),
-                };
+        let needs_to_match_syntax = !is_printing_binary
+            && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
-            Some(HighlighterFromSet::new(syntax_in_set, theme))
+        let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
+            // Determine the type of syntax for highlighting
+            const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
+            match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+                Ok(syntax_in_set) => (
+                    syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
+                    Some(HighlighterFromSet::new(syntax_in_set, theme)),
+                ),
+
+                Err(Error::UndetectedSyntax(_)) => (
+                    true,
+                    Some(
+                        assets
+                            .find_syntax_by_name(PLAIN_TEXT_SYNTAX)?
+                            .map(|s| HighlighterFromSet::new(s, theme))
+                            .expect("A plain text syntax is available"),
+                    ),
+                ),
+
+                Err(e) => return Err(e),
+            }
+        } else {
+            (false, None)
+        };
+
+        // Determine when to strip ANSI sequences
+        let strip_ansi = match config.strip_ansi {
+            _ if config.show_nonprintable => false,
+            StripAnsiMode::Always => true,
+            StripAnsiMode::Auto if is_plain_text => false, // Plain text may already contain escape sequences.
+            StripAnsiMode::Auto => true,
+            _ => false,
         };
 
         Ok(InteractivePrinter {
@@ -293,6 +317,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
+            strip_ansi,
         })
     }
 
@@ -573,7 +598,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             )
             .into()
         } else {
-            match self.content_type {
+            let mut line = match self.content_type {
                 Some(ContentType::BINARY) | None => {
                     return Ok(());
                 }
@@ -590,7 +615,14 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         line
                     }
                 }
+            };
+
+            // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
+            if self.strip_ansi {
+                line = strip_ansi(&line).into()
             }
+
+            line
         };
 
         let regions = self.highlight_regions_for_line(&line)?;
