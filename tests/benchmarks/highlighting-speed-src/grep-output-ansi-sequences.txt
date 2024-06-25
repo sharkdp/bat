@@ -1860,7 +1860,7 @@
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K789[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config()
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K799[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config()
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K810[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config()
-[35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K820[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config().arg("cach").assert().failure();
+[35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K820[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config().arg("cache").assert().failure();
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K827[m[K[36m[K:[m[K    [1;33m[Kbat[m[K()
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K836[m[K[36m[K:[m[K    [1;33m[Kbat[m[K_with_config()
 [35m[Ktests/integration_tests.rs[m[K[36m[K:[m[K[32m[K878[m[K[36m[K:[m[K    [1;33m[Kbat[m[K()

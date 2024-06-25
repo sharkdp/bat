@@ -1419,7 +1419,7 @@ fn can_print_file_starting_with_cache() {
 
 #[test]
 fn does_not_print_unwanted_file_named_cache() {
-    bat_with_config().arg("cach").assert().failure();
+    bat_with_config().arg("cache").assert().failure();
 }
 
 #[test]
@@ -2801,7 +2801,7 @@ fn lessopen_validity() {
 // Syntax highlighting should be the same regardless of
 // --map-syntax' case or file extension's case
 #[test]
-fn highlighting_independant_from_map_syntax_case() {
+fn highlighting_independent_from_map_syntax_case() {
     let expected = bat()
         .arg("-f")
         .arg("--map-syntax=*.config:JSON")

@@ -346,7 +346,7 @@ impl EscapeSequenceOffsets {
     }
 }
 
-/// An iterator over the offests of ANSI/VT escape sequences within a string.
+/// An iterator over the offsets of ANSI/VT escape sequences within a string.
 ///
 /// ## Example
 ///

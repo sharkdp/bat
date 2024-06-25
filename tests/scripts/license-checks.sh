@@ -13,12 +13,12 @@ gpl_excludes=(
     # Contains a reference to GPL, but is not under GPL
     ":(exclude)tests/syntax-tests/source/Java Server Page (JSP)/LICENSE.md"
 )
-gpl_occurances=$(git grep --recurse-submodules "${gpl_term}" -- "${gpl_excludes[@]}" || true)
+gpl_occurrences=$(git grep --recurse-submodules "${gpl_term}" -- "${gpl_excludes[@]}" || true)
 
-if [ -z "${gpl_occurances}" ]; then
+if [ -z "${gpl_occurrences}" ]; then
     echo "PASS: No files under GPL were found"
 else
     echo "FAIL: GPL:ed code is not compatible with bat, but occurrences of '${gpl_term}' were found:"
-    echo "${gpl_occurances}"
+    echo "${gpl_occurrences}"
     exit 1
 fi

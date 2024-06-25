@@ -205,7 +205,7 @@
 
 - Various bash completion improvements, see #2310 (@scop)
 - Disable completion of `cache` subcommand, see #2399 (@cyqsimon)
-- Signifigantly improve startup performance on macOS, see #2442 (@BlackHoleFox)
+- Significantly improve startup performance on macOS, see #2442 (@BlackHoleFox)
 - Bump MSRV to 1.62, see #2496 (@Enselic)
 
 ## Syntaxes
@@ -767,7 +767,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Enabled LTO, making `bat` about 10% faster, see #719 (@bolinfest, @sharkdp)
 - Suggestions non how to configure `bat` for MacOS dark mode, see README (@jerguslejko)
 - Extended ["Integration with other tools"](https://github.com/sharkdp/bat#integration-with-other-tools) section (@eth-p)
-- Updated [instrutions on how to use `bat` as a `man`-pager](https://github.com/sharkdp/bat#man), see #652, see #667 (@sharkdp)
+- Updated [instructions on how to use `bat` as a `man`-pager](https://github.com/sharkdp/bat#man), see #652, see #667 (@sharkdp)
 - Add section concerning file encodings, see #688 and #568 (@sharkdp)
 - Updated sort order of command-line options in `--help` text and manpage, see #653 and #700 (@hrlmartins)
 - Updates to the man page syntax, see #718 (@sharkdp)
@@ -785,7 +785,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - `/proc/cpuinfo` and `/proc/meminfo`, see #593 (@sharkdp)
 - Nim, see #542 (@sharkdp)
 - Vue, see #826 (@chaaaaarlotte)
-- CoffeScript, see #833 (@sharkdp)
+- CoffeeScript, see #833 (@sharkdp)
 
 ## New themes
 
