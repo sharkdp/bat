@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
+use std::thread::available_parallelism;
 
 use crate::{
     clap_app,
@@ -126,7 +127,9 @@ impl App {
         // start building glob matchers for builtin mappings immediately
         // this is an appropriate approach because it's statistically likely that
         // all the custom mappings need to be checked
-        syntax_mapping.start_offload_build_all();
+        if available_parallelism()?.get() > 1 {
+            syntax_mapping.start_offload_build_all();
+        }
 
         if let Some(values) = self.matches.get_many::<String>("ignored-suffix") {
             for suffix in values {
