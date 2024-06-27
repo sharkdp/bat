@@ -15,7 +15,9 @@ in the `.sublime-syntax` format.
 
 2. If the Sublime Text syntax is only available as a `.tmLanguage` file, open the file in
    Sublime Text and convert it to a `.sublime-syntax` file via *Tools* -> *Developer* ->
-   *New Syntax from XXX.tmLanguage...*. Save the new file in the `assets/syntaxes` folder.
+   *New Syntax from XXX.tmLanguage...*. Alternatively, you can use the
+   [Sublime Syntax Convertor](https://github.com/aziz/SublimeSyntaxConvertor).
+   Save the new file in the `assets/syntaxes` folder.
    If only `.tmLanguage.json` or `.tmLanguage.yml` file is available, use
    [PackageDev](https://packagecontrol.io/packages/PackageDev) to convert it to `.tmLanguage.plist`
    format and then rename the converted file to `.tmLanguage` file.

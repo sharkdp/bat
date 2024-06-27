@@ -260,3 +260,6 @@
 [submodule "assets/syntaxes/02_Extra/vscode-wgsl"]
 	path = assets/syntaxes/02_Extra/vscode-wgsl
 	url = https://github.com/PolyMeilex/vscode-wgsl.git
+[submodule "assets/syntaxes/02_Extra/Prolog"]
+	path = assets/syntaxes/02_Extra/Prolog
+	url = https://github.com/alnkpa/sublimeprolog
