@@ -41,7 +41,7 @@
 - Update the Lisp syntax, see #2970 (@ccqpein)
 - Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
-- `--theme` option now provides a short list of all themes if the given theme does not exist (@monkeydom)
+- `--theme` now provides a short list of all themes if the given theme does not exist, see #3009 (@monkeydom)
 
 ## Syntaxes
 
