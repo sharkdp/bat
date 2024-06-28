@@ -737,7 +737,7 @@ your `PATH` or [define an environment variable](#using-a-different-pager). The [
 Windows 10 natively supports colors in both `conhost.exe` (Command Prompt) and PowerShell since
 [v1511](https://en.wikipedia.org/wiki/Windows_10_version_history#Version_1511_(November_Update)), as
 well as in newer versions of bash. On earlier versions of Windows, you can use
-[Cmder](http://cmder.net/), which includes [ConEmu](https://conemu.github.io/).
+[Cmder](http://cmder.app/), which includes [ConEmu](https://conemu.github.io/).
 
 **Note:** Old versions of `less` do not correctly interpret colors on Windows. To fix this, you can add the optional Unix tools to your PATH when installing Git. If you don’t have any other pagers installed, you can disable paging entirely by passing `--paging=never` or by setting `BAT_PAGER` to an empty string.
 
