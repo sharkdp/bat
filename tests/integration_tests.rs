@@ -848,6 +848,16 @@ fn env_var_bat_pager_value_bat() {
 }
 
 #[test]
+fn bat_error_to_stderr() {
+    bat()
+        .env("BAT_PAGER", "bat")
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("[bat error]"));
+}
+
+#[test]
 fn pager_value_bat() {
     bat()
         .arg("--pager=bat")
@@ -1318,6 +1328,9 @@ fn can_print_file_starting_with_cache() {
         .stdout("test\n")
         .stderr("");
 }
+
+#[test]
+fn send_all_bat_error_to_stderr() {}
 
 #[test]
 fn does_not_print_unwanted_file_named_cache() {
