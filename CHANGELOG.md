@@ -52,6 +52,7 @@
 - Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
 - Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 - Add syntax mapping for Wireguard config #2874 (@cyqsimon)
+- Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 
 ## Themes
 

@@ -308,6 +308,15 @@ fn list_themes_without_colors() {
 }
 
 #[test]
+fn list_languages() {
+    bat()
+        .arg("--list-languages")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Rust").normalize());
+}
+
+#[test]
 #[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
