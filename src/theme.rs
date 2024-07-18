@@ -18,8 +18,8 @@ pub fn theme(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> Strin
 
 fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<ThemeRequest> {
     match color_scheme {
-        ColorScheme::Dark => options.dark_theme,
-        ColorScheme::Light => options.light_theme,
+        ColorScheme::Dark => options.theme_dark,
+        ColorScheme::Light => options.theme_light,
     }
 }
 
@@ -45,9 +45,9 @@ pub struct ThemeOptions {
     /// Always use this theme regardless of the terminal's background color.
     pub theme: Option<ThemeRequest>,
     /// The theme to use in case the terminal uses a dark background with light text.
-    pub dark_theme: Option<ThemeRequest>,
+    pub theme_dark: Option<ThemeRequest>,
     /// The theme to use in case the terminal uses a light background with dark text.
-    pub light_theme: Option<ThemeRequest>,
+    pub theme_light: Option<ThemeRequest>,
     /// Detect whether or not the terminal is dark or light by querying for its colors.
     pub detect_color_scheme: DetectColorScheme,
 }
@@ -182,8 +182,8 @@ mod tests {
                     },
                     ThemeOptions {
                         theme: Some(ThemeRequest::Named("Theme".to_string())),
-                        dark_theme: Some(ThemeRequest::Named("Dark Theme".to_string())),
-                        light_theme: Some(ThemeRequest::Named("Light Theme".to_string())),
+                        theme_dark: Some(ThemeRequest::Named("Dark Theme".to_string())),
+                        theme_light: Some(ThemeRequest::Named("Light Theme".to_string())),
                         ..Default::default()
                     },
                 ] {
@@ -237,8 +237,8 @@ mod tests {
                 for options in [
                     ThemeOptions::default(),
                     ThemeOptions {
-                        dark_theme: Some(ThemeRequest::Default),
-                        light_theme: Some(ThemeRequest::Default),
+                        theme_dark: Some(ThemeRequest::Default),
+                        theme_light: Some(ThemeRequest::Default),
                         ..Default::default()
                     },
                 ] {
@@ -256,8 +256,8 @@ mod tests {
         fn chooses_dark_theme_if_dark_or_unknown() {
             for color_scheme in [Some(Dark), None] {
                 let options = ThemeOptions {
-                    dark_theme: Some(ThemeRequest::Named("Dark".to_string())),
-                    light_theme: Some(ThemeRequest::Named("Light".to_string())),
+                    theme_dark: Some(ThemeRequest::Named("Dark".to_string())),
+                    theme_light: Some(ThemeRequest::Named("Light".to_string())),
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
@@ -268,8 +268,8 @@ mod tests {
         #[test]
         fn chooses_light_theme_if_light() {
             let options = ThemeOptions {
-                dark_theme: Some(ThemeRequest::Named("Dark".to_string())),
-                light_theme: Some(ThemeRequest::Named("Light".to_string())),
+                theme_dark: Some(ThemeRequest::Named("Dark".to_string())),
+                theme_light: Some(ThemeRequest::Named("Light".to_string())),
                 ..Default::default()
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));

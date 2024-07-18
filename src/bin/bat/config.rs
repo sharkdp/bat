@@ -141,6 +141,8 @@ pub fn get_args_from_env_vars() -> Vec<OsString> {
     [
         ("--tabs", "BAT_TABS"),
         ("--theme", "BAT_THEME"),
+        ("--theme-dark", "BAT_THEME_DARK"),
+        ("--theme-light", "BAT_THEME_LIGHT"),
         ("--pager", "BAT_PAGER"),
         ("--paging", "BAT_PAGING"),
         ("--style", "BAT_STYLE"),
