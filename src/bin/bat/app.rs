@@ -9,6 +9,9 @@ use crate::{
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
 use bat::style::StyleComponentList;
+use bat::theme::{
+    theme, ColorScheme, ColorSchemeDetector, DetectColorScheme, ThemeOptions, ThemeRequest,
+};
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -16,7 +19,6 @@ use console::Term;
 
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
-    assets::HighlightingAssets,
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
@@ -254,18 +256,7 @@ impl App {
                 Some("auto") => StripAnsiMode::Auto,
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
-            theme: self
-                .matches
-                .get_one::<String>("theme")
-                .map(String::from)
-                .map(|s| {
-                    if s == "default" {
-                        String::from(HighlightingAssets::default_theme())
-                    } else {
-                        s
-                    }
-                })
-                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+            theme: theme(self.theme_options(), &TerminalColorSchemeDetector),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -423,5 +414,73 @@ impl App {
         }
 
         Ok(styled_components)
+    }
+
+    fn theme_options(&self) -> ThemeOptions {
+        let theme = self
+            .matches
+            .get_one::<String>("theme")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        let theme_dark = self
+            .matches
+            .get_one::<String>("theme-dark")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        let theme_light = self
+            .matches
+            .get_one::<String>("theme-light")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        let detect_color_scheme = match self
+            .matches
+            .get_one::<String>("detect-color-scheme")
+            .map(|s| s.as_str())
+        {
+            Some("auto") => DetectColorScheme::Auto,
+            Some("never") => DetectColorScheme::Never,
+            Some("always") => DetectColorScheme::Always,
+            _ => unreachable!("other values for --detect-color-scheme are not allowed"),
+        };
+        ThemeOptions {
+            theme,
+            theme_dark,
+            theme_light,
+            detect_color_scheme,
+        }
+    }
+}
+
+struct TerminalColorSchemeDetector;
+
+#[cfg(feature = "detect-color-scheme")]
+impl ColorSchemeDetector for TerminalColorSchemeDetector {
+    fn should_detect(&self) -> bool {
+        // Querying the terminal for its colors via OSC 10 / OSC 11 requires "exclusive" access
+        // since we read/write from the terminal and enable/disable raw mode.
+        // This causes race conditions with pagers such as less when they are attached to the
+        // same terminal as us.
+        //
+        // This is usually only an issue when the output is manually piped to a pager.
+        // For example: `bat Cargo.toml | less`.
+        // Otherwise, if we start the pager ourselves, then there's no race condition
+        // since the pager is started *after* the color is detected.
+        std::io::stdout().is_terminal()
+    }
+
+    fn detect(&self) -> Option<ColorScheme> {
+        use terminal_colorsaurus::{color_scheme, ColorScheme as ColorsaurusScheme, QueryOptions};
+        match color_scheme(QueryOptions::default()).ok()? {
+            ColorsaurusScheme::Dark => Some(ColorScheme::Dark),
+            ColorsaurusScheme::Light => Some(ColorScheme::Light),
+        }
+    }
+}
+
+#[cfg(not(feature = "detect-color-scheme"))]
+impl ColorSchemeDetector for TerminalColorSchemeDetector {
+    fn should_detect(&self) -> bool {
+        false
+    }
+
+    fn detect(&self) -> Option<ColorScheme> {
+        None
     }
 }

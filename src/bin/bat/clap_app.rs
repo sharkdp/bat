@@ -375,12 +375,63 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .overrides_with("theme")
                 .help("Set the color theme for syntax highlighting.")
                 .long_help(
-                    "Set the theme for syntax highlighting. Use '--list-themes' to \
+                    "Set the theme for syntax highlighting. Note that this option overrides \
+                    '--theme-dark' and '--theme-light'. Use '--list-themes' to \
                      see all available themes. To set a default theme, add the \
                      '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
                      BAT_THEME=\"...\").",
                 ),
+        )
+        .arg(
+            Arg::new("detect-color-scheme")
+                .long("detect-color-scheme")
+                .overrides_with("detect-color-scheme")
+                .value_name("when")
+                .value_parser(["auto", "never", "always"])
+                .default_value("auto")
+                .hide_default_value(true)
+                .help("Specify when to query the terminal for its colors.")
+                .long_help(
+                    "Specify when to query the terminal for its colors \
+                     in order to pick an appropriate syntax highlighting theme. \
+                     Use '--theme-light' and '--theme-dark' (or the environment variables \
+                     BAT_THEME_LIGHT and BAT_THEME_DARK) to configure which themes are picked. \
+                     You may also use '--theme' to set a theme that is used regardless of the terminal's colors.\n\n\
+                     Possible values:\n\
+                     * auto (default):\n     \
+                            Only query the terminals colors if the output is not redirected. \
+                            This is to prevent race conditions with pagers such as less.\n\
+                     * never\n     \
+                           Never query the terminal for its colors \
+                           and assume that the terminal has a dark background.\n\
+                     * always\n     \
+                           Always query the terminal for its colors, \
+                           regardless of whether or not the output is redirected."),
+        )
+        .arg(
+            Arg::new("theme-light")
+                .long("theme-light")
+                .overrides_with("theme-light")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for light backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a light background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-light=\"...\" option to the configuration file or export the BAT_THEME_LIGHT \
+                    environment variable (e.g. export BAT_THEME_LIGHT=\"...\")."),
+        )
+        .arg(
+            Arg::new("theme-dark")
+                .long("theme-dark")
+                .overrides_with("theme-dark")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for dark backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a dark background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-dark=\"...\" option to the configuration file or export the BAT_THEME_DARK \
+                    environment variable (e.g. export BAT_THEME_DARK=\"...\")."),
         )
         .arg(
             Arg::new("list-themes")
