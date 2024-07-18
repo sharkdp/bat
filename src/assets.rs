@@ -70,43 +70,6 @@ impl HighlightingAssets {
         }
     }
 
-    /// The default theme.
-    ///
-    /// ### Windows and Linux
-    ///
-    /// Windows and most Linux distributions has a dark terminal theme by
-    /// default. On these platforms, this function always returns a theme that
-    /// looks good on a dark background.
-    ///
-    /// ### macOS
-    ///
-    /// On macOS the default terminal background is light, but it is common that
-    /// Dark Mode is active, which makes the terminal background dark. On this
-    /// platform, the default theme depends on
-    /// ```bash
-    /// defaults read -globalDomain AppleInterfaceStyle
-    /// ```
-    /// To avoid the overhead of the check on macOS, simply specify a theme
-    /// explicitly via `--theme`, `BAT_THEME`, or `~/.config/bat`.
-    ///
-    /// See <https://github.com/sharkdp/bat/issues/1746> and
-    /// <https://github.com/sharkdp/bat/issues/1928> for more context.
-    #[deprecated(note = "use bat::theme::theme instead")]
-    pub fn default_theme() -> &'static str {
-        #[cfg(not(target_os = "macos"))]
-        {
-            default_theme(ColorScheme::Dark)
-        }
-        #[cfg(target_os = "macos")]
-        {
-            if macos_dark_mode_active() {
-                default_theme(ColorScheme::Dark)
-            } else {
-                default_theme(ColorScheme::Light)
-            }
-        }
-    }
-
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
         Ok(HighlightingAssets::new(
             SerializedSyntaxSet::FromFile(cache_path.join("syntaxes.bin")),
@@ -387,26 +350,6 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
     })?;
     asset_from_contents(&contents[..], description, compressed)
         .map_err(|_| format!("Could not parse cached {description}").into())
-}
-
-#[cfg(target_os = "macos")]
-fn macos_dark_mode_active() -> bool {
-    const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
-    const STYLE_KEY: &str = "AppleInterfaceStyle";
-
-    let preferences_file = home::home_dir()
-        .map(|home| home.join(PREFERENCES_FILE))
-        .expect("Could not get home directory");
-
-    match plist::Value::from_file(preferences_file).map(|file| file.into_dictionary()) {
-        Ok(Some(preferences)) => match preferences.get(STYLE_KEY).and_then(|val| val.as_string()) {
-            Some(value) => value == "Dark",
-            // If the key does not exist, then light theme is currently in use.
-            None => false,
-        },
-        // Unreachable, in theory. All macOS users have a home directory and preferences file setup.
-        Ok(None) | Err(_) => true,
-    }
 }
 
 #[cfg(test)]
