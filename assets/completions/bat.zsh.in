@@ -40,7 +40,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --color='[specify when to use colors]:when:(auto never always)'
         --italic-text='[use italics in output]:when:(always never)'
         --decorations='[specify when to show the decorations]:when:(auto never always)'
-        --detect-color-scheme="[specify when to detect the terminal's color scheme]:when:(auto never always)"
+        --color-scheme="[whether to choose a dark or light syntax highlighting theme]:scheme:(auto auto:always dark light system)"
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->themes'

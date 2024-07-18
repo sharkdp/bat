@@ -20,8 +20,8 @@ pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
 }
 
 /// Detects the color scheme from the terminal.
-pub fn color_scheme(when: DetectColorScheme) -> ColorScheme {
-    detect(when, &TerminalColorSchemeDetector).unwrap_or_default()
+pub fn color_scheme(preference: ColorSchemePreference) -> ColorScheme {
+    color_scheme_impl(preference, &TerminalColorSchemeDetector)
 }
 
 /// Options for configuring the theme used for syntax highlighting.
@@ -34,8 +34,8 @@ pub struct ThemeOptions {
     pub theme_dark: Option<ThemeRequest>,
     /// The theme to use in case the terminal uses a light background with dark text.
     pub theme_light: Option<ThemeRequest>,
-    /// Whether or not to test if the terminal is dark or light by querying for its colors.
-    pub detect_color_scheme: DetectColorScheme,
+    /// How to choose between dark and light.
+    pub color_scheme: ColorSchemePreference,
 }
 
 /// The name of a theme or the default theme.
@@ -73,6 +73,25 @@ impl ThemeRequest {
     }
 }
 
+/// How to choose between dark and light.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ColorSchemePreference {
+    /// Detect the color scheme from the terminal.
+    Auto(DetectColorScheme),
+    /// Use a dark theme.
+    Dark,
+    /// Use a light theme.
+    Light,
+    /// Detect the color scheme from the OS instead (macOS only).
+    System,
+}
+
+impl Default for ColorSchemePreference {
+    fn default() -> Self {
+        Self::Auto(DetectColorScheme::default())
+    }
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DetectColorScheme {
     /// Only query the terminal for its colors when appropriate (i.e. when the the output is not redirected).
@@ -80,8 +99,6 @@ pub enum DetectColorScheme {
     Auto,
     /// Always query the terminal for its colors.
     Always,
-    /// Never query the terminal for its colors.
-    Never,
 }
 
 /// The color scheme used to pick a fitting theme. Defaults to [`ColorScheme::Dark`].
@@ -92,13 +109,25 @@ pub enum ColorScheme {
     Light,
 }
 
+fn color_scheme_impl(
+    pref: ColorSchemePreference,
+    detector: &dyn ColorSchemeDetector,
+) -> ColorScheme {
+    match pref {
+        ColorSchemePreference::Auto(when) => detect(when, detector).unwrap_or_default(),
+        ColorSchemePreference::Dark => ColorScheme::Dark,
+        ColorSchemePreference::Light => ColorScheme::Light,
+        ColorSchemePreference::System => color_scheme_from_system().unwrap_or_default(),
+    }
+}
+
 fn theme_from_detector(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> String {
     // Implementation note: This function is mostly pure (i.e. it has no side effects) for the sake of testing.
     // All the side effects (e.g. querying the terminal for its colors) are performed in the detector.
     if let Some(theme) = options.theme {
         theme.into_theme(ColorScheme::default())
     } else {
-        let color_scheme = detect(options.detect_color_scheme, detector).unwrap_or_default();
+        let color_scheme = color_scheme_impl(options.color_scheme, detector);
         choose_theme(options, color_scheme)
             .map(|t| t.into_theme(color_scheme))
             .unwrap_or_else(|| default_theme(color_scheme).to_owned())
@@ -116,7 +145,6 @@ fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option
     let should_detect = match when {
         DetectColorScheme::Auto => detector.should_detect(),
         DetectColorScheme::Always => true,
-        DetectColorScheme::Never => false,
     };
     should_detect.then(|| detector.detect()).flatten()
 }
@@ -152,6 +180,31 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+fn color_scheme_from_system() -> Option<ColorScheme> {
+    None
+}
+
+#[cfg(target_os = "macos")]
+fn color_scheme_from_system() -> Option<ColorScheme> {
+    const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
+    const STYLE_KEY: &str = "AppleInterfaceStyle";
+
+    let preferences_file = home::home_dir()
+        .map(|home| home.join(PREFERENCES_FILE))
+        .expect("Could not get home directory");
+
+    match plist::Value::from_file(preferences_file).map(|file| file.into_dictionary()) {
+        Ok(Some(preferences)) => match preferences.get(STYLE_KEY).and_then(|val| val.as_string()) {
+            Some(value) if value == "Dark" => Some(ColorScheme::Dark),
+            // If the key does not exist, then light theme is currently in use.
+            Some(_) | None => Some(ColorScheme::Light),
+        },
+        // Unreachable, in theory. All macOS users have a home directory and preferences file setup.
+        Ok(None) | Err(_) => None,
+    }
+}
+
 #[cfg(test)]
 impl ColorSchemeDetector for Option<ColorScheme> {
     fn should_detect(&self) -> bool {
@@ -166,6 +219,7 @@ impl ColorSchemeDetector for Option<ColorScheme> {
 #[cfg(test)]
 mod tests {
     use super::ColorScheme::*;
+    use super::ColorSchemePreference as Pref;
     use super::DetectColorScheme::*;
     use super::*;
     use std::cell::Cell;
@@ -175,14 +229,16 @@ mod tests {
         use super::*;
 
         #[test]
-        fn not_called_for_never() {
-            let detector = DetectorStub::should_detect(Some(Dark));
-            let options = ThemeOptions {
-                detect_color_scheme: Never,
-                ..Default::default()
-            };
-            _ = theme_from_detector(options, &detector);
-            assert!(!detector.was_called.get());
+        fn not_called_for_dark_or_light() {
+            for pref in [Pref::Dark, Pref::Light] {
+                let detector = DetectorStub::should_detect(Some(Dark));
+                let options = ThemeOptions {
+                    color_scheme: pref,
+                    ..Default::default()
+                };
+                _ = theme_from_detector(options, &detector);
+                assert!(!detector.was_called.get());
+            }
         }
 
         #[test]
@@ -193,7 +249,7 @@ mod tests {
             ];
             for detector in detectors {
                 let options = ThemeOptions {
-                    detect_color_scheme: Always,
+                    color_scheme: Pref::Auto(Always),
                     ..Default::default()
                 };
                 _ = theme_from_detector(options, &detector);
