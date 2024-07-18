@@ -9,7 +9,7 @@ use crate::{
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
 use bat::style::StyleComponentList;
-use bat::theme::{theme, DetectColorScheme, ThemeOptions, ThemeRequest};
+use bat::theme::{theme, ColorSchemePreference, DetectColorScheme, ThemeOptions, ThemeRequest};
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -431,20 +431,22 @@ impl App {
             theme,
             theme_dark,
             theme_light,
-            detect_color_scheme: self.detect_color_scheme(),
+            color_scheme: self.color_scheme_preference(),
         }
     }
 
-    pub(crate) fn detect_color_scheme(&self) -> DetectColorScheme {
+    pub(crate) fn color_scheme_preference(&self) -> ColorSchemePreference {
         match self
             .matches
-            .get_one::<String>("detect-color-scheme")
+            .get_one::<String>("color-scheme")
             .map(|s| s.as_str())
         {
-            Some("auto") => DetectColorScheme::Auto,
-            Some("never") => DetectColorScheme::Never,
-            Some("always") => DetectColorScheme::Always,
-            _ => unreachable!("other values for --detect-color-scheme are not allowed"),
+            Some("auto") => ColorSchemePreference::Auto(DetectColorScheme::Auto),
+            Some("auto:always") => ColorSchemePreference::Auto(DetectColorScheme::Always),
+            Some("dark") => ColorSchemePreference::Dark,
+            Some("light") => ColorSchemePreference::Light,
+            Some("system") => ColorSchemePreference::System,
+            _ => unreachable!("other values for --color-scheme are not allowed"),
         }
     }
 }

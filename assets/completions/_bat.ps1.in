@@ -32,7 +32,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--color', 'color', [CompletionResultType]::ParameterName, 'When to use colors (*auto*, never, always).')
             [CompletionResult]::new('--italic-text', 'italic-text', [CompletionResultType]::ParameterName, 'Use italics in output (always, *never*)')
             [CompletionResult]::new('--decorations', 'decorations', [CompletionResultType]::ParameterName, 'When to show the decorations (*auto*, never, always).')
-            [CompletionResult]::new('--detect-color-scheme', 'detect-color-scheme', [CompletionResultType]::ParameterName, 'When to detect the terminal''s color scheme (*auto*, never, always).')
+            [CompletionResult]::new('--color-scheme', 'color-scheme', [CompletionResultType]::ParameterName, 'Whether to choose a dark or light syntax highlighting theme (*auto*, auto:always, dark, light, system).')
             [CompletionResult]::new('--paging', 'paging', [CompletionResultType]::ParameterName, 'Specify when to use the pager, or use `-P` to disable (*auto*, never, always).')
             [CompletionResult]::new('--pager', 'pager', [CompletionResultType]::ParameterName, 'Determine which pager to use.')
             [CompletionResult]::new('-m', 'm', [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')

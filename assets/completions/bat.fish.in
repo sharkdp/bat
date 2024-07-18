@@ -99,7 +99,13 @@ set -l color_opts '
 '
 set -l decorations_opts $color_opts
 set -l paging_opts $color_opts
-set -l detect_color_scheme_opts $color_opts
+set -l color_scheme_opts "
+    auto\t'Use the terminal\'s color scheme if the output is not redirected (default)'
+    auto:always\t'Always use the terminal\'s color scheme'
+    dark\t'Use a dark syntax highlighting theme'
+    light\t'Use a light syntax highlighting theme'
+    system\t'Query the OS for its color scheme (macOS only)'
+"
 
 # Include some examples so we can indicate the default.
 set -l pager_opts '
@@ -144,7 +150,7 @@ complete -c $bat -l config-file -f -d "Display location of configuration file" -
 
 complete -c $bat -l decorations -x -a "$decorations_opts" -d "When to use --style decorations" -n __bat_no_excl_args
 
-complete -c $bat -l detect-color-scheme -x -a "$detect_color_scheme_opts" -d "When to detect the terminal's color scheme" -n __bat_no_excl_args
+complete -c $bat -l color-scheme -x -a "$color_scheme_opts" -d "Whether to choose a dark or light syntax highlighting theme" -n __bat_no_excl_args
 
 complete -c $bat -l diagnostic -d "Print diagnostic info for bug reports" -n __fish_is_first_arg
 
