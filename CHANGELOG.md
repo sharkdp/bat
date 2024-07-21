@@ -49,11 +49,12 @@
 - Upgrade JQ syntax, see #2820 (@dependabot[bot])
 - Add syntax mapping for quadman quadlets #2866 (@cyqsimon)
 - Map containers .conf files to TOML syntax #2867 (@cyqsimon)
-- Associate `xsh` files with `xonsh` syntax that is Python, see #2840 (@anki-code).
-- Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
-- Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
-- Add syntax mapping for Wireguard config #2874 (@cyqsimon)
-- Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger).
+- Associate `.xsh` files with `xonsh` syntax that is Python, see #2840 (@anki-code)
+- Associate JSON with Comments `.jsonc` with `json` syntax, see #2795 (@mxaddict)
+- Associate JSON-LD `.jsonld` files with `json` syntax, see #3037 (@vorburger)
+- Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger)
+- Associate `.aws/{config,credentials}`, see #2795 (@mxaddict)
+- Associate Wireguard config `/etc/wireguard/*.conf`, see #2874 (@cyqsimon)
 - Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
 
 ## Themes
