@@ -52,6 +52,7 @@
 - Added auto detect syntax for `.jsonc` #2795 (@mxaddict)
 - Added auto detect syntax for `.aws/{config,credentials}` #2795 (@mxaddict)
 - Add syntax mapping for Wireguard config #2874 (@cyqsimon)
+- Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger).
 
 ## Themes
 
