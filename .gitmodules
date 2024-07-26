@@ -260,3 +260,6 @@
 [submodule "assets/syntaxes/02_Extra/vscode-wgsl"]
 	path = assets/syntaxes/02_Extra/vscode-wgsl
 	url = https://github.com/PolyMeilex/vscode-wgsl.git
+[submodule "assets/syntaxes/02_Extra/CSS3"]
+	path = assets/syntaxes/02_Extra/CSS3
+	url = https://github.com/ryboe/CSS3.git
