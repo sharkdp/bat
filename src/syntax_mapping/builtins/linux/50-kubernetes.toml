@@ -1,0 +1,2 @@
+[mappings]
+"YAML" = ["/etc/kubernetes/*.conf"]
