@@ -1,0 +1,724 @@
+/* deprecated single colon syntax for pseudo-classes that have become pseudo-elements */
+
+:after {}
+:before {}
+:first-letter {}
+:first-line {}
+div:after {}
+div:before {}
+div:first-letter {}
+div:first-line {}
+
+/* -moz- prefixed pseudo-elements */
+
+::-moz-anonymous-block {}
+::-moz-anonymous-positioned-block {}
+::-moz-canvas {}
+::-moz-cell-content {}
+::-moz-focus-inner {}
+::-moz-focus-outer {}
+::-moz-inline-table {}
+::-moz-math-stretchy {}
+::-moz-page {}
+::-moz-page-sequence {}
+::-moz-pagebreak {}
+::-moz-pagecontent {}
+::-moz-placeholder {}
+::-moz-progress-bar {}
+::-moz-range-thumb {}
+::-moz-range-track {}
+::-moz-selection {}
+::-moz-scrolled-canvas {}
+::-moz-scrolled-content {}
+::-moz-scrolled-page-sequence {}
+::-moz-svg-foreign-content {}
+::-moz-table {}
+::-moz-table-cell {}
+::-moz-table-column {}
+::-moz-table-column-group {}
+::-moz-table-outer {}
+::-moz-table-row {}
+::-moz-table-row-group {}
+::-moz-viewport {}
+::-moz-viewport-scroll {}
+::-moz-xul-anonymous-block {}
+
+/* pseudo-elements */
+
+::after {}
+::before {}
+::content {}
+::first-letter {}
+::first-line:hover {}
+::grammar-error {}
+::placeholder {}
+::selection {}
+::shadow {}
+::spelling-error {}
+::view-transition {}
+
+::view-transition-group(*) {}
+::view-transition-group(root) {}
+::view-transition-group(ident) {}
+::view-transition-old(*) {}
+::view-transition-old(root) {}
+::view-transition-old(ident) {}
+::view-transition-new(*) {}
+::view-transition-new(root) {}
+::view-transition-new(ident) {}
+::view-transition-image-pair(*) {}
+::view-transition-image-pair(root) {}
+::view-transition-image-pair(ident) {}
+
+/* -moz- prefixed pseudo-classes */
+
+:-moz-locale-dir() {}
+:-moz-locale-dir(ltr) {}
+:-moz-locale-dir(rtl) {}
+:-moz-system-metric(images-in-menus) {}
+:-moz-system-metric(mac-graphite-theme) {}
+:-moz-system-metric(-moz-maemo-classic) {}
+:-moz-system-metric(device-pixel-ratio) {}
+:-moz-system-metric(scrollbar-end-backward) {}
+:-moz-system-metric(scrollbar-end-forward) {}
+:-moz-system-metric(scrollbar-start-backward) {}
+:-moz-system-metric(scrollbar-start-forward) {}
+:-moz-system-metric(scrollbar-thumb-proportional) {}
+:-moz-system-metric(touch-enabled) {}
+:-moz-system-metric(windows-classic) {}
+:-moz-system-metric(windows-compositor) {}
+:-moz-system-metric(windows-glass) {}
+:-moz-system-metric(windows-theme) {}
+:-moz-system-metric(windows-default-theme) {}
+:-moz-tree-cell-text(hover) {}
+:-moz-tree-row(hover) {}
+
+:-moz-any {}
+:-moz-any-link {}
+:-moz-bound-element {}
+:-moz-broken {}
+:-moz-drag-over {}
+:-moz-first-node {}
+:-moz-focusring {}
+:-moz-full-screen {}
+:-moz-full-screen-ancestor {}
+:-moz-handler-blocked {}
+:-moz-handler-crashed {}
+:-moz-handler-disabled {}
+:-moz-last-node {}
+:-moz-list-bullet {}
+:-moz-list-number {}
+:-moz-loading {}
+:-moz-lwtheme {}
+:-moz-lwtheme-brighttext {}
+:-moz-lwtheme-darktext {}
+:-moz-only-whitespace {}
+:-moz-read-only {}
+:-moz-read-write {}
+:-moz-suppressed {}
+:-moz-submit-invalid {}
+:-moz-tree-checkbox {}
+:-moz-tree-cell {}
+:-moz-tree-cell-text {}
+:-moz-tree-column {}
+:-moz-tree-drop-feedback {}
+:-moz-tree-image {}
+:-moz-tree-indentation {}
+:-moz-tree-line {}
+:-moz-tree-progressmeter {}
+:-moz-tree-row {}
+:-moz-tree-separator {}
+:-moz-tree-twisty {}
+:-moz-ui-invalid {}
+:-moz-ui-valid {}
+:-moz-user-disabled {}
+:-moz-window-inactive {}
+
+/* -ms- prefixed pseudo-classes */
+
+:-ms-input-placeholder {}
+:-ms-keyboard-active {}
+
+/* -webkit- prefixed pseudo-elements */
+
+::-webkit-validation-bubble-message {}
+::-webkit-validation-bubble-arrow-clipper {}
+::-webkit-validation-bubble-arrow {}
+::-webkit-validation-bubble {}
+::-webkit-slider-thumb {}
+::-webkit-search-results-decoration {}
+::-webkit-search-results-button {}
+::-webkit-search-decoration {}
+::-webkit-search-cancel-button {}
+::-webkit-scrollbar-track-piece {}
+::-webkit-scrollbar-track {}
+::-webkit-scrollbar-thumb {}
+::-webkit-scrollbar-corner {}
+::-webkit-scrollbar-button {}
+::-webkit-scrollbar {}
+::-webkit-progress-value {}
+::-webkit-progress-bar {}
+::-webkit-outer-spin-button {}
+::-webkit-meter-suboptimum-value {}
+::-webkit-meter-optimum-value {}
+::-webkit-meter-even-less-good-value {}
+::-webkit-media-controls-volume-slider-container {}
+::-webkit-media-controls-volume-slider {}
+::-webkit-media-controls-toggle-closed-captions-button {}
+::-webkit-media-controls-timeline-container {}
+::-webkit-media-controls-timeline {}
+::-webkit-media-controls-time-remaining-display {}
+::-webkit-media-controls-seek-forward-button {}
+::-webkit-media-controls-seek-back-button {}
+::-webkit-media-controls-rewind-button {}
+::-webkit-media-controls-return-to-realtime-button {}
+::-webkit-media-controls-play-button {}
+::-webkit-media-controls-panel {}
+::-webkit-media-controls-mute-button {}
+::-webkit-media-controls-fullscreen-button {}
+::-webkit-media-controls-current-time-display {}
+::-webkit-inner-spin-button {}
+::-webkit-full-page-media {}
+::-webkit-file-upload-button {}
+
+/* -webkit- prefixed pseudo-classes */
+
+:-webkit-any {}
+:-webkit-full-screen {}
+
+/* pseudo-classes */
+
+:dir(ltr) {}
+:drop() {}              /* (active\s+)?(valid\s+)?(invalid+)? */
+:drop(valid) {}              /* (active\s+)?(valid\s+)?(invalid+)? */
+:drop(valid active invalid) {}
+:matches() {}          /* these pseudo-classes take selector lists as arguments */
+:matches(:matches()) {}
+:not(:matches()) {}    /* :not() can't be nested within itself or :matches() - can't enforce this with regex */
+:not() {}
+button:not([DISABLED]) {}
+*:not(div) {}
+html|*:not(:link):not(:visited) {}
+:has() {}
+a:has(> img) {}
+dt:has(+ dt) {}
+section:not(:has(h1, h2, h3, h4, h5, h6)) {}
+section:has(:not(h1, h2, h3, h4, h5, h6)) {}
+:nth-child() {}         /* (An+B [of sel]?) */
+:nth-child(even) {}
+:nth-child(10n - 1) {}
+:nth-child(10n+9) {}
+li:nth-child(-n+3 of .important) {}
+li.important:nth-child(-n+3) {}
+:nth-last-child() {}
+tr:nth-last-child(-n+2)  {}  /* represents the two last rows of an HTML table */
+foo:nth-last-child(odd) {}
+
+:lang(de-DE) {}         /* language range is a BCP 47 identifier */
+:lang(*-DE) {}
+:lang(az-Arab-x-AZE-derbend) {}
+:lang(cmn-Hans-CN) {}
+:lang(de) {}
+:lang(de-CH-1901) {}
+:lang(de-CH-x-phonebk) {}
+:lang(de-DE) {}
+:lang(de-Qaaa) {}
+:lang(en-a-myext-b-another) {}
+:lang(en-US) {}
+:lang(en-US-u-islamcal) {}
+:lang(es-419) {}
+:lang(fr) {}
+:lang(hy-Latn-IT-arevela) {}
+:lang(i-enochian) {}
+:lang(ja) {}
+:lang(qaa-Qaaa-QM-x-southern) {}
+:lang(sl-IT-nedis) {}
+:lang(sl-nedis) {}
+:lang(sl-rozaj) {}
+:lang(sl-rozaj-biske) {}
+:lang(sr-Cyrl) {}
+:lang(sr-Latn) {}
+:lang(sr-Latn-QM) {}
+:lang(sr-Latn-RS) {}
+:lang(sr-Qaaa-RS) {}
+:lang(x-whatever) {}
+:lang(yue-HK) {}
+:lang(zh-cmn-Hans-CN) {}
+:lang(zh-CN-a-myext-x-private) {}
+:lang(zh-Hans) {}
+:lang(zh-Hans-CN) {}
+:lang(zh-Hant) {}
+:lang(zh-yue-HK) {}
+
+
+:nth-of-type() {}            /* (An+B) - can be implemented without begin-end match. just copy an+b rule into this rule*/
+img:nth-of-type(2n+1) { float: right; }
+img:nth-of-type(2n) { float: left; }
+:nth-last-of-type() {}
+body > h2:nth-of-type(n+2):nth-last-of-type(n+2) {}
+body > h2:not(:first-of-type):not(:last-of-type) {}
+:nth-column() {}
+:nth-column(even) {}
+:nth-column(10n-1) {}
+:nth-last-column() {}
+:nth-last-column(10n+9) {}
+
+:active {}
+:any-link {}
+:blank {}
+:checked {}
+:current {}
+:default {}
+:disabled {}
+:drop {}
+:empty {}
+:enabled {}
+:first-child{}
+:first-of-type {}
+:focus {}
+:future{}
+:hover {}
+:in-range {}
+:indeterminate {}
+:invalid {}
+:last-child {}
+:last-of-type {}
+:link {}
+:only-child {}
+:only-of-type {}
+:optional {}
+:out-of-range {}
+:past {}
+:placeholder-shown {}
+:read-only {}
+:read-write {}
+:required {}
+:root {}
+:scope {}
+:target {}
+:user-error {}
+:valid {}
+:visited {}
+
+/* An+B */
+
+:nth-of-type(2n+0 ) {}
+:nth-of-type(even) {}
+:nth-of-type(4n+1) {}
+:nth-of-type(-1n+6) {}
+:nth-of-type( -4n+10 ) {}
+:nth-of-type(0n+5) {}
+:nth-of-type(5) {}
+:nth-of-type(1n+0) {}
+:nth-of-type(n+0) {}
+:nth-of-type(n) {}
+:nth-of-type(2n+0) {}
+:nth-of-type(2n) {}
+:nth-of-type(3n-6) {}
+:nth-of-type(3n + 1) {}    /* whitespace ok */
+:nth-of-type(+3n - 2) {}
+:nth-of-type(-n+ 6) {}
+:nth-of-type(+6) {}
+
+/* invalid An+B */
+
+:nth-of-type(3n + -6) {}
+:nth-of-type(3 n) {}    /* invalid whitespace */
+:nth-of-type(+ 2n) {}
+:nth-of-type(+ 2) {}
+
+/* invalid pseudo-classes */
+
+:not(:not())    {}     /* can't nest :not() inside :not() or :matches(), but can't enforce this with regex */
+:matches(:not()) {}
+:nth-child(10n+-1) {}
+
+/* universal selector */
+
+* {}
+* {
+
+}
+
+/* html tags */
+
+abbr {}
+address {}
+area {}
+article {}
+aside {}
+audio {}
+a {}
+base {}
+bdi {}
+bdo {}
+blockquote {}
+body {}
+br {}
+button {}
+b {}
+canvas {}
+caption {}
+cite {}
+code {}
+colgroup {}
+col {}
+datalist {}
+data {}
+dd {}
+del {}
+details {}
+dfn {}
+div {}
+dl {}
+dt {}
+embed {}
+em {}
+fieldset {}
+figcaption {}
+figure {}
+footer {}
+form {}
+h1 {}
+h2 {}
+h3 {}
+h4 {}
+h5 {}
+h6 {}
+header {}
+head {}
+hr {}
+html {}
+iframe {}
+img {}
+input {}
+ins {}
+i {}
+kbd {}
+keygen {}
+label {}
+legend {}
+link {}
+li {}
+main {}
+map {}
+mark {}
+math {}
+menuitem {}
+menu {}
+meta {}
+meter {}
+nav {}
+noscript {}
+object {}
+ol {}
+optgroup {}
+option {}
+output {}
+param {}
+pre {}
+progress {}
+p {}
+q {}
+rp {}
+rt {}
+ruby {}
+samp {}
+script {}
+section {}
+select {}
+small {}
+source {}
+span {}
+strong {}
+style {}
+sub {}
+summary {}
+sup {}
+svg {}
+s {}
+table {}
+tbody {}
+td {}
+template {}
+textarea {}
+tfoot {}
+thead {}
+th {}
+time {}
+title {}
+track {}
+tr {}
+ul {}
+u {}
+var {}
+video {}
+wbr {}
+
+/* :not(s1, s2) */
+
+button:not([DISABLED]) {}
+*:not(FOO) {}
+html|*:not(:link):not(:visited) {}
+
+/* :matches(s1, s2) */
+
+*|*:matches(:hover, :focus) {}
+*|*:matches(*:hover, *:focus) {}
+aaa |*:matches(*:hover, *:focus) {}
+hello|*:matches(*:hover, *:focus) {}
+hello  |*:matches(*:hover, *:focus) {}
+ans\aa|*:matches(*:hover, *:focus) {}
+
+/* :has(rs1, rs2) */
+
+a:has(> img) {}
+dt:has(+ dt) {}
+section:not(:has(h1, h2, h3, h4, h5, h6)) {}
+section:has(:not(h1, h2, h3, h4, h5, h6)) {}
+
+/* class selector */
+
+*.pastoral { color: green; }
+.pastoral { color: green; }
+h1.pastoral { color: green; }
+p.pastoral.marine { color: green; }
+
+/* id selector */
+
+h1#chapter1 {}
+#chapter1 {}
+*#z98y {}
+
+/* attribute selector */
+
+h1[title] {}
+span[class="example"] {}
+span[  hello= "Cleveland"] [goodbye='Columbus'] {}
+a[rel~="copyright"] { ... }
+a[href="http://www.w3.org/"] { ... }
+a[hreflang=fr] {}
+a[hreflang|="en"] {}
+object[type^="image/" 'hi' 'hi'] {}
+a[href$=".html"] {}
+p[title*="hello" "hi" hi there 'sup'] {}
+[frame=hsides i j k] { border-style: solid none; }
+[foo\aasdf\asd|\at\aaaaat=val] { color: blue; }
+[*|att] { color: yellow; }
+[\aasdf\asd|att] { color: green; }
+[att] { color: green; }
+[|*] { color: green; }
+[*|*] { color: green; }
+[*] { color: green; }
+[ns|*] { color: green; }
+[attr] {}
+[attr=value] {}
+[attr~=value] {}
+[attr|=value] {}
+[attr^=value] {}
+[attr$=value] {}
+[attr*=value] {}
+
+/* :dir() pseudo-class */
+
+div:dir(ltr) {}
+div:dir(rtl) {}
+
+/* :lang() pseudo-class */
+
+html:lang(fr-be) {}
+html:lang(de) {}
+:lang(fr-be) > q {}
+:lang(de) > q {}
+:lang(de-*) > q {}
+:lang(*-fr) > q {}
+
+/* :any-link pseudo-class */
+
+div:any-link {}
+:any-link {}
+
+/* :link history pseudo-class */
+
+div:link {}
+.footnote:link {}
+div:visited {}
+.footnote:visited  {}
+
+/* :target pseudo-class */
+
+p.note:target {}
+*:target { color: red; }
+*:target::before { content: url('target.png'); }
+
+/* :scope pseudo-class */
+
+div:scope {}
+.footnote:scope {}
+
+/* time dimensional pseudo-classes */
+
+:current {
+  background: yellow;
+}
+:current(p, li, dt, dd) {
+  background: yellow;
+}
+:past {
+  background: yellow;
+}
+:future {
+  background: yellow;
+}
+
+/* user-action pseudo-classes */
+
+a:link    {} /* unvisited links */
+a:visited {} /* visited links */
+a:hover   {} /* user hovers */
+a:active  {} /* active links */
+a:focus   {}
+a:focus:hover {}
+a:drop(active) {}
+a:drop( valid ) {}
+a:drop(invalid)   {}
+a:drop(valid active ) {}
+
+/* :enabled :disabled pseudo-classes */
+
+div:enabled {}
+:disabled {}
+
+/* mutability pseudo-classes */
+
+div:read-only {}
+:read-write {}
+
+/* :placeholder-shown pseudo-class */
+
+div:placeholder-shown {}
+:placeholder-shown {}
+
+/* :default pseudo-class */
+
+div:default {}
+:default {}
+
+/* :checked pseudo-class */
+
+div:checked {}
+:checked {}
+:not(:checked) {}
+
+/* :indeterminate */
+
+div:indeterminate {}
+:indeterminate {}
+
+/* validity pseudo-classes */
+
+div:valid {}
+:valid {}
+div:invalid {}
+:invalid {}
+
+/* range pseudo-classes */
+
+div:in-range {}
+:in-range {}
+div:out-of-range {}
+:out-of-range {}
+
+/* :required, :optional pseudo-classes */
+
+div:required {}
+:required {}
+div:optional {}
+:optional {}
+
+/* the rest */
+
+div:root {}
+:root {}
+div:empty {}
+:empty {}
+div:blank {}
+:blank {}
+:nth-child(even) {}   /* represents the 2nd, 4th, 6th, etc elements */
+:nth-child(10n-1) {}  /* represents the 9th, 19th, 29th, etc elements */
+:nth-child(10n+9) {}  /* Same */
+    :nth-child(10n+-1) {} /* Syntactically invalid, and would be ignored */
+li:nth-child(-n+3 of .important) {}
+li.important:nth-child(-n+3) {}
+tr:nth-child(even) {
+  background: silver;
+}
+tr:nth-child(even of :not([hidden])) {
+  background: silver;
+}
+tr:nth-last-child(-n+2) {}    /* represents the two last rows of an HTML table */
+
+foo:nth-last-child(odd) {}    /* represents all odd foo elements in their parent element,
+                              counting from the last one */
+* > a:first-child {} /* a is first child of any element */
+a:first-child {} /* Same (assuming a is not the root element) */
+ol > li:last-child {}
+ol > li:only-child {}
+img:nth-of-type(2n+1) { float: right; }
+img:nth-of-type(2n) { float: left; }
+body > h2:nth-of-type(n+2):nth-last-of-type(n+2) {}
+body > h2:not(:first-of-type):not(:last-of-type) {}
+dl dt:first-of-type {}
+tr > td:last-of-type {}
+tr > td:only-of-type {}
+
+/* combinators */
+
+div * p {}
+div p *[href] {}
+body > p {}
+div ol>li p {}
+math + p {}
+h1.opener + h2 {}
+h1 ~ pre {}
+h1 /ident/ pre {}
+col.selected || td {
+  background: gray;
+  color: white;
+  font-weight: bold;
+}
+
+/* grid structural pseudo-classes */
+
+div:nth-column(2n+1) {}
+:nth-column(2n) {}
+div:nth-last-column(2n+1) {}
+:nth-last-column(2n) {}
+
+/* deprecated tags */
+
+acronym {}
+applet {}
+basefont {}
+bgsound {}
+big {}
+blink {}
+center {}
+dir {}
+font {}
+frameset {}
+frame {}
+hgroup {}
+isindex {}
+listing {}
+marquee {}
+multicol {}
+nextid {}
+nobr {}
+noembed {}
+noframes {}
+plaintext {}
+spacer {}
+strike {}
+tt {}
+xmp {}
