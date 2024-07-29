@@ -104,6 +104,8 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
+	--color-scheme)
+		COMPREPLY=($(compgen -W "auto auto:always dark light system" -- "$cur"))
 	--italic-text)
 		COMPREPLY=($(compgen -W "always never" -- "$cur"))
 		return 0
@@ -112,7 +114,9 @@ _bat() {
 		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
 		;;
-	--theme)
+	--theme | \
+	--theme-dark | \
+	--theme-light)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
                 __bat_escape_completions
@@ -170,6 +174,9 @@ _bat() {
 			--map-syntax
 			--ignored-suffix
 			--theme
+			--theme-dark
+			--theme-light
+			--color-scheme
 			--list-themes
 			--squeeze-blank
 			--squeeze-limit

@@ -2,11 +2,13 @@ use std::collections::HashSet;
 use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
+use std::str::FromStr as _;
 
 use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
+use bat::theme::{theme, ColorSchemePreference, DetectColorScheme, ThemeOptions, ThemeRequest};
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -14,7 +16,6 @@ use console::Term;
 
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
-    assets::HighlightingAssets,
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
@@ -253,18 +254,7 @@ impl App {
                 Some("auto") => StripAnsiMode::Auto,
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
-            theme: self
-                .matches
-                .get_one::<String>("theme")
-                .map(String::from)
-                .map(|s| {
-                    if s == "default" {
-                        String::from(HighlightingAssets::default_theme())
-                    } else {
-                        s
-                    }
-                })
-                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+            theme: theme(self.theme_options()),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -399,5 +389,41 @@ impl App {
         }
 
         Ok(styled_components)
+    }
+
+    fn theme_options(&self) -> ThemeOptions {
+        let theme = self
+            .matches
+            .get_one::<String>("theme")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        let theme_dark = self
+            .matches
+            .get_one::<String>("theme-dark")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        let theme_light = self
+            .matches
+            .get_one::<String>("theme-light")
+            .map(|t| ThemeRequest::from_str(t).unwrap());
+        ThemeOptions {
+            theme,
+            theme_dark,
+            theme_light,
+            color_scheme: self.color_scheme_preference(),
+        }
+    }
+
+    pub(crate) fn color_scheme_preference(&self) -> ColorSchemePreference {
+        match self
+            .matches
+            .get_one::<String>("color-scheme")
+            .map(|s| s.as_str())
+        {
+            Some("auto") => ColorSchemePreference::Auto(DetectColorScheme::Auto),
+            Some("auto:always") => ColorSchemePreference::Auto(DetectColorScheme::Always),
+            Some("dark") => ColorSchemePreference::Dark,
+            Some("light") => ColorSchemePreference::Light,
+            Some("system") => ColorSchemePreference::System,
+            _ => unreachable!("other values for --color-scheme are not allowed"),
+        }
     }
 }
