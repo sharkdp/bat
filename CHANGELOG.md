@@ -8,6 +8,7 @@
 - `PrettyPrinter::squeeze_empty_lines` to support line squeezing for bat as a library, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
+- Add line length soft/hard limits to prevent out-of-memory events, see issue #636 and PR #2902 (@einfachIrgendwer0815)
 
 ## Bugfixes
 
