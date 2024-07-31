@@ -515,6 +515,16 @@ and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
 variable to make these changes permanent or use `bat`s
 [configuration file](https://github.com/sharkdp/bat#configuration-file).
 
+>[!tip]
+> If you specify a default style in `bat`'s config file, you can change which components
+> are displayed during a single run of `bat` using the `--style` command-line argument.
+> By prefixing a component with `+` or `-`, it can be added or removed from the current style.
+>
+> For example, if your config contains `--style=full,-snip`, you can run bat with
+> `--style=-grid,+snip` to remove the grid and add back the `snip` component.
+> Or, if you want to override the styles completely, you use `--style=numbers` to
+> only show the line numbers.
+
 ### Adding new syntaxes / language definitions
 
 Should you find that a particular syntax is not available within `bat`, you can follow these

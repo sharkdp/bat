@@ -2,11 +2,13 @@ use std::collections::HashSet;
 use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
+use bat::style::StyleComponentList;
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -86,7 +88,6 @@ impl App {
 
             // .. and the rest at the end
             cli_args.for_each(|a| args.push(a));
-
             args
         };
 
@@ -364,34 +365,57 @@ impl App {
         Ok(file_input)
     }
 
+    fn forced_style_components(&self) -> Option<StyleComponents> {
+        // No components if `--decorations=never``.
+        if self
+            .matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str())
+            == Some("never")
+        {
+            return Some(StyleComponents(HashSet::new()));
+        }
+
+        // Only line numbers if `--number`.
+        if self.matches.get_flag("number") {
+            return Some(StyleComponents(HashSet::from([
+                StyleComponent::LineNumbers,
+            ])));
+        }
+
+        // Plain if `--plain` is specified at least once.
+        if self.matches.get_count("plain") > 0 {
+            return Some(StyleComponents(HashSet::from([StyleComponent::Plain])));
+        }
+
+        // Default behavior.
+        None
+    }
+
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
-        let mut styled_components = StyleComponents(
-            if matches.get_one::<String>("decorations").map(|s| s.as_str()) == Some("never") {
-                HashSet::new()
-            } else if matches.get_flag("number") {
-                [StyleComponent::LineNumbers].iter().cloned().collect()
-            } else if 0 < matches.get_count("plain") {
-                [StyleComponent::Plain].iter().cloned().collect()
-            } else {
-                matches
-                    .get_one::<String>("style")
-                    .map(|styles| {
-                        styles
-                            .split(',')
-                            .map(|style| style.parse::<StyleComponent>())
-                            .filter_map(|style| style.ok())
-                            .collect::<Vec<_>>()
-                    })
-                    .unwrap_or_else(|| vec![StyleComponent::Default])
+        let mut styled_components = match self.forced_style_components() {
+            Some(forced_components) => forced_components,
+
+            // Parse the `--style` arguments and merge them.
+            None if matches.contains_id("style") => {
+                let lists = matches
+                    .get_many::<String>("style")
+                    .expect("styles present")
+                    .map(|v| StyleComponentList::from_str(v))
+                    .collect::<Result<Vec<StyleComponentList>>>()?;
+
+                StyleComponentList::to_components(lists, self.interactive_output, true)
+            }
+
+            // Use the default.
+            None => StyleComponents(HashSet::from_iter(
+                StyleComponent::Default
+                    .components(self.interactive_output)
                     .into_iter()
-                    .map(|style| style.components(self.interactive_output))
-                    .fold(HashSet::new(), |mut acc, components| {
-                        acc.extend(components.iter().cloned());
-                        acc
-                    })
-            },
-        );
+                    .cloned(),
+            )),
+        };
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
