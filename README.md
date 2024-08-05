@@ -121,7 +121,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 #### `fzf`
 
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
-use `bat`s `--color=always` option to force colorized output. You can also use `--line-range`
+use `bat`'s `--color=always` option to force colorized output. You can also use `--line-range`
 option to restrict the load times for long files:
 
 ```bash
@@ -505,7 +505,7 @@ Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
-make the change permanent. Alternatively, use `bat`s
+make the change permanent. Alternatively, use `bat`'s
 [configuration file](#configuration-file).
 
 If you want to preview the different themes on a custom file, you can use
@@ -543,10 +543,10 @@ Although these themes are more restricted, they have three advantages over truec
 
 ### Output style
 
-You can use the `--style` option to control the appearance of `bat`s output.
+You can use the `--style` option to control the appearance of `bat`'s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
 and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
-variable to make these changes permanent or use `bat`s
+variable to make these changes permanent or use `bat`'s
 [configuration file](#configuration-file).
 
 >[!tip]
@@ -664,7 +664,7 @@ If you want to pass command-line arguments to the pager, you can also set them v
 export BAT_PAGER="less -RF"
 ```
 
-Instead of using environment variables, you can also use `bat`s [configuration file](#configuration-file) to configure the pager (`--pager` option).
+Instead of using environment variables, you can also use `bat`'s [configuration file](#configuration-file) to configure the pager (`--pager` option).
 
 
 ### Using `less` as a pager
@@ -871,7 +871,7 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
-If you want to build an application that uses `bat`s pretty-printing
+If you want to build an application that uses `bat`'s pretty-printing
 features as a library, check out the [the API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.
