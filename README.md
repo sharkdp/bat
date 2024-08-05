@@ -506,7 +506,7 @@ highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent. Alternatively, use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+[configuration file](#configuration-file).
 
 If you want to preview the different themes on a custom file, you can use
 the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
@@ -519,7 +519,7 @@ You can use the `--theme-dark` / `--theme-light` options or the `BAT_THEME_DARK`
 to customize the themes used. This is especially useful if you frequently switch between dark and light mode.
 
 You can also use a custom theme by following the
-['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
+['Adding new themes' section below](#adding-new-themes).
 
 ### 8-bit themes
 
@@ -547,7 +547,7 @@ You can use the `--style` option to control the appearance of `bat`s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
 and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
 variable to make these changes permanent or use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+[configuration file](#configuration-file).
 
 >[!tip]
 > If you specify a default style in `bat`'s config file, you can change which components
@@ -664,7 +664,7 @@ If you want to pass command-line arguments to the pager, you can also set them v
 export BAT_PAGER="less -RF"
 ```
 
-Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
+Instead of using environment variables, you can also use `bat`s [configuration file](#configuration-file) to configure the pager (`--pager` option).
 
 
 ### Using `less` as a pager
