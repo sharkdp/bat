@@ -274,6 +274,11 @@ mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
 ```
 
+an example alias for `batcat` as `bat`:
+```bash
+alias bat="batcat"
+```
+
 ### On Ubuntu (using most recent `.deb` packages)
 *... and other Debian-based Linux distributions.*
 
