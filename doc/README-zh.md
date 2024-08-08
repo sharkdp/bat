@@ -616,63 +616,59 @@ iconv -f ISO-8859-1 -t UTF-8 my-file.php | bat
 
 注意： 当`bat`无法识别语言时你可能会需要`-l`/`--language`参数。
 
-## Development
+## 开发
 
 ```bash
-# Recursive clone to retrieve all submodules
+# 递归 clone 以获取所有子模块
 git clone --recursive https://github.com/sharkdp/bat
 
-# Build (debug version)
+# 构建（调试版本）
 cd bat
 cargo build --bins
 
-# Run unit tests and integration tests
+# 运行单元测试和集成测试
 cargo test
 
-# Install (release version)
+# 安装（发布版本）
 cargo install --path . --locked
 
-# Build a bat binary with modified syntaxes and themes
+# 使用修改后的语法和主题构建一个 bat 二进制文件
 bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
-If you want to build an application that uses `bat`s pretty-printing
-features as a library, check out the [the API documentation](https://docs.rs/bat/).
-Note that you have to use either `regex-onig` or `regex-fancy` as a feature
-when you depend on `bat` as a library.
+如果你想构建一个使用 `bat` 美化打印功能的应用程序，请查看 [API 文档](https://docs.rs/bat/)。请注意，当你依赖 `bat` 作为库时，必须使用 `regex-onig` 或 `regex-fancy` 作为特性。
 
-## Contributing
+## 贡献指南
 
-Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
+请查看 [`CONTRIBUTING.md`](CONTRIBUTING.md) 指南。
 
-## Maintainers
+## 维护者
 
 - [sharkdp](https://github.com/sharkdp)
 - [eth-p](https://github.com/eth-p)
 - [keith-hall](https://github.com/keith-hall)
 - [Enselic](https://github.com/Enselic)
 
-## Security vulnerabilities
+## 安全漏洞
 
-Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnerability in `bat`.
+如果你想报告 `bat` 中的漏洞，请通过邮件联系 [David Peter](https://david-peter.de/)。
 
-## Project goals and alternatives
+## 项目目标和替代方案
 
-`bat` tries to achieve the following goals:
+`bat` 试图实现以下目标：
 
-- Provide beautiful, advanced syntax highlighting
-- Integrate with Git to show file modifications
-- Be a drop-in replacement for (POSIX) `cat`
-- Offer a user-friendly command-line interface
+- 提供美观的高级语法高亮
+- 与 Git 集成以显示文件修改
+- 成为 (POSIX) `cat` 的替代品
+- 提供用户友好的命令行界面
 
-There are a lot of alternatives, if you are looking for similar programs. See
-[this document](doc/alternatives.md) for a comparison.
+如果你在寻找类似的程序，有很多替代方案。请参阅[本文档](doc/alternatives.md)进行比较。
 
-## License
+## 许可证
 
-Copyright (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat).
+版权所有 (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat)。
 
-`bat` is made available under the terms of either the MIT License or the Apache License 2.0, at your option.
+`bat` 可根据 MIT 许可证或 Apache 许可证 2.0 的条款使用，任选其一。
 
-See the [LICENSE-APACHE](LICENSE-APACHE) and [LICENSE-MIT](LICENSE-MIT) files for license details.
+有关许可证的详细信息，请参阅 [LICENSE-APACHE](LICENSE-APACHE) 和 [LICENSE-MIT](LICENSE-MIT) 文件。
