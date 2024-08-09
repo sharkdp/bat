@@ -61,7 +61,7 @@
 
 ## Themes
 
-- added Base2Tone duotone themes #3066 (@atelierbram)
+- added Base2Tone duotone themes #3068 (@atelierbram)
 
 ## `bat` as a library
 
