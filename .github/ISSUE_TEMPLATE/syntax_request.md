@@ -26,4 +26,4 @@ guidelines for adding new syntaxes:
 [Name or description of the syntax/language here]
 
 **Guideline Criteria:**
-[packagecontro.io link here]
+[packagecontrol.io link here]

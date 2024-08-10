@@ -44,14 +44,14 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 nu-ansi-term = "0.50.0"
 ansi_colours = "^1.2"
 bincode = "1.0"
-console = "0.15.7"
+console = "0.15.8"
 flate2 = "1.0"
 once_cell = "1.19"
 thiserror = "1.0"
 wild = { version = "2.2", optional = true }
 content_inspector = "0.2.4"
 shell-words = { version = "1.1.0", optional = true }
-unicode-width = "0.1.11"
+unicode-width = "0.1.13"
 globset = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
@@ -63,10 +63,10 @@ bugreport = { version = "0.5.0", optional = true }
 etcetera = { version = "0.8.0", optional = true }
 grep-cli = { version = "0.1.10", optional = true }
 regex = { version = "1.10.2", optional = true }
-walkdir = { version = "2.4", optional = true }
+walkdir = { version = "2.5", optional = true }
 bytesize = { version = "1.3.0" }
-encoding_rs = "0.8.33"
-os_str_bytes = { version = "~6.6", optional = true }
+encoding_rs = "0.8.34"
+os_str_bytes = { version = "~7.0", optional = true }
 run_script = { version = "^0.10.1", optional = true}
 itertools = "0.13.0"
 
@@ -91,9 +91,9 @@ plist = "1.6.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"
-expect-test = "1.4.1"
+expect-test = "1.5.0"
 serial_test = { version = "2.0.0", default-features = false }
-predicates = "3.0.4"
+predicates = "3.1.0"
 wait-timeout = "0.2.0"
 tempfile = "3.8.1"
 serde = { version = "1.0", features = ["derive"] }
@@ -102,16 +102,16 @@ serde = { version = "1.0", features = ["derive"] }
 nix = { version = "0.26.4", default-features = false, features = ["term"] }
 
 [build-dependencies]
-anyhow = "1.0.78"
-indexmap = { version = "2.2.2", features = ["serde"] }
-itertools = "0.12.1"
+anyhow = "1.0.86"
+indexmap = { version = "2.3.0", features = ["serde"] }
+itertools = "0.13.0"
 once_cell = "1.18"
 regex = "1.10.2"
 serde = "1.0"
 serde_derive = "1.0"
-serde_with = { version = "3.6.1", default-features = false, features = ["macros"] }
+serde_with = { version = "3.8.1", default-features = false, features = ["macros"] }
 toml = { version = "0.8.9", features = ["preserve_order"] }
-walkdir = "2.4"
+walkdir = "2.5"
 
 [build-dependencies.clap]
 version = "4.4.12"

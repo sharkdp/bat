@@ -1,17 +1,18 @@
 use std::fmt::Write;
 
-use console::AnsiCodeIterator;
-
-use crate::nonprintable_notation::NonprintableNotation;
+use crate::{
+    nonprintable_notation::NonprintableNotation,
+    vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
+};
 
 /// Expand tabs like an ANSI-enabled expand(1).
 pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
     let mut buffer = String::with_capacity(line.len() * 2);
 
-    for chunk in AnsiCodeIterator::new(line) {
-        match chunk {
-            (text, true) => buffer.push_str(text),
-            (mut text, false) => {
+    for seq in EscapeSequenceOffsetsIterator::new(line) {
+        match seq {
+            EscapeSequenceOffsets::Text { .. } => {
+                let mut text = &line[seq.index_of_start()..seq.index_past_end()];
                 while let Some(index) = text.find('\t') {
                     // Add previous text.
                     if index > 0 {
@@ -30,6 +31,10 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
 
                 *cursor += text.len();
                 buffer.push_str(text);
+            }
+            _ => {
+                // Copy the ANSI escape sequence.
+                buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()])
             }
         }
     }
@@ -131,6 +136,27 @@ pub fn replace_nonprintable(
     output
 }
 
+/// Strips ANSI escape sequences from the input.
+pub fn strip_ansi(line: &str) -> String {
+    let mut buffer = String::with_capacity(line.len());
+
+    for seq in EscapeSequenceOffsetsIterator::new(line) {
+        if let EscapeSequenceOffsets::Text { .. } = seq {
+            buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()]);
+        }
+    }
+
+    buffer
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
+pub enum StripAnsiMode {
+    #[default]
+    Never,
+    Always,
+    Auto,
+}
+
 #[test]
 fn test_try_parse_utf8_char() {
     assert_eq!(try_parse_utf8_char(&[0x20]), Some((' ', 1)));
@@ -173,4 +199,15 @@ fn test_try_parse_utf8_char() {
     assert_eq!(try_parse_utf8_char(&[0xef]), None);
     assert_eq!(try_parse_utf8_char(&[0xef, 0x20]), None);
     assert_eq!(try_parse_utf8_char(&[0xf0, 0xf0]), None);
+}
+
+#[test]
+fn test_strip_ansi() {
+    // The sequence detection is covered by the tests in the vscreen module.
+    assert_eq!(strip_ansi("no ansi"), "no ansi");
+    assert_eq!(strip_ansi("\x1B[33mone"), "one");
+    assert_eq!(
+        strip_ansi("\x1B]1\x07multiple\x1B[J sequences"),
+        "multiple sequences"
+    );
 }
