@@ -112,7 +112,12 @@ _bat() {
 		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
 		;;
-	--theme | \
+	--theme)
+    	local IFS=$'\n'
+    	COMPREPLY=($(compgen -W "auto${IFS}auto:always${IFS}auto:system${IFS}dark${IFS}light${IFS}$("$1" --list-themes)" -- "$cur"))
+                    __bat_escape_completions
+    	return 0
+    	;;
 	--theme-dark | \
 	--theme-light)
 		local IFS=$'\n'

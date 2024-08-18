@@ -42,7 +42,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --decorations='[specify when to show the decorations]:when:(auto never always)'
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
-        '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->themes'
+        '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'
         '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
         '(--theme-light)'--theme-light='[set the color theme for syntax highlighting for light backgrounds]:theme:->themes'
         '(: --list-themes --list-languages -L)'--list-themes'[show all supported highlighting themes]'
@@ -84,7 +84,13 @@ _{{PROJECT_EXECUTABLE}}_main() {
 
         themes)
             local -a themes expl
-            themes=( ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
+            themes=(${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
+
+            _wanted themes expl 'theme' compadd -a themes && ret=0
+        ;;
+        theme_preferences)
+            local -a themes expl
+            themes=(auto dark light auto:always auto:system ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
 
             _wanted themes expl 'theme' compadd -a themes && ret=0
         ;;

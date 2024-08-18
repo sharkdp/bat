@@ -216,6 +216,10 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
 
 #[cfg(not(target_os = "macos"))]
 fn color_scheme_from_system() -> Option<ColorScheme> {
+    crate::bat_warning!(
+        "Theme 'auto:system' is only supported on macOS, \
+        using default."
+    );
     None
 }
 

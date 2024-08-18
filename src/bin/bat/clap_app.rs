@@ -375,12 +375,18 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .overrides_with("theme")
                 .help("Set the color theme for syntax highlighting.")
                 .long_help(
-                    "Set the theme for syntax highlighting. Note that this option overrides \
-                    '--theme-dark' and '--theme-light'. Use '--list-themes' to \
+                    "Set the theme for syntax highlighting. Use '--list-themes' to \
                      see all available themes. To set a default theme, add the \
                      '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"...\").",
+                     BAT_THEME=\"...\").\n\n\
+                     Special values:\n\n  \
+                     * auto: Picks a dark or light theme depending on the terminal's colors (default).\n          \
+                     Use '--theme-light' and '--theme-dark' to customize the selected theme.\n    \
+                     * auto:always: Detect the terminal's colors even when the output is redirected.\n    \
+                     * auto:system: Detect the color scheme from the system-wide preference (macOS only).\n  \
+                     * dark: Use the dark theme specified by '--theme-dark'.\n  \
+                     * light: Use the light theme specified by '--theme-light'.",
                 ),
         )
         .arg(
