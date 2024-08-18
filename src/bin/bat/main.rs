@@ -384,7 +384,7 @@ fn run() -> Result<bool> {
                     &config,
                     config_dir,
                     cache_dir,
-                    app.color_scheme_preference(),
+                    ColorSchemePreference::default(),
                 )?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {

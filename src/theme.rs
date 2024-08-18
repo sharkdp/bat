@@ -29,46 +29,79 @@ pub fn color_scheme(preference: ColorSchemePreference) -> ColorScheme {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub struct ThemeOptions {
     /// Always use this theme regardless of the terminal's background color.
-    pub theme: Option<ThemeRequest>,
+    /// This corresponds with the `BAT_THEME` environment variable and the `--theme` option.
+    pub theme: ThemePreference,
     /// The theme to use in case the terminal uses a dark background with light text.
-    pub theme_dark: Option<ThemeRequest>,
+    /// This corresponds with the `BAT_THEME_DARK` environment variable and the `--theme-dark` option.
+    pub theme_dark: Option<ThemeName>,
     /// The theme to use in case the terminal uses a light background with dark text.
-    pub theme_light: Option<ThemeRequest>,
-    /// How to choose between dark and light.
-    pub color_scheme: ColorSchemePreference,
+    /// This corresponds with the `BAT_THEME_LIGHT` environment variable and the `--theme-light` option.
+    pub theme_light: Option<ThemeName>,
+}
+
+/// What theme should `bat` use?
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub enum ThemePreference {
+    /// Choose between [`ThemeOptions::theme_dark`] and [`ThemeOptions::theme_light`]
+    /// based on the terminal's (or the OS') color scheme.
+    Auto(ColorSchemePreference),
+    /// Always use the same theme regardless of the terminal's color scheme.
+    Fixed(ThemeName),
+}
+
+impl Default for ThemePreference {
+    fn default() -> Self {
+        ThemePreference::Auto(ColorSchemePreference::default())
+    }
+}
+
+impl FromStr for ThemePreference {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use ThemePreference::*;
+        match s {
+            "auto" => Ok(Auto(ColorSchemePreference::default())),
+            "auto:always" => Ok(Auto(ColorSchemePreference::Auto(DetectColorScheme::Always))),
+            "auto:system" => Ok(Auto(ColorSchemePreference::System)),
+            "dark" => Ok(Auto(ColorSchemePreference::Dark)),
+            "light" => Ok(Auto(ColorSchemePreference::Light)),
+            _ => ThemeName::from_str(s).map(Fixed),
+        }
+    }
 }
 
 /// The name of a theme or the default theme.
 ///
 /// ```
-/// # use bat::theme::ThemeRequest;
+/// # use bat::theme::ThemeName;
 /// # use std::str::FromStr as _;
-/// assert_eq!(ThemeRequest::Default, ThemeRequest::from_str("default").unwrap());
-/// assert_eq!(ThemeRequest::Named("example".to_string()), ThemeRequest::from_str("example").unwrap());
+/// assert_eq!(ThemeName::Default, ThemeName::from_str("default").unwrap());
+/// assert_eq!(ThemeName::Named("example".to_string()), ThemeName::from_str("example").unwrap());
 /// ```
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub enum ThemeRequest {
+pub enum ThemeName {
     Named(String),
     Default,
 }
 
-impl FromStr for ThemeRequest {
+impl FromStr for ThemeName {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s == "default" {
-            Ok(ThemeRequest::Default)
+            Ok(ThemeName::Default)
         } else {
-            Ok(ThemeRequest::Named(s.to_owned()))
+            Ok(ThemeName::Named(s.to_owned()))
         }
     }
 }
 
-impl ThemeRequest {
+impl ThemeName {
     fn into_theme(self, color_scheme: ColorScheme) -> String {
         match self {
-            ThemeRequest::Named(t) => t,
-            ThemeRequest::Default => default_theme(color_scheme).to_owned(),
+            ThemeName::Named(t) => t,
+            ThemeName::Default => default_theme(color_scheme).to_owned(),
         }
     }
 }
@@ -124,17 +157,18 @@ fn color_scheme_impl(
 fn theme_from_detector(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> String {
     // Implementation note: This function is mostly pure (i.e. it has no side effects) for the sake of testing.
     // All the side effects (e.g. querying the terminal for its colors) are performed in the detector.
-    if let Some(theme) = options.theme {
-        theme.into_theme(ColorScheme::default())
-    } else {
-        let color_scheme = color_scheme_impl(options.color_scheme, detector);
-        choose_theme(options, color_scheme)
-            .map(|t| t.into_theme(color_scheme))
-            .unwrap_or_else(|| default_theme(color_scheme).to_owned())
+    match options.theme {
+        ThemePreference::Fixed(theme_name) => theme_name.into_theme(ColorScheme::default()),
+        ThemePreference::Auto(color_scheme_preference) => {
+            let color_scheme = color_scheme_impl(color_scheme_preference, detector);
+            choose_theme(options, color_scheme)
+                .map(|t| t.into_theme(color_scheme))
+                .unwrap_or_else(|| default_theme(color_scheme).to_owned())
+        }
     }
 }
 
-fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<ThemeRequest> {
+fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<ThemeName> {
     match color_scheme {
         ColorScheme::Dark => options.theme_dark,
         ColorScheme::Light => options.theme_light,
@@ -220,7 +254,6 @@ impl ColorSchemeDetector for Option<ColorScheme> {
 mod tests {
     use super::ColorScheme::*;
     use super::ColorSchemePreference as Pref;
-    use super::DetectColorScheme::*;
     use super::*;
     use std::cell::Cell;
     use std::iter;
@@ -233,7 +266,7 @@ mod tests {
             for pref in [Pref::Dark, Pref::Light] {
                 let detector = DetectorStub::should_detect(Some(Dark));
                 let options = ThemeOptions {
-                    color_scheme: pref,
+                    theme: ThemePreference::Auto(pref),
                     ..Default::default()
                 };
                 _ = theme_from_detector(options, &detector);
@@ -249,7 +282,9 @@ mod tests {
             ];
             for detector in detectors {
                 let options = ThemeOptions {
-                    color_scheme: Pref::Auto(Always),
+                    theme: ThemePreference::Auto(ColorSchemePreference::Auto(
+                        DetectColorScheme::Always,
+                    )),
                     ..Default::default()
                 };
                 _ = theme_from_detector(options, &detector);
@@ -280,13 +315,13 @@ mod tests {
             for color_scheme in optional(color_schemes()) {
                 for options in [
                     ThemeOptions {
-                        theme: Some(ThemeRequest::Named("Theme".to_string())),
+                        theme: ThemePreference::Fixed(ThemeName::Named("Theme".to_string())),
                         ..Default::default()
                     },
                     ThemeOptions {
-                        theme: Some(ThemeRequest::Named("Theme".to_string())),
-                        theme_dark: Some(ThemeRequest::Named("Dark Theme".to_string())),
-                        theme_light: Some(ThemeRequest::Named("Light Theme".to_string())),
+                        theme: ThemePreference::Fixed(ThemeName::Named("Theme".to_string())),
+                        theme_dark: Some(ThemeName::Named("Dark Theme".to_string())),
+                        theme_light: Some(ThemeName::Named("Light Theme".to_string())),
                         ..Default::default()
                     },
                 ] {
@@ -299,7 +334,7 @@ mod tests {
         #[test]
         fn detector_is_not_called_if_theme_is_present() {
             let options = ThemeOptions {
-                theme: Some(ThemeRequest::Named("Theme".to_string())),
+                theme: ThemePreference::Fixed(ThemeName::Named("Theme".to_string())),
                 ..Default::default()
             };
             let detector = DetectorStub::should_detect(Some(Dark));
@@ -326,7 +361,7 @@ mod tests {
         fn dark_if_requested_explicitly_through_theme() {
             for color_scheme in optional(color_schemes()) {
                 let options = ThemeOptions {
-                    theme: Some(ThemeRequest::Default),
+                    theme: ThemePreference::Fixed(ThemeName::Default),
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
@@ -343,8 +378,8 @@ mod tests {
                 for options in [
                     ThemeOptions::default(),
                     ThemeOptions {
-                        theme_dark: Some(ThemeRequest::Default),
-                        theme_light: Some(ThemeRequest::Default),
+                        theme_dark: Some(ThemeName::Default),
+                        theme_light: Some(ThemeName::Default),
                         ..Default::default()
                     },
                 ] {
@@ -365,8 +400,8 @@ mod tests {
         fn chooses_dark_theme_if_dark_or_unknown() {
             for color_scheme in [Some(Dark), None] {
                 let options = ThemeOptions {
-                    theme_dark: Some(ThemeRequest::Named("Dark".to_string())),
-                    theme_light: Some(ThemeRequest::Named("Light".to_string())),
+                    theme_dark: Some(ThemeName::Named("Dark".to_string())),
+                    theme_light: Some(ThemeName::Named("Light".to_string())),
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
@@ -377,8 +412,8 @@ mod tests {
         #[test]
         fn chooses_light_theme_if_light() {
             let options = ThemeOptions {
-                theme_dark: Some(ThemeRequest::Named("Dark".to_string())),
-                theme_light: Some(ThemeRequest::Named("Light".to_string())),
+                theme_dark: Some(ThemeName::Named("Dark".to_string())),
+                theme_light: Some(ThemeName::Named("Light".to_string())),
                 ..Default::default()
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));

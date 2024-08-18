@@ -279,7 +279,6 @@ fn list_themes_with_colors() {
 
     bat()
         .arg("--color=always")
-        .arg("--color-scheme=dark")
         .arg("--list-themes")
         .assert()
         .success()
@@ -296,7 +295,6 @@ fn list_themes_without_colors() {
 
     bat()
         .arg("--color=never")
-        .arg("--color-scheme=dark")
         .arg("--list-themes")
         .assert()
         .success()

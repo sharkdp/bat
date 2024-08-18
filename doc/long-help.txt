@@ -114,23 +114,6 @@ Options:
           add the '--theme="..."' option to the configuration file or export the BAT_THEME
           environment variable (e.g.: export BAT_THEME="...").
 
-      --color-scheme <scheme>
-          Specify whether to choose a dark or light syntax highlighting theme. Use '--theme-light'
-          and '--theme-dark' (or the environment variables BAT_THEME_LIGHT and BAT_THEME_DARK) to
-          configure which themes are picked. You may also use '--theme' to set a theme that is used
-          regardless of this choice.
-          
-          Possible values:
-          * auto (default):
-              Query the terminals for its color scheme if the output is not redirected. This is to
-              prevent race conditions with pagers such as less.
-          * 'auto:always':
-              Always query the terminal for its color scheme, regardless of whether or not the
-              output is redirected.
-          * dark: Use a dark syntax highlighting theme.
-          * light: Use a light syntax highlighting theme.
-          * system: Query the OS for its color scheme. Only works on macOS.
-
       --theme-light <theme>
           Sets the theme name for syntax highlighting used when the terminal uses a light
           background. Use '--list-themes' to see all available themes. To set a default theme, add

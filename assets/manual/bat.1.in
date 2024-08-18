@@ -117,24 +117,6 @@ Specify when to use the decorations that have been specified via '\-\-style'. Th
 automatic mode only enables decorations if an interactive terminal is detected. Possible
 values: *auto*, never, always.
 .HP
-\fB\-\-detect\-color\-scheme\fR <when>
-.IP
-Specify when to query the terminal for its colors in order to pick an appropriate syntax
-highlighting theme. Use \fB\-\-theme-light\fP and \fB\-\-theme-dark\fP (or the environment variables
-\fBBAT_THEME_LIGHT\fP and \fBBAT_THEME_DARK\fP) to configure which themes are picked. You can also use
-\fP\-\-theme\fP to set a theme that is used regardless of the terminal's colors.
-.IP
-\fI<when>\fP can be one of:
-.RS
-.IP "\fBauto\fP"
-Only query the terminals colors if the output is not redirected. This is to prevent
-race conditions with pagers such as less.
-.IP "never"
-Never query the terminal for its colors and assume that the terminal has a dark background.
-.IP "always"
-Always query the terminal for its colors, regardless of whether or not the output is redirected.
-.RE
-.HP
 \fB\-f\fR, \fB\-\-force\-colorization\fR
 .IP
 Alias for '--decorations=always --color=always'. This is useful \
@@ -177,14 +159,14 @@ export the \fBBAT_THEME\fP environment variable (e.g.: \fBexport BAT_THEME="..."
 \fB\-\-theme\-dark\fR <theme>
 .IP
 Sets the theme name for syntax highlighting used when the terminal uses a dark background.
-To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or 
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
 export the \fBBAT_THEME_DARK\fP environment variable (e.g. \fBexport BAT_THEME_DARK="..."\fP).
 This option is ignored if \fB\-\-theme\fP option is set.
 .HP
 \fB\-\-theme\-light\fR <theme>
 .IP
 Sets the theme name for syntax highlighting used when the terminal uses a dark background.
-To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or 
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
 export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
 This option is ignored if \fB\-\-theme\fP option is set.
 .HP
@@ -339,7 +321,7 @@ To use the preprocessor, call:
 
 \fB{{PROJECT_EXECUTABLE}} --lessopen\fR
 
-Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file. 
+Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file.
 
 To temporarily disable the preprocessor if it is enabled by default, call:
 
@@ -355,7 +337,7 @@ Enable the $LESSOPEN preprocessor.
 .IP
 Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)
 .PP
-For more information, see the "INPUT PREPROCESSOR" section of less(1).  
+For more information, see the "INPUT PREPROCESSOR" section of less(1).
 
 .SH "MORE INFORMATION"
 

@@ -104,8 +104,6 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
-	--color-scheme)
-		COMPREPLY=($(compgen -W "auto auto:always dark light system" -- "$cur"))
 	--italic-text)
 		COMPREPLY=($(compgen -W "always never" -- "$cur"))
 		return 0
@@ -176,7 +174,6 @@ _bat() {
 			--theme
 			--theme-dark
 			--theme-light
-			--color-scheme
 			--list-themes
 			--squeeze-blank
 			--squeeze-limit
