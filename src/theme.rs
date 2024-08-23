@@ -1,13 +1,18 @@
 //! Utilities for choosing an appropriate theme for syntax highlighting.
 
 use std::convert::Infallible;
+use std::fmt;
 use std::io::IsTerminal as _;
 use std::str::FromStr;
 
 /// Chooses an appropriate theme or falls back to a default theme
 /// based on the user-provided options and the color scheme of the terminal.
-pub fn theme(options: ThemeOptions) -> String {
-    theme_from_detector(options, &TerminalColorSchemeDetector)
+///
+/// Intentionally returns a [`ThemeResult`] instead of a simple string so
+/// that downstream consumers such as `delta` can easily apply their own
+/// default theme and can use the detected color scheme elsewhere.
+pub fn theme(options: ThemeOptions) -> ThemeResult {
+    theme_impl(options, &TerminalColorSchemeDetector)
 }
 
 /// The default theme, suitable for the given color scheme.
@@ -26,7 +31,7 @@ pub fn color_scheme(preference: ColorSchemePreference) -> ColorScheme {
 
 /// Options for configuring the theme used for syntax highlighting.
 /// Used together with [`theme`].
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ThemeOptions {
     /// Always use this theme regardless of the terminal's background color.
     /// This corresponds with the `BAT_THEME` environment variable and the `--theme` option.
@@ -40,7 +45,14 @@ pub struct ThemeOptions {
 }
 
 /// What theme should `bat` use?
-#[derive(Debug, PartialEq, Eq, Hash)]
+///
+/// The easiest way to construct this is from a string:
+/// ```
+/// # use bat::theme::ThemePreference;
+/// # use std::str::FromStr as _;
+/// let preference = ThemePreference::from_str("auto:system").unwrap();
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ThemePreference {
     /// Choose between [`ThemeOptions::theme_dark`] and [`ThemeOptions::theme_light`]
     /// based on the terminal's (or the OS') color scheme.
@@ -79,7 +91,7 @@ impl FromStr for ThemePreference {
 /// assert_eq!(ThemeName::Default, ThemeName::from_str("default").unwrap());
 /// assert_eq!(ThemeName::Named("example".to_string()), ThemeName::from_str("example").unwrap());
 /// ```
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ThemeName {
     Named(String),
     Default,
@@ -93,15 +105,6 @@ impl FromStr for ThemeName {
             Ok(ThemeName::Default)
         } else {
             Ok(ThemeName::Named(s.to_owned()))
-        }
-    }
-}
-
-impl ThemeName {
-    fn into_theme(self, color_scheme: ColorScheme) -> String {
-        match self {
-            ThemeName::Named(t) => t,
-            ThemeName::Default => default_theme(color_scheme).to_owned(),
         }
     }
 }
@@ -142,6 +145,26 @@ pub enum ColorScheme {
     Light,
 }
 
+/// The resolved theme and the color scheme as determined from
+/// the terminal, OS or fallback.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ThemeResult {
+    /// The theme selected according to the [`ThemeOptions`].
+    pub theme: ThemeName,
+    /// Either the user's chosen color scheme, the terminal's color scheme, the OS's
+    /// color scheme or `None` if the color scheme was not detected because the user chose a fixed theme.
+    pub color_scheme: Option<ColorScheme>,
+}
+
+impl fmt::Display for ThemeResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.theme {
+            ThemeName::Named(name) => f.write_str(name),
+            ThemeName::Default => f.write_str(default_theme(self.color_scheme.unwrap_or_default())),
+        }
+    }
+}
+
 fn color_scheme_impl(
     pref: ColorSchemePreference,
     detector: &dyn ColorSchemeDetector,
@@ -154,16 +177,21 @@ fn color_scheme_impl(
     }
 }
 
-fn theme_from_detector(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> String {
+fn theme_impl(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> ThemeResult {
     // Implementation note: This function is mostly pure (i.e. it has no side effects) for the sake of testing.
     // All the side effects (e.g. querying the terminal for its colors) are performed in the detector.
     match options.theme {
-        ThemePreference::Fixed(theme_name) => theme_name.into_theme(ColorScheme::default()),
-        ThemePreference::Auto(color_scheme_preference) => {
-            let color_scheme = color_scheme_impl(color_scheme_preference, detector);
-            choose_theme(options, color_scheme)
-                .map(|t| t.into_theme(color_scheme))
-                .unwrap_or_else(|| default_theme(color_scheme).to_owned())
+        ThemePreference::Fixed(theme) => ThemeResult {
+            theme,
+            color_scheme: None,
+        },
+        ThemePreference::Auto(pref) => {
+            let color_scheme = color_scheme_impl(pref, detector);
+            let theme = choose_theme(options, color_scheme).unwrap_or(ThemeName::Default);
+            ThemeResult {
+                theme,
+                color_scheme: Some(color_scheme),
+            }
         }
     }
 }
@@ -273,7 +301,7 @@ mod tests {
                     theme: ThemePreference::Auto(pref),
                     ..Default::default()
                 };
-                _ = theme_from_detector(options, &detector);
+                _ = theme_impl(options, &detector);
                 assert!(!detector.was_called.get());
             }
         }
@@ -291,7 +319,7 @@ mod tests {
                     )),
                     ..Default::default()
                 };
-                _ = theme_from_detector(options, &detector);
+                _ = theme_impl(options, &detector);
                 assert!(detector.was_called.get());
             }
         }
@@ -299,14 +327,14 @@ mod tests {
         #[test]
         fn called_for_auto_if_should_detect() {
             let detector = DetectorStub::should_detect(Some(Dark));
-            _ = theme_from_detector(ThemeOptions::default(), &detector);
+            _ = theme_impl(ThemeOptions::default(), &detector);
             assert!(detector.was_called.get());
         }
 
         #[test]
         fn not_called_for_auto_if_not_should_detect() {
             let detector = DetectorStub::should_not_detect();
-            _ = theme_from_detector(ThemeOptions::default(), &detector);
+            _ = theme_impl(ThemeOptions::default(), &detector);
             assert!(!detector.was_called.get());
         }
     }
@@ -330,7 +358,7 @@ mod tests {
                     },
                 ] {
                     let detector = ConstantDetector(color_scheme);
-                    assert_eq!("Theme", theme_from_detector(options, &detector));
+                    assert_eq!("Theme", theme_impl(options, &detector).to_string());
                 }
             }
         }
@@ -342,7 +370,7 @@ mod tests {
                 ..Default::default()
             };
             let detector = DetectorStub::should_detect(Some(Dark));
-            _ = theme_from_detector(options, &detector);
+            _ = theme_impl(options, &detector);
             assert!(!detector.was_called.get());
         }
     }
@@ -355,7 +383,7 @@ mod tests {
             let detector = ConstantDetector(None);
             assert_eq!(
                 default_theme(ColorScheme::Dark),
-                theme_from_detector(ThemeOptions::default(), &detector)
+                theme_impl(ThemeOptions::default(), &detector).to_string()
             );
         }
 
@@ -371,7 +399,7 @@ mod tests {
                 let detector = ConstantDetector(color_scheme);
                 assert_eq!(
                     default_theme(ColorScheme::Dark),
-                    theme_from_detector(options, &detector)
+                    theme_impl(options, &detector).to_string()
                 );
             }
         }
@@ -390,7 +418,7 @@ mod tests {
                     let detector = ConstantDetector(Some(color_scheme));
                     assert_eq!(
                         default_theme(color_scheme),
-                        theme_from_detector(options, &detector)
+                        theme_impl(options, &detector).to_string()
                     );
                 }
             }
@@ -409,7 +437,7 @@ mod tests {
                     ..Default::default()
                 };
                 let detector = ConstantDetector(color_scheme);
-                assert_eq!("Dark", theme_from_detector(options, &detector));
+                assert_eq!("Dark", theme_impl(options, &detector).to_string());
             }
         }
 
@@ -421,7 +449,7 @@ mod tests {
                 ..Default::default()
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));
-            assert_eq!("Light", theme_from_detector(options, &detector));
+            assert_eq!("Light", theme_impl(options, &detector).to_string());
         }
     }
 

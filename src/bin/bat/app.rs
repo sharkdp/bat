@@ -254,7 +254,7 @@ impl App {
                 Some("auto") => StripAnsiMode::Auto,
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
-            theme: theme(self.theme_options()),
+            theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
