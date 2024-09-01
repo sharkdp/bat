@@ -89,7 +89,7 @@ home = "0.5.9"
 plist = "1.7.0"
 
 [dev-dependencies]
-assert_cmd = "2.0.12"
+assert_cmd = "2.0.16"
 expect-test = "1.5.0"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.1.0"
