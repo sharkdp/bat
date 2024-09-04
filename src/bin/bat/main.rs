@@ -14,6 +14,7 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
+use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
 
@@ -35,7 +36,7 @@ use bat::{
     error::*,
     input::Input,
     style::{StyleComponent, StyleComponents},
-    theme::{color_scheme, default_theme, ColorScheme, ColorSchemePreference},
+    theme::{color_scheme, default_theme, ColorScheme},
     MappingTarget, PagingMode,
 };
 
@@ -193,7 +194,7 @@ pub fn list_themes(
     cfg: &Config,
     config_dir: &Path,
     cache_dir: &Path,
-    color_scheme_pref: ColorSchemePreference,
+    detect_color_scheme: DetectColorScheme,
 ) -> Result<()> {
     let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
     let mut config = cfg.clone();
@@ -205,7 +206,7 @@ pub fn list_themes(
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 
-    let default_theme_name = default_theme(color_scheme(color_scheme_pref));
+    let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
     for theme in assets.themes() {
         let default_theme_info = if default_theme_name == theme {
             " (default)"
@@ -380,12 +381,7 @@ fn run() -> Result<bool> {
                 };
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-                list_themes(
-                    &config,
-                    config_dir,
-                    cache_dir,
-                    ColorSchemePreference::default(),
-                )?;
+                list_themes(&config, config_dir, cache_dir, DetectColorScheme::default())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());
