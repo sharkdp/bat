@@ -28,6 +28,9 @@ pub enum Error {
     InvalidPagerValueBat,
     #[error("{0}")]
     Msg(String),
+    #[cfg(feature = "paging")]
+    #[error(transparent)]
+    MinusError(#[from] ::minus::MinusError),
     #[cfg(feature = "lessopen")]
     #[error(transparent)]
     VarError(#[from] ::std::env::VarError),

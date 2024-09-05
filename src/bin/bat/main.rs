@@ -16,7 +16,7 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
-use bat::output::{OutputHandle, OutputType};
+use bat::output::OutputType;
 use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
@@ -229,10 +229,7 @@ pub fn list_themes(
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(
-                    vec![theme_preview_file()],
-                    Some(OutputHandle::IoWrite(&mut writer)),
-                )
+                .run(vec![theme_preview_file()], Some(&mut writer))
                 .ok();
             writeln!(writer)?;
         } else if config.loop_through {

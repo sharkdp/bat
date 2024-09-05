@@ -328,7 +328,7 @@ impl<'a> PrettyPrinter<'a> {
         if let Some(mut w) = writer {
             controller.run(
                 inputs.into_iter().map(|i| i.into()).collect(),
-                Some(OutputHandle::FmtWrite(&mut w)),
+                Some(&mut OutputHandle::FmtWrite(&mut w)),
             )
         } else {
             controller.run(inputs.into_iter().map(|i| i.into()).collect(), None)

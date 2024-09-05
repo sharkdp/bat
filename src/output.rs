@@ -1,7 +1,9 @@
 use std::fmt;
-use std::io::{self, Write};
+use std::io;
 #[cfg(feature = "paging")]
 use std::process::Child;
+#[cfg(feature = "paging")]
+use std::thread::{spawn, JoinHandle};
 
 use crate::error::*;
 #[cfg(feature = "paging")]
@@ -10,6 +12,36 @@ use crate::less::{retrieve_less_version, LessVersion};
 use crate::paging::PagingMode;
 #[cfg(feature = "paging")]
 use crate::wrapping::WrappingMode;
+
+#[cfg(feature = "paging")]
+pub struct BuiltinPager {
+    pager: minus::Pager,
+    handle: Option<JoinHandle<Result<()>>>,
+}
+
+#[cfg(feature = "paging")]
+impl BuiltinPager {
+    fn new() -> Self {
+        let pager = minus::Pager::new();
+        let handle = {
+            let pager = pager.clone();
+            Some(spawn(move || {
+                minus::dynamic_paging(pager).map_err(Error::from)
+            }))
+        };
+        Self { pager, handle }
+    }
+}
+
+#[cfg(feature = "paging")]
+impl std::fmt::Debug for BuiltinPager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BuiltinPager")
+            //.field("pager", &self.pager) /// minus::Pager doesn't implement fmt::Debug
+            .field("handle", &self.handle)
+            .finish()
+    }
+}
 
 #[cfg(feature = "paging")]
 #[derive(Debug, PartialEq)]
@@ -22,6 +54,8 @@ enum SingleScreenAction {
 pub enum OutputType {
     #[cfg(feature = "paging")]
     Pager(Child),
+    #[cfg(feature = "paging")]
+    BuiltinPager(BuiltinPager),
     Stdout(io::Stdout),
 }
 
@@ -62,6 +96,10 @@ impl OutputType {
 
         if pager.kind == PagerKind::Bat {
             return Err(Error::InvalidPagerValueBat);
+        }
+
+        if pager.kind == PagerKind::Builtin {
+            return Ok(OutputType::BuiltinPager(BuiltinPager::new()));
         }
 
         let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
@@ -138,7 +176,7 @@ impl OutputType {
 
     #[cfg(feature = "paging")]
     pub(crate) fn is_pager(&self) -> bool {
-        matches!(self, OutputType::Pager(_))
+        matches!(self, OutputType::Pager(_) | OutputType::BuiltinPager(_))
     }
 
     #[cfg(not(feature = "paging"))]
@@ -146,14 +184,18 @@ impl OutputType {
         false
     }
 
-    pub fn handle(&mut self) -> Result<&mut dyn Write> {
+    pub fn handle<'a>(&'a mut self) -> Result<OutputHandle<'a>> {
         Ok(match *self {
             #[cfg(feature = "paging")]
-            OutputType::Pager(ref mut command) => command
-                .stdin
-                .as_mut()
-                .ok_or("Could not open stdin for pager")?,
-            OutputType::Stdout(ref mut handle) => handle,
+            OutputType::Pager(ref mut command) => OutputHandle::IoWrite(
+                command
+                    .stdin
+                    .as_mut()
+                    .ok_or("Could not open stdin for pager")?,
+            ),
+            #[cfg(feature = "paging")]
+            OutputType::BuiltinPager(ref mut pager) => OutputHandle::FmtWrite(&mut pager.pager),
+            OutputType::Stdout(ref mut handle) => OutputHandle::IoWrite(handle),
         })
     }
 }
@@ -161,8 +203,16 @@ impl OutputType {
 #[cfg(feature = "paging")]
 impl Drop for OutputType {
     fn drop(&mut self) {
-        if let OutputType::Pager(ref mut command) = *self {
-            let _ = command.wait();
+        match *self {
+            OutputType::Pager(ref mut command) => {
+                let _ = command.wait();
+            }
+            OutputType::BuiltinPager(ref mut pager) => {
+                if pager.handle.is_some() {
+                    let _ = pager.handle.take().unwrap().join().unwrap();
+                }
+            }
+            OutputType::Stdout(_) => (),
         }
     }
 }

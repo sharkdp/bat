@@ -14,7 +14,7 @@ fn main() {
     controller
         .run(
             vec![input.into()],
-            Some(OutputHandle::FmtWrite(&mut buffer)),
+            Some(&mut OutputHandle::FmtWrite(&mut buffer)),
         )
         .unwrap();
 

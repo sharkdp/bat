@@ -36,14 +36,18 @@ impl Controller<'_> {
         }
     }
 
-    pub fn run(&self, inputs: Vec<Input>, output_handle: Option<OutputHandle<'_>>) -> Result<bool> {
+    pub fn run(
+        &self,
+        inputs: Vec<Input>,
+        output_handle: Option<&mut OutputHandle<'_>>,
+    ) -> Result<bool> {
         self.run_with_error_handler(inputs, output_handle, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
-        output_handle: Option<OutputHandle<'_>>,
+        output_handle: Option<&mut OutputHandle<'_>>,
         mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -88,7 +92,7 @@ impl Controller<'_> {
         let mut writer = match output_handle {
             Some(OutputHandle::FmtWrite(w)) => OutputHandle::FmtWrite(w),
             Some(OutputHandle::IoWrite(w)) => OutputHandle::IoWrite(w),
-            None => OutputHandle::IoWrite(output_type.handle()?),
+            None => output_type.handle()?,
         };
         let mut no_errors: bool = true;
         let stderr = io::stderr();
