@@ -292,7 +292,7 @@ fn color_scheme_from_system() -> Option<ColorScheme> {
 
     match plist::Value::from_file(preferences_file).map(|file| file.into_dictionary()) {
         Ok(Some(preferences)) => match preferences.get(STYLE_KEY).and_then(|val| val.as_string()) {
-            Some(value) if value == "Dark" => Some(ColorScheme::Dark),
+            Some("Dark") => Some(ColorScheme::Dark),
             // If the key does not exist, then light theme is currently in use.
             Some(_) | None => Some(ColorScheme::Light),
         },
