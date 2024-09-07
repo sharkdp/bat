@@ -105,6 +105,20 @@ impl FromStr for ThemePreference {
     }
 }
 
+impl fmt::Display for ThemePreference {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use ThemePreference::*;
+        match self {
+            Auto(DetectColorScheme::Auto) => f.write_str("auto"),
+            Auto(DetectColorScheme::Always) => f.write_str("auto:always"),
+            Auto(DetectColorScheme::System) => f.write_str("auto:system"),
+            Fixed(theme) => theme.fmt(f),
+            Dark => f.write_str("dark"),
+            Light => f.write_str("light"),
+        }
+    }
+}
+
 /// The name of a theme or the default theme.
 ///
 /// ```
@@ -475,6 +489,26 @@ mod tests {
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));
             assert_eq!("Light", theme_impl(options, &detector).to_string());
+        }
+    }
+
+    mod theme_preference {
+        use super::*;
+
+        #[test]
+        fn values_roundtrip_via_display() {
+            let prefs = [
+                ThemePreference::Auto(DetectColorScheme::Auto),
+                ThemePreference::Auto(DetectColorScheme::Always),
+                ThemePreference::Auto(DetectColorScheme::System),
+                ThemePreference::Fixed(ThemeName::Default),
+                ThemePreference::Fixed(ThemeName::new("foo")),
+                ThemePreference::Dark,
+                ThemePreference::Light,
+            ];
+            for pref in prefs {
+                assert_eq!(pref, ThemePreference::new(&pref.to_string()));
+            }
         }
     }
 
