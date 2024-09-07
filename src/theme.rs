@@ -5,6 +5,16 @@ use std::fmt;
 use std::io::IsTerminal as _;
 use std::str::FromStr;
 
+/// Environment variable names.
+pub mod env {
+    /// See [`crate::theme::ThemeOptions::theme`].
+    pub const BAT_THEME: &str = "BAT_THEME";
+    /// See [`crate::theme::ThemeOptions::theme_dark`].
+    pub const BAT_THEME_DARK: &str = "BAT_THEME";
+    /// See [`crate::theme::ThemeOptions::theme_light`].
+    pub const BAT_THEME_LIGHT: &str = "BAT_THEME";
+}
+
 /// Chooses an appropriate theme or falls back to a default theme
 /// based on the user-provided options and the color scheme of the terminal.
 ///
