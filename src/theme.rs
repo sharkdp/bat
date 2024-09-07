@@ -36,7 +36,7 @@ pub const fn default_theme(color_scheme: ColorScheme) -> &'static str {
 
 /// Detects the color scheme from the terminal.
 pub fn color_scheme(when: DetectColorScheme) -> Option<ColorScheme> {
-    detect(when, &TerminalColorSchemeDetector)
+    color_scheme_impl(when, &TerminalColorSchemeDetector)
 }
 
 /// Options for configuring the theme used for syntax highlighting.
@@ -194,7 +194,7 @@ fn theme_impl(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> Them
         },
         ThemePreference::Dark => choose_theme_opt(Some(ColorScheme::Dark), options),
         ThemePreference::Light => choose_theme_opt(Some(ColorScheme::Light), options),
-        ThemePreference::Auto(when) => choose_theme_opt(detect(when, detector), options),
+        ThemePreference::Auto(when) => choose_theme_opt(color_scheme_impl(when, detector), options),
     }
 }
 
@@ -214,7 +214,10 @@ fn choose_theme(options: ThemeOptions, color_scheme: ColorScheme) -> Option<Them
     }
 }
 
-fn detect(when: DetectColorScheme, detector: &dyn ColorSchemeDetector) -> Option<ColorScheme> {
+fn color_scheme_impl(
+    when: DetectColorScheme,
+    detector: &dyn ColorSchemeDetector,
+) -> Option<ColorScheme> {
     let should_detect = match when {
         DetectColorScheme::Auto => detector.should_detect(),
         DetectColorScheme::Always => true,
