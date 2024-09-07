@@ -48,9 +48,9 @@ pub struct ThemeOptions {
 ///
 /// The easiest way to construct this is from a string:
 /// ```
-/// # use bat::theme::ThemePreference;
-/// # use std::str::FromStr as _;
-/// let preference = ThemePreference::from_str("auto:system").unwrap();
+/// # use bat::theme::{ThemePreference, DetectColorScheme};
+/// let preference = ThemePreference::new("auto:system");
+/// assert_eq!(ThemePreference::Auto(DetectColorScheme::System), preference);
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ThemePreference {
@@ -71,19 +71,26 @@ impl Default for ThemePreference {
     }
 }
 
+impl ThemePreference {
+    /// Creates a theme preference from a string.
+    pub fn new(s: &str) -> Self {
+        use ThemePreference::*;
+        match s {
+            "auto" => Auto(Default::default()),
+            "auto:always" => Auto(DetectColorScheme::Always),
+            "auto:system" => Auto(DetectColorScheme::System),
+            "dark" => Dark,
+            "light" => Light,
+            _ => Fixed(ThemeName::new(s)),
+        }
+    }
+}
+
 impl FromStr for ThemePreference {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use ThemePreference::*;
-        match s {
-            "auto" => Ok(Auto(Default::default())),
-            "auto:always" => Ok(Auto(DetectColorScheme::Always)),
-            "auto:system" => Ok(Auto(DetectColorScheme::System)),
-            "dark" => Ok(Dark),
-            "light" => Ok(Light),
-            _ => ThemeName::from_str(s).map(Fixed),
-        }
+        Ok(ThemePreference::new(s))
     }
 }
 
@@ -91,9 +98,8 @@ impl FromStr for ThemePreference {
 ///
 /// ```
 /// # use bat::theme::ThemeName;
-/// # use std::str::FromStr as _;
-/// assert_eq!(ThemeName::Default, ThemeName::from_str("default").unwrap());
-/// assert_eq!(ThemeName::Named("example".to_string()), ThemeName::from_str("example").unwrap());
+/// assert_eq!(ThemeName::Default, ThemeName::new("default"));
+/// assert_eq!(ThemeName::Named("example".to_string()), ThemeName::new("example"));
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ThemeName {
@@ -101,14 +107,30 @@ pub enum ThemeName {
     Default,
 }
 
+impl ThemeName {
+    /// Creates a theme name from a string.
+    pub fn new(s: &str) -> Self {
+        if s == "default" {
+            ThemeName::Default
+        } else {
+            ThemeName::Named(s.to_owned())
+        }
+    }
+}
+
 impl FromStr for ThemeName {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "default" {
-            Ok(ThemeName::Default)
-        } else {
-            Ok(ThemeName::Named(s.to_owned()))
+        Ok(ThemeName::new(s))
+    }
+}
+
+impl fmt::Display for ThemeName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ThemeName::Named(t) => f.write_str(t),
+            ThemeName::Default => f.write_str("default"),
         }
     }
 }
