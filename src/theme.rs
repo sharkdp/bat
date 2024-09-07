@@ -43,7 +43,8 @@ pub fn color_scheme(when: DetectColorScheme) -> Option<ColorScheme> {
 /// Used together with [`theme`].
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct ThemeOptions {
-    /// Always use this theme regardless of the terminal's background color.
+    /// Configures how the theme is chosen. If set to a [`ThemePreference::Fixed`] value,
+    /// then the given theme is used regardless of the terminal's background color.
     /// This corresponds with the `BAT_THEME` environment variable and the `--theme` option.
     pub theme: ThemePreference,
     /// The theme to use in case the terminal uses a dark background with light text.
