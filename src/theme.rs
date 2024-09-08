@@ -84,9 +84,10 @@ impl Default for ThemePreference {
 
 impl ThemePreference {
     /// Creates a theme preference from a string.
-    pub fn new(s: &str) -> Self {
+    pub fn new(s: impl Into<String>) -> Self {
         use ThemePreference::*;
-        match s {
+        let s = s.into();
+        match s.as_str() {
             "auto" => Auto(Default::default()),
             "auto:always" => Auto(DetectColorScheme::Always),
             "auto:system" => Auto(DetectColorScheme::System),
@@ -134,11 +135,12 @@ pub enum ThemeName {
 
 impl ThemeName {
     /// Creates a theme name from a string.
-    pub fn new(s: &str) -> Self {
+    pub fn new(s: impl Into<String>) -> Self {
+        let s = s.into();
         if s == "default" {
             ThemeName::Default
         } else {
-            ThemeName::Named(s.to_owned())
+            ThemeName::Named(s)
         }
     }
 }
