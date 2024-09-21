@@ -273,6 +273,24 @@ make install
 nix-env -i bat
 ```
 
+### Via flox
+
+`bat` を [flox](https://flox.dev) 経由でインストールすることができます:
+
+```bash
+flox install bat
+```
+
+### Via x-cmd
+
+`bat` を [x-cmd](https://www.x-cmd.com) 経由でインストールすることができます:
+
+```bash
+x env use bat
+# or
+x bat
+```
+
 ### On openSUSE
 
 `bat` をzypperでインストールすることができます:
