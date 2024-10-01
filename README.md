@@ -257,7 +257,8 @@ abbr -a --position anywhere -- -h '-h | bat -plhelp'
 
 This way, you can keep on using `cp --help`, but get colorized help pages.
 
-Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`).
+Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`). In cases where you need to use `-h` 
+as a command argument you can prepend `\` to the arguement (eg. `ls \-h`) to escape the aliasing defined above. 
 
 Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
