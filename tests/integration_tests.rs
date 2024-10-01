@@ -274,11 +274,8 @@ fn squeeze_limit_line_numbers() {
 
 #[test]
 fn list_themes_with_colors() {
-    #[cfg(target_os = "macos")]
-    let default_theme_chunk = "Monokai Extended Light\x1B[0m (default)";
-
-    #[cfg(not(target_os = "macos"))]
     let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
+    let default_light_theme_chunk = "Monokai Extended Light\x1B[0m (default light)";
 
     bat()
         .arg("--color=always")
@@ -287,16 +284,14 @@ fn list_themes_with_colors() {
         .success()
         .stdout(predicate::str::contains("DarkNeon").normalize())
         .stdout(predicate::str::contains(default_theme_chunk).normalize())
+        .stdout(predicate::str::contains(default_light_theme_chunk).normalize())
         .stdout(predicate::str::contains("Output the square of a number.").normalize());
 }
 
 #[test]
 fn list_themes_without_colors() {
-    #[cfg(target_os = "macos")]
-    let default_theme_chunk = "Monokai Extended Light (default)";
-
-    #[cfg(not(target_os = "macos"))]
     let default_theme_chunk = "Monokai Extended (default)";
+    let default_light_theme_chunk = "Monokai Extended Light (default light)";
 
     bat()
         .arg("--color=never")
@@ -304,7 +299,8 @@ fn list_themes_without_colors() {
         .assert()
         .success()
         .stdout(predicate::str::contains("DarkNeon").normalize())
-        .stdout(predicate::str::contains(default_theme_chunk).normalize());
+        .stdout(predicate::str::contains(default_theme_chunk).normalize())
+        .stdout(predicate::str::contains(default_light_theme_chunk).normalize());
 }
 
 #[test]
@@ -405,6 +401,7 @@ fn no_args_doesnt_break() {
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
     // not exit, because in this case it is safe to read and write to the same fd, which is why
     // this test exists.
+
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
     let mut master = unsafe { File::from_raw_fd(master) };
     let stdin_file = unsafe { File::from_raw_fd(slave) };
@@ -415,6 +412,7 @@ fn no_args_doesnt_break() {
     let mut child = bat_raw_command()
         .stdin(stdin)
         .stdout(stdout)
+        .env("TERM", "dumb") // Suppresses color detection
         .spawn()
         .expect("Failed to start.");
 

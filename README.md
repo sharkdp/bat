@@ -482,8 +482,10 @@ the following command (you need [`fzf`](https://github.com/junegunn/fzf) for thi
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
-`bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
+`bat` automatically picks a fitting theme depending on your terminal's background color.
+You can use the `--theme-light` / `--theme-light` options or the `BAT_THEME_DARK` / `BAT_THEME_LIGHT` environment variables
+to customize the themes used. This is especially useful if you frequently switch between dark and light mode.
+
 You can also use a custom theme by following the
 ['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
 
