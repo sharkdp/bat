@@ -33,7 +33,7 @@ minimal-application = [
 ]
 git = ["git2"] # Support indicating git modifications
 paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
-lessopen = ["run_script", "os_str_bytes"] # Support $LESSOPEN preprocessor
+lessopen = ["run_script", "os_str_bytes/conversions"] # Support $LESSOPEN preprocessor
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
 
 # You need to use one of these if you depend on bat as a library:
