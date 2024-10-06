@@ -55,9 +55,11 @@
 - Associate JSON with Comments `.jsonc` with `json` syntax, see #2795 (@mxaddict)
 - Associate JSON-LD `.jsonld` files with `json` syntax, see #3037 (@vorburger)
 - Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger)
+- Associate GeoJSON `.geojson` files with `json` syntax, see #3084 (@mvaaltola)
 - Associate `.aws/{config,credentials}`, see #2795 (@mxaddict)
 - Associate Wireguard config `/etc/wireguard/*.conf`, see #2874 (@cyqsimon)
 - Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
+- Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
 
 ## Themes
 

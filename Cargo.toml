@@ -46,7 +46,7 @@ ansi_colours = "^1.2"
 bincode = "1.0"
 console = "0.15.8"
 flate2 = "1.0"
-once_cell = "1.19"
+once_cell = "1.20"
 thiserror = "1.0"
 wild = { version = "2.2", optional = true }
 content_inspector = "0.2.4"
@@ -70,7 +70,7 @@ os_str_bytes = { version = "~7.0", optional = true }
 run_script = { version = "^0.10.1", optional = true}
 
 [dependencies.git2]
-version = "0.18"
+version = "0.19"
 optional = true
 default-features = false
 
@@ -86,7 +86,7 @@ features = ["wrap_help", "cargo"]
 
 [target.'cfg(target_os = "macos")'.dependencies]
 home = "0.5.9"
-plist = "1.6.0"
+plist = "1.7.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.12"
@@ -104,7 +104,7 @@ nix = { version = "0.26.4", default-features = false, features = ["term"] }
 anyhow = "1.0.86"
 indexmap = { version = "2.3.0", features = ["serde"] }
 itertools = "0.13.0"
-once_cell = "1.18"
+once_cell = "1.20"
 regex = "1.10.2"
 serde = "1.0"
 serde_derive = "1.0"
