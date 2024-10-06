@@ -300,11 +300,21 @@ fn list_themes_without_colors() {
 
     bat()
         .arg("--color=never")
+        .arg("--decorations=always") // trick bat into setting `Config::loop_through` to false
         .arg("--list-themes")
         .assert()
         .success()
         .stdout(predicate::str::contains("DarkNeon").normalize())
         .stdout(predicate::str::contains(default_theme_chunk).normalize());
+}
+
+#[test]
+fn list_themes_to_piped_output() {
+    bat()
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("(default)").not());
 }
 
 #[test]
