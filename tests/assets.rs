@@ -13,6 +13,10 @@ fn all_themes_are_present() {
     assert_eq!(
         themes,
         vec![
+            "Catppuccin Latte",
+            "Catppuccin Frappe",
+            "Catppuccin Mocha",
+            "Catppuccin Macchiatto"
             "1337",
             "Coldark-Cold",
             "Coldark-Dark",
