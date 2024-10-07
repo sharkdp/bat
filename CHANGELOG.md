@@ -63,6 +63,9 @@
 
 ## Themes
 
+- Added Catppuccin themes (Latte, Frappe, Macchiato, Mocha), see #3099 (@aadirave)
+
+
 ## `bat` as a library
 
 - Changes to `syntax_mapping::SyntaxMapping` #2755 (@cyqsimon)
