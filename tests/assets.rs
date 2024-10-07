@@ -16,7 +16,7 @@ fn all_themes_are_present() {
             "Catppuccin Latte",
             "Catppuccin Frappe",
             "Catppuccin Mocha",
-            "Catppuccin Macchiatto"
+            "Catppuccin Macchiatto",
             "1337",
             "Coldark-Cold",
             "Coldark-Dark",
