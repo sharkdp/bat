@@ -202,7 +202,7 @@ pub fn list_themes(cfg: &Config, config_dir: &Path, cache_dir: &Path) -> Result<
 
     let default_theme = HighlightingAssets::default_theme();
     for theme in assets.themes() {
-        let default_theme_info = if default_theme == theme {
+        let default_theme_info = if !config.loop_through && default_theme == theme {
             " (default)"
         } else {
             ""
