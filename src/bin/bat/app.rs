@@ -417,6 +417,11 @@ impl App {
             )),
         };
 
+        // Add syntax.
+        if !self.matches.get_flag("no-syntax") {
+            styled_components.0.insert(StyleComponent::Syntax);
+        }
+
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
             bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
