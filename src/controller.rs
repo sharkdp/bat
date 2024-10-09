@@ -1,4 +1,4 @@
-use std::io::{self, BufRead, Write};
+use std::io::{self, BufRead, BufWriter, Write};
 
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
@@ -88,9 +88,12 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
+        const BUF_W_SZ: usize = 1 << 14;
         let mut writer = match output_buffer {
             Some(buf) => OutputHandle::FmtWrite(buf),
-            None => OutputHandle::IoWrite(output_type.handle()?),
+            None => {
+                OutputHandle::IoWrite(BufWriter::with_capacity(BUF_W_SZ, output_type.handle()?))
+            }
         };
         let mut no_errors: bool = true;
         let stderr = io::stderr();
@@ -124,10 +127,10 @@ impl<'b> Controller<'b> {
         Ok(no_errors)
     }
 
-    fn print_input<R: BufRead>(
+    fn print_input<R: BufRead, W: io::Write>(
         &self,
         input: Input,
-        writer: &mut OutputHandle,
+        writer: &mut OutputHandle<W>,
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
@@ -174,7 +177,7 @@ impl<'b> Controller<'b> {
             None
         };
 
-        let mut printer: Box<dyn Printer> = if self.config.loop_through {
+        let mut printer: Box<dyn Printer<_>> = if self.config.loop_through {
             Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(
@@ -196,10 +199,10 @@ impl<'b> Controller<'b> {
         )
     }
 
-    fn print_file(
+    fn print_file<W: io::Write>(
         &self,
-        printer: &mut dyn Printer,
-        writer: &mut OutputHandle,
+        printer: &mut dyn Printer<W>,
+        writer: &mut OutputHandle<W>,
         input: &mut OpenedInput,
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
@@ -234,10 +237,10 @@ impl<'b> Controller<'b> {
         Ok(())
     }
 
-    fn print_file_ranges(
+    fn print_file_ranges<W: io::Write>(
         &self,
-        printer: &mut dyn Printer,
-        writer: &mut OutputHandle,
+        printer: &mut dyn Printer<W>,
+        writer: &mut OutputHandle<W>,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
@@ -279,6 +282,7 @@ impl<'b> Controller<'b> {
             line_number += 1;
             line_buffer.clear();
         }
+        writer.flush()?;
         Ok(())
     }
 }
