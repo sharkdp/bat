@@ -15,6 +15,7 @@ pub enum StyleComponent {
     HeaderFilename,
     HeaderFilesize,
     LineNumbers,
+    Syntax,
     Snip,
     Full,
     Default,
@@ -39,6 +40,7 @@ impl StyleComponent {
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
+            StyleComponent::Syntax => &[StyleComponent::Syntax],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
@@ -47,6 +49,7 @@ impl StyleComponent {
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
                 StyleComponent::LineNumbers,
+                StyleComponent::Syntax,
                 StyleComponent::Snip,
             ],
             StyleComponent::Default => &[
@@ -55,6 +58,7 @@ impl StyleComponent {
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::LineNumbers,
+                StyleComponent::Syntax,
                 StyleComponent::Snip,
             ],
             StyleComponent::Plain => &[],
@@ -76,6 +80,7 @@ impl FromStr for StyleComponent {
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
+            "syntax" => Ok(StyleComponent::Syntax),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
@@ -122,12 +127,18 @@ impl StyleComponents {
         self.0.contains(&StyleComponent::LineNumbers)
     }
 
+    pub fn syntax(&self) -> bool {
+        self.0.contains(&StyleComponent::Syntax)
+    }
+
     pub fn snip(&self) -> bool {
         self.0.contains(&StyleComponent::Snip)
     }
 
     pub fn plain(&self) -> bool {
-        self.0.iter().all(|c| c == &StyleComponent::Plain)
+        self.0
+            .iter()
+            .all(|c| c == &StyleComponent::Plain || c == &StyleComponent::Syntax)
     }
 
     pub fn insert(&mut self, component: StyleComponent) {
@@ -245,7 +256,7 @@ mod test {
     #[test]
     pub fn style_component_list_parse() {
         assert_eq!(
-            StyleComponentList::from_str("grid,+numbers,snip,-snip,header")
+            StyleComponentList::from_str("grid,+numbers,snip,-snip,header,-syntax")
                 .expect("no error")
                 .0,
             vec![
@@ -254,6 +265,7 @@ mod test {
                 (Override, Snip),
                 (Remove, Snip),
                 (Override, Header),
+                (Remove, Syntax),
             ]
         );
 

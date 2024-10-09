@@ -639,6 +639,10 @@ impl<'a, W: io::Write> Printer<W> for InteractivePrinter<'a> {
             line
         };
 
+        if self.config.style_components.plain() && !self.config.style_components.syntax() {
+            return write!(handle, "{line}");
+        }
+
         let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());

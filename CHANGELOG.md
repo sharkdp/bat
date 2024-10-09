@@ -45,6 +45,7 @@
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 - Significantly improve performance by using a buffered writer, see #3101 (@MoSal)
+- Add --no-syntax option, see #3102 (@MoSal)
 
 ## Syntaxes
 

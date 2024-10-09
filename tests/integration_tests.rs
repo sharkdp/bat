@@ -2888,3 +2888,34 @@ fn style_components_will_merge_with_env_var() {
         .stdout("     STDIN\n   1 test\n")
         .stderr("");
 }
+
+#[test]
+fn skip_syntax() {
+    macro_rules! bat {
+        ([$($extra_arg:expr)*], out=$out:expr) => {
+            bat()
+                .arg("--paging=never")
+                .arg("--terminal-width=80")
+                .arg("--decorations=always")
+                .arg("--theme=ansi")
+                .arg("--style=plain")
+                .arg("--highlight-line=1")
+                $(.arg($extra_arg))*
+                .write_stdin("Ansi Underscore Test\nAnother Line")
+                .assert()
+                .success()
+                .stdout($out)
+                .stderr("");
+            };
+    }
+    // without --no-syntax
+    bat! {
+        [],
+        out = "\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line"
+    };
+    // with --no-syntax
+    bat! {
+        ["--no-syntax"],
+        out = "Ansi Underscore Test\nAnother Line"
+    };
+}

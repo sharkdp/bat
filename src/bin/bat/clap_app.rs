@@ -302,6 +302,14 @@ pub fn build_app(interactive_output: bool) -> Command {
                         to keep the colorization/decorations.")
         )
         .arg(
+            Arg::new("no-syntax")
+                .long("no-syntax")
+                .action(ArgAction::SetTrue)
+                .overrides_with("no-syntax")
+                .hide_short_help(true)
+                .long_help("Don't pass text to the syntax highlighter in plain mode.")
+        )
+        .arg(
             Arg::new("paging")
                 .long("paging")
                 .overrides_with("paging")
