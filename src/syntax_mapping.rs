@@ -1,6 +1,14 @@
-use std::path::Path;
+use std::{
+    path::Path,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    thread,
+};
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
+use once_cell::sync::Lazy;
 
 use crate::error::Result;
 use builtin::BUILTIN_MAPPINGS;
@@ -44,12 +52,48 @@ pub struct SyntaxMapping<'a> {
     ///
     /// Rules in front have precedence.
     custom_mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
+
     pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
+
+    /// A flag to halt glob matcher building, which is offloaded to another thread.
+    ///
+    /// We have this so that we can signal the thread to halt early when appropriate.
+    halt_glob_build: Arc<AtomicBool>,
+}
+
+impl<'a> Drop for SyntaxMapping<'a> {
+    fn drop(&mut self) {
+        // signal the offload thread to halt early
+        self.halt_glob_build.store(true, Ordering::Relaxed);
+    }
 }
 
 impl<'a> SyntaxMapping<'a> {
     pub fn new() -> SyntaxMapping<'a> {
         Default::default()
+    }
+
+    /// Start a thread to build the glob matchers for all builtin mappings.
+    ///
+    /// The use of this function while not necessary, is useful to speed up startup
+    /// times by starting this work early in parallel.
+    ///
+    /// The thread halts if/when `halt_glob_build` is set to true.
+    pub fn start_offload_build_all(&self) {
+        let halt = Arc::clone(&self.halt_glob_build);
+        thread::spawn(move || {
+            for (matcher, _) in BUILTIN_MAPPINGS.iter() {
+                if halt.load(Ordering::Relaxed) {
+                    break;
+                }
+                Lazy::force(matcher);
+            }
+        });
+        // Note that this thread is not joined upon completion because there's
+        // no shared resources that need synchronization to be safely dropped.
+        // If we later add code into this thread that requires interesting
+        // resources (e.g. IO), it would be a good idea to store the handle
+        // and join it on drop.
     }
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {

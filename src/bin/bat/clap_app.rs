@@ -1,9 +1,11 @@
+use bat::style::StyleComponentList;
 use clap::{
     crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
 };
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 static VERSION: Lazy<String> = Lazy::new(|| {
     #[cfg(feature = "bugreport")]
@@ -403,36 +405,29 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("strip-ansi")
+                .long("strip-ansi")
+                .overrides_with("strip-ansi")
+                .value_name("when")
+                .value_parser(["auto", "always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Strip colors from the input (auto, always, *never*)")
+                .long_help("Specify when to strip ANSI escape sequences from the input. \
+                The automatic mode will remove escape sequences unless the syntax highlighting \
+                language is plain text. Possible values: auto, always, *never*.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
+                .action(ArgAction::Append)
                 .value_name("components")
-                .overrides_with("style")
-                .overrides_with("plain")
-                .overrides_with("number")
                 // Cannot use claps built in validation because we have to turn off clap's delimiters
                 .value_parser(|val: &str| {
-                    let mut invalid_vals = val.split(',').filter(|style| {
-                        !&[
-                            "auto",
-                            "full",
-                            "default",
-                            "plain",
-                            "header",
-                            "header-filename",
-                            "header-filesize",
-                            "grid",
-                            "rule",
-                            "numbers",
-                            "snip",
-                            #[cfg(feature = "git")]
-                            "changes",
-                        ].contains(style)
-                    });
-
-                    if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{invalid}'"))
-                    } else {
-                        Ok(val.to_owned())
+                    match StyleComponentList::from_str(val) {
+                        Err(err) => Err(err),
+                        Ok(_) => Ok(val.to_owned()),
                     }
                 })
                 .help(
@@ -447,6 +442,12 @@ pub fn build_app(interactive_output: bool) -> Command {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     When styles are specified in multiple places, the \"nearest\" set \
+                     of styles take precedence. The command-line arguments are the highest \
+                     priority, followed by the BAT_STYLE environment variable, and then \
+                     the configuration file. If any set of styles consists entirely of \
+                     components prefixed with \"+\" or \"-\", it will modify the \
+                     previous set of styles instead of replacing them.\n\n\
                      By default, the following components are enabled:\n  \
                         changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
