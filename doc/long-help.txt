@@ -20,6 +20,13 @@ Options:
             * unicode (␇, ␊, ␀, ..)
             * caret   (^G, ^J, ^@, ..)
 
+      --binary <behavior>
+          How to treat binary content. (default: no-printing)
+          
+          Possible values:
+            * no-printing: do not print any binary content
+            * as-text: treat binary content as normal text
+
   -p, --plain...
           Only show plain style, no decorations. This is an alias for '--style=plain'. When '-p' is
           used twice ('-pp'), it also disables automatic paging (alias for '--style=plain
