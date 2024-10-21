@@ -133,6 +133,8 @@ set -l tabs_opts '
 
 complete -c $bat -l acknowledgements -d "Print acknowledgements" -n __fish_is_first_arg
 
+complete -c $bat -l cache-dir -f -d "Show bat's cache directory" -n __fish_is_first_arg
+
 complete -c $bat -l color -x -a "$color_opts" -d "When to use colored output" -n __bat_no_excl_args
 
 complete -c $bat -l config-dir -f -d "Display location of configuration directory" -n __fish_is_first_arg

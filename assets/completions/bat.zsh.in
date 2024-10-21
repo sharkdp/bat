@@ -48,6 +48,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
             default auto full plain changes header header-filename header-filesize grid rule numbers snip'
         \*{-r+,--line-range=}'[only print the specified line range]:start\:end'
         '(* -)'{-L,--list-languages}'[display all supported languages]'
+        -P'[disable paging]'
         "--no-config[don't use the configuration file]"
         "--no-custom-assets[don't load custom assets]"
         '(--no-lessopen)'--lessopen'[enable the $LESSOPEN preprocessor]'
