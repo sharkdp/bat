@@ -163,7 +163,7 @@ git show v0.6.0:src/main.rs | bat -l rs
 볼 수 있습니다:
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d | xargs bat --diff
+    git diff --name-only --diff-filter=d -z | xargs --null bat --diff
 }
 ```
 이것을 별도의 도구로 쓰고 싶다면
