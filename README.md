@@ -693,10 +693,11 @@ on your operating system. To get the default path for your system, call
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
-non-default location of the configuration file:
+Alternatively, you can use `BAT_CONFIG_PATH` or `BAT_CONFIG_DIR` environment variables to point `bat`
+to a non-default location of the configuration file or the configuration directory respectively:
 ```bash
-export BAT_CONFIG_PATH="/path/to/bat.conf"
+export BAT_CONFIG_PATH="/path/to/bat/bat.conf"
+export BAT_CONFIG_DIR="/path/to/bat"
 ```
 
 A default configuration file can be created with the `--generate-config-file` option.
