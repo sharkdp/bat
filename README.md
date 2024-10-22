@@ -67,7 +67,7 @@ characters:
 
 By default, `bat` pipes its own output to a pager (e.g. `less`) if the output is too large for one screen.
 If you would rather `bat` work like `cat` all the time (never page output), you can set `--paging=never` as an option, either on the command line or in your configuration file.
-If you intend to alias `cat` to `bat` in your shell configuration, you can use `alias cat='bat --paging=never'` to preserve the default behavior.
+If you intend to alias `cat` to `bat` in your shell configuration, you can use `alias cat='bat --style=plain --paging=never'` to preserve the default behavior.
 
 #### File concatenation
 
@@ -162,6 +162,16 @@ batgrep needle src/
 ```bash
 tail -f /var/log/pacman.log | bat --paging=never -l log
 ```
+You can also add an alias `batlog` to read any logfile
+
+```bash
+alias batlog='bat --paging=never -l log'
+
+tail -f /var/log/pacman.log | batlog
+
+batlog /var/log/pacman.log
+```
+
 
 Note that we have to switch off paging in order for this to work. We have also specified the syntax
 explicitly (`-l log`), as it can not be auto-detected in this case.
