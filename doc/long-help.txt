@@ -87,6 +87,9 @@ Options:
           Alias for '--decorations=always --color=always'. This is useful if the output of bat is
           piped to another program, but you want to keep the colorization/decorations.
 
+      --no-syntax
+          Don't pass text to the syntax highlighter in plain mode.
+
       --paging <when>
           Specify when to use the pager. To disable the pager, use --paging=never' or its
           alias,'-P'. To disable the pager permanently, set BAT_PAGING to 'never'. To control which
