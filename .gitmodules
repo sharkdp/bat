@@ -263,3 +263,6 @@
 [submodule "assets/syntaxes/02_Extra/CFML"]
 	path = assets/syntaxes/02_Extra/CFML
 	url = https://github.com/jcberquist/sublimetext-cfml.git
+[submodule "assets/themes/bat"]
+	path = assets/themes/bat
+	url = https://github.com/catppuccin/bat.git
