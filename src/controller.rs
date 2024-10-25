@@ -230,7 +230,13 @@ impl<'b> Controller<'b> {
                 }
             };
 
-            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+            self.print_file_ranges(
+                printer,
+                writer,
+                &mut input.reader,
+                &line_ranges,
+                input.is_terminal,
+            )?;
         }
         printer.print_footer(writer, input)?;
 
@@ -243,6 +249,7 @@ impl<'b> Controller<'b> {
         writer: &mut OutputHandle<W>,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
+        input_is_terminal: bool,
     ) -> Result<()> {
         let mut line_buffer = Vec::new();
         let mut line_number: usize = 1;
@@ -281,6 +288,11 @@ impl<'b> Controller<'b> {
 
             line_number += 1;
             line_buffer.clear();
+
+            // flush per line if input is terminal to allow interactive use
+            if input_is_terminal {
+                writer.flush()?;
+            }
         }
         writer.flush()?;
         Ok(())

@@ -338,6 +338,8 @@ impl App {
             return Err("Must be one file name per input type.".into());
         }
 
+        let stdin_is_terminal = || std::io::stdin().is_terminal();
+
         let mut filenames_or_none: Box<dyn Iterator<Item = Option<&Path>>> = match filenames {
             Some(filenames) => Box::new(filenames.into_iter().map(Some)),
             None => Box::new(std::iter::repeat(None)),
@@ -345,6 +347,7 @@ impl App {
         if files.is_none() {
             return Ok(vec![new_stdin_input(
                 filenames_or_none.next().unwrap_or(None),
+                stdin_is_terminal(),
             )]);
         }
         let files_or_none: Box<dyn Iterator<Item = _>> = match files {
@@ -356,7 +359,7 @@ impl App {
         for (filepath, provided_name) in files_or_none.zip(filenames_or_none) {
             if let Some(filepath) = filepath {
                 if filepath.to_str().unwrap_or_default() == "-" {
-                    file_input.push(new_stdin_input(provided_name));
+                    file_input.push(new_stdin_input(provided_name, stdin_is_terminal()));
                 } else {
                     file_input.push(new_file_input(filepath, provided_name));
                 }

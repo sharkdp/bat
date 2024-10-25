@@ -94,6 +94,7 @@ pub(crate) struct InputMetadata {
 pub struct Input<'a> {
     pub(crate) kind: InputKind<'a>,
     pub(crate) metadata: InputMetadata,
+    pub(crate) is_terminal: bool,
     pub(crate) description: InputDescription,
 }
 
@@ -106,6 +107,7 @@ pub(crate) enum OpenedInputKind {
 pub(crate) struct OpenedInput<'a> {
     pub(crate) kind: OpenedInputKind,
     pub(crate) metadata: InputMetadata,
+    pub(crate) is_terminal: bool,
     pub(crate) reader: InputReader<'a>,
     pub(crate) description: InputDescription,
 }
@@ -141,15 +143,17 @@ impl<'a> Input<'a> {
             description: kind.description(),
             metadata,
             kind,
+            is_terminal: false,
         }
     }
 
-    pub fn stdin() -> Self {
+    pub fn stdin(is_terminal: bool) -> Self {
         let kind = InputKind::StdIn;
         Input {
             description: kind.description(),
             metadata: InputMetadata::default(),
             kind,
+            is_terminal,
         }
     }
 
@@ -159,6 +163,7 @@ impl<'a> Input<'a> {
             description: kind.description(),
             metadata: InputMetadata::default(),
             kind,
+            is_terminal: false,
         }
     }
 
@@ -207,6 +212,7 @@ impl<'a> Input<'a> {
                     kind: OpenedInputKind::StdIn,
                     description,
                     metadata: self.metadata,
+                    is_terminal: self.is_terminal,
                     reader: InputReader::new(stdin),
                 })
             }
@@ -215,6 +221,7 @@ impl<'a> Input<'a> {
                 kind: OpenedInputKind::OrdinaryFile(path.clone()),
                 description,
                 metadata: self.metadata,
+                is_terminal: self.is_terminal,
                 reader: {
                     let mut file = File::open(&path)
                         .map_err(|e| format!("'{}': {}", path.to_string_lossy(), e))?;
@@ -243,6 +250,7 @@ impl<'a> Input<'a> {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
+                is_terminal: self.is_terminal,
                 reader: InputReader::new(BufReader::new(reader)),
             }),
         }

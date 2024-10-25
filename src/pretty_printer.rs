@@ -348,7 +348,7 @@ impl<'a> Input<'a> {
 
     /// A new input from STDIN.
     pub fn from_stdin() -> Self {
-        input::Input::stdin().into()
+        input::Input::stdin(true).into()
     }
 
     /// The filename of the input.

@@ -5,8 +5,8 @@ pub fn new_file_input<'a>(file: &'a Path, name: Option<&'a Path>) -> Input<'a> {
     named(Input::ordinary_file(file), name.or(Some(file)))
 }
 
-pub fn new_stdin_input(name: Option<&Path>) -> Input {
-    named(Input::stdin(), name)
+pub fn new_stdin_input(name: Option<&Path>, is_terminal: bool) -> Input {
+    named(Input::stdin(is_terminal), name)
 }
 
 fn named<'a>(input: Input<'a>, name: Option<&Path>) -> Input<'a> {
