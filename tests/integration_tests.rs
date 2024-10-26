@@ -9,7 +9,6 @@ use tempfile::tempdir;
 mod unix {
     pub use std::fs::File;
     pub use std::io::{self, Write};
-    pub use std::os::unix::io::FromRawFd;
     pub use std::path::PathBuf;
     pub use std::process::Stdio;
     pub use std::thread;
@@ -416,8 +415,8 @@ fn no_args_doesnt_break() {
     // not exit, because in this case it is safe to read and write to the same fd, which is why
     // this test exists.
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
-    let mut master = unsafe { File::from_raw_fd(master) };
-    let stdin_file = unsafe { File::from_raw_fd(slave) };
+    let mut master = File::from(master);
+    let stdin_file = File::from(slave);
     let stdout_file = stdin_file.try_clone().unwrap();
     let stdin = Stdio::from(stdin_file);
     let stdout = Stdio::from(stdout_file);
