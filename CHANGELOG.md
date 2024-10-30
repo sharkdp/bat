@@ -62,6 +62,7 @@
 - Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
 - Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
 - Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
+- Adds support for pipe delimiter for CSV #3115 (@pratik-m)
 
 ## Themes
 
