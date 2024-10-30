@@ -9,6 +9,7 @@
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
 
 ## Bugfixes
 
@@ -45,6 +46,7 @@
 - Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
+- Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
 
 ## Syntaxes
 
@@ -61,6 +63,7 @@
 - Associate Wireguard config `/etc/wireguard/*.conf`, see #2874 (@cyqsimon)
 - Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
 - Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
+- Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
 
 ## Themes
 
