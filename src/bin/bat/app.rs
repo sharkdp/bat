@@ -98,12 +98,30 @@ impl App {
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
         let style_components = self.style_components()?;
 
+        let extra_plain = self.matches.get_count("plain") > 1;
+        let plain_last_index = self
+            .matches
+            .indices_of("plain")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
+        let paging_last_index = self
+            .matches
+            .indices_of("paging")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
+
         let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
-            Some("always") => PagingMode::Always,
+            Some("always") => {
+                // Disable paging if the second -p (or -pp) is specified after --paging=always
+                if extra_plain && plain_last_index > paging_last_index {
+                    PagingMode::Never
+                } else {
+                    PagingMode::Always
+                }
+            }
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
-                let extra_plain = self.matches.get_count("plain") > 1;
                 if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
