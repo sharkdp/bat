@@ -114,6 +114,7 @@
 - Update `Julia` syntax, see #2553 (@dependabot)
 - add `NSIS` support, see #2577 (@idleberg)
 - Update `ssh-config`, see #2697 (@mrmeszaros)
+- Add syntax mapping `*.debdiff` => `diff`, see #2947 (@jacg)
 
 ## `bat` as a library
 
