@@ -279,12 +279,11 @@ checksum = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1"
 
 [[package]]
 name = "clircle"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0b92245ea62a7a751db4b0e4a583f8978e508077ef6de24fcc0d0dc5311a8d"
+checksum = "e136d50bd652710f1d86259a8977263d46bef0ab782a8bfc3887e44338517015"
 dependencies = [
  "cfg-if",
- "libc",
  "serde",
  "serde_derive",
  "winapi",
