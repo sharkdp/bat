@@ -1,0 +1,3 @@
+# .debdiff is the extension used for diffs in Debian packaging
+[mappings]
+"Diff" = ["*.debdiff"]

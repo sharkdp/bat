@@ -9,6 +9,7 @@
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
 
 ## Bugfixes
 
@@ -18,6 +19,7 @@
 - Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
 - Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 - Fix compile issue of `time` dependency caused by standard library regression #3045 (@cyqsimon)
+- Fix override behavior of --plain and --paging, see issue #2731 and PR #3108 (@einfachIrgendwer0815)
 
 ## Other
 
@@ -63,6 +65,7 @@
 - Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
 - Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
 - Adds support for pipe delimiter for CSV #3115 (@pratik-m)
+- Add syntax mapping for `/etc/pacman.conf` #2961 (@cyqsimon)
 
 ## Themes
 
@@ -112,6 +115,7 @@
 - Update `Julia` syntax, see #2553 (@dependabot)
 - add `NSIS` support, see #2577 (@idleberg)
 - Update `ssh-config`, see #2697 (@mrmeszaros)
+- Add syntax mapping `*.debdiff` => `diff`, see #2947 (@jacg)
 
 ## `bat` as a library
 

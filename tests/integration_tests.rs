@@ -1020,6 +1020,31 @@ fn enable_pager_if_pp_flag_comes_before_paging() {
 }
 
 #[test]
+fn paging_does_not_override_simple_plain() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--decorations=always")
+        .arg("--plain")
+        .arg("--paging=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n"));
+}
+
+#[test]
+fn simple_plain_does_not_override_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("--plain")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n"));
+}
+
+#[test]
 fn pager_failed_to_parse() {
     bat()
         .env("BAT_PAGER", "mismatched-quotes 'a")
@@ -1935,6 +1960,16 @@ fn show_all_with_unicode() {
         .arg("control_characters.txt")
         .assert()
         .stdout("␀␁␂␃␄␅␆␇␈├─┤␊\n␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␡")
+        .stderr("");
+}
+
+#[test]
+fn binary_as_text() {
+    bat()
+        .arg("--binary=as-text")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F")
         .stderr("");
 }
 
