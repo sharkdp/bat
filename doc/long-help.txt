@@ -20,6 +20,13 @@ Options:
             * unicode (␇, ␊, ␀, ..)
             * caret   (^G, ^J, ^@, ..)
 
+      --binary <behavior>
+          How to treat binary content. (default: no-printing)
+          
+          Possible values:
+            * no-printing: do not print any binary content
+            * as-text: treat binary content as normal text
+
   -p, --plain...
           Only show plain style, no decorations. This is an alias for '--style=plain'. When '-p' is
           used twice ('-pp'), it also disables automatic paging (alias for '--style=plain
@@ -122,12 +129,23 @@ Options:
       --squeeze-limit <squeeze-limit>
           Set the maximum number of consecutive empty lines to be printed.
 
+      --strip-ansi <when>
+          Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
+          escape sequences unless the syntax highlighting language is plain text. Possible values:
+          auto, always, *never*.
+
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
           to display in addition to the file contents. The argument is a comma-separated list of
           components to display (e.g. 'numbers,changes,grid') or a pre-defined style ('full'). To
           set a default style, add the '--style=".."' option to the configuration file or export the
           BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
+          
+          When styles are specified in multiple places, the "nearest" set of styles take precedence.
+          The command-line arguments are the highest priority, followed by the BAT_STYLE environment
+          variable, and then the configuration file. If any set of styles consists entirely of
+          components prefixed with "+" or "-", it will modify the previous set of styles instead of
+          replacing them.
           
           By default, the following components are enabled:
             changes, grid, header-filename, numbers, snip

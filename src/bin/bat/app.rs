@@ -2,11 +2,15 @@ use std::collections::HashSet;
 use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 use crate::{
     clap_app,
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
+use bat::style::StyleComponentList;
+use bat::BinaryBehavior;
+use bat::StripAnsiMode;
 use clap::ArgMatches;
 
 use console::Term;
@@ -85,7 +89,6 @@ impl App {
 
             // .. and the rest at the end
             cli_args.for_each(|a| args.push(a));
-
             args
         };
 
@@ -104,12 +107,30 @@ impl App {
 
         let style_components = self.style_components(loop_through)?;
 
+        let extra_plain = self.matches.get_count("plain") > 1;
+        let plain_last_index = self
+            .matches
+            .indices_of("plain")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
+        let paging_last_index = self
+            .matches
+            .indices_of("paging")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
+
         let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
-            Some("always") => PagingMode::Always,
+            Some("always") => {
+                // Disable paging if the second -p (or -pp) is specified after --paging=always
+                if extra_plain && plain_last_index > paging_last_index {
+                    PagingMode::Never
+                } else {
+                    PagingMode::Always
+                }
+            }
             Some("never") => PagingMode::Never,
             Some("auto") | None => {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
-                let extra_plain = self.matches.get_count("plain") > 1;
                 if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
                 } else if inputs.iter().any(Input::is_stdin) {
@@ -200,6 +221,11 @@ impl App {
                 Some("caret") => NonprintableNotation::Caret,
                 _ => unreachable!("other values for --nonprintable-notation are not allowed"),
             },
+            binary: match self.matches.get_one::<String>("binary").map(|s| s.as_str()) {
+                Some("as-text") => BinaryBehavior::AsText,
+                Some("no-printing") => BinaryBehavior::NoPrinting,
+                _ => unreachable!("other values for --binary are not allowed"),
+            },
             wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
                 if !self.matches.get_flag("chop-long-lines") {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
@@ -244,6 +270,16 @@ impl App {
                         4
                     },
                 ),
+            strip_ansi: match self
+                .matches
+                .get_one::<String>("strip-ansi")
+                .map(|s| s.as_str())
+            {
+                Some("never") => StripAnsiMode::Never,
+                Some("always") => StripAnsiMode::Always,
+                Some("auto") => StripAnsiMode::Auto,
+                _ => unreachable!("other values for --strip-ansi are not allowed"),
+            },
             theme: self
                 .matches
                 .get_one::<String>("theme")
@@ -355,34 +391,62 @@ impl App {
         Ok(file_input)
     }
 
+    fn forced_style_components(&self) -> Option<StyleComponents> {
+        // No components if `--decorations=never``.
+        if self
+            .matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str())
+            == Some("never")
+        {
+            return Some(StyleComponents(HashSet::new()));
+        }
+
+        // Only line numbers if `--number`.
+        if self.matches.get_flag("number") {
+            return Some(StyleComponents(HashSet::from([
+                StyleComponent::LineNumbers,
+            ])));
+        }
+
+        // Plain if `--plain` is specified at least once.
+        if self.matches.get_count("plain") > 0 {
+            return Some(StyleComponents(HashSet::from([StyleComponent::Plain])));
+        }
+
+        // Default behavior.
+        None
+    }
+
     fn style_components(&self, loop_through: bool) -> Result<StyleComponents> {
         let matches = &self.matches;
-        let mut styled_components = StyleComponents(
-            if matches.get_one::<String>("decorations").map(|s| s.as_str()) == Some("never") {
-                HashSet::new()
-            } else if matches.get_flag("number") {
-                [StyleComponent::LineNumbers].iter().cloned().collect()
-            } else if 0 < matches.get_count("plain") {
-                [StyleComponent::Plain].iter().cloned().collect()
-            } else {
-                matches
-                    .get_one::<String>("style")
-                    .map(|styles| {
-                        styles
-                            .split(',')
-                            .map(|style| style.parse::<StyleComponent>())
-                            .filter_map(|style| style.ok())
-                            .collect::<Vec<_>>()
-                    })
-                    .unwrap_or_else(|| vec![StyleComponent::Default])
+        let mut styled_components = match self.forced_style_components() {
+            Some(forced_components) => forced_components,
+
+            // Parse the `--style` arguments and merge them.
+            None if matches.contains_id("style") => {
+                let lists = matches
+                    .get_many::<String>("style")
+                    .expect("styles present")
+                    .map(|v| StyleComponentList::from_str(v))
+                    .collect::<Result<Vec<StyleComponentList>>>()?;
+
+                StyleComponentList::to_components(lists, self.interactive_output, true)
+            }
+
+            // Use the default.
+            None => StyleComponents(HashSet::from_iter(
+                StyleComponent::Default
+                    .components(self.interactive_output)
                     .into_iter()
                     .map(|style| style.components(self.interactive_output, loop_through))
                     .fold(HashSet::new(), |mut acc, components| {
                         acc.extend(components.iter().cloned());
                         acc
                     })
-            },
-        );
+                    .cloned(),
+            )),
+        };
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {

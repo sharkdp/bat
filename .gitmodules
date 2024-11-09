@@ -260,3 +260,6 @@
 [submodule "assets/syntaxes/02_Extra/vscode-wgsl"]
 	path = assets/syntaxes/02_Extra/vscode-wgsl
 	url = https://github.com/PolyMeilex/vscode-wgsl.git
+[submodule "assets/syntaxes/02_Extra/CFML"]
+	path = assets/syntaxes/02_Extra/CFML
+	url = https://github.com/jcberquist/sublimetext-cfml.git

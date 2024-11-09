@@ -11,7 +11,7 @@ use crate::{
     input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::StyleComponent,
-    SyntaxMapping, WrappingMode,
+    StripAnsiMode, SyntaxMapping, WrappingMode,
 };
 
 #[cfg(feature = "paging")]
@@ -179,6 +179,15 @@ impl<'a> PrettyPrinter<'a> {
     /// Whether to show "snip" markers between visible line ranges (default: no)
     pub fn snip(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.snip = yes;
+        self
+    }
+
+    /// Whether to remove ANSI escape sequences from the input (default: never)
+    ///
+    /// If `Auto` is used, escape sequences will only be removed when the input
+    /// is not plain text.
+    pub fn strip_ansi(&mut self, mode: StripAnsiMode) -> &mut Self {
+        self.config.strip_ansi = mode;
         self
     }
 

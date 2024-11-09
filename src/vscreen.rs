@@ -285,7 +285,7 @@ fn join(
 
 /// A range of indices for a raw ANSI escape sequence.
 #[derive(Debug, PartialEq)]
-enum EscapeSequenceOffsets {
+pub enum EscapeSequenceOffsets {
     Text {
         start: usize,
         end: usize,
@@ -320,6 +320,32 @@ enum EscapeSequenceOffsets {
     },
 }
 
+impl EscapeSequenceOffsets {
+    /// Returns the byte-index of the first character in the escape sequence.
+    pub fn index_of_start(&self) -> usize {
+        use EscapeSequenceOffsets::*;
+        match self {
+            Text { start, .. } => *start,
+            Unknown { start, .. } => *start,
+            NF { start_sequence, .. } => *start_sequence,
+            OSC { start_sequence, .. } => *start_sequence,
+            CSI { start_sequence, .. } => *start_sequence,
+        }
+    }
+
+    /// Returns the byte-index past the last character in the escape sequence.
+    pub fn index_past_end(&self) -> usize {
+        use EscapeSequenceOffsets::*;
+        match self {
+            Text { end, .. } => *end,
+            Unknown { end, .. } => *end,
+            NF { end, .. } => *end,
+            OSC { end, .. } => *end,
+            CSI { end, .. } => *end,
+        }
+    }
+}
+
 /// An iterator over the offests of ANSI/VT escape sequences within a string.
 ///
 /// ## Example
@@ -327,7 +353,7 @@ enum EscapeSequenceOffsets {
 /// ```ignore
 /// let iter = EscapeSequenceOffsetsIterator::new("\x1B[33mThis is yellow text.\x1B[m");
 /// ```
-struct EscapeSequenceOffsetsIterator<'a> {
+pub struct EscapeSequenceOffsetsIterator<'a> {
     text: &'a str,
     chars: Peekable<CharIndices<'a>>,
 }
