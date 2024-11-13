@@ -35,11 +35,11 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
 <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=bat_20231001">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
-  <strong>Warp is a modern, Rust-based terminal with AI built in<br>so you and your team can build great software, faster.</strong>
+  <strong>Warp, the intelligent terminal</strong>
   <br>
-  <sub>Feel more productive on the command line with parameterized commands,</sub>
+  <sub>Run commands like a power user with AI and your dev team’s</sub>
   <br>
-  <sup>autosuggestions, and an IDE-like text editor.</sup>
+  <sup>knowledge in one fast, intuitive terminal. For MacOS or Linux.</sup>
 </a>
 
 ### Syntax highlighting
@@ -482,8 +482,10 @@ the following command (you need [`fzf`](https://github.com/junegunn/fzf) for thi
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
-`bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
+`bat` automatically picks a fitting theme depending on your terminal's background color.
+You can use the `--theme-light` / `--theme-light` options or the `BAT_THEME_DARK` / `BAT_THEME_LIGHT` environment variables
+to customize the themes used. This is especially useful if you frequently switch between dark and light mode.
+
 You can also use a custom theme by following the
 ['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
 
@@ -693,10 +695,11 @@ on your operating system. To get the default path for your system, call
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
-non-default location of the configuration file:
+Alternatively, you can use `BAT_CONFIG_PATH` or `BAT_CONFIG_DIR` environment variables to point `bat`
+to a non-default location of the configuration file or the configuration directory respectively:
 ```bash
-export BAT_CONFIG_PATH="/path/to/bat.conf"
+export BAT_CONFIG_PATH="/path/to/bat/bat.conf"
+export BAT_CONFIG_DIR="/path/to/bat"
 ```
 
 A default configuration file can be created with the `--generate-config-file` option.

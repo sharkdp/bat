@@ -78,10 +78,25 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("binary")
+                .long("binary")
+                .action(ArgAction::Set)
+                .default_value("no-printing")
+                .value_parser(["no-printing", "as-text"])
+                .value_name("behavior")
+                .hide_default_value(true)
+                .help("How to treat binary content. (default: no-printing)")
+                .long_help(
+                    "How to treat binary content. (default: no-printing)\n\n\
+                    Possible values:\n  \
+                    * no-printing: do not print any binary content\n  \
+                    * as-text: treat binary content as normal text",
+                ),
+        )
+        .arg(
             Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
-                .overrides_with("paging")
                 .short('p')
                 .long("plain")
                 .action(ArgAction::Count)
@@ -306,7 +321,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("paging")
                 .overrides_with("paging")
                 .overrides_with("no-paging")
-                .overrides_with("plain")
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .default_value("auto")
@@ -379,8 +393,39 @@ pub fn build_app(interactive_output: bool) -> Command {
                      see all available themes. To set a default theme, add the \
                      '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"...\").",
+                     BAT_THEME=\"...\").\n\n\
+                     Special values:\n\n  \
+                     * auto: Picks a dark or light theme depending on the terminal's colors (default).\n          \
+                     Use '--theme-light' and '--theme-dark' to customize the selected theme.\n    \
+                     * auto:always: Detect the terminal's colors even when the output is redirected.\n    \
+                     * auto:system: Detect the color scheme from the system-wide preference (macOS only).\n  \
+                     * dark: Use the dark theme specified by '--theme-dark'.\n  \
+                     * light: Use the light theme specified by '--theme-light'.",
                 ),
+        )
+        .arg(
+            Arg::new("theme-light")
+                .long("theme-light")
+                .overrides_with("theme-light")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for light backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a light background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-light=\"...\" option to the configuration file or export the BAT_THEME_LIGHT \
+                    environment variable (e.g. export BAT_THEME_LIGHT=\"...\")."),
+        )
+        .arg(
+            Arg::new("theme-dark")
+                .long("theme-dark")
+                .overrides_with("theme-dark")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for dark backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a dark background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-dark=\"...\" option to the configuration file or export the BAT_THEME_DARK \
+                    environment variable (e.g. export BAT_THEME_DARK=\"...\")."),
         )
         .arg(
             Arg::new("list-themes")
