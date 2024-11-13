@@ -9,7 +9,6 @@ use tempfile::tempdir;
 mod unix {
     pub use std::fs::File;
     pub use std::io::{self, Write};
-    pub use std::os::unix::io::FromRawFd;
     pub use std::path::PathBuf;
     pub use std::process::Stdio;
     pub use std::thread;
@@ -416,8 +415,8 @@ fn no_args_doesnt_break() {
     // not exit, because in this case it is safe to read and write to the same fd, which is why
     // this test exists.
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
-    let mut master = unsafe { File::from_raw_fd(master) };
-    let stdin_file = unsafe { File::from_raw_fd(slave) };
+    let mut master = File::from(master);
+    let stdin_file = File::from(slave);
     let stdout_file = stdin_file.try_clone().unwrap();
     let stdin = Stdio::from(stdin_file);
     let stdout = Stdio::from(stdout_file);
@@ -1018,6 +1017,31 @@ fn enable_pager_if_pp_flag_comes_before_paging() {
         .assert()
         .success()
         .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn paging_does_not_override_simple_plain() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--decorations=always")
+        .arg("--plain")
+        .arg("--paging=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n"));
+}
+
+#[test]
+fn simple_plain_does_not_override_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("--plain")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n"));
 }
 
 #[test]
@@ -1936,6 +1960,16 @@ fn show_all_with_unicode() {
         .arg("control_characters.txt")
         .assert()
         .stdout("␀␁␂␃␄␅␆␇␈├─┤␊\n␋␌␍␎␏␐␑␒␓␔␕␖␗␘␙␚␛␜␝␞␟␡")
+        .stderr("");
+}
+
+#[test]
+fn binary_as_text() {
+    bat()
+        .arg("--binary=as-text")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F")
         .stderr("");
 }
 

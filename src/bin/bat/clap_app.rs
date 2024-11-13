@@ -78,10 +78,25 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("binary")
+                .long("binary")
+                .action(ArgAction::Set)
+                .default_value("no-printing")
+                .value_parser(["no-printing", "as-text"])
+                .value_name("behavior")
+                .hide_default_value(true)
+                .help("How to treat binary content. (default: no-printing)")
+                .long_help(
+                    "How to treat binary content. (default: no-printing)\n\n\
+                    Possible values:\n  \
+                    * no-printing: do not print any binary content\n  \
+                    * as-text: treat binary content as normal text",
+                ),
+        )
+        .arg(
             Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
-                .overrides_with("paging")
                 .short('p')
                 .long("plain")
                 .action(ArgAction::Count)
@@ -306,7 +321,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("paging")
                 .overrides_with("paging")
                 .overrides_with("no-paging")
-                .overrides_with("plain")
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .default_value("auto")
