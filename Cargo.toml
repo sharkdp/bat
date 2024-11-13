@@ -95,7 +95,7 @@ expect-test = "1.5.0"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.1.0"
 wait-timeout = "0.2.0"
-tempfile = "3.8.1"
+tempfile = "3.14.0"
 serde = { version = "1.0", features = ["derive"] }
 
 [target.'cfg(unix)'.dev-dependencies]
