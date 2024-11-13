@@ -35,11 +35,11 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
 <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=bat_20231001">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
-  <strong>Warp is a modern, Rust-based terminal with AI built in<br>so you and your team can build great software, faster.</strong>
+  <strong>Warp, the intelligent terminal</strong>
   <br>
-  <sub>Feel more productive on the command line with parameterized commands,</sub>
+  <sub>Run commands like a power user with AI and your dev team’s</sub>
   <br>
-  <sup>autosuggestions, and an IDE-like text editor.</sup>
+  <sup>knowledge in one fast, intuitive terminal. For MacOS or Linux.</sup>
 </a>
 
 ### Syntax highlighting

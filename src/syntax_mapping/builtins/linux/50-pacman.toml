@@ -1,3 +1,8 @@
 [mappings]
-# pacman hooks
-"INI" = ["/usr/share/libalpm/hooks/*.hook", "/etc/pacman.d/hooks/*.hook"]
+"INI" = [
+    # config
+    "/etc/pacman.conf",
+    # hooks
+    "/usr/share/libalpm/hooks/*.hook",
+    "/etc/pacman.d/hooks/*.hook",
+]
