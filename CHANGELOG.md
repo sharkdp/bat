@@ -9,6 +9,7 @@
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
 - Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
 
 ## Bugfixes
@@ -78,6 +79,9 @@
   - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
 - Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
 - Improve compile time by 20%, see #2815 (@dtolnay)
+- Add `theme::theme` for choosing an appropriate theme based on the
+  terminal's color scheme, see #2896 (@bash)
+  - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
 
 # v0.24.0
 

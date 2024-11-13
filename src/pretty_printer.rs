@@ -245,7 +245,9 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
-    /// Specify the highlighting theme
+    /// Specify the highlighting theme.
+    /// You can use [`crate::theme::theme`] to pick a theme based on user preferences
+    /// and the terminal's background color.
     pub fn theme(&mut self, theme: impl AsRef<str>) -> &mut Self {
         self.config.theme = theme.as_ref().to_owned();
         self

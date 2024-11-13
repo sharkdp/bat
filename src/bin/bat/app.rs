@@ -9,6 +9,7 @@ use crate::{
     config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
 };
 use bat::style::StyleComponentList;
+use bat::theme::{theme, ThemeName, ThemeOptions, ThemePreference};
 use bat::BinaryBehavior;
 use bat::StripAnsiMode;
 use clap::ArgMatches;
@@ -17,7 +18,6 @@ use console::Term;
 
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
-    assets::HighlightingAssets,
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
@@ -278,18 +278,7 @@ impl App {
                 Some("auto") => StripAnsiMode::Auto,
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
-            theme: self
-                .matches
-                .get_one::<String>("theme")
-                .map(String::from)
-                .map(|s| {
-                    if s == "default" {
-                        String::from(HighlightingAssets::default_theme())
-                    } else {
-                        s
-                    }
-                })
-                .unwrap_or_else(|| String::from(HighlightingAssets::default_theme())),
+            theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -447,5 +436,26 @@ impl App {
         }
 
         Ok(styled_components)
+    }
+
+    fn theme_options(&self) -> ThemeOptions {
+        let theme = self
+            .matches
+            .get_one::<String>("theme")
+            .map(|t| ThemePreference::from_str(t).unwrap())
+            .unwrap_or_default();
+        let theme_dark = self
+            .matches
+            .get_one::<String>("theme-dark")
+            .map(|t| ThemeName::from_str(t).unwrap());
+        let theme_light = self
+            .matches
+            .get_one::<String>("theme-light")
+            .map(|t| ThemeName::from_str(t).unwrap());
+        ThemeOptions {
+            theme,
+            theme_dark,
+            theme_light,
+        }
     }
 }
