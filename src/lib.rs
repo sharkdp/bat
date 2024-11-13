@@ -49,6 +49,7 @@ pub(crate) mod printer;
 pub mod style;
 pub(crate) mod syntax_mapping;
 mod terminal;
+pub mod theme;
 mod vscreen;
 pub(crate) mod wrapping;
 

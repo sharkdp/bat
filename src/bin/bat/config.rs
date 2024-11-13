@@ -140,7 +140,9 @@ fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseE
 pub fn get_args_from_env_vars() -> Vec<OsString> {
     [
         ("--tabs", "BAT_TABS"),
-        ("--theme", "BAT_THEME"),
+        ("--theme", bat::theme::env::BAT_THEME),
+        ("--theme-dark", bat::theme::env::BAT_THEME_DARK),
+        ("--theme-light", bat::theme::env::BAT_THEME_LIGHT),
         ("--pager", "BAT_PAGER"),
         ("--paging", "BAT_PAGING"),
         ("--style", "BAT_STYLE"),

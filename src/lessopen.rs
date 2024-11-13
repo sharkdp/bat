@@ -112,7 +112,7 @@ impl LessOpenPreprocessor {
                 }
 
                 (
-                    RawOsString::from_string(lessopen_stdout),
+                    RawOsString::new(lessopen_stdout),
                     path_str.to_string(),
                     OpenedInputKind::OrdinaryFile(path.to_path_buf()),
                 )

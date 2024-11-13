@@ -113,6 +113,13 @@ _bat() {
 		return 0
 		;;
 	--theme)
+    	local IFS=$'\n'
+    	COMPREPLY=($(compgen -W "auto${IFS}auto:always${IFS}auto:system${IFS}dark${IFS}light${IFS}$("$1" --list-themes)" -- "$cur"))
+                    __bat_escape_completions
+    	return 0
+    	;;
+	--theme-dark | \
+	--theme-light)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
                 __bat_escape_completions
@@ -170,6 +177,8 @@ _bat() {
 			--map-syntax
 			--ignored-suffix
 			--theme
+			--theme-dark
+			--theme-light
 			--list-themes
 			--squeeze-blank
 			--squeeze-limit
