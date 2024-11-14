@@ -7,14 +7,14 @@ file_extensions:
   - tsv
 scope: text.csv
 variables:
-  field_separator: (?:[,;\t])
+  field_separator: (?:[,;|\t])
   record_separator: (?:$\n?)
 contexts:
   prototype:
     - match: (?={{record_separator}})
       pop: true
   fields:
-    - match: ''
+    - match: ""
       push:
         - field_or_record_separator
         - field4
@@ -26,15 +26,15 @@ contexts:
         - field1
   main:
     - meta_include_prototype: false
-    - match: '^'
+    - match: "^"
       set: fields
 
   field_or_record_separator:
     - meta_include_prototype: false
-    - match: '{{record_separator}}'
+    - match: "{{record_separator}}"
       scope: punctuation.terminator.record.csv
       pop: true
-    - match: '{{field_separator}}'
+    - match: "{{field_separator}}"
       scope: punctuation.separator.sequence.csv
       pop: true
 
@@ -56,23 +56,22 @@ contexts:
       pop: true
 
   field1:
-    - match: ''
+    - match: ""
       set:
         - meta_content_scope: meta.field-1.csv support.type
         - include: field_contents
   field2:
-    - match: ''
+    - match: ""
       set:
         - meta_content_scope: meta.field-2.csv support.function
         - include: field_contents
   field3:
-    - match: ''
+    - match: ""
       set:
         - meta_content_scope: meta.field-3.csv constant.numeric
         - include: field_contents
   field4:
-    - match: ''
+    - match: ""
       set:
         - meta_content_scope: meta.field-4.csv keyword.operator
         - include: field_contents
-

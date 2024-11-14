@@ -393,8 +393,39 @@ pub fn build_app(interactive_output: bool) -> Command {
                      see all available themes. To set a default theme, add the \
                      '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"...\").",
+                     BAT_THEME=\"...\").\n\n\
+                     Special values:\n\n  \
+                     * auto: Picks a dark or light theme depending on the terminal's colors (default).\n          \
+                     Use '--theme-light' and '--theme-dark' to customize the selected theme.\n    \
+                     * auto:always: Detect the terminal's colors even when the output is redirected.\n    \
+                     * auto:system: Detect the color scheme from the system-wide preference (macOS only).\n  \
+                     * dark: Use the dark theme specified by '--theme-dark'.\n  \
+                     * light: Use the light theme specified by '--theme-light'.",
                 ),
+        )
+        .arg(
+            Arg::new("theme-light")
+                .long("theme-light")
+                .overrides_with("theme-light")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for light backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a light background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-light=\"...\" option to the configuration file or export the BAT_THEME_LIGHT \
+                    environment variable (e.g. export BAT_THEME_LIGHT=\"...\")."),
+        )
+        .arg(
+            Arg::new("theme-dark")
+                .long("theme-dark")
+                .overrides_with("theme-dark")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for dark backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a dark background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-dark=\"...\" option to the configuration file or export the BAT_THEME_DARK \
+                    environment variable (e.g. export BAT_THEME_DARK=\"...\")."),
         )
         .arg(
             Arg::new("list-themes")

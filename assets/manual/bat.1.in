@@ -152,9 +152,38 @@ will use JSON syntax, and ignore '.dev'
 .HP
 \fB\-\-theme\fR <theme>
 .IP
-Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
-To set a default theme, add the '\-\-theme="..."' option to the configuration file or
-export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
+Set the theme for syntax highlighting. Use \fB\-\-list\-themes\fP to see all available themes.
+To set a default theme, add the \fB\-\-theme="..."\fP option to the configuration file or
+export the \fBBAT_THEME\fP environment variable (e.g.: \fBexport BAT_THEME="..."\fP).
+
+Special values:
+.RS
+.IP "auto (\fIdefault\fR)"
+Picks a dark or light theme depending on the terminal's colors.
+Use \fB-\-theme\-light\fR and \fB-\-theme\-dark\fR to customize the selected theme.
+.IP "auto:always"
+Variation of \fBauto\fR where where the terminal's colors are detected even when the output is redirected.
+.IP "auto:system (macOS only)"
+Variation of \fBauto\fR where the color scheme is detected from the system-wide preference instead.
+.IP "dark"
+Use the dark theme specified by \fB-\-theme-dark\fR.
+.IP "light"
+Use the light theme specified by \fB-\-theme-light\fR.
+.RE
+.HP
+\fB\-\-theme\-dark\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a dark background.
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+export the \fBBAT_THEME_DARK\fP environment variable (e.g. \fBexport BAT_THEME_DARK="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBdark\fR.
+.HP
+\fB\-\-theme\-light\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a dark background.
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBlight\fR.
 .HP
 \fB\-\-list\-themes\fR
 .IP
@@ -307,7 +336,7 @@ To use the preprocessor, call:
 
 \fB{{PROJECT_EXECUTABLE}} --lessopen\fR
 
-Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file. 
+Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file.
 
 To temporarily disable the preprocessor if it is enabled by default, call:
 
@@ -323,7 +352,7 @@ Enable the $LESSOPEN preprocessor.
 .IP
 Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)
 .PP
-For more information, see the "INPUT PREPROCESSOR" section of less(1).  
+For more information, see the "INPUT PREPROCESSOR" section of less(1).
 
 .SH "MORE INFORMATION"
 
