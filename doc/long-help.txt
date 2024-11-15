@@ -202,6 +202,9 @@ Options:
           This option exists for POSIX-compliance reasons ('u' is for 'unbuffered'). The output is
           always unbuffered - this option is simply ignored.
 
+      --completion <SHELL>
+          Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
+
       --diagnostic
           Show diagnostic information for bug reports.
 
