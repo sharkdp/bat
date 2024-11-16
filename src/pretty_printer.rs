@@ -281,6 +281,11 @@ impl<'a> PrettyPrinter<'a> {
     /// If you want to call 'print' multiple times, you have to call the appropriate
     /// input_* methods again.
     pub fn print(&mut self) -> Result<bool> {
+        self.print_with_writer(None::<&mut dyn std::fmt::Write>)
+    }
+
+    /// Pretty-print all specified inputs to a specified writer.
+    pub fn print_with_writer<W: std::fmt::Write>(&mut self, writer: Option<W>) -> Result<bool> {
         let highlight_lines = std::mem::take(&mut self.highlighted_lines);
         self.config.highlighted_lines = HighlightedLineRanges(LineRanges::from(highlight_lines));
         self.config.term_width = self
@@ -317,7 +322,13 @@ impl<'a> PrettyPrinter<'a> {
 
         // Run the controller
         let controller = Controller::new(&self.config, &self.assets);
-        controller.run(inputs.into_iter().map(|i| i.into()).collect(), None)
+
+        // If writer is provided, pass it to the controller, otherwise pass None
+        if let Some(mut w) = writer {
+            controller.run(inputs.into_iter().map(|i| i.into()).collect(), Some(&mut w))
+        } else {
+            controller.run(inputs.into_iter().map(|i| i.into()).collect(), None)
+        }
     }
 }
 

@@ -82,6 +82,7 @@
 - Add `theme::theme` for choosing an appropriate theme based on the
   terminal's color scheme, see #2896 (@bash)
   - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
+- Add `PrettyPrinter::print_with_writer` for custom output destinations, see #3070 (@kojix2)
 
 # v0.24.0
 
