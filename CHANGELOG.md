@@ -48,6 +48,7 @@
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 - Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
+- Throw an error when try to read a block device, see #3128 (@Integral-Tech)
 
 ## Syntaxes
 

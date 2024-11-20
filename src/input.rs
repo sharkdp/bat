@@ -4,6 +4,9 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 
+#[cfg(target_family = "unix")]
+use std::os::unix::fs::FileTypeExt;
+
 use clircle::{Clircle, Identifier};
 use content_inspector::{self, ContentType};
 
@@ -218,8 +221,16 @@ impl<'a> Input<'a> {
                 reader: {
                     let mut file = File::open(&path)
                         .map_err(|e| format!("'{}': {}", path.to_string_lossy(), e))?;
-                    if file.metadata()?.is_dir() {
+                    let metadata = file.metadata()?;
+                    if metadata.is_dir() {
                         return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
+                    }
+
+                    #[cfg(target_family = "unix")]
+                    if metadata.file_type().is_block_device() {
+                        return Err(
+                            format!("'{}' is a block device.", path.to_string_lossy()).into()
+                        );
                     }
 
                     if let Some(stdout) = stdout_identifier {
