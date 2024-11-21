@@ -164,7 +164,7 @@ impl fmt::Display for ThemeName {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum DetectColorScheme {
-    /// Only query the terminal for its colors when appropriate (i.e. when the the output is not redirected).
+    /// Only query the terminal for its colors when appropriate (i.e. when the output is not redirected).
     #[default]
     Auto,
     /// Always query the terminal for its colors.
