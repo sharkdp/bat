@@ -303,6 +303,16 @@ from the official sources:
 pacman -S bat
 ```
 
+### On Exherbo Linux
+
+You can install [the `bat` package](https://gitlab.exherbo.org/davlgd/rust/-/tree/master/packages/sys-apps/bat)
+from the official sources, provided you have the appropriate repository enabled:
+
+```bash
+cave resolve -x repository/rust
+cave resolve -x bat
+```
+
 ### On Fedora
 
 You can install [the `bat` package](https://koji.fedoraproject.org/koji/packageinfo?packageID=27506) from the official [Fedora Modular](https://docs.fedoraproject.org/en-US/modularity/using-modules/) repository.
