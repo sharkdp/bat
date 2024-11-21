@@ -87,6 +87,10 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
 can be used in addition to control the output width.
 .HP
+\fB\-S\fR, \fB\-\-chop\-long\-lines\fR
+.IP
+Truncate all lines longer than screen width. Alias for '\-\-wrap=never'.
+.HP
 \fB\-\-terminal\-width\fR <width>
 .IP
 Explicitly set the width of the terminal instead of determining it automatically. If
@@ -141,15 +145,57 @@ use -m '*.build:Python'. To highlight files named '.myignore' with the Git Ignor
 syntax, use -m '.myignore:Git Ignore'.
 Note that the right-hand side is the *name* of the syntax, not a file extension.
 .HP
+\fB\-\-ignored\-suffix\fR <ignored-suffix>
+.IP
+Ignore extension. For example: 'bat \-\-ignored-suffix ".dev" my_file.json.dev'
+will use JSON syntax, and ignore '.dev'
+.HP
 \fB\-\-theme\fR <theme>
 .IP
-Set the theme for syntax highlighting. Use '\-\-list\-themes' to see all available themes.
-To set a default theme, add the '\-\-theme="..."' option to the configuration file or
-export the BAT_THEME environment variable (e.g.: export BAT_THEME="...").
+Set the theme for syntax highlighting. Use \fB\-\-list\-themes\fP to see all available themes.
+To set a default theme, add the \fB\-\-theme="..."\fP option to the configuration file or
+export the \fBBAT_THEME\fP environment variable (e.g.: \fBexport BAT_THEME="..."\fP).
+
+Special values:
+.RS
+.IP "auto (\fIdefault\fR)"
+Picks a dark or light theme depending on the terminal's colors.
+Use \fB-\-theme\-light\fR and \fB-\-theme\-dark\fR to customize the selected theme.
+.IP "auto:always"
+Variation of \fBauto\fR where where the terminal's colors are detected even when the output is redirected.
+.IP "auto:system (macOS only)"
+Variation of \fBauto\fR where the color scheme is detected from the system-wide preference instead.
+.IP "dark"
+Use the dark theme specified by \fB-\-theme-dark\fR.
+.IP "light"
+Use the light theme specified by \fB-\-theme-light\fR.
+.RE
+.HP
+\fB\-\-theme\-dark\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a dark background.
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+export the \fBBAT_THEME_DARK\fP environment variable (e.g. \fBexport BAT_THEME_DARK="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBdark\fR.
+.HP
+\fB\-\-theme\-light\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a dark background.
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBlight\fR.
 .HP
 \fB\-\-list\-themes\fR
 .IP
 Display a list of supported themes for syntax highlighting.
+.HP
+\fB\-s\fR, \fB\-\-squeeze\-blank\fR
+.IP
+Squeeze consecutive empty lines into a single empty line.
+.HP
+\fB\-\-squeeze\-limit\fR <squeeze-limit>
+.IP
+Set the maximum number of consecutive empty lines to be printed.
 .HP
 \fB\-\-style\fR <style\-components>
 .IP
@@ -184,6 +230,30 @@ Display a list of supported languages for syntax highlighting.
 This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
 always unbuffered \- this option is simply ignored.
 .HP
+\fB\-\-no\-custom\-assets\fR
+.IP
+Do not load custom assets.
+.HP
+\fB\-\-config\-dir\fR
+.IP
+Show bat's configuration directory.
+.HP
+\fB\-\-cache\-dir\fR
+.IP
+Show bat's cache directory.
+.HP
+\fB\-\-diagnostic\fR
+.IP
+Show diagnostic information for bug reports.
+.HP
+\fB\-\-acknowledgements\fR
+.IP
+Show acknowledgements.
+.HP
+\fB\-\-set\-terminal\-title\fR
+.IP
+Sets terminal title to filenames when using a pager.
+.HP
 \fB\-h\fR, \fB\-\-help\fR
 .IP
 Print this help message.
@@ -212,6 +282,20 @@ location of the configuration file.
 To generate a default configuration file, call:
 
 \fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR
+
+These are related options:
+.HP
+\fB\-\-config\-file\fR
+.IP
+Show path to the configuration file.
+.HP
+\fB\-\-generate-config\-file\fR
+.IP
+Generates a default configuration file.
+.HP
+\fB\-\-no\-config\fR
+.IP
+Do not use the configuration file.
 .SH "ADDING CUSTOM LANGUAGES"
 {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
 customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
@@ -252,13 +336,23 @@ To use the preprocessor, call:
 
 \fB{{PROJECT_EXECUTABLE}} --lessopen\fR
 
-Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file. 
+Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file.
 
 To temporarily disable the preprocessor if it is enabled by default, call:
 
 \fB{{PROJECT_EXECUTABLE}} --no-lessopen\fR
 
-For more information, see the "INPUT PREPROCESSOR" section of less(1).  
+These are related options:
+.HP
+\fB\-\-lessopen\fR
+.IP
+Enable the $LESSOPEN preprocessor.
+.HP
+\fB\-\-no\-lessopen\fR
+.IP
+Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)
+.PP
+For more information, see the "INPUT PREPROCESSOR" section of less(1).
 
 .SH "MORE INFORMATION"
 

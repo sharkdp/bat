@@ -26,7 +26,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
     args=(
         '(-A --show-all)'{-A,--show-all}'[show non-printable characters (space, tab, newline, ..)]'
         --nonprintable-notation='[specify how to display non-printable characters when using --show-all]:notation:(caret unicode)'
-        \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable disable automatic paging (alias for `--paging=never`)]'
+        \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable automatic paging (alias for `--paging=never`)]'
         '(-l --language)'{-l+,--language=}'[set the language for syntax highlighting]:language:->languages'
         \*{-H+,--highlight-line=}'[highlight specified block of lines]:start\:end'
         \*--file-name='[specify the name to display for a file]:name:_files'
@@ -42,12 +42,15 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --decorations='[specify when to show the decorations]:when:(auto never always)'
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
-        '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->themes'
+        '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'
+        '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
+        '(--theme-light)'--theme-light='[set the color theme for syntax highlighting for light backgrounds]:theme:->themes'
         '(: --list-themes --list-languages -L)'--list-themes'[show all supported highlighting themes]'
         --style='[comma-separated list of style elements to display]: : _values "style [default]"
             default auto full plain changes header header-filename header-filesize grid rule numbers snip'
         \*{-r+,--line-range=}'[only print the specified line range]:start\:end'
         '(* -)'{-L,--list-languages}'[display all supported languages]'
+        -P'[disable paging]'
         "--no-config[don't use the configuration file]"
         "--no-custom-assets[don't load custom assets]"
         '(--no-lessopen)'--lessopen'[enable the $LESSOPEN preprocessor]'
@@ -81,7 +84,13 @@ _{{PROJECT_EXECUTABLE}}_main() {
 
         themes)
             local -a themes expl
-            themes=( ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
+            themes=(${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
+
+            _wanted themes expl 'theme' compadd -a themes && ret=0
+        ;;
+        theme_preferences)
+            local -a themes expl
+            themes=(auto dark light auto:always auto:system ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --list-themes)"} )
 
             _wanted themes expl 'theme' compadd -a themes && ret=0
         ;;

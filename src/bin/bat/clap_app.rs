@@ -1,9 +1,11 @@
+use bat::style::StyleComponentList;
 use clap::{
     crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
 };
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 static VERSION: Lazy<String> = Lazy::new(|| {
     #[cfg(feature = "bugreport")]
@@ -76,10 +78,25 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("binary")
+                .long("binary")
+                .action(ArgAction::Set)
+                .default_value("no-printing")
+                .value_parser(["no-printing", "as-text"])
+                .value_name("behavior")
+                .hide_default_value(true)
+                .help("How to treat binary content. (default: no-printing)")
+                .long_help(
+                    "How to treat binary content. (default: no-printing)\n\n\
+                    Possible values:\n  \
+                    * no-printing: do not print any binary content\n  \
+                    * as-text: treat binary content as normal text",
+                ),
+        )
+        .arg(
             Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
-                .overrides_with("paging")
                 .short('p')
                 .long("plain")
                 .action(ArgAction::Count)
@@ -304,7 +321,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("paging")
                 .overrides_with("paging")
                 .overrides_with("no-paging")
-                .overrides_with("plain")
                 .value_name("when")
                 .value_parser(["auto", "never", "always"])
                 .default_value("auto")
@@ -377,8 +393,39 @@ pub fn build_app(interactive_output: bool) -> Command {
                      see all available themes. To set a default theme, add the \
                      '--theme=\"...\"' option to the configuration file or export the \
                      BAT_THEME environment variable (e.g.: export \
-                     BAT_THEME=\"...\").",
+                     BAT_THEME=\"...\").\n\n\
+                     Special values:\n\n  \
+                     * auto: Picks a dark or light theme depending on the terminal's colors (default).\n          \
+                     Use '--theme-light' and '--theme-dark' to customize the selected theme.\n    \
+                     * auto:always: Detect the terminal's colors even when the output is redirected.\n    \
+                     * auto:system: Detect the color scheme from the system-wide preference (macOS only).\n  \
+                     * dark: Use the dark theme specified by '--theme-dark'.\n  \
+                     * light: Use the light theme specified by '--theme-light'.",
                 ),
+        )
+        .arg(
+            Arg::new("theme-light")
+                .long("theme-light")
+                .overrides_with("theme-light")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for light backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a light background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-light=\"...\" option to the configuration file or export the BAT_THEME_LIGHT \
+                    environment variable (e.g. export BAT_THEME_LIGHT=\"...\")."),
+        )
+        .arg(
+            Arg::new("theme-dark")
+                .long("theme-dark")
+                .overrides_with("theme-dark")
+                .value_name("theme")
+                .help("Sets the color theme for syntax highlighting used for dark backgrounds.")
+                .long_help(
+                    "Sets the theme name for syntax highlighting used when the terminal uses a dark background. \
+                    Use '--list-themes' to see all available themes. To set a default theme, add the \
+                    '--theme-dark=\"...\" option to the configuration file or export the BAT_THEME_DARK \
+                    environment variable (e.g. export BAT_THEME_DARK=\"...\")."),
         )
         .arg(
             Arg::new("list-themes")
@@ -419,34 +466,13 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("style")
                 .long("style")
+                .action(ArgAction::Append)
                 .value_name("components")
-                .overrides_with("style")
-                .overrides_with("plain")
-                .overrides_with("number")
                 // Cannot use claps built in validation because we have to turn off clap's delimiters
                 .value_parser(|val: &str| {
-                    let mut invalid_vals = val.split(',').filter(|style| {
-                        !&[
-                            "auto",
-                            "full",
-                            "default",
-                            "plain",
-                            "header",
-                            "header-filename",
-                            "header-filesize",
-                            "grid",
-                            "rule",
-                            "numbers",
-                            "snip",
-                            #[cfg(feature = "git")]
-                            "changes",
-                        ].contains(style)
-                    });
-
-                    if let Some(invalid) = invalid_vals.next() {
-                        Err(format!("Unknown style, '{invalid}'"))
-                    } else {
-                        Ok(val.to_owned())
+                    match StyleComponentList::from_str(val) {
+                        Err(err) => Err(err),
+                        Ok(_) => Ok(val.to_owned()),
                     }
                 })
                 .help(
@@ -461,6 +487,12 @@ pub fn build_app(interactive_output: bool) -> Command {
                      pre-defined style ('full'). To set a default style, add the \
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
+                     When styles are specified in multiple places, the \"nearest\" set \
+                     of styles take precedence. The command-line arguments are the highest \
+                     priority, followed by the BAT_STYLE environment variable, and then \
+                     the configuration file. If any set of styles consists entirely of \
+                     components prefixed with \"+\" or \"-\", it will modify the \
+                     previous set of styles instead of replacing them.\n\n\
                      By default, the following components are enabled:\n  \
                         changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \

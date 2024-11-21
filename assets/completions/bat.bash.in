@@ -76,6 +76,7 @@ _bat() {
 	-m | --map-syntax | \
 	--ignored-suffix | \
 	--list-themes | \
+	--squeeze-limit | \
 	--line-range | \
 	-L | --list-languages | \
 	--lessopen | \
@@ -112,6 +113,13 @@ _bat() {
 		return 0
 		;;
 	--theme)
+    	local IFS=$'\n'
+    	COMPREPLY=($(compgen -W "auto${IFS}auto:always${IFS}auto:system${IFS}dark${IFS}light${IFS}$("$1" --list-themes)" -- "$cur"))
+                    __bat_escape_completions
+    	return 0
+    	;;
+	--theme-dark | \
+	--theme-light)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$("$1" --list-themes)" -- "$cur"))
                 __bat_escape_completions
@@ -157,6 +165,7 @@ _bat() {
 			--diff-context
 			--tabs
 			--wrap
+			--chop-long-lines
 			--terminal-width
 			--number
 			--color
@@ -168,19 +177,27 @@ _bat() {
 			--map-syntax
 			--ignored-suffix
 			--theme
+			--theme-dark
+			--theme-light
 			--list-themes
+			--squeeze-blank
+			--squeeze-limit
 			--style
 			--line-range
 			--list-languages
 			--lessopen
 			--diagnostic
 			--acknowledgements
+			--set-terminal-title
 			--help
 			--version
 			--cache-dir
 			--config-dir
 			--config-file
 			--generate-config-file
+			--no-config
+			--no-custom-assets
+			--no-lessopen
 		" -- "$cur"))
 		return 0
 	fi

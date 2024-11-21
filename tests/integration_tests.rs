@@ -9,7 +9,6 @@ use tempfile::tempdir;
 mod unix {
     pub use std::fs::File;
     pub use std::io::{self, Write};
-    pub use std::os::unix::io::FromRawFd;
     pub use std::path::PathBuf;
     pub use std::process::Stdio;
     pub use std::thread;
@@ -274,11 +273,8 @@ fn squeeze_limit_line_numbers() {
 
 #[test]
 fn list_themes_with_colors() {
-    #[cfg(target_os = "macos")]
-    let default_theme_chunk = "Monokai Extended Light\x1B[0m (default)";
-
-    #[cfg(not(target_os = "macos"))]
     let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
+    let default_light_theme_chunk = "Monokai Extended Light\x1B[0m (default light)";
 
     bat()
         .arg("--color=always")
@@ -287,24 +283,33 @@ fn list_themes_with_colors() {
         .success()
         .stdout(predicate::str::contains("DarkNeon").normalize())
         .stdout(predicate::str::contains(default_theme_chunk).normalize())
+        .stdout(predicate::str::contains(default_light_theme_chunk).normalize())
         .stdout(predicate::str::contains("Output the square of a number.").normalize());
 }
 
 #[test]
 fn list_themes_without_colors() {
-    #[cfg(target_os = "macos")]
-    let default_theme_chunk = "Monokai Extended Light (default)";
-
-    #[cfg(not(target_os = "macos"))]
     let default_theme_chunk = "Monokai Extended (default)";
+    let default_light_theme_chunk = "Monokai Extended Light (default light)";
 
     bat()
         .arg("--color=never")
+        .arg("--decorations=always") // trick bat into setting `Config::loop_through` to false
         .arg("--list-themes")
         .assert()
         .success()
         .stdout(predicate::str::contains("DarkNeon").normalize())
-        .stdout(predicate::str::contains(default_theme_chunk).normalize());
+        .stdout(predicate::str::contains(default_theme_chunk).normalize())
+        .stdout(predicate::str::contains(default_light_theme_chunk).normalize());
+}
+
+#[test]
+fn list_themes_to_piped_output() {
+    bat()
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("(default)").not());
 }
 
 #[test]
@@ -405,9 +410,10 @@ fn no_args_doesnt_break() {
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
     // not exit, because in this case it is safe to read and write to the same fd, which is why
     // this test exists.
+
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
-    let mut master = unsafe { File::from_raw_fd(master) };
-    let stdin_file = unsafe { File::from_raw_fd(slave) };
+    let mut master = File::from(master);
+    let stdin_file = File::from(slave);
     let stdout_file = stdin_file.try_clone().unwrap();
     let stdin = Stdio::from(stdin_file);
     let stdout = Stdio::from(stdout_file);
@@ -415,6 +421,7 @@ fn no_args_doesnt_break() {
     let mut child = bat_raw_command()
         .stdin(stdin)
         .stdout(stdout)
+        .env("TERM", "dumb") // Suppresses color detection
         .spawn()
         .expect("Failed to start.");
 
@@ -1008,6 +1015,31 @@ fn enable_pager_if_pp_flag_comes_before_paging() {
         .assert()
         .success()
         .stdout(predicate::eq("pager-output\n").normalize());
+}
+
+#[test]
+fn paging_does_not_override_simple_plain() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--decorations=always")
+        .arg("--plain")
+        .arg("--paging=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("hello world\n"));
+}
+
+#[test]
+fn simple_plain_does_not_override_paging() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--paging=always")
+        .arg("--plain")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::eq("pager-output\n"));
 }
 
 #[test]
@@ -1930,6 +1962,16 @@ fn show_all_with_unicode() {
 }
 
 #[test]
+fn binary_as_text() {
+    bat()
+        .arg("--binary=as-text")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F")
+        .stderr("");
+}
+
+#[test]
 fn no_paging_arg() {
     bat()
         .arg("--no-paging")
@@ -2809,4 +2851,72 @@ fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
     .expect("valid utf8");
 
     assert!(output.contains("\x1B[33mYellow"))
+}
+
+// Tests that style components can be removed with `-component`.
+#[test]
+fn style_components_can_be_removed() {
+    bat()
+        .arg({
+            #[cfg(not(feature = "git"))]
+            {
+                "--style=full,-grid"
+            }
+            #[cfg(feature = "git")]
+            {
+                "--style=full,-grid,-changes"
+            }
+        })
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n     Size: -\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components are chosen based on the rightmost `--style` argument.
+#[test]
+fn style_components_can_be_overidden() {
+    bat()
+        .arg("--style=full")
+        .arg("--style=header,numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components can be merged across multiple `--style` arguments.
+#[test]
+fn style_components_will_merge() {
+    bat()
+        .arg("--style=header,grid")
+        .arg("--style=-grid,+numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
+}
+
+// Tests that style components can be merged with the `BAT_STYLE` environment variable.
+#[test]
+fn style_components_will_merge_with_env_var() {
+    bat()
+        .env("BAT_STYLE", "header,grid")
+        .arg("--style=-grid,+numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("test")
+        .assert()
+        .success()
+        .stdout("     STDIN\n   1 test\n")
+        .stderr("");
 }
