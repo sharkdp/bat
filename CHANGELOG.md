@@ -68,6 +68,7 @@
 - Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
 - Adds support for pipe delimiter for CSV #3115 (@pratik-m)
 - Add syntax mapping for `/etc/pacman.conf` #2961 (@cyqsimon)
+- Associate `uv.lock` with `TOML` syntax, see #3132 (@fepegar)
 
 ## Themes
 
