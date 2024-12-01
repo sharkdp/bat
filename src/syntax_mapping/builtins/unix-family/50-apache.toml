@@ -1,2 +1,2 @@
 [mappings]
-"Apache Conf" = ["/etc/apache2/**/*.conf", "/etc/apache2/sites-*/**/*"]
+"Apache Conf" = ["/etc/apache2/**/*.conf", "/etc/apache2/sites-*/**/*", "/etc/httpd/conf/**/*.conf"]
