@@ -313,13 +313,19 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
-#[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
+#[cfg_attr(
+    any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
+    ignore
+)]
 fn short_help() {
     test_help("-h", "../doc/short-help.txt");
 }
 
 #[test]
-#[cfg_attr(any(not(feature = "git"), target_os = "windows"), ignore)]
+#[cfg_attr(
+    any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
+    ignore
+)]
 fn long_help() {
     test_help("--help", "../doc/long-help.txt");
 }
