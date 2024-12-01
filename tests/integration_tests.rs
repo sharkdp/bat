@@ -2443,7 +2443,6 @@ fn lessopen_stdin_piped() {
 #[cfg(unix)] // Expected output assumed that tests are run on a Unix-like system
 #[cfg(feature = "lessopen")]
 #[test]
-#[serial] // Randomly fails otherwise
 fn lessopen_and_lessclose_file_temp() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In this case, the original file and the temporary file returned by $LESSOPEN
@@ -2461,7 +2460,6 @@ fn lessopen_and_lessclose_file_temp() {
 #[cfg(unix)] // Expected output assumed that tests are run on a Unix-like system
 #[cfg(feature = "lessopen")]
 #[test]
-#[serial] // Randomly fails otherwise
 fn lessopen_and_lessclose_file_piped() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In these cases, the original file and a dash
@@ -2488,8 +2486,6 @@ fn lessopen_and_lessclose_file_piped() {
 #[cfg(unix)] // Expected output assumed that tests are run on a Unix-like system
 #[cfg(feature = "lessopen")]
 #[test]
-#[serial] // Randomly fails otherwise
-#[ignore = "randomly failing on some systems"]
 fn lessopen_and_lessclose_stdin_temp() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In this case, a dash and the temporary file returned by $LESSOPEN
@@ -2507,7 +2503,6 @@ fn lessopen_and_lessclose_stdin_temp() {
 #[cfg(unix)] // Expected output assumed that tests are run on a Unix-like system
 #[cfg(feature = "lessopen")]
 #[test]
-#[serial] // Randomly fails otherwise
 fn lessopen_and_lessclose_stdin_piped() {
     // This is mainly to test that $LESSCLOSE gets passed the correct file paths
     // In these cases, two dashes
