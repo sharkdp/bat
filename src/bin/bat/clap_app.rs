@@ -564,6 +564,17 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Do not load custom assets"),
         );
 
+    #[cfg(feature = "application")]
+    {
+        app = app.arg(
+            Arg::new("completion")
+            .long("completion")
+            .value_name("SHELL")
+            .value_parser(["bash", "fish", "ps1", "zsh"])
+            .help("Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]"),
+        );
+    }
+
     #[cfg(feature = "lessopen")]
     {
         app = app

@@ -3,6 +3,8 @@
 mod app;
 mod assets;
 mod clap_app;
+#[cfg(feature = "application")]
+mod completions;
 mod config;
 mod directories;
 mod input;
@@ -344,6 +346,18 @@ fn run() -> Result<bool> {
         invoke_bugreport(&app, cache_dir);
         #[cfg(not(feature = "bugreport"))]
         println!("bat has been built without the 'bugreport' feature. The '--diagnostic' option is not available.");
+        return Ok(true);
+    }
+
+    #[cfg(feature = "application")]
+    if let Some(shell) = app.matches.get_one::<String>("completion") {
+        match shell.as_str() {
+            "bash" => println!("{}", completions::BASH_COMPLETION),
+            "fish" => println!("{}", completions::FISH_COMPLETION),
+            "ps1" => println!("{}", completions::PS1_COMPLETION),
+            "zsh" => println!("{}", completions::ZSH_COMPLETION),
+            _ => unreachable!("No completion for shell '{}' available.", shell),
+        }
         return Ok(true);
     }
 

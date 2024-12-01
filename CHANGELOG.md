@@ -11,6 +11,7 @@
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
 - Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
 - Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
+- Make shell completions available via `--completion <shell>`, see issue #2057 and PR #3126 (@einfachIrgendwer0815)
 
 ## Bugfixes
 
