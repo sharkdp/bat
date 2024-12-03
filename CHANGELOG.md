@@ -22,6 +22,7 @@
 - Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 - Fix compile issue of `time` dependency caused by standard library regression #3045 (@cyqsimon)
 - Fix override behavior of --plain and --paging, see issue #2731 and PR #3108 (@einfachIrgendwer0815)
+- Fix bugs in `$LESSOPEN` support, see #2805 (@Anomalocaridid)
 
 ## Other
 
