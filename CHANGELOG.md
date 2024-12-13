@@ -51,6 +51,7 @@
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 - Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
 - Bump MSRV to [1.74](https://blog.rust-lang.org/2023/11/16/Rust-1.74.0.html), see #3154 (@keith-hall)
+- Update clircle dependency to remove winapi transitive dependency, see #3113 (@niklasmohrin)
 
 ## Syntaxes
 
