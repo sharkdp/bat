@@ -91,6 +91,7 @@
 - Adds support for pipe delimiter for CSV #3115 (@pratik-m)
 - Add syntax mapping for `/etc/pacman.conf` #2961 (@cyqsimon)
 - Associate `uv.lock` with `TOML` syntax, see #3132 (@fepegar)
+- Add support for [Idris 2 programming language](https://www.idris-lang.org/) #3150 (@buzden)
 
 ## Themes
 
