@@ -10,7 +10,7 @@ version = "0.24.0"
 exclude = ["assets/syntaxes/*", "assets/themes/*"]
 build = "build/main.rs"
 edition = '2021'
-rust-version = "1.70"
+rust-version = "1.74"
 
 [features]
 default = ["application"]
