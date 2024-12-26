@@ -152,8 +152,8 @@ jobs:
     name: cargo audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - run: cargo install cargo-audit --locked
+      - uses: actions/checkout@v4
       - run: cargo audit
 
   build:
