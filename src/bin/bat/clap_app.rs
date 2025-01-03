@@ -464,6 +464,44 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("disable-line-limits")
+                .long("disable-line-limits")
+                .action(ArgAction::SetTrue)
+                .overrides_with_all(["soft-line-limit", "hard-line-limit"])
+                .help("Disables all line limits.")
+                .long_help("Disables all line limits. Short for `--soft-line-limit 0 --hard-line-limit 0`.")
+        )
+        .arg(
+            Arg::new("soft-line-limit")
+                .long("soft-line-limit")
+                .value_name("BYTES")
+                .value_parser(|s: &str| s.parse::<usize>())
+                .default_value("65536")
+                .overrides_with("disable-line-limits")
+                .long_help(
+                    "Line length (in bytes) at which the line will be ignored. \
+                     Zero disables this limit.\n\
+                     Default: 64 kB",
+                )
+                .hide_short_help(true)
+                .hide_default_value(true)
+        )
+        .arg(
+            Arg::new("hard-line-limit")
+                .long("hard-line-limit")
+                .value_name("BYTES")
+                .value_parser(|s: &str| s.parse::<usize>())
+                .default_value("262144")
+                .overrides_with("disable-line-limits")
+                .long_help(
+                    "Line length (in bytes) at which bat will abort. \
+                     Zero disables this limit.\n\
+                     Default: 256 kB"
+                )
+                .hide_short_help(true)
+                .hide_default_value(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .action(ArgAction::Append)

@@ -155,6 +155,17 @@ Options:
           escape sequences unless the syntax highlighting language is plain text. Possible values:
           auto, always, *never*.
 
+      --disable-line-limits
+          Disables all line limits. Short for `--soft-line-limit 0 --hard-line-limit 0`.
+
+      --soft-line-limit <BYTES>
+          Line length (in bytes) at which the line will be ignored. Zero disables this limit.
+          Default: 64 kB
+
+      --hard-line-limit <BYTES>
+          Line length (in bytes) at which bat will abort. Zero disables this limit.
+          Default: 256 kB
+
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
           to display in addition to the file contents. The argument is a comma-separated list of

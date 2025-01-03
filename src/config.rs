@@ -107,6 +107,12 @@ pub struct Config<'a> {
 
     // Weather or not to set terminal title when using a pager
     pub strip_ansi: StripAnsiMode,
+
+    /// Line length (in bytes) at which a line of input will be ignored
+    pub soft_line_limit: Option<usize>,
+
+    /// Line length (in bytes) at which an error will be thrown
+    pub hard_line_limit: Option<usize>,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
