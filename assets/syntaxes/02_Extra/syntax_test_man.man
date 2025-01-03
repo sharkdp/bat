@@ -131,6 +131,12 @@ OPTIONS
 #                                ^^ - variable
               output NUM (default 3) lines of copied context
 
+       -      This is  not really a switch, but indicates that standard input
+#      ^ entity.name.command-line-option.man
+#       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - entity - variable
+              is coming from a file or a pipe and not interactively from the
+              command line.
+
 EXAMPLE
        #include <stdio.h>
 #      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include

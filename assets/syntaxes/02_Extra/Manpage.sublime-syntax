@@ -85,6 +85,9 @@ contexts:
 
   options:
     # command-line options like --option=value, --some-flag, or -x
+    - match: '^[ ]{7}(-)(?=\s)'
+      captures:
+        1: entity.name.command-line-option.man
     - match: '^[ ]{7}(?=-|\+)'
       push: expect-command-line-option
     - match: '(?:[^a-zA-Z0-9_-]|^|\s){{command_line_option}}'
