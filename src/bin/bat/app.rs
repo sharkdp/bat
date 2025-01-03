@@ -96,7 +96,16 @@ impl App {
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config> {
-        let style_components = self.style_components()?;
+        let loop_through = !(self.interactive_output
+            || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
+            || self
+                .matches
+                .get_one::<String>("decorations")
+                .map(|s| s.as_str())
+                == Some("always")
+            || self.matches.get_flag("force-colorization"));
+
+        let style_components = self.style_components(loop_through)?;
 
         let extra_plain = self.matches.get_count("plain") > 1;
         let plain_last_index = self
@@ -248,14 +257,7 @@ impl App {
                 },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
-            loop_through: !(self.interactive_output
-                || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
-                || self
-                    .matches
-                    .get_one::<String>("decorations")
-                    .map(|s| s.as_str())
-                    == Some("always")
-                || self.matches.get_flag("force-colorization")),
+            loop_through: loop_through,
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -405,7 +407,7 @@ impl App {
         None
     }
 
-    fn style_components(&self) -> Result<StyleComponents> {
+    fn style_components(&self, loop_through: bool) -> Result<StyleComponents> {
         let matches = &self.matches;
         let mut styled_components = match self.forced_style_components() {
             Some(forced_components) => forced_components,
@@ -426,6 +428,11 @@ impl App {
                 StyleComponent::Default
                     .components(self.interactive_output)
                     .into_iter()
+                    .map(|style| style.components(self.interactive_output, loop_through))
+                    .fold(HashSet::new(), |mut acc, components| {
+                        acc.extend(components.iter().cloned());
+                        acc
+                    })
                     .cloned(),
             )),
         };
