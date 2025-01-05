@@ -286,8 +286,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d9334f725b46fb9bed8580b9b47a932587e044fadb344ed7fa98774b067ac1a"
 dependencies = [
  "cfg-if",
- "serde",
- "serde_derive",
  "windows",
 ]
 
