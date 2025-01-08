@@ -70,7 +70,7 @@ execute = { version = "0.2.13", optional = true }
 terminal-colorsaurus = "0.4"
 
 [dependencies.git2]
-version = "0.19"
+version = "0.20"
 optional = true
 default-features = false
 
