@@ -2266,6 +2266,46 @@ fn theme_arg_overrides_env_withconfig() {
 }
 
 #[test]
+fn theme_light_env_var_is_respected() {
+    bat()
+        .env("BAT_THEME_LIGHT", "Coldark-Cold")
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=light")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout("\x1B[48;2;208;218;231mLorem Ipsum\x1B[0m")
+        .stderr("");
+}
+
+#[test]
+fn theme_dark_env_var_is_respected() {
+    bat()
+        .env("BAT_THEME_DARK", "Coldark-Dark")
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=dark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout("\x1B[48;2;33;48;67mLorem Ipsum\x1B[0m")
+        .stderr("");
+}
+
+#[test]
 fn theme_env_overrides_config() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
