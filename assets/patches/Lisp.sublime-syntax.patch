@@ -1434,7 +1434,7 @@ index 50e5dad3..44a9795d 100644
 +  break: (?={{break_char}}|$)
 +  break_char: '[\s()"'',:;|]'
 +
-+  # caracters
++  # characters
 +  standard_char: '[0-9A-Za-z!"#$%&''()*+,\-./:;<=>?@\\\[\]^_`{|}~]'
 +  char_attributes: (?:(?:[[:alnum:]_]+-)+\\?)
 +
