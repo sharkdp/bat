@@ -3,6 +3,7 @@
 ## Features
 
 ## Bugfixes
+* Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
 
 ## Other
 
