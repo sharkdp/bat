@@ -310,6 +310,24 @@ pkg_add bat
 nix-env -i bat
 ```
 
+### 通过 flox
+
+你可以用 [flox](https://flox.dev) 安装`bat`：
+
+```bash
+flox install bat
+```
+
+### 通过 x-cmd
+
+你可以用 [x-cmd](https://cn.x-cmd.com) 安装`bat`：
+
+```bash
+x env use bat
+# or
+x bat
+```
+
 ### openSUSE
 
 你可以用 zypper 安装`bat`：
