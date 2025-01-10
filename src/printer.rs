@@ -1,5 +1,6 @@
 use std::fmt;
 use std::io;
+use std::io::IsTerminal;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -138,7 +139,7 @@ impl<'a> Printer for SimplePrinter<'a> {
         &mut self,
         out_of_range: bool,
         handle: &mut OutputHandle,
-        _line_number: usize,
+        line_number: usize,
         line_buffer: &[u8],
     ) -> Result<()> {
         // Skip squeezed lines.
@@ -166,7 +167,18 @@ impl<'a> Printer for SimplePrinter<'a> {
                 write!(handle, "{line}")?;
             } else {
                 match handle {
-                    OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
+                    OutputHandle::IoWrite(handle) => {
+                        if self.config.style_components.numbers()
+                            && !std::io::stdout().is_terminal()
+                        {
+                            handle.write_all(
+                                format!("{line_number:4} {}", String::from_utf8_lossy(line_buffer))
+                                    .as_bytes(),
+                            )?;
+                        } else {
+                            handle.write_all(line_buffer)?;
+                        }
+                    }
                     OutputHandle::FmtWrite(handle) => {
                         write!(
                             handle,
