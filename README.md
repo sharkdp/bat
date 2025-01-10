@@ -489,7 +489,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
 `bat` automatically picks a fitting theme depending on your terminal's background color.
-You can use the `--theme-light` / `--theme-light` options or the `BAT_THEME_DARK` / `BAT_THEME_LIGHT` environment variables
+You can use the `--theme-dark` / `--theme-light` options or the `BAT_THEME_DARK` / `BAT_THEME_LIGHT` environment variables
 to customize the themes used. This is especially useful if you frequently switch between dark and light mode.
 
 You can also use a custom theme by following the
