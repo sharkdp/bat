@@ -263,3 +263,6 @@
 [submodule "assets/syntaxes/02_Extra/CFML"]
 	path = assets/syntaxes/02_Extra/CFML
 	url = https://github.com/jcberquist/sublimetext-cfml.git
+[submodule "assets/syntaxes/02_Extra/Idris2"]
+	path = assets/syntaxes/02_Extra/Idris2
+	url = https://github.com/buzden/sublime-syntax-idris2
