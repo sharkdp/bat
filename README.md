@@ -121,6 +121,11 @@ bat f - g  # output 'f', then stdin, then 'g'.
 
 ### Integration with other tools
 
+#### `Warp`
+<a href="https://app.warp.dev/drive/folder/-Bat-Warp-Pack-lxhe7HrEwgwpG17mvrFSz1">
+  <img src="doc/sponsors/warp-pack-header.png" alt="Warp">
+</a>
+
 #### `fzf`
 
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
