@@ -236,8 +236,14 @@ fn get_def_paths() -> anyhow::Result<Vec<PathBuf>> {
     ];
 
     let mut toml_paths = vec![];
-    for subdir in source_subdirs {
-        let wd = WalkDir::new(Path::new("src/syntax_mapping/builtins").join(subdir));
+    for subdir_name in source_subdirs {
+        let subdir = Path::new("src/syntax_mapping/builtins").join(subdir_name);
+        if !subdir.try_exists()? {
+            // Directory might not exist due to this `cargo vendor` bug:
+            // https://github.com/rust-lang/cargo/issues/15080
+            continue;
+        }
+        let wd = WalkDir::new(subdir);
         let paths = wd
             .into_iter()
             .filter_map_ok(|entry| {

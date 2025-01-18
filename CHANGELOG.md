@@ -7,6 +7,8 @@
 
 ## Other
 
+- Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
+
 ## Syntaxes
 
 ## Themes
