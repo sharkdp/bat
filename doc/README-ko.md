@@ -340,6 +340,26 @@ make install
 nix-env -i bat
 ```
 
+### flox를 써서
+
+[flox](https://flox.dev)를 이용해 `bat`을 설치할 수
+있습니다:
+
+```bash
+flox install bat
+```
+
+### x-cmd를 써서
+
+[x-cmd](https://www.x-cmd.com)를 이용해 `bat`을 설치할 수
+있습니다:
+
+```bash
+x env use bat
+# or
+x bat
+```
+
 ### openSUSE에서
 
 zypper를 이용해 `bat`을 설치할 수 있습니다:

@@ -387,6 +387,16 @@ You can install `bat` using [Flox](https://flox.dev)
 flox install bat
 ```
 
+### Via x-cmd
+
+You can install `bat` using [x-cmd](https://www.x-cmd.com/)
+
+```bash
+x env use bat
+# or
+x bat
+```
+
 ### On openSUSE
 
 You can install `bat` with zypper:
