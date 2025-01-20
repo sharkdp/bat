@@ -11,6 +11,8 @@
 
 ## Syntaxes
 
+-  Add syntax mapping for paru configuration files #3182 (@cyqsimon)
+
 ## Themes
 
 ## `bat` as a library
