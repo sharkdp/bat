@@ -17,6 +17,7 @@
 - Add syntax mapping for `paru` configuration files #3182 (@cyqsimon)
 - Add support for [Idris 2 programming language](https://www.idris-lang.org/) #3150 (@buzden)
 - Add syntax mapping for `nix`'s '`flake.lock` lockfiles #3196 (@odilf)
+- Improvements to CSV/TSV highlighting, with autodetection of delimiter and support for TSV files, see #3186 (@keith-hall)
 
 ## Themes
 
