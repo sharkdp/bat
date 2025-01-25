@@ -253,6 +253,24 @@ make install
 nix-env -i bat
 ```
 
+### С помощью flox
+
+Вы можете установить `bat`, используя [flox](https://flox.dev):
+
+```bash
+flox install bat
+```
+
+### С помощью x-cmd
+
+Вы можете установить `bat`, используя [x-cmd](https://www.x-cmd.com):
+
+```bash
+x env use bat
+# or
+x bat
+```
+
 ### openSUSE
 
 Вы можете установить `bat` с помощью `zypper`:
