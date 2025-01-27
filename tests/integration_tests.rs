@@ -305,11 +305,12 @@ fn list_themes_without_colors() {
 
 #[test]
 fn list_themes_to_piped_output() {
-    bat()
-        .arg("--list-themes")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("(default)").not());
+    bat().arg("--list-themes").assert().success().stdout(
+        predicate::str::contains("(default)")
+            .not()
+            .and(predicate::str::contains("(default light)").not())
+            .and(predicate::str::contains("(default dark)").not()),
+    );
 }
 
 #[test]
