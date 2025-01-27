@@ -10,9 +10,9 @@ pub mod env {
     /// See [`crate::theme::ThemeOptions::theme`].
     pub const BAT_THEME: &str = "BAT_THEME";
     /// See [`crate::theme::ThemeOptions::theme_dark`].
-    pub const BAT_THEME_DARK: &str = "BAT_THEME";
+    pub const BAT_THEME_DARK: &str = "BAT_THEME_DARK";
     /// See [`crate::theme::ThemeOptions::theme_light`].
-    pub const BAT_THEME_LIGHT: &str = "BAT_THEME";
+    pub const BAT_THEME_LIGHT: &str = "BAT_THEME_LIGHT";
 }
 
 /// Chooses an appropriate theme or falls back to a default theme

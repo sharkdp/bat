@@ -2,6 +2,26 @@
 
 ## Features
 
+## Bugfixes
+- Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
+- Prevent `--list-themes` from outputting default theme info to stdout when it is piped, see #3189 (@einfachIrgendwer0815)
+
+## Other
+
+- Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
+
+## Syntaxes
+
+-  Add syntax mapping for paru configuration files #3182 (@cyqsimon)
+
+## Themes
+
+## `bat` as a library
+
+# v0.25.0
+
+## Features
+
 - Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
 - `bat --squeeze-blank`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze-blank`, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
@@ -12,6 +32,7 @@
 - Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
 - Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
 - Make shell completions available via `--completion <shell>`, see issue #2057 and PR #3126 (@einfachIrgendwer0815)
+- Syntax highlighting for puppet code blocks within Markdown files, see #3152 (@liliwilson)
 
 ## Bugfixes
 
@@ -22,6 +43,7 @@
 - Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 - Fix compile issue of `time` dependency caused by standard library regression #3045 (@cyqsimon)
 - Fix override behavior of --plain and --paging, see issue #2731 and PR #3108 (@einfachIrgendwer0815)
+- Fix bugs in `$LESSOPEN` support, see #2805 (@Anomalocaridid)
 
 ## Other
 
@@ -49,6 +71,8 @@
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
 - Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
+- Bump MSRV to [1.74](https://blog.rust-lang.org/2023/11/16/Rust-1.74.0.html), see #3154 (@keith-hall)
+- Update clircle dependency to remove winapi transitive dependency, see #3113 (@niklasmohrin)
 
 ## Syntaxes
 
@@ -72,6 +96,8 @@
 - Associate `uv.lock` with `TOML` syntax, see #3132 (@fepegar)
 
 ## Themes
+
+- Patched/improved themes for better Manpage syntax highlighting support, see #2994 (@keith-hall).
 
 ## `bat` as a library
 

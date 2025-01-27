@@ -69,7 +69,7 @@
                 <key>name</key>
                 <string>Labels</string>
                 <key>scope</key>
-                <string>entity.name.label</string>
+                <string>entity.name.label, variable.parameter</string>
                 <key>settings</key>
                 <dict>
                     <key>foreground</key>
@@ -80,7 +80,7 @@
                 <key>name</key>
                 <string>Classes</string>
                 <key>scope</key>
-                <string>support.class, entity.name.class, entity.name.type.class</string>
+                <string>support.class, entity.name.class, entity.name.type.class, entity.name</string>
                 <key>settings</key>
                 <dict>
                     <key>foreground</key>
@@ -234,7 +234,7 @@
                 <key>name</key>
                 <string>Headings</string>
                 <key>scope</key>
-                <string>markup.heading punctuation.definition.heading, entity.name.section</string>
+                <string>markup.heading punctuation.definition.heading, entity.name.section, markup.heading - text.html.markdown</string>
                 <key>settings</key>
                 <dict>
                     <key>fontStyle</key>
