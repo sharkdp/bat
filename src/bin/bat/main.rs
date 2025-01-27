@@ -210,7 +210,7 @@ pub fn list_themes(
 
     let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
     for theme in assets.themes() {
-        let default_theme_info = if !config.loop_through && default_theme_name == theme {
+        let default_theme_info = if default_theme_name == theme {
             " (default)"
         } else if default_theme(ColorScheme::Dark) == theme {
             " (default dark)"
@@ -231,6 +231,8 @@ pub fn list_themes(
                 .run(vec![theme_preview_file()], None)
                 .ok();
             writeln!(stdout)?;
+        } else if config.loop_through {
+            writeln!(stdout, "{theme}")?;
         } else {
             writeln!(stdout, "{theme}{default_theme_info}")?;
         }
