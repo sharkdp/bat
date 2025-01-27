@@ -3,11 +3,11 @@
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  Клон утилиты <i>cat(1)</i> с поддержкой выделения синтаксиса и Git
+  Клон утилиты <i>cat(1)</i> с поддержкой подсветки синтаксиса и Git
 </p>
 
 <p align="center">
-  <a href="#выделение-синтаксиса">Ключевые возможности</a> •
+  <a href="#подсветка-синтаксиса">Ключевые возможности</a> •
   <a href="#как-использовать">Использование</a> •
   <a href="#установка">Установка</a> •
   <a href="#кастомизация">Кастомизация</a> •
@@ -19,11 +19,11 @@
   [Русский]
 </p>
 
-### Выделение синтаксиса
+### Подсветка синтаксиса
 
-`bat` поддерживает выделение синтаксиса для огромного количества языков программирования и разметки:
+`bat` поддерживает подсветку синтаксиса для огромного количества языков программирования и разметки:
 
-![Пример выделения синтаксиса](https://i.imgur.com/3FGy5tW.png)
+![Пример подсветки синтаксиса](https://i.imgur.com/3FGy5tW.png)
 
 ### Интеграция с Git
 `bat` использует `git`, чтобы показать изменения в коде
@@ -31,15 +31,17 @@
 
 ![Пример интеграции с Git](https://i.imgur.com/azUAzdx.png)
 
-### Показать непечатаемые символы
+### Показ непечатных символов
 
-Вы можете использовать `-A` / `--show-all` флаг, чтобы показать символы, которые невозможно напечатать:
+Вы можете использовать флаг `-A` / `--show-all`, чтобы показать непечатные символы:
 
 ![Строка с неотображемыми символами](https://i.imgur.com/X0orYY9.png)
 
-### Автоматическое разделение текста
+### Автоматический пейджинг терминала
 
-`bat` умеет перенаправлять вывод в `less`, если вывод не помещается на экране полностью.
+`bat` умеет перенаправлять вывод в пейджер терминала (например, в `less`), если вывод не помещается на экране полностью.
+Если вы хотите, чтобы `bat` работал как `cat` всё время, вы можете установить опцию `--paging=never` в командной строке или в конфигурационном файле.
+Если вы намерены использовать `bat` в качестве алиаса для `cat`, вы можете установить `alias cat='bat --paging=never'`, чтобы сохранить изначальное поведение.
 
 ### Объединение файлов
 
@@ -86,10 +88,22 @@ bat header.md content.md footer.md > document.md
 
 bat -n main.rs  # показываем только количество строк
 
-bat f - g  # выводит 'f' в stdin, а потом 'g'.
+bat f - g  # выводит 'f', потом stdin, а потом 'g'.
 ```
 
 ### Интеграция с другими утилитами
+
+#### `fzf`
+
+Вы можете использовать `bat` как просмотрщик для [`fzf`](https://github.com/junegunn/fzf).
+Чтобы это заработало, используйте опцию `--color=always`, чтобы вывод был всегда цветным.
+Вы можете также использовать опцию `--line-range`, чтобы уменьшить время загрузки для больших файлов:
+
+```bash
+fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
+```
+
+Больше деталей смотрите в [`README` программы `fzf`](https://github.com/junegunn/fzf#preview-window).
 
 #### `find` или `fd`
 
@@ -121,12 +135,22 @@ tail -f /var/log/pacman.log | bat --paging=never -l log
 
 #### `git`
 
-Вы можете использовать `bat` с `git show`, чтобы просмотреть старую версию файла с выделением синтаксиса:
+Вы можете использовать `bat` с `git show`, чтобы просмотреть старую версию файла с подсветкой синтаксиса:
 ```bash
 git show v0.6.0:src/main.rs | bat -l rs
 ```
 
-Обратите внимание, что выделение синтаксиса не работает в `git diff` на данный момент. Если вам это нужно, посмотрите [`delta`](https://github.com/dandavison/delta).
+#### `git diff`
+
+Вы можете использовать `bat` с `git diff` для просмотра строк кода вокруг изменений с подсветкой синтаксиса:
+```bash
+batdiff() {
+    git diff --name-only --relative --diff-filter=d | xargs bat --diff
+}
+```
+Если вы хотите использовать это как отдельную программу, посмотрите `batdiff` из [`bat-extras`](https://github.com/eth-p/bat-extras).
+
+Если вам это нужна более полная поддержка для операций с git и diff, посмотрите [`delta`](https://github.com/dandavison/delta).
 
 #### `xclip`
 
@@ -135,17 +159,18 @@ git show v0.6.0:src/main.rs | bat -l rs
 ```bash
 bat main.cpp | xclip
 ```
-`bat` обнаружит перенаправление вывода и выведет обычный текст без выделения синтаксиса.
+`bat` обнаружит перенаправление вывода и выведет обычный текст без подсветки синтаксиса.
 
 #### `man`
 
-`bat` может быть использован в виде выделения цвета для  `man`, для этого установите переменную окружения
+`bat` может быть использован для раскрашивания вывода `man`, для этого установите переменную окружения
 `MANPAGER`:
 
 ```bash
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 man 2 select
 ```
+(замените `bat` на `batcat`, если у вас Debian или Ubuntu)
 
 Возможно вам понадобится также установить `MANROFFOPT="-c"`, если у вас есть проблемы с форматированием.
 
@@ -153,10 +178,40 @@ man 2 select
 
 Обратите внимание, что [синтаксис manpage](assets/syntaxes/02_Extra/Manpage.sublime-syntax) разрабатывается в этом репозитории и все еще находится в разработке.
 
+Также заметьте, что это [не заработает](https://github.com/sharkdp/bat/issues/1145) с реализацией `man` через Mandocs.
+
 #### `prettier` / `shfmt` / `rustfmt`
 
 [`Prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) — скрипт, который форматирует код и выводит его с помощью `bat`.
 
+#### Подсветка сообщений `--help`
+
+Вы можете использовать `bat`, чтобы подсвечивать текст справки комманд: `$ cp --help | bat -plhelp`
+
+Вы можете сделать такую вспомогательную команду для этого:
+
+```bash
+# in your .bashrc/.zshrc/*rc
+alias bathelp='bat --plain --language=help'
+help() {
+    "$@" --help 2>&1 | bathelp
+}
+```
+
+В этом случае, вы можете просто писать `$ help cp` или `$ help git commit`.
+
+Если вы используете `zsh`, вы можете объявить глобальные алиасы для `-h` и `--help`:
+
+```bash
+alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
+alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
+```
+
+В этом случае, вы можете продолжать использовать `cp --help`, но при этом получать подцвеченный вывод.
+
+Обратите внимание, что не всегда опция `-h` является краткой формы опции `--help` (например, у `ls`).
+
+Пожалуйста, сообщайте о проблемах с подсветкой справки в [этот репозиторий](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
 ## Установка
 
@@ -165,8 +220,7 @@ man 2 select
 ### Ubuntu (с помощью `apt`)
 *... и другие дистрибутивы основанные на Debian.*
 
-`bat` есть в репозиториях [Ubuntu](https://packages.ubuntu.com/eoan/bat) и
-[Debian](https://packages.debian.org/sid/bat) и доступен начиная с Ubuntu Eoan 19.10. На Debian `bat` пока что доступен только с нестабильной веткой "Sid".
+`bat` доступен на [Ubuntu since 20.04 ("Focal")](https://packages.ubuntu.com/search?keywords=bat&exact=1) и [Debian since August 2021 (Debian 11 - "Bullseye")](https://packages.debian.org/bullseye/bat).
 
 Если ваша версия Ubuntu/Debian достаточно новая, вы можете установить `bat` так:
 
@@ -245,12 +299,28 @@ cd /usr/ports/textproc/bat
 make install
 ```
 
+### On OpenBSD
+
+Вы можете установить `bat` с помощью [`pkg_add(1)`](https://man.openbsd.org/pkg_add.1):
+
+```bash
+pkg_add bat
+```
+
 ### С помощью nix
 
 Вы можете установить `bat`, используя [nix package manager](https://nixos.org/nix):
 
 ```bash
 nix-env -i bat
+```
+
+### Через flox
+
+Вы можете установить `bat` используя [Flox](https://flox.dev)
+
+```bash
+flox install bat
 ```
 
 ### openSUSE
@@ -261,13 +331,15 @@ nix-env -i bat
 zypper install bat
 ```
 
-### macOS
+### На macOS (или Linux) через Homebrew
 
 Вы можете установить `bat` с помощью [Homebrew](http://braumeister.org/formula/bat):
 
 ```bash
 brew install bat
 ```
+
+### На macOS через MacPorts
 
 Или же установить его с помощью [MacPorts](https://ports.macports.org/port/bat/summary):
 
@@ -277,7 +349,19 @@ port install bat
 
 ### Windows
 
-Есть несколько способов установить `bat`. Как только вы установили его, посмотрите на секцию ["Использование `bat` в Windows"](#using-bat-on-windows).
+Есть несколько способов установить `bat`. Как только вы установили его, посмотрите на секцию ["Использование `bat` в Windows"](#использование-bat-в-windows).
+
+#### Пререквитизы
+
+Вам нужно установить пакет [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+
+#### С помощью WinGet
+
+Вы можете установить `bat` через [WinGet](https://learn.microsoft.com/en-us/windows/package-manager/winget):
+
+```bash
+winget install sharkdp.bat
+```
 
 #### С помощью Chocolatey
 
@@ -293,49 +377,9 @@ choco install bat
 scoop install bat
 ```
 
-Для этого у вас должен быть установлен [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
-
 #### Из заранее скомпилированных файлов:
 
 Их вы можете скачать на [странице релизов](https://github.com/sharkdp/bat/releases).
-
-Для этого у вас должен быть установлен [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
-
-### С помощью Docker
-
-Вы можете использовать [Docker image](https://hub.docker.com/r/danlynn/bat/), чтобы запустить `bat` в контейнере:
-```bash
-docker pull danlynn/bat
-alias bat='docker run -it --rm -e BAT_THEME -e BAT_STYLE -e BAT_TABS -v "$(pwd):/myapp" danlynn/bat'
-```
-
-### С помощью Ansible
-
-Вы можете установить `bat` с [Ansible](https://www.ansible.com/):
-
-```bash
-# Устанавливаем роль на устройстве
-ansible-galaxy install aeimer.install_bat
-```
-
-```yaml
----
-# Playbook для установки bat
-- host: all
-  roles:
-    - aeimer.install_bat
-```
-
-- [Ansible Galaxy](https://galaxy.ansible.com/aeimer/install_bat)
-- [GitHub](https://github.com/aeimer/ansible-install-bat)
-
-Этот способ должен сработать со следующими дистрибутивами:
-- Debian/Ubuntu
-- ARM (например Raspberry PI)
-- Arch Linux
-- Void Linux
-- FreeBSD
-- macOS
 
 ### Из скомпилированных файлов
 
@@ -344,15 +388,24 @@ ansible-galaxy install aeimer.install_bat
 
 ### Из исходников
 
-Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.74.0 или выше. После этого используйте `cargo`, чтобы все скомпилировать:
+Если вы желаете установить `bat` из исходников, вам понадобится Rust 1.74.0 или выше. После этого используйте `cargo`, чтобы всё скомпилировать:
 
 ```bash
 cargo install --locked bat
 ```
 
+Заметьте, что дополнительные файлы, такие как документация man и подсказки командной строки, не могут быть установлены таким способом.
+Они будут сгенерированы командой `cargo` должны быть доступны в папке сборки (в `build`).
+
+Подсказки командной строки также доступны при таком запуске:
+```bash
+bat --completion <shell>
+# see --help for supported shells
+```
+
 ## Кастомизация
 
-### Темы для выделения текста
+### Темы для подсветки синтаксиса
 
 Используйте `bat --list-themes`, чтобы вывести список всех доступных тем. Для выбора темы `TwoDark` используйте `bat` с флагом
 `--theme=TwoDark` или выставьте переменную окружения `BAT_THEME` в `TwoDark`. Используйте `export BAT_THEME="TwoDark"` в конфигурационном файле вашей оболочки, чтобы изменить ее навсегда. Или же используйте [конфигурационный файл](https://github.com/sharkdp/bat#configuration-file) `bat`.
@@ -372,7 +425,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /путь/к/ф
 
 ### Добавление новых синтаксисов
 
-`bat` использует [`syntect`](https://github.com/trishume/syntect/) для выделения синтаксиса. `syntect` может читать
+`bat` использует [`syntect`](https://github.com/trishume/syntect/) для подсветки синтаксиса. `syntect` может читать
 [файл `.sublime-syntax`](https://www.sublimetext.com/docs/3/syntax.html)
 и темы. Чтобы добавить новый синтаксис, сделайте следующее:
 
@@ -403,7 +456,7 @@ bat cache --clear
 
 ### Добавление новых тем
 
-Это работает похожим образом, так же как и добавление новых тем выделения синтаксиса
+Это работает похожим образом, так же как и добавление новых тем подсветки синтаксиса
 
 Во-первых, создайте каталог с новыми темами для синтаксиса:
 ```bash
@@ -590,7 +643,7 @@ cargo install --locked --force
 Есть очень много альтернатив `bat`. Смотрите [этот документ](doc/alternatives.md) для сравнения.
 
 ## Лицензия
-Copyright (c) 2018-2021 [Разработчики bat](https://github.com/sharkdp/bat).
+Copyright (c) 2018-2024 [Разработчики bat](https://github.com/sharkdp/bat).
 
 `bat` распространяется под лицензиями MIT License и Apache License 2.0 (на выбор пользователя).
 
