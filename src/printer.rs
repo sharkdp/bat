@@ -267,7 +267,7 @@ impl<'a> InteractivePrinter<'a> {
         let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+            .is_some_and(|c| c.is_binary() && !config.show_nonprintable);
 
         let needs_to_match_syntax = (!is_printing_binary
             || matches!(config.binary, BinaryBehavior::AsText))
@@ -544,7 +544,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             })?;
 
         if self.config.style_components.grid() {
-            if self.content_type.map_or(false, |c| c.is_text())
+            if self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
                 || matches!(self.config.binary, BinaryBehavior::AsText)
             {
@@ -559,7 +559,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
-            && (self.content_type.map_or(false, |c| c.is_text())
+            && (self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
                 || matches!(self.config.binary, BinaryBehavior::AsText))
         {

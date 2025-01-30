@@ -153,7 +153,7 @@ impl<'a> SyntaxMapping<'a> {
             if glob.is_match_candidate(&candidate)
                 || candidate_filename
                     .as_ref()
-                    .map_or(false, |filename| glob.is_match_candidate(filename))
+                    .is_some_and(|filename| glob.is_match_candidate(filename))
             {
                 return Some(*syntax);
             }
