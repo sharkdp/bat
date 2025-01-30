@@ -1,5 +1,3 @@
-#![cfg(feature = "lessopen")]
-
 use std::convert::TryFrom;
 use std::env;
 use std::fs::File;
