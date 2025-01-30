@@ -200,7 +200,7 @@ impl LessOpenPreprocessor {
         })
     }
 
-    fn fall_back_to_original_file(&self, lessopen_stdout: &Vec<u8>, exit_code: ExitStatus) -> bool {
+    fn fall_back_to_original_file(&self, lessopen_stdout: &[u8], exit_code: ExitStatus) -> bool {
         lessopen_stdout.is_empty()
             && (!exit_code.success() || matches!(self.kind, LessOpenKind::PipedIgnoreExitCode))
     }
