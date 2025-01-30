@@ -432,7 +432,7 @@ impl<'a> InteractivePrinter<'a> {
             .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
 
         if too_long {
-            highlighted_line[0].1 = &line;
+            highlighted_line[0].1 = line;
         }
 
         Ok(highlighted_line)
