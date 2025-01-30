@@ -60,7 +60,7 @@ fn to_path_and_stem(source_dir: &Path, entry: DirEntry) -> Option<PathAndStem> {
 fn handle_file(path_and_stem: &PathAndStem) -> Result<Option<String>> {
     if path_and_stem.stem == "NOTICE" {
         handle_notice(&path_and_stem.path)
-    } else if path_and_stem.stem.to_ascii_uppercase() == "LICENSE" {
+    } else if path_and_stem.stem.eq_ignore_ascii_case("LICENSE") {
         handle_license(&path_and_stem.path)
     } else {
         Ok(None)
