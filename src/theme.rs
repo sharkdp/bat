@@ -509,7 +509,7 @@ mod tests {
                 ThemePreference::Light,
             ];
             for pref in prefs {
-                assert_eq!(pref, ThemePreference::new(&pref.to_string()));
+                assert_eq!(pref, ThemePreference::new(pref.to_string()));
             }
         }
     }
