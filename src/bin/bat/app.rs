@@ -425,7 +425,7 @@ impl App {
             None => StyleComponents(HashSet::from_iter(
                 StyleComponent::Default
                     .components(self.interactive_output)
-                    .into_iter()
+                    .iter()
                     .cloned(),
             )),
         };
