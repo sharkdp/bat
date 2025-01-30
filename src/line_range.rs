@@ -9,8 +9,8 @@ pub struct LineRange {
 impl Default for LineRange {
     fn default() -> LineRange {
         LineRange {
-            lower: usize::min_value(),
-            upper: usize::max_value(),
+            lower: usize::MIN,
+            upper: usize::MAX,
         }
     }
 }
@@ -93,7 +93,7 @@ fn test_parse_full() {
 #[test]
 fn test_parse_partial_min() {
     let range = LineRange::from(":50").expect("Shouldn't fail on test!");
-    assert_eq!(usize::min_value(), range.lower);
+    assert_eq!(usize::MIN, range.lower);
     assert_eq!(50, range.upper);
 }
 
@@ -101,7 +101,7 @@ fn test_parse_partial_min() {
 fn test_parse_partial_max() {
     let range = LineRange::from("40:").expect("Shouldn't fail on test!");
     assert_eq!(40, range.lower);
-    assert_eq!(usize::max_value(), range.upper);
+    assert_eq!(usize::MAX, range.upper);
 }
 
 #[test]
@@ -203,11 +203,7 @@ impl LineRanges {
     }
 
     pub fn from(ranges: Vec<LineRange>) -> LineRanges {
-        let largest_upper_bound = ranges
-            .iter()
-            .map(|r| r.upper)
-            .max()
-            .unwrap_or(usize::max_value());
+        let largest_upper_bound = ranges.iter().map(|r| r.upper).max().unwrap_or(usize::MAX);
         LineRanges {
             ranges,
             largest_upper_bound,
