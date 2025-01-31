@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Add build for windows/ARM64 platform. #3190 (@alcroito)
 
 ## Bugfixes
 - Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
