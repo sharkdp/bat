@@ -370,7 +370,7 @@ mod tests {
         pub temp_dir: TempDir,
     }
 
-    impl<'a> SyntaxDetectionTest<'a> {
+    impl SyntaxDetectionTest<'_> {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),

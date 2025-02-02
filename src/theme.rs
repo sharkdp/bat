@@ -383,7 +383,6 @@ mod tests {
                         theme: ThemePreference::Fixed(ThemeName::Named("Theme".to_string())),
                         theme_dark: Some(ThemeName::Named("Dark Theme".to_string())),
                         theme_light: Some(ThemeName::Named("Light Theme".to_string())),
-                        ..Default::default()
                     },
                 ] {
                     let detector = ConstantDetector(color_scheme);
@@ -509,7 +508,7 @@ mod tests {
                 ThemePreference::Light,
             ];
             for pref in prefs {
-                assert_eq!(pref, ThemePreference::new(&pref.to_string()));
+                assert_eq!(pref, ThemePreference::new(pref.to_string()));
             }
         }
     }

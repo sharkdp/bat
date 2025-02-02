@@ -75,7 +75,7 @@ pub(crate) enum InputKind<'a> {
     CustomReader(Box<dyn Read + 'a>),
 }
 
-impl<'a> InputKind<'a> {
+impl InputKind<'_> {
     pub fn description(&self) -> InputDescription {
         match self {
             InputKind::OrdinaryFile(ref path) => InputDescription::new(path.to_string_lossy()),

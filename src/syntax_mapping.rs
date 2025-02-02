@@ -61,7 +61,7 @@ pub struct SyntaxMapping<'a> {
     halt_glob_build: Arc<AtomicBool>,
 }
 
-impl<'a> Drop for SyntaxMapping<'a> {
+impl Drop for SyntaxMapping<'_> {
     fn drop(&mut self) {
         // signal the offload thread to halt early
         self.halt_glob_build.store(true, Ordering::Relaxed);
@@ -153,7 +153,7 @@ impl<'a> SyntaxMapping<'a> {
             if glob.is_match_candidate(&candidate)
                 || candidate_filename
                     .as_ref()
-                    .map_or(false, |filename| glob.is_match_candidate(filename))
+                    .is_some_and(|filename| glob.is_match_candidate(filename))
             {
                 return Some(*syntax);
             }

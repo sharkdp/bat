@@ -73,7 +73,7 @@ pub enum OutputHandle<'a> {
     FmtWrite(&'a mut dyn fmt::Write),
 }
 
-impl<'a> OutputHandle<'a> {
+impl OutputHandle<'_> {
     fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
         match self {
             Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
@@ -116,7 +116,7 @@ impl<'a> SimplePrinter<'a> {
     }
 }
 
-impl<'a> Printer for SimplePrinter<'a> {
+impl Printer for SimplePrinter<'_> {
     fn print_header(
         &mut self,
         _handle: &mut OutputHandle,
@@ -144,7 +144,7 @@ impl<'a> Printer for SimplePrinter<'a> {
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
             if String::from_utf8_lossy(line_buffer)
-                .trim_end_matches(|c| c == '\r' || c == '\n')
+                .trim_end_matches(['\r', '\n'])
                 .is_empty()
             {
                 self.consecutive_empty_lines += 1;
@@ -267,7 +267,7 @@ impl<'a> InteractivePrinter<'a> {
         let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+            .is_some_and(|c| c.is_binary() && !config.show_nonprintable);
 
         let needs_to_match_syntax = (!is_printing_binary
             || matches!(config.binary, BinaryBehavior::AsText))
@@ -432,7 +432,7 @@ impl<'a> InteractivePrinter<'a> {
             .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
 
         if too_long {
-            highlighted_line[0].1 = &line;
+            highlighted_line[0].1 = line;
         }
 
         Ok(highlighted_line)
@@ -448,7 +448,7 @@ impl<'a> InteractivePrinter<'a> {
     }
 }
 
-impl<'a> Printer for InteractivePrinter<'a> {
+impl Printer for InteractivePrinter<'_> {
     fn print_header(
         &mut self,
         handle: &mut OutputHandle,
@@ -544,7 +544,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
             })?;
 
         if self.config.style_components.grid() {
-            if self.content_type.map_or(false, |c| c.is_text())
+            if self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
                 || matches!(self.config.binary, BinaryBehavior::AsText)
             {
@@ -559,7 +559,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
-            && (self.content_type.map_or(false, |c| c.is_text())
+            && (self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
                 || matches!(self.config.binary, BinaryBehavior::AsText))
         {
@@ -644,7 +644,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
-            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+            if line.trim_end_matches(['\r', '\n']).is_empty() {
                 self.consecutive_empty_lines += 1;
                 if self.consecutive_empty_lines > squeeze_limit {
                     return Ok(());
@@ -697,7 +697,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         // Regular text.
                         EscapeSequence::Text(text) => {
                             let text = self.preprocess(text, &mut cursor_total);
-                            let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+                            let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
                             write!(
                                 handle,
@@ -751,10 +751,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // Regular text.
                         EscapeSequence::Text(text) => {
-                            let text = self.preprocess(
-                                text.trim_end_matches(|c| c == '\r' || c == '\n'),
-                                &mut cursor_total,
-                            );
+                            let text = self
+                                .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
 
                             let mut max_width = cursor_max - cursor;
 
