@@ -539,7 +539,7 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 }
 
-impl<'a> Iterator for EscapeSequenceOffsetsIterator<'a> {
+impl Iterator for EscapeSequenceOffsetsIterator<'_> {
     type Item = EscapeSequenceOffsets;
     fn next(&mut self) -> Option<Self::Item> {
         match self.chars.peek() {

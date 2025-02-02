@@ -61,7 +61,7 @@ pub struct SyntaxMapping<'a> {
     halt_glob_build: Arc<AtomicBool>,
 }
 
-impl<'a> Drop for SyntaxMapping<'a> {
+impl Drop for SyntaxMapping<'_> {
     fn drop(&mut self) {
         // signal the offload thread to halt early
         self.halt_glob_build.store(true, Ordering::Relaxed);

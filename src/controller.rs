@@ -25,7 +25,7 @@ pub struct Controller<'a> {
     preprocessor: Option<LessOpenPreprocessor>,
 }
 
-impl<'b> Controller<'b> {
+impl Controller<'_> {
     pub fn new<'a>(config: &'a Config, assets: &'a HighlightingAssets) -> Controller<'a> {
         Controller {
             config,

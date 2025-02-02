@@ -73,7 +73,7 @@ pub enum OutputHandle<'a> {
     FmtWrite(&'a mut dyn fmt::Write),
 }
 
-impl<'a> OutputHandle<'a> {
+impl OutputHandle<'_> {
     fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
         match self {
             Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
@@ -116,7 +116,7 @@ impl<'a> SimplePrinter<'a> {
     }
 }
 
-impl<'a> Printer for SimplePrinter<'a> {
+impl Printer for SimplePrinter<'_> {
     fn print_header(
         &mut self,
         _handle: &mut OutputHandle,
@@ -448,7 +448,7 @@ impl<'a> InteractivePrinter<'a> {
     }
 }
 
-impl<'a> Printer for InteractivePrinter<'a> {
+impl Printer for InteractivePrinter<'_> {
     fn print_header(
         &mut self,
         handle: &mut OutputHandle,
