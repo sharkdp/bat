@@ -65,7 +65,7 @@
 	path = assets/themes/onehalf
 	url = https://github.com/sonph/onehalf
 [submodule "assets/syntaxes/JavaScript (Babel)"]
-	path = assets/syntaxes/02_Extra/JavaScript (Babel)
+	path = assets/syntaxes/02_Extra/JavaScript_(Babel)
 	url = https://github.com/babel/babel-sublime
 [submodule "assets/syntaxes/FSharp"]
 	path = assets/syntaxes/02_Extra/FSharp
@@ -89,7 +89,7 @@
 	path = assets/themes/sublime-snazzy
 	url = https://github.com/greggb/sublime-snazzy
 [submodule "assets/syntaxes/Assembly (ARM)"]
-	path = assets/syntaxes/02_Extra/Assembly (ARM)
+	path = assets/syntaxes/02_Extra/Assembly_(ARM)
 	url = https://github.com/tvi/Sublime-ARM-Assembly
 [submodule "assets/syntaxes/protobuf-syntax-highlighting"]
 	path = assets/syntaxes/02_Extra/Protobuf
@@ -108,7 +108,7 @@
 	path = assets/syntaxes/02_Extra/Fish
 	url = https://github.com/Phidica/sublime-fish.git
 [submodule "assets/syntaxes/Org mode"]
-	path = assets/syntaxes/02_Extra/Org mode
+	path = assets/syntaxes/02_Extra/Org_mode
 	url = https://github.com/jezcope/Org.tmbundle.git
 [submodule "assets/syntaxes/DotENV"]
 	path = assets/syntaxes/02_Extra/DotENV
@@ -142,7 +142,7 @@
 	path = assets/themes/dracula-sublime
 	url = https://github.com/dracula/sublime.git
 [submodule "assets/syntaxes/HTML (Twig)"]
-	path = assets/syntaxes/02_Extra/HTML (Twig)
+	path = assets/syntaxes/02_Extra/HTML_(Twig)
 	url = https://github.com/Anomareh/PHP-Twig.tmbundle.git
 [submodule "assets/themes/Nord-sublime"]
 	path = assets/themes/Nord-sublime
