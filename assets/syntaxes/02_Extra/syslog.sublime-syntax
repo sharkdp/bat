@@ -31,22 +31,24 @@ contexts:
   structured-data:
     - match: '\['
       scope: punctuation.section.mapping.begin.syslog
-      push:
-        - match: \]
-          scope: punctuation.section.mapping.end.syslog
-          pop: true
-        - match: \w+
-          scope: variable.parameter.syslog
-        - match: =
-          scope: keyword.operator.assignment.syslog
-          push:
-            - match: '[^\s\]]+'
-              scope: constant.other.syslog
-              pop: true
-            - match: (?=\])
-              pop: true
+      push: structured-data-contents
     - match: (?=\S)
       set: text
+  structured-data-contents:
+    - match: \]
+      scope: punctuation.section.mapping.end.syslog
+      pop: true
+    - match: \w+
+      scope: variable.parameter.syslog
+    - match: =
+      scope: keyword.operator.assignment.syslog
+      push: structured-data-assignment
+  structured-data-assignment:
+    - match: '[^\s\]]+'
+      scope: constant.other.syslog
+      pop: true
+    - match: (?=\])
+      pop: true
   text:
     - match: $
       pop: true

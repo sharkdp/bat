@@ -14,3 +14,4 @@ Aug 11 13:36:34 192.168.220.5 nginx: 2021/08/11 13:36:34 [debug] 2031#2031: epol
 Aug 11 21:31:08 ::1 nginx: 2021/08/11 21:31:08 [debug] 760831#760831: epoll add event: fd:6 op:1 ev:10000001
 Aug 11 21:40:31 hostname-here scop hello
 Aug 16 21:38:21 hostname-here systemd[1]: Finished Cleanup of Temporary Directories.
+2025-02-08 20:52:11.039 - setfont: ERROR kdfontop.c:183 put_font_kdfontop: Unable to load such font with such kernel version
