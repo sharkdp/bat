@@ -1,0 +1,113 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: Separated Values
+file_extensions:
+  - csv
+scope: text.csv
+variables:
+  field_separator_chars: ',;\t|'
+  field_separator: (?:[{{field_separator_chars}}])
+  record_separator: (?:$\n?)
+contexts:
+  main:
+    - meta_include_prototype: false
+    - include: three_field_separators
+    - include: single_separator_type_on_line
+    - match: '^'
+      push: unknown-separated-main
+
+  three_field_separators:
+    - match: ^(?=(?:[^,]*,){3})
+      set: scope:text.csv.comma
+    - match: ^(?=(?:[^;]*;){3})
+      set: scope:text.csv.semi-colon
+    - match: ^(?=(?:[^\t]*\t){3})
+      set: scope:text.csv.tab
+    - match: ^(?=(?:[^|]*\|){3})
+      set: scope:text.csv.pipe
+
+  single_separator_type_on_line:
+    - match: ^(?=[^{{field_separator_chars}}]*,[^;\t|]*$)
+      set: scope:text.csv.comma
+    - match: ^(?=[^{{field_separator_chars}}]*;[^,\t|]*$)
+      set: scope:text.csv.semi-colon
+    - match: ^(?=[^{{field_separator_chars}}]*\t[^,;|]*$)
+      set: scope:text.csv.tab
+    - match: ^(?=[^{{field_separator_chars}}]*\|[^,;\t]*$)
+      set: scope:text.csv.pipe
+
+  unknown-separated-main:
+    - include: record_separator
+    - match: ''
+      push:
+        - field_or_record_separator
+        - field5
+        - field_or_record_separator
+        - field4
+        - field_or_record_separator
+        - field3
+        - field_or_record_separator
+        - field2
+        - field_or_record_separator
+        - field1
+
+  record_separator_pop:
+    - match: (?={{record_separator}})
+      pop: true
+
+  record_separator:
+    - meta_include_prototype: false
+    - match: '{{record_separator}}'
+      scope: punctuation.terminator.record.csv
+
+  field_or_record_separator:
+    - meta_include_prototype: false
+    - include: record_separator_pop
+    - match: '{{field_separator}}'
+      scope: punctuation.separator.sequence.csv
+      pop: true
+
+  field_contents:
+    - match: '"'
+      scope: punctuation.definition.string.begin.csv
+      push: double_quoted_string
+
+    - include: record_separator_pop
+    - match: (?={{field_separator}})
+      pop: true
+
+  double_quoted_string:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.csv
+    - match: '""'
+      scope: constant.character.escape.csv
+    - match: '"'
+      scope: punctuation.definition.string.end.csv
+      pop: true
+
+  field1:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-1.csv variable.parameter
+        - include: field_contents
+  field2:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-2.csv support.function
+        - include: field_contents
+  field3:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-3.csv constant.numeric
+        - include: field_contents
+  field4:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-4.csv keyword.operator
+        - include: field_contents
+  field5:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-5.csv string.unquoted
+        - include: field_contents
