@@ -26,7 +26,7 @@ in the `.sublime-syntax` format.
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
    `bat` binary.
 
-5. Use `bat --list-languages` to check if the new languages are available.
+5. Use `bat --list-languages` to check if the new languages are available. You may want to do something like `export PATH="`pwd`/target/debug:$PATH"` to ensure the locally compiled version is the one being used.
 
 6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
 
