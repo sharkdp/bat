@@ -15,6 +15,7 @@
 - Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
 - Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
 - Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
+- Make --map-syntax target case insensitive to match --language, see #3206 (@keith-hall)
 
 ## Other
 
