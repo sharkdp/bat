@@ -19,6 +19,7 @@
 - Add syntax mapping for `nix`'s '`flake.lock` lockfiles #3196 (@odilf)
 - Improvements to CSV/TSV highlighting, with autodetection of delimiter and support for TSV files, see #3186 (@keith-
 - Improve (Sys)log error highlighting, see #3205 (@keith-hall)
+- Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
 
 ## Themes
 
