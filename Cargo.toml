@@ -32,7 +32,7 @@ minimal-application = [
     "regex-onig",
     "wild",
 ]
-git = ["git2"] # Support indicating git modifications
+git = ["gix"] # Support indicating git modifications
 paging = ["shell-words", "grep-cli"] # Support applying a pager on the output
 lessopen = ["execute"] # Support $LESSOPEN preprocessor
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
@@ -72,10 +72,11 @@ terminal-colorsaurus = "0.4"
 unicode-segmentation = "1.12.0"
 itertools = "0.13.0"
 
-[dependencies.git2]
-version = "0.20"
+[dependencies.gix]
+version = "0.70"
 optional = true
 default-features = false
+features = ["blob-diff"]
 
 [dependencies.syntect]
 version = "5.2.0"
