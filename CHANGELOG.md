@@ -20,6 +20,7 @@
 - Improvements to CSV/TSV highlighting, with autodetection of delimiter and support for TSV files, see #3186 (@keith-
 - Improve (Sys)log error highlighting, see #3205 (@keith-hall)
 - Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
+- Map files with `csproj`, `vbproj`, `props` and `targets` extensions to XML syntax, see #3213 (@keith-hall)
 
 ## Themes
 
