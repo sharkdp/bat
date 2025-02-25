@@ -21,6 +21,7 @@
 - Improve (Sys)log error highlighting, see #3205 (@keith-hall)
 - Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
 - Map files with `csproj`, `vbproj`, `props` and `targets` extensions to XML syntax, see #3213 (@keith-hall)
+- Add debsources syntax to highlight `/etc/apt/sources.list` files, see #3215 (@keith-hall)
 
 ## Themes
 
