@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+set -u
+# shellcheck disable=SC3040
+(set -o pipefail 2> /dev/null) && set -o pipefail
+
+cpath="$1"
+# cpath without suffix
+path="$(echo $cpath | sed 's/\.[^.]*$//')"
+
+( bsdcat "$path" || gunzip -c "$path" ) | batcat --file-name "$path"
