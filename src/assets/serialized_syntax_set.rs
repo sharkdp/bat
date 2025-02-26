@@ -19,7 +19,7 @@ impl SerializedSyntaxSet {
     pub fn deserialize(&self) -> Result<SyntaxSet> {
         match self {
             SerializedSyntaxSet::FromBinary(data) => Ok(from_binary(data, COMPRESS_SYNTAXES)),
-            SerializedSyntaxSet::FromFile(ref path) => {
+            SerializedSyntaxSet::FromFile( path) => {
                 asset_from_cache(path, "syntax set", COMPRESS_SYNTAXES)
             }
         }
