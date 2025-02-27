@@ -162,7 +162,7 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
         };
 
         for lang in languages {
-            write!(result, "{:width$}{}", lang.name, separator, width = longest).ok();
+            write!(result, "{:width$}{separator}", lang.name, width = longest).ok();
 
             // Number of characters on this line so far, wrap before `desired_width`
             let mut num_chars = 0;
@@ -173,7 +173,7 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
                 let new_chars = word.len() + comma_separator.len();
                 if num_chars + new_chars >= desired_width {
                     num_chars = 0;
-                    write!(result, "\n{:width$}{}", "", separator, width = longest).ok();
+                    write!(result, "\n{:width$}{separator}", "", width = longest).ok();
                 }
 
                 num_chars += new_chars;
@@ -224,9 +224,8 @@ pub fn list_themes(
         if config.colored_output {
             writeln!(
                 writer,
-                "Theme: {}{}\n",
+                "Theme: {}{default_theme_info}\n",
                 Style::new().bold().paint(theme.to_string()),
-                default_theme_info
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
@@ -363,7 +362,7 @@ fn run() -> Result<bool> {
             "fish" => println!("{}", completions::FISH_COMPLETION),
             "ps1" => println!("{}", completions::PS1_COMPLETION),
             "zsh" => println!("{}", completions::ZSH_COMPLETION),
-            _ => unreachable!("No completion for shell '{}' available.", shell),
+            _ => unreachable!("No completion for shell '{shell}' available."),
         }
         return Ok(true);
     }

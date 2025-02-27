@@ -75,7 +75,7 @@ fn create_sample_directory() -> Result<TempDir, git2::Error> {
 
     // Copy over `sample.rs`
     let sample_path = temp_dir.path().join("sample.rs");
-    println!("{:?}", &sample_path);
+    println!("{sample_path:?}");
     fs::copy("tests/snapshots/sample.rs", &sample_path).expect("successful copy");
 
     // Commit
