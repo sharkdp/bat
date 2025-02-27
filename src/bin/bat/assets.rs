@@ -50,7 +50,7 @@ fn clear_asset(path: PathBuf, description: &str) {
             println!("skipped (not present)");
         }
         Err(err) => {
-            println!("could not remove the cache file {:?}: {}", &path, err);
+            println!("could not remove the cache file {path:?}: {err}");
         }
         Ok(_) => println!("okay"),
     }

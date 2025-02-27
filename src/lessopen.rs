@@ -39,7 +39,7 @@ impl LessOpenPreprocessor {
         // Note that $LESSCLOSE has no such requirement
         if lessopen.match_indices("%s").count() != 1 {
             let error_msg = "LESSOPEN ignored: must contain exactly one %s";
-            bat_warning!("{}", error_msg);
+            bat_warning!("{error_msg}");
             return Err(error_msg.into());
         }
 
@@ -110,7 +110,7 @@ impl LessOpenPreprocessor {
                 if self.preprocess_stdin {
                     if let Some(stdout) = stdout_identifier {
                         let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
-                            .map_err(|e| format!("Stdin: Error identifying file: {}", e))?;
+                            .map_err(|e| format!("Stdin: Error identifying file: {e}"))?;
                         if stdout.surely_conflicts_with(&input_identifier) {
                             return Err("IO circle detected. The input from stdin is also an output. Aborting to avoid infinite loop.".into());
                         }

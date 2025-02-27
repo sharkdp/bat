@@ -191,11 +191,11 @@ impl HighlightingAssets {
             Some(theme) => theme,
             None => {
                 if theme == "ansi-light" || theme == "ansi-dark" {
-                    bat_warning!("Theme '{}' is deprecated, using 'ansi' instead.", theme);
+                    bat_warning!("Theme '{theme}' is deprecated, using 'ansi' instead.");
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{}', using default.", theme)
+                    bat_warning!("Unknown theme '{theme}', using default.")
                 }
                 self.get_theme_set()
                     .get(
@@ -354,8 +354,7 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
 ) -> Result<T> {
     let contents = fs::read(path).map_err(|_| {
         format!(
-            "Could not load cached {} '{}'",
-            description,
+            "Could not load cached {description} '{}'",
             path.to_string_lossy()
         )
     })?;
