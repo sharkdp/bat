@@ -60,14 +60,13 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
         Error::SerdeYamlError(_) => {
             writeln!(
                 output,
-                "{}: Error while parsing metadata.yaml file: {}",
+                "{}: Error while parsing metadata.yaml file: {error}",
                 Red.paint("[bat error]"),
-                error
             )
             .ok();
         }
         _ => {
-            writeln!(output, "{}: {}", Red.paint("[bat error]"), error).ok();
+            writeln!(output, "{}: {error}", Red.paint("[bat error]")).ok();
         }
     };
 }
