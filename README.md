@@ -21,16 +21,7 @@
 
 ### Sponsors
 
-A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
-<a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=bat&utm_source=github">
-  <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
-  <br>
-  <strong>Your app, enterprise-ready.</strong>
-  <br>
-  <sub>Start selling to enterprise customers with just a few lines of code.</sub>
-  <br>
-  <sup>Add Single Sign-On (and more) in minutes instead of months.</sup>
-</a>
+A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsor</a>:<br>
 
 <a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=bat_20231001">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
