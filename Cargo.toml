@@ -9,8 +9,8 @@ repository = "https://github.com/sharkdp/bat"
 version = "0.25.0"
 exclude = ["assets/syntaxes/*", "assets/themes/*"]
 build = "build/main.rs"
-edition = '2021'
-rust-version = "1.74"
+edition = '2024'
+rust-version = "1.85.0"
 
 [features]
 default = ["application"]
