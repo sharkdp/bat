@@ -217,14 +217,14 @@ impl<'a> Input<'a> {
                 metadata: self.metadata,
                 reader: {
                     let mut file = File::open(&path)
-                        .map_err(|e| format!("'{}': {}", path.to_string_lossy(), e))?;
+                        .map_err(|e| format!("'{}': {e}", path.to_string_lossy()))?;
                     if file.metadata()?.is_dir() {
                         return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
                     }
 
                     if let Some(stdout) = stdout_identifier {
                         let input_identifier = Identifier::try_from(file).map_err(|e| {
-                            format!("{}: Error identifying file: {}", path.to_string_lossy(), e)
+                            format!("{}: Error identifying file: {e}", path.to_string_lossy())
                         })?;
                         if stdout.surely_conflicts_with(&input_identifier) {
                             return Err(format!(

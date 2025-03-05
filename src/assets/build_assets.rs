@@ -47,9 +47,8 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result
         let res = theme_set.add_from_folder(&theme_dir);
         if let Err(err) = res {
             println!(
-                "Failed to load one or more themes from '{}' (reason: '{}')",
+                "Failed to load one or more themes from '{}' (reason: '{err}')",
                 theme_dir.to_string_lossy(),
-                err,
             );
         }
     } else {
@@ -162,15 +161,10 @@ fn asset_to_cache<T: serde::Serialize>(
     description: &str,
     compressed: bool,
 ) -> Result<()> {
-    print!("Writing {} to {} ... ", description, path.to_string_lossy());
+    print!("Writing {description} to {} ... ", path.to_string_lossy());
     let contents = asset_to_contents(asset, description, compressed)?;
-    std::fs::write(path, &contents[..]).map_err(|_| {
-        format!(
-            "Could not save {} to {}",
-            description,
-            path.to_string_lossy()
-        )
-    })?;
+    std::fs::write(path, &contents[..])
+        .map_err(|_| format!("Could not save {description} to {}", path.to_string_lossy()))?;
     println!("okay");
     Ok(())
 }
