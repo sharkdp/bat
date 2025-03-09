@@ -23,14 +23,12 @@
 
 A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsor</a>:<br>
 
-<a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=bat_20231001">
+<a href="https://www.warp.dev/bat">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
   <strong>Warp, the intelligent terminal</strong>
   <br>
-  <sub>Run commands like a power user with AI and your dev team’s</sub>
-  <br>
-  <sup>knowledge in one fast, intuitive terminal. For MacOS or Linux.</sup>
+  <sub>Available on MacOS, Linux, Windows</sub>
 </a>
 
 ### Syntax highlighting
