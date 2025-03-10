@@ -108,7 +108,7 @@ impl Decoration for LineChangesDecoration {
         printer: &InteractivePrinter,
     ) -> DecorationText {
         if !continuation {
-            if let Some(ref changes) = printer.line_changes {
+            if let Some( changes) = printer.line_changes {
                 return match changes.get(&(line_number as u32)) {
                     Some(&LineChange::Added) => self.cached_added.clone(),
                     Some(&LineChange::RemovedAbove) => self.cached_removed_above.clone(),
