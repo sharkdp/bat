@@ -19,7 +19,7 @@ fn get_mocked_pagers_dir() -> PathBuf {
 pub fn from(base: &str) -> String {
     let mut cmd_and_args = shell_words::split(base).unwrap();
     let suffix = if cfg!(windows) { ".bat" } else { "" };
-    let mut out_cmd = format!("{}{}", cmd_and_args.first().unwrap(), suffix);
+    let mut out_cmd = format!("{}{suffix}", cmd_and_args.first().unwrap());
 
     if (cmd_and_args.len() > 1) {
         out_cmd.push(' ');

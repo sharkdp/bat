@@ -88,9 +88,8 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 
     fs::write(&config_file, default_config).map_err(|e| {
         format!(
-            "Failed to create config file at '{}': {}",
+            "Failed to create config file at '{}': {e}",
             config_file.to_string_lossy(),
-            e
         )
     })?;
 
