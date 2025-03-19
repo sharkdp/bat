@@ -10,6 +10,7 @@ use crate::paging::PagingMode;
 #[cfg(feature = "paging")]
 use crate::wrapping::WrappingMode;
 
+use crate::config::Config;
 #[cfg(feature = "paging")]
 #[derive(Debug, PartialEq)]
 enum SingleScreenAction {
@@ -29,13 +30,19 @@ impl OutputType {
     pub fn from_mode(
         paging_mode: PagingMode,
         wrapping_mode: WrappingMode,
-        pager: Option<&str>,
+        config: &Config,
+        panel_width: usize,
     ) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match paging_mode {
-            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager)?,
+            Always => OutputType::try_pager(
+                SingleScreenAction::Nothing,
+                wrapping_mode,
+                config,
+                panel_width,
+            )?,
             QuitIfOneScreen => {
-                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager)?
+                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, config, panel_width)?
             }
             _ => OutputType::stdout(),
         })
@@ -46,11 +53,13 @@ impl OutputType {
     fn try_pager(
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
-        pager_from_config: Option<&str>,
+        config: &Config,
+        panel_width: usize,
     ) -> Result<Self> {
         use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
 
+        let pager_from_config = config.pager;
         let pager_opt =
             pager::get_pager(pager_from_config).map_err(|_| "Could not parse pager command.")?;
 
@@ -81,6 +90,11 @@ impl OutputType {
             // We only do this for PAGER (as it is not specific to 'bat'), not for BAT_PAGER
             // or bats '--pager' command line option.
             let replace_arguments_to_less = pager.source == PagerSource::EnvVarPager;
+            let less_version = match retrieve_less_version(&pager.bin) {
+                None => 1,
+                Some(LessVersion::Less(version)) => version,
+                _ => 0,
+            };
 
             if args.is_empty() || replace_arguments_to_less {
                 p.arg("-R"); // Short version of --RAW-CONTROL-CHARS for maximum compatibility
@@ -99,21 +113,56 @@ impl OutputType {
                 //
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
-                match retrieve_less_version(&pager.bin) {
-                    None => {
-                        p.arg("--no-init");
-                    }
-                    Some(LessVersion::Less(version))
-                        if (version < 530 || (cfg!(windows) && version < 558)) =>
-                    {
-                        p.arg("--no-init");
-                    }
-                    _ => {}
+                if less_version == 1
+                    || (less_version > 1
+                        && (less_version < 530 || (cfg!(windows) && less_version < 558)))
+                {
+                    p.arg("--no-init");
                 }
             } else {
                 p.args(args);
             }
+
             p.env("LESSCHARSET", "UTF-8");
+
+            if less_version >= 600 {
+                let mut row_header = 0;
+                let mut col_header = 0;
+                let have_grid = config.style_components.grid();
+                let have_numbers = config.style_components.numbers();
+                let have_header_filename = config.style_components.header_filename();
+                let have_header_filesize = config.style_components.header_filesize();
+
+                if have_grid {
+                    // for top line
+                    row_header += 1;
+                }
+
+                if have_header_filename && have_header_filesize {
+                    // 2 headers
+                    row_header += 2;
+                    if have_grid {
+                        // for bottom line
+                        row_header += 1;
+                    }
+                } else if have_header_filesize || have_header_filename {
+                    row_header += 1;
+                    if have_grid {
+                        // for bottom line
+                        row_header += 1;
+                    }
+                }
+
+                if have_numbers && panel_width > 0 {
+                    col_header += panel_width;
+                }
+
+                if row_header > 0 || col_header > 0 {
+                    let header_args = format!("{row_header},{col_header}");
+                    p.args(vec!["--header", &header_args]);
+                    p.arg("--no-search-headers");
+                }
+            }
 
             #[cfg(feature = "lessopen")]
             // Ensures that 'less' does not preprocess input again if '$LESSOPEN' is set.
