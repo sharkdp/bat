@@ -204,6 +204,10 @@ pub fn list_themes(
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
+    #[cfg(feature = "paging")]
+    {
+        config.paging_mode = bat::PagingMode::Never; // don't page our very short preview file
+    }
 
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
