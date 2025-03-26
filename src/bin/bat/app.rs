@@ -124,7 +124,10 @@ impl App {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
                 if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
-                } else if inputs.iter().any(Input::is_stdin) {
+                } else if inputs.iter().any(Input::is_stdin)
+                    // ignore stdin when --list-themes is used because in that case no input will be read anyways
+                    && !self.matches.get_flag("list-themes")
+                {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.

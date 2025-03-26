@@ -10,6 +10,7 @@ use crate::{
     error::Result,
     input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
+    output::OutputHandle,
     style::StyleComponent,
     StripAnsiMode, SyntaxMapping, WrappingMode,
 };
@@ -325,7 +326,10 @@ impl<'a> PrettyPrinter<'a> {
 
         // If writer is provided, pass it to the controller, otherwise pass None
         if let Some(mut w) = writer {
-            controller.run(inputs.into_iter().map(|i| i.into()).collect(), Some(&mut w))
+            controller.run(
+                inputs.into_iter().map(|i| i.into()).collect(),
+                Some(OutputHandle::FmtWrite(&mut w)),
+            )
         } else {
             controller.run(inputs.into_iter().map(|i| i.into()).collect(), None)
         }

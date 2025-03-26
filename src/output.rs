@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io::{self, Write};
 #[cfg(feature = "paging")]
 use std::process::Child;
@@ -159,6 +160,20 @@ impl Drop for OutputType {
     fn drop(&mut self) {
         if let OutputType::Pager(ref mut command) = *self {
             let _ = command.wait();
+        }
+    }
+}
+
+pub enum OutputHandle<'a> {
+    IoWrite(&'a mut dyn io::Write),
+    FmtWrite(&'a mut dyn fmt::Write),
+}
+
+impl OutputHandle<'_> {
+    pub fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
+        match self {
+            Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
+            Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
         }
     }
 }
