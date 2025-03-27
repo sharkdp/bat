@@ -54,7 +54,7 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
     use nu_ansi_term::Color::Red;
 
     match error {
-        Error::Io(ref io_error) if io_error.kind() == ::std::io::ErrorKind::BrokenPipe => {
+        Error::Io( io_error) if io_error.kind() == ::std::io::ErrorKind::BrokenPipe => {
             ::std::process::exit(0);
         }
         Error::SerdeYamlError(_) => {
