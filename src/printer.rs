@@ -1,5 +1,3 @@
-use std::fmt;
-use std::io;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -29,6 +27,7 @@ use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
+use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
@@ -67,20 +66,6 @@ const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting:
     },
     font_style: FontStyle::empty(),
 };
-
-pub enum OutputHandle<'a> {
-    IoWrite(&'a mut dyn io::Write),
-    FmtWrite(&'a mut dyn fmt::Write),
-}
-
-impl OutputHandle<'_> {
-    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
-        match self {
-            Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-            Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-        }
-    }
-}
 
 pub(crate) trait Printer {
     fn print_header(

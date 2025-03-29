@@ -11,10 +11,10 @@ use crate::lessopen::LessOpenPreprocessor;
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
 use crate::line_range::{LineRanges, RangeCheckResult};
-use crate::output::OutputType;
+use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
-use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
+use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 
 use clircle::{Clircle, Identifier};
 
@@ -35,18 +35,14 @@ impl Controller<'_> {
         }
     }
 
-    pub fn run(
-        &self,
-        inputs: Vec<Input>,
-        output_buffer: Option<&mut dyn std::fmt::Write>,
-    ) -> Result<bool> {
-        self.run_with_error_handler(inputs, output_buffer, default_error_handler)
+    pub fn run(&self, inputs: Vec<Input>, output_handle: Option<OutputHandle<'_>>) -> Result<bool> {
+        self.run_with_error_handler(inputs, output_handle, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
-        output_buffer: Option<&mut dyn std::fmt::Write>,
+        output_handle: Option<OutputHandle<'_>>,
         mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -88,8 +84,9 @@ impl Controller<'_> {
             clircle::Identifier::stdout()
         };
 
-        let mut writer = match output_buffer {
-            Some(buf) => OutputHandle::FmtWrite(buf),
+        let mut writer = match output_handle {
+            Some(OutputHandle::FmtWrite(w)) => OutputHandle::FmtWrite(w),
+            Some(OutputHandle::IoWrite(w)) => OutputHandle::IoWrite(w),
             None => OutputHandle::IoWrite(output_type.handle()?),
         };
         let mut no_errors: bool = true;
