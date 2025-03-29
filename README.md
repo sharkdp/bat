@@ -240,6 +240,13 @@ alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 ```
 
+For `fish`, you can use abbreviations:
+
+```fish
+abbr -a --position anywhere -- --help '--help | bat -plhelp'
+abbr -a --position anywhere -- -h '-h | bat -plhelp'
+```
+
 This way, you can keep on using `cp --help`, but get colorized help pages.
 
 Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`).
