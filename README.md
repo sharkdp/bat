@@ -691,7 +691,7 @@ theme based on the OS theme. The following snippet uses the `default` theme when
 and the `GitHub` theme when in the _light mode_.
 
 ```bash
-alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
+alias cat="bat --theme auto:system --theme-dark default --theme-light GitHub"
 ```
 
 
