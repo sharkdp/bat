@@ -6,10 +6,6 @@ updates:
     interval: monthly
     time: "04:00"
     timezone: Europe/Berlin
-  ignore:
-  - dependency-name: git2
-    versions:
-    - 0.13.17
 - package-ecosystem: gitsubmodule
   directory: "/"
   schedule:
