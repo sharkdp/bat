@@ -405,6 +405,10 @@ impl<'a> InteractivePrinter<'a> {
         content: &str,
     ) -> Result<()> {
         let content_width = self.config.term_width - self.get_header_component_indent_length();
+        if content.chars().count() <= content_width {
+            return self.print_header_component_with_indent(handle, content);
+        }
+
         let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
         while content_graphemes.len() > content_width {
             let (content_line, remaining) = content_graphemes.split_at(content_width);
