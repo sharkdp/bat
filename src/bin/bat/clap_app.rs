@@ -16,7 +16,7 @@ static VERSION: Lazy<String> = Lazy::new(|| {
     if git_version.is_empty() {
         crate_version!().to_string()
     } else {
-        format!("{} ({})", crate_version!(), git_version)
+        format!("{} ({git_version})", crate_version!())
     }
 });
 
