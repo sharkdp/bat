@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Add build for windows/ARM64 platform. #3190 (@alcroito)
 
 ## Bugfixes
 
