@@ -21,8 +21,9 @@
 
 ### Sponsors
 
-A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsor</a>:<br>
+A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
 
+<ul><li>
 <a href="https://www.warp.dev/bat">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
@@ -30,6 +31,13 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsor</a>:
   <br>
   <sub>Available on MacOS, Linux, Windows</sub>
 </a>
+</li><hr /><li>
+<a href="https://graphite.dev/?utm_source=github&utm_medium=repo&utm_campaign=bat">
+  <img src="doc/sponsors/graphite-logo.jpeg" width="200" alt="Graphite">
+  <br>
+  <strong>Graphite is the AI developer productivity platform helping teams on GitHub ship higher quality software, faster</strong>
+</a>
+</li></ul>
 
 ### Syntax highlighting
 
