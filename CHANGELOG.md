@@ -10,6 +10,7 @@
 - Prevent `--list-themes` from outputting default theme info to stdout when it is piped, see #3189 (@einfachIrgendwer0815)
 - Rename some submodules to fix Dependabot submodule updates, see issue #3198 and PR #3201 (@victor-gp)
 - Make highlight tests fail when new syntaxes don't have fixtures PR #3255 (@dan-hipschman)
+- Fix bash/zsh file highlighting, see PR #3262 (@AdamGaskins)
 
 ## Other
 
