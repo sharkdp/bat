@@ -180,8 +180,8 @@ This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR 
 .HP
 \fB\-\-theme\-light\fR <theme>
 .IP
-Sets the theme name for syntax highlighting used when the terminal uses a dark background.
-To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+Sets the theme name for syntax highlighting used when the terminal uses a light background.
+To set a default theme, add the \fB\-\-theme-light="..."\fP option to the configuration file or
 export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
 This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBlight\fR.
 .HP
