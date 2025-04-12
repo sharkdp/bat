@@ -10,6 +10,7 @@ version = "0.25.0"
 exclude = ["assets/syntaxes/*", "assets/themes/*"]
 build = "build/main.rs"
 edition = '2021'
+# You are free to bump MSRV as soon as a reason for bumping emerges.
 rust-version = "1.74"
 
 [features]
