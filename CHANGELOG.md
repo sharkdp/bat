@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+* Add a `zbat` wrapper script to automatically decompress files before display, see PR #3177 (@anarcat)
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 
