@@ -1,5 +1,3 @@
-use std::fmt;
-use std::io;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -17,6 +15,7 @@ use content_inspector::ContentType;
 
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
+use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
@@ -29,6 +28,7 @@ use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::RangeCheckResult;
+use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
@@ -67,20 +67,6 @@ const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting:
     },
     font_style: FontStyle::empty(),
 };
-
-pub enum OutputHandle<'a> {
-    IoWrite(&'a mut dyn io::Write),
-    FmtWrite(&'a mut dyn fmt::Write),
-}
-
-impl OutputHandle<'_> {
-    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
-        match self {
-            Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-            Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-        }
-    }
-}
 
 pub(crate) trait Printer {
     fn print_header(
@@ -403,14 +389,18 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
-        let mut content = content;
         let content_width = self.config.term_width - self.get_header_component_indent_length();
-        while content.len() > content_width {
-            let (content_line, remaining) = content.split_at(content_width);
-            self.print_header_component_with_indent(handle, content_line)?;
-            content = remaining;
+        if content.chars().count() <= content_width {
+            return self.print_header_component_with_indent(handle, content);
         }
-        self.print_header_component_with_indent(handle, content)
+
+        let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
+        while content_graphemes.len() > content_width {
+            let (content_line, remaining) = content_graphemes.split_at(content_width);
+            self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
+            content_graphemes = remaining.iter().cloned().collect();
+        }
+        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
 
     fn highlight_regions_for_line<'b>(

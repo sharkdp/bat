@@ -16,6 +16,7 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
+use bat::output::{OutputHandle, OutputType};
 use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
@@ -205,8 +206,9 @@ pub fn list_themes(
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
 
-    let stdout = io::stdout();
-    let mut stdout = stdout.lock();
+    let mut output_type =
+        OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
+    let mut writer = output_type.handle()?;
 
     let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
     for theme in assets.themes() {
@@ -221,26 +223,29 @@ pub fn list_themes(
         };
         if config.colored_output {
             writeln!(
-                stdout,
+                writer,
                 "Theme: {}{}\n",
                 Style::new().bold().paint(theme.to_string()),
                 default_theme_info
             )?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![theme_preview_file()], None)
+                .run(
+                    vec![theme_preview_file()],
+                    Some(OutputHandle::IoWrite(&mut writer)),
+                )
                 .ok();
-            writeln!(stdout)?;
+            writeln!(writer)?;
         } else if config.loop_through {
-            writeln!(stdout, "{theme}")?;
+            writeln!(writer, "{theme}")?;
         } else {
-            writeln!(stdout, "{theme}{default_theme_info}")?;
+            writeln!(writer, "{theme}{default_theme_info}")?;
         }
     }
 
     if config.colored_output {
         writeln!(
-            stdout,
+            writer,
             "Further themes can be installed to '{}', \
             and are added to the cache with `bat cache --build`. \
             For more information, see:\n\n  \

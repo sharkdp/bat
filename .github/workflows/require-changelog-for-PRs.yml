@@ -30,4 +30,4 @@ jobs:
           echo "Added lines in CHANGELOG.md:"
           echo "$ADDED"
           echo "Grepping for PR info (see CONTRIBUTING.md):"
-          grep "#${PR_NUMBER}\\b.*@${PR_SUBMITTER}\\b" <<< "$ADDED"
+          grep "#${PR_NUMBER}\\b.*${PR_SUBMITTER}\\b" <<< "$ADDED"

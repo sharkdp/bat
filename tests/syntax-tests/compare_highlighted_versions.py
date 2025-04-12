@@ -12,13 +12,15 @@ def compare_highlighted_versions(root_old, root_new):
     print(" -", root_old)
     print(" -", root_new)
     has_changes = False
+    # Used to check for newly added files that don't have a test
+    unknown_files = {strip_root(p) for p in glob.glob(path.join(root_new, "*", "*"))}
+
     for path_old in glob.glob(path.join(root_old, "*", "*")):
-        filename = path.basename(path_old)
-        dirname = path.basename(path.dirname(path_old))
+        rel_path = strip_root(path_old)
+        unknown_files.discard(rel_path)
+        path_new = path.join(root_new, rel_path)
 
-        path_new = path.join(root_new, dirname, filename)
-
-        print("\n========== {}/{}".format(dirname, filename))
+        print("\n========== {}".format(rel_path))
 
         with open(path_old) as file_old:
             lines_old = file_old.readlines()
@@ -39,9 +41,19 @@ def compare_highlighted_versions(root_old, root_new):
             has_changes = True
         else:
             print("No changes")
-    print()
 
+    for f in unknown_files:
+        print("\n========== {}: No fixture for this language, run update.sh".format(f))
+        has_changes = True
+
+    print()
     return has_changes
+
+
+def strip_root(p: str) -> str:
+    filename = path.basename(p)
+    dirname = path.basename(path.dirname(p))
+    return path.join(dirname, filename)
 
 
 if __name__ == "__main__":
