@@ -28,6 +28,7 @@
 - Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
 - Map files with `csproj`, `vbproj`, `props` and `targets` extensions to XML syntax, see #3213 (@keith-hall)
 - Add debsources syntax to highlight `/etc/apt/sources.list` files, see #3215 (@keith-hall)
+- Add syntax definition and test file for GDScript highlighting, see #3236 (@chetanjangir0)
 - Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
 
 ## Themes
