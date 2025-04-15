@@ -177,6 +177,46 @@ fn line_range_2_3() {
 }
 
 #[test]
+fn line_range_up_to_2_from_back() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-2")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\n");
+}
+
+#[test]
+fn line_range_up_to_2_from_back_single_line_is_empty() {
+    bat()
+        .arg("single-line.txt")
+        .arg("--line-range=:-2")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn line_range_from_back_last_two() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=-2:")
+        .assert()
+        .success()
+        .stdout("line 3\nline 4\n");
+}
+
+#[test]
+fn line_range_from_back_last_two_single_line() {
+    bat()
+        .arg("single-line.txt")
+        .arg("--line-range=-2:")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
 fn line_range_first_two() {
     bat()
         .arg("multiline.txt")

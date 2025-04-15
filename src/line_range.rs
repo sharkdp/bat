@@ -1,16 +1,26 @@
 use crate::error::*;
+use itertools::{Itertools, MinMaxResult};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct LineRange {
-    lower: usize,
-    upper: usize,
+    lower: RangeBound,
+    upper: RangeBound,
+}
+
+/// Defines a boundary for a range
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(crate) enum RangeBound {
+    // An absolute line number marking the boundary of a range
+    Absolute(usize),
+    // A relative (implicitly negative) offset from the end of the file as a boundary
+    OffsetFromEnd(usize),
 }
 
 impl Default for LineRange {
     fn default() -> LineRange {
         LineRange {
-            lower: usize::MIN,
-            upper: usize::MAX,
+            lower: RangeBound::Absolute(usize::MIN),
+            upper: RangeBound::Absolute(usize::MAX),
         }
     }
 }
@@ -18,8 +28,8 @@ impl Default for LineRange {
 impl LineRange {
     pub fn new(from: usize, to: usize) -> Self {
         LineRange {
-            lower: from,
-            upper: to,
+            lower: RangeBound::Absolute(from),
+            upper: RangeBound::Absolute(to),
         }
     }
 
@@ -29,31 +39,47 @@ impl LineRange {
 
     fn parse_range(range_raw: &str) -> Result<LineRange> {
         let mut new_range = LineRange::default();
+        let mut raw_range_iter = range_raw.bytes();
+        let first_byte = raw_range_iter.next().ok_or("Empty line range")?;
 
-        if range_raw.bytes().next().ok_or("Empty line range")? == b':' {
-            new_range.upper = range_raw[1..].parse()?;
+        if first_byte == b':' {
+            if raw_range_iter.next() == Some(b'-') {
+                // E.g. ':-3'
+                let value = range_raw[2..].parse()?;
+                new_range.upper = RangeBound::OffsetFromEnd(value);
+            } else {
+                let value = range_raw[1..].parse()?;
+                new_range.upper = RangeBound::Absolute(value);
+            }
             return Ok(new_range);
         } else if range_raw.bytes().last().ok_or("Empty line range")? == b':' {
-            new_range.lower = range_raw[..range_raw.len() - 1].parse()?;
+            if first_byte == b'-' {
+                // E.g. '-3:'
+                let value = range_raw[1..range_raw.len() - 1].parse()?;
+                new_range.lower = RangeBound::OffsetFromEnd(value);
+            } else {
+                let value = range_raw[..range_raw.len() - 1].parse()?;
+                new_range.lower = RangeBound::Absolute(value);
+            }
             return Ok(new_range);
         }
 
         let line_numbers: Vec<&str> = range_raw.split(':').collect();
         match line_numbers.len() {
             1 => {
-                new_range.lower = line_numbers[0].parse()?;
+                new_range.lower = RangeBound::Absolute(line_numbers[0].parse()?);
                 new_range.upper = new_range.lower;
                 Ok(new_range)
             }
             2 => {
-                new_range.lower = line_numbers[0].parse()?;
+                let mut lower_absolute_bound: usize = line_numbers[0].parse()?;
                 let first_byte = line_numbers[1].bytes().next();
 
-                new_range.upper = if first_byte == Some(b'+') {
+                let upper_absolute_bound = if first_byte == Some(b'+') {
                     let more_lines = &line_numbers[1][1..]
                         .parse()
                         .map_err(|_| "Invalid character after +")?;
-                    new_range.lower.saturating_add(*more_lines)
+                    lower_absolute_bound.saturating_add(*more_lines)
                 } else if first_byte == Some(b'-') {
                     // this will prevent values like "-+5" even though "+5" is valid integer
                     if line_numbers[1][1..].bytes().next() == Some(b'+') {
@@ -62,13 +88,14 @@ impl LineRange {
                     let prior_lines = &line_numbers[1][1..]
                         .parse()
                         .map_err(|_| "Invalid character after -")?;
-                    let prev_lower = new_range.lower;
-                    new_range.lower = new_range.lower.saturating_sub(*prior_lines);
+                    let prev_lower = lower_absolute_bound;
+                    lower_absolute_bound = lower_absolute_bound.saturating_sub(*prior_lines);
                     prev_lower
                 } else {
                     line_numbers[1].parse()?
                 };
-
+                new_range.lower = RangeBound::Absolute(lower_absolute_bound);
+                new_range.upper = RangeBound::Absolute(upper_absolute_bound);
                 Ok(new_range)
             }
             _ => Err(
@@ -78,37 +105,107 @@ impl LineRange {
         }
     }
 
-    pub(crate) fn is_inside(&self, line: usize) -> bool {
-        line >= self.lower && line <= self.upper
+    /// Checks if a line number is inside the range.
+    /// For ranges with relative offsets range bounds `max_buffered_line_number` is necessary
+    /// to convert the offset to an absolute value.
+    pub(crate) fn is_inside(
+        &self,
+        line: usize,
+        max_buffered_line_number: MaxBufferedLineNumber,
+    ) -> bool {
+        match (self.lower, self.upper, max_buffered_line_number) {
+            (RangeBound::Absolute(lower), RangeBound::Absolute(upper), _) => {
+                lower <= line && line <= upper
+            }
+            (
+                RangeBound::Absolute(lower),
+                RangeBound::OffsetFromEnd(offset),
+                MaxBufferedLineNumber::Final(last_line_number),
+            ) => lower <= line && line <= last_line_number.saturating_sub(offset),
+            (
+                RangeBound::Absolute(lower),
+                RangeBound::OffsetFromEnd(_),
+                MaxBufferedLineNumber::Tentative(_),
+            ) => {
+                // We don't know the final line number yet, so the assumption is that the line is
+                // still far enough away from the upper end of the range
+                lower <= line
+            }
+            (
+                RangeBound::OffsetFromEnd(offset),
+                RangeBound::Absolute(upper),
+                MaxBufferedLineNumber::Final(last_line_number),
+            ) => last_line_number.saturating_sub(offset) <= line && line <= upper,
+            (
+                RangeBound::OffsetFromEnd(_),
+                RangeBound::Absolute(_),
+                MaxBufferedLineNumber::Tentative(_),
+            ) => {
+                // We don't know the final line number yet, so the assumption is that the line is
+                // still too far away from the having reached the lower end of the range
+                false
+            }
+            (
+                RangeBound::OffsetFromEnd(lower),
+                RangeBound::OffsetFromEnd(upper),
+                MaxBufferedLineNumber::Final(last_line_number),
+            ) => {
+                last_line_number.saturating_sub(lower) <= line
+                    && line <= last_line_number.saturating_sub(upper)
+            }
+            (
+                RangeBound::OffsetFromEnd(_),
+                RangeBound::OffsetFromEnd(_),
+                MaxBufferedLineNumber::Tentative(_),
+            ) => {
+                // We don't know the final line number yet, so the assumption is that we're still
+                // too far away from the having reached the lower end of the range
+                false
+            }
+        }
     }
 }
 
 #[test]
 fn test_parse_full() {
     let range = LineRange::from("40:50").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(RangeBound::Absolute(40), range.lower);
+    assert_eq!(RangeBound::Absolute(50), range.upper);
 }
 
 #[test]
 fn test_parse_partial_min() {
     let range = LineRange::from(":50").expect("Shouldn't fail on test!");
-    assert_eq!(usize::MIN, range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(RangeBound::Absolute(usize::MIN), range.lower);
+    assert_eq!(RangeBound::Absolute(50), range.upper);
+}
+
+#[test]
+fn test_parse_partial_relative_negative_from_back() {
+    let range = LineRange::from(":-5").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(usize::MIN), range.lower);
+    assert_eq!(RangeBound::OffsetFromEnd(5), range.upper);
+}
+
+#[test]
+fn test_parse_relative_negative_from_back_partial() {
+    let range = LineRange::from("-5:").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::OffsetFromEnd(5), range.lower);
+    assert_eq!(RangeBound::Absolute(usize::MAX), range.upper);
 }
 
 #[test]
 fn test_parse_partial_max() {
     let range = LineRange::from("40:").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(usize::MAX, range.upper);
+    assert_eq!(RangeBound::Absolute(40), range.lower);
+    assert_eq!(RangeBound::Absolute(usize::MAX), range.upper);
 }
 
 #[test]
 fn test_parse_single() {
     let range = LineRange::from("40").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(40, range.upper);
+    assert_eq!(RangeBound::Absolute(40), range.lower);
+    assert_eq!(RangeBound::Absolute(40), range.upper);
 }
 
 #[test]
@@ -117,6 +214,8 @@ fn test_parse_fail() {
     assert!(range.is_err());
     let range = LineRange::from("40::80");
     assert!(range.is_err());
+    let range = LineRange::from("-2:5");
+    assert!(range.is_err());
     let range = LineRange::from(":40:");
     assert!(range.is_err());
 }
@@ -124,15 +223,15 @@ fn test_parse_fail() {
 #[test]
 fn test_parse_plus() {
     let range = LineRange::from("40:+10").expect("Shouldn't fail on test!");
-    assert_eq!(40, range.lower);
-    assert_eq!(50, range.upper);
+    assert_eq!(RangeBound::Absolute(40), range.lower);
+    assert_eq!(RangeBound::Absolute(50), range.upper);
 }
 
 #[test]
 fn test_parse_plus_overflow() {
     let range = LineRange::from(&format!("{}:+1", usize::MAX)).expect("Shouldn't fail on test!");
-    assert_eq!(usize::MAX, range.lower);
-    assert_eq!(usize::MAX, range.upper);
+    assert_eq!(RangeBound::Absolute(usize::MAX), range.lower);
+    assert_eq!(RangeBound::Absolute(usize::MAX), range.upper);
 }
 
 #[test]
@@ -148,21 +247,21 @@ fn test_parse_plus_fail() {
 #[test]
 fn test_parse_minus_success() {
     let range = LineRange::from("40:-10").expect("Shouldn't fail on test!");
-    assert_eq!(30, range.lower);
-    assert_eq!(40, range.upper);
+    assert_eq!(RangeBound::Absolute(30), range.lower);
+    assert_eq!(RangeBound::Absolute(40), range.upper);
 }
 
 #[test]
 fn test_parse_minus_edge_cases_success() {
     let range = LineRange::from("5:-4").expect("Shouldn't fail on test!");
-    assert_eq!(1, range.lower);
-    assert_eq!(5, range.upper);
+    assert_eq!(RangeBound::Absolute(1), range.lower);
+    assert_eq!(RangeBound::Absolute(5), range.upper);
     let range = LineRange::from("5:-5").expect("Shouldn't fail on test!");
-    assert_eq!(0, range.lower);
-    assert_eq!(5, range.upper);
+    assert_eq!(RangeBound::Absolute(0), range.lower);
+    assert_eq!(RangeBound::Absolute(5), range.upper);
     let range = LineRange::from("5:-100").expect("Shouldn't fail on test!");
-    assert_eq!(0, range.lower);
-    assert_eq!(5, range.upper);
+    assert_eq!(RangeBound::Absolute(0), range.lower);
+    assert_eq!(RangeBound::Absolute(5), range.upper);
 }
 
 #[test]
@@ -187,10 +286,24 @@ pub enum RangeCheckResult {
     AfterLastRange,
 }
 
+/// Represents the maximum line number in the buffer when reading a file.
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub(crate) enum MaxBufferedLineNumber {
+    // The currently known maximum line number, may not be the final line number
+    Tentative(usize),
+    // The final line number, when EOF has been reached
+    Final(usize),
+}
+
 #[derive(Debug, Clone)]
 pub struct LineRanges {
     ranges: Vec<LineRange>,
-    largest_upper_bound: usize,
+    // The largest absolute upper line number of all ranges
+    largest_absolute_upper_bound: usize,
+    // The smallest relative offset from the end of all ranges
+    smallest_offset_from_end: usize,
+    // The largest relative offset from the end of all ranges
+    largest_offset_from_end: usize,
 }
 
 impl LineRanges {
@@ -203,21 +316,61 @@ impl LineRanges {
     }
 
     pub fn from(ranges: Vec<LineRange>) -> LineRanges {
-        let largest_upper_bound = ranges.iter().map(|r| r.upper).max().unwrap_or(usize::MAX);
+        let largest_absolute_upper_bound = ranges
+            .iter()
+            .filter_map(|r| match r.upper {
+                RangeBound::Absolute(upper) => Some(upper),
+                _ => None,
+            })
+            .max()
+            .unwrap_or(usize::MAX);
+
+        let offsets_min_max = ranges
+            .iter()
+            .flat_map(|r| [r.lower, r.upper])
+            .filter_map(|r| match r {
+                RangeBound::OffsetFromEnd(offset) => Some(offset),
+                _ => None,
+            })
+            .minmax();
+
+        let (smallest_offset_from_end, largest_offset_from_end) = match offsets_min_max {
+            MinMaxResult::NoElements => (usize::MIN, usize::MIN),
+            MinMaxResult::OneElement(offset) => (offset, offset),
+            MinMaxResult::MinMax(min, max) => (min, max),
+        };
+
         LineRanges {
             ranges,
-            largest_upper_bound,
+            largest_absolute_upper_bound,
+            smallest_offset_from_end,
+            largest_offset_from_end,
         }
     }
 
-    pub(crate) fn check(&self, line: usize) -> RangeCheckResult {
-        if self.ranges.iter().any(|r| r.is_inside(line)) {
+    pub(crate) fn check(
+        &self,
+        line: usize,
+        max_buffered_line_number: MaxBufferedLineNumber,
+    ) -> RangeCheckResult {
+        if self
+            .ranges
+            .iter()
+            .any(|r| r.is_inside(line, max_buffered_line_number))
+        {
             RangeCheckResult::InRange
-        } else if line < self.largest_upper_bound {
+        } else if matches!(max_buffered_line_number, MaxBufferedLineNumber::Final(final_line_number) if line > final_line_number.saturating_sub(self.smallest_offset_from_end))
+        {
+            RangeCheckResult::AfterLastRange
+        } else if line < self.largest_absolute_upper_bound {
             RangeCheckResult::BeforeOrBetweenRanges
         } else {
             RangeCheckResult::AfterLastRange
         }
+    }
+
+    pub(crate) fn largest_offset_from_end(&self) -> usize {
+        self.largest_offset_from_end
     }
 }
 
@@ -245,54 +398,292 @@ fn ranges(rs: &[&str]) -> LineRanges {
 fn test_ranges_simple() {
     let ranges = ranges(&["3:8"]);
 
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
-    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(2, MaxBufferedLineNumber::Tentative(2))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(5))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(9, MaxBufferedLineNumber::Tentative(9))
+    );
 }
 
 #[test]
 fn test_ranges_advanced() {
     let ranges = ranges(&["3:8", "11:20", "25:30"]);
 
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(2));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(9));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(11));
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(22));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(28));
-    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(31));
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(2, MaxBufferedLineNumber::Tentative(2))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(5))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(9, MaxBufferedLineNumber::Tentative(9))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(11, MaxBufferedLineNumber::Tentative(11))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(22, MaxBufferedLineNumber::Tentative(22))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(28, MaxBufferedLineNumber::Tentative(28))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(31, MaxBufferedLineNumber::Tentative(31))
+    );
 }
 
 #[test]
 fn test_ranges_open_low() {
     let ranges = ranges(&["3:8", ":5"]);
 
-    assert_eq!(RangeCheckResult::InRange, ranges.check(1));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(3));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(7));
-    assert_eq!(RangeCheckResult::AfterLastRange, ranges.check(9));
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Tentative(3))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(7, MaxBufferedLineNumber::Tentative(7))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(9, MaxBufferedLineNumber::Tentative(9))
+    );
 }
 
 #[test]
 fn test_ranges_open_high() {
     let ranges = ranges(&["3:", "2:5"]);
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
 
-    assert_eq!(RangeCheckResult::BeforeOrBetweenRanges, ranges.check(1));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(3));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(5));
-    assert_eq!(RangeCheckResult::InRange, ranges.check(9));
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(1, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(2, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(9, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(10, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Tentative(3))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(5))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(9, MaxBufferedLineNumber::Tentative(9))
+    );
+}
+
+#[test]
+fn test_ranges_open_up_to_3_from_end() {
+    let ranges = ranges(&[":-3"]);
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Tentative(3))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(8))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Final(6))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(2, MaxBufferedLineNumber::Final(6))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Final(6))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(4, MaxBufferedLineNumber::Final(6))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(5, MaxBufferedLineNumber::Final(6))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(6, MaxBufferedLineNumber::Final(6))
+    );
+}
+
+#[test]
+fn test_ranges_multiple_negative_from_back() {
+    let ranges = ranges(&[":-3", ":-9"]);
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Tentative(3))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(14))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Final(16))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(7, MaxBufferedLineNumber::Final(16))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(13, MaxBufferedLineNumber::Final(16))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(14, MaxBufferedLineNumber::Final(16))
+    );
+    assert_eq!(
+        RangeCheckResult::AfterLastRange,
+        ranges.check(16, MaxBufferedLineNumber::Final(16))
+    );
+}
+
+#[test]
+fn test_ranges_3_from_back_up_to_end() {
+    let ranges = ranges(&["-3:"]);
+
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(3, MaxBufferedLineNumber::Tentative(3))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(8))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(1, MaxBufferedLineNumber::Final(5))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(2, MaxBufferedLineNumber::Final(5))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(3, MaxBufferedLineNumber::Final(5))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(4, MaxBufferedLineNumber::Final(5))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Final(5))
+    );
+}
+
+#[test]
+fn test_ranges_multiple_negative_offsets_to_end() {
+    let ranges = ranges(&["-3:", "-12:"]);
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(8))
+    );
+    assert_eq!(
+        RangeCheckResult::BeforeOrBetweenRanges,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(17))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(8, MaxBufferedLineNumber::Final(20))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(9, MaxBufferedLineNumber::Final(20))
+    );
+}
+
+#[test]
+fn test_ranges_absolute_bound_and_offset() {
+    let ranges = ranges(&["5:", ":-2"]);
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(4, MaxBufferedLineNumber::Tentative(6))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(5, MaxBufferedLineNumber::Tentative(7))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(8, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(9, MaxBufferedLineNumber::Final(10))
+    );
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(10, MaxBufferedLineNumber::Final(10))
+    );
 }
 
 #[test]
 fn test_ranges_all() {
     let ranges = LineRanges::all();
 
-    assert_eq!(RangeCheckResult::InRange, ranges.check(1));
+    assert_eq!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
 }
 
 #[test]
 fn test_ranges_none() {
     let ranges = LineRanges::none();
 
-    assert_ne!(RangeCheckResult::InRange, ranges.check(1));
+    assert_ne!(
+        RangeCheckResult::InRange,
+        ranges.check(1, MaxBufferedLineNumber::Tentative(1))
+    );
 }

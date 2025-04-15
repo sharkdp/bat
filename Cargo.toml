@@ -70,6 +70,7 @@ encoding_rs = "0.8.35"
 execute = { version = "0.2.13", optional = true }
 terminal-colorsaurus = "0.4"
 unicode-segmentation = "1.12.0"
+itertools = "0.13.0"
 
 [dependencies.git2]
 version = "0.20"

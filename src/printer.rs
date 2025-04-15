@@ -27,7 +27,7 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
-use crate::line_range::RangeCheckResult;
+use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
@@ -85,6 +85,7 @@ pub(crate) trait Printer {
         handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
+        max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()>;
 }
 
@@ -126,6 +127,7 @@ impl Printer for SimplePrinter<'_> {
         handle: &mut OutputHandle,
         _line_number: usize,
         line_buffer: &[u8],
+        _max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
@@ -589,6 +591,7 @@ impl Printer for InteractivePrinter<'_> {
         handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
+        max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
@@ -650,8 +653,12 @@ impl Printer for InteractivePrinter<'_> {
         let mut panel_wrap: Option<String> = None;
 
         // Line highlighting
-        let highlight_this_line =
-            self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
+        let highlight_this_line = self
+            .config
+            .highlighted_lines
+            .0
+            .check(line_number, max_buffered_line_number)
+            == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
