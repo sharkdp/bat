@@ -1,21 +1,23 @@
 %YAML 1.2
 ---
 # See http://www.sublimetext.com/docs/3/syntax.html
-name: Comma Separated Values
-file_extensions:
-  - csv
-  - tsv
-scope: text.csv
+name: Pipe Separated Values
+scope: text.csv.pipe
 variables:
-  field_separator: (?:[,;\t])
+  field_separator: (?:\|)
   record_separator: (?:$\n?)
+
 contexts:
-  prototype:
-    - match: (?={{record_separator}})
-      pop: true
+  main:
+    - match: '^'
+      push: fields
+
   fields:
+    - include: record_separator
     - match: ''
       push:
+        - field_or_record_separator
+        - field5
         - field_or_record_separator
         - field4
         - field_or_record_separator
@@ -24,16 +26,20 @@ contexts:
         - field2
         - field_or_record_separator
         - field1
-  main:
-    - meta_include_prototype: false
-    - match: '^'
-      set: fields
 
-  field_or_record_separator:
+  record_separator_pop:
+    - match: (?={{record_separator}})
+      pop: true
+
+  record_separator:
     - meta_include_prototype: false
     - match: '{{record_separator}}'
       scope: punctuation.terminator.record.csv
       pop: true
+
+  field_or_record_separator:
+    - meta_include_prototype: false
+    - include: record_separator_pop
     - match: '{{field_separator}}'
       scope: punctuation.separator.sequence.csv
       pop: true
@@ -41,24 +47,16 @@ contexts:
   field_contents:
     - match: '"'
       scope: punctuation.definition.string.begin.csv
-      push: double_quoted_string
+      push: scope:text.csv#double_quoted_string
 
-    - match: (?={{field_separator}}|{{record_separator}})
-      pop: true
-
-  double_quoted_string:
-    - meta_include_prototype: false
-    - meta_scope: string.quoted.double.csv
-    - match: '""'
-      scope: constant.character.escape.csv
-    - match: '"'
-      scope: punctuation.definition.string.end.csv
+    - include: record_separator_pop
+    - match: (?={{field_separator}})
       pop: true
 
   field1:
     - match: ''
       set:
-        - meta_content_scope: meta.field-1.csv support.type
+        - meta_content_scope: meta.field-1.csv variable.parameter
         - include: field_contents
   field2:
     - match: ''
@@ -75,4 +73,8 @@ contexts:
       set:
         - meta_content_scope: meta.field-4.csv keyword.operator
         - include: field_contents
-
+  field5:
+    - match: ''
+      set:
+        - meta_content_scope: meta.field-5.csv string.unquoted
+        - include: field_contents

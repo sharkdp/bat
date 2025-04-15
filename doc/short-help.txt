@@ -11,6 +11,8 @@ Options:
           Show non-printable characters (space, tab, newline, ..).
       --nonprintable-notation <notation>
           Set notation for non-printable characters.
+      --binary <behavior>
+          How to treat binary content. (default: no-printing)
   -p, --plain...
           Show plain style (alias for '--style=plain').
   -l, --language <language>
@@ -41,6 +43,10 @@ Options:
           Use the specified syntax for files matching the glob pattern ('*.cpp:C++').
       --theme <theme>
           Set the color theme for syntax highlighting.
+      --theme-light <theme>
+          Sets the color theme for syntax highlighting used for light backgrounds.
+      --theme-dark <theme>
+          Sets the color theme for syntax highlighting used for dark backgrounds.
       --list-themes
           Display all supported highlighting themes.
   -s, --squeeze-blank
@@ -52,6 +58,8 @@ Options:
           Only print the lines from N to M.
   -L, --list-languages
           Display all supported languages.
+      --completion <SHELL>
+          Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
   -h, --help
           Print help (see more with '--help')
   -V, --version

@@ -63,5 +63,22 @@ pub fn gen_man_and_comp() -> anyhow::Result<()> {
         out_dir.join("assets/completions/bat.zsh"),
     )?;
 
+    println!(
+        "cargo:rustc-env=BAT_GENERATED_COMPLETION_BASH={}",
+        out_dir.join("assets/completions/bat.bash").display()
+    );
+    println!(
+        "cargo:rustc-env=BAT_GENERATED_COMPLETION_FISH={}",
+        out_dir.join("assets/completions/bat.fish").display()
+    );
+    println!(
+        "cargo:rustc-env=BAT_GENERATED_COMPLETION_PS1={}",
+        out_dir.join("assets/completions/_bat.ps1").display()
+    );
+    println!(
+        "cargo:rustc-env=BAT_GENERATED_COMPLETION_ZSH={}",
+        out_dir.join("assets/completions/bat.zsh").display()
+    );
+
     Ok(())
 }

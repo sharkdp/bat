@@ -38,21 +38,21 @@ contexts:
       scope: markup.underline.link.scheme.log
       push: url-host
   log_level_lines:
-    - match: ^(?=.*{{error}})
+    - match: (?=.*{{error}})
       push:
-        - error_line
+        - error_line_meta
         - main_pop_at_eol
-    - match: ^(?=.*{{warning}})
+    - match: (?=.*{{warning}})
       push:
-        - warning_line
+        - warning_line_meta
         - main_pop_at_eol
-    - match: ^(?=.*{{info}})
+    - match: (?=.*{{info}})
       push:
-        - info_line
+        - info_line_meta
         - main_pop_at_eol
-    - match: ^(?=.*{{debug}})
+    - match: (?=.*{{debug}})
       push:
-        - debug_line
+        - debug_line_meta
         - main_pop_at_eol
   log_levels:
     - match: '{{error}}'
@@ -63,16 +63,16 @@ contexts:
       scope: markup.info.log
     - match: '{{debug}}'
       scope: markup.info.log
-  error_line:
+  error_line_meta:
     - meta_scope: meta.annotation.error-line.log
     - include: immediately_pop
-  warning_line:
+  warning_line_meta:
     - meta_scope: meta.annotation.warning-line.log
     - include: immediately_pop
-  info_line:
+  info_line_meta:
     - meta_scope: meta.annotation.info-line.log
     - include: immediately_pop
-  debug_line:
+  debug_line_meta:
     - meta_scope: meta.annotation.debug-line.log
     - include: immediately_pop
   immediately_pop:

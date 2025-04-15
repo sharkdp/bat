@@ -37,6 +37,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('-m', 'm', [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')
             [CompletionResult]::new('--map-syntax', 'map-syntax', [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')
             [CompletionResult]::new('--theme', 'theme', [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting.')
+            [CompletionResult]::new('--theme-dark', 'theme', [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for dark backgrounds.')
+            [CompletionResult]::new('--theme-light', 'theme', [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for light backgrounds.')
             [CompletionResult]::new('--style', 'style', [CompletionResultType]::ParameterName, 'Comma-separated list of style elements to display (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Only print the lines from N to M.')
             [CompletionResult]::new('--line-range', 'line-range', [CompletionResultType]::ParameterName, 'Only print the lines from N to M.')

@@ -21,11 +21,26 @@ index 9c2aa3e..180cbbf 100644
        <string>Invalid</string>
        <key>scope</key>
 -      <string>invalid</string>
-+      <string>invalid, markup.error</string>
++      <string>invalid, meta.annotation.error-line</string>
        <key>settings</key>
        <dict>
          <key>background</key>
-@@ -1042,7 +1042,7 @@
+@@ -1038,11 +1038,22 @@
+         <string>#f8f8f0</string>
+       </dict>
+     </dict>
++    <dict>
++      <key>name</key>
++      <string>Error</string>
++      <key>scope</key>
++      <string>markup.error</string>
++      <key>settings</key>
++      <dict>
++        <key>foreground</key>
++        <string>#dd2020</string>
++      </dict>
++    </dict>
+     <dict>
        <key>name</key>
        <string>Invalid deprecated</string>
        <key>scope</key>

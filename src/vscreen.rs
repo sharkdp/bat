@@ -360,10 +360,10 @@ pub struct EscapeSequenceOffsetsIterator<'a> {
 
 impl<'a> EscapeSequenceOffsetsIterator<'a> {
     pub fn new(text: &'a str) -> EscapeSequenceOffsetsIterator<'a> {
-        return EscapeSequenceOffsetsIterator {
+        EscapeSequenceOffsetsIterator {
             text,
             chars: text.char_indices().peekable(),
-        };
+        }
     }
 
     /// Takes values from the iterator while the predicate returns true.
@@ -539,7 +539,7 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 }
 
-impl<'a> Iterator for EscapeSequenceOffsetsIterator<'a> {
+impl Iterator for EscapeSequenceOffsetsIterator<'_> {
     type Item = EscapeSequenceOffsets;
     fn next(&mut self) -> Option<Self::Item> {
         match self.chars.peek() {
@@ -564,10 +564,10 @@ pub struct EscapeSequenceIterator<'a> {
 
 impl<'a> EscapeSequenceIterator<'a> {
     pub fn new(text: &'a str) -> EscapeSequenceIterator<'a> {
-        return EscapeSequenceIterator {
+        EscapeSequenceIterator {
             text,
             offset_iter: EscapeSequenceOffsetsIterator::new(text),
-        };
+        }
     }
 }
 

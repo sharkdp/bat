@@ -1,5 +1,5 @@
 diff --git syntaxes/01_Packages/Markdown/Markdown.sublime-syntax syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-index 19dc685d..44440c7f 100644
+index 19dc685d..3a45ea05 100644
 --- syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 +++ syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 @@ -24,7 +24,6 @@ variables:
@@ -166,7 +166,29 @@ index 19dc685d..44440c7f 100644
      - match: ^\s*$\n?
        scope: invalid.illegal.non-terminated.bold-italic.markdown
        pop: true
-@@ -1152,7 +1110,7 @@ contexts:
+@@ -1073,6 +1031,21 @@ contexts:
+       escape: '{{code_fence_escape}}'
+       escape_captures:
+         0: meta.code-fence.definition.end.python.markdown-gfm
++        1: punctuation.definition.raw.code-fence.end.markdown
++    - match: |-
++         (?x)
++          {{fenced_code_block_start}}
++          ((?i:puppet))
++          {{fenced_code_block_trailing_infostring_characters}}
++      captures:
++        0: meta.code-fence.definition.begin.puppet.markdown-gfm
++        2: punctuation.definition.raw.code-fence.begin.markdown
++        5: constant.other.language-name.markdown
++      embed: scope:source.puppet
++      embed_scope: markup.raw.code-fence.puppet.markdown-gfm
++      escape: '{{code_fence_escape}}'
++      escape_captures:
++        0: meta.code-fence.definition.end.puppet.markdown-gfm
+         1: punctuation.definition.raw.code-fence.end.markdown
+     - match: |-
+          (?x)
+@@ -1152,7 +1125,7 @@ contexts:
      - match: |-
           (?x)
            {{fenced_code_block_start}}

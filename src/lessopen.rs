@@ -1,15 +1,12 @@
-#![cfg(feature = "lessopen")]
-
 use std::convert::TryFrom;
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Cursor, Read, Write};
+use std::io::{BufRead, BufReader, Cursor, Read};
 use std::path::PathBuf;
-use std::str;
+use std::process::{ExitStatus, Stdio};
 
 use clircle::{Clircle, Identifier};
-use os_str_bytes::RawOsString;
-use run_script::{IoOptions, ScriptOptions};
+use execute::{shell, Execute};
 
 use crate::error::Result;
 use crate::{
@@ -21,7 +18,6 @@ use crate::{
 pub(crate) struct LessOpenPreprocessor {
     lessopen: String,
     lessclose: Option<String>,
-    command_options: ScriptOptions,
     kind: LessOpenKind,
     /// Whether or not data piped via stdin is to be preprocessed
     preprocess_stdin: bool,
@@ -52,7 +48,7 @@ impl LessOpenPreprocessor {
         // Otherwise, if output is empty and exit code is nonzero, use original file contents
         let (kind, lessopen) = if lessopen.starts_with("||") {
             (LessOpenKind::Piped, lessopen.chars().skip(2).collect())
-        // "|" means pipe, but ignore exit code, always using preprocessor output
+        // "|" means pipe as above, but ignore exit code and always use preprocessor output even if empty
         } else if lessopen.starts_with('|') {
             (
                 LessOpenKind::PipedIgnoreExitCode,
@@ -70,16 +66,9 @@ impl LessOpenPreprocessor {
             (false, lessopen)
         };
 
-        let mut command_options = ScriptOptions::new();
-        command_options.runner = env::var("SHELL").ok();
-        command_options.input_redirection = IoOptions::Pipe;
-
         Ok(Self {
-            lessopen: lessopen.replacen("%s", "$1", 1),
-            lessclose: env::var("LESSCLOSE")
-                .ok()
-                .map(|str| str.replacen("%s", "$1", 1).replacen("%s", "$2", 1)),
-            command_options,
+            lessopen,
+            lessclose: env::var("LESSCLOSE").ok(),
             kind,
             preprocess_stdin: stdin,
         })
@@ -98,21 +87,21 @@ impl LessOpenPreprocessor {
                     None => return input.open(stdin, stdout_identifier),
                 };
 
-                let (exit_code, lessopen_stdout, _) = match run_script::run(
-                    &self.lessopen,
-                    &vec![path_str.to_string()],
-                    &self.command_options,
-                ) {
+                let mut lessopen_command = shell(self.lessopen.replacen("%s", path_str, 1));
+                lessopen_command.stdout(Stdio::piped());
+
+                let lessopen_output = match lessopen_command.execute_output() {
                     Ok(output) => output,
                     Err(_) => return input.open(stdin, stdout_identifier),
                 };
 
-                if self.fall_back_to_original_file(&lessopen_stdout, exit_code) {
+                if self.fall_back_to_original_file(&lessopen_output.stdout, lessopen_output.status)
+                {
                     return input.open(stdin, stdout_identifier);
                 }
 
                 (
-                    RawOsString::from_string(lessopen_stdout),
+                    lessopen_output.stdout,
                     path_str.to_string(),
                     OpenedInputKind::OrdinaryFile(path.to_path_buf()),
                 )
@@ -127,47 +116,31 @@ impl LessOpenPreprocessor {
                         }
                     }
 
-                    // stdin isn't Clone, so copy it to a cloneable buffer
+                    // stdin isn't Clone or AsRef<[u8]>, so move it into a cloneable buffer
+                    // so the data can be used multiple times if necessary
+                    // NOTE: stdin will be empty from this point onwards
                     let mut stdin_buffer = Vec::new();
-                    stdin.read_to_end(&mut stdin_buffer).unwrap();
+                    stdin.read_to_end(&mut stdin_buffer)?;
 
-                    let mut lessopen_handle = match run_script::spawn(
-                        &self.lessopen,
-                        &vec!["-".to_string()],
-                        &self.command_options,
-                    ) {
-                        Ok(handle) => handle,
-                        Err(_) => {
-                            return input.open(stdin, stdout_identifier);
-                        }
-                    };
+                    let mut lessopen_command = shell(self.lessopen.replacen("%s", "-", 1));
+                    lessopen_command.stdout(Stdio::piped());
 
-                    if lessopen_handle
-                        .stdin
-                        .as_mut()
-                        .unwrap()
-                        .write_all(&stdin_buffer.clone())
-                        .is_err()
+                    let lessopen_output = match lessopen_command.execute_input_output(&stdin_buffer)
                     {
-                        return input.open(stdin, stdout_identifier);
-                    }
-
-                    let lessopen_output = match lessopen_handle.wait_with_output() {
                         Ok(output) => output,
                         Err(_) => {
                             return input.open(Cursor::new(stdin_buffer), stdout_identifier);
                         }
                     };
 
-                    if lessopen_output.stdout.is_empty()
-                        && (!lessopen_output.status.success()
-                            || matches!(self.kind, LessOpenKind::PipedIgnoreExitCode))
+                    if self
+                        .fall_back_to_original_file(&lessopen_output.stdout, lessopen_output.status)
                     {
                         return input.open(Cursor::new(stdin_buffer), stdout_identifier);
                     }
 
                     (
-                        RawOsString::assert_from_raw_vec(lessopen_output.stdout),
+                        lessopen_output.stdout,
                         "-".to_string(),
                         OpenedInputKind::StdIn,
                     )
@@ -184,13 +157,17 @@ impl LessOpenPreprocessor {
             kind,
             reader: InputReader::new(BufReader::new(
                 if matches!(self.kind, LessOpenKind::TempFile) {
-                    // Remove newline at end of temporary file path returned by $LESSOPEN
-                    let stdout = match lessopen_stdout.strip_suffix("\n") {
-                        Some(stripped) => stripped.to_owned(),
-                        None => lessopen_stdout,
+                    let lessopen_string = match String::from_utf8(lessopen_stdout) {
+                        Ok(string) => string,
+                        Err(_) => {
+                            return input.open(stdin, stdout_identifier);
+                        }
                     };
-
-                    let stdout = stdout.into_os_string();
+                    // Remove newline at end of temporary file path returned by $LESSOPEN
+                    let stdout = match lessopen_string.strip_suffix("\n") {
+                        Some(stripped) => stripped.to_owned(),
+                        None => lessopen_string,
+                    };
 
                     let file = match File::open(PathBuf::from(&stdout)) {
                         Ok(file) => file,
@@ -201,16 +178,18 @@ impl LessOpenPreprocessor {
 
                     Preprocessed {
                         kind: PreprocessedKind::TempFile(file),
-                        lessclose: self.lessclose.clone(),
-                        command_args: vec![path_str, stdout.to_str().unwrap().to_string()],
-                        command_options: self.command_options.clone(),
+                        lessclose: self
+                            .lessclose
+                            .as_ref()
+                            .map(|s| s.replacen("%s", &path_str, 1).replacen("%s", &stdout, 1)),
                     }
                 } else {
                     Preprocessed {
-                        kind: PreprocessedKind::Piped(Cursor::new(lessopen_stdout.into_raw_vec())),
-                        lessclose: self.lessclose.clone(),
-                        command_args: vec![path_str, "-".to_string()],
-                        command_options: self.command_options.clone(),
+                        kind: PreprocessedKind::Piped(Cursor::new(lessopen_stdout)),
+                        lessclose: self
+                            .lessclose
+                            .as_ref()
+                            .map(|s| s.replacen("%s", &path_str, 1).replacen("%s", "-", 1)),
                     }
                 },
             )),
@@ -219,9 +198,9 @@ impl LessOpenPreprocessor {
         })
     }
 
-    fn fall_back_to_original_file(&self, lessopen_output: &str, exit_code: i32) -> bool {
-        lessopen_output.is_empty()
-            && (exit_code != 0 || matches!(self.kind, LessOpenKind::PipedIgnoreExitCode))
+    fn fall_back_to_original_file(&self, lessopen_stdout: &[u8], exit_code: ExitStatus) -> bool {
+        lessopen_stdout.is_empty()
+            && (!exit_code.success() || matches!(self.kind, LessOpenKind::PipedIgnoreExitCode))
     }
 
     #[cfg(test)]
@@ -261,8 +240,6 @@ impl Read for PreprocessedKind {
 pub struct Preprocessed {
     kind: PreprocessedKind,
     lessclose: Option<String>,
-    command_args: Vec<String>,
-    command_options: ScriptOptions,
 }
 
 impl Read for Preprocessed {
@@ -273,11 +250,20 @@ impl Read for Preprocessed {
 
 impl Drop for Preprocessed {
     fn drop(&mut self) {
-        if let Some(ref command) = self.lessclose {
-            self.command_options.output_redirection = IoOptions::Inherit;
+        if let Some(lessclose) = self.lessclose.clone() {
+            let mut lessclose_command = shell(lessclose);
 
-            run_script::run(command, &self.command_args, &self.command_options)
-                .expect("failed to run $LESSCLOSE to clean up file");
+            let lessclose_output = match lessclose_command.execute_output() {
+                Ok(output) => output,
+                Err(_) => {
+                    bat_warning!("failed to run $LESSCLOSE to clean up temporary file");
+                    return;
+                }
+            };
+
+            if lessclose_output.status.success() {
+                bat_warning!("$LESSCLOSE exited with nonzero exit code",)
+            };
         }
     }
 }
@@ -301,7 +287,7 @@ mod tests {
     fn test_just_lessopen() -> Result<()> {
         let preprocessor = LessOpenPreprocessor::mock_new(Some("|batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(preprocessor.lessclose.is_none());
 
         reset_env_vars();
@@ -327,8 +313,8 @@ mod tests {
         let preprocessor =
             LessOpenPreprocessor::mock_new(Some("lessopen.sh %s"), Some("lessclose.sh %s %s"))?;
 
-        assert_eq!(preprocessor.lessopen, "lessopen.sh $1");
-        assert_eq!(preprocessor.lessclose.unwrap(), "lessclose.sh $1 $2");
+        assert_eq!(preprocessor.lessopen, "lessopen.sh %s");
+        assert_eq!(preprocessor.lessclose.unwrap(), "lessclose.sh %s %s");
 
         reset_env_vars();
 
@@ -340,13 +326,13 @@ mod tests {
     fn test_lessopen_prefixes() -> Result<()> {
         let preprocessor = LessOpenPreprocessor::mock_new(Some("batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(preprocessor.kind, LessOpenKind::TempFile));
         assert!(!preprocessor.preprocess_stdin);
 
         let preprocessor = LessOpenPreprocessor::mock_new(Some("|batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(
             preprocessor.kind,
             LessOpenKind::PipedIgnoreExitCode
@@ -355,19 +341,19 @@ mod tests {
 
         let preprocessor = LessOpenPreprocessor::mock_new(Some("||batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(preprocessor.kind, LessOpenKind::Piped));
         assert!(!preprocessor.preprocess_stdin);
 
         let preprocessor = LessOpenPreprocessor::mock_new(Some("-batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(preprocessor.kind, LessOpenKind::TempFile));
         assert!(preprocessor.preprocess_stdin);
 
         let preprocessor = LessOpenPreprocessor::mock_new(Some("|-batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(
             preprocessor.kind,
             LessOpenKind::PipedIgnoreExitCode
@@ -376,7 +362,7 @@ mod tests {
 
         let preprocessor = LessOpenPreprocessor::mock_new(Some("||-batpipe %s"), None)?;
 
-        assert_eq!(preprocessor.lessopen, "batpipe $1");
+        assert_eq!(preprocessor.lessopen, "batpipe %s");
         assert!(matches!(preprocessor.kind, LessOpenKind::Piped));
         assert!(preprocessor.preprocess_stdin);
 
@@ -391,8 +377,8 @@ mod tests {
         let preprocessor =
             LessOpenPreprocessor::mock_new(Some("|echo File:%s"), Some("echo File:%s Temp:%s"))?;
 
-        assert_eq!(preprocessor.lessopen, "echo File:$1");
-        assert_eq!(preprocessor.lessclose.unwrap(), "echo File:$1 Temp:$2");
+        assert_eq!(preprocessor.lessopen, "echo File:%s");
+        assert_eq!(preprocessor.lessclose.unwrap(), "echo File:%s Temp:%s");
 
         reset_env_vars();
 

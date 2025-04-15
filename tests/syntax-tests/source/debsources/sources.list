@@ -1,0 +1,15 @@
+# See http://help.ubuntu.com/community/UpgradeNotes for how to upgrade to
+# newer versions of the distribution.
+
+deb https://deb.debian.org/debian bookworm main non-free-firmware
+#deb-src https://deb.debian.org/debian bookworm main non-free-firmware
+
+## Major bug fix updates produced after the final release of the
+## distribution.
+# deb-src http://lt.archive.ubuntu.com/ubuntu/ xenial-updates main restricted
+
+deb https://security.debian.org/debian-security bookworm-security main non-free-firmware
+deb-src https://security.debian.org/debian-security bookworm-security main non-free-firmware
+
+deb https://deb.debian.org/debian bookworm-updates main non-free-firmware
+deb-src https://deb.debian.org/debian bookworm-updates main non-free-firmware
