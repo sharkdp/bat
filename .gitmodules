@@ -266,6 +266,9 @@
 [submodule "assets/syntaxes/02_Extra/Idris2"]
 	path = assets/syntaxes/02_Extra/Idris2
 	url = https://github.com/buzden/sublime-syntax-idris2
+[submodule "assets/syntaxes/02_Extra/GDScript-sublime"]
+	path = assets/syntaxes/02_Extra/GDScript-sublime
+	url = https://github.com/beefsack/GDScript-sublime
 [submodule "assets/syntaxes/02_Extra/sublime-odin"]
 	path = assets/syntaxes/02_Extra/sublime-odin
 	url = https://github.com/odin-lang/sublime-odin

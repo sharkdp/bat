@@ -1601,6 +1601,17 @@ oken
 }
 
 #[test]
+fn header_narrow_terminal_with_multibyte_chars() {
+    bat()
+        .arg("--terminal-width=30")
+        .arg("--decorations=always")
+        .arg("test.A—B가")
+        .assert()
+        .success()
+        .stderr("");
+}
+
+#[test]
 #[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default() {
     bat()

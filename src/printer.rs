@@ -15,6 +15,7 @@ use content_inspector::ContentType;
 
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
+use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
@@ -388,14 +389,18 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
-        let mut content = content;
         let content_width = self.config.term_width - self.get_header_component_indent_length();
-        while content.len() > content_width {
-            let (content_line, remaining) = content.split_at(content_width);
-            self.print_header_component_with_indent(handle, content_line)?;
-            content = remaining;
+        if content.chars().count() <= content_width {
+            return self.print_header_component_with_indent(handle, content);
         }
-        self.print_header_component_with_indent(handle, content)
+
+        let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
+        while content_graphemes.len() > content_width {
+            let (content_line, remaining) = content_graphemes.split_at(content_width);
+            self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
+            content_graphemes = remaining.iter().cloned().collect();
+        }
+        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
 
     fn highlight_regions_for_line<'b>(
