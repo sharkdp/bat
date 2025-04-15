@@ -53,7 +53,7 @@ jobs:
 
   ensure_cargo_fmt:
     name: Ensure 'cargo fmt' has been run
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: dtolnay/rust-toolchain@stable
       with:
@@ -63,7 +63,7 @@ jobs:
 
   min_version:
     name: Minimum supported rust version
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: crate_metadata
     steps:
     - name: Checkout source code
@@ -81,7 +81,7 @@ jobs:
 
   license_checks:
     name: License checks
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
@@ -90,7 +90,7 @@ jobs:
 
   test_with_new_syntaxes_and_themes:
     name: Run tests with updated syntaxes and themes
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
@@ -119,7 +119,7 @@ jobs:
 
   test_with_system_config:
     name: Run tests with system wide configuration
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
@@ -135,7 +135,7 @@ jobs:
 
   documentation:
     name: Documentation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - name: Git checkout
       uses: actions/checkout@v4
@@ -164,18 +164,18 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { target: aarch64-unknown-linux-musl  , os: ubuntu-20.04, dpkg_arch: arm64,            use-cross: true }
-          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-20.04, dpkg_arch: arm64,            use-cross: true }
-          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-20.04, dpkg_arch: armhf,            use-cross: true }
-          - { target: arm-unknown-linux-musleabihf, os: ubuntu-20.04, dpkg_arch: musl-linux-armhf, use-cross: true }
+          - { target: aarch64-unknown-linux-musl  , os: ubuntu-latest, dpkg_arch: arm64,            use-cross: true }
+          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-latest, dpkg_arch: arm64,            use-cross: true }
+          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-latest, dpkg_arch: armhf,            use-cross: true }
+          - { target: arm-unknown-linux-musleabihf, os: ubuntu-latest, dpkg_arch: musl-linux-armhf, use-cross: true }
           - { target: i686-pc-windows-msvc        , os: windows-2019,                                              }
-          - { target: i686-unknown-linux-gnu      , os: ubuntu-20.04, dpkg_arch: i686,             use-cross: true }
-          - { target: i686-unknown-linux-musl     , os: ubuntu-20.04, dpkg_arch: musl-linux-i686,  use-cross: true }
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-latest, dpkg_arch: i686,             use-cross: true }
+          - { target: i686-unknown-linux-musl     , os: ubuntu-latest, dpkg_arch: musl-linux-i686,  use-cross: true }
           - { target: x86_64-apple-darwin         , os: macos-13,                                                  }
           - { target: aarch64-apple-darwin        , os: macos-14,                                                  }
           - { target: x86_64-pc-windows-msvc      , os: windows-2019,                                              }
-          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-20.04, dpkg_arch: amd64,            use-cross: true }
-          - { target: x86_64-unknown-linux-musl   , os: ubuntu-20.04, dpkg_arch: musl-linux-amd64, use-cross: true }
+          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-latest, dpkg_arch: amd64,            use-cross: true }
+          - { target: x86_64-unknown-linux-musl   , os: ubuntu-latest, dpkg_arch: musl-linux-amd64, use-cross: true }
     env:
       BUILD_CMD: cargo
     steps:
