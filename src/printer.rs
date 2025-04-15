@@ -791,7 +791,7 @@ impl Printer for InteractivePrinter<'_> {
                                             background_color
                                         ),
                                         self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
+                                        panel_wrap.as_ref().unwrap()
                                     )?;
 
                                     cursor = 0;
