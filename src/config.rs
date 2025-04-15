@@ -119,17 +119,25 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
 
 #[test]
 fn default_config_should_include_all_lines() {
+    use crate::line_range::MaxBufferedLineNumber;
     use crate::line_range::RangeCheckResult;
 
-    assert_eq!(LineRanges::default().check(17), RangeCheckResult::InRange);
+    assert_eq!(
+        LineRanges::default().check(17, MaxBufferedLineNumber::Tentative(17)),
+        RangeCheckResult::InRange
+    );
 }
 
 #[test]
 fn default_config_should_highlight_no_lines() {
+    use crate::line_range::MaxBufferedLineNumber;
     use crate::line_range::RangeCheckResult;
 
     assert_ne!(
-        Config::default().highlighted_lines.0.check(17),
+        Config::default()
+            .highlighted_lines
+            .0
+            .check(17, MaxBufferedLineNumber::Tentative(17)),
         RangeCheckResult::InRange
     );
 }
