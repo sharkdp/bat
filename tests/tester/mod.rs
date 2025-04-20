@@ -85,11 +85,15 @@ fn create_sample_directory() -> Result<TempDir, Box<dyn std::error::Error>> {
         "HEAD",
         "initial commit",
         tree_id,
-        gix::commit::NO_PARENT_IDS
+        gix::commit::NO_PARENT_IDS,
     )?;
     assert_eq!(commit_id, repo.head_id()?);
 
-    fs::copy("tests/snapshots/sample.modified.rs", temp_dir.path().join("sample.rs")).expect("successful copy");
+    fs::copy(
+        "tests/snapshots/sample.modified.rs",
+        temp_dir.path().join("sample.rs"),
+    )
+    .expect("successful copy");
 
     Ok(temp_dir)
 }

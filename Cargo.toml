@@ -73,7 +73,7 @@ unicode-segmentation = "1.12.0"
 itertools = "0.13.0"
 
 [dependencies.gix]
-version = "0.70"
+version = "0.71"
 optional = true
 default-features = false
 features = ["blob-diff"]

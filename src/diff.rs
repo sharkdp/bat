@@ -67,7 +67,8 @@ pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
             repository
                 .head_tree()
                 .ok()?
-                .lookup_entry_by_path(filepath_relative_to_repo.to_str()?).ok()??
+                .lookup_entry_by_path(filepath_relative_to_repo.to_str()?)
+                .ok()??
                 .object_id(),
             EntryKind::Blob,
             filepath_relative_to_repo.to_str()?.into(),
