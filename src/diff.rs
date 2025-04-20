@@ -51,14 +51,14 @@ impl Sink for DiffStepper {
 pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
     let filepath_absolute = filename.canonicalize().ok()?;
     let repository = gix::discover(filepath_absolute.parent().ok()?).unwrap();
-    let repo_path_absolute = repository.work_dir()?.canonicalize().ok()?;
+    let repo_path_absolute = repository.workdir()?.canonicalize().ok()?;
     let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_path_absolute).ok()?;
     let mut cache = repository
         .diff_resource_cache(
             Mode::ToGit,
             WorktreeRoots {
                 old_root: None,
-                new_root: repository.work_dir().map(Path::to_path_buf),
+                new_root: repository.workdir().map(Path::to_path_buf),
             },
         )
         .ok()?;
