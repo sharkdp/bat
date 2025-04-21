@@ -6,8 +6,8 @@ use std::process::Command;
 
 use gix::actor::SignatureRef;
 use gix::bstr::BString;
-use gix::date::Time;
 use gix::bstr::ByteSlice;
+use gix::date::Time;
 use gix::objs::tree;
 use tempfile::TempDir;
 
