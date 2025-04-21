@@ -4,7 +4,10 @@ use std::io::Read;
 use std::path::PathBuf;
 use std::process::Command;
 
+use gix::actor::SignatureRef;
 use gix::bstr::BString;
+use gix::date::Time;
+use gix::bstr::ByteSlice;
 use gix::objs::tree;
 use tempfile::TempDir;
 
@@ -81,7 +84,14 @@ fn create_sample_directory() -> Result<TempDir, Box<dyn std::error::Error>> {
     tree.entries.push(entry);
     let tree_id = repo.write_object(tree)?;
 
-    let commit_id = repo.commit(
+    let author = SignatureRef {
+        name: "test".as_bytes().as_bstr(),
+        email: "test@test.test".as_bytes().as_bstr(),
+        time: Time::now_utc(),
+    };
+    let commit_id = repo.commit_as(
+        author,
+        author,
         "HEAD",
         "initial commit",
         tree_id,
