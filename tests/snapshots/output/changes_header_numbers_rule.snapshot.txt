@@ -17,8 +17,8 @@
   16   
   17   fn area(rectangle: &Rectangle) -> u32 {
   18       rectangle.width * rectangle.height
-  19   }
+  19 + }
   20 + 
   21 + fn perimeter(rectangle: &Rectangle) -> u32 {
   22 +     (rectangle.width + rectangle.height) * 2
-  23 + }
+  23   }
