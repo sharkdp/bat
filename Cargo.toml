@@ -29,7 +29,7 @@ minimal-application = [
     "clap",
     "etcetera",
     "paging",
-    "regex-onig",
+    "regex-fancy",
     "wild",
 ]
 git = ["git2"] # Support indicating git modifications
