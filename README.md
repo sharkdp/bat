@@ -23,7 +23,7 @@
 
 A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
 
-<ul><li>
+<ul style="list-style-type: none;"><li>
 <a href="https://www.warp.dev/bat">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
