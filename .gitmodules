@@ -197,9 +197,6 @@
 [submodule "assets/syntaxes/02_Extra/Lean"]
 	path = assets/syntaxes/02_Extra/Lean
 	url = https://github.com/leanprover/vscode-lean.git
-[submodule "assets/syntaxes/02_Extra/LiveScript"]
-	path = assets/syntaxes/02_Extra/LiveScript
-	url = https://github.com/paulmillr/LiveScript.tmbundle
 [submodule "assets/syntaxes/02_Extra/Zig"]
 	path = assets/syntaxes/02_Extra/Zig
 	url = https://github.com/ziglang/sublime-zig-language.git
