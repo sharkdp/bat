@@ -419,7 +419,7 @@ take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
 #### Prerequisites
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist#latest-microsoft-visual-c-redistributable-version)
 
 #### With WinGet
 
