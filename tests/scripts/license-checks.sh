@@ -13,7 +13,9 @@ gpl_excludes=(
     # Contains a reference to GPL, but is not under GPL
     ":(exclude)tests/syntax-tests/source/Java Server Page (JSP)/LICENSE.md"
 )
-gpl_occurances=$(git grep --recurse-submodules "${gpl_term}" -- "${gpl_excludes[@]}" || true)
+# The line "means either the GNU General Public License" comes from MPL, and MPL
+# for syntaxes and themes is fine.
+gpl_occurances=$(git grep --recurse-submodules "${gpl_term}" -- "${gpl_excludes[@]}" | grep -v 'means either the GNU General Public License' || true)
 
 if [ -z "${gpl_occurances}" ]; then
     echo "PASS: No files under GPL were found"
