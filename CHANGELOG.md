@@ -18,6 +18,7 @@
 
 - Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
 - CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
+- Replace `libgit2` with a pure Rust implementation of git called `gitoxide`, see PR #3235 (@blinxen)
 
 ## Syntaxes
 
