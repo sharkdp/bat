@@ -23,6 +23,6 @@
 )
 
 ```python
-dev foo():
+def foo():
   print("hi")
 ```
