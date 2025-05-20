@@ -32,6 +32,7 @@
 - Add debsources syntax to highlight `/etc/apt/sources.list` files, see #3215 (@keith-hall)
 - Add syntax definition and test file for GDScript highlighting, see #3236 (@chetanjangir0)
 - Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
+- Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
 
 ## Themes
 
