@@ -33,6 +33,7 @@
 - Add syntax definition and test file for GDScript highlighting, see #3236 (@chetanjangir0)
 - Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
 - Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
+- Add syntax Typst #3300 (@cskeeters)
 
 ## Themes
 
