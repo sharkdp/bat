@@ -37,6 +37,23 @@ Use character sequences like ^G, ^J, ^@, .. to identify non-printable characters
 Use special Unicode code points to identify non-printable characters
 .RE
 .HP
+\fB\-\-binary\fR <behavior>
+.IP
+How to treat binary content.
+
+Possible values:
+.RS
+.IP "no\-printing"
+Do not print any binary content (default)
+.IP "as\-text"
+Treat binary content as normal text
+.RE
+.HP
+\fB\-\-completion\fR <SHELL>
+.IP
+Show shell completion for a certain shell.
+Possible values: bash, fish, zsh, ps1
+.HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
 Only show plain style, no decorations. This is an alias for
@@ -196,6 +213,12 @@ Squeeze consecutive empty lines into a single empty line.
 \fB\-\-squeeze\-limit\fR <squeeze-limit>
 .IP
 Set the maximum number of consecutive empty lines to be printed.
+.HP
+\fB\-\-strip\-ansi\fR <when>
+.IP
+Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
+escape sequences unless the syntax highlighting language is plain text. Possible values:
+auto, always, *never*.
 .HP
 \fB\-\-style\fR <style\-components>
 .IP
