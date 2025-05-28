@@ -242,7 +242,10 @@ impl<'a> InteractivePrinter<'a> {
         }
 
         // Don't add grid decoration in compact mode
-        if config.style_components.grid() && !decorations.is_empty() && !config.style_components.compact() {
+        if config.style_components.grid()
+            && !decorations.is_empty()
+            && !config.style_components.compact()
+        {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
         }
 
@@ -331,7 +334,11 @@ impl<'a> InteractivePrinter<'a> {
 
     fn print_horizontal_line(&mut self, handle: &mut OutputHandle, grid_char: char) -> Result<()> {
         let use_rule = self.config.style_components.rule();
-        let style = if use_rule { self.colors.rule } else { self.colors.grid };
+        let style = if use_rule {
+            self.colors.rule
+        } else {
+            self.colors.grid
+        };
         if self.panel_width == 0 {
             self.print_horizontal_line_term(handle, style)?;
         } else {
@@ -478,7 +485,7 @@ impl Printer for InteractivePrinter<'_> {
 
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
-            Some(ContentType::UTF_16LE) => "   <UTF-16LE>", 
+            Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
             Some(ContentType::UTF_16BE) => "   <UTF-16BE>",
             None => "   <EMPTY>",
             _ => "",

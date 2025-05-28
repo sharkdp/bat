@@ -708,7 +708,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .help(
                             "Create completely new syntax and theme sets \
                              (instead of appending to the default sets).",
-                        )
+                        ),
                 )
                 .arg(
                     Arg::new("acknowledgements")
