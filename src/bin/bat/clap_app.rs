@@ -165,7 +165,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long_help(
                             "Only show lines that have been added/removed/modified with respect \
                      to the Git index. Use --diff-context=N to control how much context you want to see.",
-                        ),
+                        )
                 )
                 .arg(
                     Arg::new("diff-context")
@@ -183,7 +183,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .hide_short_help(true)
                         .long_help(
                             "Include N lines of context around added/removed/modified lines when using '--diff'.",
-                        ),
+                        )
                 )
     }
 
@@ -204,176 +204,176 @@ pub fn build_app(interactive_output: bool) -> Command {
             .long_help(
                 "Set the tab width to T spaces. Use a width of 0 to pass tabs through \
                      directly",
-            ),
+            )
     )
-        .arg(
-            Arg::new("wrap")
-                .long("wrap")
-                .overrides_with("wrap")
-                .value_name("mode")
-                .value_parser(["auto", "never", "character"])
-                .default_value("auto")
-                .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+    .arg(
+        Arg::new("wrap")
+            .long("wrap")
+            .overrides_with("wrap")
+            .value_name("mode")
+            .value_parser(["auto", "never", "character"])
+            .default_value("auto")
+            .hide_default_value(true)
+            .help("Specify the text-wrapping mode (*auto*, never, character).")
+            .long_help("Specify the text-wrapping mode (*auto*, never, character). \
                            The '--terminal-width' option can be used in addition to \
                            control the output width."),
-        )
-        .arg(
-            Arg::new("chop-long-lines")
-                .long("chop-long-lines")
-                .short('S')
-                .action(ArgAction::SetTrue)
-                .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
-        )
-        .arg(
-            Arg::new("terminal-width")
-                .long("terminal-width")
-                .value_name("width")
-                .hide_short_help(true)
-                .allow_hyphen_values(true)
-                .value_parser(
-                    |t: &str| {
-                        let is_offset = t.starts_with('+') || t.starts_with('-');
-                        t.parse::<i32>()
-                            .map_err(|_e| "must be an offset or number")
-                            .and_then(|v| if v == 0 && !is_offset {
-                                Err("terminal width cannot be zero")
-                            } else {
-                                Ok(t.to_owned())
-                            })
-                            .map_err(|e| e.to_string())
-                    })
-                .help(
-                    "Explicitly set the width of the terminal instead of determining it \
+    )
+    .arg(
+        Arg::new("chop-long-lines")
+            .long("chop-long-lines")
+            .short('S')
+            .action(ArgAction::SetTrue)
+            .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
+    )
+    .arg(
+        Arg::new("terminal-width")
+            .long("terminal-width")
+            .value_name("width")
+            .hide_short_help(true)
+            .allow_hyphen_values(true)
+            .value_parser(
+                |t: &str| {
+                    let is_offset = t.starts_with('+') || t.starts_with('-');
+                    t.parse::<i32>()
+                        .map_err(|_e| "must be an offset or number")
+                        .and_then(|v| if v == 0 && !is_offset {
+                            Err("terminal width cannot be zero")
+                        } else {
+                            Ok(t.to_owned())
+                        })
+                        .map_err(|e| e.to_string())
+                })
+            .help(
+                "Explicitly set the width of the terminal instead of determining it \
                      automatically. If prefixed with '+' or '-', the value will be treated \
                      as an offset to the actual terminal width. See also: '--wrap'.",
-                ),
-        )
-        .arg(
-            Arg::new("number")
-                .long("number")
-                .overrides_with("number")
-                .short('n')
-                .action(ArgAction::SetTrue)
-                .help("Show line numbers (alias for '--style=numbers').")
-                .long_help(
-                    "Only show line numbers, no other decorations. This is an alias for \
+            ),
+    )
+    .arg(
+        Arg::new("number")
+            .long("number")
+            .overrides_with("number")
+            .short('n')
+            .action(ArgAction::SetTrue)
+            .help("Show line numbers (alias for '--style=numbers').")
+            .long_help(
+                "Only show line numbers, no other decorations. This is an alias for \
                      '--style=numbers'",
-                ),
-        )
-        .arg(
-            Arg::new("color")
-                .long("color")
-                .overrides_with("color")
-                .value_name("when")
-                .value_parser(["auto", "never", "always"])
-                .hide_default_value(true)
-                .default_value("auto")
-                .help("When to use colors (*auto*, never, always).")
-                .long_help(
-                    "Specify when to use colored output. The automatic mode \
+            ),
+    )
+    .arg(
+        Arg::new("color")
+            .long("color")
+            .overrides_with("color")
+            .value_name("when")
+            .value_parser(["auto", "never", "always"])
+            .hide_default_value(true)
+            .default_value("auto")
+            .help("When to use colors (*auto*, never, always).")
+            .long_help(
+                "Specify when to use colored output. The automatic mode \
                      only enables colors if an interactive terminal is detected - \
                      colors are automatically disabled if the output goes to a pipe.\n\
                      Possible values: *auto*, never, always.",
-                ),
-        )
-        .arg(
-            Arg::new("italic-text")
-                .long("italic-text")
-                .value_name("when")
-                .value_parser(["always", "never"])
-                .default_value("never")
-                .hide_default_value(true)
-                .help("Use italics in output (always, *never*)")
-                .long_help("Specify when to use ANSI sequences for italic text in the output. Possible values: always, *never*."),
-        )
-        .arg(
-            Arg::new("decorations")
-                .long("decorations")
-                .overrides_with("decorations")
-                .value_name("when")
-                .value_parser(["auto", "never", "always", "compact"])
-                .default_value("auto")
-                .hide_default_value(true)
-                .help("When to show the decorations (*auto*, never, always, compact).")
-                .long_help(
-                    "Specify when to use the decorations that have been specified \
+            ),
+    )
+    .arg(
+        Arg::new("italic-text")
+            .long("italic-text")
+            .value_name("when")
+            .value_parser(["always", "never"])
+            .default_value("never")
+            .hide_default_value(true)
+            .help("Use italics in output (always, *never*)")
+            .long_help("Specify when to use ANSI sequences for italic text in the output. Possible values: always, *never*."),
+    )
+    .arg(
+        Arg::new("decorations")
+            .long("decorations")
+            .overrides_with("decorations")
+            .value_name("when")
+            .value_parser(["auto", "never", "always", "compact"])
+            .default_value("auto")
+            .hide_default_value(true)
+            .help("When to show the decorations (*auto*, never, always, compact).")
+            .long_help(
+                "Specify when to use the decorations that have been specified \
                      via '--style'. The automatic mode only enables decorations if \
                      an interactive terminal is detected. 'compact' mode shows a minimal \
                      header with just the filename and line numbers. \
                      Possible values: *auto*, never, always, compact.",
-                ),
-        )
-        .arg(
-            Arg::new("force-colorization")
-                .long("force-colorization")
-                .short('f')
-                .action(ArgAction::SetTrue)
-                .conflicts_with("color")
-                .conflicts_with("decorations")
-                .overrides_with("force-colorization")
-                .hide_short_help(true)
-                .long_help("Alias for '--decorations=always --color=always'. This is useful \
+            ),
+    )
+    .arg(
+        Arg::new("force-colorization")
+            .long("force-colorization")
+            .short('f')
+            .action(ArgAction::SetTrue)
+            .conflicts_with("color")
+            .conflicts_with("decorations")
+            .overrides_with("force-colorization")
+            .hide_short_help(true)
+            .long_help("Alias for '--decorations=always --color=always'. This is useful \
                         if the output of bat is piped to another program, but you want \
                         to keep the colorization/decorations.")
+    )
+    .arg(
+        Arg::new("paging")
+            .long("paging")
+            .overrides_with("paging")
+            .overrides_with("no-paging")
+            .value_name("when")
+            .value_parser(["auto", "never", "always"])
+            .default_value("auto")
+            .hide_default_value(true)
+            .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
+            .long_help(
+                "Specify when to use the pager. To disable the pager, use \
+                --paging=never' or its alias,'-P'. To disable the pager permanently, \
+                set BAT_PAGING to 'never'. To control which pager is used, see the \
+                '--pager' option. Possible values: *auto*, never, always."
+            ),
+    )
+    .arg(
+        Arg::new("no-paging")
+            .short('P')
+            .long("no-paging")
+            .alias("no-pager")
+            .action(ArgAction::SetTrue)
+            .overrides_with("no-paging")
+            .hide(true)
+            .hide_short_help(true)
+            .help("Alias for '--paging=never'")
         )
-        .arg(
-            Arg::new("paging")
-                .long("paging")
-                .overrides_with("paging")
-                .overrides_with("no-paging")
-                .value_name("when")
-                .value_parser(["auto", "never", "always"])
-                .default_value("auto")
-                .hide_default_value(true)
-                .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
-                .long_help(
-                    "Specify when to use the pager. To disable the pager, use \
-                    --paging=never' or its alias,'-P'. To disable the pager permanently, \
-                    set BAT_PAGING to 'never'. To control which pager is used, see the \
-                    '--pager' option. Possible values: *auto*, never, always."
-                ),
-        )
-        .arg(
-            Arg::new("no-paging")
-                .short('P')
-                .long("no-paging")
-                .alias("no-pager")
-                .action(ArgAction::SetTrue)
-                .overrides_with("no-paging")
-                .hide(true)
-                .hide_short_help(true)
-                .help("Alias for '--paging=never'")
-            )
-        .arg(
-            Arg::new("pager")
-                .long("pager")
-                .overrides_with("pager")
-                .value_name("command")
-                .hide_short_help(true)
-                .help("Determine which pager to use.")
-                .long_help(
-                    "Determine which pager is used. This option will override the \
-                    PAGER and BAT_PAGER environment variables. The default pager is 'less'. \
-                    To control when the pager is used, see the '--paging' option. \
-                    Example: '--pager \"less -RF\"'."
-                ),
-        )
-        .arg(
-            Arg::new("map-syntax")
-                .short('m')
-                .long("map-syntax")
-                .action(ArgAction::Append)
-                .value_name("glob:syntax")
-                .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
-                .long_help(
-                    "Map a glob pattern to an existing syntax name. The glob pattern is matched \
+    .arg(
+        Arg::new("pager")
+            .long("pager")
+            .overrides_with("pager")
+            .value_name("command")
+            .hide_short_help(true)
+            .help("Determine which pager to use.")
+            .long_help(
+                "Determine which pager is used. This option will override the \
+                PAGER and BAT_PAGER environment variables. The default pager is 'less'. \
+                To control when the pager is used, see the '--paging' option. \
+                Example: '--pager \"less -RF\"'."
+            ),
+    )
+    .arg(
+        Arg::new("map-syntax")
+            .short('m')
+            .long("map-syntax")
+            .action(ArgAction::Append)
+            .value_name("glob:syntax")
+            .help("Use the specified syntax for files matching the glob pattern ('*.cpp:C++').")
+            .long_help(
+                "Map a glob pattern to an existing syntax name. The glob pattern is matched \
                      on the full path and the filename. For example, to highlight *.build files \
                      with the Python syntax, use -m '*.build:Python'. To highlight files named \
                      '.myignore' with the Git Ignore syntax, use -m '.myignore:Git Ignore'. Note \
                      that the right-hand side is the *name* of the syntax, not a file extension.",
-                )
+            )
         )
         .arg(
             Arg::new("ignored-suffix")
@@ -670,7 +670,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
                              the source directory (default: the configuration directory).",
-                        )
+                        ),
                 )
                 .arg(
                     Arg::new("clear")
