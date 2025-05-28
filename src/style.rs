@@ -19,6 +19,8 @@ pub enum StyleComponent {
     Full,
     Default,
     Plain,
+    // Only show header filename and line numbers in a compact format
+    Compact,
 }
 
 impl StyleComponent {
@@ -40,6 +42,7 @@ impl StyleComponent {
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
+            StyleComponent::Compact => &[StyleComponent::Compact, StyleComponent::LineNumbers],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
@@ -64,7 +67,6 @@ impl StyleComponent {
 
 impl FromStr for StyleComponent {
     type Err = Error;
-
     fn from_str(s: &str) -> Result<Self> {
         match s {
             "auto" => Ok(StyleComponent::Auto),
@@ -80,6 +82,7 @@ impl FromStr for StyleComponent {
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
+            "compact" => Ok(StyleComponent::Compact),
             _ => Err(format!("Unknown style '{s}'").into()),
         }
     }
@@ -93,6 +96,10 @@ impl StyleComponents {
         StyleComponents(components.iter().cloned().collect())
     }
 
+    pub fn rule(&self) -> bool {
+        self.0.contains(&StyleComponent::Rule)
+    }
+
     #[cfg(feature = "git")]
     pub fn changes(&self) -> bool {
         self.0.contains(&StyleComponent::Changes)
@@ -100,10 +107,6 @@ impl StyleComponents {
 
     pub fn grid(&self) -> bool {
         self.0.contains(&StyleComponent::Grid)
-    }
-
-    pub fn rule(&self) -> bool {
-        self.0.contains(&StyleComponent::Rule)
     }
 
     pub fn header(&self) -> bool {
@@ -128,6 +131,10 @@ impl StyleComponents {
 
     pub fn plain(&self) -> bool {
         self.0.iter().all(|c| c == &StyleComponent::Plain)
+    }
+
+    pub fn compact(&self) -> bool {
+        self.0.contains(&StyleComponent::Compact)
     }
 
     pub fn insert(&mut self, component: StyleComponent) {
@@ -221,12 +228,14 @@ impl Default for StyleComponentList {
 
 impl FromStr for StyleComponentList {
     type Err = Error;
-
     fn from_str(s: &str) -> Result<Self> {
         Ok(StyleComponentList(
-            s.split(",")
-                .map(ComponentAction::extract_from_str) // If the component starts with "-", it's meant to be removed
-                .map(|(a, s)| Ok((a, StyleComponent::from_str(s)?)))
+            s.split(',')
+                .map(ComponentAction::extract_from_str)
+                .map(|(a, s)| {
+                    let c = StyleComponent::from_str(s)?;
+                    Ok((a, c))
+                })
                 .collect::<Result<Vec<(ComponentAction, StyleComponent)>>>()?,
         ))
     }

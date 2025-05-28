@@ -4,6 +4,7 @@
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 - Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
+- Added a new `--decorations=compact` mode for more compact file headings, keeping line numbers and filename but reducing vertical space. See #3303
 
 ## Bugfixes
 

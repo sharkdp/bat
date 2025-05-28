@@ -43,7 +43,7 @@ impl Decoration for LineNumberDecoration {
         &self,
         line_number: usize,
         continuation: bool,
-        _printer: &InteractivePrinter,
+        printer: &InteractivePrinter,
     ) -> DecorationText {
         if continuation {
             if line_number >= self.cached_wrap_invalid_at {
@@ -56,10 +56,20 @@ impl Decoration for LineNumberDecoration {
 
             self.cached_wrap.clone()
         } else {
-            let plain: String = format!("{line_number:4}");
-            DecorationText {
-                width: plain.len(),
-                text: self.color.paint(plain).to_string(),
+            if printer.is_compact_mode() {
+                // In compact mode, use 3-space padding for line numbers
+                let plain: String = format!("{:>3}", line_number);
+                DecorationText {
+                    width: 3,
+                    text: self.color.paint(plain).to_string(),
+                }
+            } else {
+                // In normal mode, use 4-space padding
+                let plain: String = format!("{:>4}", line_number);
+                DecorationText {
+                    width: 4,
+                    text: self.color.paint(plain).to_string(),
+                }
             }
         }
     }

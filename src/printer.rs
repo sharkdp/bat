@@ -221,6 +221,7 @@ impl<'a> InteractivePrinter<'a> {
         // Create decorations.
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
 
+        // Add line numbers decoration for compact mode regardless of style components
         if config.style_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
         }
@@ -232,18 +233,20 @@ impl<'a> InteractivePrinter<'a> {
             }
         }
 
-        let mut panel_width: usize =
-            decorations.len() + decorations.iter().fold(0, |a, x| a + x.width());
+        // Calculate panel width as the sum of all decoration widths
+        let mut panel_width: usize = decorations.iter().map(|d| d.width()).sum();
 
-        // The grid border decoration isn't added until after the panel_width calculation, since the
-        // print_horizontal_line, print_header, and print_footer functions all assume the panel
-        // width is without the grid border.
-        if config.style_components.grid() && !decorations.is_empty() {
+        // In compact mode, line numbers should use 3 spaces
+        if config.style_components.compact() && config.style_components.numbers() {
+            panel_width = 3;
+        }
+
+        // Don't add grid decoration in compact mode
+        if config.style_components.grid() && !decorations.is_empty() && !config.style_components.compact() {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
         }
 
-        // Disable the panel if the terminal is too small (i.e. can't fit 5 characters with the
-        // panel showing).
+        // Disable the panel if the terminal is too small
         if config.term_width
             < (decorations.len() + decorations.iter().fold(0, |a, x| a + x.width())) + 5
         {
@@ -316,6 +319,8 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         style: Style,
     ) -> Result<()> {
+        let use_rule = self.config.style_components.rule();
+        let style = if use_rule { self.colors.rule } else { style };
         writeln!(
             handle,
             "{}",
@@ -325,12 +330,14 @@ impl<'a> InteractivePrinter<'a> {
     }
 
     fn print_horizontal_line(&mut self, handle: &mut OutputHandle, grid_char: char) -> Result<()> {
+        let use_rule = self.config.style_components.rule();
+        let style = if use_rule { self.colors.rule } else { self.colors.grid };
         if self.panel_width == 0 {
-            self.print_horizontal_line_term(handle, self.colors.grid)?;
+            self.print_horizontal_line_term(handle, style)?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
             let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
-            writeln!(handle, "{}", self.colors.grid.paint(hline))?;
+            writeln!(handle, "{}", style.paint(hline))?;
         }
 
         Ok(())
@@ -438,6 +445,10 @@ impl<'a> InteractivePrinter<'a> {
         *cursor += text.len();
         text.to_string()
     }
+
+    pub fn is_compact_mode(&self) -> bool {
+        self.config.style_components.compact()
+    }
 }
 
 impl Printer for InteractivePrinter<'_> {
@@ -447,24 +458,19 @@ impl Printer for InteractivePrinter<'_> {
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
-        if add_header_padding && self.config.style_components.rule() {
-            self.print_horizontal_line_term(handle, self.colors.rule)?;
+        // Print compact header format (overrides other header styles)
+        if self.config.style_components.compact() {
+            // Bordered compact header style
+            writeln!(handle, "──── {} ────", input.description.title())?;
+            return Ok(());
         }
 
+        // Skip header if neither header nor compact mode is enabled
         if !self.config.style_components.header() {
-            if Some(ContentType::BINARY) == self.content_type
-                && !self.config.show_nonprintable
-                && !matches!(self.config.binary, BinaryBehavior::AsText)
-            {
-                writeln!(
-                    handle,
-                    "{}: Binary content from {} will not be printed to the terminal \
-                     (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
-                     to show the binary file contents.",
-                    Yellow.paint("[bat warning]"),
-                    input.description.summary(),
-                )?;
-            } else if self.config.style_components.grid() {
+            if add_header_padding && !self.config.style_components.rule() {
+                writeln!(handle)?;
+            }
+            if self.config.style_components.grid() {
                 self.print_horizontal_line(handle, '┬')?;
             }
             return Ok(());
@@ -472,7 +478,7 @@ impl Printer for InteractivePrinter<'_> {
 
         let mode = match self.content_type {
             Some(ContentType::BINARY) => "   <BINARY>",
-            Some(ContentType::UTF_16LE) => "   <UTF-16LE>",
+            Some(ContentType::UTF_16LE) => "   <UTF-16LE>", 
             Some(ContentType::UTF_16BE) => "   <UTF-16BE>",
             None => "   <EMPTY>",
             _ => "",
@@ -501,11 +507,6 @@ impl Printer for InteractivePrinter<'_> {
         // Print the cornering grid before the first header component
         if self.config.style_components.grid() {
             self.print_horizontal_line(handle, '┬')?;
-        } else {
-            // Only pad space between files, if we haven't already drawn a horizontal rule
-            if add_header_padding && !self.config.style_components.rule() {
-                writeln!(handle)?;
-            }
         }
 
         header_components
@@ -669,7 +670,16 @@ impl Printer for InteractivePrinter<'_> {
             .filter(|_| highlight_this_line);
 
         // Line decorations.
-        if self.panel_width > 0 {
+        if self.panel_width == 4
+            && self.config.style_components.header_filename()
+            && self.config.style_components.numbers()
+            && !self.config.style_components.grid()
+            && !self.config.style_components.header_filesize()
+            && self.config.style_components.0.len() == 2
+        {
+            write!(handle, "{:>4} ", line_number)?;
+            cursor_max -= 5;
+        } else if self.panel_width > 0 {
             let decorations = self
                 .decorations
                 .iter()

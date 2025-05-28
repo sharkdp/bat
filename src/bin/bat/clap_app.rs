@@ -293,14 +293,16 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("decorations")
                 .overrides_with("decorations")
                 .value_name("when")
-                .value_parser(["auto", "never", "always"])
+                .value_parser(["auto", "never", "always", "compact"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("When to show the decorations (*auto*, never, always).")
+                .help("When to show the decorations (*auto*, never, always, compact).")
                 .long_help(
                     "Specify when to use the decorations that have been specified \
                      via '--style'. The automatic mode only enables decorations if \
-                     an interactive terminal is detected. Possible values: *auto*, never, always.",
+                     an interactive terminal is detected. 'compact' mode shows a minimal \
+                     header with just the filename and line numbers. \
+                     Possible values: *auto*, never, always, compact.",
                 ),
         )
         .arg(
@@ -668,7 +670,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
                              the source directory (default: the configuration directory).",
-                        ),
+                        )
                 )
                 .arg(
                     Arg::new("clear")
@@ -706,7 +708,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .help(
                             "Create completely new syntax and theme sets \
                              (instead of appending to the default sets).",
-                        ),
+                        )
                 )
                 .arg(
                     Arg::new("acknowledgements")

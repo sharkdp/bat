@@ -382,6 +382,19 @@ impl App {
     }
 
     fn forced_style_components(&self) -> Option<StyleComponents> {
+        // Compact headings mode: only show compact header and line numbers.
+        if self
+            .matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str())
+            == Some("compact")
+        {
+            return Some(StyleComponents(HashSet::from([
+                StyleComponent::Compact,
+                StyleComponent::LineNumbers,
+            ])));
+        }
+
         // No components if `--decorations=never``.
         if self
             .matches
