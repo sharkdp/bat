@@ -298,7 +298,11 @@ impl HighlightingAssets {
         let syntax_set = self.get_syntax_set()?;
         Ok(String::from_utf8(reader.first_line.clone())
             .ok()
-            .and_then(|l| syntax_set.find_syntax_by_first_line(&l))
+            .and_then(|l| {
+                // Strip UTF-8 BOM if present
+                let line = l.strip_prefix('\u{feff}').unwrap_or(&l);
+                syntax_set.find_syntax_by_first_line(line)
+            })
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 }
@@ -529,6 +533,41 @@ mod tests {
         );
         assert_eq!(
             test.syntax_for_file_with_content("my_script", "<?php"),
+            "PHP"
+        );
+    }
+
+    #[test]
+    fn syntax_detection_first_line_with_utf8_bom() {
+        let test = SyntaxDetectionTest::new();
+
+        // Test that XML files are detected correctly even with UTF-8 BOM
+        // The BOM should be stripped before first-line syntax detection
+        let xml_with_bom = "\u{feff}<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_file", xml_with_bom),
+            "XML"
+        );
+
+        // Test the specific .csproj case mentioned in the issue
+        // Even if .csproj has extension mapping, this tests first-line fallback
+        let csproj_content_with_bom = "\u{feff}<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">";
+        assert_eq!(
+            test.syntax_for_file_with_content("test.csproj", csproj_content_with_bom),
+            "XML"
+        );
+
+        // Test that shell scripts are detected correctly even with UTF-8 BOM
+        let script_with_bom = "\u{feff}#!/bin/bash";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_script", script_with_bom),
+            "Bourne Again Shell (bash)"
+        );
+
+        // Test that PHP files are detected correctly even with UTF-8 BOM
+        let php_with_bom = "\u{feff}<?php";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_php", php_with_bom),
             "PHP"
         );
     }
