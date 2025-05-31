@@ -14,6 +14,10 @@ fn all_themes_are_present() {
         themes,
         vec![
             "1337",
+            "Catppuccin Frappe",
+            "Catppuccin Latte",
+            "Catppuccin Macchiato",
+            "Catppuccin Mocha",
             "Coldark-Cold",
             "Coldark-Dark",
             "DarkNeon",

@@ -38,6 +38,8 @@
 
 ## Themes
 
+- Add Catppuccin, see #3317 (@SchweGELBin)
+
 ## `bat` as a library
 
 # v0.25.0

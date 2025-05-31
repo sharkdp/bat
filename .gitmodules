@@ -272,3 +272,6 @@
 [submodule "assets/syntaxes/02_Extra/typst-syntax-highlight"]
 	path = assets/syntaxes/02_Extra/typst-syntax-highlight
 	url = https://github.com/hyrious/typst-syntax-highlight
+[submodule "assets/themes/Catppuccin"]
+	path = assets/themes/Catppuccin
+	url = https://github.com/SchweGELBin/catppuccin-bat-sub.git
