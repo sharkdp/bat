@@ -35,6 +35,7 @@
 - Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
 - Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
 - Add syntax Typst #3300 (@cskeeters)
+- Map `.mill` files to Scala syntax for Mill build tool configuration files #3311 (@krikera)
 
 ## Themes
 
