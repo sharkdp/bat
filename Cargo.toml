@@ -112,7 +112,7 @@ regex = "1.10.6"
 serde = "1.0"
 serde_derive = "1.0"
 serde_with = { version = "3.12.0", default-features = false, features = ["macros"] }
-toml = { version = "0.8.19", features = ["preserve_order"] }
+toml = { version = "0.8.22", features = ["preserve_order"] }
 walkdir = "2.5"
 
 [build-dependencies.clap]
