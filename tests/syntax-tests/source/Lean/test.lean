@@ -1,67 +1,82 @@
-import data.matrix.notation
-import data.vector2
+import MIL.Common
+import Mathlib.Topology.Instances.Real.Defs
 
-/-!
+open Set Filter Topology
 
-Helpers that don't currently fit elsewhere...
+variable {α : Type*}
+variable (s t : Set ℕ)
+variable (ssubt : s ⊆ t)
+variable {α : Type*} (s : Set (Set α))
+-- Apostrophes are allowed in variable names
+variable (f'_x x' : ℕ)
+variable (bangwI' jablu'DI' QaQqu' nay' Ghay'cha' he' : ℕ)
 
--/
+-- In the next example we could use `tauto` in each proof instead of knowing the lemmas
+example {α : Type*} (s : Set α) : Filter α :=
+  { sets := { t | s ⊆ t }
+    univ_sets := subset_univ s
+    sets_of_superset := fun hU hUV ↦ Subset.trans hU hUV
+    inter_sets := fun hU hV ↦ subset_inter hU hV }
 
-lemma split_eq {m n : Type*} (x : m × n) (p p' : m × n) :
-  p = x ∨ p' = x ∨ (x ≠ p ∧ x ≠ p') := by tauto
-
--- For `playfield`s, the piece type and/or piece index type.
-variables (X : Type*)
-variables [has_repr X]
 
 namespace chess.utils
 
 section repr
 
-/--
-An auxiliary wrapper for `option X` that allows for overriding the `has_repr` instance
-for `option`, and rather, output just the value in the `some` and a custom provided
-`string` for `none`.
--/
-structure option_wrapper :=
-(val : option X)
-(none_s : string)
+@[class] structure One₂ (α : Type) where
+  /-- The element one -/
+  one : α
 
-instance wrapped_option_repr : has_repr (option_wrapper X) :=
-⟨λ ⟨val, s⟩, (option.map has_repr.repr val).get_or_else s⟩
+structure StandardTwoSimplex where
+  x : ℝ
+  y : ℝ
+  z : ℝ
+  x_nonneg : 0 ≤ x
+  y_nonneg : 0 ≤ y
+  z_nonneg : 0 ≤ z
+  sum_eq : x + y + z = 1
 
-variables {X}
-/--
-Construct an `option_wrapper` term from a provided `option X` and the `string`
-that will override the `has_repr.repr` for `none`.
--/
-def option_wrap (val : option X) (none_s : string) : option_wrapper X := ⟨val, none_s⟩
+#check Pi.ringHom
+#check ker_Pi_Quotient_mk
+#eval 1 + 1
 
--- The size of the "vectors" for a `fin n' → X`, for `has_repr` definitions
-variables {m' n' : ℕ}
+/-- The homomorphism from ``R ⧸ ⨅ i, I i`` to ``Π i, R ⧸ I i`` featured in the Chinese
+  Remainder Theorem. -/
+def chineseMap (I : ι → Ideal R) : (R ⧸ ⨅ i, I i) →+* Π i, R ⧸ I i :=
+  Ideal.Quotient.lift (⨅ i, I i) (Pi.ringHom fun i : ι ↦ Ideal.Quotient.mk (I i))
+    (by simp [← RingHom.mem_ker, ker_Pi_Quotient_mk])
 
-/--
-For a "vector" `X^n'` represented by the type `Π n' : ℕ, fin n' → X`, where
-the `X` has a `has_repr` instance itself, we can provide a `has_repr` for the "vector".
-This definition is used for displaying rows of the playfield, when it is defined
-via a `matrix`, likely through notation.
--/
-def vec_repr : Π {n' : ℕ}, (fin n' → X) → string :=
-λ _ v, string.intercalate ", " ((vector.of_fn v).to_list.map repr)
+lemma chineseMap_mk (I : ι → Ideal R) (x : R) :
+    chineseMap I (Quotient.mk _ x) = fun i : ι ↦ Ideal.Quotient.mk (I i) x :=
+  rfl
 
-instance vec_repr_instance : has_repr (fin n' → X) := ⟨vec_repr⟩
+theorem isCoprime_Inf {I : Ideal R} {J : ι → Ideal R} {s : Finset ι}
+    (hf : ∀ j ∈ s, IsCoprime I (J j)) : IsCoprime I (⨅ j ∈ s, J j) := by
+  classical
+  simp_rw [isCoprime_iff_add] at *
+  induction s using Finset.induction with
+  | empty =>
+      simp
+  | @insert i s _ hs =>
+      rw [Finset.iInf_insert, inf_comm, one_eq_top, eq_top_iff, ← one_eq_top]
+      set K := ⨅ j ∈ s, J j
+      calc
+        1 = I + K                  := (hs fun j hj ↦ hf j (Finset.mem_insert_of_mem hj)).symm
+        _ = I + K * (I + J i)      := by rw [hf i (Finset.mem_insert_self i s), mul_one]
+        _ = (1 + K) * I + K * J i  := by ring
+        _ ≤ I + K ⊓ J i            := by gcongr ; apply mul_le_left ; apply mul_le_inf
 
-/--
-For a `matrix` `X^(m' × n')` where the `X` has a `has_repr` instance itself,
-we can provide a `has_repr` for the matrix, using `vec_repr` for each of the rows of the matrix.
-This definition is used for displaying the playfield, when it is defined
-via a `matrix`, likely through notation.
--/
-def matrix_repr : Π {m' n'}, matrix (fin m') (fin n') X → string :=
-λ _ _ M, string.intercalate ";\n" ((vector.of_fn M).to_list.map repr)
 
-instance matrix_repr_instance :
-  has_repr (matrix (fin n') (fin m') X) := ⟨matrix_repr⟩
+class Ring₃ (R : Type) extends AddGroup₃ R, Monoid₃ R, MulZeroClass R where
+  /-- Multiplication is left distributive over addition -/
+  left_distrib : ∀ a b c : R, a * (b + c) = a * b + a * c
+  /-- Multiplication is right distributive over addition -/
+  right_distrib : ∀ a b c : R, (a + b) * c = a * c + b * c
+
+instance {R : Type} [Ring₃ R] : AddCommGroup₃ R :=
+{ Ring₃.toAddGroup₃ with
+  add_comm := by
+    sorry }
 
 end repr
 
