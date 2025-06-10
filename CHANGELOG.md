@@ -36,6 +36,7 @@
 - Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
 - Add syntax Typst #3300 (@cskeeters)
 - Map `.mill` files to Scala syntax for Mill build tool configuration files #3311 (@krikera)
+- Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
 
 ## Themes
 
