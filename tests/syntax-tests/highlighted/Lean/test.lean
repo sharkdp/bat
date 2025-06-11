@@ -1,67 +1,82 @@
-[38;2;249;38;114mimport[0m[38;2;248;248;242m data.matrix.notation[0m
-[38;2;249;38;114mimport[0m[38;2;248;248;242m data.vector2[0m
+[38;2;249;38;114mimport[0m[38;2;248;248;242m MIL.Common[0m
+[38;2;249;38;114mimport[0m[38;2;248;248;242m Mathlib.Topology.Instances.Real.Defs[0m
 
-[38;2;117;113;94m/-![0m
+[38;2;249;38;114mopen[0m[38;2;248;248;242m Set Filter Topology[0m
 
-[38;2;117;113;94mHelpers that don't currently fit elsewhere...[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m {α : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m*}[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m (s t : Set ℕ)[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m (ssubt : s ⊆ t)[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m {α : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m*} (s : Set (Set α))[0m
+[38;2;117;113;94m-- Apostrophes are allowed in variable names[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m (f'_x x' : ℕ)[0m
+[38;2;249;38;114mvariable[0m[38;2;248;248;242m (bangwI' jablu'DI' QaQqu' nay' Ghay'cha' he' : ℕ)[0m
 
-[38;2;117;113;94m-/[0m
+[38;2;117;113;94m-- In the next example we could use `tauto` in each proof instead of knowing the lemmas[0m
+[38;2;249;38;114mexample[0m[38;2;248;248;242m {α : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m*} (s : Set α) : Filter α :=[0m
+[38;2;248;248;242m  { sets := { t | s ⊆ t }[0m
+[38;2;248;248;242m    univ_sets := subset_univ s[0m
+[38;2;248;248;242m    sets_of_superset := [0m[38;2;249;38;114mfun[0m[38;2;248;248;242m hU hUV ↦ Subset.trans hU hUV[0m
+[38;2;248;248;242m    inter_sets := [0m[38;2;249;38;114mfun[0m[38;2;248;248;242m hU hV ↦ subset_inter hU hV }[0m
 
-[38;2;249;38;114mlemma[0m[38;2;248;248;242m [0m[38;2;166;226;46msplit_eq[0m[38;2;248;248;242m [0m[38;2;248;248;242m{m n : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m*} (x : m × n) (p p' : m × n) :[0m
-[38;2;248;248;242m  p = x ∨ p' = x ∨ (x ≠ p ∧ x ≠ p') := [0m[38;2;249;38;114mby[0m[38;2;248;248;242m tauto[0m
-
-[38;2;117;113;94m--[0m[38;2;117;113;94m For `playfield`s, the piece type and/or piece index type.[0m
-[38;2;249;38;114mvariables[0m[38;2;248;248;242m (X : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m*)[0m
-[38;2;249;38;114mvariables[0m[38;2;248;248;242m [has_repr X][0m
 
 [38;2;249;38;114mnamespace[0m[38;2;248;248;242m chess.utils[0m
 
 [38;2;249;38;114msection[0m[38;2;248;248;242m repr[0m
 
-[38;2;117;113;94m/--[0m
-[38;2;117;113;94mAn auxiliary wrapper for `option X` that allows for overriding the `has_repr` instance[0m
-[38;2;117;113;94mfor `option`, and rather, output just the value in the `some` and a custom provided[0m
-[38;2;117;113;94m`string` for `none`.[0m
-[38;2;117;113;94m-/[0m
-[38;2;249;38;114mstructure[0m[38;2;248;248;242m [0m[38;2;166;226;46moption_wrapper[0m[38;2;248;248;242m [0m[38;2;248;248;242m:=[0m
-[38;2;248;248;242m(val : option X)[0m
-[38;2;248;248;242m(none_s : string)[0m
+[38;2;249;38;114m@[class][0m[38;2;248;248;242m [0m[38;2;249;38;114mstructure[0m[38;2;248;248;242m [0m[38;2;166;226;46mOne₂[0m[38;2;248;248;242m [0m[38;2;248;248;242m(α : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m) [0m[38;2;249;38;114mwhere[0m
+[38;2;248;248;242m  [0m[38;2;117;113;94m/-- The element one -/[0m
+[38;2;248;248;242m  one : α[0m
 
-[38;2;249;38;114minstance[0m[38;2;248;248;242m [0m[38;2;166;226;46mwrapped_option_repr[0m[38;2;248;248;242m [0m[38;2;248;248;242m: has_repr (option_wrapper X) :=[0m
-[38;2;248;248;242m⟨[0m[38;2;249;38;114mλ[0m[38;2;248;248;242m ⟨val, s⟩, (option.map has_repr.repr val).get_or_else s⟩[0m
+[38;2;249;38;114mstructure[0m[38;2;248;248;242m [0m[38;2;166;226;46mStandardTwoSimplex[0m[38;2;248;248;242m [0m[38;2;249;38;114mwhere[0m
+[38;2;248;248;242m  x : ℝ[0m
+[38;2;248;248;242m  y : ℝ[0m
+[38;2;248;248;242m  z : ℝ[0m
+[38;2;248;248;242m  x_nonneg : [0m[38;2;190;132;255m0[0m[38;2;248;248;242m ≤ x[0m
+[38;2;248;248;242m  y_nonneg : [0m[38;2;190;132;255m0[0m[38;2;248;248;242m ≤ y[0m
+[38;2;248;248;242m  z_nonneg : [0m[38;2;190;132;255m0[0m[38;2;248;248;242m ≤ z[0m
+[38;2;248;248;242m  sum_eq : x + y + z = [0m[38;2;190;132;255m1[0m
 
-[38;2;249;38;114mvariables[0m[38;2;248;248;242m {X}[0m
-[38;2;117;113;94m/--[0m
-[38;2;117;113;94mConstruct an `option_wrapper` term from a provided `option X` and the `string`[0m
-[38;2;117;113;94mthat will override the `has_repr.repr` for `none`.[0m
-[38;2;117;113;94m-/[0m
-[38;2;249;38;114mdef[0m[38;2;248;248;242m [0m[38;2;166;226;46moption_wrap[0m[38;2;248;248;242m [0m[38;2;248;248;242m(val : option X) (none_s : string) : option_wrapper X := ⟨val, none_s⟩[0m
+[38;2;249;38;114m#check[0m[38;2;248;248;242m Pi.ringHom[0m
+[38;2;249;38;114m#check[0m[38;2;248;248;242m ker_Pi_Quotient_mk[0m
+[38;2;249;38;114m#eval[0m[38;2;248;248;242m [0m[38;2;190;132;255m1[0m[38;2;248;248;242m + [0m[38;2;190;132;255m1[0m
 
-[38;2;117;113;94m--[0m[38;2;117;113;94m The size of the "vectors" for a `fin n' → X`, for `has_repr` definitions[0m
-[38;2;249;38;114mvariables[0m[38;2;248;248;242m {m' n' : ℕ}[0m
+[38;2;117;113;94m/-- The homomorphism from ``R ⧸ ⨅ i, I i`` to ``Π i, R ⧸ I i`` featured in the Chinese[0m
+[38;2;117;113;94m  Remainder Theorem. -/[0m
+[38;2;249;38;114mdef[0m[38;2;248;248;242m [0m[38;2;166;226;46mchineseMap[0m[38;2;248;248;242m [0m[38;2;248;248;242m(I : ι → Ideal R) : (R ⧸ ⨅ i, I i) →+* Π i, R ⧸ I i :=[0m
+[38;2;248;248;242m  Ideal.Quotient.lift (⨅ i, I i) (Pi.ringHom [0m[38;2;249;38;114mfun[0m[38;2;248;248;242m i : ι ↦ Ideal.Quotient.mk (I i))[0m
+[38;2;248;248;242m    ([0m[38;2;249;38;114mby[0m[38;2;248;248;242m simp [← RingHom.mem_ker, ker_Pi_Quotient_mk])[0m
 
-[38;2;117;113;94m/--[0m
-[38;2;117;113;94mFor a "vector" `X^n'` represented by the type `Π n' : ℕ, fin n' → X`, where[0m
-[38;2;117;113;94mthe `X` has a `has_repr` instance itself, we can provide a `has_repr` for the "vector".[0m
-[38;2;117;113;94mThis definition is used for displaying rows of the playfield, when it is defined[0m
-[38;2;117;113;94mvia a `matrix`, likely through notation.[0m
-[38;2;117;113;94m-/[0m
-[38;2;249;38;114mdef[0m[38;2;248;248;242m [0m[38;2;166;226;46mvec_repr[0m[38;2;248;248;242m [0m[38;2;248;248;242m: Π {n' : ℕ}, (fin n' → X) → string :=[0m
-[38;2;249;38;114mλ[0m[38;2;248;248;242m _ v, string.intercalate [0m[38;2;230;219;116m"[0m[38;2;230;219;116m, [0m[38;2;230;219;116m"[0m[38;2;248;248;242m ((vector.of_fn v).to_list.map repr)[0m
+[38;2;249;38;114mlemma[0m[38;2;248;248;242m [0m[38;2;166;226;46mchineseMap_mk[0m[38;2;248;248;242m [0m[38;2;248;248;242m(I : ι → Ideal R) (x : R) :[0m
+[38;2;248;248;242m    chineseMap I (Quotient.mk _ x) = [0m[38;2;249;38;114mfun[0m[38;2;248;248;242m i : ι ↦ Ideal.Quotient.mk (I i) x :=[0m
+[38;2;248;248;242m  rfl[0m
 
-[38;2;249;38;114minstance[0m[38;2;248;248;242m [0m[38;2;166;226;46mvec_repr_instance[0m[38;2;248;248;242m [0m[38;2;248;248;242m: has_repr (fin n' → X) := ⟨vec_repr⟩[0m
+[38;2;249;38;114mtheorem[0m[38;2;248;248;242m [0m[38;2;166;226;46misCoprime_Inf[0m[38;2;248;248;242m [0m[38;2;248;248;242m{I : Ideal R} {J : ι → Ideal R} {s : Finset ι}[0m
+[38;2;248;248;242m    (hf : ∀ j ∈ s, IsCoprime I (J j)) : IsCoprime I (⨅ j ∈ s, J j) := [0m[38;2;249;38;114mby[0m
+[38;2;248;248;242m  classical[0m
+[38;2;248;248;242m  simp_rw [isCoprime_iff_add] at *[0m
+[38;2;248;248;242m  induction s using Finset.induction [0m[38;2;249;38;114mwith[0m
+[38;2;248;248;242m  | empty =>[0m
+[38;2;248;248;242m      simp[0m
+[38;2;248;248;242m  | @insert i s _ hs =>[0m
+[38;2;248;248;242m      rw [Finset.iInf_insert, inf_comm, one_eq_top, eq_top_iff, ← one_eq_top][0m
+[38;2;248;248;242m      set K := ⨅ j ∈ s, J j[0m
+[38;2;248;248;242m      [0m[38;2;249;38;114mcalc[0m
+[38;2;248;248;242m        [0m[38;2;190;132;255m1[0m[38;2;248;248;242m = I + K                  := (hs [0m[38;2;249;38;114mfun[0m[38;2;248;248;242m j hj ↦ hf j (Finset.mem_insert_of_mem hj)).symm[0m
+[38;2;248;248;242m        _ = I + K * (I + J i)      := [0m[38;2;249;38;114mby[0m[38;2;248;248;242m rw [hf i (Finset.mem_insert_self i s), mul_one][0m
+[38;2;248;248;242m        _ = ([0m[38;2;190;132;255m1[0m[38;2;248;248;242m + K) * I + K * J i  := [0m[38;2;249;38;114mby[0m[38;2;248;248;242m ring[0m
+[38;2;248;248;242m        _ ≤ I + K ⊓ J i            := [0m[38;2;249;38;114mby[0m[38;2;248;248;242m gcongr ; apply mul_le_left ; apply mul_le_inf[0m
 
-[38;2;117;113;94m/--[0m
-[38;2;117;113;94mFor a `matrix` `X^(m' × n')` where the `X` has a `has_repr` instance itself,[0m
-[38;2;117;113;94mwe can provide a `has_repr` for the matrix, using `vec_repr` for each of the rows of the matrix.[0m
-[38;2;117;113;94mThis definition is used for displaying the playfield, when it is defined[0m
-[38;2;117;113;94mvia a `matrix`, likely through notation.[0m
-[38;2;117;113;94m-/[0m
-[38;2;249;38;114mdef[0m[38;2;248;248;242m [0m[38;2;166;226;46mmatrix_repr[0m[38;2;248;248;242m [0m[38;2;248;248;242m: Π {m' n'}, matrix (fin m') (fin n') X → string :=[0m
-[38;2;249;38;114mλ[0m[38;2;248;248;242m _ _ M, string.intercalate [0m[38;2;230;219;116m"[0m[38;2;230;219;116m;[0m[38;2;190;132;255m\n[0m[38;2;230;219;116m"[0m[38;2;248;248;242m ((vector.of_fn M).to_list.map repr)[0m
 
-[38;2;249;38;114minstance[0m[38;2;248;248;242m [0m[38;2;166;226;46mmatrix_repr_instance[0m[38;2;248;248;242m [0m[38;2;248;248;242m:[0m
-[38;2;248;248;242m  has_repr (matrix (fin n') (fin m') X) := ⟨matrix_repr⟩[0m
+[38;2;249;38;114mclass[0m[38;2;248;248;242m [0m[38;2;166;226;46mRing₃[0m[38;2;248;248;242m [0m[38;2;248;248;242m(R : [0m[3;38;2;102;217;239mType[0m[38;2;248;248;242m) [0m[38;2;249;38;114mextends[0m[38;2;248;248;242m AddGroup₃ R, Monoid₃ R, MulZeroClass R [0m[38;2;249;38;114mwhere[0m
+[38;2;248;248;242m  [0m[38;2;117;113;94m/-- Multiplication is left distributive over addition -/[0m
+[38;2;248;248;242m  left_distrib : ∀ a b c : R, a * (b + c) = a * b + a * c[0m
+[38;2;248;248;242m  [0m[38;2;117;113;94m/-- Multiplication is right distributive over addition -/[0m
+[38;2;248;248;242m  right_distrib : ∀ a b c : R, (a + b) * c = a * c + b * c[0m
+
+[38;2;249;38;114minstance[0m[38;2;248;248;242m {R : Type} [0m[38;2;248;248;242m[Ring₃ R] : AddCommGroup₃ R :=[0m
+[38;2;248;248;242m{ Ring₃.toAddGroup₃ [0m[38;2;249;38;114mwith[0m
+[38;2;248;248;242m  add_comm := [0m[38;2;249;38;114mby[0m
+[38;2;248;248;242m    [0m[38;2;248;248;240msorry[0m[38;2;248;248;242m }[0m
 
 [38;2;249;38;114mend[0m[38;2;248;248;242m repr[0m
 

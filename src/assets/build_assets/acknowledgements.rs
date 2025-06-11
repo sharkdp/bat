@@ -95,6 +95,9 @@ fn include_license_in_acknowledgments(license_text: &str) -> bool {
         // Apache 2.0
         "Apache License Version 2.0, January 2004 http://www.apache.org/licenses/",
         "Licensed under the Apache License, Version 2.0 (the \"License\");",
+
+        // CC BY 4.0
+        "Creative Commons Attribution 4.0 International Public License",
     ];
 
     license_contains_marker(license_text, &markers)

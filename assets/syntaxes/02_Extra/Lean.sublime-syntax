@@ -1,125 +1,130 @@
 %YAML 1.2
 ---
-# http://www.sublimetext.com/docs/3/syntax.html
-name: Lean
+# http://www.sublimetext.com/docs/syntax.html
+name: Lean 4
 file_extensions:
   - lean
-scope: source.lean
+scope: source.lean4
 contexts:
   main:
     - include: comments
-    - match: '\b(?<!\.)(inductive|coinductive|structure|theorem|axiom|axioms|abbreviation|lemma|definition|def|instance|class|constant)\b\s+(\{[^}]*\})?'
+    - match: \b(Prop|Type|Sort)\b
+      scope: storage.type.lean4
+    - match: '\battribute\b\s*\[[^\]]*\]'
+      scope: storage.modifier.lean4
+    - match: '@\[[^\]]*\]'
+      scope: storage.modifier.lean4
+    - match: \b(?<!\.)(global|local|scoped|partial|unsafe|private|protected|noncomputable)(?!\.)\b
+      scope: storage.modifier.lean4
+    - match: \b(sorry|admit|stop)\b
+      scope: invalid.illegal.lean4
+    - match: '#(print|eval|reduce|check|check_failure)\b'
+      scope: keyword.other.lean4
+    - match: \bderiving\s+instance\b
+      scope: keyword.other.command.lean4
+    - match: '\b(?<!\.)(inductive|coinductive|structure|theorem|axiom|abbrev|lemma|def|instance|class|constant)\b\s+(\{[^}]*\})?'
       captures:
-        1: keyword.other.definitioncommand.lean
+        1: keyword.other.definitioncommand.lean4
       push:
-        - meta_scope: meta.definitioncommand.lean
-        - match: '(?=\bwith\b|\bextends\b|[:\|\(\[\{⦃<>])'
+        - meta_scope: meta.definitioncommand.lean4
+        - match: '(?=\bwith\b|\bextends\b|\bwhere\b|[:\|\(\[\{⦃<>])'
           pop: true
         - include: comments
         - include: definitionName
-        - match: ","
-    - match: \b(Prop|Type|Sort)\b
-      scope: storage.type.lean
-    - match: '\battribute\b\s*\[[^\]]*\]'
-      scope: storage.modifier.lean
-    - match: '@\[[^\]]*\]'
-      scope: storage.modifier.lean
-    - match: \b(?<!\.)(private|meta|mutual|protected|noncomputable)\b
-      scope: keyword.control.definition.modifier.lean
-    - match: \b(sorry)\b
-      scope: invalid.illegal.lean
-    - match: '#print\s+(def|definition|inductive|instance|structure|axiom|axioms|class)\b'
-      scope: keyword.other.command.lean
-    - match: '#(print|eval|reduce|check|help|exit|find|where)\b'
-      scope: keyword.other.command.lean
-    - match: \b(?<!\.)(import|export|prelude|theory|definition|def|abbreviation|instance|renaming|hiding|exposing|parameter|parameters|begin|constant|constants|lemma|variable|variables|theorem|example|open|axiom|inductive|coinductive|with|structure|universe|universes|alias|precedence|reserve|postfix|prefix|infix|infixl|infixr|notation|end|using|namespace|section|local|set_option|extends|include|omit|class|classes|instances|raw|run_cmd|restate_axiom)(?!\.)\b
-      scope: keyword.other.lean
-    - match: \b(?<!\.)(calc|have|this|match|do|suffices|show|by|in|at|let|forall|fun|exists|assume|from|obtain|haveI|λ)(?!\.)\b
-      scope: keyword.other.lean
+        - match: ','
+    - match: \b(?<!\.)(theorem|show|have|from|suffices|nomatch|def|class|structure|instance|set_option|initialize|builtin_initialize|example|inductive|coinductive|axiom|constant|universe|universes|variable|variables|import|open|export|theory|prelude|renaming|hiding|exposing|do|by|let|extends|mutual|mut|where|rec|syntax|macro_rules|macro|deriving|fun|section|namespace|end|infix|infixl|infixr|postfix|prefix|notation|abbrev|if|then|else|calc|match|with|for|in|unless|try|catch|finally|return|continue|break)(?!\.)\b
+      scope: keyword.other.lean4
     - match: «
       push:
-        - meta_content_scope: entity.name.lean
+        - meta_content_scope: entity.name.lean4
         - match: »
           pop: true
-    - match: \b(?<!\.)(if|then|else)\b
-      scope: keyword.control.lean
-    - match: '"'
+    - match: (s!)"
       captures:
-        0: punctuation.definition.string.begin.lean
+        1: keyword.other.lean4
       push:
-        - meta_scope: string.quoted.double.lean
+        - meta_scope: string.interpolated.lean4
         - match: '"'
-          captures:
-            0: punctuation.definition.string.end.lean
           pop: true
-        - match: '\\[\\"nt'']'
-          scope: constant.character.escape.lean
+        - match: '(\{)'
+          captures:
+            1: keyword.other.lean4
+          push:
+            - match: '(\})'
+              captures:
+                1: keyword.other.lean4
+              pop: true
+            - include: main
+        - match: '\\[\\"ntr'']'
+          scope: constant.character.escape.lean4
         - match: '\\x[0-9A-Fa-f][0-9A-Fa-f]'
-          scope: constant.character.escape.lean
+          scope: constant.character.escape.lean4
         - match: '\\u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'
-          scope: constant.character.escape.lean
+          scope: constant.character.escape.lean4
+    - match: '"'
+      push:
+        - meta_scope: string.quoted.double.lean4
+        - match: '"'
+          pop: true
+        - match: '\\[\\"ntr'']'
+          scope: constant.character.escape.lean4
+        - match: '\\x[0-9A-Fa-f][0-9A-Fa-f]'
+          scope: constant.character.escape.lean4
+        - match: '\\u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]'
+          scope: constant.character.escape.lean4
+    - match: \b(true|false)\b
+      scope: constant.language.lean4
     - match: '''[^\\'']'''
-      scope: string.quoted.single.lean
-    - match: '''(\\(x..|u....|.))'''
-      scope: string.quoted.single.lean
+      scope: string.quoted.single.lean4
+    - match: '''(\\(x[0-9A-Fa-f][0-9A-Fa-f]|u[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]|.))'''
+      scope: string.quoted.single.lean4
       captures:
-        1: constant.character.escape.lean
+        1: constant.character.escape.lean4
     - match: '`+[^\[(]\S+'
-      scope: entity.name.lean
-    - match: '\b([0-9]+|0([xX][0-9a-fA-F]+))\b'
-      scope: constant.numeric.lean
+      scope: entity.name.lean4
+    - match: '\b([0-9]+|0([xX][0-9a-fA-F]+)|[-]?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?)\b'
+      scope: constant.numeric.lean4
   blockComment:
     - match: /-
       push:
-        - meta_scope: comment.block.lean
-        - match: "-/"
+        - meta_scope: comment.block.lean4
+        - match: '-/'
           pop: true
-        - include: scope:source.lean.markdown
+        - include: scope:source.lean4.markdown
         - include: blockComment
   comments:
     - include: dashComment
     - include: docComment
-    - include: stringBlock
     - include: modDocComment
     - include: blockComment
   dashComment:
-    - match: (--)
-      captures:
-        0: punctuation.definition.comment.lean
+    - match: '--'
       push:
-        - meta_scope: comment.line.double-dash.lean
+        - meta_scope: comment.line.double-dash.lean4
         - match: $
           pop: true
-        - include: scope:source.lean.markdown
+        - include: scope:source.lean4.markdown
   definitionName:
     - match: '\b[^:«»\(\)\{\}[:space:]=→λ∀?][^:«»\(\)\{\}[:space:]]*'
-      scope: entity.name.function.lean
+      scope: entity.name.function.lean4
     - match: «
       push:
-        - meta_content_scope: entity.name.function.lean
+        - meta_content_scope: entity.name.function.lean4
         - match: »
           pop: true
   docComment:
     - match: /--
       push:
-        - meta_scope: comment.block.documentation.lean
-        - match: "-/"
+        - meta_scope: comment.block.documentation.lean4
+        - match: '-/'
           pop: true
-        - include: scope:source.lean.markdown
+        - include: scope:source.lean4.markdown
         - include: blockComment
   modDocComment:
     - match: /-!
       push:
-        - meta_scope: comment.block.documentation.lean
-        - match: "-/"
+        - meta_scope: comment.block.documentation.lean4
+        - match: '-/'
           pop: true
-        - include: scope:source.lean.markdown
-        - include: blockComment
-  stringBlock:
-    - match: /-"
-      push:
-        - meta_scope: comment.block.string.lean
-        - match: '"-/'
-          pop: true
-        - include: scope:source.lean.markdown
+        - include: scope:source.lean4.markdown
         - include: blockComment

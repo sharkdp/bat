@@ -196,7 +196,7 @@
 	branch = bat-source
 [submodule "assets/syntaxes/02_Extra/Lean"]
 	path = assets/syntaxes/02_Extra/Lean
-	url = https://github.com/leanprover/vscode-lean.git
+	url = https://github.com/leanprover/vscode-lean4.git
 [submodule "assets/syntaxes/02_Extra/Zig"]
 	path = assets/syntaxes/02_Extra/Zig
 	url = https://github.com/ziglang/sublime-zig-language.git
