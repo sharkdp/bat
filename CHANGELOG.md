@@ -1,5 +1,5 @@
 # unreleased
-- Send all bat errors to stderr by default, see #3334
+- Send all bat errors to stderr by default, see #3336
 ## Features
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
