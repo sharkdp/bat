@@ -124,10 +124,10 @@ impl ToTokens for Matcher {
         let t = match self.0.as_slice() {
             [] => unreachable!("0-length matcher should never be created"),
             [MatcherSegment::Text(text)] => {
-                quote! { Lazy::new(|| Some(build_matcher_fixed(#text)))}
+                quote! { Lazy::new(|| Some(build_matcher_fixed(#text))) }
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
-            segs @ [_, ..] => quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ]))},
+            segs @ [_, ..] => quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ])) },
         };
         tokens.append_all(t);
     }
@@ -144,8 +144,8 @@ enum MatcherSegment {
 impl ToTokens for MatcherSegment {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let t = match self {
-            Self::Text(text) => quote! { MatcherSegment::Text(#text)},
-            Self::Env(env) => quote! {MatcherSegment::Env(#env)},
+            Self::Text(text) => quote! { MatcherSegment::Text(#text) },
+            Self::Env(env) => quote! { MatcherSegment::Env(#env) },
         };
         tokens.append_all(t);
     }
