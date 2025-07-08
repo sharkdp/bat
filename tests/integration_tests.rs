@@ -452,6 +452,16 @@ fn stdin_to_stdout_cycle() -> io::Result<()> {
 
 #[cfg(unix)]
 #[test]
+fn bat_error_to_stderr() {
+    bat()
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("[bat error]"));
+}
+
+#[cfg(unix)]
+#[test]
 fn no_args_doesnt_break() {
     // To simulate bat getting started from the shell, a process is created with stdin and stdout
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should

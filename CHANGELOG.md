@@ -14,6 +14,7 @@
 - Make highlight tests fail when new syntaxes don't have fixtures PR #3255 (@dan-hipschman)
 - Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
 - Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
+- Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
 
 ## Other
 
@@ -38,6 +39,7 @@
 - Add syntax Typst #3300 (@cskeeters)
 - Map `.mill` files to Scala syntax for Mill build tool configuration files #3311 (@krikera)
 - Add syntax highlighting for VHDL, see #3337 (@JerryImMouse)
+- Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
 
 ## Themes
 
