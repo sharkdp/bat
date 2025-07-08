@@ -20,6 +20,7 @@
 - Update base16 README links to community driven base16 work #2871 (@JamyGolden)
 - Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
 - CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
+- CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
 
 ## Syntaxes
 

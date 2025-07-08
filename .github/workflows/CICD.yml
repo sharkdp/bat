@@ -168,12 +168,12 @@ jobs:
           - { target: aarch64-unknown-linux-gnu   , os: ubuntu-latest, dpkg_arch: arm64,            use-cross: true }
           - { target: arm-unknown-linux-gnueabihf , os: ubuntu-latest, dpkg_arch: armhf,            use-cross: true }
           - { target: arm-unknown-linux-musleabihf, os: ubuntu-latest, dpkg_arch: musl-linux-armhf, use-cross: true }
-          - { target: i686-pc-windows-msvc        , os: windows-2019,                                              }
+          - { target: i686-pc-windows-msvc        , os: windows-2025,                                              }
           - { target: i686-unknown-linux-gnu      , os: ubuntu-latest, dpkg_arch: i686,             use-cross: true }
           - { target: i686-unknown-linux-musl     , os: ubuntu-latest, dpkg_arch: musl-linux-i686,  use-cross: true }
           - { target: x86_64-apple-darwin         , os: macos-13,                                                  }
           - { target: aarch64-apple-darwin        , os: macos-14,                                                  }
-          - { target: x86_64-pc-windows-msvc      , os: windows-2019,                                              }
+          - { target: x86_64-pc-windows-msvc      , os: windows-2025,                                              }
           - { target: x86_64-unknown-linux-gnu    , os: ubuntu-latest, dpkg_arch: amd64,            use-cross: true }
           - { target: x86_64-unknown-linux-musl   , os: ubuntu-latest, dpkg_arch: musl-linux-amd64, use-cross: true }
     env:
