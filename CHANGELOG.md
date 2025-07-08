@@ -22,6 +22,7 @@
 - Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
 - CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
 - CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
+- Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 
 ## Syntaxes
 
