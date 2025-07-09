@@ -288,6 +288,9 @@ pub fn build_static_mappings() -> anyhow::Result<()> {
     println!("cargo:rerun-if-changed=src/syntax_mapping/builtins/");
 
     let mappings = read_all_mappings()?;
+
+    // IMPRV: parse + unparse is a bit cringe, but there seems to be no better
+    // option given the limited APIs of `prettyplease`
     let rs_src = syn::parse_file(&mappings.to_token_stream().to_string())?;
     let rs_src_pretty = prettyplease::unparse(&rs_src);
 
