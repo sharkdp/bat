@@ -46,6 +46,7 @@
 ## Themes
 
 - Add Catppuccin, see #3317 (@SchweGELBin)
+- Updated Catppuccin, see #3333 (@SchweGELBin)
 
 ## `bat` as a library
 
