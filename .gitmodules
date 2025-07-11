@@ -275,3 +275,6 @@
 [submodule "assets/themes/Catppuccin"]
 	path = assets/themes/Catppuccin
 	url = https://github.com/SchweGELBin/catppuccin-bat-sub.git
+[submodule "assets/syntaxes/02_Extra/SmartVHDL"]
+	path = assets/syntaxes/02_Extra/SmartVHDL
+	url = https://github.com/TheClams/SmartVHDL

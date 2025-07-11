@@ -203,8 +203,18 @@ Configure which elements (line numbers, file headers, grid borders, Git modifica
 \&..) to display in addition to the file contents. The argument is a comma\-separated list
 of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
 To set a default style, add the '\-\-style=".."' option to the configuration file or
-export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
-values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
+export the BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
+.IP
+When styles are specified in multiple places, the "nearest" set of styles take precedence.
+The command\-line arguments are the highest priority, followed by the BAT_STYLE environment
+variable, and then the configuration file. If any set of styles consists entirely of
+components prefixed with "+" or "\-", it will modify the previous set of styles instead of
+replacing them.
+.IP
+By default, the following components are enabled:
+changes, grid, header\-filename, numbers, snip
+.IP
+Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...

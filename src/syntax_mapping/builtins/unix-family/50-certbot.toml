@@ -1,0 +1,3 @@
+# See https://eff-certbot.readthedocs.io/en/stable/using.html#configuration-file
+[mappings]
+"INI" = ["/etc/letsencrypt/renewal/*.conf"]
