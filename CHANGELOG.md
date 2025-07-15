@@ -24,6 +24,7 @@
 - CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 - Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
+- Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
 
 ## Syntaxes
 
