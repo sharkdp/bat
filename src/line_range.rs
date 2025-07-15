@@ -235,13 +235,16 @@ fn test_parse_single() {
 
 #[test]
 fn test_parse_fail() {
-    let range = LineRange::from("40:50:80");
+    // Test 4+ colon parts should still fail
+    let range = LineRange::from("40:50:80:90");
     assert!(range.is_err());
-    let range = LineRange::from("40::80");
-    assert!(range.is_err());
+    // Test invalid formats that should still fail
     let range = LineRange::from("-2:5");
     assert!(range.is_err());
     let range = LineRange::from(":40:");
+    assert!(range.is_err());
+    // Test completely malformed input
+    let range = LineRange::from("abc:def");
     assert!(range.is_err());
 }
 
@@ -311,6 +314,11 @@ fn test_parse_context_range() {
     let range = LineRange::from("30:40:2").expect("Shouldn't fail on test!");
     assert_eq!(RangeBound::Absolute(28), range.lower);
     assert_eq!(RangeBound::Absolute(42), range.upper);
+
+    // Test the case that used to fail but should now work
+    let range = LineRange::from("40:50:80").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(0), range.lower); // 40 - 80 = 0 (saturated)
+    assert_eq!(RangeBound::Absolute(130), range.upper); // 50 + 80 = 130
 }
 
 #[test]
