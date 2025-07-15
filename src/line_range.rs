@@ -98,8 +98,33 @@ impl LineRange {
                 new_range.upper = RangeBound::Absolute(upper_absolute_bound);
                 Ok(new_range)
             }
+            3 => {
+                // Handle context syntax: N::C or N:M:C
+                if line_numbers[1].is_empty() {
+                    // Format: N::C - single line with context
+                    let line_number: usize = line_numbers[0].parse()
+                        .map_err(|_| "Invalid line number in N::C format")?;
+                    let context: usize = line_numbers[2].parse()
+                        .map_err(|_| "Invalid context number in N::C format")?;
+                    
+                    new_range.lower = RangeBound::Absolute(line_number.saturating_sub(context));
+                    new_range.upper = RangeBound::Absolute(line_number.saturating_add(context));
+                } else {
+                    // Format: N:M:C - range with context
+                    let start_line: usize = line_numbers[0].parse()
+                        .map_err(|_| "Invalid start line number in N:M:C format")?;
+                    let end_line: usize = line_numbers[1].parse()
+                        .map_err(|_| "Invalid end line number in N:M:C format")?;
+                    let context: usize = line_numbers[2].parse()
+                        .map_err(|_| "Invalid context number in N:M:C format")?;
+                    
+                    new_range.lower = RangeBound::Absolute(start_line.saturating_sub(context));
+                    new_range.upper = RangeBound::Absolute(end_line.saturating_add(context));
+                }
+                Ok(new_range)
+            }
             _ => Err(
-                "Line range contained more than one ':' character. Expected format: 'N' or 'N:M'"
+                "Line range contained too many ':' characters. Expected format: 'N', 'N:M', 'N::C', or 'N:M:C'"
                     .into(),
             ),
         }
@@ -271,6 +296,52 @@ fn test_parse_minus_fail() {
     let range = LineRange::from("40:-+10");
     assert!(range.is_err());
     let range = LineRange::from("40:-");
+    assert!(range.is_err());
+}
+
+#[test]
+fn test_parse_context_single_line() {
+    let range = LineRange::from("35::5").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(30), range.lower);
+    assert_eq!(RangeBound::Absolute(40), range.upper);
+}
+
+#[test]
+fn test_parse_context_range() {
+    let range = LineRange::from("30:40:2").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(28), range.lower);
+    assert_eq!(RangeBound::Absolute(42), range.upper);
+}
+
+#[test]
+fn test_parse_context_edge_cases() {
+    // Test with small line numbers that would underflow
+    let range = LineRange::from("5::10").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(0), range.lower);
+    assert_eq!(RangeBound::Absolute(15), range.upper);
+    
+    // Test with zero context
+    let range = LineRange::from("50::0").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(50), range.lower);
+    assert_eq!(RangeBound::Absolute(50), range.upper);
+    
+    // Test range with zero context
+    let range = LineRange::from("30:40:0").expect("Shouldn't fail on test!");
+    assert_eq!(RangeBound::Absolute(30), range.lower);
+    assert_eq!(RangeBound::Absolute(40), range.upper);
+}
+
+#[test]
+fn test_parse_context_fail() {
+    let range = LineRange::from("40::z");
+    assert!(range.is_err());
+    let range = LineRange::from("::5");
+    assert!(range.is_err());
+    let range = LineRange::from("40::");
+    assert!(range.is_err());
+    let range = LineRange::from("30:40:z");
+    assert!(range.is_err());
+    let range = LineRange::from("30::40:5");
     assert!(range.is_err());
 }
 
