@@ -106,7 +106,7 @@ impl LineRange {
                         .map_err(|_| "Invalid line number in N::C format")?;
                     let context: usize = line_numbers[2].parse()
                         .map_err(|_| "Invalid context number in N::C format")?;
-                    
+
                     new_range.lower = RangeBound::Absolute(line_number.saturating_sub(context));
                     new_range.upper = RangeBound::Absolute(line_number.saturating_add(context));
                 } else {
@@ -117,7 +117,7 @@ impl LineRange {
                         .map_err(|_| "Invalid end line number in N:M:C format")?;
                     let context: usize = line_numbers[2].parse()
                         .map_err(|_| "Invalid context number in N:M:C format")?;
-                    
+
                     new_range.lower = RangeBound::Absolute(start_line.saturating_sub(context));
                     new_range.upper = RangeBound::Absolute(end_line.saturating_add(context));
                 }
@@ -319,12 +319,12 @@ fn test_parse_context_edge_cases() {
     let range = LineRange::from("5::10").expect("Shouldn't fail on test!");
     assert_eq!(RangeBound::Absolute(0), range.lower);
     assert_eq!(RangeBound::Absolute(15), range.upper);
-    
+
     // Test with zero context
     let range = LineRange::from("50::0").expect("Shouldn't fail on test!");
     assert_eq!(RangeBound::Absolute(50), range.lower);
     assert_eq!(RangeBound::Absolute(50), range.upper);
-    
+
     // Test range with zero context
     let range = LineRange::from("30:40:0").expect("Shouldn't fail on test!");
     assert_eq!(RangeBound::Absolute(30), range.lower);
