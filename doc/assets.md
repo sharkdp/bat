@@ -26,7 +26,7 @@ in the `.sublime-syntax` format.
 4. Re-compile `bat`. At compilation time, the `syntaxes.bin` file will be stored inside the
    `bat` binary.
 
-5. Use `bat --list-languages` to check if the new languages are available.
+5. Use `bat --list-languages` to check if the new languages are available. You may want to do something like ``export PATH="`pwd`/target/debug:$PATH"`` to ensure the locally compiled version is the one being used.
 
 6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
 
@@ -102,4 +102,4 @@ The following files have been manually modified after converting from a `.tmLang
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
-* `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean/blob/master/syntaxes/lean.json via conversion.
+* `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.

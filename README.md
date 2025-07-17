@@ -22,25 +22,22 @@
 ### Sponsors
 
 A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>:<br>
-<a href="https://workos.com/?utm_campaign=github_repo&utm_medium=referral&utm_content=bat&utm_source=github">
-  <img src="doc/sponsors/workos-logo-white-bg.svg" width="200" alt="WorkOS">
-  <br>
-  <strong>Your app, enterprise-ready.</strong>
-  <br>
-  <sub>Start selling to enterprise customers with just a few lines of code.</sub>
-  <br>
-  <sup>Add Single Sign-On (and more) in minutes instead of months.</sup>
-</a>
 
-<a href="https://www.warp.dev/?utm_source=github&utm_medium=referral&utm_campaign=bat_20231001">
+<p>
+<a href="https://www.warp.dev/bat">
   <img src="doc/sponsors/warp-logo.png" width="200" alt="Warp">
   <br>
-  <strong>Warp is a modern, Rust-based terminal with AI built in<br>so you and your team can build great software, faster.</strong>
+  <strong>Warp, the intelligent terminal</strong>
   <br>
-  <sub>Feel more productive on the command line with parameterized commands,</sub>
-  <br>
-  <sup>autosuggestions, and an IDE-like text editor.</sup>
+  <sub>Available on MacOS, Linux, Windows</sub>
 </a>
+</p><p>
+<a href="https://graphite.dev/?utm_source=github&utm_medium=repo&utm_campaign=bat">
+  <img src="doc/sponsors/graphite-logo.jpeg" width="200" alt="Graphite">
+  <br>
+  <strong>Graphite is the AI developer productivity platform helping<br>teams on GitHub ship higher quality software, faster</strong>
+</a>
+</p>
 
 ### Syntax highlighting
 
@@ -124,7 +121,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 #### `fzf`
 
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
-use `bat`s `--color=always` option to force colorized output. You can also use `--line-range`
+use `bat`'s `--color=always` option to force colorized output. You can also use `--line-range`
 option to restrict the load times for long files:
 
 ```bash
@@ -181,7 +178,7 @@ You can combine `bat` with `git diff` to view lines around code changes with pro
 highlighting:
 ```bash
 batdiff() {
-    git diff --name-only --relative --diff-filter=d | xargs bat --diff
+    git diff --name-only --relative --diff-filter=d -z | xargs --null bat --diff
 }
 ```
 If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
@@ -204,23 +201,29 @@ bat main.cpp | xclip
 `MANPAGER` environment variable:
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
 man 2 select
 ```
 (replace `bat` with `batcat` if you are on Debian or Ubuntu)
 
-It might also be necessary to set `MANROFFOPT="-c"` if you experience
-formatting problems.
-
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
-Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
+> [!WARNING]  
+> This will [not work](https://github.com/sharkdp/bat/issues/1145) out of the box with Mandoc's `man` implementation.
+>
+> Please either use `batman`, or convert the shell script to a [shebang executable](https://en.wikipedia.org/wiki/Shebang_(Unix)) and point `MANPAGER` to that.
 
-Also, note that this will [not work](https://github.com/sharkdp/bat/issues/1145) with Mandocs `man` implementation.
+Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
 The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.md) script is a wrapper that will format code and print it with `bat`.
+
+#### `Warp`
+
+<a href="https://app.warp.dev/drive/folder/-Bat-Warp-Pack-lxhe7HrEwgwpG17mvrFSz1">
+  <img src="doc/sponsors/warp-pack-header.png" alt="Warp">
+</a>
 
 #### Highlighting `--help` messages
 
@@ -245,9 +248,17 @@ alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 ```
 
+For `fish`, you can use abbreviations:
+
+```fish
+abbr -a --position anywhere -- --help '--help | bat -plhelp'
+abbr -a --position anywhere -- -h '-h | bat -plhelp'
+```
+
 This way, you can keep on using `cp --help`, but get colorized help pages.
 
-Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`).
+Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`). In cases where you need to use `-h` 
+as a command argument you can prepend `\` to the arguement (eg. `ls \-h`) to escape the aliasing defined above. 
 
 Please report any issues with the help syntax in [this repository](https://github.com/victor-gp/cmd-help-sublime-syntax).
 
@@ -272,6 +283,11 @@ clash with another package](https://github.com/sharkdp/bat/issues/982)). You can
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
+```
+
+an example alias for `batcat` as `bat`:
+```bash
+alias bat="batcat"
 ```
 
 ### On Ubuntu (using most recent `.deb` packages)
@@ -417,7 +433,7 @@ take a look at the ["Using `bat` on Windows"](#using-bat-on-windows) section.
 
 #### Prerequisites
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist#latest-microsoft-visual-c-redistributable-version)
 
 #### With WinGet
 
@@ -455,15 +471,32 @@ binaries are also available: look for archives with `musl` in the file name.
 
 ### From source
 
-If you want to build `bat` from source, you need Rust 1.70.0 or
+If you want to build `bat` from source, you need Rust 1.74.0 or
 higher. You can then use `cargo` to build everything:
 
+#### From local source
+```bash
+cargo install --path . --locked
+```
+> [!NOTE]
+> The `--path .` above specifies the directory of the source code and NOT where `bat` will be installed.
+> For more information see the docs for [`cargo install`](https://doc.rust-lang.org/cargo/commands/cargo-install.html).
+
+#### From `crates.io`
 ```bash
 cargo install --locked bat
 ```
 
 Note that additional files like the man page or shell completion
-files can not be installed in this way. They will be generated by `cargo` and should be available in the cargo target folder (under `build`).
+files can not be installed automatically in both these ways.
+If installing from a local source, they will be generated by `cargo`
+and should be available in the cargo target folder under `build`.
+
+Furthermore, shell completions are also available by running:
+```bash
+bat --completion <shell>
+# see --help for supported shells
+```
 
 ## Customization
 
@@ -473,8 +506,8 @@ Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. To select the `TwoDark` theme, call `bat` with the
 `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
-make the change permanent. Alternatively, use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+make the change permanent. Alternatively, use `bat`'s
+[configuration file](#configuration-file).
 
 If you want to preview the different themes on a custom file, you can use
 the following command (you need [`fzf`](https://github.com/junegunn/fzf) for this):
@@ -482,10 +515,12 @@ the following command (you need [`fzf`](https://github.com/junegunn/fzf) for thi
 bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 ```
 
-`bat` looks good on a dark background by default. However, if your terminal uses a
-light background, some themes like `GitHub` or `OneHalfLight` will work better for you.
+`bat` automatically picks a fitting theme depending on your terminal's background color.
+You can use the `--theme-dark` / `--theme-light` options or the `BAT_THEME_DARK` / `BAT_THEME_LIGHT` environment variables
+to customize the themes used. This is especially useful if you frequently switch between dark and light mode.
+
 You can also use a custom theme by following the
-['Adding new themes' section below](https://github.com/sharkdp/bat#adding-new-themes).
+['Adding new themes' section below](#adding-new-themes).
 
 ### 8-bit themes
 
@@ -494,12 +529,12 @@ even when truecolor support is available:
 
 - `ansi` looks decent on any terminal. It uses 3-bit colors: black, red, green,
   yellow, blue, magenta, cyan, and white.
-- `base16` is designed for [base16](https://github.com/chriskempson/base16) terminal themes. It uses
+- `base16` is designed for [base16](https://github.com/tinted-theming/home) terminal themes. It uses
   4-bit colors (3-bit colors plus bright variants) in accordance with the
-  [base16 styling guidelines](https://github.com/chriskempson/base16/blob/master/styling.md).
-- `base16-256` is designed for [base16-shell](https://github.com/chriskempson/base16-shell).
+  [base16 styling guidelines](https://github.com/tinted-theming/home/blob/main/styling.md).
+- `base16-256` is designed for [tinted-shell](https://github.com/tinted-theming/tinted-shell).
   It replaces certain bright colors with 8-bit colors from 16 to 21. **Do not** use this simply
-  because you have a 256-color terminal but are not using base16-shell.
+  because you have a 256-color terminal but are not using tinted-shell.
 
 Although these themes are more restricted, they have three advantages over truecolor themes. They:
 
@@ -509,11 +544,11 @@ Although these themes are more restricted, they have three advantages over truec
 
 ### Output style
 
-You can use the `--style` option to control the appearance of `bat`s output.
+You can use the `--style` option to control the appearance of `bat`'s output.
 You can use `--style=numbers,changes`, for example, to show only Git changes
 and line numbers but no grid and no file header. Set the `BAT_STYLE` environment
-variable to make these changes permanent or use `bat`s
-[configuration file](https://github.com/sharkdp/bat#configuration-file).
+variable to make these changes permanent or use `bat`'s
+[configuration file](#configuration-file).
 
 >[!tip]
 > If you specify a default style in `bat`'s config file, you can change which components
@@ -630,7 +665,7 @@ If you want to pass command-line arguments to the pager, you can also set them v
 export BAT_PAGER="less -RF"
 ```
 
-Instead of using environment variables, you can also use `bat`s [configuration file](https://github.com/sharkdp/bat#configuration-file) to configure the pager (`--pager` option).
+Instead of using environment variables, you can also use `bat`'s [configuration file](#configuration-file) to configure the pager (`--pager` option).
 
 
 ### Using `less` as a pager
@@ -681,7 +716,7 @@ theme based on the OS theme. The following snippet uses the `default` theme when
 and the `GitHub` theme when in the _light mode_.
 
 ```bash
-alias cat="bat --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
+alias cat="bat --theme auto:system --theme-dark default --theme-light GitHub"
 ```
 
 
@@ -693,10 +728,11 @@ on your operating system. To get the default path for your system, call
 bat --config-file
 ```
 
-Alternatively, you can use the `BAT_CONFIG_PATH` environment variable to point `bat` to a
-non-default location of the configuration file:
+Alternatively, you can use `BAT_CONFIG_PATH` or `BAT_CONFIG_DIR` environment variables to point `bat`
+to a non-default location of the configuration file or the configuration directory respectively:
 ```bash
-export BAT_CONFIG_PATH="/path/to/bat.conf"
+export BAT_CONFIG_PATH="/path/to/bat/bat.conf"
+export BAT_CONFIG_DIR="/path/to/bat"
 ```
 
 A default configuration file can be created with the `--generate-config-file` option.
@@ -836,7 +872,7 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
-If you want to build an application that uses `bat`s pretty-printing
+If you want to build an application that uses `bat`'s pretty-printing
 features as a library, check out the [the API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.

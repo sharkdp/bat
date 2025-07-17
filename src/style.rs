@@ -225,7 +225,7 @@ impl FromStr for StyleComponentList {
     fn from_str(s: &str) -> Result<Self> {
         Ok(StyleComponentList(
             s.split(",")
-                .map(|s| ComponentAction::extract_from_str(s)) // If the component starts with "-", it's meant to be removed
+                .map(ComponentAction::extract_from_str) // If the component starts with "-", it's meant to be removed
                 .map(|(a, s)| Ok((a, StyleComponent::from_str(s)?)))
                 .collect::<Result<Vec<(ComponentAction, StyleComponent)>>>()?,
         ))

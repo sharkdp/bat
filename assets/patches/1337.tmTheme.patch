@@ -1,0 +1,22 @@
+diff --git themes/1337-Scheme/1337.tmTheme themes/1337-Scheme/1337.tmTheme
+index fdff5bf..8cfc888 100644
+--- themes/1337-Scheme/1337.tmTheme
++++ themes/1337-Scheme/1337.tmTheme
+@@ -280,7 +280,7 @@ SOFTWARE.
+ 			<key>name</key>
+ 			<string>PHP Namespaces</string>
+ 			<key>scope</key>
+-			<string>support.other.namespace, entity.name.type.namespace</string>
++			<string>support.other.namespace, entity.name.type.namespace, entity.name</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>foreground</key>
+@@ -561,7 +561,7 @@ SOFTWARE.
+ 		    <key>name</key>
+ 		    <string>diff.header</string>
+ 		    <key>scope</key>
+-		    <string>meta.diff, meta.diff.header</string>
++		    <string>meta.diff, meta.diff.header, markup.heading</string>
+ 		    <key>settings</key>
+ 		    <dict>
+ 			<key>foreground</key>

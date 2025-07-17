@@ -60,7 +60,7 @@ fn to_path_and_stem(source_dir: &Path, entry: DirEntry) -> Option<PathAndStem> {
 fn handle_file(path_and_stem: &PathAndStem) -> Result<Option<String>> {
     if path_and_stem.stem == "NOTICE" {
         handle_notice(&path_and_stem.path)
-    } else if path_and_stem.stem.to_ascii_uppercase() == "LICENSE" {
+    } else if path_and_stem.stem.eq_ignore_ascii_case("LICENSE") {
         handle_license(&path_and_stem.path)
     } else {
         Ok(None)
@@ -95,6 +95,9 @@ fn include_license_in_acknowledgments(license_text: &str) -> bool {
         // Apache 2.0
         "Apache License Version 2.0, January 2004 http://www.apache.org/licenses/",
         "Licensed under the Apache License, Version 2.0 (the \"License\");",
+
+        // CC BY 4.0
+        "Creative Commons Attribution 4.0 International Public License",
     ];
 
     license_contains_marker(license_text, &markers)

@@ -67,7 +67,13 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
             .ok();
         }
         _ => {
-            writeln!(output, "{}: {}", Red.paint("[bat error]"), error).ok();
+            writeln!(
+                &mut std::io::stderr().lock(),
+                "{}: {}",
+                Red.paint("[bat error]"),
+                error
+            )
+            .ok();
         }
     };
 }

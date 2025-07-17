@@ -2,6 +2,60 @@
 
 ## Features
 
+- Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
+- Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
+
+## Bugfixes
+
+- Fix UTF-8 BOM not being stripped for syntax detection, see #3314 (@krikera)
+- Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
+- Prevent `--list-themes` from outputting default theme info to stdout when it is piped, see #3189 (@einfachIrgendwer0815)
+- Rename some submodules to fix Dependabot submodule updates, see issue #3198 and PR #3201 (@victor-gp)
+- Make highlight tests fail when new syntaxes don't have fixtures PR #3255 (@dan-hipschman)
+- Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
+- Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
+- Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
+
+## Other
+
+- Update base16 README links to community driven base16 work #2871 (@JamyGolden)
+- Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
+- CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
+- CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
+- Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
+- Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
+- Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
+
+## Syntaxes
+
+- Add syntax mapping for `paru` configuration files #3182 (@cyqsimon)
+- Add support for [Idris 2 programming language](https://www.idris-lang.org/) #3150 (@buzden)
+- Add syntax mapping for `nix`'s '`flake.lock` lockfiles #3196 (@odilf)
+- Improvements to CSV/TSV highlighting, with autodetection of delimiter and support for TSV files, see #3186 (@keith-
+- Improve (Sys)log error highlighting, see #3205 (@keith-hall)
+- Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
+- Map files with `csproj`, `vbproj`, `props` and `targets` extensions to XML syntax, see #3213 (@keith-hall)
+- Add debsources syntax to highlight `/etc/apt/sources.list` files, see #3215 (@keith-hall)
+- Add syntax definition and test file for GDScript highlighting, see #3236 (@chetanjangir0)
+- Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
+- Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
+- Add syntax Typst #3300 (@cskeeters)
+- Map `.mill` files to Scala syntax for Mill build tool configuration files #3311 (@krikera)
+- Add syntax highlighting for VHDL, see #3337 (@JerryImMouse)
+- Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
+- Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
+
+## Themes
+
+- Add Catppuccin, see #3317 (@SchweGELBin)
+- Updated Catppuccin, see #3333 (@SchweGELBin)
+
+## `bat` as a library
+
+# v0.25.0
+
+## Features
+
 - Set terminal title to file names when Paging is not Paging::Never #2807 (@Oliver-Looney)
 - `bat --squeeze-blank`/`bat -s` will now squeeze consecutive empty lines, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
 - `bat --squeeze-limit` to set the maximum number of empty consecutive when using `--squeeze-blank`, see #1441 (@eth-p) and #2665 (@einfachIrgendwer0815)
@@ -9,6 +63,10 @@
 - Syntax highlighting for JavaScript files that start with `#!/usr/bin/env bun` #2913 (@sharunkumar)
 - `bat --strip-ansi={never,always,auto}` to remove ANSI escape sequences from bat's input, see #2999 (@eth-p)
 - Add or remove individual style components without replacing all styles #2929 (@eth-p)
+- Automatically choose theme based on the terminal's color scheme, see #2896 (@bash)
+- Add option `--binary=as-text` for printing binary content, see issue #2974 and PR #2976 (@einfachIrgendwer0815)
+- Make shell completions available via `--completion <shell>`, see issue #2057 and PR #3126 (@einfachIrgendwer0815)
+- Syntax highlighting for puppet code blocks within Markdown files, see #3152 (@liliwilson)
 
 ## Bugfixes
 
@@ -18,6 +76,8 @@
 - Fix handling of inputs with combined ANSI color and attribute sequences, see #2185 and #2856 (@eth-p)
 - Fix panel width when line 10000 wraps, see #2854 (@eth-p)
 - Fix compile issue of `time` dependency caused by standard library regression #3045 (@cyqsimon)
+- Fix override behavior of --plain and --paging, see issue #2731 and PR #3108 (@einfachIrgendwer0815)
+- Fix bugs in `$LESSOPEN` support, see #2805 (@Anomalocaridid)
 
 ## Other
 
@@ -44,6 +104,9 @@
 - Use bat's ANSI iterator during tab expansion, see #2998 (@eth-p)
 - Support 'statically linked binary' for aarch64 in 'Release' page, see #2992 (@tzq0301)
 - Update options in shell completions and the man page of `bat`, see #2995 (@akinomyoga)
+- Update nix dev-dependency to v0.29.0, see #3112 (@decathorpe)
+- Bump MSRV to [1.74](https://blog.rust-lang.org/2023/11/16/Rust-1.74.0.html), see #3154 (@keith-hall)
+- Update clircle dependency to remove winapi transitive dependency, see #3113 (@niklasmohrin)
 
 ## Syntaxes
 
@@ -55,13 +118,21 @@
 - Associate JSON with Comments `.jsonc` with `json` syntax, see #2795 (@mxaddict)
 - Associate JSON-LD `.jsonld` files with `json` syntax, see #3037 (@vorburger)
 - Associate `.textproto` files with `ProtoBuf` syntax, see #3038 (@vorburger)
+- Associate GeoJSON `.geojson` files with `json` syntax, see #3084 (@mvaaltola)
 - Associate `.aws/{config,credentials}`, see #2795 (@mxaddict)
 - Associate Wireguard config `/etc/wireguard/*.conf`, see #2874 (@cyqsimon)
 - Add support for [CFML](https://www.adobe.com/products/coldfusion-family.html), see #3031 (@brenton-at-pieces)
+- Map `*.mkd` files to `Markdown` syntax, see issue #3060 and PR #3061 (@einfachIrgendwer0815)
+- Add syntax mapping for CITATION.cff, see #3103 (@Ugzuzg)
+- Add syntax mapping for kubernetes config files #3049 (@cyqsimon)
+- Adds support for pipe delimiter for CSV #3115 (@pratik-m)
+- Add syntax mapping for `/etc/pacman.conf` #2961 (@cyqsimon)
+- Associate `uv.lock` with `TOML` syntax, see #3132 (@fepegar)
 
 ## Themes
 
 - added Base2Tone duotone themes #3067 (@atelierbram)
+- Patched/improved themes for better Manpage syntax highlighting support, see #2994 (@keith-hall).
 
 ## `bat` as a library
 
@@ -71,6 +142,10 @@
   - [BREAKING] `SyntaxMapping::mappings` is replaced by `SyntaxMapping::{builtin,custom,all}_mappings`
 - Make `Controller::run_with_error_handler`'s error handler `FnMut`, see #2831 (@rhysd)
 - Improve compile time by 20%, see #2815 (@dtolnay)
+- Add `theme::theme` for choosing an appropriate theme based on the
+  terminal's color scheme, see #2896 (@bash)
+  - [BREAKING] Remove `HighlightingAssets::default_theme`. Use `theme::default_theme` instead.
+- Add `PrettyPrinter::print_with_writer` for custom output destinations, see #3070 (@kojix2)
 
 # v0.24.0
 
@@ -109,6 +184,7 @@
 - Update `Julia` syntax, see #2553 (@dependabot)
 - add `NSIS` support, see #2577 (@idleberg)
 - Update `ssh-config`, see #2697 (@mrmeszaros)
+- Add syntax mapping `*.debdiff` => `diff`, see #2947 (@jacg)
 
 ## `bat` as a library
 

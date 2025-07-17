@@ -1,5 +1,3 @@
-use std::fmt;
-use std::io;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -17,6 +15,7 @@ use content_inspector::ContentType;
 
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
+use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthChar;
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
@@ -28,13 +27,15 @@ use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration}
 use crate::diff::LineChanges;
 use crate::error::*;
 use crate::input::OpenedInput;
-use crate::line_range::RangeCheckResult;
+use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
+use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
+use crate::BinaryBehavior;
 use crate::StripAnsiMode;
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
@@ -67,20 +68,6 @@ const EMPTY_SYNTECT_STYLE: syntect::highlighting::Style = syntect::highlighting:
     font_style: FontStyle::empty(),
 };
 
-pub enum OutputHandle<'a> {
-    IoWrite(&'a mut dyn io::Write),
-    FmtWrite(&'a mut dyn fmt::Write),
-}
-
-impl<'a> OutputHandle<'a> {
-    fn write_fmt(&mut self, args: fmt::Arguments<'_>) -> Result<()> {
-        match self {
-            Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-            Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
-        }
-    }
-}
-
 pub(crate) trait Printer {
     fn print_header(
         &mut self,
@@ -98,6 +85,7 @@ pub(crate) trait Printer {
         handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
+        max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()>;
 }
 
@@ -115,7 +103,7 @@ impl<'a> SimplePrinter<'a> {
     }
 }
 
-impl<'a> Printer for SimplePrinter<'a> {
+impl Printer for SimplePrinter<'_> {
     fn print_header(
         &mut self,
         _handle: &mut OutputHandle,
@@ -139,11 +127,12 @@ impl<'a> Printer for SimplePrinter<'a> {
         handle: &mut OutputHandle,
         _line_number: usize,
         line_buffer: &[u8],
+        _max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
             if String::from_utf8_lossy(line_buffer)
-                .trim_end_matches(|c| c == '\r' || c == '\n')
+                .trim_end_matches(['\r', '\n'])
                 .is_empty()
             {
                 self.consecutive_empty_lines += 1;
@@ -266,9 +255,10 @@ impl<'a> InteractivePrinter<'a> {
         let is_printing_binary = input
             .reader
             .content_type
-            .map_or(false, |c| c.is_binary() && !config.show_nonprintable);
+            .is_some_and(|c| c.is_binary() && !config.show_nonprintable);
 
-        let needs_to_match_syntax = !is_printing_binary
+        let needs_to_match_syntax = (!is_printing_binary
+            || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
         let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
@@ -401,14 +391,18 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
-        let mut content = content;
         let content_width = self.config.term_width - self.get_header_component_indent_length();
-        while content.len() > content_width {
-            let (content_line, remaining) = content.split_at(content_width);
-            self.print_header_component_with_indent(handle, content_line)?;
-            content = remaining;
+        if content.chars().count() <= content_width {
+            return self.print_header_component_with_indent(handle, content);
         }
-        self.print_header_component_with_indent(handle, content)
+
+        let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
+        while content_graphemes.len() > content_width {
+            let (content_line, remaining) = content_graphemes.split_at(content_width);
+            self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
+            content_graphemes = remaining.iter().cloned().collect();
+        }
+        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
 
     fn highlight_regions_for_line<'b>(
@@ -430,7 +424,7 @@ impl<'a> InteractivePrinter<'a> {
             .highlight_line(for_highlighting, highlighter_from_set.syntax_set)?;
 
         if too_long {
-            highlighted_line[0].1 = &line;
+            highlighted_line[0].1 = line;
         }
 
         Ok(highlighted_line)
@@ -446,7 +440,7 @@ impl<'a> InteractivePrinter<'a> {
     }
 }
 
-impl<'a> Printer for InteractivePrinter<'a> {
+impl Printer for InteractivePrinter<'_> {
     fn print_header(
         &mut self,
         handle: &mut OutputHandle,
@@ -458,7 +452,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
         }
 
         if !self.config.style_components.header() {
-            if Some(ContentType::BINARY) == self.content_type && !self.config.show_nonprintable {
+            if Some(ContentType::BINARY) == self.content_type
+                && !self.config.show_nonprintable
+                && !matches!(self.config.binary, BinaryBehavior::AsText)
+            {
                 writeln!(
                     handle,
                     "{}: Binary content from {} will not be printed to the terminal \
@@ -539,7 +536,10 @@ impl<'a> Printer for InteractivePrinter<'a> {
             })?;
 
         if self.config.style_components.grid() {
-            if self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable {
+            if self.content_type.is_some_and(|c| c.is_text())
+                || self.config.show_nonprintable
+                || matches!(self.config.binary, BinaryBehavior::AsText)
+            {
                 self.print_horizontal_line(handle, '┼')?;
             } else {
                 self.print_horizontal_line(handle, '┴')?;
@@ -551,7 +551,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
         if self.config.style_components.grid()
-            && (self.content_type.map_or(false, |c| c.is_text()) || self.config.show_nonprintable)
+            && (self.content_type.is_some_and(|c| c.is_text())
+                || self.config.show_nonprintable
+                || matches!(self.config.binary, BinaryBehavior::AsText))
         {
             self.print_horizontal_line(handle, '┴')
         } else {
@@ -589,6 +591,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         line_number: usize,
         line_buffer: &[u8],
+        max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
@@ -599,7 +602,9 @@ impl<'a> Printer for InteractivePrinter<'a> {
             .into()
         } else {
             let mut line = match self.content_type {
-                Some(ContentType::BINARY) | None => {
+                Some(ContentType::BINARY) | None
+                    if !matches!(self.config.binary, BinaryBehavior::AsText) =>
+                {
                     return Ok(());
                 }
                 Some(ContentType::UTF_16LE) => UTF_16LE.decode_with_bom_removal(line_buffer).0,
@@ -632,7 +637,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
 
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
-            if line.trim_end_matches(|c| c == '\r' || c == '\n').is_empty() {
+            if line.trim_end_matches(['\r', '\n']).is_empty() {
                 self.consecutive_empty_lines += 1;
                 if self.consecutive_empty_lines > squeeze_limit {
                     return Ok(());
@@ -648,8 +653,12 @@ impl<'a> Printer for InteractivePrinter<'a> {
         let mut panel_wrap: Option<String> = None;
 
         // Line highlighting
-        let highlight_this_line =
-            self.config.highlighted_lines.0.check(line_number) == RangeCheckResult::InRange;
+        let highlight_this_line = self
+            .config
+            .highlighted_lines
+            .0
+            .check(line_number, max_buffered_line_number)
+            == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
@@ -685,7 +694,7 @@ impl<'a> Printer for InteractivePrinter<'a> {
                         // Regular text.
                         EscapeSequence::Text(text) => {
                             let text = self.preprocess(text, &mut cursor_total);
-                            let text_trimmed = text.trim_end_matches(|c| c == '\r' || c == '\n');
+                            let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
                             write!(
                                 handle,
@@ -739,10 +748,8 @@ impl<'a> Printer for InteractivePrinter<'a> {
                     match chunk {
                         // Regular text.
                         EscapeSequence::Text(text) => {
-                            let text = self.preprocess(
-                                text.trim_end_matches(|c| c == '\r' || c == '\n'),
-                                &mut cursor_total,
-                            );
+                            let text = self
+                                .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
 
                             let mut max_width = cursor_max - cursor;
 

@@ -13,6 +13,7 @@ use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
 use crate::syntax_mapping::ignored_suffixes::IgnoredSuffixes;
 use crate::syntax_mapping::MappingTarget;
+use crate::theme::{default_theme, ColorScheme};
 use crate::{bat_warning, SyntaxMapping};
 
 use lazy_theme_set::LazyThemeSet;
@@ -67,57 +68,6 @@ impl HighlightingAssets {
             theme_set,
             fallback_theme: None,
         }
-    }
-
-    /// The default theme.
-    ///
-    /// ### Windows and Linux
-    ///
-    /// Windows and most Linux distributions has a dark terminal theme by
-    /// default. On these platforms, this function always returns a theme that
-    /// looks good on a dark background.
-    ///
-    /// ### macOS
-    ///
-    /// On macOS the default terminal background is light, but it is common that
-    /// Dark Mode is active, which makes the terminal background dark. On this
-    /// platform, the default theme depends on
-    /// ```bash
-    /// defaults read -globalDomain AppleInterfaceStyle
-    /// ```
-    /// To avoid the overhead of the check on macOS, simply specify a theme
-    /// explicitly via `--theme`, `BAT_THEME`, or `~/.config/bat`.
-    ///
-    /// See <https://github.com/sharkdp/bat/issues/1746> and
-    /// <https://github.com/sharkdp/bat/issues/1928> for more context.
-    pub fn default_theme() -> &'static str {
-        #[cfg(not(target_os = "macos"))]
-        {
-            Self::default_dark_theme()
-        }
-        #[cfg(target_os = "macos")]
-        {
-            if macos_dark_mode_active() {
-                Self::default_dark_theme()
-            } else {
-                Self::default_light_theme()
-            }
-        }
-    }
-
-    /**
-     * The default theme that looks good on a dark background.
-     */
-    fn default_dark_theme() -> &'static str {
-        "Monokai Extended"
-    }
-
-    /**
-     * The default theme that looks good on a light background.
-     */
-    #[cfg(target_os = "macos")]
-    fn default_light_theme() -> &'static str {
-        "Monokai Extended Light"
     }
 
     pub fn from_cache(cache_path: &Path) -> Result<Self> {
@@ -248,7 +198,10 @@ impl HighlightingAssets {
                     bat_warning!("Unknown theme '{}', using default.", theme)
                 }
                 self.get_theme_set()
-                    .get(self.fallback_theme.unwrap_or_else(Self::default_theme))
+                    .get(
+                        self.fallback_theme
+                            .unwrap_or_else(|| default_theme(ColorScheme::Dark)),
+                    )
                     .expect("something is very wrong if the default theme is missing")
             }
         }
@@ -345,7 +298,11 @@ impl HighlightingAssets {
         let syntax_set = self.get_syntax_set()?;
         Ok(String::from_utf8(reader.first_line.clone())
             .ok()
-            .and_then(|l| syntax_set.find_syntax_by_first_line(&l))
+            .and_then(|l| {
+                // Strip UTF-8 BOM if present
+                let line = l.strip_prefix('\u{feff}').unwrap_or(&l);
+                syntax_set.find_syntax_by_first_line(line)
+            })
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 }
@@ -399,26 +356,6 @@ fn asset_from_cache<T: serde::de::DeserializeOwned>(
         .map_err(|_| format!("Could not parse cached {description}").into())
 }
 
-#[cfg(target_os = "macos")]
-fn macos_dark_mode_active() -> bool {
-    const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
-    const STYLE_KEY: &str = "AppleInterfaceStyle";
-
-    let preferences_file = home::home_dir()
-        .map(|home| home.join(PREFERENCES_FILE))
-        .expect("Could not get home directory");
-
-    match plist::Value::from_file(preferences_file).map(|file| file.into_dictionary()) {
-        Ok(Some(preferences)) => match preferences.get(STYLE_KEY).and_then(|val| val.as_string()) {
-            Some(value) => value == "Dark",
-            // If the key does not exist, then light theme is currently in use.
-            None => false,
-        },
-        // Unreachable, in theory. All macOS users have a home directory and preferences file setup.
-        Ok(None) | Err(_) => true,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -437,7 +374,7 @@ mod tests {
         pub temp_dir: TempDir,
     }
 
-    impl<'a> SyntaxDetectionTest<'a> {
+    impl SyntaxDetectionTest<'_> {
         fn new() -> Self {
             SyntaxDetectionTest {
                 assets: HighlightingAssets::from_binary(),
@@ -596,6 +533,41 @@ mod tests {
         );
         assert_eq!(
             test.syntax_for_file_with_content("my_script", "<?php"),
+            "PHP"
+        );
+    }
+
+    #[test]
+    fn syntax_detection_first_line_with_utf8_bom() {
+        let test = SyntaxDetectionTest::new();
+
+        // Test that XML files are detected correctly even with UTF-8 BOM
+        // The BOM should be stripped before first-line syntax detection
+        let xml_with_bom = "\u{feff}<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_file", xml_with_bom),
+            "XML"
+        );
+
+        // Test the specific .csproj case mentioned in the issue
+        // Even if .csproj has extension mapping, this tests first-line fallback
+        let csproj_content_with_bom = "\u{feff}<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">";
+        assert_eq!(
+            test.syntax_for_file_with_content("test.csproj", csproj_content_with_bom),
+            "XML"
+        );
+
+        // Test that shell scripts are detected correctly even with UTF-8 BOM
+        let script_with_bom = "\u{feff}#!/bin/bash";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_script", script_with_bom),
+            "Bourne Again Shell (bash)"
+        );
+
+        // Test that PHP files are detected correctly even with UTF-8 BOM
+        let php_with_bom = "\u{feff}<?php";
+        assert_eq!(
+            test.syntax_for_file_with_content("unknown_php", php_with_bom),
             "PHP"
         );
     }

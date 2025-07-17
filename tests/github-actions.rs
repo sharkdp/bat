@@ -35,13 +35,7 @@ fn all_jobs_not_missing_any_jobs() {
         .as_mapping()
         .unwrap()
         .keys()
-        .filter_map(|k| {
-            if exceptions.contains(&k.as_str().unwrap_or_default()) {
-                None
-            } else {
-                Some(k)
-            }
-        })
+        .filter(|k| !exceptions.contains(&k.as_str().unwrap_or_default()))
         .map(ToOwned::to_owned)
         .collect::<Vec<_>>();
 

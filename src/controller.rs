@@ -1,5 +1,3 @@
-use std::io::{self, BufRead, Write};
-
 use crate::assets::HighlightingAssets;
 use crate::config::{Config, VisibleLines};
 #[cfg(feature = "git")]
@@ -10,11 +8,14 @@ use crate::input::{Input, InputReader, OpenedInput};
 use crate::lessopen::LessOpenPreprocessor;
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
-use crate::line_range::{LineRanges, RangeCheckResult};
-use crate::output::OutputType;
+use crate::line_range::{LineRanges, MaxBufferedLineNumber, RangeCheckResult};
+use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
-use crate::printer::{InteractivePrinter, OutputHandle, Printer, SimplePrinter};
+use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
+use std::collections::VecDeque;
+use std::io::{self, BufRead, Write};
+use std::mem;
 
 use clircle::{Clircle, Identifier};
 
@@ -25,7 +26,7 @@ pub struct Controller<'a> {
     preprocessor: Option<LessOpenPreprocessor>,
 }
 
-impl<'b> Controller<'b> {
+impl Controller<'_> {
     pub fn new<'a>(config: &'a Config, assets: &'a HighlightingAssets) -> Controller<'a> {
         Controller {
             config,
@@ -35,18 +36,14 @@ impl<'b> Controller<'b> {
         }
     }
 
-    pub fn run(
-        &self,
-        inputs: Vec<Input>,
-        output_buffer: Option<&mut dyn std::fmt::Write>,
-    ) -> Result<bool> {
-        self.run_with_error_handler(inputs, output_buffer, default_error_handler)
+    pub fn run(&self, inputs: Vec<Input>, output_handle: Option<OutputHandle<'_>>) -> Result<bool> {
+        self.run_with_error_handler(inputs, output_handle, default_error_handler)
     }
 
     pub fn run_with_error_handler(
         &self,
         inputs: Vec<Input>,
-        output_buffer: Option<&mut dyn std::fmt::Write>,
+        output_handle: Option<OutputHandle<'_>>,
         mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
         let mut output_type;
@@ -88,8 +85,9 @@ impl<'b> Controller<'b> {
             clircle::Identifier::stdout()
         };
 
-        let mut writer = match output_buffer {
-            Some(buf) => OutputHandle::FmtWrite(buf),
+        let mut writer = match output_handle {
+            Some(OutputHandle::FmtWrite(w)) => OutputHandle::FmtWrite(w),
+            Some(OutputHandle::IoWrite(w)) => OutputHandle::IoWrite(w),
             None => OutputHandle::IoWrite(output_type.handle()?),
         };
         let mut no_errors: bool = true;
@@ -241,20 +239,63 @@ impl<'b> Controller<'b> {
         reader: &mut InputReader,
         line_ranges: &LineRanges,
     ) -> Result<()> {
-        let mut line_buffer = Vec::new();
-        let mut line_number: usize = 1;
+        let mut current_line_buffer: Vec<u8> = Vec::new();
+        let mut current_line_number: usize = 1;
+        // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
+        let buffer_size: usize = line_ranges.largest_offset_from_end() + 1;
+        // Buffers multiple line data and line number
+        let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
 
+        let mut reached_eof: bool = false;
         let mut first_range: bool = true;
         let mut mid_range: bool = false;
 
         let style_snip = self.config.style_components.snip();
 
-        while reader.read_line(&mut line_buffer)? {
-            match line_ranges.check(line_number) {
+        loop {
+            if reached_eof && buffered_lines.is_empty() {
+                // Done processing all lines
+                break;
+            }
+            if !reached_eof {
+                if reader.read_line(&mut current_line_buffer)? {
+                    // Fill the buffer
+                    buffered_lines
+                        .push_back((mem::take(&mut current_line_buffer), current_line_number));
+                    current_line_number += 1;
+                } else {
+                    // No more data to read
+                    reached_eof = true;
+                }
+            }
+
+            if buffered_lines.len() < buffer_size && !reached_eof {
+                // The buffer needs to be completely filled first
+                continue;
+            }
+
+            let Some((line, line_nr)) = buffered_lines.pop_front() else {
+                break;
+            };
+
+            // Determine if the last line number in the buffer is the last line of the file or
+            // just a line somewhere in the file
+            let max_buffered_line_number = buffered_lines
+                .back()
+                .map(|(_, max_line_number)| {
+                    if reached_eof {
+                        MaxBufferedLineNumber::Final(*max_line_number)
+                    } else {
+                        MaxBufferedLineNumber::Tentative(*max_line_number)
+                    }
+                })
+                .unwrap_or(MaxBufferedLineNumber::Final(line_nr));
+
+            match line_ranges.check(line_nr, max_buffered_line_number) {
                 RangeCheckResult::BeforeOrBetweenRanges => {
                     // Call the printer in case we need to call the syntax highlighter
                     // for this line. However, set `out_of_range` to `true`.
-                    printer.print_line(true, writer, line_number, &line_buffer)?;
+                    printer.print_line(true, writer, line_nr, &line, max_buffered_line_number)?;
                     mid_range = false;
                 }
 
@@ -269,15 +310,12 @@ impl<'b> Controller<'b> {
                         }
                     }
 
-                    printer.print_line(false, writer, line_number, &line_buffer)?;
+                    printer.print_line(false, writer, line_nr, &line, max_buffered_line_number)?;
                 }
                 RangeCheckResult::AfterLastRange => {
                     break;
                 }
             }
-
-            line_number += 1;
-            line_buffer.clear();
         }
         Ok(())
     }

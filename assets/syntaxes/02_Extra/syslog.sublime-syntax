@@ -8,10 +8,10 @@ scope: text.log.syslog
 contexts:
   main:
     - match: ^(\w+\s+\d+)\s+(\d{2}:\d{2}:\d{2})
-      scope: meta.datetime.syslog constant.numeric.syslog
+      scope: meta.datetime.syslog
       captures:
-        1: meta.date.syslog
-        2: meta.time.syslog
+        1: meta.date.syslog constant.numeric.syslog
+        2: meta.time.syslog constant.numeric.syslog
       push: loghost
     - match: ^
       push: text
@@ -31,22 +31,24 @@ contexts:
   structured-data:
     - match: '\['
       scope: punctuation.section.mapping.begin.syslog
-      push:
-        - match: \]
-          scope: punctuation.section.mapping.end.syslog
-          pop: true
-        - match: \w+
-          scope: variable.parameter.syslog
-        - match: =
-          scope: keyword.operator.assignment.syslog
-          push:
-            - match: '[^\s\]]+'
-              scope: constant.other.syslog
-              pop: true
-            - match: (?=\])
-              pop: true
+      push: structured-data-contents
     - match: (?=\S)
       set: text
+  structured-data-contents:
+    - match: \]
+      scope: punctuation.section.mapping.end.syslog
+      pop: true
+    - match: \w+
+      scope: variable.parameter.syslog
+    - match: =
+      scope: keyword.operator.assignment.syslog
+      push: structured-data-assignment
+  structured-data-assignment:
+    - match: '[^\s\]]+'
+      scope: constant.other.syslog
+      pop: true
+    - match: (?=\])
+      pop: true
   text:
     - match: $
       pop: true
