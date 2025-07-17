@@ -131,6 +131,7 @@
 
 ## Themes
 
+- added Base2Tone duotone themes #3067 (@atelierbram)
 - Patched/improved themes for better Manpage syntax highlighting support, see #2994 (@keith-hall).
 
 ## `bat` as a library
