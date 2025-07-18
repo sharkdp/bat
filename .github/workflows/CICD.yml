@@ -461,7 +461,7 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: vedantmgoyal2009/winget-releaser@v2
+      - uses: vedantmgoyal9/winget-releaser@main
         with:
           identifier: sharkdp.bat
           installers-regex: '-pc-windows-msvc\.zip$'
