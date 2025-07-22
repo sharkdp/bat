@@ -26,6 +26,7 @@
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 - Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 - Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
+- Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
 
 ## Syntaxes
 
