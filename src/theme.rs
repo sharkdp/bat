@@ -266,10 +266,10 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
     }
 
     fn detect(&self) -> Option<ColorScheme> {
-        use terminal_colorsaurus::{color_scheme, ColorScheme as ColorsaurusScheme, QueryOptions};
-        match color_scheme(QueryOptions::default()).ok()? {
-            ColorsaurusScheme::Dark => Some(ColorScheme::Dark),
-            ColorsaurusScheme::Light => Some(ColorScheme::Light),
+        use terminal_colorsaurus::{theme_mode, QueryOptions, ThemeMode};
+        match theme_mode(QueryOptions::default()).ok()? {
+            ThemeMode::Dark => Some(ColorScheme::Dark),
+            ThemeMode::Light => Some(ColorScheme::Light),
         }
     }
 }
