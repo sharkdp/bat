@@ -45,6 +45,7 @@
 - Add syntax highlighting for VHDL, see #3337 (@JerryImMouse)
 - Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
 - Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
+- Add syntax highlighting for Cooklang recipe markup language (.cook files), see #3350 (@dubadub)
 
 ## Themes
 
