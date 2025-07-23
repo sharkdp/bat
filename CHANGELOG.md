@@ -15,6 +15,7 @@
 - Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
 - Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
 - Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
+- Make --map-syntax target case insensitive to match --language, see #3206 (@keith-hall)
 
 ## Other
 
@@ -25,6 +26,7 @@
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 - Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 - Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
+- Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
 
 ## Syntaxes
 

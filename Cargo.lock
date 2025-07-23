@@ -1536,9 +1536,9 @@ dependencies = [
 
 [[package]]
 name = "terminal-colorsaurus"
-version = "0.4.7"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "858625398bdd5da7a96e8ad33a10031a50c3a5ad50d5aaa81a2827369a9c216c"
+checksum = "3f7226dad4b1817567c1e2f5d453897ef36abe79def7783af3fa241a694e30b3"
 dependencies = [
  "cfg-if",
  "libc",
@@ -1546,13 +1546,14 @@ dependencies = [
  "mio",
  "terminal-trx",
  "windows-sys 0.59.0",
+ "xterm-color",
 ]
 
 [[package]]
 name = "terminal-trx"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57a5b836e7f4f81afe61b5cd399eee774f25edcfd47009a76e29f53bb6487833"
+checksum = "975b4233aefa1b02456d5e53b22c61653c743e308c51cf4181191d8ce41753ab"
 dependencies = [
  "cfg-if",
  "libc",
@@ -2039,6 +2040,12 @@ name = "writeable"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e9df38ee2d2c3c5948ea468a8406ff0db0b29ae1ffde1bcf20ef305bcc95c51"
+
+[[package]]
+name = "xterm-color"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4de5f056fb9dc8b7908754867544e26145767187aaac5a98495e88ad7cb8a80f"
 
 [[package]]
 name = "yaml-rust"
