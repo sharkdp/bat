@@ -227,6 +227,7 @@ impl App {
                 if !self.matches.get_flag("chop-long-lines") {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
+                        Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
                             if style_components.plain() {
@@ -261,7 +262,10 @@ impl App {
                     .get_one::<String>("decorations")
                     .map(|s| s.as_str())
                     == Some("always")
-                || self.matches.get_flag("force-colorization")),
+                || self.matches.get_flag("force-colorization")
+                || maybe_term_width.is_some()  // Use InteractivePrinter when terminal width is explicitly set
+                || matches!(self.matches.get_one::<String>("wrap").map(|s| s.as_str()), 
+                           Some("word") | Some("character"))), // Use InteractivePrinter for explicit wrapping modes
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")

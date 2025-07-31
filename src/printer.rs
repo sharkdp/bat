@@ -753,42 +753,161 @@ impl Printer for InteractivePrinter<'_> {
 
                             let mut max_width = cursor_max - cursor;
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
+                            match self.config.wrapping_mode {
+                                WrappingMode::Word => {
+                                    // Word wrapping: split text into words and wrap at word boundaries
+                                    let words: Vec<&str> = text.split_whitespace().collect();
+                                    let mut current_line = String::new();
+                                    let mut current_line_width = 0;
 
-                            // Displayed width of line_buf
-                            let mut current_width = 0;
+                                    for word in words.iter() {
+                                        let word_width = word
+                                            .chars()
+                                            .map(|c| c.width().unwrap_or(0))
+                                            .sum::<usize>();
 
-                            for c in text.chars() {
-                                // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
-                                current_width += cw;
+                                        // Add space before word if it's not the first word in the line
+                                        let space_width =
+                                            if current_line.is_empty() { 0 } else { 1 };
+                                        let total_width = word_width + space_width;
 
-                                // if next character cannot be printed on this line,
-                                // flush the buffer.
-                                if current_width > max_width {
-                                    // Generate wrap padding if not already generated.
-                                    if panel_wrap.is_none() {
-                                        panel_wrap = if self.panel_width > 0 {
-                                            Some(format!(
-                                                "{} ",
-                                                self.decorations
-                                                    .iter()
-                                                    .map(|d| d
-                                                        .generate(line_number, true, self)
-                                                        .text)
-                                                    .collect::<Vec<String>>()
-                                                    .join(" ")
-                                            ))
-                                        } else {
-                                            Some("".to_string())
+                                        // Check if the word fits on the current line
+                                        if current_line_width + total_width > max_width
+                                            && !current_line.is_empty()
+                                        {
+                                            // Generate wrap padding if not already generated.
+                                            if panel_wrap.is_none() {
+                                                panel_wrap = if self.panel_width > 0 {
+                                                    Some(format!(
+                                                        "{} ",
+                                                        self.decorations
+                                                            .iter()
+                                                            .map(|d| d
+                                                                .generate(line_number, true, self)
+                                                                .text)
+                                                            .collect::<Vec<String>>()
+                                                            .join(" ")
+                                                    ))
+                                                } else {
+                                                    Some("".to_string())
+                                                }
+                                            }
+
+                                            // Output the current line and wrap
+                                            write!(
+                                                handle,
+                                                "{}{}\n{}",
+                                                as_terminal_escaped(
+                                                    style,
+                                                    &format!("{}{}", self.ansi_style, current_line),
+                                                    self.config.true_color,
+                                                    self.config.colored_output,
+                                                    self.config.use_italic_text,
+                                                    background_color
+                                                ),
+                                                self.ansi_style.to_reset_sequence(),
+                                                panel_wrap.clone().unwrap()
+                                            )?;
+
+                                            cursor = 0;
+                                            max_width = cursor_max;
+                                            current_line.clear();
+                                            current_line_width = 0;
                                         }
+
+                                        // Add space before word if needed
+                                        if !current_line.is_empty() {
+                                            current_line.push(' ');
+                                            current_line_width += 1;
+                                        }
+
+                                        // Add the word to the current line
+                                        current_line.push_str(word);
+                                        current_line_width += word_width;
                                     }
 
-                                    // It wraps.
+                                    // Output any remaining text
+                                    if !current_line.is_empty() {
+                                        cursor += current_line_width;
+                                        write!(
+                                            handle,
+                                            "{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &format!("{}{}", self.ansi_style, current_line),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            )
+                                        )?;
+                                    }
+                                }
+                                _ => {
+                                    // Character wrapping (original behavior)
+                                    // line buffer (avoid calling write! for every character)
+                                    let mut line_buf = String::with_capacity(max_width * 4);
+
+                                    // Displayed width of line_buf
+                                    let mut current_width = 0;
+
+                                    for c in text.chars() {
+                                        // calculate the displayed width for next character
+                                        let cw = c.width().unwrap_or(0);
+                                        current_width += cw;
+
+                                        // if next character cannot be printed on this line,
+                                        // flush the buffer.
+                                        if current_width > max_width {
+                                            // Generate wrap padding if not already generated.
+                                            if panel_wrap.is_none() {
+                                                panel_wrap = if self.panel_width > 0 {
+                                                    Some(format!(
+                                                        "{} ",
+                                                        self.decorations
+                                                            .iter()
+                                                            .map(|d| d
+                                                                .generate(line_number, true, self)
+                                                                .text)
+                                                            .collect::<Vec<String>>()
+                                                            .join(" ")
+                                                    ))
+                                                } else {
+                                                    Some("".to_string())
+                                                }
+                                            }
+
+                                            // It wraps.
+                                            write!(
+                                                handle,
+                                                "{}{}\n{}",
+                                                as_terminal_escaped(
+                                                    style,
+                                                    &format!("{}{}", self.ansi_style, line_buf),
+                                                    self.config.true_color,
+                                                    self.config.colored_output,
+                                                    self.config.use_italic_text,
+                                                    background_color
+                                                ),
+                                                self.ansi_style.to_reset_sequence(),
+                                                panel_wrap.clone().unwrap()
+                                            )?;
+
+                                            cursor = 0;
+                                            max_width = cursor_max;
+
+                                            line_buf.clear();
+                                            current_width = cw;
+                                        }
+
+                                        line_buf.push(c);
+                                    }
+
+                                    // flush the buffer
+                                    cursor += current_width;
                                     write!(
                                         handle,
-                                        "{}{}\n{}",
+                                        "{}",
                                         as_terminal_escaped(
                                             style,
                                             &format!("{}{}", self.ansi_style, line_buf),
@@ -796,35 +915,10 @@ impl Printer for InteractivePrinter<'_> {
                                             self.config.colored_output,
                                             self.config.use_italic_text,
                                             background_color
-                                        ),
-                                        self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
+                                        )
                                     )?;
-
-                                    cursor = 0;
-                                    max_width = cursor_max;
-
-                                    line_buf.clear();
-                                    current_width = cw;
                                 }
-
-                                line_buf.push(c);
                             }
-
-                            // flush the buffer
-                            cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{}", self.ansi_style, line_buf),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
                         }
 
                         // ANSI escape passthrough.

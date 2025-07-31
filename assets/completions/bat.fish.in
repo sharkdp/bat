@@ -117,6 +117,7 @@ set -l wrap_opts '
     auto\tdefault
     never\t
     character\t
+    word\twrap\ at\ word\ boundaries
 '
 
 # While --tabs theoretically takes any number, most people should be OK with these.

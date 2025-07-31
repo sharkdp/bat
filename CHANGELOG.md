@@ -4,6 +4,7 @@
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 - Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
+- Add `--wrap=word` option for word wrapping to improve readability of markdown files, see #3324 (@krikera)
 
 ## Bugfixes
 
