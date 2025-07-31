@@ -1,4 +1,5 @@
 [mappings]
 "INI" = [
     "*.flatpakref",
+    "*.flatpakrepo"
 ]
