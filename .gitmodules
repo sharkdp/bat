@@ -278,3 +278,6 @@
 [submodule "assets/syntaxes/02_Extra/SmartVHDL"]
 	path = assets/syntaxes/02_Extra/SmartVHDL
 	url = https://github.com/TheClams/SmartVHDL
+[submodule "assets/syntaxes/02_Extra/CookSublime"]
+	path = assets/syntaxes/02_Extra/CookSublime
+	url = https://github.com/cooklang/CookSublime
