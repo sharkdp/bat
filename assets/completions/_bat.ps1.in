@@ -27,7 +27,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--file-name', 'file-name', [CompletionResultType]::ParameterName, 'Specify the name to display for a file.')
             [CompletionResult]::new('--diff-context', 'diff-context', [CompletionResultType]::ParameterName, 'diff-context')
             [CompletionResult]::new('--tabs', 'tabs', [CompletionResultType]::ParameterName, 'Set the tab width to T spaces.')
-            [CompletionResult]::new('--wrap', 'wrap', [CompletionResultType]::ParameterName, 'Specify the text-wrapping mode (*auto*, never, character).')
+            [CompletionResult]::new('--wrap', 'wrap', [CompletionResultType]::ParameterName, 'Specify the text-wrapping mode (*auto*, never, character, word).')
             [CompletionResult]::new('--terminal-width', 'terminal-width', [CompletionResultType]::ParameterName, 'Explicitly set the width of the terminal instead of determining it automatically. If prefixed with ''+'' or ''-'', the value will be treated as an offset to the actual terminal width. See also: ''--wrap''.')
             [CompletionResult]::new('--color', 'color', [CompletionResultType]::ParameterName, 'When to use colors (*auto*, never, always).')
             [CompletionResult]::new('--italic-text', 'italic-text', [CompletionResultType]::ParameterName, 'Use italics in output (always, *never*)')

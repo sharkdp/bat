@@ -61,8 +61,8 @@ Options:
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character). The '--terminal-width' option
-          can be used in addition to control the output width.
+          Specify the text-wrapping mode (*auto*, never, character, word). The '--terminal-width'
+          option can be used in addition to control the output width.
 
   -S, --chop-long-lines
           Truncate all lines longer than screen width. Alias for '--wrap=never'.

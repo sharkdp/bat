@@ -2298,6 +2298,53 @@ fn no_wrapping_with_chop_long_lines() {
 }
 
 #[test]
+fn word_wrapping() {
+    // Test word wrapping vs character wrapping with a line that contains words
+    bat()
+        .arg("--wrap=word")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("--terminal-width=25")
+        .arg("long-word-line.txt")
+        .assert()
+        .success()
+        .stdout("word1 word2 word3 word4\nword5 word6 word7 word8\nword9 word10 word11\nword12 word13 word14\n")
+        .stderr("");
+}
+
+#[test]
+fn character_wrapping() {
+    // Test character wrapping with the same content for comparison
+    bat()
+        .arg("--wrap=character")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("--terminal-width=25")
+        .arg("long-word-line.txt")
+        .assert()
+        .success()
+        .stdout("word1 word2 word3 word4 w\nord5 word6 word7 word8 wo\nrd9 word10 word11 word12 \nword13 word14\n")
+        .stderr("");
+}
+
+#[test]
+fn word_wrapping_with_decorations() {
+    // Test word wrapping with decorations (line numbers) enabled
+    bat()
+        .arg("--wrap=word")
+        .arg("--number")
+        .arg("--color=never")
+        .arg("--terminal-width=35")
+        .arg("long-word-line.txt")
+        .assert()
+        .success()
+        .stdout("   1 word1 word2 word3 word4 word5\n     word6 word7 word8 word9\n     word10 word11 word12 word13\n     word14\n")
+        .stderr("");
+}
+
+#[test]
 fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")

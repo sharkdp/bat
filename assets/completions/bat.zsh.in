@@ -33,7 +33,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(-d --diff)'--diff'[only show lines that have been added/removed/modified]'
         --diff-context='[specify lines of context around added/removed/modified lines when using `--diff`]:lines'
         --tabs='[set the tab width]:tab width [4]'
-        --wrap='[specify the text-wrapping mode]:mode [auto]:(auto never character)'
+                --wrap='[specify the text-wrapping mode]:mode [auto]:(auto never character word)'
         '!(--wrap)'{-S,--chop-long-lines}
         --terminal-width='[explicitly set the width of the terminal instead of determining it automatically]:width'
         '(-n --number --diff --diff-context)'{-n,--number}'[show line numbers]'

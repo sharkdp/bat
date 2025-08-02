@@ -97,7 +97,7 @@ _bat() {
 		return 0
 		;;
 	--wrap)
-		COMPREPLY=($(compgen -W "auto never character" -- "$cur"))
+		COMPREPLY=($(compgen -W "auto never character word" -- "$cur"))
 		return 0
 		;;
 	--color | --decorations | --paging)

@@ -211,11 +211,11 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("wrap")
                 .overrides_with("wrap")
                 .value_name("mode")
-                .value_parser(["auto", "never", "character"])
+                .value_parser(["auto", "never", "character", "word"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+                .help("Specify the text-wrapping mode (*auto*, never, character, word).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word). \
                            The '--terminal-width' option can be used in addition to \
                            control the output width."),
         )
