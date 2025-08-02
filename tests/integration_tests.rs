@@ -2330,6 +2330,21 @@ fn character_wrapping() {
 }
 
 #[test]
+fn word_wrapping_with_decorations() {
+    // Test word wrapping with decorations (line numbers) enabled
+    bat()
+        .arg("--wrap=word")
+        .arg("--number")
+        .arg("--color=never")
+        .arg("--terminal-width=35")
+        .arg("long-word-line.txt")
+        .assert()
+        .success()
+        .stdout("   1 word1 word2 word3 word4 word5\n     word6 word7 word8 word9\n     word10 word11 word12 word13\n     word14\n")
+        .stderr("");
+}
+
+#[test]
 fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")

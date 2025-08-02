@@ -400,7 +400,7 @@ impl<'a> InteractivePrinter<'a> {
         while content_graphemes.len() > content_width {
             let (content_line, remaining) = content_graphemes.split_at(content_width);
             self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
-            content_graphemes = remaining.iter().cloned().collect();
+            content_graphemes = remaining.to_vec();
         }
         self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
@@ -437,6 +437,208 @@ impl<'a> InteractivePrinter<'a> {
 
         *cursor += text.len();
         text.to_string()
+    }
+
+    /// Find the best word break position for a line that fits within max_width
+    /// Returns (break_position, display_width_up_to_break)
+    fn find_word_break_position(&self, text: &str, max_width: usize) -> Option<(usize, usize)> {
+        let mut last_whitespace_pos = None;
+        let mut last_whitespace_width = 0;
+        let mut current_width = 0;
+        let mut char_pos = 0;
+
+        for ch in text.chars() {
+            let char_width = ch.width().unwrap_or(0);
+
+            // If adding this character would exceed the width limit
+            if current_width + char_width > max_width {
+                // Return the last good whitespace position if we found one
+                return last_whitespace_pos.map(|pos| (pos, last_whitespace_width));
+            }
+
+            current_width += char_width;
+
+            // Track whitespace positions as potential break points
+            if ch.is_whitespace() {
+                last_whitespace_pos = Some(char_pos + ch.len_utf8());
+                last_whitespace_width = current_width;
+            }
+
+            char_pos += ch.len_utf8();
+        }
+
+        // If the whole text fits, return None (no break needed)
+        None
+    }
+
+    /// Generate wrap padding for continuation lines
+    fn generate_wrap_padding(&self, line_number: usize) -> String {
+        if self.panel_width > 0 {
+            format!(
+                "{} ",
+                self.decorations
+                    .iter()
+                    .map(|d| d.generate(line_number, true, self).text)
+                    .collect::<Vec<String>>()
+                    .join(" ")
+            )
+        } else {
+            String::new()
+        }
+    }
+
+    /// Process word wrapping for a text segment
+    #[allow(clippy::too_many_arguments)]
+    fn process_word_wrapping(
+        &self,
+        handle: &mut OutputHandle,
+        text: &str,
+        style: syntect::highlighting::Style,
+        background_color: Option<Color>,
+        line_number: usize,
+        cursor: &mut usize,
+        max_width: usize,
+        cursor_max: usize,
+        panel_wrap: &mut Option<String>,
+    ) -> Result<()> {
+        let mut remaining_text = text;
+        let mut current_max_width = max_width;
+
+        while !remaining_text.is_empty() {
+            // Find the best place to break the line
+            if let Some((break_pos, _break_width)) =
+                self.find_word_break_position(remaining_text, current_max_width)
+            {
+                // Generate wrap padding if not already generated
+                if panel_wrap.is_none() {
+                    *panel_wrap = Some(self.generate_wrap_padding(line_number));
+                }
+
+                // Get the text segment to output (excluding trailing whitespace)
+                let line_text = remaining_text[..break_pos].trim_end();
+
+                // Output the line segment
+                write!(
+                    handle,
+                    "{}{}\n{}",
+                    as_terminal_escaped(
+                        style,
+                        &format!("{}{}", self.ansi_style, line_text),
+                        self.config.true_color,
+                        self.config.colored_output,
+                        self.config.use_italic_text,
+                        background_color
+                    ),
+                    self.ansi_style.to_reset_sequence(),
+                    panel_wrap.as_ref().unwrap()
+                )?;
+
+                // Move to the next line
+                *cursor = 0;
+                current_max_width = cursor_max;
+
+                // Skip whitespace at the beginning of the next segment
+                remaining_text = remaining_text[break_pos..].trim_start();
+            } else {
+                // The remaining text fits on the current line
+                let display_width = remaining_text
+                    .chars()
+                    .map(|c| c.width().unwrap_or(0))
+                    .sum::<usize>();
+
+                *cursor += display_width;
+                write!(
+                    handle,
+                    "{}",
+                    as_terminal_escaped(
+                        style,
+                        &format!("{}{}", self.ansi_style, remaining_text),
+                        self.config.true_color,
+                        self.config.colored_output,
+                        self.config.use_italic_text,
+                        background_color
+                    )
+                )?;
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Process character wrapping for a text segment
+    #[allow(clippy::too_many_arguments)]
+    fn process_character_wrapping(
+        &self,
+        handle: &mut OutputHandle,
+        text: &str,
+        style: syntect::highlighting::Style,
+        background_color: Option<Color>,
+        line_number: usize,
+        cursor: &mut usize,
+        max_width: usize,
+        cursor_max: usize,
+        panel_wrap: &mut Option<String>,
+    ) -> Result<()> {
+        // line buffer (avoid calling write! for every character)
+        let mut line_buf = String::with_capacity(max_width * 4);
+        let mut current_width = 0;
+        let mut current_max_width = max_width;
+
+        for c in text.chars() {
+            // calculate the displayed width for next character
+            let cw = c.width().unwrap_or(0);
+            current_width += cw;
+
+            // if next character cannot be printed on this line, flush the buffer.
+            if current_width > current_max_width {
+                // Generate wrap padding if not already generated.
+                if panel_wrap.is_none() {
+                    *panel_wrap = Some(self.generate_wrap_padding(line_number));
+                }
+
+                // It wraps.
+                write!(
+                    handle,
+                    "{}{}\n{}",
+                    as_terminal_escaped(
+                        style,
+                        &format!("{}{}", self.ansi_style, line_buf),
+                        self.config.true_color,
+                        self.config.colored_output,
+                        self.config.use_italic_text,
+                        background_color
+                    ),
+                    self.ansi_style.to_reset_sequence(),
+                    panel_wrap.as_ref().unwrap()
+                )?;
+
+                *cursor = 0;
+                current_max_width = cursor_max;
+
+                line_buf.clear();
+                current_width = cw;
+            }
+
+            line_buf.push(c);
+        }
+
+        // flush the buffer
+        *cursor += current_width;
+        write!(
+            handle,
+            "{}",
+            as_terminal_escaped(
+                style,
+                &format!("{}{}", self.ansi_style, line_buf),
+                self.config.true_color,
+                self.config.colored_output,
+                self.config.use_italic_text,
+                background_color
+            )
+        )?;
+
+        Ok(())
     }
 }
 
@@ -751,171 +953,33 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self
                                 .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
 
-                            let mut max_width = cursor_max - cursor;
+                            let max_width = cursor_max - cursor;
 
                             match self.config.wrapping_mode {
                                 WrappingMode::Word => {
-                                    // Word wrapping: split text into words and wrap at word boundaries
-                                    let words: Vec<&str> = text.split_whitespace().collect();
-                                    let mut current_line = String::new();
-                                    let mut current_line_width = 0;
-
-                                    for word in words.iter() {
-                                        let word_width = word
-                                            .chars()
-                                            .map(|c| c.width().unwrap_or(0))
-                                            .sum::<usize>();
-
-                                        // Add space before word if it's not the first word in the line
-                                        let space_width =
-                                            if current_line.is_empty() { 0 } else { 1 };
-                                        let total_width = word_width + space_width;
-
-                                        // Check if the word fits on the current line
-                                        if current_line_width + total_width > max_width
-                                            && !current_line.is_empty()
-                                        {
-                                            // Generate wrap padding if not already generated.
-                                            if panel_wrap.is_none() {
-                                                panel_wrap = if self.panel_width > 0 {
-                                                    Some(format!(
-                                                        "{} ",
-                                                        self.decorations
-                                                            .iter()
-                                                            .map(|d| d
-                                                                .generate(line_number, true, self)
-                                                                .text)
-                                                            .collect::<Vec<String>>()
-                                                            .join(" ")
-                                                    ))
-                                                } else {
-                                                    Some("".to_string())
-                                                }
-                                            }
-
-                                            // Output the current line and wrap
-                                            write!(
-                                                handle,
-                                                "{}{}\n{}",
-                                                as_terminal_escaped(
-                                                    style,
-                                                    &format!("{}{}", self.ansi_style, current_line),
-                                                    self.config.true_color,
-                                                    self.config.colored_output,
-                                                    self.config.use_italic_text,
-                                                    background_color
-                                                ),
-                                                self.ansi_style.to_reset_sequence(),
-                                                panel_wrap.clone().unwrap()
-                                            )?;
-
-                                            cursor = 0;
-                                            max_width = cursor_max;
-                                            current_line.clear();
-                                            current_line_width = 0;
-                                        }
-
-                                        // Add space before word if needed
-                                        if !current_line.is_empty() {
-                                            current_line.push(' ');
-                                            current_line_width += 1;
-                                        }
-
-                                        // Add the word to the current line
-                                        current_line.push_str(word);
-                                        current_line_width += word_width;
-                                    }
-
-                                    // Output any remaining text
-                                    if !current_line.is_empty() {
-                                        cursor += current_line_width;
-                                        write!(
-                                            handle,
-                                            "{}",
-                                            as_terminal_escaped(
-                                                style,
-                                                &format!("{}{}", self.ansi_style, current_line),
-                                                self.config.true_color,
-                                                self.config.colored_output,
-                                                self.config.use_italic_text,
-                                                background_color
-                                            )
-                                        )?;
-                                    }
+                                    self.process_word_wrapping(
+                                        handle,
+                                        &text,
+                                        style,
+                                        background_color,
+                                        line_number,
+                                        &mut cursor,
+                                        max_width,
+                                        cursor_max,
+                                        &mut panel_wrap,
+                                    )?;
                                 }
                                 _ => {
-                                    // Character wrapping (original behavior)
-                                    // line buffer (avoid calling write! for every character)
-                                    let mut line_buf = String::with_capacity(max_width * 4);
-
-                                    // Displayed width of line_buf
-                                    let mut current_width = 0;
-
-                                    for c in text.chars() {
-                                        // calculate the displayed width for next character
-                                        let cw = c.width().unwrap_or(0);
-                                        current_width += cw;
-
-                                        // if next character cannot be printed on this line,
-                                        // flush the buffer.
-                                        if current_width > max_width {
-                                            // Generate wrap padding if not already generated.
-                                            if panel_wrap.is_none() {
-                                                panel_wrap = if self.panel_width > 0 {
-                                                    Some(format!(
-                                                        "{} ",
-                                                        self.decorations
-                                                            .iter()
-                                                            .map(|d| d
-                                                                .generate(line_number, true, self)
-                                                                .text)
-                                                            .collect::<Vec<String>>()
-                                                            .join(" ")
-                                                    ))
-                                                } else {
-                                                    Some("".to_string())
-                                                }
-                                            }
-
-                                            // It wraps.
-                                            write!(
-                                                handle,
-                                                "{}{}\n{}",
-                                                as_terminal_escaped(
-                                                    style,
-                                                    &format!("{}{}", self.ansi_style, line_buf),
-                                                    self.config.true_color,
-                                                    self.config.colored_output,
-                                                    self.config.use_italic_text,
-                                                    background_color
-                                                ),
-                                                self.ansi_style.to_reset_sequence(),
-                                                panel_wrap.clone().unwrap()
-                                            )?;
-
-                                            cursor = 0;
-                                            max_width = cursor_max;
-
-                                            line_buf.clear();
-                                            current_width = cw;
-                                        }
-
-                                        line_buf.push(c);
-                                    }
-
-                                    // flush the buffer
-                                    cursor += current_width;
-                                    write!(
+                                    self.process_character_wrapping(
                                         handle,
-                                        "{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &format!("{}{}", self.ansi_style, line_buf),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        )
+                                        &text,
+                                        style,
+                                        background_color,
+                                        line_number,
+                                        &mut cursor,
+                                        max_width,
+                                        cursor_max,
+                                        &mut panel_wrap,
                                     )?;
                                 }
                             }
