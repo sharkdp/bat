@@ -61,7 +61,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             $ArrayBinary |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
-        }'*;--style' {
+        } '*;--style' {
             $ArrayStyle |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
