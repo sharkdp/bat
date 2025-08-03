@@ -2,7 +2,7 @@
 using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 
-Register-ArgumentCompleter -Native -CommandName 'bat' -ScriptBlock {
+Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
     $ArrayStyle      = @('default', 'auto', 'full', 'plain', 'changes', 'header', 'header-filename', 'header-filesize', 'grid', 'rule', 'numbers', 'snip')
