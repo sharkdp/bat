@@ -48,6 +48,7 @@
 - Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
 - Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
 - Map `.flatpakref` and `.flatpakrepo` files to INI syntax #3353 (@Ferenc-)
+- Add syntax highlighting support for .kshrc files using Bash syntax, see #3361  (@ritoban23)
 
 ## Themes
 
