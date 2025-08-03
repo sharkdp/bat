@@ -14,25 +14,24 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
     $ArrayPrint      = @('unicode', 'caret')
 
     function Get-MyThemes(){
-        $themes = bat --list-themes | ForEach-Object {$_  -replace "^(.*)$", '''$1'''} | select-object
+        $themes = {{PROJECT_EXECUTABLE}} --list-themes | ForEach-Object {$_  -replace "^(.*)$", '''$1'''} | select-object
         return $themes
     }
 
     function Get-MyLanguages(){
-        $themes = bat --list-languages | ForEach-Object{[pscustomobject]@{MyParameter=$_.Substring(0,$_.IndexOf(":")).Trim();MyDescription=$_.Substring($_.IndexOf(":")+1)}} | select-object
+        $themes = {{PROJECT_EXECUTABLE}} --list-languages | ForEach-Object{[pscustomobject]@{MyParameter=$_.Substring(0,$_.IndexOf(":")).Trim();MyDescription=$_.Substring($_.IndexOf(":")+1)}} | select-object
         return $themes
     }
-    
 
     $commandElements = $commandAst.CommandElements
     $command = @(
-        'bat'
+        '{{PROJECT_EXECUTABLE}}'
         for ($i = 1; $i -lt $commandElements.Count; $i++) {
             $element = $commandElements[$i]
             if ($element -isnot [StringConstantExpressionAst] -or
                 $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                #$element.Value.StartsWith('-') -or
                 $element.Value -eq $wordToComplete) {
-                #-or $element.Value.StartsWith('-')
                 break
         }
         $element.Value
@@ -47,7 +46,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         }
         '*;--acknowledgements' {
             break
-        } '*;--language' {
+        }
+        '*;--language' {
             Get-MyLanguages |
             ForEach-Object {[CompletionResult]::new(($_.MyParameter -replace "^(.*)$", '''$1'''), $_.MyParameter, [CompletionResultType]::ParameterName, $_.MyDescription ?? '_no value_')}
             break
@@ -61,7 +61,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             $ArrayBinary |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
-        } '*;--style' {
+        }
+        '*;--style' {
             $ArrayStyle |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
@@ -109,7 +110,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         '*;--generate-config-file' {
             break
         }
-        'bat;cache' {
+        '{{PROJECT_EXECUTABLE}};cache' {
             [CompletionResult]::new('--source'                , 'source'                , [CompletionResultType]::ParameterName, 'Use a different directory to load syntaxes and themes from.')
             [CompletionResult]::new('--target'                , 'target'                , [CompletionResultType]::ParameterName, 'Use a different directory to store the cached syntax and theme set.')
         #   [CompletionResult]::new('-b'                      , 'b'                     , [CompletionResultType]::ParameterName, 'Initialize (or update) the syntax/theme cache.')
