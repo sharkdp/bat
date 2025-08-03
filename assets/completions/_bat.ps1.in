@@ -72,7 +72,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             break
         }
         '*;--color' {
-            $ArrayStyle |
+            $ArrayWhen |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
         }
