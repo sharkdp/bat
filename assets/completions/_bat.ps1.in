@@ -47,7 +47,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         }
         '*;--acknowledgements' {
             break
-        }'*;--language' {
+        } '*;--language' {
             Get-MyLanguages |
             ForEach-Object {[CompletionResult]::new(($_.MyParameter -replace "^(.*)$", '''$1'''), $_.MyParameter, [CompletionResultType]::ParameterName, $_.MyDescription ?? '_no value_')}
             break
