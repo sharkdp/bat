@@ -113,9 +113,6 @@
 [submodule "assets/syntaxes/DotENV"]
 	path = assets/syntaxes/02_Extra/DotENV
 	url = https://github.com/zaynali53/DotENV
-[submodule "assets/syntaxes/hosts"]
-	path = assets/syntaxes/02_Extra/hosts
-	url = https://github.com/brandonwamboldt/sublime-hosts
 [submodule "assets/syntaxes/ssh-config"]
 	path = assets/syntaxes/02_Extra/ssh-config
 	url = https://github.com/robballou/sublimetext-sshconfig.git
@@ -177,7 +174,7 @@
 	url = https://github.com/euler0/sublime-glsl
 [submodule "assets/syntaxes/02_Extra/Nginx"]
 	path = assets/syntaxes/02_Extra/Nginx
-	url = https://github.com/brandonwamboldt/sublime-nginx
+	url = https://github.com/SublimeText/nginx
 [submodule "assets/syntaxes/02_Extra/Apache"]
 	path = assets/syntaxes/02_Extra/Apache
 	url = https://github.com/colinta/ApacheConf.tmLanguage
@@ -278,3 +275,6 @@
 [submodule "assets/syntaxes/02_Extra/SmartVHDL"]
 	path = assets/syntaxes/02_Extra/SmartVHDL
 	url = https://github.com/TheClams/SmartVHDL
+[submodule "assets/syntaxes/02_Extra/hosts"]
+	path = assets/syntaxes/02_Extra/hosts
+	url = https://github.com/tijn/hosts.tmLanguage
