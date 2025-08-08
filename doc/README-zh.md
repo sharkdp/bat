@@ -150,7 +150,7 @@ git show v0.6.0:src/main.rs | bat -l rs
 
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d -z | xargs --null bat --diff
+    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff
 }
 ```
 
