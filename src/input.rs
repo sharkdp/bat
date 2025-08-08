@@ -267,7 +267,7 @@ impl<'a> InputReader<'a> {
         };
 
         if content_type == Some(ContentType::UTF_16LE) {
-            reader.read_until(0x00, &mut first_line).ok();
+            read_utf16le_line(&mut reader, &mut first_line).ok();
         }
 
         InputReader {
@@ -286,11 +286,29 @@ impl<'a> InputReader<'a> {
         let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
 
         if self.content_type == Some(ContentType::UTF_16LE) {
-            let _ = self.inner.read_until(0x00, buf);
+            return read_utf16le_line(&mut self.inner, buf);
         }
 
         Ok(res)
     }
+}
+
+fn read_utf16le_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>) -> io::Result<bool> {
+    loop {
+        let mut temp = Vec::new();
+        let n = reader.read_until(0x00, &mut temp)?;
+        if n == 0 {
+            // EOF reached
+            break;
+        }
+        buf.extend_from_slice(&temp);
+        if buf.len() >= 2 && buf[buf.len() - 2] == 0x0A && buf[buf.len() - 1] == 0x00 {
+            // end of line found
+            break;
+        }
+        // end of line not found, keep going
+    }
+    return Ok(!buf.is_empty());
 }
 
 #[test]
@@ -342,6 +360,31 @@ fn utf16le() {
     assert!(res.is_ok());
     assert!(res.unwrap());
     assert_eq!(b"\x64\x00", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn utf16le_issue3367() {
+    let content = b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52";
+    let mut reader = InputReader::new(&content[..]);
+
+    assert_eq!(
+        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52",
+        &reader.first_line[..]
+    );
+
+    let mut buffer = vec![];
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52", &buffer[..]);
 
     buffer.clear();
 
