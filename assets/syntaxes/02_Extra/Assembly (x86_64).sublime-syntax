@@ -1365,4 +1365,3 @@ contexts:
       scope: invalid.keyword.operator.word.mnemonic.sse5.packed-arithmetic
     - match: '(?i)\b(pcmov|permp[ds]|pperm|prot[bdqw]|psh[al][bdqw])\b'
       scope: invalid.keyword.operator.word.mnemonic.sse5.simd-integer
-...
