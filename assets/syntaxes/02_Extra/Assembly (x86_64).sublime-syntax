@@ -1,5 +1,6 @@
 %YAML 1.2
 ---
+name: x86_64 Assembly
 file_extensions: [yasm, nasm, asm, inc, mac]
 scope: source.asm.x86_64
 
@@ -1364,4 +1365,3 @@ contexts:
       scope: invalid.keyword.operator.word.mnemonic.sse5.packed-arithmetic
     - match: '(?i)\b(pcmov|permp[ds]|pperm|prot[bdqw]|psh[al][bdqw])\b'
       scope: invalid.keyword.operator.word.mnemonic.sse5.simd-integer
-...
