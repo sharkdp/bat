@@ -183,7 +183,7 @@ fn line_range_up_to_2_from_back() {
         .arg("--line-range=:-2")
         .assert()
         .success()
-        .stdout("line 1\nline 2\n");
+        .stdout("line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\n");
 }
 
 #[test]
@@ -203,7 +203,7 @@ fn line_range_from_back_last_two() {
         .arg("--line-range=-2:")
         .assert()
         .success()
-        .stdout("line 3\nline 4\n");
+        .stdout("line 19\nline 20\n");
 }
 
 #[test]
@@ -230,10 +230,10 @@ fn line_range_first_two() {
 fn line_range_last_3() {
     bat()
         .arg("multiline.txt")
-        .arg("--line-range=2:")
+        .arg("--line-range=18:")
         .assert()
         .success()
-        .stdout("line 2\nline 3\nline 4\n");
+        .stdout("line 18\nline 19\nline 20\n");
 }
 
 #[test]
@@ -245,6 +245,116 @@ fn line_range_multiple() {
         .assert()
         .success()
         .stdout("line 1\nline 2\nline 4\n");
+}
+
+#[test]
+fn line_range_context_around_single_line() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10::2")
+        .assert()
+        .success()
+        .stdout("line 8\nline 9\nline 10\nline 11\nline 12\n");
+}
+
+#[test]
+fn line_range_context_around_single_line_minimal() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=5::1")
+        .assert()
+        .success()
+        .stdout("line 4\nline 5\nline 6\n");
+}
+
+#[test]
+fn line_range_context_around_range() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10:12:2")
+        .assert()
+        .success()
+        .stdout("line 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\n");
+}
+
+#[test]
+fn line_range_context_at_file_boundaries() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=1::2")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\nline 3\n");
+}
+
+#[test]
+fn line_range_context_at_end_of_file() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=20::2")
+        .assert()
+        .success()
+        .stdout("line 18\nline 19\nline 20\n");
+}
+
+#[test]
+fn line_range_context_zero() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10::0")
+        .assert()
+        .success()
+        .stdout("line 10\n");
+}
+
+#[test]
+fn line_range_context_negative_single_line() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10::-1")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid context number in N::C format"));
+}
+
+#[test]
+fn line_range_context_negative_range() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10:12:-1")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid context number in N:M:C format"));
+}
+
+#[test]
+fn line_range_context_non_numeric_single_line() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10::abc")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid context number in N::C format"));
+}
+
+#[test]
+fn line_range_context_non_numeric_range() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10:12:xyz")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid context number in N:M:C format"));
+}
+
+#[test]
+fn line_range_context_very_large() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=10::999999")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\n");
 }
 
 #[test]
