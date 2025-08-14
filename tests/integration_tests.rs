@@ -314,7 +314,9 @@ fn line_range_context_negative_single_line() {
         .arg("--line-range=10::-1")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Invalid context number in N::C format"));
+        .stderr(predicate::str::contains(
+            "Invalid context number in N::C format",
+        ));
 }
 
 #[test]
@@ -324,7 +326,9 @@ fn line_range_context_negative_range() {
         .arg("--line-range=10:12:-1")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Invalid context number in N:M:C format"));
+        .stderr(predicate::str::contains(
+            "Invalid context number in N:M:C format",
+        ));
 }
 
 #[test]
@@ -334,7 +338,9 @@ fn line_range_context_non_numeric_single_line() {
         .arg("--line-range=10::abc")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Invalid context number in N::C format"));
+        .stderr(predicate::str::contains(
+            "Invalid context number in N::C format",
+        ));
 }
 
 #[test]
@@ -344,7 +350,9 @@ fn line_range_context_non_numeric_range() {
         .arg("--line-range=10:12:xyz")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Invalid context number in N:M:C format"));
+        .stderr(predicate::str::contains(
+            "Invalid context number in N:M:C format",
+        ));
 }
 
 #[test]
