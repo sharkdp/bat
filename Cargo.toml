@@ -45,7 +45,7 @@ regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 nu-ansi-term = "0.50.0"
 ansi_colours = "^1.2"
 bincode = "1.0"
-console = "0.15.10"
+console = "0.16.0"
 flate2 = "1.1"
 once_cell = "1.20"
 thiserror = "2.0"
@@ -68,7 +68,7 @@ walkdir = { version = "2.5", optional = true }
 bytesize = { version = "1.3.0" }
 encoding_rs = "0.8.35"
 execute = { version = "0.2.13", optional = true }
-terminal-colorsaurus = "0.4"
+terminal-colorsaurus = "1.0"
 unicode-segmentation = "1.12.0"
 itertools = "0.13.0"
 

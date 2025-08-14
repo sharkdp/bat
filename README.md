@@ -178,7 +178,7 @@ You can combine `bat` with `git diff` to view lines around code changes with pro
 highlighting:
 ```bash
 batdiff() {
-    git diff --name-only --relative --diff-filter=d -z | xargs --null bat --diff
+    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff
 }
 ```
 If you prefer to use this as a separate tool, check out `batdiff` in [`bat-extras`](https://github.com/eth-p/bat-extras).
@@ -201,7 +201,7 @@ bat main.cpp | xclip
 `MANPAGER` environment variable:
 
 ```bash
-export MANPAGER="sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat -p -lman'"
+export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
 man 2 select
 ```
 (replace `bat` with `batcat` if you are on Debian or Ubuntu)

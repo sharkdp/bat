@@ -16,6 +16,7 @@
 - Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
 - Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
 - Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
+- Make --map-syntax target case insensitive to match --language, see #3206 (@keith-hall)
 
 ## Other
 
@@ -26,6 +27,8 @@
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 - Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 - Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
+- Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
+- Update console dependency to 0.16, see #3351 (@musicinmybrain)
 
 ## Syntaxes
 
@@ -45,11 +48,14 @@
 - Add syntax highlighting for VHDL, see #3337 (@JerryImMouse)
 - Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
 - Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
+- Map `.flatpakref` and `.flatpakrepo` files to INI syntax #3353 (@Ferenc-)
+- Update hosts syntax #3368 (@keith-hall)
 
 ## Themes
 
 - Add Catppuccin, see #3317 (@SchweGELBin)
 - Updated Catppuccin, see #3333 (@SchweGELBin)
+- Updated gruvbox, see #3372 (@Nicholas42)
 
 ## `bat` as a library
 

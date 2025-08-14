@@ -2822,6 +2822,27 @@ fn highlighting_independant_from_map_syntax_case() {
 }
 
 #[test]
+fn map_syntax_target_syntax_case_insensitive() {
+    let expected = bat()
+        .arg("-f")
+        .arg("--map-syntax=*.config:json")
+        .arg("map-syntax_case.Config")
+        .assert()
+        .get_output()
+        .stdout
+        .clone();
+
+    bat()
+        .arg("-f")
+        .arg("--map-syntax=*.config:json")
+        .arg("map-syntax_case.Config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
 fn strip_ansi_always_strips_ansi() {
     bat()
         .arg("--style=plain")

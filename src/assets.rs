@@ -163,7 +163,7 @@ impl HighlightingAssets {
 
         if let Some(MappingTarget::MapTo(syntax_name)) = syntax_match {
             return self
-                .find_syntax_by_name(syntax_name)?
+                .find_syntax_by_token(syntax_name)?
                 .ok_or_else(|| Error::UnknownSyntax(syntax_name.to_owned()));
         }
 
@@ -256,6 +256,13 @@ impl HighlightingAssets {
         let extension = e.and_then(|x| x.to_str()).unwrap_or_default();
         Ok(syntax_set
             .find_syntax_by_extension(extension)
+            .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
+    }
+
+    fn find_syntax_by_token(&self, token: &str) -> Result<Option<SyntaxReferenceInSet>> {
+        let syntax_set = self.get_syntax_set()?;
+        Ok(syntax_set
+            .find_syntax_by_token(token)
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
