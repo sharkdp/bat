@@ -265,6 +265,15 @@ Please report any issues with the help syntax in [this repository](https://githu
 
 ## Installation
 
+<!--
+
+Installation instructions need to:
+* be for widely used systems
+* be non-obvious
+* be from somewhat official sources
+
+-->
+
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?columns=3&exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### On Ubuntu (using `apt`)
@@ -327,14 +336,6 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 dnf install bat
 ```
 
-### On Funtoo Linux
-
-You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
-
-```bash
-emerge sys-apps/bat
-```
-
 ### On Gentoo Linux
 
 You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
@@ -342,20 +343,6 @@ from the official sources:
 
 ```bash
 emerge sys-apps/bat
-```
-
-### On Void Linux
-
-You can install `bat` via xbps-install:
-```bash
-xbps-install -S bat
-```
-
-### On Termux
-
-You can install `bat` via pkg:
-```bash
-pkg install bat
 ```
 
 ### On FreeBSD
@@ -387,14 +374,6 @@ You can install `bat` using the [nix package manager](https://nixos.org/nix):
 
 ```bash
 nix-env -i bat
-```
-
-### Via flox
-
-You can install `bat` using [Flox](https://flox.dev)
-
-```bash
-flox install bat
 ```
 
 ### On openSUSE
