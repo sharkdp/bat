@@ -94,7 +94,7 @@ impl OutputType {
                 }
 
                 // Ensures that 'less' quits together with 'bat'
-                p.arg("-K"); // Sort version of ' --quit-on-intr'
+                p.arg("-K"); // Short version of '--quit-on-intr'
 
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
