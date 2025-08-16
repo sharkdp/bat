@@ -371,11 +371,13 @@ fn utf16le() {
 
 #[test]
 fn utf16le_issue3367() {
-    let content = b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52";
+    let content = b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00\
+        \x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00\
+        \x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00";
     let mut reader = InputReader::new(&content[..]);
 
     assert_eq!(
-        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52",
+        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00",
         &reader.first_line[..]
     );
 
@@ -384,10 +386,24 @@ fn utf16le_issue3367() {
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(res.unwrap());
-    assert_eq!(b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52", &buffer[..]);
+    assert_eq!(b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00", &buffer[..]);
 
     buffer.clear();
 
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"\x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"\x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00", &buffer[..]);
+
+    buffer.clear();
+    
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(!res.unwrap());
