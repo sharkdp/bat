@@ -674,8 +674,8 @@ The `-F` option instructs `less` to exit immediately if the output size is small
 the vertical size of the terminal. This is convenient for small files because you do not
 have to press `q` to quit the pager.
 
-The `-K` option instructs `less` to exit immediately when an interrupt character is received.
-This is useful to ensure that `less` quits together with `bat` on interrupt characters.
+The `-K` option instructs `less` to exit immediately when an interrupt signal is received.
+This is useful to ensure that `less` quits together with `bat` on SIGINT.
 
 The `-X` option is needed to fix a bug with the `--quit-if-one-screen` feature in versions
 of `less` older than version 530. Unfortunately, it also breaks mouse-wheel support in `less`.
