@@ -1343,6 +1343,18 @@ fn utf16le() {
         .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
 }
 
+#[test]
+fn utf16be() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--color=never")
+        .arg("test_UTF-16BE-complicated.txt")
+        .assert()
+        .success()
+        .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
+}
+
 // Regression test for https://github.com/sharkdp/bat/issues/1922
 #[test]
 fn bom_not_stripped_in_loop_through_mode() {
