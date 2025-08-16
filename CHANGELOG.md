@@ -17,6 +17,7 @@
 - Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
 - Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
 - Make --map-syntax target case insensitive to match --language, see #3206 (@keith-hall)
+- Correctly determine the end of the line in UTF16LE/BE input #3369 (@keith-hall)
 
 ## Other
 

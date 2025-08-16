@@ -1321,6 +1321,38 @@ fn utf16() {
         .assert()
         .success()
         .stdout("hello world\n");
+
+    bat()
+        .arg("--plain")
+        .arg("--decorations=always")
+        .arg("test_UTF-16BE.txt")
+        .assert()
+        .success()
+        .stdout("hello world\nthis is a test\n");
+}
+
+#[test]
+fn utf16le() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--color=never")
+        .arg("test_UTF-16LE-complicated.txt")
+        .assert()
+        .success()
+        .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
+}
+
+#[test]
+fn utf16be() {
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--color=never")
+        .arg("test_UTF-16BE-complicated.txt")
+        .assert()
+        .success()
+        .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
 }
 
 // Regression test for https://github.com/sharkdp/bat/issues/1922
