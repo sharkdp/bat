@@ -297,7 +297,12 @@ impl<'a> InputReader<'a> {
     }
 }
 
-fn read_utf16_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>, read_until_char: u8, preceded_by_char: u8) -> io::Result<bool> {
+fn read_utf16_line<R: BufRead>(
+    reader: &mut R,
+    buf: &mut Vec<u8>,
+    read_until_char: u8,
+    preceded_by_char: u8,
+) -> io::Result<bool> {
     loop {
         let mut temp = Vec::new();
         let n = reader.read_until(read_until_char, &mut temp)?;
@@ -306,7 +311,10 @@ fn read_utf16_line<R: BufRead>(reader: &mut R, buf: &mut Vec<u8>, read_until_cha
             break;
         }
         buf.extend_from_slice(&temp);
-        if buf.len() >= 2 && buf[buf.len() - 2] == preceded_by_char && buf[buf.len() - 1] == read_until_char {
+        if buf.len() >= 2
+            && buf[buf.len() - 2] == preceded_by_char
+            && buf[buf.len() - 1] == read_until_char
+        {
             // end of line found
             break;
         }
@@ -390,21 +398,30 @@ fn utf16le_issue3367() {
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(res.unwrap());
-    assert_eq!(b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00", &buffer[..]);
+    assert_eq!(
+        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00",
+        &buffer[..]
+    );
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(res.unwrap());
-    assert_eq!(b"\x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00", &buffer[..]);
+    assert_eq!(
+        b"\x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00",
+        &buffer[..]
+    );
 
     buffer.clear();
 
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(res.unwrap());
-    assert_eq!(b"\x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00", &buffer[..]);
+    assert_eq!(
+        b"\x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00",
+        &buffer[..]
+    );
 
     buffer.clear();
 
