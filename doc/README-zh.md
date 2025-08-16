@@ -150,7 +150,7 @@ git show v0.6.0:src/main.rs | bat -l rs
 
 ```bash
 batdiff() {
-    git diff --name-only --diff-filter=d | xargs bat --diff
+    git diff --name-only --relative --diff-filter=d -z | xargs -0 bat --diff
 }
 ```
 
@@ -170,20 +170,23 @@ bat main.cpp | xclip
 
 #### `man`
 
-`bat`也能给`man`的输出上色。这需要设置`MANPAGER`环境变量：
+`bat` 可以通过设置 `MANPAGER` 环境变量，用作 `man` 的彩色分页器：
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
 man 2 select
 ```
 
-（如果你使用的是 Debian 或者 Ubuntu，使用`batcat`替换`bat`）
+（如果你使用 Debian 或 Ubuntu，请将 `batcat` 替换为 `bat`）
 
-如果你遇到格式化问题，设置`MANROFFOPT="-c"`也许会有帮助。
+如果你希望将其打包为一个新的命令，也可以使用 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)。
 
-`batman`能提供类似功能——作为一个独立的命令。
+> [!WARNING]
+> 在使用 Mandoc 的 `man` 实现时，这[无法](https://github.com/sharkdp/bat/issues/1145)直接工作。
+>
+> 请使用 `batman`，或将此 Shell 脚本包装为 [Shebang 可执行文件](https://en.wikipedia.org/wiki/Shebang_(Unix))，并将 `MANPAGER` 指向该文件。
 
-注意：[man page 语法](assets/syntaxes/02_Extra/Manpage.sublime-syntax) 还需要完善。在使用特定的`man`实现时该功能[无法正常工作](https://github.com/sharkdp/bat/issues/1145)。
+注意，[Manpage 语法](assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
 
 #### `prettier` / `shfmt` / `rustfmt`
 
@@ -401,8 +404,8 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 `bat` 自带三个 [8-bit 色彩](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors) 主题：
 
 - `ansi` 适应于大部分终端。它使用 3-bit 色彩：黑红绿黄蓝洋红靛青白。
-- `base16`专为 [base16](https://github.com/chriskempson/base16) 终端设计。它使用 4-bit 色彩（带有亮度的 3-bit 色彩）。根据 [base16 styling guidelines](https://github.com/chriskempson/base16/blob/master/styling.md) 制作。
-- `base16-25`专为 [base16-shell](https://github.com/chriskempson/base16-shell) 设计。它把部分亮色替换为 8-bit 色彩。请不要直接使用该主题，除非你清楚你的256色终端是否使用 base16-shell。
+- `base16`专为 [base16](https://github.com/tinted-theming/home) 终端设计。它使用 4-bit 色彩（带有亮度的 3-bit 色彩）。根据 [base16 styling guidelines](https://github.com/tinted-theming/home/blob/main/styling.md) 制作。
+- `base16-25`专为 [base16-shell](https://github.com/tinted-theming/base16-shell) 设计。它把部分亮色替换为 8-bit 色彩。请不要直接使用该主题，除非你清楚你的256色终端是否使用 base16-shell。
 
 尽管这些主题具有诸多限制，但具有一些 truecolor 主题不具有的三个优点：
 

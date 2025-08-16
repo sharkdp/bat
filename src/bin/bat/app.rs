@@ -3,6 +3,7 @@ use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::thread::available_parallelism;
 
 use crate::{
     clap_app,
@@ -124,7 +125,10 @@ impl App {
                 // If we have -pp as an option when in auto mode, the pager should be disabled.
                 if extra_plain || self.matches.get_flag("no-paging") {
                     PagingMode::Never
-                } else if inputs.iter().any(Input::is_stdin) {
+                } else if inputs.iter().any(Input::is_stdin)
+                    // ignore stdin when --list-themes is used because in that case no input will be read anyways
+                    && !self.matches.get_flag("list-themes")
+                {
                     // If we are reading from stdin, only enable paging if we write to an
                     // interactive terminal and if we do not *read* from an interactive
                     // terminal.
@@ -146,7 +150,9 @@ impl App {
         // start building glob matchers for builtin mappings immediately
         // this is an appropriate approach because it's statistically likely that
         // all the custom mappings need to be checked
-        syntax_mapping.start_offload_build_all();
+        if available_parallelism()?.get() > 1 {
+            syntax_mapping.start_offload_build_all();
+        }
 
         if let Some(values) = self.matches.get_many::<String>("ignored-suffix") {
             for suffix in values {

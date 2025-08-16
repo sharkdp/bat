@@ -1,18 +1,35 @@
 # unreleased
 
 ## Features
+- Add build for windows/ARM64 platform. #3190 (@alcroito)
+
+- Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
+- Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
 
 ## Bugfixes
 
+- Fix UTF-8 BOM not being stripped for syntax detection, see #3314 (@krikera)
 - Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
 - Prevent `--list-themes` from outputting default theme info to stdout when it is piped, see #3189 (@einfachIrgendwer0815)
 - Rename some submodules to fix Dependabot submodule updates, see issue #3198 and PR #3201 (@victor-gp)
+- Make highlight tests fail when new syntaxes don't have fixtures PR #3255 (@dan-hipschman)
+- Fix crash for multibyte characters in file path, see issue #3230 and PR #3245 (@HSM95)
+- Add missing mappings for various bash/zsh files, see PR #3262 (@AdamGaskins)
+- Send all bat errors to stderr by default, see #3336 (@JerryImMouse)
+- Make --map-syntax target case insensitive to match --language, see #3206 (@keith-hall)
 
 ## Other
 
+- Update base16 README links to community driven base16 work #2871 (@JamyGolden)
 - Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
+- CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
+- CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
+- Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
+- Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
+- Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
+- Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
+- Update console dependency to 0.16, see #3351 (@musicinmybrain)
 - Fixed some typos #3244 (@ssbarnea)
-
 
 ## Syntaxes
 
@@ -24,9 +41,22 @@
 - Map `ndjson` extension to JSON syntax, see #3209 (@keith-hall)
 - Map files with `csproj`, `vbproj`, `props` and `targets` extensions to XML syntax, see #3213 (@keith-hall)
 - Add debsources syntax to highlight `/etc/apt/sources.list` files, see #3215 (@keith-hall)
+- Add syntax definition and test file for GDScript highlighting, see #3236 (@chetanjangir0)
 - Add syntax test file for Odin highlighting, see #3241 (@chetanjangir0)
+- Update quadlet syntax mapping rules to cover quadlets in subdirectories #3299 (@cyqsimon)
+- Add syntax Typst #3300 (@cskeeters)
+- Map `.mill` files to Scala syntax for Mill build tool configuration files #3311 (@krikera)
+- Add syntax highlighting for VHDL, see #3337 (@JerryImMouse)
+- Add syntax mapping for certbot certificate configuration #3338 (@cyqsimon)
+- Update Lean syntax from Lean 3 to Lean 4 #3322 (@YDX-2147483647)
+- Map `.flatpakref` and `.flatpakrepo` files to INI syntax #3353 (@Ferenc-)
+- Update hosts syntax #3368 (@keith-hall)
 
 ## Themes
+
+- Add Catppuccin, see #3317 (@SchweGELBin)
+- Updated Catppuccin, see #3333 (@SchweGELBin)
+- Updated gruvbox, see #3372 (@Nicholas42)
 
 ## `bat` as a library
 

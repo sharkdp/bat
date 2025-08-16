@@ -37,6 +37,23 @@ Use character sequences like ^G, ^J, ^@, .. to identify non-printable characters
 Use special Unicode code points to identify non-printable characters
 .RE
 .HP
+\fB\-\-binary\fR <behavior>
+.IP
+How to treat binary content.
+
+Possible values:
+.RS
+.IP "no\-printing"
+Do not print any binary content (default)
+.IP "as\-text"
+Treat binary content as normal text
+.RE
+.HP
+\fB\-\-completion\fR <SHELL>
+.IP
+Show shell completion for a certain shell.
+Possible values: bash, fish, zsh, ps1
+.HP
 \fB\-p\fR, \fB\-\-plain\fR
 .IP
 Only show plain style, no decorations. This is an alias for
@@ -180,8 +197,8 @@ This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR 
 .HP
 \fB\-\-theme\-light\fR <theme>
 .IP
-Sets the theme name for syntax highlighting used when the terminal uses a dark background.
-To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+Sets the theme name for syntax highlighting used when the terminal uses a light background.
+To set a default theme, add the \fB\-\-theme-light="..."\fP option to the configuration file or
 export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
 This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBlight\fR.
 .HP
@@ -197,14 +214,30 @@ Squeeze consecutive empty lines into a single empty line.
 .IP
 Set the maximum number of consecutive empty lines to be printed.
 .HP
+\fB\-\-strip\-ansi\fR <when>
+.IP
+Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
+escape sequences unless the syntax highlighting language is plain text. Possible values:
+auto, always, *never*.
+.HP
 \fB\-\-style\fR <style\-components>
 .IP
 Configure which elements (line numbers, file headers, grid borders, Git modifications,
 \&..) to display in addition to the file contents. The argument is a comma\-separated list
 of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
 To set a default style, add the '\-\-style=".."' option to the configuration file or
-export the BAT_STYLE environment variable (e.g.: export BAT_STYLE=".."). Possible
-values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
+export the BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
+.IP
+When styles are specified in multiple places, the "nearest" set of styles take precedence.
+The command\-line arguments are the highest priority, followed by the BAT_STYLE environment
+variable, and then the configuration file. If any set of styles consists entirely of
+components prefixed with "+" or "\-", it will modify the previous set of styles instead of
+replacing them.
+.IP
+By default, the following components are enabled:
+changes, grid, header\-filename, numbers, snip
+.IP
+Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...

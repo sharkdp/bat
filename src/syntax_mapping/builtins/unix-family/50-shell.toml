@@ -2,4 +2,24 @@
 "Bourne Again Shell (bash)" = [
     # used by lots of shells
     "/etc/profile",
+
+    "bashrc",
+    "*.bashrc",
+    "bash_profile",
+    "*.bash_profile",
+    "bash_login",
+    "*.bash_login",
+    "bash_logout",
+    "*.bash_logout",
+
+    "zshrc",
+    "*.zshrc",
+    "zprofile",
+    "*.zprofile",
+    "zlogin",
+    "*.zlogin",
+    "zlogout",
+    "*.zlogout",
+    "zshenv",
+    "*.zshenv"
 ]

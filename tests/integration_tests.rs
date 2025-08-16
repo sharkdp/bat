@@ -177,6 +177,46 @@ fn line_range_2_3() {
 }
 
 #[test]
+fn line_range_up_to_2_from_back() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-2")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\n");
+}
+
+#[test]
+fn line_range_up_to_2_from_back_single_line_is_empty() {
+    bat()
+        .arg("single-line.txt")
+        .arg("--line-range=:-2")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn line_range_from_back_last_two() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=-2:")
+        .assert()
+        .success()
+        .stdout("line 3\nline 4\n");
+}
+
+#[test]
+fn line_range_from_back_last_two_single_line() {
+    bat()
+        .arg("single-line.txt")
+        .arg("--line-range=-2:")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
 fn line_range_first_two() {
     bat()
         .arg("multiline.txt")
@@ -314,6 +354,15 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn list_languages() {
+    bat()
+        .arg("--list-languages")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Rust").normalize());
+}
+
+#[test]
 #[cfg_attr(
     any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
     ignore
@@ -408,6 +457,16 @@ fn stdin_to_stdout_cycle() -> io::Result<()> {
     drop(dir);
     res.failure();
     Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn bat_error_to_stderr() {
+    bat()
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("[bat error]"));
 }
 
 #[cfg(unix)]
@@ -1601,6 +1660,17 @@ oken
 }
 
 #[test]
+fn header_narrow_terminal_with_multibyte_chars() {
+    bat()
+        .arg("--terminal-width=30")
+        .arg("--decorations=always")
+        .arg("test.A—B가")
+        .assert()
+        .success()
+        .stderr("");
+}
+
+#[test]
 #[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default() {
     bat()
@@ -2744,6 +2814,27 @@ fn highlighting_independant_from_map_syntax_case() {
     bat()
         .arg("-f")
         .arg("--map-syntax=*.Config:JSON")
+        .arg("map-syntax_case.Config")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn map_syntax_target_syntax_case_insensitive() {
+    let expected = bat()
+        .arg("-f")
+        .arg("--map-syntax=*.config:json")
+        .arg("map-syntax_case.Config")
+        .assert()
+        .get_output()
+        .stdout
+        .clone();
+
+    bat()
+        .arg("-f")
+        .arg("--map-syntax=*.config:json")
         .arg("map-syntax_case.Config")
         .assert()
         .success()
