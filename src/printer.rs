@@ -399,7 +399,7 @@ impl<'a> InteractivePrinter<'a> {
         while content_graphemes.len() > content_width {
             let (content_line, remaining) = content_graphemes.split_at(content_width);
             self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
-            content_graphemes = remaining.iter().cloned().collect();
+            content_graphemes = remaining.to_vec();
         }
         self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
