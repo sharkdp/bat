@@ -320,7 +320,7 @@ fn read_utf16_line<R: BufRead>(
         }
         // end of line not found, keep going
     }
-    return Ok(!buf.is_empty());
+    Ok(!buf.is_empty())
 }
 
 #[test]
