@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - crate_metadata
-      - ensure_cargo_fmt
+      - lint
       - min_version
       - license_checks
       - test_with_new_syntaxes_and_themes
@@ -35,7 +35,7 @@ jobs:
     name: Extract crate metadata
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Extract crate information
       id: crate_metadata
       run: |
@@ -51,15 +51,16 @@ jobs:
       homepage: ${{ steps.crate_metadata.outputs.homepage }}
       msrv: ${{ steps.crate_metadata.outputs.msrv }}
 
-  ensure_cargo_fmt:
-    name: Ensure 'cargo fmt' has been run
+  lint:
+    name: Ensure code quality
     runs-on: ubuntu-latest
     steps:
     - uses: dtolnay/rust-toolchain@stable
       with:
-        components: rustfmt
-    - uses: actions/checkout@v4
+        components: rustfmt,clippy
+    - uses: actions/checkout@v5
     - run: cargo fmt -- --check
+    - run: cargo clippy --locked --all-targets --all-features -- -D warnings
 
   min_version:
     name: Minimum supported rust version
@@ -67,15 +68,11 @@ jobs:
     needs: crate_metadata
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v4
-
+      uses: actions/checkout@v5
     - name: Install rust toolchain (v${{ needs.crate_metadata.outputs.msrv }})
       uses: dtolnay/rust-toolchain@master
       with:
         toolchain: ${{ needs.crate_metadata.outputs.msrv }}
-        components: clippy
-    - name: Run clippy (on minimum supported rust version to prevent warnings we can't fix)
-      run: cargo clippy --locked --all-targets ${{ env.MSRV_FEATURES }}
     - name: Run tests
       run: cargo test --locked ${{ env.MSRV_FEATURES }}
 
@@ -83,7 +80,7 @@ jobs:
     name: License checks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
       with:
         submodules: true # we especially want to perform license checks on submodules
     - run: tests/scripts/license-checks.sh
@@ -93,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
@@ -122,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Prepare environment variables
       run: |
         echo "BAT_SYSTEM_CONFIG_PREFIX=$GITHUB_WORKSPACE/tests/examples/system_config" >> $GITHUB_ENV
@@ -138,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
     - name: Check documentation
@@ -153,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: cargo install cargo-audit --locked
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: cargo audit
 
   build:
@@ -181,7 +178,7 @@ jobs:
       BUILD_CMD: cargo
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Install prerequisites
       shell: bash

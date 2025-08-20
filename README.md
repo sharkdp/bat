@@ -711,12 +711,40 @@ sidebar. Calling `bat` with `--tabs=0` will override it and let tabs be consumed
 
 ### Dark mode
 
-If you make use of the dark mode feature in macOS, you might want to configure `bat` to use a different
+If you make use of the dark mode feature in **macOS**, you might want to configure `bat` to use a different
 theme based on the OS theme. The following snippet uses the `default` theme when in the _dark mode_
 and the `GitHub` theme when in the _light mode_.
 
 ```bash
 alias cat="bat --theme auto:system --theme-dark default --theme-light GitHub"
+```
+
+The same dark mode feature is now available in **GNOME** and affects the `org.gnome.desktop.interface color-scheme` setting. The following code converts the above to use said setting.
+
+```bash
+# .bashrc
+sys_color_scheme_is_dark() {
+    condition=$(gsettings get org.gnome.desktop.interface color-scheme)
+    condition=$(echo "$condition" | tr -d "[:space:]'")
+    if [ $condition == "prefer-dark" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+bat_alias_wrapper() {
+    #get color scheme
+    sys_color_scheme_is_dark
+    if [[ $? -eq 0 ]]; then
+        # bat command with dark color scheme
+        bat --theme=default "$@"
+    else
+        # bat command with light color scheme
+        bat --theme=GitHub "$@"
+    fi
+}
+alias cat='bat_alias_wrapper'
 ```
 
 

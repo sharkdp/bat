@@ -101,7 +101,7 @@ tempfile = "3.16.0"
 serde = { version = "1.0", features = ["derive"] }
 
 [target.'cfg(unix)'.dev-dependencies]
-nix = { version = "0.29", default-features = false, features = ["term"] }
+nix = { version = "0.30", default-features = false, features = ["term"] }
 
 [build-dependencies]
 anyhow = "1.0.97"
