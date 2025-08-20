@@ -58,6 +58,7 @@
 - Add Catppuccin, see #3317 (@SchweGELBin)
 - Updated Catppuccin, see #3333 (@SchweGELBin)
 - Updated gruvbox, see #3372 (@Nicholas42)
+- Updated GitHub theme, see #3382 (@CosmicHorrorDev)
 
 ## `bat` as a library
 
