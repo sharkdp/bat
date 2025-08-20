@@ -525,7 +525,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file\n  \
                      '--line-range 40' only prints line 40\n  \
-                     '--line-range 30:+10' prints lines 30 to 40",
+                     '--line-range 30:+10' prints lines 30 to 40\n  \
+                     '--line-range 35::5' prints lines 30 to 40 (line 35 with 5 lines of context)\n  \
+                     '--line-range 30:40:2' prints lines 28 to 42 (range 30-40 with 2 lines of context)",
                 ),
         )
         .arg(
