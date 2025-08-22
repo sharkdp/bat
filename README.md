@@ -646,7 +646,7 @@ If you want to pass command-line arguments to the pager, you can also set them v
 `PAGER`/`BAT_PAGER` variables:
 
 ```bash
-export BAT_PAGER="less -RF"
+export BAT_PAGER="less -RFK"
 ```
 
 Instead of using environment variables, you can also use `bat`'s [configuration file](#configuration-file) to configure the pager (`--pager` option).
@@ -656,7 +656,7 @@ Instead of using environment variables, you can also use `bat`'s [configuration 
 
 When using `less` as a pager, `bat` will automatically pass extra options along to `less`
 to improve the experience. Specifically, `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen`,
-and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
+`-K`/`--quit-on-intr` and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
 
 >[!IMPORTANT]
 > These options will not be added if:
@@ -673,6 +673,9 @@ The `-R` option is needed to interpret ANSI colors correctly.
 The `-F` option instructs `less` to exit immediately if the output size is smaller than
 the vertical size of the terminal. This is convenient for small files because you do not
 have to press `q` to quit the pager.
+
+The `-K` option instructs `less` to exit immediately when an interrupt signal is received.
+This is useful to ensure that `less` quits together with `bat` on SIGINT.
 
 The `-X` option is needed to fix a bug with the `--quit-if-one-screen` feature in versions
 of `less` older than version 530. Unfortunately, it also breaks mouse-wheel support in `less`.
