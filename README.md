@@ -503,8 +503,9 @@ bat --completion <shell>
 ### Highlighting theme
 
 Use `bat --list-themes` to get a list of all available themes for syntax
-highlighting. To select the `TwoDark` theme, call `bat` with the
-`--theme=TwoDark` option or set the `BAT_THEME` environment variable to
+highlighting. By default, `bat` uses `Monokai Extended` or `Monokai Extended Light`
+for dark and light themes respectively. To select the `TwoDark` theme, call `bat`
+with the `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent. Alternatively, use `bat`'s
 [configuration file](#configuration-file).
@@ -605,6 +606,8 @@ syntax:
 ### Adding new themes
 
 This works very similar to how we add new syntax definitions.
+> [!NOTE]
+> Themes are stored in [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html).
 
 First, create a folder with the new syntax highlighting themes:
 ```bash
@@ -619,6 +622,8 @@ bat cache --build
 ```
 
 Finally, use `bat --list-themes` to check if the new themes are available.
+> [!NOTE]
+> `bat` uses the name of the `.tmTheme` file for the theme's name. 
 
 ### Adding or changing file type associations
 
