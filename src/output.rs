@@ -90,7 +90,7 @@ impl OutputType {
                 }
 
                 if wrapping_mode == WrappingMode::NoWrapping(true) {
-                    p.arg("-S"); // Short version of --chop-long-lines for compatibility
+                    p.arg("-Sc"); // Short version of --chop-long-lines --clear-screen for compatibility
                 }
 
                 // Ensures that 'less' quits together with 'bat'
