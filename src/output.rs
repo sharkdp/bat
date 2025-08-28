@@ -93,6 +93,9 @@ impl OutputType {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
+                // Ensures that 'less' quits together with 'bat'
+                p.arg("-K"); // Short version of '--quit-on-intr'
+
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                 //

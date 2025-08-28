@@ -212,15 +212,15 @@ impl Attributes {
     }
 
     fn update_with_charset(&mut self, kind: char, set: impl Iterator<Item = char>) -> bool {
-        self.charset = format!("\x1B{}{}", kind, set.take(1).collect::<String>());
+        self.charset = format!("\x1B{kind}{}", set.take(1).collect::<String>());
         true
     }
 
     fn parse_color(color: u16, parameters: &mut dyn Iterator<Item = u16>) -> String {
         match color % 10 {
             8 => match parameters.next() {
-                Some(5) /* 256-color */ => format!("\x1B[{};5;{}m", color, join(";", 1, parameters)),
-                Some(2) /* 24-bit color */ => format!("\x1B[{};2;{}m", color, join(";", 3, parameters)),
+                Some(5) /* 256-color */ => format!("\x1B[{color};5;{}m", join(";", 1, parameters)),
+                Some(2) /* 24-bit color */ => format!("\x1B[{color};2;{}m", join(";", 3, parameters)),
                 Some(c) => format!("\x1B[{color};{c}m"),
                 _ => "".to_owned(),
             },

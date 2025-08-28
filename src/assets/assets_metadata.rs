@@ -40,15 +40,15 @@ impl AssetsMetadata {
     /// Load metadata about the stored cache file from the given folder.
     ///
     /// There are several possibilities:
-    ///   - We find a metadata.yaml file and are able to parse it
-    ///       => return the contained information
-    ///   - We find a metadata.yaml file and but are not able to parse it
-    ///       => return a SerdeYamlError
-    ///   - We do not find a metadata.yaml file but a syntaxes.bin or themes.bin file
-    ///       => assume that these were created by an old version of bat and return
-    ///          AssetsMetadata::default() without version information
-    ///   - We do not find a metadata.yaml file and no cached assets
-    ///       => no user provided assets are available, return None
+    ///   - We find a `metadata.yaml` file and are able to parse it
+    ///     - return the contained information
+    ///   - We find a `metadata.yaml` file, but are not able to parse it
+    ///     - return a [`Error::SerdeYamlError`]
+    ///   - We do not find a `metadata.yaml` file but a `syntaxes.bin` or `themes.bin` file
+    ///     - assume that these were created by an old version of bat and return
+    ///       [`AssetsMetadata::default()`] without version information
+    ///   - We do not find a `metadata.yaml` file and no cached assets
+    ///     - no user provided assets are available, return `None`
     pub fn load_from_folder(path: &Path) -> Result<Option<Self>> {
         match Self::try_load_from_folder(path) {
             Ok(metadata) => Ok(Some(metadata)),

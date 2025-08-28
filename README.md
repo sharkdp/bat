@@ -265,6 +265,15 @@ Please report any issues with the help syntax in [this repository](https://githu
 
 ## Installation
 
+<!--
+
+Installation instructions need to:
+* be for widely used systems
+* be non-obvious
+* be from somewhat official sources
+
+-->
+
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bat-cat.svg?columns=3&exclude_unsupported=1)](https://repology.org/project/bat-cat/versions)
 
 ### On Ubuntu (using `apt`)
@@ -327,14 +336,6 @@ You can install [the `bat` package](https://koji.fedoraproject.org/koji/packagei
 dnf install bat
 ```
 
-### On Funtoo Linux
-
-You can install [the `bat` package](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/bat) from dev-kit.
-
-```bash
-emerge sys-apps/bat
-```
-
 ### On Gentoo Linux
 
 You can install [the `bat` package](https://packages.gentoo.org/packages/sys-apps/bat)
@@ -342,20 +343,6 @@ from the official sources:
 
 ```bash
 emerge sys-apps/bat
-```
-
-### On Void Linux
-
-You can install `bat` via xbps-install:
-```bash
-xbps-install -S bat
-```
-
-### On Termux
-
-You can install `bat` via pkg:
-```bash
-pkg install bat
 ```
 
 ### On FreeBSD
@@ -387,14 +374,6 @@ You can install `bat` using the [nix package manager](https://nixos.org/nix):
 
 ```bash
 nix-env -i bat
-```
-
-### Via flox
-
-You can install `bat` using [Flox](https://flox.dev)
-
-```bash
-flox install bat
 ```
 
 ### On openSUSE
@@ -503,8 +482,9 @@ bat --completion <shell>
 ### Highlighting theme
 
 Use `bat --list-themes` to get a list of all available themes for syntax
-highlighting. To select the `TwoDark` theme, call `bat` with the
-`--theme=TwoDark` option or set the `BAT_THEME` environment variable to
+highlighting. By default, `bat` uses `Monokai Extended` or `Monokai Extended Light`
+for dark and light themes respectively. To select the `TwoDark` theme, call `bat`
+with the `--theme=TwoDark` option or set the `BAT_THEME` environment variable to
 `TwoDark`. Use `export BAT_THEME="TwoDark"` in your shell's startup file to
 make the change permanent. Alternatively, use `bat`'s
 [configuration file](#configuration-file).
@@ -605,6 +585,8 @@ syntax:
 ### Adding new themes
 
 This works very similar to how we add new syntax definitions.
+> [!NOTE]
+> Themes are stored in [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html).
 
 First, create a folder with the new syntax highlighting themes:
 ```bash
@@ -619,6 +601,8 @@ bat cache --build
 ```
 
 Finally, use `bat --list-themes` to check if the new themes are available.
+> [!NOTE]
+> `bat` uses the name of the `.tmTheme` file for the theme's name. 
 
 ### Adding or changing file type associations
 
@@ -662,7 +646,7 @@ If you want to pass command-line arguments to the pager, you can also set them v
 `PAGER`/`BAT_PAGER` variables:
 
 ```bash
-export BAT_PAGER="less -RF"
+export BAT_PAGER="less -RFK"
 ```
 
 Instead of using environment variables, you can also use `bat`'s [configuration file](#configuration-file) to configure the pager (`--pager` option).
@@ -672,7 +656,7 @@ Instead of using environment variables, you can also use `bat`'s [configuration 
 
 When using `less` as a pager, `bat` will automatically pass extra options along to `less`
 to improve the experience. Specifically, `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen`,
-and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
+`-K`/`--quit-on-intr` and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
 
 >[!IMPORTANT]
 > These options will not be added if:
@@ -689,6 +673,9 @@ The `-R` option is needed to interpret ANSI colors correctly.
 The `-F` option instructs `less` to exit immediately if the output size is smaller than
 the vertical size of the terminal. This is convenient for small files because you do not
 have to press `q` to quit the pager.
+
+The `-K` option instructs `less` to exit immediately when an interrupt signal is received.
+This is useful to ensure that `less` quits together with `bat` on SIGINT.
 
 The `-X` option is needed to fix a bug with the `--quit-if-one-screen` feature in versions
 of `less` older than version 530. Unfortunately, it also breaks mouse-wheel support in `less`.
@@ -918,7 +905,7 @@ Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
 
 ## Security vulnerabilities
 
-Please contact [David Peter](https://david-peter.de/) via email if you want to report a vulnerability in `bat`.
+See [`SECURITY.md`](SECURITY.md).
 
 ## Project goals and alternatives
 

@@ -329,7 +329,7 @@ impl<'a> InteractivePrinter<'a> {
             self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
-            let hline = format!("{}{}{}", "─".repeat(self.panel_width), grid_char, hline);
+            let hline = format!("{}{grid_char}{hline}", "─".repeat(self.panel_width));
             writeln!(handle, "{}", self.colors.grid.paint(hline))?;
         }
 
@@ -343,8 +343,7 @@ impl<'a> InteractivePrinter<'a> {
 
         let text_truncated: String = text.chars().take(self.panel_width - 1).collect();
         let text_filled: String = format!(
-            "{}{}",
-            text_truncated,
+            "{text_truncated}{}",
             " ".repeat(self.panel_width - 1 - text_truncated.len())
         );
         if self.config.style_components.grid() {
@@ -400,7 +399,7 @@ impl<'a> InteractivePrinter<'a> {
         while content_graphemes.len() > content_width {
             let (content_line, remaining) = content_graphemes.split_at(content_width);
             self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
-            content_graphemes = remaining.iter().cloned().collect();
+            content_graphemes = remaining.to_vec();
         }
         self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
     }
@@ -513,13 +512,12 @@ impl Printer for InteractivePrinter<'_> {
             .try_for_each(|component| match component {
                 StyleComponent::HeaderFilename => {
                     let header_filename = format!(
-                        "{}{}{}",
+                        "{}{}{mode}",
                         description
                             .kind()
                             .map(|kind| format!("{kind}: "))
                             .unwrap_or_else(|| "".into()),
                         self.colors.header_value.paint(description.title()),
-                        mode
                     );
                     self.print_header_multiline_component(handle, &header_filename)
                 }
@@ -701,7 +699,7 @@ impl Printer for InteractivePrinter<'_> {
                                 "{}{}",
                                 as_terminal_escaped(
                                     style,
-                                    &format!("{}{}", self.ansi_style, text_trimmed),
+                                    &format!("{}{text_trimmed}", self.ansi_style),
                                     true_color,
                                     colored_output,
                                     italics,
@@ -791,7 +789,7 @@ impl Printer for InteractivePrinter<'_> {
                                         "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
-                                            &format!("{}{}", self.ansi_style, line_buf),
+                                            &format!("{}{line_buf}", self.ansi_style),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
@@ -818,7 +816,7 @@ impl Printer for InteractivePrinter<'_> {
                                 "{}",
                                 as_terminal_escaped(
                                     style,
-                                    &format!("{}{}", self.ansi_style, line_buf),
+                                    &format!("{}{line_buf}", self.ansi_style),
                                     self.config.true_color,
                                     self.config.colored_output,
                                     self.config.use_italic_text,

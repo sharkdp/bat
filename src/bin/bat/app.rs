@@ -96,7 +96,7 @@ impl App {
         Ok(clap_app::build_app(interactive_output).get_matches_from(args))
     }
 
-    pub fn config(&self, inputs: &[Input]) -> Result<Config> {
+    pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
         let style_components = self.style_components()?;
 
         let extra_plain = self.matches.get_count("plain") > 1;
@@ -338,7 +338,7 @@ impl App {
         })
     }
 
-    pub fn inputs(&self) -> Result<Vec<Input>> {
+    pub fn inputs(&self) -> Result<Vec<Input<'_>>> {
         let filenames: Option<Vec<&Path>> = self
             .matches
             .get_many::<PathBuf>("file-name")
