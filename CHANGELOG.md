@@ -31,6 +31,7 @@
 - Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
 - Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
 - Update console dependency to 0.16, see #3351 (@musicinmybrain)
+- Fixed some typos #3244 (@ssbarnea)
 
 ## Syntaxes
 

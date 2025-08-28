@@ -1,6 +1,6 @@
 [38;2;249;38;114mimport[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mjava[0m[38;2;248;248;242m.[0m[3;38;2;166;226;46mutil[0m[38;2;248;248;242m.[0m[3;38;2;166;226;46mScanner[0m[38;2;248;248;242m;[0m
 
-[38;2;117;113;94m/*[0m[38;2;117;113;94m This Java program was submiited to help bat[0m
+[38;2;117;113;94m/*[0m[38;2;117;113;94m This Java program was submitted to help bat[0m
 [38;2;117;113;94m * with its syntax highlighting tests[0m
 [38;2;117;113;94m [0m[38;2;117;113;94m*/[0m
 

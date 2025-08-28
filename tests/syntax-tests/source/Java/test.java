@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-/* This Java program was submiited to help bat
+/* This Java program was submitted to help bat
  * with its syntax highlighting tests
  */
 

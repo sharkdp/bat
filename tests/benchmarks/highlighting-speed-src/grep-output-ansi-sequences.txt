@@ -670,7 +670,7 @@
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K469[m[K[36m[K:[m[Kexport [1;33m[KBAT[m[K_PAGER="less -RF"
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K472[m[K[36m[K:[m[K環境変数を利用する代わりに、 `[1;33m[Kbat[m[K` の [設定ファイル](#設定ファイル) を使用して設定も可能です（`--pager` オプション）
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K475[m[K[36m[K:[m[K`[1;33m[Kbat[m[K` はページャーの以下のコマンドラインオプション を受け付けるでしょう:
-[35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K491[m[K[36m[K:[m[KmacOSでダークモード機能を使用する場合、OSテーマに基づいて異なるテーマを使用するように `[1;33m[Kbat[m[K` を構成することができます。 
+[35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K491[m[K[36m[K:[m[KmacOSでダークモード機能を使用する場合、OSテーマに基づいて異なるテーマを使用するように `[1;33m[Kbat[m[K` を構成することができます。
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K496[m[K[36m[K:[m[Kalias cat="[1;33m[Kbat[m[K --theme=\$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo default || echo GitHub)"
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K501[m[K[36m[K:[m[K`[1;33m[Kbat[m[K` は設定ファイルでカスタマイズすることが可能です。ファイルの場所はOSに依存します。
 [35m[Kdoc/README-ja.md[m[K[36m[K:[m[K[32m[K504[m[K[36m[K:[m[K[1;33m[Kbat[m[K --config-file
@@ -721,7 +721,7 @@
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K108[m[K[36m[K:[m[K`[1;33m[Kbat[m[K`을 [`fzf`](https://github.com/junegunn/fzf)의 프리뷰로 쓸 수 있습니다.
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K109[m[K[36m[K:[m[K이를 위해서는 `[1;33m[Kbat[m[K`의 `--color=always` 옵션으로 항상 컬러 출력이 나오게 해야
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K113[m[K[36m[K:[m[Kfzf --preview '[1;33m[Kbat[m[K --color=always --style=numbers --line-range=:500 {}'
-[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K120[m[K[36m[K:[m[K`find`의 `-exec` 옵션을 사용하여 모든 검색 결과를 `[1;33m[Kbat[m[K`로 미리 볼 수 있습니다: 
+[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K120[m[K[36m[K:[m[K`find`의 `-exec` 옵션을 사용하여 모든 검색 결과를 `[1;33m[Kbat[m[K`로 미리 볼 수 있습니다:
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K122[m[K[36m[K:[m[Kfind … -exec [1;33m[Kbat[m[K {} +
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K125[m[K[36m[K:[m[K[`fd`](https://github.com/sharkdp/fd)를 사용하는 경우, `-X`/`--exec-[1;33m[Kbat[m[Kch`
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K128[m[K[36m[K:[m[Kfd … -X [1;33m[Kbat[m[K
@@ -765,7 +765,7 @@
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K271[m[K[36m[K:[m[Kpacman -S [1;33m[Kbat[m[K
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K279[m[K[36m[K:[m[K[`[1;33m[Kbat[m[K` 패키지](https://koji.fedoraproject.org/koji/packageinfo?packageID=27506)를
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K283[m[K[36m[K:[m[Kdnf install [1;33m[Kbat[m[K
-[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K288[m[K[36m[K:[m[Kdev-kit을 통해 [`[1;33m[Kbat[m[K` 패키지](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/[1;33m[Kbat[m[K)를 설치할 수 있습니다: 
+[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K288[m[K[36m[K:[m[Kdev-kit을 통해 [`[1;33m[Kbat[m[K` 패키지](https://github.com/funtoo/dev-kit/tree/1.4-release/sys-apps/[1;33m[Kbat[m[K)를 설치할 수 있습니다:
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K291[m[K[36m[K:[m[Kemerge sys-apps/[1;33m[Kbat[m[K
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K297[m[K[36m[K:[m[K[`[1;33m[Kbat[m[K` 패키지](https://packages.gentoo.org/packages/sys-apps/[1;33m[Kbat[m[K)를 설치할 수
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K301[m[K[36m[K:[m[Kemerge sys-apps/[1;33m[Kbat[m[K
@@ -860,7 +860,7 @@
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K796[m[K[36m[K:[m[K`[1;33m[Kbat[m[K`의 pretty-printing 기능을 라이브러리로 사용하는 애플리케이션을 만들고
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K797[m[K[36m[K:[m[K싶다면, [API 문서](https://docs.rs/[1;33m[Kbat[m[K/)를 살펴보세요.
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K798[m[K[36m[K:[m[K참고로 `[1;33m[Kbat[m[K`에 라이브러리로써 의존한다면, `regex-onig`나 `regex-fancy`를
-[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K814[m[K[36m[K:[m[K만약 `[1;33m[Kbat[m[K`의 취약점을 발견하였다면, [David Peter](https://david-peter.de/)에게 메일로 연락주시기 바랍니다. 
+[35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K814[m[K[36m[K:[m[K만약 `[1;33m[Kbat[m[K`의 취약점을 발견하였다면, [David Peter](https://david-peter.de/)에게 메일로 연락주시기 바랍니다.
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K818[m[K[36m[K:[m[K`[1;33m[Kbat[m[K`은 다음과 같은 목표를 달성하려고 합니다:
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K829[m[K[36m[K:[m[KCopyright (c) 2018-2021 [[1;33m[Kbat[m[K-developers](https://github.com/sharkdp/[1;33m[Kbat[m[K).
 [35m[Kdoc/README-ko.md[m[K[36m[K:[m[K[32m[K831[m[K[36m[K:[m[K`[1;33m[Kbat[m[K`는 여러분의 선택에 따라 MIT 라이센스 또는 Apache 라이센스 2.0의 조건에 따라
@@ -2021,7 +2021,7 @@
 [35m[Ktests/syntax-tests/highlighted/Manpage/bat-0.16.man[m[K[36m[K:[m[K[32m[K243[m[K[36m[K:[m[K[38;2;248;248;242m                                                                        [0m[38;2;166;226;46m[1;33m[KBAT[m[K[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m
 [35m[Ktests/syntax-tests/highlighted/Svelte/App.svelte[m[K[36m[K:[m[K[32m[K30[m[K[36m[K:[m[K[38;2;248;248;242m    [0m[38;2;246;170;17m// This block is a regression test for a [1;33m[Kbat[m[K panic when a LiveScript syntax definition is missing[0m
 [35m[Ktests/syntax-tests/highlighted/VimL/source.vim[m[K[36m[K:[m[K[32m[K77[m[K[36m[K:[m[K[38;2;117;113;94m" Error case from issue #1604 (https://github.com/sharkdp/[1;33m[Kbat[m[K/issues/1064)[0m
-[35m[Ktests/syntax-tests/highlighted/Java/test.java[m[K[36m[K:[m[K[32m[K3[m[K[36m[K:[m[K[38;2;117;113;94m/*[0m[38;2;117;113;94m This Java program was submiited to help [1;33m[Kbat[m[K[0m
+[35m[Ktests/syntax-tests/highlighted/Java/test.java[m[K[36m[K:[m[K[32m[K3[m[K[36m[K:[m[K[38;2;117;113;94m/*[0m[38;2;117;113;94m This Java program was submitted to help [1;33m[Kbat[m[K[0m
 [35m[Ktests/syntax-tests/highlighted/Sass/example.sass[m[K[36m[K:[m[K[32m[K46[m[K[36m[K:[m[K[38;2;248;248;242m    [0m[3;38;2;102;217;239mbackground-image[0m[38;2;255;255;255m:[0m[38;2;248;248;242m [0m[38;2;102;217;239murl[0m[38;2;255;255;255m([0m[38;2;230;219;116m"[0m[38;2;230;219;116mhttps://github.com/sharkdp/[1;33m[Kbat[m[K/raw/master/doc/logo-header.svg[0m[38;2;230;219;116m"[0m[38;2;255;255;255m)[0m
 [35m[Ktests/syntax-tests/highlighted/HTML/test.html[m[K[36m[K:[m[K[32m[K5[m[K[36m[K:[m[K[38;2;248;248;242m    [0m[38;2;255;255;255m<[0m[38;2;249;38;114mtitle[0m[38;2;255;255;255m>[0m[38;2;248;248;242m[1;33m[KBat[m[K Syntax Test[0m[38;2;255;255;255m</[0m[38;2;249;38;114mtitle[0m[38;2;255;255;255m>[0m
 [35m[Ktests/syntax-tests/highlighted/Cpp/test.cpp[m[K[36m[K:[m[K[32m[K6[m[K[36m[K:[m[K[38;2;117;113;94m/*[0m[38;2;117;113;94m This C program was submitted to help [1;33m[Kbat[m[K[0m
@@ -2119,7 +2119,7 @@
 [35m[Ktests/syntax-tests/source/Svelte/App.svelte[m[K[36m[K:[m[K[32m[K30[m[K[36m[K:[m[K    // This block is a regression test for a [1;33m[Kbat[m[K panic when a LiveScript syntax definition is missing
 [35m[Ktests/syntax-tests/source/VimL/source.vim[m[K[36m[K:[m[K[32m[K77[m[K[36m[K:[m[K" Error case from issue #1604 (https://github.com/sharkdp/[1;33m[Kbat[m[K/issues/1064)
 [35m[Ktests/syntax-tests/source/Git Config/LICENSE.md[m[K[36m[K:[m[K[32m[K1[m[K[36m[K:[m[KThe `test.gitconfig` file has been added from https://github.com/sharkdp/[1;33m[Kbat[m[K/pull/1336#issuecomment-715905807. Its "free to use".
-[35m[Ktests/syntax-tests/source/Java/test.java[m[K[36m[K:[m[K[32m[K3[m[K[36m[K:[m[K/* This Java program was submiited to help [1;33m[Kbat[m[K
+[35m[Ktests/syntax-tests/source/Java/test.java[m[K[36m[K:[m[K[32m[K3[m[K[36m[K:[m[K/* This Java program was submitted to help [1;33m[Kbat[m[K
 [35m[Ktests/syntax-tests/source/Sass/example.sass[m[K[36m[K:[m[K[32m[K46[m[K[36m[K:[m[K    background-image: url("https://github.com/sharkdp/[1;33m[Kbat[m[K/raw/master/doc/logo-header.svg")
 [35m[Ktests/syntax-tests/source/HTML/test.html[m[K[36m[K:[m[K[32m[K5[m[K[36m[K:[m[K    <title>[1;33m[KBat[m[K Syntax Test</title>
 [35m[Ktests/syntax-tests/source/Cpp/test.cpp[m[K[36m[K:[m[K[32m[K6[m[K[36m[K:[m[K/* This C program was submitted to help [1;33m[Kbat[m[K
@@ -2138,7 +2138,7 @@
 [35m[Ktests/syntax-tests/source/TOML/Cargo.toml[m[K[36m[K:[m[K[32m[K20[m[K[36m[K:[m[K# Feature required for [1;33m[Kbat[m[K the application. Should be disabled when depending on
 [35m[Ktests/syntax-tests/source/TOML/Cargo.toml[m[K[36m[K:[m[K[32m[K21[m[K[36m[K:[m[K# [1;33m[Kbat[m[K as a library.
 [35m[Ktests/syntax-tests/source/Erlang/bat_erlang.erl[m[K[36m[K:[m[K[32m[K1[m[K[36m[K:[m[K-module([1;33m[Kbat[m[K_erlang).
-[35m[Ktests/syntax-tests/source/Batch/LICENSE.md[m[K[36m[K:[m[K[32m[K1[m[K[36m[K:[m[KThe `build.[1;33m[Kbat[m[K` file has been added from https://github.com/Leandros/ClangOnWindows/blob/master/build.[1;33m[Kbat[m[K under the following license: 
+[35m[Ktests/syntax-tests/source/Batch/LICENSE.md[m[K[36m[K:[m[K[32m[K1[m[K[36m[K:[m[KThe `build.[1;33m[Kbat[m[K` file has been added from https://github.com/Leandros/ClangOnWindows/blob/master/build.[1;33m[Kbat[m[K under the following license:
 [35m[Ktests/syntax-tests/source/Bash/batgrep.sh[m[K[36m[K:[m[K[32m[K3[m[K[36m[K:[m[K# [1;33m[Kbat[m[K-extras | Copyright (C) 2020 eth-p and contributors | MIT License
 [35m[Ktests/syntax-tests/source/Bash/batgrep.sh[m[K[36m[K:[m[K[32m[K5[m[K[36m[K:[m[K# Repository: https://github.com/eth-p/[1;33m[Kbat[m[K-extras
 [35m[Ktests/syntax-tests/source/Bash/batgrep.sh[m[K[36m[K:[m[K[32m[K6[m[K[36m[K:[m[K# Issues:     https://github.com/eth-p/[1;33m[Kbat[m[K-extras/issues
