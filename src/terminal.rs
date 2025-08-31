@@ -50,34 +50,46 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<nu_
 pub fn rainbow_color(position: usize, line_number: usize, true_color: bool) -> nu_ansi_term::Color {
     let freq_h = 0.23;
     let freq_v = 0.1;
-    
+
     let offx = (std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
-        .as_secs() % 300) as f64 / 300.0;
-    
+        .as_secs()
+        % 300) as f64
+        / 300.0;
+
     if true_color {
         // Use 24-bit RGB colors for true color terminals
-        let theta = position as f64 * freq_h / 5.0 + line_number as f64 * freq_v + offx * std::f64::consts::PI;
-        
+        let theta = position as f64 * freq_h / 5.0
+            + line_number as f64 * freq_v
+            + offx * std::f64::consts::PI;
+
         let offset = 0.1;
         let r = ((offset + (1.0 - offset) * (0.5 + 0.5 * (theta + 0.0).sin())) * 255.0) as u8;
-        let g = ((offset + (1.0 - offset) * (0.5 + 0.5 * (theta + 2.0 * std::f64::consts::PI / 3.0).sin())) * 255.0) as u8;
-        let b = ((offset + (1.0 - offset) * (0.5 + 0.5 * (theta + 4.0 * std::f64::consts::PI / 3.0).sin())) * 255.0) as u8;
-        
+        let g = ((offset
+            + (1.0 - offset) * (0.5 + 0.5 * (theta + 2.0 * std::f64::consts::PI / 3.0).sin()))
+            * 255.0) as u8;
+        let b = ((offset
+            + (1.0 - offset) * (0.5 + 0.5 * (theta + 4.0 * std::f64::consts::PI / 3.0).sin()))
+            * 255.0) as u8;
+
         nu_ansi_term::Color::Rgb(r, g, b)
     } else {
-        // Use 256-color palette 
-        let codes = [39, 38, 44, 43, 49, 48, 84, 83, 119, 118, 154, 148, 184, 178, 214, 208, 209, 203, 204, 198, 199, 163, 164, 128, 129, 93, 99, 63, 69, 33];
-        
-        let ncc = offx * codes.len() as f64 + position as f64 * freq_h + line_number as f64 * freq_v;
+        // Use 256-color palette
+        let codes = [
+            39, 38, 44, 43, 49, 48, 84, 83, 119, 118, 154, 148, 184, 178, 214, 208, 209, 203, 204,
+            198, 199, 163, 164, 128, 129, 93, 99, 63, 69, 33,
+        ];
+
+        let ncc =
+            offx * codes.len() as f64 + position as f64 * freq_h + line_number as f64 * freq_v;
         let index = ncc as usize % codes.len();
-        
+
         nu_ansi_term::Color::Fixed(codes[index])
     }
 }
 
-// Process text character by character with rainbow colors 
+// Process text character by character with rainbow colors
 pub fn rainbow_text(
     text: &str,
     start_position: usize,
@@ -85,16 +97,16 @@ pub fn rainbow_text(
     true_color: bool,
 ) -> String {
     let mut result = String::new();
-    
+
     for (i, c) in text.chars().enumerate() {
         let position = start_position + i;
         let color = rainbow_color(position, line_number, true_color);
-        
+
         // Create a style with the rainbow color
         let style = nu_ansi_term::Style::new().fg(color);
         result.push_str(&style.paint(c.to_string()).to_string());
     }
-    
+
     result
 }
 

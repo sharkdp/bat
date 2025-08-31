@@ -32,7 +32,7 @@ use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
-use crate::terminal::{as_terminal_escaped, to_ansi_color, rainbow_text};
+use crate::terminal::{as_terminal_escaped, rainbow_text, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
@@ -702,7 +702,7 @@ impl Printer for InteractivePrinter<'_> {
                                     &format!("{}{text_trimmed}", self.ansi_style),
                                     cursor_total,
                                     line_number,
-                                    true_color
+                                    true_color,
                                 );
                                 write!(handle, "{}", rainbow_output)?;
                             } else {
@@ -799,12 +799,12 @@ impl Printer for InteractivePrinter<'_> {
 
                                     // It wraps.
                                     if self.config.lol_mode && self.is_plain_text {
-                                        // Use rainbow colors character by character 
+                                        // Use rainbow colors character by character
                                         let rainbow_output = rainbow_text(
                                             &format!("{}{line_buf}", self.ansi_style),
                                             cursor,
                                             line_number,
-                                            self.config.true_color
+                                            self.config.true_color,
                                         );
                                         write!(
                                             handle,
@@ -848,7 +848,7 @@ impl Printer for InteractivePrinter<'_> {
                                     &format!("{}{line_buf}", self.ansi_style),
                                     cursor,
                                     line_number,
-                                    self.config.true_color
+                                    self.config.true_color,
                                 );
                                 write!(handle, "{}", rainbow_output)?;
                             } else {
