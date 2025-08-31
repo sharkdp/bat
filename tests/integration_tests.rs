@@ -3222,3 +3222,62 @@ fn style_components_will_merge_with_env_var() {
         .stdout("     STDIN\n   1 test\n")
         .stderr("");
 }
+
+#[test]
+fn lol_argument_applies_rainbow_to_plain_text() {
+    // Test that --lol applies rainbow colors to plain text
+    let output = String::from_utf8(
+        bat()
+            .arg("--lol")
+            .arg("--decorations=never")
+            .arg("--color=always")
+            .arg("--paging=never")
+            .write_stdin("im gay lol")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    // Should contain ANSI color codes (not plain text)
+    assert!(output.contains("\x1B["));
+    // Should contain the individual characters wrapped in color codes
+    assert!(output.contains("i"));
+    assert!(output.contains("m"));
+    assert!(output.contains("g"));
+    assert!(output.contains("a"));
+    assert!(output.contains("y"));
+    assert!(output.contains("l"));
+    assert!(output.contains("o"));
+    assert!(output.contains("l"));
+}
+
+#[test]
+fn lol_argument_preserves_syntax_highlighting() {
+    // Test that --lol doesn't interfere with syntax highlighting
+    let output = String::from_utf8(
+        bat()
+            .arg("--lol")
+            .arg("--decorations=never")
+            .arg("--color=always")
+            .arg("--paging=never")
+            .arg("--language=bash")
+            .write_stdin("echo 'im gay lol'")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone(),
+    )
+    .expect("valid utf8");
+
+    // Should contain ANSI color codes (syntax highlighting)
+    assert!(output.contains("\x1B["));
+    // Should contain the individual characters wrapped in color codes
+    assert!(output.contains("echo"));
+    assert!(output.contains("im"));
+    assert!(output.contains("gay"));
+    assert!(output.contains("lol"));
+}

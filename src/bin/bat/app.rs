@@ -324,6 +324,7 @@ impl App {
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
+            lol_mode: self.matches.get_flag("lol"),
             set_terminal_title: self.matches.get_flag("set-terminal-title"),
             squeeze_lines: if self.matches.get_flag("squeeze-blank") {
                 Some(

@@ -99,6 +99,9 @@ pub struct Config<'a> {
     #[cfg(feature = "lessopen")]
     pub use_lessopen: bool,
 
+    /// Whether or not to apply rainbow colors to text
+    pub lol_mode: bool,
+
     // Weather or not to set terminal title when using a pager
     pub set_terminal_title: bool,
 

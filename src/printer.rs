@@ -32,7 +32,7 @@ use crate::output::OutputHandle;
 use crate::preprocessor::strip_ansi;
 use crate::preprocessor::{expand_tabs, replace_nonprintable};
 use crate::style::StyleComponent;
-use crate::terminal::{as_terminal_escaped, to_ansi_color};
+use crate::terminal::{as_terminal_escaped, to_ansi_color, rainbow_text};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
@@ -199,6 +199,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    is_plain_text: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -308,6 +309,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            is_plain_text,
         })
     }
 
@@ -694,19 +696,31 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
-                            write!(
-                                handle,
-                                "{}{}",
-                                as_terminal_escaped(
-                                    style,
+                            if self.config.lol_mode && self.is_plain_text {
+                                // Use rainbow colors character by character
+                                let rainbow_output = rainbow_text(
                                     &format!("{}{text_trimmed}", self.ansi_style),
-                                    true_color,
-                                    colored_output,
-                                    italics,
-                                    background_color
-                                ),
-                                self.ansi_style.to_reset_sequence(),
-                            )?;
+                                    cursor_total,
+                                    line_number,
+                                    true_color
+                                );
+                                write!(handle, "{}", rainbow_output)?;
+                            } else {
+                                // Use normal syntax highlighting
+                                write!(
+                                    handle,
+                                    "{}{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{text_trimmed}", self.ansi_style),
+                                        true_color,
+                                        colored_output,
+                                        italics,
+                                        background_color
+                                    ),
+                                    self.ansi_style.to_reset_sequence(),
+                                )?;
+                            }
 
                             // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
@@ -784,20 +798,37 @@ impl Printer for InteractivePrinter<'_> {
                                     }
 
                                     // It wraps.
-                                    write!(
-                                        handle,
-                                        "{}{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
+                                    if self.config.lol_mode && self.is_plain_text {
+                                        // Use rainbow colors character by character 
+                                        let rainbow_output = rainbow_text(
                                             &format!("{}{line_buf}", self.ansi_style),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
-                                        self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
-                                    )?;
+                                            cursor,
+                                            line_number,
+                                            self.config.true_color
+                                        );
+                                        write!(
+                                            handle,
+                                            "{}\n{}",
+                                            rainbow_output,
+                                            panel_wrap.clone().unwrap()
+                                        )?;
+                                    } else {
+                                        // Use normal syntax highlighting
+                                        write!(
+                                            handle,
+                                            "{}{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &format!("{}{line_buf}", self.ansi_style),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            ),
+                                            self.ansi_style.to_reset_sequence(),
+                                            panel_wrap.clone().unwrap()
+                                        )?;
+                                    }
 
                                     cursor = 0;
                                     max_width = cursor_max;
@@ -811,18 +842,30 @@ impl Printer for InteractivePrinter<'_> {
 
                             // flush the buffer
                             cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
+                            if self.config.lol_mode && self.is_plain_text {
+                                // Use rainbow colors character by character
+                                let rainbow_output = rainbow_text(
                                     &format!("{}{line_buf}", self.ansi_style),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
+                                    cursor,
+                                    line_number,
+                                    self.config.true_color
+                                );
+                                write!(handle, "{}", rainbow_output)?;
+                            } else {
+                                // Use normal syntax highlighting
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{line_buf}", self.ansi_style),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                            }
                         }
 
                         // ANSI escape passthrough.

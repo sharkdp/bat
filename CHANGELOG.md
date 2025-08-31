@@ -1,6 +1,7 @@
 # unreleased
 
 ## Features
+- Add `--lol` argument to apply rainbow colors to plain text, see #3385 (@vxfemboy)
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)

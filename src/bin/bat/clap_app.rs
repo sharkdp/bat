@@ -645,6 +645,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Show acknowledgements."),
         )
         .arg(
+            Arg::new("lol")
+                .long("lol")
+                .action(ArgAction::SetTrue)
+                .hide_short_help(true)
+                .help("Apply rainbow colors to text"),
+        )
+        .arg(
             Arg::new("set-terminal-title")
                 .long("set-terminal-title")
                 .action(ArgAction::SetTrue)

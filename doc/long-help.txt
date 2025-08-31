@@ -213,6 +213,9 @@ Options:
       --acknowledgements
           Show acknowledgements.
 
+      --lol
+          Apply rainbow colors to text.
+
       --set-terminal-title
           Sets terminal title to filenames when using a pager.
 
