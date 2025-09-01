@@ -76,13 +76,13 @@ Whenever `bat` detects a non-interactive terminal (i.e. when you pipe into anoth
 Display a single file on the terminal
 
 ```bash
-> bat README.md
+bat README.md
 ```
 
 Display multiple files at once
 
 ```bash
-> bat src/*.rs
+bat src/*.rs
 ```
 
 Read from stdin, determine the syntax automatically (note, highlighting will
@@ -90,18 +90,18 @@ only work if the syntax can be determined from the first line of the file,
 usually through a shebang such as `#!/bin/sh`)
 
 ```bash
-> curl -s https://sh.rustup.rs | bat
+curl -s https://sh.rustup.rs | bat
 ```
 
 Read from stdin, specify the language explicitly
 
 ```bash
-> yaml2json .travis.yml | json_pp | bat -l json
+yaml2json .travis.yml | json_pp | bat -l json
 ```
 
 Show and highlight non-printable characters:
 ```bash
-> bat -A /etc/hosts
+bat -A /etc/hosts
 ```
 
 Use it as a `cat` replacement:
