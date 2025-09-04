@@ -32,6 +32,7 @@
 - Update terminal-colorsaurus (the library used for dark/light detection) to 1.0, see #3347 (@bash)
 - Update console dependency to 0.16, see #3351 (@musicinmybrain)
 - Fixed some typos #3244 (@ssbarnea)
+- Update onig_sys dependency to 69.9.1 to fix a gcc build failure #3400 (@CosmicHorrorDev)
 
 ## Syntaxes
 
