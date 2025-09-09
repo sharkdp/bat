@@ -106,6 +106,7 @@ set -l pager_opts '
     less\ -FR\t
     more\t
     vimpager\t
+    builtin\t
 '
 
 set -l italic_text_opts '

@@ -635,9 +635,11 @@ syntax, use (this mapping is already built in):
 ### Using a different pager
 
 `bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not
-set, `less` is used by default. If you want to use a different pager, you can either modify the
-`PAGER` variable or set the `BAT_PAGER` environment variable to override what is specified in
-`PAGER`.
+set, `less` is used by default. You can also use bat's built-in pager with `--pager=builtin` or
+by setting the `BAT_PAGER` environment variable to "builtin".
+
+If you want to use a different pager, you can either modify the `PAGER` variable or set the
+`BAT_PAGER` environment variable to override what is specified in `PAGER`.
 
 >[!NOTE]
 > If `PAGER` is `more` or `most`, `bat` will silently use `less` instead to ensure support for colors.

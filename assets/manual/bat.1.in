@@ -149,8 +149,9 @@ which pager is used, see the '\-\-pager' option. Possible values: *auto*, never,
 \fB\-\-pager\fR <command>
 .IP
 Determine which pager is used. This option will override the PAGER and BAT_PAGER
-environment variables. The default pager is 'less'. To control when the pager is used, see
-the '\-\-paging' option. Example: '\-\-pager "less \fB\-RF\fR"'.
+environment variables. The default pager is 'less'. If you provide '\-\-pager=builtin', use
+the built-in 'minus' pager. To control when the pager is used, see the '\-\-paging' option.
+Example: '\-\-pager "less \fB\-RF\fR"'.
 
 Note: By default, if the pager is set to 'less' (and no command-line options are specified), 'bat' will pass the following command line options to the pager: '-R'/'--RAW-CONTROL-CHARS', '-F'/'--quit-if-one-screen' and '-X'/'--no-init'. The last option ('-X') is only used for 'less' versions older than 530. The '-R' option is needed to interpret ANSI colors correctly. The second option ('-F') instructs less to exit immediately if the output size is smaller than the vertical size of the terminal. This is convenient for small files because you do not have to press 'q' to quit the pager. The third option ('-X') is needed to fix a bug with the '--quit-if-one-screen' feature in old versions of 'less'. Unfortunately, it also breaks mouse-wheel support in 'less'. If you want to enable mouse-wheel scrolling on older versions of 'less', you can pass just '-R' (as in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer, it should work out of the box.
 .HP
