@@ -278,3 +278,6 @@
 [submodule "assets/syntaxes/02_Extra/hosts"]
 	path = assets/syntaxes/02_Extra/hosts
 	url = https://github.com/tijn/hosts.tmLanguage
+[submodule "assets/themes/Vacme"]
+	path = assets/themes/Vacme
+	url = git@github.com:newptcai/vacme-for-bat.git
