@@ -1,4 +1,6 @@
+use std::str::FromStr;
 use std::vec::Vec;
+use syntect::highlighting::ScopeSelectors;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
 use nu_ansi_term::Style;
@@ -892,14 +894,130 @@ impl Colors {
             ..Style::default()
         };
 
+        // Get scope style from theme using given `scope_name` or use `default_style`.
+        let get_scope_style = |scope_name: &str, default_style: Style| {
+            let scope_selectors = ScopeSelectors::from_str(scope_name).unwrap();
+
+            theme
+                .scopes
+                .iter()
+                .find(|item| item.scope.eq(&scope_selectors))
+                .and_then(|item| item.style.foreground)
+                .map(|c| Style {
+                    foreground: to_ansi_color(c, true_color),
+                    ..Style::default()
+                })
+                .unwrap_or(default_style)
+        };
+
         Colors {
             grid: gutter_style,
             rule: gutter_style,
             header_value: Style::new().bold(),
-            git_added: Green.normal(),
-            git_removed: Red.normal(),
-            git_modified: Yellow.normal(),
+            git_added: get_scope_style("markup.inserted", Green.normal()),
+            git_removed: get_scope_style("markup.deleted", Red.normal()),
+            git_modified: get_scope_style("markup.changed", Yellow.normal()),
             line_number: gutter_style,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syntect::highlighting::{Color, StyleModifier, Theme, ThemeItem};
+
+    fn make_theme_with_scope(scope_name: &str, color: Color) -> Theme {
+        let mut theme = Theme::default();
+
+        let style = StyleModifier {
+            foreground: Some(color),
+            ..StyleModifier::default()
+        };
+
+        theme.scopes.push(ThemeItem {
+            scope: ScopeSelectors::from_str(scope_name).unwrap(),
+            style,
+        });
+
+        theme
+    }
+
+    #[test]
+    fn git_added_default_style() {
+        let theme = Theme::default();
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_added.foreground,
+            Some(nu_ansi_term::Color::Green)
+        )
+    }
+
+    #[test]
+    fn git_added_theme_style() {
+        // #afdc7c
+        let r = 175;
+        let g = 220;
+        let b = 124;
+        let theme = make_theme_with_scope("markup.inserted", Color { r, g, b, a: 255 });
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_added.foreground,
+            Some(nu_ansi_term::Color::Rgb(r, g, b))
+        )
+    }
+
+    #[test]
+    fn git_deleted_default_style() {
+        let theme = Theme::default();
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_removed.foreground,
+            Some(nu_ansi_term::Color::Red)
+        )
+    }
+
+    #[test]
+    fn git_deleted_theme_style() {
+        // #f36072
+        let r = 243;
+        let g = 96;
+        let b = 114;
+        let theme = make_theme_with_scope("markup.deleted", Color { r, g, b, a: 255 });
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_removed.foreground,
+            Some(nu_ansi_term::Color::Rgb(r, g, b))
+        )
+    }
+
+    #[test]
+    fn git_modified_default_style() {
+        let theme = Theme::default();
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_modified.foreground,
+            Some(nu_ansi_term::Color::Yellow)
+        )
+    }
+
+    #[test]
+    fn git_modified_theme_style() {
+        // #72a2f8
+        let r = 114;
+        let g = 162;
+        let b = 248;
+        let theme = make_theme_with_scope("markup.changed", Color { r, g, b, a: 255 });
+        let colors = Colors::colored(&theme, true);
+
+        assert_eq!(
+            colors.git_modified.foreground,
+            Some(nu_ansi_term::Color::Rgb(r, g, b))
+        )
     }
 }
