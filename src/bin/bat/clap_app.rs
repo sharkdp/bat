@@ -328,7 +328,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
                 .long_help(
                     "Specify when to use the pager. To disable the pager, use \
-                    --paging=never' or its alias,'-P'. To disable the pager permanently, \
+                    '--paging=never' or its alias,'-P'. To disable the pager permanently, \
                     set BAT_PAGING to 'never'. To control which pager is used, see the \
                     '--pager' option. Possible values: *auto*, never, always."
                 ),
@@ -354,6 +354,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help(
                     "Determine which pager is used. This option will override the \
                     PAGER and BAT_PAGER environment variables. The default pager is 'less'. \
+                    If you provide '--pager=builtin', use the built-in 'minus' pager. \
                     To control when the pager is used, see the '--paging' option. \
                     Example: '--pager \"less -RF\"'."
                 ),

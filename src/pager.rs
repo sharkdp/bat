@@ -32,6 +32,9 @@ pub(crate) enum PagerKind {
     /// most
     Most,
 
+    /// builtin
+    Builtin,
+
     /// A pager we don't know about
     Unknown,
 }
@@ -39,6 +42,10 @@ pub(crate) enum PagerKind {
 impl PagerKind {
     fn from_bin(bin: &str) -> PagerKind {
         use std::path::Path;
+
+        if bin == "builtin" {
+            return PagerKind::Builtin;
+        }
 
         // Set to `less` by default on most Linux distros.
         let pager_bin = Path::new(bin).file_stem();
