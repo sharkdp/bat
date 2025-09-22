@@ -1890,7 +1890,7 @@ fn header_default_is_default() {
 
 #[test]
 #[cfg(feature = "git")] // Expected output assumes git is enabled
-// Make sure indent isn't printed if there's no changes
+                        // Make sure indent isn't printed if there's no changes
 fn header_and_changes_only() {
     bat()
         .arg("--style=header-filename,changes")
