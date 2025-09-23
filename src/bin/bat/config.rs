@@ -145,6 +145,7 @@ pub fn get_args_from_env_vars() -> Vec<OsString> {
         ("--pager", "BAT_PAGER"),
         ("--paging", "BAT_PAGING"),
         ("--style", "BAT_STYLE"),
+        ("--gitsigns", bat::gitsigns::env::BAT_GITSIGNS),
     ]
     .iter()
     .filter_map(|(flag, key)| {

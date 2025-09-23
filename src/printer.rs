@@ -232,7 +232,10 @@ impl<'a> InteractivePrinter<'a> {
             if config.style_components.changes()
                 && line_changes.as_ref().is_some_and(|c| !c.is_empty())
             {
-                decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+                decorations.push(Box::new(LineChangesDecoration::new(
+                    &colors,
+                    &config.gitsigns,
+                )));
             }
         }
 

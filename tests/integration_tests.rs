@@ -1,7 +1,11 @@
 use predicates::boolean::PredicateBooleanExt;
+use predicates::str::contains;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
+use std::env;
+use std::fs;
 use std::path::Path;
+use std::process::Command as StdCommand;
 use std::str::from_utf8;
 use tempfile::tempdir;
 
@@ -3236,4 +3240,240 @@ fn style_components_will_merge_with_env_var() {
         .success()
         .stdout("     STDIN\n   1 test\n")
         .stderr("");
+}
+
+fn bat_tempdir(namespace: &str) -> PathBuf {
+    let tmp = env::temp_dir();
+    let bat_tempdir = tmp.join("bat_test").join(namespace);
+
+    // remove `/path_to_os_tmp_dir/bar_test` dir if it was already created in a previous test
+    let _ = fs::remove_dir_all(&bat_tempdir);
+
+    // create a new empty `/path_to_os_tmp_dir/bat_test` dir
+    fs::create_dir_all(&bat_tempdir).unwrap();
+
+    bat_tempdir
+}
+
+fn make_git_repo_with_file_changes(repo_path: &Path, file_path: &Path) {
+    let _ = fs::create_dir_all(repo_path);
+
+    // 1. git init
+    StdCommand::new("git")
+        .args(["init"])
+        .current_dir(repo_path)
+        .output()
+        .unwrap();
+
+    // 2. create test.txt
+    fs::write(
+        file_path,
+        fs::read_to_string("tests/gitsigns/before/test.txt").unwrap(),
+    )
+    .unwrap();
+
+    // 3. git add .
+    StdCommand::new("git")
+        .args(["add", "."])
+        .current_dir(repo_path)
+        .output()
+        .unwrap();
+
+    // 4. git commit -m "Initial commit"
+    StdCommand::new("git")
+        .args(["commit", "-m", "Initial commit"])
+        .current_dir(repo_path)
+        .output()
+        .unwrap();
+
+    // 5. change test.txt content
+    fs::write(
+        file_path,
+        fs::read_to_string("tests/gitsigns/after/test.txt").unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn gitsigns_default() {
+    let bat_tempdir = bat_tempdir("gitsigns_default");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // bat tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/default").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_classic() {
+    let bat_tempdir = bat_tempdir("gitsigns_classic");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // bat --gitsigns=classic tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            "--gitsigns=classic",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/classic").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_modern() {
+    let bat_tempdir = bat_tempdir("gitsigns_modern");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // bat --gitsigns=modern tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            "--gitsigns=modern",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_custom() {
+    let bat_tempdir = bat_tempdir("gitsigns_custom");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // bat --gitsigns="M,A,‾,_" tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            "--gitsigns=M,A,‾,_",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/custom").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_using_config_file() {
+    let bat_tempdir = bat_tempdir("gitsigns_using_config_file");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+    let bat_config_path = bat_tempdir.join("bat.conf");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    fs::write(
+        &bat_config_path,
+        fs::read_to_string("tests/gitsigns/bat.conf").unwrap(),
+    )
+    .unwrap();
+
+    // BAT_CONFIG_PATH=tests/gitsigns/bat.conf bat tests/gitsigns/after/test.txt
+    let cmd = bat_with_config()
+        .env("BAT_CONFIG_PATH", bat_config_path.to_str().unwrap())
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_using_env_var() {
+    let bat_tempdir = bat_tempdir("gitsigns_using_env_var");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // BAT_GITSIGNS=modern bat tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .env("BAT_GITSIGNS", "modern")
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+
+    assert_eq!(output, expected);
+}
+
+#[test]
+fn gitsigns_parse_error_expected_4_comma_separated_signs() {
+    // bat --gitsigns="1,2,3" test.txt
+    bat()
+        .args(["--gitsigns=1,2,3", "test.txt"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(contains("Expected 4 comma-separated signs"));
+}
+
+#[test]
+fn gitsigns_parse_error_each_sign_must_be_a_single_char() {
+    // bat --gitsigns="M,A,RA,RB" test.txt
+    bat()
+        .args(["--gitsigns=M,A,RA,RB", "test.txt"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(contains("Each sign must be a single character"));
 }

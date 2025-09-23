@@ -22,6 +22,7 @@ use bat::{
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
+    gitsigns::Gitsigns,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
@@ -334,6 +335,20 @@ impl App {
                 )
             } else {
                 None
+            },
+            #[cfg(feature = "git")]
+            gitsigns: match self
+                .matches
+                .get_one::<String>("gitsigns")
+                .map(|s| s.as_str())
+            {
+                Some("classic") => Gitsigns::classic(),
+                Some("modern") => Gitsigns::modern(),
+                Some(s) => Gitsigns::parse(s).unwrap_or_else(|e| {
+                    eprintln!("Error parsing `--gitsigns={s}` \n{e}");
+                    std::process::exit(1);
+                }),
+                None => Gitsigns::default(),
             },
         })
     }

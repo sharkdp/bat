@@ -1,6 +1,6 @@
-#[cfg(feature = "git")]
-use crate::diff::LineChange;
 use crate::printer::{Colors, InteractivePrinter};
+#[cfg(feature = "git")]
+use crate::{diff::LineChange, gitsigns::Gitsigns};
 use nu_ansi_term::Style;
 
 #[derive(Debug, Clone)]
@@ -88,13 +88,19 @@ impl LineChangesDecoration {
         }
     }
 
-    pub(crate) fn new(colors: &Colors) -> Self {
+    pub(crate) fn new(colors: &Colors, gitsigns: &Gitsigns) -> Self {
         LineChangesDecoration {
             cached_none: Self::generate_cached(Style::default(), " "),
-            cached_added: Self::generate_cached(colors.git_added, "+"),
-            cached_removed_above: Self::generate_cached(colors.git_removed, "‾"),
-            cached_removed_below: Self::generate_cached(colors.git_removed, "_"),
-            cached_modified: Self::generate_cached(colors.git_modified, "~"),
+            cached_added: Self::generate_cached(colors.git_added, &gitsigns.added),
+            cached_removed_above: Self::generate_cached(
+                colors.git_removed,
+                &gitsigns.removed_above,
+            ),
+            cached_removed_below: Self::generate_cached(
+                colors.git_removed,
+                &gitsigns.removed_below,
+            ),
+            cached_modified: Self::generate_cached(colors.git_modified, &gitsigns.modified),
         }
     }
 }
