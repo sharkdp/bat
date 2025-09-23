@@ -3242,6 +3242,7 @@ fn style_components_will_merge_with_env_var() {
 }
 
 /// Used to fix bat ouput on windows: mixed line endings `\n` and `\r\n` !!
+#[cfg(windows)]
 fn normalize_output_line_endings(s: &str) -> String {
     s.replace("\r\n", "\n")
 }
