@@ -34,6 +34,12 @@ use utils::command::{bat, bat_with_config};
 use utils::command::bat_raw_command;
 use utils::mocked_pagers;
 
+#[cfg(windows)]
+const LINE_ENDING: &str = "\r\n";
+
+#[cfg(unix)]
+const LINE_ENDING: &str = "\n";
+
 const EXAMPLES_DIR: &str = "tests/examples";
 
 fn get_config() -> &'static str {
@@ -3241,6 +3247,11 @@ fn style_components_will_merge_with_env_var() {
         .stderr("");
 }
 
+/// Normalize line endings depending on OS(windows or unix)
+fn normalize_line_endings(s: &str) -> String {
+    s.replace("\n", LINE_ENDING)
+}
+
 #[cfg(feature = "git")]
 fn bat_tempdir(namespace: &str) -> PathBuf {
     let tmp = env::temp_dir();
@@ -3316,7 +3327,8 @@ fn gitsigns_default() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/default").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/default").unwrap());
 
     assert_eq!(output, expected);
 }
@@ -3343,7 +3355,8 @@ fn gitsigns_classic() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/classic").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/classic").unwrap());
 
     assert_eq!(output, expected);
 }
@@ -3370,7 +3383,8 @@ fn gitsigns_modern() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
 
     assert_eq!(output, expected);
 }
@@ -3397,7 +3411,8 @@ fn gitsigns_custom() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/custom").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/custom").unwrap());
 
     assert_eq!(output, expected);
 }
@@ -3431,7 +3446,8 @@ fn gitsigns_using_config_file() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
 
     assert_eq!(output, expected);
 }
@@ -3458,7 +3474,8 @@ fn gitsigns_using_env_var() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected = fs::read_to_string("tests/gitsigns/output/modern").unwrap();
+    let expected =
+        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
 
     assert_eq!(output, expected);
 }
