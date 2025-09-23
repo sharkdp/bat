@@ -22,12 +22,14 @@ use bat::{
     bat_warning,
     config::{Config, VisibleLines},
     error::*,
-    gitsigns::Gitsigns,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
     style::{StyleComponent, StyleComponents},
     MappingTarget, NonprintableNotation, PagingMode, SyntaxMapping, WrappingMode,
 };
+
+#[cfg(feature = "git")]
+use bat::gitsigns::Gitsigns;
 
 fn is_truecolor_terminal() -> bool {
     env::var("COLORTERM")
