@@ -3242,6 +3242,7 @@ fn style_components_will_merge_with_env_var() {
         .stderr("");
 }
 
+#[cfg(feature = "git")]
 fn bat_tempdir(namespace: &str) -> PathBuf {
     let tmp = env::temp_dir();
     let bat_tempdir = tmp.join("bat_test").join(namespace);
@@ -3255,6 +3256,7 @@ fn bat_tempdir(namespace: &str) -> PathBuf {
     bat_tempdir
 }
 
+#[cfg(feature = "git")]
 fn make_git_repo_with_file_changes(repo_path: &Path, file_path: &Path) {
     let _ = fs::create_dir_all(repo_path);
 
@@ -3295,6 +3297,7 @@ fn make_git_repo_with_file_changes(repo_path: &Path, file_path: &Path) {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_default() {
     let bat_tempdir = bat_tempdir("gitsigns_default");
     let repo_path = bat_tempdir.join("bat");
@@ -3320,6 +3323,7 @@ fn gitsigns_default() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_classic() {
     let bat_tempdir = bat_tempdir("gitsigns_classic");
     let repo_path = bat_tempdir.join("bat");
@@ -3346,6 +3350,7 @@ fn gitsigns_classic() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_modern() {
     let bat_tempdir = bat_tempdir("gitsigns_modern");
     let repo_path = bat_tempdir.join("bat");
@@ -3372,6 +3377,7 @@ fn gitsigns_modern() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_custom() {
     let bat_tempdir = bat_tempdir("gitsigns_custom");
     let repo_path = bat_tempdir.join("bat");
@@ -3398,6 +3404,7 @@ fn gitsigns_custom() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_using_config_file() {
     let bat_tempdir = bat_tempdir("gitsigns_using_config_file");
     let repo_path = bat_tempdir.join("bat");
@@ -3431,6 +3438,7 @@ fn gitsigns_using_config_file() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_using_env_var() {
     let bat_tempdir = bat_tempdir("gitsigns_using_env_var");
     let repo_path = bat_tempdir.join("bat");
@@ -3457,6 +3465,7 @@ fn gitsigns_using_env_var() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_parse_error_expected_4_comma_separated_signs() {
     // bat --gitsigns="1,2,3" test.txt
     bat()
@@ -3468,6 +3477,7 @@ fn gitsigns_parse_error_expected_4_comma_separated_signs() {
 }
 
 #[test]
+#[cfg(feature = "git")]
 fn gitsigns_parse_error_each_sign_must_be_a_single_char() {
     // bat --gitsigns="M,A,RA,RB" test.txt
     bat()
