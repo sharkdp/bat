@@ -4,7 +4,7 @@ use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command as StdCommand;
 use std::str::from_utf8;
 use tempfile::tempdir;
@@ -13,7 +13,6 @@ use tempfile::tempdir;
 mod unix {
     pub use std::fs::File;
     pub use std::io::{self, Write};
-    pub use std::path::PathBuf;
     pub use std::process::Stdio;
     pub use std::thread;
     pub use std::time::Duration;
