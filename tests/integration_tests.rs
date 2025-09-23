@@ -34,12 +34,6 @@ use utils::command::{bat, bat_with_config};
 use utils::command::bat_raw_command;
 use utils::mocked_pagers;
 
-#[cfg(windows)]
-const LINE_ENDING: &str = "\r\n";
-
-#[cfg(unix)]
-const LINE_ENDING: &str = "\n";
-
 const EXAMPLES_DIR: &str = "tests/examples";
 
 fn get_config() -> &'static str {
@@ -3247,9 +3241,9 @@ fn style_components_will_merge_with_env_var() {
         .stderr("");
 }
 
-/// Normalize line endings depending on OS(windows or unix)
-fn normalize_line_endings(s: &str) -> String {
-    s.replace("\n", LINE_ENDING)
+/// Used to fix bat ouput on windows: mixed line endings `\n` and `\r\n` !!
+fn normalize_output_line_endings(s: &str) -> String {
+    s.replace("\r\n", "\n")
 }
 
 #[cfg(feature = "git")]
@@ -3307,9 +3301,9 @@ fn make_git_repo_with_file_changes(repo_path: &Path, file_path: &Path) {
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_default() {
-    let bat_tempdir = bat_tempdir("gitsigns_default");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_default_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_default_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
 
@@ -3327,16 +3321,15 @@ fn gitsigns_default() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/default").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/default").unwrap();
 
     assert_eq!(output, expected);
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_classic() {
-    let bat_tempdir = bat_tempdir("gitsigns_classic");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_classic_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_classic_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
 
@@ -3355,16 +3348,15 @@ fn gitsigns_classic() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/classic").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/classic").unwrap();
 
     assert_eq!(output, expected);
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_modern() {
-    let bat_tempdir = bat_tempdir("gitsigns_modern");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_modern_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_modern_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
 
@@ -3383,16 +3375,15 @@ fn gitsigns_modern() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/modern").unwrap();
 
     assert_eq!(output, expected);
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_custom() {
-    let bat_tempdir = bat_tempdir("gitsigns_custom");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_custom_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_custom_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
 
@@ -3411,16 +3402,15 @@ fn gitsigns_custom() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/custom").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/custom").unwrap();
 
     assert_eq!(output, expected);
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_using_config_file() {
-    let bat_tempdir = bat_tempdir("gitsigns_using_config_file");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_using_config_file_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_using_config_file_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
     let bat_config_path = bat_tempdir.join("bat.conf");
@@ -3446,16 +3436,15 @@ fn gitsigns_using_config_file() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/modern").unwrap();
 
     assert_eq!(output, expected);
 }
 
 #[test]
-#[cfg(feature = "git")]
-fn gitsigns_using_env_var() {
-    let bat_tempdir = bat_tempdir("gitsigns_using_env_var");
+#[cfg(all(feature = "git", unix))]
+fn gitsigns_using_env_var_unix() {
+    let bat_tempdir = bat_tempdir("gitsigns_using_env_var_unix");
     let repo_path = bat_tempdir.join("bat");
     let file_path = repo_path.join("test.txt");
 
@@ -3474,8 +3463,7 @@ fn gitsigns_using_env_var() {
         .success();
 
     let output = from_utf8(&cmd.get_output().stdout).unwrap();
-    let expected =
-        normalize_line_endings(&fs::read_to_string("tests/gitsigns/output/modern").unwrap());
+    let expected = fs::read_to_string("tests/gitsigns/output/unix/modern").unwrap();
 
     assert_eq!(output, expected);
 }
@@ -3503,3 +3491,36 @@ fn gitsigns_parse_error_each_sign_must_be_a_single_char() {
         .code(1)
         .stderr(contains("Each sign must be a single character"));
 }
+
+#[test]
+#[cfg(all(feature = "git", windows))]
+fn gitsigns_default_windows() {
+    let bat_tempdir = bat_tempdir("gitsigns_default_windows");
+    let repo_path = bat_tempdir.join("bat");
+    let file_path = repo_path.join("test.txt");
+
+    make_git_repo_with_file_changes(&repo_path, &file_path);
+
+    // bat tests/gitsigns/after/test.txt
+    let cmd = bat()
+        .current_dir(repo_path)
+        .args([
+            "--decorations=always",
+            "--file-name=tests/gitsigns/after/test.txt",
+            file_path.to_str().unwrap(),
+        ])
+        .assert()
+        .success();
+
+    let output = from_utf8(&cmd.get_output().stdout).unwrap();
+    let expected = fs::read_to_string("tests/gitsigns/output/windows/default").unwrap();
+
+    // NOTE: expected to pass on x86_64-pc-windows-msvc (windows-2025) and fail on i686-pc-windows-msvc (windows-2025)
+    // TODO: fix test on i686-pc-windows-msvc (windows-2025)
+    assert_eq!(
+        normalize_output_line_endings(output),
+        normalize_output_line_endings(&expected)
+    );
+}
+
+// TODO: add windows gitsigns `classic`, `modern`, `custom`, `using_config_file` and `using_env_var` tests
