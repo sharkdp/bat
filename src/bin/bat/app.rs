@@ -60,7 +60,10 @@ impl App {
         // Check if we should skip config file processing for special arguments
         // that don't require full application setup (help, version, diagnostic)
         let should_skip_config = wild::args_os().any(|arg| {
-            matches!(arg.to_str(), Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics"))
+            matches!(
+                arg.to_str(),
+                Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics")
+            )
         });
 
         let args = if wild::args_os().nth(1) == Some("cache".into()) {
