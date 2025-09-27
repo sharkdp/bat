@@ -234,7 +234,7 @@
                 <key>name</key>
                 <string>Headings</string>
                 <key>scope</key>
-                <string>markup.heading punctuation.definition.heading, entity.name.section, markup.heading - text.html.markdown</string>
+                <string>markup.heading punctuation.definition.heading, entity.name.section, markup.heading - text.html.markdown, meta.mapping.key string.quoted.double</string>
                 <key>settings</key>
                 <dict>
                     <key>fontStyle</key>
