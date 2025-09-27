@@ -1300,7 +1300,9 @@ fn help_works_with_invalid_config() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("A cat(1) clone with syntax highlighting"));
+        .stdout(predicate::str::contains(
+            "A cat(1) clone with syntax highlighting",
+        ));
 
     // -h should also work
     bat_with_config()
