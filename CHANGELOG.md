@@ -1,6 +1,5 @@
 # unreleased
 
-- Update docuementation to add bash autocompletion for help #3423 (@euge908)
 
 ## Features
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
@@ -37,6 +36,7 @@
 - Update console dependency to 0.16, see #3351 (@musicinmybrain)
 - Fixed some typos #3244 (@ssbarnea)
 - Update onig_sys dependency to 69.9.1 to fix a gcc build failure #3400 (@CosmicHorrorDev)
+- Update documentation to add bash autocompletion for help #3423 (@euge908)
 
 ## Syntaxes
 
