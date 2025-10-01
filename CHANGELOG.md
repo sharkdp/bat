@@ -1,5 +1,7 @@
 # unreleased
 
+- Update docuementation to add bash autocompletion for help #3423 (@euge908)
+
 ## Features
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
 
