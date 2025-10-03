@@ -278,3 +278,6 @@
 [submodule "assets/syntaxes/02_Extra/hosts"]
 	path = assets/syntaxes/02_Extra/hosts
 	url = https://github.com/tijn/hosts.tmLanguage
+[submodule "assets/syntaxes/02_Extra/Gomod"]
+	path = assets/syntaxes/02_Extra/Gomod
+	url = https://github.com/mitranim/sublime-gomod
