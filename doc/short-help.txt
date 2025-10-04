@@ -23,6 +23,8 @@ Options:
           Specify the name to display for a file.
   -d, --diff
           Only show lines that have been added/removed/modified.
+      --gitsigns <gitsigns>
+          Set git `added`, `modified`, `removed-above`, `removed-below` signs. (default: classic)
       --tabs <T>
           Set the tab width to T spaces.
       --wrap <mode>

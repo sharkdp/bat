@@ -304,6 +304,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "BAT_STYLE",
             "BAT_TABS",
             "BAT_THEME",
+            "BAT_GITSIGNS",
             "COLORTERM",
             "LANG",
             "LC_ALL",
