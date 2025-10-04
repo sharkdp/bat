@@ -142,9 +142,15 @@ set -l special_themes '
 
 complete -c $bat -l acknowledgements -d "Print acknowledgements" -n __fish_is_first_arg
 
+complete -c $bat -l binary -x -a "no-printing as-text" -d "How to treat binary content" -n __bat_no_excl_args
+
 complete -c $bat -l cache-dir -f -d "Show bat's cache directory" -n __fish_is_first_arg
 
+complete -c $bat -s c -l chop-long-lines -d "Truncate all lines longer than screen width" -n __bat_no_excl_args
+
 complete -c $bat -l color -x -a "$color_opts" -d "When to use colored output" -n __bat_no_excl_args
+
+complete -c $bat -l completion -x -a "bash fish zsh ps1" -d "Show shell completion for a certain shell" -n __fish_is_first_arg
 
 complete -c $bat -l config-dir -f -d "Display location of configuration directory" -n __fish_is_first_arg
 
@@ -192,19 +198,33 @@ complete -c $bat -l no-custom-assets -d "Do not load custom assets"
 
 complete -c $bat -l no-lessopen -d "Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)"
 
+complete -c $bat -l nonprintable-notation -x -a "unicode caret" -d "Set notation for non-printable characters" -n __bat_no_excl_args
+
 complete -c $bat -s n -l number -d "Only show line numbers, no other decorations" -n __bat_no_excl_args
+
+complete -c $bat -l no-paging -d "Alias for --paging=never" -n __bat_no_excl_args
 
 complete -c $bat -l pager -x -a "$pager_opts" -d "Which pager to use" -n __bat_no_excl_args
 
 complete -c $bat -l paging -x -a "$paging_opts" -d "When to use the pager" -n __bat_no_excl_args
+
+complete -c $bat -s p -l plain -d "Show plain style" -n __bat_no_excl_args
+
+complete -c $bat -l set-terminal-title -d "Sets terminal title to filenames when using a pager" -n __bat_no_excl_args
+
+complete -c $bat -s A -l show-all -d "Show non-printable characters" -n __bat_no_excl_args
+
+complete -c $bat -s s -l squeeze-blank -d "Squeeze consecutive empty lines into a single empty line" -n __bat_no_excl_args
+
+complete -c $bat -l squeeze-limit -x -d "Set the maximum number of consecutive empty lines to be printed" -n __bat_no_excl_args
+
+complete -c $bat -l strip-ansi -x -a "auto never always" -d "Specify when to strip ANSI escape sequences from the input" -n __bat_no_excl_args
 
 complete -c $bat -s p -l plain -d "Disable decorations" -n __bat_no_excl_args
 
 complete -c $bat -o pp -d "Disable decorations and paging" -n __bat_no_excl_args
 
 complete -c $bat -s P -d "Disable paging" -n __bat_no_excl_args
-
-complete -c $bat -s A -l show-all -d "Show non-printable characters" -n __bat_no_excl_args
 
 complete -c $bat -l style -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
 
@@ -217,6 +237,8 @@ complete -c $bat -l theme -x -a "$special_themes(command $bat --list-themes | co
 complete -c $bat -l theme-dark -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for dark backgrounds" -n __bat_no_excl_args
 
 complete -c $bat -l theme-light -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for light backgrounds" -n __bat_no_excl_args
+
+complete -c $bat -s u -l unbuffered -d "This option exists for POSIX-compliance reasons" -n __bat_no_excl_args
 
 complete -c $bat -s V -l version -f -d "Show version information" -n __fish_is_first_arg
 
