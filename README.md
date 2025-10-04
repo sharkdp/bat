@@ -231,6 +231,7 @@ You can use `bat` to colorize help text: `$ cp --help | bat -plhelp`
 
 You can also use a wrapper around this:
 
+
 ```bash
 # in your .bashrc/.zshrc/*rc
 alias bathelp='bat --plain --language=help'
@@ -240,6 +241,16 @@ help() {
 ```
 
 Then you can do `$ help cp` or `$ help git commit`.
+
+
+Bashcompletion might not work properly with the above command, because `help` is aliased as a function. To resolve this, you can also put the following in your `.bashrc`:
+
+```
+# in your .bashrc/.zshrc/*rc
+complete -F _command help 
+
+# Ex: try `help gi<TAB>`
+```
 
 When you are using `zsh`, you can also use global aliases to override `-h` and `--help` entirely:
 
