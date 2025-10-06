@@ -36,6 +36,7 @@
 - Update console dependency to 0.16, see #3351 (@musicinmybrain)
 - Fixed some typos #3244 (@ssbarnea)
 - Update onig_sys dependency to 69.9.1 to fix a gcc build failure #3400 (@CosmicHorrorDev)
+- Add a cargo feature (`vendored-libgit2`) to build with vendored libgit2 version without depending on the system's one #3426 (@0x61nas)
 
 ## Syntaxes
 
