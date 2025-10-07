@@ -57,6 +57,7 @@
 - Map `.flatpakref` and `.flatpakrepo` files to INI syntax #3353 (@Ferenc-)
 - Update hosts syntax #3368 (@keith-hall)
 - Map `.kshrc` files to Bash syntax #3364 (@ritoban23)
+- Map `/var/log/dmesg` files to Syslog syntax #3412 (@keith-hall)
 - Add syntax definition and test file for Go modules(`go.mod` and `go.sum`) highlighting, see #3424 (@DarkMatter-999)
 
 ## Themes
