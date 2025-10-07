@@ -80,6 +80,7 @@ _bat() {
 	--line-range | \
 	-L | --list-languages | \
 	--lessopen | \
+	--no-paging | \
 	--diagnostic | \
 	--acknowledgements | \
 	-h | --help | \
@@ -98,6 +99,22 @@ _bat() {
 		;;
 	--wrap)
 		COMPREPLY=($(compgen -W "auto never character" -- "$cur"))
+		return 0
+		;;
+	--binary)
+		COMPREPLY=($(compgen -W "no-printing as-text" -- "$cur"))
+		return 0
+		;;
+	--nonprintable-notation)
+		COMPREPLY=($(compgen -W "unicode caret" -- "$cur"))
+		return 0
+		;;
+	--strip-ansi)
+		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
+		return 0
+		;;
+	--completion)
+		COMPREPLY=($(compgen -W "bash fish zsh ps1" -- "$cur"))
 		return 0
 		;;
 	--color | --decorations | --paging)
@@ -157,6 +174,8 @@ _bat() {
 		# --unbuffered excluded intentionally (no-op)
 		COMPREPLY=($(compgen -W "
 			--show-all
+			--nonprintable-notation
+			--binary
 			--plain
 			--language
 			--highlight-line
@@ -173,6 +192,7 @@ _bat() {
 			--decorations
 			--force-colorization
 			--paging
+			--no-paging
 			--pager
 			--map-syntax
 			--ignored-suffix
@@ -182,10 +202,12 @@ _bat() {
 			--list-themes
 			--squeeze-blank
 			--squeeze-limit
+			--strip-ansi
 			--style
 			--line-range
 			--list-languages
 			--lessopen
+			--completion
 			--diagnostic
 			--acknowledgements
 			--set-terminal-title
