@@ -63,10 +63,12 @@ Before you make a pull request that adds a new syntax or theme, please read
 the [Customization](https://github.com/sharkdp/bat#customization) section
 in the README first.
 
-If you really think that a particular syntax or theme should be added for all
+If you really think that a particular syntax should be added for all
 users, please read the corresponding
 [documentation](https://github.com/sharkdp/bat/blob/master/doc/assets.md)
 first.
+
+Note: We are currently not accepting new default themes.
 
 
 ## Regression tests
