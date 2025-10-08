@@ -14,13 +14,12 @@ edition = '2021'
 rust-version = "1.74"
 
 [features]
-default = ["application"]
+default = ["application", "git"]
 # Feature required for bat the application. Should be disabled when depending on
 # bat as a library.
 application = [
     "bugreport",
     "build-assets",
-    "git",
     "minimal-application",
 ]
 # Mainly for developers that want to iterate quickly
@@ -33,6 +32,7 @@ minimal-application = [
     "wild",
 ]
 git = ["git2"] # Support indicating git modifications
+vendored-libgit2 = ["git2/vendored-libgit2"]
 paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
 lessopen = ["execute"] # Support $LESSOPEN preprocessor
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
