@@ -2404,6 +2404,24 @@ fn ansi_highlight_underline() {
         .stderr("");
 }
 
+// we don't really test other color schemes in the syntax-tests/source vs highlighted stuff
+// so here a simple integration test has been made for the ANSI theme,
+// which lives directly inside the bat repository
+#[test]
+fn ansi_highlight_json_keys() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--theme=ansi")
+        .arg("--language=json")
+        .write_stdin("{\"foo\": \"bar\", \"test\": [123, \"baz\"] }")
+        .assert()
+        .success()
+        .stdout("{\x1B[34m\"\x1B[0m\x1B[34mfoo\x1B[0m\x1B[34m\"\x1B[0m: \x1B[32m\"\x1B[0m\x1B[32mbar\x1B[0m\x1B[32m\"\x1B[0m, \x1B[34m\"\x1B[0m\x1B[34mtest\x1B[0m\x1B[34m\"\x1B[0m: [\x1B[33m123\x1B[0m, \x1B[32m\"\x1B[0m\x1B[32mbaz\x1B[0m\x1B[32m\"\x1B[0m] }")
+        .stderr("");
+}
+
 // Ensure that ANSI passthrough is emitted properly for both wrapping and non-wrapping printer.
 // See https://github.com/sharkdp/bat/issues/2307 for what common use case this test tests.
 #[test]

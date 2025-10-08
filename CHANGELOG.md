@@ -69,6 +69,7 @@
 - Updated Catppuccin, see #3333 (@SchweGELBin)
 - Updated gruvbox, see #3372 (@Nicholas42)
 - Updated GitHub theme, see #3382 (@CosmicHorrorDev)
+- Updated ANSI theme to highlight JSON object keys differently from values, see #3413 (@keith-hall)
 
 ## `bat` as a library
 
