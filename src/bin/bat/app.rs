@@ -57,15 +57,30 @@ impl App {
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
+        // Check if we should skip config file processing for special arguments
+        // that don't require full application setup (help, version, diagnostic)
+        let should_skip_config = wild::args_os().any(|arg| {
+            matches!(
+                arg.to_str(),
+                Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics")
+            )
+        });
+
         let args = if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
 
             wild::args_os().collect::<Vec<_>>()
-        } else if wild::args_os().any(|arg| arg == "--no-config") {
-            // Skip the arguments in bats config file
+        } else if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
+            // Skip the arguments in bats config file when --no-config is present
+            // or when user requests help, version, or diagnostic information
 
             let mut cli_args = wild::args_os();
-            let mut args = get_args_from_env_vars();
+            let mut args = if should_skip_config {
+                // For special commands, don't even try to load env vars that might fail
+                vec![]
+            } else {
+                get_args_from_env_vars()
+            };
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
