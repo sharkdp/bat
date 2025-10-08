@@ -22,6 +22,7 @@
 - Correctly determine the end of the line in UTF16LE/BE input #3369 (@keith-hall)
 - `--style=changes` no longer prints a two-space indent when the file is unmodified, see issue #2710 and PR #3406 (@jyn514)
 - Add missing shell completions, see #3411 (@keith-hall)
+- Execute help/version/diagnostic commands even with invalid config/arguments present, see #3414 (@keith-hall)
 
 ## Other
 
