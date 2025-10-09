@@ -11,7 +11,7 @@ exclude = ["assets/syntaxes/*", "assets/themes/*"]
 build = "build/main.rs"
 edition = '2021'
 # You are free to bump MSRV as soon as a reason for bumping emerges.
-rust-version = "1.74"
+rust-version = "1.79"
 
 [features]
 default = ["application", "git"]
@@ -82,7 +82,7 @@ optional = true
 default-features = false
 
 [dependencies.syntect]
-version = "5.2.0"
+version = "5.3.0"
 default-features = false
 features = ["parsing"]
 
