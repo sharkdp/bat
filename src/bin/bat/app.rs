@@ -38,6 +38,11 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+enum HelpType {
+    Short,
+    Long,
+}
+
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
@@ -50,10 +55,54 @@ impl App {
 
         let interactive_output = std::io::stdout().is_terminal();
 
+        let help_type = wild::args_os().find_map(|arg| match arg.to_str() {
+            Some("-h") => Some(HelpType::Short),
+            Some("--help") => Some(HelpType::Long),
+            _ => None,
+        });
+
+        if let Some(help_type) = help_type {
+            Self::display_help(interactive_output, help_type)?;
+            std::process::exit(0);
+        }
+
         Ok(App {
             matches: Self::matches(interactive_output)?,
             interactive_output,
         })
+    }
+
+    fn display_help(interactive_output: bool, help_type: HelpType) -> Result<()> {
+        use crate::assets::assets_from_cache_or_binary;
+        use crate::directories::PROJECT_DIRS;
+        use bat::{
+            config::Config,
+            controller::Controller,
+            input::Input,
+            style::{StyleComponent, StyleComponents},
+            PagingMode,
+        };
+
+        let mut cmd = clap_app::build_app(interactive_output);
+        let help_text = match help_type {
+            HelpType::Short => cmd.render_help().to_string(),
+            HelpType::Long => cmd.render_long_help().to_string(),
+        };
+
+        let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
+        let plain_config = Config {
+            style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+            paging_mode: PagingMode::QuitIfOneScreen,
+            ..Default::default()
+        };
+
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let assets = assets_from_cache_or_binary(false, cache_dir)?;
+        Controller::new(&plain_config, &assets)
+            .run(inputs, None)
+            .ok();
+
+        Ok(())
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
