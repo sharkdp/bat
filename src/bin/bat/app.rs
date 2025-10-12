@@ -90,15 +90,16 @@ impl App {
         };
 
         let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
-        let plain_config = Config {
+        let help_config = Config {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
             paging_mode: PagingMode::QuitIfOneScreen,
+            language: Some("help"),
             ..Default::default()
         };
 
         let cache_dir = PROJECT_DIRS.cache_dir();
         let assets = assets_from_cache_or_binary(false, cache_dir)?;
-        Controller::new(&plain_config, &assets)
+        Controller::new(&help_config, &assets)
             .run(inputs, None)
             .ok();
 
