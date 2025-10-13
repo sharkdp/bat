@@ -398,12 +398,8 @@ fn run() -> Result<bool> {
                 };
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-                let plain_config = Config {
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..config
-                };
-                list_themes(
-                    &plain_config,
+               list_themes(
+                    &config,
                     config_dir,
                     cache_dir,
                     DetectColorScheme::default(),
