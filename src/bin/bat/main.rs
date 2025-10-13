@@ -398,12 +398,7 @@ fn run() -> Result<bool> {
                 };
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-               list_themes(
-                    &config,
-                    config_dir,
-                    cache_dir,
-                    DetectColorScheme::default(),
-                )?;
+                list_themes(&config, config_dir, cache_dir, DetectColorScheme::default())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());
