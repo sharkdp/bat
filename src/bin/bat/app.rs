@@ -73,7 +73,13 @@ impl App {
 
             let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
 
-            Self::display_help(interactive_output, help_type, use_pager, use_color, custom_pager)?;
+            Self::display_help(
+                interactive_output,
+                help_type,
+                use_pager,
+                use_color,
+                custom_pager,
+            )?;
             std::process::exit(0);
         }
 
