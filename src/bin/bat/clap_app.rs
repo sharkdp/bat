@@ -655,19 +655,19 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Sets terminal title to filenames when using a pager."),
         )
         .arg(
-            Arg::new("version")
-                .long("version")
-                .short('V')
-                .action(ArgAction::Version)
-                .help("Show version information"),
-        )
-        .arg(
             Arg::new("help")
                 .short('h')
                 .long("help")
                 .action(ArgAction::SetTrue)
                 .help("Print help (see more with '--help')")
                 .long_help("Print help (see a summary with '-h')"),
+        )
+        .arg(
+            Arg::new("version")
+                .long("version")
+                .short('V')
+                .action(ArgAction::Version)
+                .help("Print version"),
         );
 
     // Check if the current directory contains a file name cache. Otherwise,

@@ -68,8 +68,11 @@ impl App {
                 _ => !matches.get_flag("no-paging"),
             };
 
-            let use_color = interactive_output
-                && matches.get_one::<String>("color").map(|s| s.as_str()) != Some("never");
+            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => true,
+                Some("never") => false,
+                _ => interactive_output, // auto: use color if interactive
+            };
 
             let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
 
@@ -124,6 +127,8 @@ impl App {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
             paging_mode,
             pager: custom_pager.as_deref(),
+            colored_output: use_color,
+            true_color: use_color,
             language: if use_color { Some("help") } else { None },
             ..Default::default()
         };
