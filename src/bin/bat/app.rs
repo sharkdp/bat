@@ -54,25 +54,42 @@ impl App {
         let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = std::io::stdout().is_terminal();
+        let matches = Self::matches(interactive_output)?;
 
-        let help_type = wild::args_os().find_map(|arg| match arg.to_str() {
-            Some("-h") => Some(HelpType::Short),
-            Some("--help") => Some(HelpType::Long),
-            _ => None,
-        });
+        if matches.get_flag("help") {
+            let help_type = if wild::args_os().any(|arg| arg == "--help") {
+                HelpType::Long
+            } else {
+                HelpType::Short
+            };
 
-        if let Some(help_type) = help_type {
-            Self::display_help(interactive_output, help_type)?;
+            let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
+                Some("never") => false,
+                _ => !matches.get_flag("no-paging"),
+            };
+
+            let use_color = interactive_output
+                && matches.get_one::<String>("color").map(|s| s.as_str()) != Some("never");
+
+            let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
+
+            Self::display_help(interactive_output, help_type, use_pager, use_color, custom_pager)?;
             std::process::exit(0);
         }
 
         Ok(App {
-            matches: Self::matches(interactive_output)?,
+            matches,
             interactive_output,
         })
     }
 
-    fn display_help(interactive_output: bool, help_type: HelpType) -> Result<()> {
+    fn display_help(
+        interactive_output: bool,
+        help_type: HelpType,
+        use_pager: bool,
+        use_color: bool,
+        custom_pager: Option<String>,
+    ) -> Result<()> {
         use crate::assets::assets_from_cache_or_binary;
         use crate::directories::PROJECT_DIRS;
         use bat::{
@@ -90,10 +107,18 @@ impl App {
         };
 
         let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
+
+        let paging_mode = if use_pager {
+            PagingMode::QuitIfOneScreen
+        } else {
+            PagingMode::Never
+        };
+
         let help_config = Config {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-            paging_mode: PagingMode::QuitIfOneScreen,
-            language: Some("help"),
+            paging_mode,
+            pager: custom_pager.as_deref(),
+            language: if use_color { Some("help") } else { None },
             ..Default::default()
         };
 
