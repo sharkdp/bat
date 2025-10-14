@@ -5,6 +5,7 @@ use std::fmt;
 use std::io::IsTerminal as _;
 use std::str::FromStr;
 
+
 /// Environment variable names.
 pub mod env {
     /// See [`crate::theme::ThemeOptions::theme`].
@@ -262,6 +263,15 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
         // For example: `bat Cargo.toml | less`.
         // Otherwise, if we start the pager ourselves, then there's no race condition
         // since the pager is started *after* the color is detected.
+
+
+        // This is the changed part
+        // If user explicitly sets BAT_FORCE_THEME=1, force detection even in non-TTY
+        if std::env::var("BAT_FORCE_THEME").unwrap_or_default() == "1" {
+            return true;
+        }
+
+        // Otherwise, it only detects if stdout is a TTY (i.e existing behaviour)
         std::io::stdout().is_terminal()
     }
 
