@@ -276,7 +276,9 @@ impl App {
                     .get_one::<String>("decorations")
                     .map(|s| s.as_str())
                     == Some("always")
-                || self.matches.get_flag("force-colorization")),
+                || self.matches.get_flag("force-colorization")
+                || self.matches.get_flag("number")
+                || self.matches.contains_id("style") && !style_components.plain()),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
