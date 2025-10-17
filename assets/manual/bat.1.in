@@ -14,7 +14,8 @@ It also communicates with git(1) to show modifications with respect to the git i
 
 Whenever the output of {{PROJECT_EXECUTABLE}} goes to a non-interactive terminal, i.e. when the
 output is piped into another process or into a file, {{PROJECT_EXECUTABLE}} will act as a drop-in
-replacement for cat(1) and fall back to printing the plain file contents.
+replacement for cat(1) and fall back to printing the plain file contents,
+unless an explicit style is requested.
 
 .SH "OPTIONS"
 General remarks: Command-line options like '-l'/'--language' that take values can be specified as
@@ -131,7 +132,8 @@ always, *never*.
 \fB\-\-decorations\fR <when>
 .IP
 Specify when to use the decorations that have been specified via '\-\-style'. The
-automatic mode only enables decorations if an interactive terminal is detected. Possible
+automatic mode only enables decorations if an interactive terminal is detected. The
+always mode will show decorations even when piping output. Possible
 values: *auto*, never, always.
 .HP
 \fB\-f\fR, \fB\-\-force\-colorization\fR
