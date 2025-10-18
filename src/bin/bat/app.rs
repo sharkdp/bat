@@ -38,6 +38,11 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+enum HelpType {
+    Short,
+    Long,
+}
+
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
@@ -49,11 +54,94 @@ impl App {
         let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = std::io::stdout().is_terminal();
+        let matches = Self::matches(interactive_output)?;
+
+        if matches.get_flag("help") {
+            let help_type = if wild::args_os().any(|arg| arg == "--help") {
+                HelpType::Long
+            } else {
+                HelpType::Short
+            };
+
+            let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
+                Some("never") => false,
+                _ => !matches.get_flag("no-paging"),
+            };
+
+            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => true,
+                Some("never") => false,
+                _ => interactive_output, // auto: use color if interactive
+            };
+
+            let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
+
+            Self::display_help(
+                interactive_output,
+                help_type,
+                use_pager,
+                use_color,
+                custom_pager,
+            )?;
+            std::process::exit(0);
+        }
 
         Ok(App {
-            matches: Self::matches(interactive_output)?,
+            matches,
             interactive_output,
         })
+    }
+
+    fn display_help(
+        interactive_output: bool,
+        help_type: HelpType,
+        use_pager: bool,
+        use_color: bool,
+        custom_pager: Option<String>,
+    ) -> Result<()> {
+        use crate::assets::assets_from_cache_or_binary;
+        use crate::directories::PROJECT_DIRS;
+        use bat::{
+            config::Config,
+            controller::Controller,
+            input::Input,
+            style::{StyleComponent, StyleComponents},
+            PagingMode,
+        };
+
+        let mut cmd = clap_app::build_app(interactive_output);
+        let help_text = match help_type {
+            HelpType::Short => cmd.render_help().to_string(),
+            HelpType::Long => cmd.render_long_help().to_string(),
+        };
+
+        let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
+
+        let paging_mode = if use_pager {
+            PagingMode::QuitIfOneScreen
+        } else {
+            PagingMode::Never
+        };
+
+        let pager = bat::config::get_pager_executable(custom_pager.as_deref());
+
+        let help_config = Config {
+            style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+            paging_mode,
+            pager: pager.as_deref(),
+            colored_output: use_color,
+            true_color: use_color,
+            language: if use_color { Some("help") } else { None },
+            ..Default::default()
+        };
+
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let assets = assets_from_cache_or_binary(false, cache_dir)?;
+        Controller::new(&help_config, &assets)
+            .run(inputs, None)
+            .ok();
+
+        Ok(())
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
