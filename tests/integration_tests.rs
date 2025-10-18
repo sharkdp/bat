@@ -379,6 +379,83 @@ fn line_range_context_very_large() {
 }
 
 #[test]
+fn piped_output_with_implicit_auto_style() {
+    bat()
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn piped_output_with_line_number_flag() {
+    bat()
+        .arg("--number")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout("   1 hello\n   2 world\n");
+}
+
+#[test]
+fn piped_output_with_line_numbers_style_flag() {
+    bat()
+        .arg("--style=numbers")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout("   1 hello\n   2 world\n");
+}
+
+#[test]
+#[cfg(not(target_os = "windows"))]
+fn piped_output_with_line_numbers_with_header_grid_style_flag() {
+    bat()
+        .arg("--style=header,grid,numbers")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout(
+            "─────┬──────────────────────────────────────────────────────────────────────────
+     │ STDIN
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ hello
+   2 │ world
+─────┴──────────────────────────────────────────────────────────────────────────
+",
+        );
+}
+
+#[test]
+fn piped_output_with_auto_style() {
+    bat()
+        .arg("--style=auto")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n"); // Should be plain when piped
+}
+
+#[test]
+#[cfg(not(target_os = "windows"))]
+fn piped_output_with_default_style_flag() {
+    bat()
+        .arg("--style=default")
+        .write_stdin("hello\nworld\n")
+        .assert()
+        .success()
+        .stdout(
+            "─────┬──────────────────────────────────────────────────────────────────────────
+     │ STDIN
+─────┼──────────────────────────────────────────────────────────────────────────
+   1 │ hello
+   2 │ world
+─────┴──────────────────────────────────────────────────────────────────────────
+",
+        );
+}
+
+#[test]
 fn squeeze_blank() {
     bat()
         .arg("empty_lines.txt")
