@@ -185,6 +185,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                             "Include N lines of context around added/removed/modified lines when using '--diff'.",
                         ),
                 )
+                .arg(
+                    Arg::new("gitsigns")
+                        .long("gitsigns")
+                        .overrides_with("gitsigns")
+                        .help("Set git `added`, `modified`, `removed-above`, `removed-below` signs. (default: classic)")
+                        .long_help(
+                            "Set git `added`, `modified`, `removed-above`, `removed-below` signs. (default: classic)\n\
+                             To set a default gitsigns, add the '--gitsigns=\"...\"' option to the configuration file\n\
+                             or export the BAT_GITSIGNS environment variable (e.g.: export BAT_GITSIGNS=\"...\").\n\n\
+                             Possible values:\n  \
+                             * classic: preset `~,+,‾,_`\n  \
+                             * modern: preset `▎,▎,‾,_`\n  \
+                             * 4 comma-separated signs, e.g. `~,+,-,-`",
+                        ),
+                )
     }
 
     app = app.arg(
