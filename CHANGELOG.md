@@ -1,13 +1,14 @@
 # unreleased
 
 ## Features
-- Add build for windows/ARM64 platform. #3190 (@alcroito)
 
+- Add build for windows/ARM64 platform. #3190 (@alcroito)
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 - Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
 - Support context in line ranges, e.g. `bat -r 30::5` /  `bat -r 30:40:5`, see #3345 (@cavanaug)
 - Add built-in 'minus' pager, e.g. `bat --pager=builtin` see PR #3402 (@academician)
 - Add paging to '-h' and '--help' see PR #3432 (@MuntasirSZN)
+- Syntax highlighting for typescript code blocks within Markdown files, see #3435 (@MuntasirSZN)
 
 ## Bugfixes
 

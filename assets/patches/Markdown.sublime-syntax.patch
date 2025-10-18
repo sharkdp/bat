@@ -166,7 +166,7 @@ index 19dc685d..3a45ea05 100644
      - match: ^\s*$\n?
        scope: invalid.illegal.non-terminated.bold-italic.markdown
        pop: true
-@@ -1073,6 +1031,21 @@ contexts:
+@@ -1073,6 +1031,36 @@ contexts:
        escape: '{{code_fence_escape}}'
        escape_captures:
          0: meta.code-fence.definition.end.python.markdown-gfm
@@ -185,10 +185,25 @@ index 19dc685d..3a45ea05 100644
 +      escape: '{{code_fence_escape}}'
 +      escape_captures:
 +        0: meta.code-fence.definition.end.puppet.markdown-gfm
++        1: punctuation.definition.raw.code-fence.end.markdown
++    - match: |-
++         (?x)
++          {{fenced_code_block_start}}
++          ((?i:typescript|ts))
++          {{fenced_code_block_trailing_infostring_characters}}
++      captures:
++        0: meta.code-fence.definition.begin.typescript.markdown-gfm
++        2: punctuation.definition.raw.code-fence.begin.markdown
++        5: constant.other.language-name.markdown
++      embed: scope:source.ts
++      embed_scope: markup.raw.code-fence.typescript.markdown-gfm
++      escape: '{{code_fence_escape}}'
++      escape_captures:
++        0: meta.code-fence.definition.end.typescript.markdown-gfm
          1: punctuation.definition.raw.code-fence.end.markdown
      - match: |-
           (?x)
-@@ -1152,7 +1125,7 @@ contexts:
+@@ -1152,7 +1155,7 @@ contexts:
      - match: |-
           (?x)
            {{fenced_code_block_start}}
