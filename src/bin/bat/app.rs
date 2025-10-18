@@ -123,10 +123,12 @@ impl App {
             PagingMode::Never
         };
 
+        let pager = bat::config::get_pager_executable(custom_pager.as_deref());
+
         let help_config = Config {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
             paging_mode,
-            pager: custom_pager.as_deref(),
+            pager: pager.as_deref(),
             colored_output: use_color,
             true_color: use_color,
             language: if use_color { Some("help") } else { None },
