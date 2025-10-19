@@ -670,22 +670,22 @@ to improve the experience. Specifically, `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--qui
 > - The `--paging=always` argument is used.
 > - The `BAT_PAGING` environment is set to `always`.
 
-The `-R` option is needed to interpret ANSI colors correctly.
+The `-R`/`--RAW-CONTROL-CHARS` option is needed to interpret ANSI colors correctly.
 
-The `-F` option instructs `less` to exit immediately if the output size is smaller than
+The `-F`/`--quit-if-one-screen` option instructs `less` to exit immediately if the output size is smaller than
 the vertical size of the terminal. This is convenient for small files because you do not
 have to press `q` to quit the pager.
 
-The `-K` option instructs `less` to exit immediately when an interrupt signal is received.
+The `-K`/`--quit-on-intr` option instructs `less` to exit immediately when an interrupt signal is received.
 This is useful to ensure that `less` quits together with `bat` on SIGINT.
 
-The `-X` option is needed to fix a bug with the `--quit-if-one-screen` feature in versions
+The `-X`/`--no-init` option is needed to fix a bug with the `-F`/`--quit-if-one-screen` feature in versions
 of `less` older than version 530. Unfortunately, it also breaks mouse-wheel support in `less`.
 If you want to enable mouse-wheel scrolling on older versions of `less` and do not mind losing
 the quit-if-one-screen feature, you can set the pager (via `--pager` or `BAT_PAGER`) to `less -R`.
 For `less` 530 or newer, it should work out of the box.
 
-The `-S` option is added when `bat`'s `-S`/`--chop-long-lines` option is used. This tells `less`
+The `-S`/`--chop-long-lines` option is added when `bat`'s `-S`/`--chop-long-lines` option is used. This tells `less`
 to truncate any lines larger than the terminal width.
 
 ### Indentation
