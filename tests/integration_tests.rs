@@ -207,10 +207,21 @@ fn line_range_from_back_last_two() {
 }
 
 #[test]
-fn line_range_from_back_last_two_single_line() {
+fn line_range_from_back_last_two_single_line_eq_sep() {
     bat()
         .arg("single-line.txt")
         .arg("--line-range=-2:")
+        .assert()
+        .success()
+        .stdout("Single Line");
+}
+
+#[test]
+fn line_range_from_back_last_two_single_line_no_sep() {
+    bat()
+        .arg("single-line.txt")
+        .arg("--line-range")
+        .arg("-2:")
         .assert()
         .success()
         .stdout("Single Line");
