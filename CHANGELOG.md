@@ -4,6 +4,8 @@
 
 ## Bugfixes
 
+- Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
+
 ## Other
 
 ## Syntaxes
