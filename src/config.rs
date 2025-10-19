@@ -1,3 +1,5 @@
+#[cfg(feature = "git")]
+use crate::gitsigns::Gitsigns;
 use crate::line_range::{HighlightedLineRanges, LineRanges};
 use crate::nonprintable_notation::{BinaryBehavior, NonprintableNotation};
 #[cfg(feature = "paging")]
@@ -107,6 +109,10 @@ pub struct Config<'a> {
 
     // Weather or not to set terminal title when using a pager
     pub strip_ansi: StripAnsiMode,
+
+    /// Set git `added`, `modified`, `removed-above`, `removed-below` signs
+    #[cfg(feature = "git")]
+    pub gitsigns: Gitsigns,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

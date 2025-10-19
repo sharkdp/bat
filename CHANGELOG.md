@@ -1,6 +1,8 @@
 # unreleased
 
 ## Features
+- Use theme styles for git signs, see PR #3407 (@flashios09)
+- Add `--gitsigns` option, see PR #3407 (@flashios09)
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
 
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)

@@ -57,6 +57,16 @@ Options:
       --diff-context <N>
           Include N lines of context around added/removed/modified lines when using '--diff'.
 
+      --gitsigns <gitsigns>
+          Set git `added`, `modified`, `removed-above`, `removed-below` signs. (default: classic)
+          To set a default gitsigns, add the '--gitsigns="..."' option to the configuration file
+          or export the BAT_GITSIGNS environment variable (e.g.: export BAT_GITSIGNS="...").
+          
+          Possible values:
+            * classic: preset `~,+,‾,_`
+            * modern: preset `▎,▎,‾,_`
+            * 4 comma-separated signs, e.g. `~,+,-,-`
+
       --tabs <T>
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
