@@ -679,8 +679,8 @@ have to press `q` to quit the pager.
 The `-K`/`--quit-on-intr` option instructs `less` to exit immediately when an interrupt signal is received.
 This is useful to ensure that `less` quits together with `bat` on SIGINT.
 
-The `-X`/`--no-init` option is needed to fix a bug with the `-F`/`--quit-if-one-screen` feature in versions
-of `less` older than version 530. Unfortunately, it also breaks mouse-wheel support in `less`.
+The `-X`/`--no-init` option is added to versions of `less` older than version 530 (older than 558 on Windows) to
+fix a bug with the `-F`/`--quit-if-one-screen` feature. Unfortunately, it also breaks mouse-wheel support in `less`.
 If you want to enable mouse-wheel scrolling on older versions of `less` and do not mind losing
 the quit-if-one-screen feature, you can set the pager (via `--pager` or `BAT_PAGER`) to `less -R`.
 For `less` 530 or newer, it should work out of the box.
