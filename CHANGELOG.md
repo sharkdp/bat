@@ -25,6 +25,7 @@
 - `--style=changes` no longer prints a two-space indent when the file is unmodified, see issue #2710 and PR #3406 (@jyn514)
 - Add missing shell completions, see #3411 (@keith-hall)
 - Execute help/version/diagnostic commands even with invalid config/arguments present, see #3414 (@keith-hall)
+- Fixed line numbers (`-n`) and style components not printing when piping output, see issue #2935 and PR #3438 (@lmmx)
 
 ## Other
 

@@ -301,9 +301,10 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("When to show the decorations (*auto*, never, always).")
                 .long_help(
                     "Specify when to use the decorations that have been specified \
-                     via '--style'. The automatic mode only enables decorations if \
-                     an interactive terminal is detected. Possible values: *auto*, never, always.",
-                ),
+                    via '--style'. The automatic mode only enables decorations if \
+                    an interactive terminal is detected. The always mode will show \
+                    decorations even when piping output. Possible values: *auto*, never, always.",
+                )
         )
         .arg(
             Arg::new("force-colorization")

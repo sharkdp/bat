@@ -87,8 +87,8 @@ Options:
 
       --decorations <when>
           Specify when to use the decorations that have been specified via '--style'. The automatic
-          mode only enables decorations if an interactive terminal is detected. Possible values:
-          *auto*, never, always.
+          mode only enables decorations if an interactive terminal is detected. The always mode will
+          show decorations even when piping output. Possible values: *auto*, never, always.
 
   -f, --force-colorization
           Alias for '--decorations=always --color=always'. This is useful if the output of bat is
