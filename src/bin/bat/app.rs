@@ -75,6 +75,7 @@ impl App {
             };
 
             let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
+            let theme_options = Self::theme_options_from_matches(&matches);
 
             Self::display_help(
                 interactive_output,
@@ -82,6 +83,7 @@ impl App {
                 use_pager,
                 use_color,
                 custom_pager,
+                theme_options,
             )?;
             std::process::exit(0);
         }
@@ -98,6 +100,7 @@ impl App {
         use_pager: bool,
         use_color: bool,
         custom_pager: Option<String>,
+        theme_options: ThemeOptions,
     ) -> Result<()> {
         use crate::assets::assets_from_cache_or_binary;
         use crate::directories::PROJECT_DIRS;
@@ -106,6 +109,7 @@ impl App {
             controller::Controller,
             input::Input,
             style::{StyleComponent, StyleComponents},
+            theme::theme,
             PagingMode,
         };
 
@@ -132,6 +136,7 @@ impl App {
             colored_output: use_color,
             true_color: use_color,
             language: if use_color { Some("help") } else { None },
+            theme: theme(theme_options).to_string(),
             ..Default::default()
         };
 
@@ -550,17 +555,18 @@ impl App {
     }
 
     fn theme_options(&self) -> ThemeOptions {
-        let theme = self
-            .matches
+        Self::theme_options_from_matches(&self.matches)
+    }
+
+    fn theme_options_from_matches(matches: &ArgMatches) -> ThemeOptions {
+        let theme = matches
             .get_one::<String>("theme")
             .map(|t| ThemePreference::from_str(t).unwrap())
             .unwrap_or_default();
-        let theme_dark = self
-            .matches
+        let theme_dark = matches
             .get_one::<String>("theme-dark")
             .map(|t| ThemeName::from_str(t).unwrap());
-        let theme_light = self
-            .matches
+        let theme_light = matches
             .get_one::<String>("theme-light")
             .map(|t| ThemeName::from_str(t).unwrap());
         ThemeOptions {
