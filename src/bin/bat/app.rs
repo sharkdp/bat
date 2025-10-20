@@ -151,13 +151,18 @@ impl App {
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
         // Check if we should skip config file processing for special arguments
-        // that don't require full application setup (help, version, diagnostic)
+        // that don't require full application setup (version, diagnostic)
         let should_skip_config = wild::args_os().any(|arg| {
             matches!(
                 arg.to_str(),
-                Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics")
+                Some("-V" | "--version" | "--diagnostic" | "--diagnostics")
             )
         });
+
+        // Check if help was requested - help should go through the same code path
+        // but be forgiving of config file errors
+        let help_requested =
+            wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
 
         let args = if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
@@ -165,15 +170,10 @@ impl App {
             wild::args_os().collect::<Vec<_>>()
         } else if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
-            // or when user requests help, version, or diagnostic information
+            // or when user requests version or diagnostic information
 
             let mut cli_args = wild::args_os();
-            let mut args = if should_skip_config {
-                // For special commands, don't even try to load env vars that might fail
-                vec![]
-            } else {
-                get_args_from_env_vars()
-            };
+            let mut args = get_args_from_env_vars();
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
@@ -182,13 +182,27 @@ impl App {
             cli_args.for_each(|a| args.push(a));
 
             args
+        } else if help_requested {
+            // Help goes through the normal config path but only uses env vars for themes
+            // to avoid failing on invalid config options
+            let mut cli_args = wild::args_os();
+            let mut args = get_args_from_env_vars();
+
+            // Put the zero-th CLI argument (program name) first
+            args.insert(0, cli_args.next().unwrap());
+
+            // .. and the rest at the end (includes --help and other CLI args)
+            cli_args.for_each(|a| args.push(a));
+            args
         } else {
             let mut cli_args = wild::args_os();
 
             // Read arguments from bats config file
-            let mut args = get_args_from_env_opts_var()
-                .unwrap_or_else(get_args_from_config_file)
-                .map_err(|_| "Could not parse configuration file")?;
+            let mut args = match get_args_from_env_opts_var() {
+                Some(result) => result,
+                None => get_args_from_config_file(),
+            }
+            .map_err(|_| "Could not parse configuration file")?;
 
             // Selected env vars supersede config vars
             args.extend(get_args_from_env_vars());
