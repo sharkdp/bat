@@ -8,6 +8,8 @@
 
 ## Other
 
+- Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
+
 ## Syntaxes
 
 ## Themes
