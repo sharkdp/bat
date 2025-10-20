@@ -36,6 +36,8 @@
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
+- Add CI support for RISC-V 64-bit. See #3532 (@OctopusET)
+
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 - Allow home and end keys to be used with builtin pager, see #3651 (@keith-hall)
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
