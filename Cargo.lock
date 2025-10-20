@@ -152,6 +152,7 @@ dependencies = [
  "serde_yaml",
  "serial_test",
  "shell-words",
+ "signal-hook",
  "syn",
  "syntect",
  "tempfile",
