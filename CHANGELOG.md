@@ -13,6 +13,7 @@
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
+- Add CI support for RISC-V 64-bit. See #3532 (@OctopusET)
 
 ## Syntaxes
 
