@@ -7,6 +7,7 @@
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
 
 ## Other
+- Improve README documentation on pager options passed to less, see #3443 (@injust)
 
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
 
@@ -47,7 +48,7 @@
 - Update base16 README links to community driven base16 work #2871 (@JamyGolden)
 - Work around build failures when building `bat` from vendored sources #3179 (@dtolnay)
 - CICD: Stop building for x86_64-pc-windows-gnu which fails #3261 (Enselic)
-- CICD:  CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
+- CICD: replace windows-2019 runners with windows-2025 #3339 (@cyqsimon)
 - Build script: replace string-based codegen with quote-based codegen #3340 (@cyqsimon)
 - Improve code coverage of `--list-languages` parameter #2942 (@sblondon)
 - Only start offload worker thread when there's more than 1 core #2956 (@cyqsimon)
