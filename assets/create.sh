@@ -67,3 +67,4 @@ reverse_patches() {
 trap reverse_patches EXIT
 
 bat cache --build --blank --acknowledgements --source="$ASSET_DIR" --target="$ASSET_DIR"
+new
