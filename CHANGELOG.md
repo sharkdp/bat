@@ -2,6 +2,8 @@
 
 ## Features
 
+- Add paging to '-h' and '--help' see PR #3432 (@MuntasirSZN)
+
 ## Bugfixes
 
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
