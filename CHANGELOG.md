@@ -2,13 +2,28 @@
 
 ## Features
 
+- Add paging to '-h' and '--help' see PR #3432 (@MuntasirSZN)
+
+## Bugfixes
+
+- Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
+
+## Other
+
+## Syntaxes
+
+## Themes
+
+## `bat` as a library
+
+# v0.26.0
+
+## Features
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 - Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
 - Support context in line ranges, e.g. `bat -r 30::5` /  `bat -r 30:40:5`, see #3345 (@cavanaug)
 - Add built-in 'minus' pager, e.g. `bat --pager=builtin` see PR #3402 (@academician)
-- Add paging to '-h' and '--help' see PR #3432 (@MuntasirSZN)
-- Syntax highlighting for typescript code blocks within Markdown files, see #3435 (@MuntasirSZN)
 
 ## Bugfixes
 
@@ -66,6 +81,7 @@
 - Map `.kshrc` files to Bash syntax #3364 (@ritoban23)
 - Map `/var/log/dmesg` files to Syslog syntax #3412 (@keith-hall)
 - Add syntax definition and test file for Go modules(`go.mod` and `go.sum`) highlighting, see #3424 (@DarkMatter-999)
+- Syntax highlighting for typescript code blocks within Markdown files, see #3435 (@MuntasirSZN)
 
 ## Themes
 
@@ -74,8 +90,6 @@
 - Updated gruvbox, see #3372 (@Nicholas42)
 - Updated GitHub theme, see #3382 (@CosmicHorrorDev)
 - Updated ANSI theme to highlight JSON object keys differently from values, see #3413 (@keith-hall)
-
-## `bat` as a library
 
 # v0.25.0
 

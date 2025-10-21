@@ -521,6 +521,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('r')
                 .action(ArgAction::Append)
                 .value_name("N:M")
+                .allow_hyphen_values(true)
                 .help("Only print the lines from N to M.")
                 .long_help(
                     "Only print the specified range of lines for each file. \
@@ -529,6 +530,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                      '--line-range :40' prints lines 1 to 40\n  \
                      '--line-range 40:' prints lines 40 to the end of the file\n  \
                      '--line-range 40' only prints line 40\n  \
+                     '--line-range -10:' prints the last 10 lines\n  \
                      '--line-range 30:+10' prints lines 30 to 40\n  \
                      '--line-range 35::5' prints lines 30 to 40 (line 35 with 5 lines of context)\n  \
                      '--line-range 30:40:2' prints lines 28 to 42 (range 30-40 with 2 lines of context)",
