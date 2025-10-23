@@ -13,6 +13,8 @@
 
 ## Syntaxes
 
+- Add syntax mapping for `gradle.kts` build scripts #3453 (@nicolaic)
+
 ## Themes
 
 ## `bat` as a library
