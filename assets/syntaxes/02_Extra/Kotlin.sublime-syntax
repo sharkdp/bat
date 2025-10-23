@@ -5,6 +5,7 @@ name: Kotlin
 file_extensions:
   - kt
   - kts
+  - gradle.kts
 scope: source.Kotlin
 contexts:
   main:
