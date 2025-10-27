@@ -10,6 +10,7 @@
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
 
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
+- `--theme` now provides a short list of all themes if the given theme does not exist, see #3009 (@monkeydom)
 
 ## Syntaxes
 
