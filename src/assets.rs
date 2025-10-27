@@ -195,7 +195,11 @@ impl HighlightingAssets {
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{theme}', using default.")
+                    let all_themes: Vec<&str> = self.get_theme_set().themes().collect();
+                    bat_warning!(
+                        "Unknown theme '{theme}', using default. (Available themes: {})",
+                        all_themes.join(", ")
+                    );
                 }
                 self.get_theme_set()
                     .get(
