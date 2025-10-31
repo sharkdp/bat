@@ -288,7 +288,7 @@ fn color_scheme_from_system() -> Option<ColorScheme> {
     const PREFERENCES_FILE: &str = "Library/Preferences/.GlobalPreferences.plist";
     const STYLE_KEY: &str = "AppleInterfaceStyle";
 
-    let preferences_file = home::home_dir()
+    let preferences_file = std::env::home_dir()
         .map(|home| home.join(PREFERENCES_FILE))
         .expect("Could not get home directory");
 
