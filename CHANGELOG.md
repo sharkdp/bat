@@ -4,6 +4,7 @@
 
 ## Bugfixes
 
+- Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
 
 ## Other

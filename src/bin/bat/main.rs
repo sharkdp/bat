@@ -205,6 +205,7 @@ pub fn list_themes(
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
+    config.paging_mode = PagingMode::Always;
 
     let mut output_type =
         OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;

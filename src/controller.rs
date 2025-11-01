@@ -50,10 +50,12 @@ impl Controller<'_> {
         output_handle: Option<&mut OutputHandle<'_>>,
         mut handle_error: impl FnMut(&Error, &mut dyn Write),
     ) -> Result<bool> {
-        let mut output_type;
+        // only create our own OutputType if no output handle was provided.
+        #[allow(unused_mut)]
+        let mut output_type_opt: Option<OutputType> = None;
 
         #[cfg(feature = "paging")]
-        {
+        if output_handle.is_none() {
             use crate::input::InputKind;
             use std::path::Path;
 
@@ -74,25 +76,35 @@ impl Controller<'_> {
 
             let wrapping_mode = self.config.wrapping_mode;
 
-            output_type = OutputType::from_mode(paging_mode, wrapping_mode, self.config.pager)?;
+            output_type_opt = Some(OutputType::from_mode(
+                paging_mode,
+                wrapping_mode,
+                self.config.pager,
+            )?);
         }
 
         #[cfg(not(feature = "paging"))]
-        {
-            output_type = OutputType::stdout();
+        if output_handle.is_none() {
+            output_type_opt = Some(OutputType::stdout());
         }
 
-        let attached_to_pager = output_type.is_pager();
+        let attached_to_pager = match (&output_handle, &output_type_opt) {
+            (Some(_), _) => true,
+            (None, Some(ot)) => ot.is_pager(),
+            (None, None) => false,
+        };
+
         let stdout_identifier = if cfg!(windows) || attached_to_pager {
             None
         } else {
             clircle::Identifier::stdout()
         };
 
-        let mut writer = match output_handle {
-            Some(OutputHandle::FmtWrite(w)) => OutputHandle::FmtWrite(w),
-            Some(OutputHandle::IoWrite(w)) => OutputHandle::IoWrite(w),
-            None => output_type.handle()?,
+        let mut writer = match (output_handle, &mut output_type_opt) {
+            (Some(OutputHandle::FmtWrite(w)), _) => OutputHandle::FmtWrite(w),
+            (Some(OutputHandle::IoWrite(w)), _) => OutputHandle::IoWrite(w),
+            (None, Some(ot)) => ot.handle()?,
+            (None, None) => unreachable!("No output handle and no output type available"),
         };
         let mut no_errors: bool = true;
         let stderr = io::stderr();
