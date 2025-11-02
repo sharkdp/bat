@@ -16,7 +16,7 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
-use bat::output::{OutputType, OutputHandle};
+use bat::output::{OutputHandle, OutputType};
 use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
