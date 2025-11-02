@@ -223,7 +223,7 @@ pub fn list_themes(
 
         if config.colored_output {
             handle.write_fmt(format_args!(
-                "Theme: {}\n\n",
+                "{}{default_theme_info}\n\n",
                 Style::new().bold().paint(theme.to_string()),
             ))?;
             config.theme = theme.to_string();
