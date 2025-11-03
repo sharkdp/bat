@@ -5,6 +5,7 @@
 ## Bugfixes
 
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
+- Fix broken Docker syntax preventing use of custom assets, see #3476 (@keith-hall)
 
 ## Other
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
