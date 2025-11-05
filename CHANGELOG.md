@@ -2,7 +2,7 @@
 
 ## Features
 
-- Add paging to '-h' and '--help' see PR #3432 (@MuntasirSZN)
+- Add paging to '-h' and '--help' see PR #3478 (@MuntasirSZN)
 
 ## Bugfixes
 
