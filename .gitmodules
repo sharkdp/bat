@@ -243,7 +243,7 @@
 	url = https://github.com/dertuxmalwieder/SublimeTodoTxt
 [submodule "assets/syntaxes/02_Extra/Ada"]
 	path = assets/syntaxes/02_Extra/Ada
-	url = https://github.com/wiremoons/ada-sublime-syntax
+	url = https://github.com/AldanTanneo/ada-sublime-syntax
   
 [submodule "assets/syntaxes/02_Extra/Crontab"]
 	path = assets/syntaxes/02_Extra/Crontab
