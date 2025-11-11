@@ -12,6 +12,8 @@
 
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
 
+- add mise alternative installation method, see #3483 (@jylenhof)
+
 ## Syntaxes
 
 - Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
