@@ -13,6 +13,8 @@
 
 ## Syntaxes
 
+- Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
+
 ## Themes
 
 ## `bat` as a library
