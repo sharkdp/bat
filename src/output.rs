@@ -13,6 +13,36 @@ use crate::paging::PagingMode;
 #[cfg(feature = "paging")]
 use crate::wrapping::WrappingMode;
 
+#[cfg(all(unix, feature = "paging"))]
+use std::sync::atomic::AtomicBool;
+#[cfg(all(unix, feature = "paging"))]
+use std::sync::Arc;
+#[cfg(all(unix, feature = "paging"))]
+struct IgnoreSigint {
+    _handle: signal_hook::SigId,
+}
+
+#[cfg(all(unix, feature = "paging"))]
+impl IgnoreSigint {
+    fn new() -> Self {
+        // No-op SIGINT handler prevents pager process termination
+        let handle = signal_hook::flag::register(
+            signal_hook::consts::SIGINT,
+            Arc::new(AtomicBool::new(false)),
+        )
+        .expect("failed to ignore SIGINT");
+
+        Self { _handle: handle }
+    }
+}
+
+#[cfg(feature = "paging")]
+pub struct PagerProc {
+    child: Child,
+    #[cfg(unix)]
+    _sigint_guard: IgnoreSigint,
+}
+
 #[cfg(feature = "paging")]
 pub struct BuiltinPager {
     pager: minus::Pager,
@@ -50,10 +80,9 @@ enum SingleScreenAction {
     Nothing,
 }
 
-#[derive(Debug)]
 pub enum OutputType {
     #[cfg(feature = "paging")]
-    Pager(Child),
+    Pager(PagerProc),
     #[cfg(feature = "paging")]
     BuiltinPager(BuiltinPager),
     Stdout(io::Stdout),
@@ -166,7 +195,13 @@ impl OutputType {
 
         Ok(p.stdin(Stdio::piped())
             .spawn()
-            .map(OutputType::Pager)
+            .map(|child| {
+                OutputType::Pager(PagerProc {
+                    child,
+                    #[cfg(unix)]
+                    _sigint_guard: IgnoreSigint::new(),
+                })
+            })
             .unwrap_or_else(|_| OutputType::stdout()))
     }
 
@@ -187,8 +222,8 @@ impl OutputType {
     pub fn handle<'a>(&'a mut self) -> Result<OutputHandle<'a>> {
         Ok(match *self {
             #[cfg(feature = "paging")]
-            OutputType::Pager(ref mut command) => OutputHandle::IoWrite(
-                command
+            OutputType::Pager(ref mut proc) => OutputHandle::IoWrite(
+                proc.child
                     .stdin
                     .as_mut()
                     .ok_or("Could not open stdin for pager")?,
@@ -204,8 +239,8 @@ impl OutputType {
 impl Drop for OutputType {
     fn drop(&mut self) {
         match *self {
-            OutputType::Pager(ref mut command) => {
-                let _ = command.wait();
+            OutputType::Pager(ref mut proc) => {
+                let _ = proc.child.wait();
             }
             OutputType::BuiltinPager(ref mut pager) => {
                 if pager.handle.is_some() {
