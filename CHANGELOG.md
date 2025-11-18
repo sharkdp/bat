@@ -2,6 +2,8 @@
 
 ## Features
 
+- Add paging to '-h' and '--help' see PR #3478 (@MuntasirSZN)
+
 ## Bugfixes
 
 - Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
