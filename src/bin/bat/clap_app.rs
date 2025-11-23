@@ -34,6 +34,8 @@ pub fn build_app(interactive_output: bool) -> Command {
         .args_conflicts_with_subcommands(true)
         .allow_external_subcommands(true)
         .disable_help_subcommand(true)
+        .disable_help_flag(true)
+        .disable_version_flag(true)
         .max_term_width(100)
         .about("A cat(1) clone with wings.")
         .long_about("A cat(1) clone with syntax highlighting and Git integration.")
@@ -654,6 +656,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Sets terminal title to filenames when using a pager."),
+        )
+        .arg(
+            Arg::new("help")
+                .short('h')
+                .long("help")
+                .action(ArgAction::SetTrue)
+                .help("Print help (see more with '--help')")
+                .long_help("Print help (see a summary with '-h')"),
+        )
+        .arg(
+            Arg::new("version")
+                .long("version")
+                .short('V')
+                .action(ArgAction::Version)
+                .help("Print version"),
         );
 
     // Check if the current directory contains a file name cache. Otherwise,

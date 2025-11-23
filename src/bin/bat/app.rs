@@ -38,6 +38,11 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+enum HelpType {
+    Short,
+    Long,
+}
+
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
@@ -49,22 +54,115 @@ impl App {
         let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = std::io::stdout().is_terminal();
+        let matches = Self::matches(interactive_output)?;
+
+        if matches.get_flag("help") {
+            let help_type = if wild::args_os().any(|arg| arg == "--help") {
+                HelpType::Long
+            } else {
+                HelpType::Short
+            };
+
+            let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
+                Some("never") => false,
+                _ => !matches.get_flag("no-paging"),
+            };
+
+            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => true,
+                Some("never") => false,
+                _ => interactive_output, // auto: use color if interactive
+            };
+
+            let custom_pager = matches.get_one::<String>("pager").map(|s| s.to_string());
+            let theme_options = Self::theme_options_from_matches(&matches);
+
+            Self::display_help(
+                interactive_output,
+                help_type,
+                use_pager,
+                use_color,
+                custom_pager,
+                theme_options,
+            )?;
+            std::process::exit(0);
+        }
 
         Ok(App {
-            matches: Self::matches(interactive_output)?,
+            matches,
             interactive_output,
         })
     }
 
+    fn display_help(
+        interactive_output: bool,
+        help_type: HelpType,
+        use_pager: bool,
+        use_color: bool,
+        custom_pager: Option<String>,
+        theme_options: ThemeOptions,
+    ) -> Result<()> {
+        use crate::assets::assets_from_cache_or_binary;
+        use crate::directories::PROJECT_DIRS;
+        use bat::{
+            config::Config,
+            controller::Controller,
+            input::Input,
+            style::{StyleComponent, StyleComponents},
+            theme::theme,
+            PagingMode,
+        };
+
+        let mut cmd = clap_app::build_app(interactive_output);
+        let help_text = match help_type {
+            HelpType::Short => cmd.render_help().to_string(),
+            HelpType::Long => cmd.render_long_help().to_string(),
+        };
+
+        let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
+
+        let paging_mode = if use_pager {
+            PagingMode::QuitIfOneScreen
+        } else {
+            PagingMode::Never
+        };
+
+        let pager = bat::config::get_pager_executable(custom_pager.as_deref());
+
+        let help_config = Config {
+            style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+            paging_mode,
+            pager: pager.as_deref(),
+            colored_output: use_color,
+            true_color: use_color,
+            language: if use_color { Some("help") } else { None },
+            theme: theme(theme_options).to_string(),
+            ..Default::default()
+        };
+
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let assets = assets_from_cache_or_binary(false, cache_dir)?;
+        Controller::new(&help_config, &assets)
+            .run(inputs, None)
+            .ok();
+
+        Ok(())
+    }
+
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
         // Check if we should skip config file processing for special arguments
-        // that don't require full application setup (help, version, diagnostic)
+        // that don't require full application setup (version, diagnostic)
         let should_skip_config = wild::args_os().any(|arg| {
             matches!(
                 arg.to_str(),
-                Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics")
+                Some("-V" | "--version" | "--diagnostic" | "--diagnostics")
             )
         });
+
+        // Check if help was requested - help should go through the same code path
+        // but be forgiving of config file errors
+        let help_requested =
+            wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
 
         let args = if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
@@ -72,15 +170,10 @@ impl App {
             wild::args_os().collect::<Vec<_>>()
         } else if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
-            // or when user requests help, version, or diagnostic information
+            // or when user requests version or diagnostic information
 
             let mut cli_args = wild::args_os();
-            let mut args = if should_skip_config {
-                // For special commands, don't even try to load env vars that might fail
-                vec![]
-            } else {
-                get_args_from_env_vars()
-            };
+            let mut args = get_args_from_env_vars();
 
             // Put the zero-th CLI argument (program name) first
             args.insert(0, cli_args.next().unwrap());
@@ -89,13 +182,27 @@ impl App {
             cli_args.for_each(|a| args.push(a));
 
             args
+        } else if help_requested {
+            // Help goes through the normal config path but only uses env vars for themes
+            // to avoid failing on invalid config options
+            let mut cli_args = wild::args_os();
+            let mut args = get_args_from_env_vars();
+
+            // Put the zero-th CLI argument (program name) first
+            args.insert(0, cli_args.next().unwrap());
+
+            // .. and the rest at the end (includes --help and other CLI args)
+            cli_args.for_each(|a| args.push(a));
+            args
         } else {
             let mut cli_args = wild::args_os();
 
             // Read arguments from bats config file
-            let mut args = get_args_from_env_opts_var()
-                .unwrap_or_else(get_args_from_config_file)
-                .map_err(|_| "Could not parse configuration file")?;
+            let mut args = match get_args_from_env_opts_var() {
+                Some(result) => result,
+                None => get_args_from_config_file(),
+            }
+            .map_err(|_| "Could not parse configuration file")?;
 
             // Selected env vars supersede config vars
             args.extend(get_args_from_env_vars());
@@ -462,17 +569,18 @@ impl App {
     }
 
     fn theme_options(&self) -> ThemeOptions {
-        let theme = self
-            .matches
+        Self::theme_options_from_matches(&self.matches)
+    }
+
+    fn theme_options_from_matches(matches: &ArgMatches) -> ThemeOptions {
+        let theme = matches
             .get_one::<String>("theme")
             .map(|t| ThemePreference::from_str(t).unwrap())
             .unwrap_or_default();
-        let theme_dark = self
-            .matches
+        let theme_dark = matches
             .get_one::<String>("theme-dark")
             .map(|t| ThemeName::from_str(t).unwrap());
-        let theme_light = self
-            .matches
+        let theme_light = matches
             .get_one::<String>("theme-light")
             .map(|t| ThemeName::from_str(t).unwrap());
         ThemeOptions {
