@@ -16,7 +16,7 @@ use std::io::{BufReader, Write};
 use std::path::Path;
 use std::process;
 
-use bat::output::OutputType;
+use bat::output::{OutputHandle, OutputType};
 use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
@@ -206,11 +206,10 @@ pub fn list_themes(
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
 
-    let mut output_type =
-        OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
-    let mut writer = output_type.handle()?;
-
     let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
+    let mut buf = String::new();
+    let mut handle = OutputHandle::FmtWrite(&mut buf);
+
     for theme in assets.themes() {
         let default_theme_info = if default_theme_name == theme {
             " (default)"
@@ -221,34 +220,38 @@ pub fn list_themes(
         } else {
             ""
         };
+
         if config.colored_output {
-            writeln!(
-                writer,
-                "Theme: {}{default_theme_info}\n",
+            handle.write_fmt(format_args!(
+                "{}{default_theme_info}\n\n",
                 Style::new().bold().paint(theme.to_string()),
-            )?;
+            ))?;
             config.theme = theme.to_string();
             Controller::new(&config, &assets)
-                .run(vec![theme_preview_file()], Some(&mut writer))
+                .run(vec![theme_preview_file()], Some(&mut handle))
                 .ok();
-            writeln!(writer)?;
+            handle.write_fmt(format_args!("\n"))?;
         } else if config.loop_through {
-            writeln!(writer, "{theme}")?;
+            handle.write_fmt(format_args!("{theme}\n"))?;
         } else {
-            writeln!(writer, "{theme}{default_theme_info}")?;
+            handle.write_fmt(format_args!("{theme}{default_theme_info}\n"))?;
         }
     }
 
     if config.colored_output {
-        writeln!(
-            writer,
+        handle.write_fmt(format_args!(
             "Further themes can be installed to '{}', \
             and are added to the cache with `bat cache --build`. \
             For more information, see:\n\n  \
             https://github.com/sharkdp/bat#adding-new-themes",
             config_dir.join("themes").to_string_lossy()
-        )?;
+        ))?;
     }
+
+    let mut output_type =
+        OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
+    let mut writer = output_type.handle()?;
+    writer.write_fmt(format_args!("{buf}"))?;
 
     Ok(())
 }
