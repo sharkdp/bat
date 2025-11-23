@@ -30,6 +30,7 @@ pub fn build_app(interactive_output: bool) -> Command {
     let mut app = Command::new(crate_name!())
         .version(VERSION.as_str())
         .color(color_when)
+        .styles(clap_cargo::style::CLAP_STYLING)
         .hide_possible_values(true)
         .args_conflicts_with_subcommands(true)
         .allow_external_subcommands(true)

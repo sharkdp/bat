@@ -11,6 +11,7 @@
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
 
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
+- Add colors to `--help` command, see #3494 (@starsep)
 
 ## Syntaxes
 
