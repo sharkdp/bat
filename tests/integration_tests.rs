@@ -605,6 +605,44 @@ fn test_help(arg: &str, expect_file: &str) {
         .assert_eq(&String::from_utf8_lossy(&assert.get_output().stdout));
 }
 
+#[test]
+fn short_help_with_highlighting() {
+    bat()
+        .arg("-h")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("Usage:"))
+        .stdout(predicate::str::contains("Options:"));
+}
+
+#[test]
+fn long_help_with_highlighting() {
+    bat()
+        .arg("--help")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("Usage:"))
+        .stdout(predicate::str::contains("Options:"));
+}
+
+#[test]
+fn help_with_color_never() {
+    bat()
+        .arg("--help")
+        .arg("--color=never")
+        .arg("--paging=never")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[").not())
+        .stdout(predicate::str::contains("Usage:"));
+}
+
 #[cfg(unix)]
 fn setup_temp_file(content: &[u8]) -> io::Result<(PathBuf, tempfile::TempDir)> {
     let dir = tempfile::tempdir().expect("Couldn't create tempdir");

@@ -2,8 +2,11 @@
 
 ## Features
 
+- Add paging to '-h' and '--help' see PR #3478 (@MuntasirSZN)
+
 ## Bugfixes
 
+- Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
 
 ## Other
@@ -12,6 +15,9 @@
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
 
 ## Syntaxes
+
+- Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
+- Fix inconsistencies in Ada syntax, see #3481 (@AldanTanneo)
 
 ## Themes
 

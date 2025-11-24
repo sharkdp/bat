@@ -141,16 +141,18 @@ impl OutputType {
                 //
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
-                match retrieve_less_version(&pager.bin) {
-                    None => {
-                        p.arg("--no-init");
+                if single_screen_action == SingleScreenAction::Quit {
+                    match retrieve_less_version(&pager.bin) {
+                        None => {
+                            p.arg("--no-init");
+                        }
+                        Some(LessVersion::Less(version))
+                            if (version < 530 || (cfg!(windows) && version < 558)) =>
+                        {
+                            p.arg("--no-init");
+                        }
+                        _ => {}
                     }
-                    Some(LessVersion::Less(version))
-                        if (version < 530 || (cfg!(windows) && version < 558)) =>
-                    {
-                        p.arg("--no-init");
-                    }
-                    _ => {}
                 }
             } else {
                 p.args(args);
