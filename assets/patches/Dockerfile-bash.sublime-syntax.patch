@@ -1,0 +1,11 @@
+--- syntaxes/02_Extra/Docker/Syntaxes/Dockerfile-bash.sublime-syntax
++++ syntaxes/02_Extra/Docker/Syntaxes/Dockerfile-bash.sublime-syntax
+@@ -50,7 +50,7 @@
+         1: keyword.control.dockerfile
+       push:
+         - match: (?=\s*\[)
+-          set: scope:source.json#arrays
++          set: scope:source.json#array
+           with_prototype:
+             - match: \n
+               pop: true
