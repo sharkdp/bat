@@ -8,6 +8,7 @@
 
 - Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
+- Ignore SIGINT during paging to fix bug where less exited without `-K` arg, see issue #3444 and PR #3447 (@lmmx)
 
 ## Other
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
