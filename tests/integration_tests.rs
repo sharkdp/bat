@@ -1599,7 +1599,7 @@ Clearing metadata file ... okay",
 
 #[cfg(unix)]
 #[test]
-fn cache_build() {
+fn cache_build_blank() {
     let src_dir = "cache_source";
     let tmp_dir = tempdir().expect("can create temporary directory");
     let tmp_themes_path = tmp_dir.path().join("themes.bin");
@@ -1634,6 +1634,50 @@ Writing metadata to folder .* ... okay",
             )
             .unwrap(),
         );
+
+    // Now we expect the files to exist. If they exist, we assume contents are correct
+    assert!(tmp_themes_path.exists());
+    assert!(tmp_syntaxes_path.exists());
+    assert!(tmp_acknowledgements_path.exists());
+    assert!(tmp_metadata_path.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn cache_build() {
+    let src_dir = "cache_source";
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_themes_path = tmp_dir.path().join("themes.bin");
+    let tmp_syntaxes_path = tmp_dir.path().join("syntaxes.bin");
+    let tmp_acknowledgements_path = tmp_dir.path().join("acknowledgements.bin");
+    let tmp_metadata_path = tmp_dir.path().join("metadata.yaml");
+
+    // Build the cache
+    // Include the BAT_CONFIG_PATH and BAT_THEME environment variables to ensure that
+    // options loaded from a config or the environment are not inserted
+    // before the cache subcommand, which would break it.
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join(src_dir))
+        .env("BAT_CONFIG_PATH", "bat.conf")
+        .env("BAT_THEME", "1337")
+        .arg("cache")
+        .arg("--build")
+        // removed --blank
+        .arg("--source")
+        .arg(".")
+        .arg("--target")
+        .arg(tmp_dir.path().to_str().unwrap())
+        .arg("--acknowledgements")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::is_match(
+                "Writing theme set to .*/themes.bin ... okay\nWriting syntax set to .*/syntaxes.bin ... okay\nWriting acknowledgements to .*/acknowledgements.bin ... okay\nWriting metadata to folder .* ... okay",
+            )
+            .unwrap(),
+        )
+        .stdout(predicate::str::contains("Some referenced contexts could not be found!").not())
+        ;
 
     // Now we expect the files to exist. If they exist, we assume contents are correct
     assert!(tmp_themes_path.exists());
