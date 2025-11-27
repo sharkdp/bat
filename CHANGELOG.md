@@ -12,7 +12,7 @@
 
 ## Other
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
-
+- Make PowerShell completions compatible with PowerShell v5.1, see #3495 (@keith-hall)
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
 
 ## Syntaxes
