@@ -49,7 +49,10 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         }
         '*;--language' {
             Get-MyLanguages |
-            ForEach-Object {[CompletionResult]::new(($_.MyParameter -replace "^(.*)$", '''$1'''), $_.MyParameter, [CompletionResultType]::ParameterName, $_.MyDescription ?? '_no value_')}
+            ForEach-Object {
+                $desc = if ($null -eq $_.MyDescription) { '_no value_' } else { $_.MyDescription }
+                [CompletionResult]::new(($_.MyParameter -replace "^(.*)$", '''$1'''), $_.MyParameter, [CompletionResultType]::ParameterName, $desc)
+            }
             break
         }
         '*;--theme' {
