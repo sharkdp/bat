@@ -540,6 +540,12 @@ variable to make these changes permanent or use `bat`'s
 > Or, if you want to override the styles completely, you use `--style=numbers` to
 > only show the line numbers.
 
+### Decorations
+
+By default, `bat` only shows decorations (such as line numbers, file headers, grid borders, etc.) when outputting to an interactive terminal. You can control this behavior with the `--decorations` option. Use `--decorations=always` to show decorations even when piping output to another command, or `--decorations=never` to disable them entirely. Possible values are `auto` (default), `never`, and `always`.
+
+There is also the `--force-colorization` option, which is an alias for `--decorations=always --color=always`. This is useful if you want to keep colorization and decorations when piping `bat`'s output to another program.
+
 ### Adding new syntaxes / language definitions
 
 Should you find that a particular syntax is not available within `bat`, you can follow these
