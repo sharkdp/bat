@@ -20,6 +20,7 @@
 
 - Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
 - Fix inconsistencies in Ada syntax, see #3481 (@AldanTanneo)
+- Add syntax mapping for podman's `artifact` quadlet files, see #3497 (@xduugu)
 
 ## Themes
 
