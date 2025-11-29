@@ -384,8 +384,7 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.matches.get_flag("number")
-                || self.matches.contains_id("style") && !style_components.plain()),
+                || self.matches.get_flag("number")),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")

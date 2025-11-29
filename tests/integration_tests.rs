@@ -415,7 +415,7 @@ fn piped_output_with_line_numbers_style_flag() {
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
-        .stdout("   1 hello\n   2 world\n");
+        .stdout("hello\nworld\n");
 }
 
 #[test]
@@ -426,15 +426,7 @@ fn piped_output_with_line_numbers_with_header_grid_style_flag() {
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
-        .stdout(
-            "─────┬──────────────────────────────────────────────────────────────────────────
-     │ STDIN
-─────┼──────────────────────────────────────────────────────────────────────────
-   1 │ hello
-   2 │ world
-─────┴──────────────────────────────────────────────────────────────────────────
-",
-        );
+        .stdout("hello\nworld\n");
 }
 
 #[test]
@@ -452,6 +444,7 @@ fn piped_output_with_auto_style() {
 fn piped_output_with_default_style_flag() {
     bat()
         .arg("--style=default")
+        .arg("--decorations=always")
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
