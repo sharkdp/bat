@@ -178,6 +178,42 @@ fn line_numbers_from_cli_in_loop_through_mode() {
 }
 
 #[test]
+fn style_from_env_var_ignored_and_line_numbers_from_cli_in_loop_through_mode() {
+    bat()
+        .env("BAT_STYLE", "full")
+        .arg("multiline.txt")
+        .arg("-n")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+}
+
+#[test]
+fn numbers_ignored_from_cli_when_followed_by_plain_in_loop_through_mode() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-np")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\n",
+        );
+}
+
+#[test]
+fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-pn")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+}
+
+#[test]
 fn line_range_2_3() {
     bat()
         .arg("multiline.txt")
