@@ -46,6 +46,10 @@ enum HelpType {
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
+    /// True if -n / --number was passed on the command line
+    /// (not from config file or environment variables).
+    /// This is used to honor the flag when piping output, similar to `cat -n`.
+    number_from_cli: bool,
 }
 
 impl App {
@@ -54,6 +58,15 @@ impl App {
         let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = std::io::stdout().is_terminal();
+        
+        // Check if the -n / --number option was passed on the command line
+        // (before merging with config file and environment variables).
+        // This is needed to honor the -n flag when piping output, similar to `cat -n`.
+        let number_from_cli = wild::args_os().any(|arg| {
+            let arg_str = arg.to_string_lossy();
+            arg_str == "-n" || arg_str == "--number"
+        });
+        
         let matches = Self::matches(interactive_output)?;
 
         if matches.get_flag("help") {
@@ -91,6 +104,7 @@ impl App {
         Ok(App {
             matches,
             interactive_output,
+            number_from_cli,
         })
     }
 
@@ -384,7 +398,7 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.matches.get_flag("number")),
+                || self.number_from_cli),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
