@@ -114,7 +114,13 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
     crate::pager::get_pager(config_pager)
         .ok()
         .flatten()
-        .map(|pager| pager.bin)
+        .and_then(|pager| {
+            if pager.kind != crate::pager::PagerKind::Builtin {
+                Some(pager.bin)
+            } else {
+                None
+            }
+        })
 }
 
 #[test]
