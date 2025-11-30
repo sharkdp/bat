@@ -46,6 +46,10 @@ enum HelpType {
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
+    /// True if -n / --number was passed on the command line
+    /// (not from config file or environment variables).
+    /// This is used to honor the flag when piping output, similar to `cat -n`.
+    number_from_cli: bool,
 }
 
 impl App {
@@ -54,6 +58,38 @@ impl App {
         let _ = nu_ansi_term::enable_ansi_support();
 
         let interactive_output = std::io::stdout().is_terminal();
+
+        // Check if the -n / --number option was passed on the command line
+        // (before merging with config file and environment variables).
+        // This is needed to honor the -n flag when piping output, similar to `cat -n`.
+        // We need to handle both standalone (-n, --number) and combined short flags (-pn, -An, etc.)
+        // Note: We only check if -n appears and is not overridden by -p in the same combined flag.
+        // For combined flags like -np, -p comes after -n and overrides it, so we don't count it.
+        // For combined flags like -pn, -n comes after -p and takes effect.
+        let number_from_cli = wild::args_os().any(|arg| {
+            let arg_str = arg.to_string_lossy();
+            if arg_str == "-n" || arg_str == "--number" {
+                return true;
+            }
+            // Handle combined short flags
+            // Only count -n if it's the LAST flag in the combined form (so -p doesn't override it)
+            // or if -p is not present in the combined form
+            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
+                let chars: Vec<char> = arg_str.chars().skip(1).collect();
+                let n_pos = chars.iter().position(|&c| c == 'n');
+                let p_pos = chars.iter().position(|&c| c == 'p');
+                // -n is in the combined flag and either:
+                // - -p is not present, OR
+                // - -n comes after -p (so -n takes effect)
+                if let Some(n) = n_pos {
+                    if p_pos.is_none() || n > p_pos.unwrap() {
+                        return true;
+                    }
+                }
+            }
+            false
+        });
+
         let matches = Self::matches(interactive_output)?;
 
         if matches.get_flag("help") {
@@ -91,6 +127,7 @@ impl App {
         Ok(App {
             matches,
             interactive_output,
+            number_from_cli,
         })
     }
 
@@ -384,8 +421,7 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.matches.get_flag("number")
-                || self.matches.contains_id("style") && !style_components.plain()),
+                || self.number_from_cli),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")

@@ -166,6 +166,53 @@ fn line_numbers() {
         .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
 }
 
+// Test that -n on command line shows line numbers even when piping (similar to `cat -n`)
+#[test]
+fn line_numbers_from_cli_in_loop_through_mode() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-n")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+}
+
+#[test]
+fn style_from_env_var_ignored_and_line_numbers_from_cli_in_loop_through_mode() {
+    bat()
+        .env("BAT_STYLE", "full")
+        .arg("multiline.txt")
+        .arg("-n")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+}
+
+#[test]
+fn numbers_ignored_from_cli_when_followed_by_plain_in_loop_through_mode() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-np")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\n",
+        );
+}
+
+#[test]
+fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-pn")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+}
+
 #[test]
 fn line_range_2_3() {
     bat()
@@ -415,26 +462,18 @@ fn piped_output_with_line_numbers_style_flag() {
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
-        .stdout("   1 hello\n   2 world\n");
+        .stdout("hello\nworld\n");
 }
 
 #[test]
-#[cfg(not(target_os = "windows"))]
 fn piped_output_with_line_numbers_with_header_grid_style_flag() {
+    // style ignored because non-interactive
     bat()
         .arg("--style=header,grid,numbers")
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
-        .stdout(
-            "─────┬──────────────────────────────────────────────────────────────────────────
-     │ STDIN
-─────┼──────────────────────────────────────────────────────────────────────────
-   1 │ hello
-   2 │ world
-─────┴──────────────────────────────────────────────────────────────────────────
-",
-        );
+        .stdout("hello\nworld\n");
 }
 
 #[test]
@@ -452,6 +491,7 @@ fn piped_output_with_auto_style() {
 fn piped_output_with_default_style_flag() {
     bat()
         .arg("--style=default")
+        .arg("--decorations=always")
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
