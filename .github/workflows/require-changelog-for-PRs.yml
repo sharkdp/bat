@@ -13,7 +13,7 @@ jobs:
       PR_NUMBER: ${{ github.event.number }}
       PR_BASE: ${{ github.base_ref }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Fetch PR base
         run: git fetch --no-tags --prune --depth=1 origin
 
