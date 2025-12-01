@@ -11,6 +11,7 @@
 - Fix broken Docker syntax preventing use of custom assets, see #3476 (@keith-hall)
 - Fix decorations being applied unexpectedly when piping. Now only line numbers explicitly required on the command line should be applied in auto decorations mode for `cat` compatibility. See #3496 (@keith-hall)
 - Fix diagnostics attempting to find the version of an executable named builtin when builtin pager is used. See #3498 (@keith-hall)
+- `--help` now correctly reads the config file for theme information etc. See #3507 (@keith-hall)
 
 ## Other
 - Improve README documentation on pager options passed to less, see #3443 (@injust)

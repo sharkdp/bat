@@ -186,6 +186,20 @@ impl App {
         Ok(())
     }
 
+    /// Build argument list with env vars and CLI args (without config file)
+    fn build_args_without_config() -> Vec<std::ffi::OsString> {
+        let mut cli_args = wild::args_os();
+        let mut args = get_args_from_env_vars();
+
+        // Put the zero-th CLI argument (program name) first
+        args.insert(0, cli_args.next().unwrap());
+
+        // .. and the rest at the end
+        cli_args.for_each(|a| args.push(a));
+
+        args
+    }
+
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
         // Check if we should skip config file processing for special arguments
         // that don't require full application setup (version, diagnostic)
@@ -196,63 +210,65 @@ impl App {
             )
         });
 
-        // Check if help was requested - help should go through the same code path
-        // but be forgiving of config file errors
+        // Check if help was requested - help should read the config file but be
+        // forgiving of invalid arguments (so configured theme etc. can be used)
         let help_requested =
             wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
 
-        let args = if wild::args_os().nth(1) == Some("cache".into()) {
+        if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
+            let args = wild::args_os().collect::<Vec<_>>();
+            return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
+        }
 
-            wild::args_os().collect::<Vec<_>>()
-        } else if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
+        if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
             // or when user requests version or diagnostic information
+            let args = Self::build_args_without_config();
+            return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
+        }
 
-            let mut cli_args = wild::args_os();
-            let mut args = get_args_from_env_vars();
+        // Build arguments with config file
+        let mut cli_args = wild::args_os();
 
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
-
-            // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
-
-            args
-        } else if help_requested {
-            // Help goes through the normal config path but only uses env vars for themes
-            // to avoid failing on invalid config options
-            let mut cli_args = wild::args_os();
-            let mut args = get_args_from_env_vars();
-
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
-
-            // .. and the rest at the end (includes --help and other CLI args)
-            cli_args.for_each(|a| args.push(a));
-            args
-        } else {
-            let mut cli_args = wild::args_os();
-
-            // Read arguments from bats config file
-            let mut args = match get_args_from_env_opts_var() {
-                Some(result) => result,
-                None => get_args_from_config_file(),
-            }
-            .map_err(|_| "Could not parse configuration file")?;
-
-            // Selected env vars supersede config vars
-            args.extend(get_args_from_env_vars());
-
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
-
-            // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
-            args
+        // Read arguments from bats config file
+        let config_args = match get_args_from_env_opts_var() {
+            Some(result) => result,
+            None => get_args_from_config_file(),
         };
 
-        Ok(clap_app::build_app(interactive_output).get_matches_from(args))
+        // For help, ignore config file parse errors (use empty config instead)
+        // For non-help, propagate the error
+        let mut args = if help_requested {
+            config_args.unwrap_or_default()
+        } else {
+            config_args.map_err(|_| "Could not parse configuration file")?
+        };
+
+        // Selected env vars supersede config vars
+        args.extend(get_args_from_env_vars());
+
+        // Put the zero-th CLI argument (program name) first
+        args.insert(0, cli_args.next().unwrap());
+
+        // .. and the rest at the end
+        cli_args.for_each(|a| args.push(a));
+
+        // For help, try parsing with config, and if clap fails (e.g., invalid
+        // argument in config), fall back to parsing without config file args
+        if help_requested {
+            let app = clap_app::build_app(interactive_output);
+            match app.try_get_matches_from(args) {
+                Ok(matches) => Ok(matches),
+                Err(_) => {
+                    // Config has invalid arguments, fall back to just env vars + CLI args
+                    let fallback_args = Self::build_args_without_config();
+                    Ok(clap_app::build_app(interactive_output).get_matches_from(fallback_args))
+                }
+            }
+        } else {
+            Ok(clap_app::build_app(interactive_output).get_matches_from(args))
+        }
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
