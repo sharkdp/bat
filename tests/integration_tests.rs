@@ -1480,6 +1480,28 @@ fn help_works_with_invalid_config() {
 }
 
 #[test]
+fn help_uses_valid_config() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("valid-config.conf");
+
+    // Write a valid config file with an invalid theme (so we can see a warning)
+    std::fs::write(&tmp_config_path, "--theme=NonExistentThemeName123")
+        .expect("can write config file");
+
+    // --help should read the config file and try to use the theme
+    // (we'll see a warning about unknown theme. This is the easiest way to prove the theme is read from config.)
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "A cat(1) clone with syntax highlighting",
+        ))
+        .stderr(predicate::str::contains("Unknown theme"));
+}
+
+#[test]
 fn version_works_with_invalid_config() {
     let tmp_dir = tempdir().expect("can create temporary directory");
     let tmp_config_path = tmp_dir.path().join("invalid-config.conf");
