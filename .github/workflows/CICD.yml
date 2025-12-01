@@ -35,7 +35,7 @@ jobs:
     name: Extract crate metadata
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Extract crate information
       id: crate_metadata
       run: |
@@ -58,7 +58,7 @@ jobs:
     - uses: dtolnay/rust-toolchain@stable
       with:
         components: rustfmt,clippy
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - run: cargo fmt -- --check
     - run: cargo clippy --locked --all-targets --all-features -- -D warnings
 
@@ -68,7 +68,7 @@ jobs:
     needs: crate_metadata
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Install rust toolchain (v${{ needs.crate_metadata.outputs.msrv }})
       uses: dtolnay/rust-toolchain@master
       with:
@@ -80,7 +80,7 @@ jobs:
     name: License checks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
       with:
         submodules: true # we especially want to perform license checks on submodules
     - run: tests/scripts/license-checks.sh
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         submodules: true # we need all syntax and theme submodules
     - name: Install Rust toolchain
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Prepare environment variables
       run: |
         echo "BAT_SYSTEM_CONFIG_PREFIX=$GITHUB_WORKSPACE/tests/examples/system_config" >> $GITHUB_ENV
@@ -135,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Git checkout
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
     - name: Check documentation
@@ -150,7 +150,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: cargo install cargo-audit --locked
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: cargo audit
 
   build:
@@ -178,7 +178,7 @@ jobs:
       BUILD_CMD: cargo
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
 
     - name: Install prerequisites
       shell: bash
