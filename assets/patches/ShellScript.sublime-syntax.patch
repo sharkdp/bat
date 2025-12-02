@@ -14,7 +14,7 @@ index e973e319..07c170a7 100644
  first_line_match: |
    (?x)
 -    ^\#! .* \b(bash|zsh|sh|tcsh|ash)\b
-+    ^\#! .* \b(bash|zsh|sh|tcsh|ash|dash)\b
++    ^\#! .* \b(bash|zsh|sh|tcsh|ash|dash|ksh)\b
    | ^\# \s* -\*- [^*]* mode: \s* shell-script [^*]* -\*-
  
  #-------------------------------------------------------------------------------
