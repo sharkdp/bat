@@ -23,6 +23,7 @@
 - Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
 - Fix inconsistencies in Ada syntax, see #3481 (@AldanTanneo)
 - Add syntax mapping for podman's `artifact` quadlet files, see #3497 (@xduugu)
+- Highlight Korn Shell scripts (i.e. with a shebang of ...`ksh`) using Bash syntax, see #3509 (@keith-hall)
 
 ## Themes
 
