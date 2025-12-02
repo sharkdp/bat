@@ -526,9 +526,9 @@ dependencies = [
 
 [[package]]
 name = "execute"
-version = "0.2.13"
+version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a82608ee96ce76aeab659e9b8d3c2b787bffd223199af88c674923d861ada10"
+checksum = "0be3cc61fe54b4cae4463cdbda0401978ffe19d4dcc7a5201a312cddf64726dd"
 dependencies = [
  "execute-command-macro",
  "execute-command-tokens",
