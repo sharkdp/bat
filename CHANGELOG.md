@@ -4,6 +4,8 @@
 
 ## Bugfixes
 
+- `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
+
 ## Other
 
 ## Syntaxes
