@@ -137,7 +137,7 @@ fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseE
 }
 
 pub fn get_args_from_env_vars() -> Vec<OsString> {
-    [
+    let mut args = vec![
         ("--tabs", "BAT_TABS"),
         ("--theme", bat::theme::env::BAT_THEME),
         ("--theme-dark", bat::theme::env::BAT_THEME_DARK),
@@ -145,15 +145,21 @@ pub fn get_args_from_env_vars() -> Vec<OsString> {
         ("--pager", "BAT_PAGER"),
         ("--paging", "BAT_PAGING"),
         ("--style", "BAT_STYLE"),
-    ]
-    .iter()
-    .filter_map(|(flag, key)| {
-        env::var(key)
-            .ok()
-            .map(|var| [flag.to_string(), var].join("="))
-    })
-    .map(|a| a.into())
-    .collect()
+    ];
+
+    #[cfg(feature = "git")]
+    {
+        args.push(("--gitsigns", bat::gitsigns::env::BAT_GITSIGNS));
+    }
+
+    args.iter()
+        .filter_map(|(flag, key)| {
+            env::var(key)
+                .ok()
+                .map(|var| [flag.to_string(), var].join("="))
+        })
+        .map(|a| a.into())
+        .collect()
 }
 
 #[test]

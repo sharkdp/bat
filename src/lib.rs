@@ -32,6 +32,8 @@ pub mod controller;
 mod decorations;
 mod diff;
 pub mod error;
+#[cfg(feature = "git")]
+pub mod gitsigns;
 pub mod input;
 mod less;
 #[cfg(feature = "lessopen")]

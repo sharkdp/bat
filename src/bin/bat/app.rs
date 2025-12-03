@@ -28,6 +28,9 @@ use bat::{
     MappingTarget, NonprintableNotation, PagingMode, SyntaxMapping, WrappingMode,
 };
 
+#[cfg(feature = "git")]
+use bat::gitsigns::Gitsigns;
+
 fn is_truecolor_terminal() -> bool {
     env::var("COLORTERM")
         .map(|colorterm| colorterm == "truecolor" || colorterm == "24bit")
@@ -510,6 +513,20 @@ impl App {
                 )
             } else {
                 None
+            },
+            #[cfg(feature = "git")]
+            gitsigns: match self
+                .matches
+                .get_one::<String>("gitsigns")
+                .map(|s| s.as_str())
+            {
+                Some("classic") => Gitsigns::classic(),
+                Some("modern") => Gitsigns::modern(),
+                Some(s) => Gitsigns::parse(s).unwrap_or_else(|e| {
+                    eprintln!("Error parsing `--gitsigns={s}` \n{e}");
+                    std::process::exit(1);
+                }),
+                None => Gitsigns::default(),
             },
         })
     }

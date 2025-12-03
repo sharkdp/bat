@@ -32,6 +32,8 @@
 # v0.26.0
 
 ## Features
+- Use theme styles for git signs, see PR #3407 (@flashios09)
+- Add `--gitsigns` option, see PR #3407 (@flashios09)
 - Add build for windows/ARM64 platform. #3190 (@alcroito)
 - Add paging to `--list-themes`, see PR #3239 (@einfachIrgendwer0815)
 - Support negative relative line ranges, e.g. `bat -r :-10` / `bat -r='-10:'`, see #3068 (@ajesipow)
