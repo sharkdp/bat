@@ -31,12 +31,6 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
   <br>
   <sub>Available on MacOS, Linux, Windows</sub>
 </a>
-</p><p>
-<a href="https://graphite.dev/?utm_source=github&utm_medium=repo&utm_campaign=bat">
-  <img src="doc/sponsors/graphite-logo.jpeg" width="200" alt="Graphite">
-  <br>
-  <strong>Graphite is the AI developer productivity platform helping<br>teams on GitHub ship higher quality software, faster</strong>
-</a>
 </p>
 
 ### Syntax highlighting
