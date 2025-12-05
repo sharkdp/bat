@@ -153,9 +153,30 @@ which pager is used, see the '\-\-pager' option. Possible values: *auto*, never,
 Determine which pager is used. This option will override the PAGER and BAT_PAGER
 environment variables. The default pager is 'less'. If you provide '\-\-pager=builtin', use
 the built-in 'minus' pager. To control when the pager is used, see the '\-\-paging' option.
-Example: '\-\-pager "less \fB\-RF\fR"'.
+Example: '\-\-pager "less \fB\-RFK\fR"'.
 
-Note: By default, if the pager is set to 'less' (and no command-line options are specified), 'bat' will pass the following command line options to the pager: '-R'/'--RAW-CONTROL-CHARS', '-F'/'--quit-if-one-screen' and '-X'/'--no-init'. The last option ('-X') is only used for 'less' versions older than 530. The '-R' option is needed to interpret ANSI colors correctly. The second option ('-F') instructs less to exit immediately if the output size is smaller than the vertical size of the terminal. This is convenient for small files because you do not have to press 'q' to quit the pager. The third option ('-X') is needed to fix a bug with the '--quit-if-one-screen' feature in old versions of 'less'. Unfortunately, it also breaks mouse-wheel support in 'less'. If you want to enable mouse-wheel scrolling on older versions of 'less', you can pass just '-R' (as in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer, it should work out of the box.
+By default, if the pager is set to 'less' (and no command-line options are specified), 'bat'
+will pass the following command line options to the pager:
+.RS
+.IP "-R, --RAW-CONTROL-CHARS"
+Interpret ANSI colors correctly.
+.IP "-F, --quit-if-one-screen"
+Exit immediately if the output size is smaller than the vertical size of the terminal. This
+is convenient for small files because you do not have to press 'q' to quit the pager.
+.IP "-K, --quit-on-intr"
+Exit immediately when an interrupt signal is received. This is useful to ensure that less
+quits together with bat on SIGINT.
+.IP "-S, --chop-long-lines"
+Added when bat's -S/--chop-long-lines option is used. This tells less to truncate any lines
+larger than the terminal width.
+.IP "-X, --no-init"
+Only used for 'less' versions older than 530.
+
+Fix a bug with the '--quit-if-one-screen' feature in old versions of 'less'. Unfortunately,
+it also breaks mouse-wheel support in 'less'. If you want to enable mouse-wheel scrolling
+on older versions of 'less', you can pass just '-R' (as in the example above, this will
+disable the quit-if-one-screen feature). For less 530 or newer, it should work out of the box.
+.RE
 .HP
 \fB\-m\fR, \fB\-\-map\-syntax\fR <glob-pattern:syntax-name>...
 .IP
