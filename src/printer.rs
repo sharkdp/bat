@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -29,8 +30,7 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
-use crate::preprocessor::strip_ansi;
-use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::preprocessor::{expand_tabs, replace_nonprintable, strip_ansi, strip_overstrike};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
@@ -152,7 +152,7 @@ impl Printer for SimplePrinter<'_> {
                     self.config.nonprintable_notation,
                 );
                 write!(handle, "{line}")?;
-            } else {
+            } else if self.config.binary == BinaryBehavior::AsText {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
                     OutputHandle::FmtWrite(handle) => {
@@ -164,6 +164,23 @@ impl Printer for SimplePrinter<'_> {
                                     .to_string()
                             ))?
                         )?;
+                    }
+                }
+            } else {
+                match handle {
+                    OutputHandle::IoWrite(handle) => {
+                        // Only strip overstrike for valid UTF-8, otherwise write raw bytes
+                        if let Ok(line) = std::str::from_utf8(line_buffer) {
+                            let line = strip_overstrike(line);
+                            handle.write_all(line.as_bytes())?;
+                        } else {
+                            handle.write_all(line_buffer)?;
+                        }
+                    }
+                    OutputHandle::FmtWrite(handle) => {
+                        let line = String::from_utf8_lossy(line_buffer);
+                        let line = strip_overstrike(&line);
+                        write!(handle, "{line}")?;
                     }
                 }
             };
@@ -621,6 +638,11 @@ impl Printer for InteractivePrinter<'_> {
                     }
                 }
             };
+
+            // Strip overstrike sequences (used by man pages for bold/underline).
+            if line.contains('\x08') {
+                line = Cow::Owned(strip_overstrike(&line).into_owned());
+            }
 
             // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
             if self.strip_ansi {
