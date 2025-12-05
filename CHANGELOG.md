@@ -4,6 +4,8 @@
 
 ## Bugfixes
 
+- Strip overstriking to better support man pages, see #3517 (@akirk)
+
 ## Other
 
 ## Syntaxes

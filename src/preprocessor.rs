@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::fmt::Write;
 
 use crate::{
@@ -149,6 +150,31 @@ pub fn strip_ansi(line: &str) -> String {
     buffer
 }
 
+/// Strips overstrike sequences (backspace formatting) from input.
+///
+/// Overstrike formatting is used by man pages and some help output:
+/// - Bold: `X\x08X` (character, backspace, same character)
+/// - Underline: `_\x08X` (underscore, backspace, character)
+///
+/// This function removes these sequences, keeping only the visible character.
+pub fn strip_overstrike(line: &str) -> Cow<'_, str> {
+    if !line.contains('\x08') {
+        return Cow::Borrowed(line);
+    }
+
+    let mut output = String::with_capacity(line.len());
+
+    for c in line.chars() {
+        if c == '\x08' {
+            output.pop();
+        } else {
+            output.push(c);
+        }
+    }
+
+    Cow::Owned(output)
+}
+
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub enum StripAnsiMode {
     #[default]
@@ -210,4 +236,31 @@ fn test_strip_ansi() {
         strip_ansi("\x1B]1\x07multiple\x1B[J sequences"),
         "multiple sequences"
     );
+}
+
+#[test]
+fn test_strip_overstrike() {
+    // No overstrike - should return borrowed reference
+    assert_eq!(strip_overstrike("no overstrike"), "no overstrike");
+
+    // Empty string
+    assert_eq!(strip_overstrike(""), "");
+
+    // Bold: X\x08X (same char repeated)
+    assert_eq!(strip_overstrike("H\x08Hello"), "Hello");
+
+    // Underline: _\x08X (underscore before char)
+    assert_eq!(strip_overstrike("_\x08Hello"), "Hello");
+
+    // Multiple overstrike sequences
+    assert_eq!(strip_overstrike("B\x08Bo\x08ol\x08ld\x08d"), "Bold");
+
+    // Backspace at start of line (nothing to pop)
+    assert_eq!(strip_overstrike("\x08Hello"), "Hello");
+
+    // Multiple consecutive backspaces
+    assert_eq!(strip_overstrike("ABC\x08\x08\x08XYZ"), "XYZ");
+
+    // Unicode with overstrike
+    assert_eq!(strip_overstrike("ä\x08äöü"), "äöü");
 }
