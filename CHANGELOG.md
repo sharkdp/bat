@@ -10,6 +10,8 @@
 
 ## Syntaxes
 
+- Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
+
 ## Themes
 
 ## `bat` as a library
