@@ -114,7 +114,13 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
     crate::pager::get_pager(config_pager)
         .ok()
         .flatten()
-        .map(|pager| pager.bin)
+        .and_then(|pager| {
+            if pager.kind != crate::pager::PagerKind::Builtin {
+                Some(pager.bin)
+            } else {
+                None
+            }
+        })
 }
 
 #[test]
@@ -140,4 +146,81 @@ fn default_config_should_highlight_no_lines() {
             .check(17, MaxBufferedLineNumber::Tentative(17)),
         RangeCheckResult::InRange
     );
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_with_config_pager_less() {
+    let result = get_pager_executable(Some("less"));
+    assert_eq!(result, Some("less".to_string()));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_with_config_pager_builtin() {
+    let result = get_pager_executable(Some("builtin"));
+    assert_eq!(result, None);
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_with_config_pager_more() {
+    let result = get_pager_executable(Some("more"));
+    assert_eq!(result, Some("more".to_string()));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_with_bat_pager() {
+    std::env::set_var("BAT_PAGER", "most");
+    let result = get_pager_executable(None);
+    assert_eq!(result, Some("most".to_string()));
+    std::env::remove_var("BAT_PAGER");
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_with_pager_more_switches_to_less() {
+    std::env::set_var("PAGER", "more");
+    let result = get_pager_executable(None);
+    assert_eq!(result, Some("less".to_string()));
+    std::env::remove_var("PAGER");
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_default() {
+    // Ensure no env vars
+    std::env::remove_var("BAT_PAGER");
+    std::env::remove_var("PAGER");
+    let result = get_pager_executable(None);
+    assert_eq!(result, Some("less".to_string()));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_name_ignoring_arguments() {
+    let result = get_pager_executable(Some("foo --bar"));
+    assert_eq!(result, Some("foo".to_string()));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_name_ignoring_path() {
+    let result = get_pager_executable(Some("/bin/foo test"));
+    assert_eq!(result, Some("/bin/foo".to_string()));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_invalid_command() {
+    let result = get_pager_executable(Some("invalid ' command"));
+    assert_eq!(result, None);
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn get_pager_executable_empty_config() {
+    let result = get_pager_executable(Some(""));
+    assert_eq!(result, None);
 }

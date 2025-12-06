@@ -4,12 +4,36 @@
 
 ## Bugfixes
 
+- `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
+
+## Other
+
+## Syntaxes
+
+- Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
+
+## Themes
+
+## `bat` as a library
+
+# v0.26.1
+
+## Features
+
+- Add paging to '-h' and '--help' see PR #3478 (@MuntasirSZN)
+
+## Bugfixes
+
 - Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
+- Fix broken Docker syntax preventing use of custom assets, see #3476 (@keith-hall)
+- Fix decorations being applied unexpectedly when piping. Now only line numbers explicitly required on the command line should be applied in auto decorations mode for `cat` compatibility. See #3496 (@keith-hall)
+- Fix diagnostics attempting to find the version of an executable named builtin when builtin pager is used. See #3498 (@keith-hall)
+- `--help` now correctly reads the config file for theme information etc. See #3507 (@keith-hall)
 
 ## Other
 - Improve README documentation on pager options passed to less, see #3443 (@injust)
-
+- Make PowerShell completions compatible with PowerShell v5.1, see #3495 (@keith-hall)
 - Use more robust approach to escaping in Bash completions, see #3448 (@akinomyoga)
 
 - add mise alternative installation method, see #3483 (@jylenhof)
@@ -18,6 +42,8 @@
 
 - Update quadlet syntax mapping to include *.{build,pod} files #3484 (@cyqsimon)
 - Fix inconsistencies in Ada syntax, see #3481 (@AldanTanneo)
+- Add syntax mapping for podman's `artifact` quadlet files, see #3497 (@xduugu)
+- Highlight Korn Shell scripts (i.e. with a shebang of ...`ksh`) using Bash syntax, see #3509 (@keith-hall)
 
 ## Themes
 

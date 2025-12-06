@@ -38,9 +38,18 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+enum HelpType {
+    Short,
+    Long,
+}
+
 pub struct App {
     pub matches: ArgMatches,
     interactive_output: bool,
+    /// True if -n / --number was passed on the command line
+    /// (not from config file or environment variables).
+    /// This is used to honor the flag when piping output, similar to `cat -n`.
+    number_from_cli: bool,
 }
 
 impl App {
@@ -50,65 +59,214 @@ impl App {
 
         let interactive_output = std::io::stdout().is_terminal();
 
+        // Check if the -n / --number option was passed on the command line
+        // (before merging with config file and environment variables).
+        // This is needed to honor the -n flag when piping output, similar to `cat -n`.
+        // We need to handle both standalone (-n, --number) and combined short flags (-pn, -An, etc.)
+        // Note: We only check if -n appears and is not overridden by -p in the same combined flag.
+        // For combined flags like -np, -p comes after -n and overrides it, so we don't count it.
+        // For combined flags like -pn, -n comes after -p and takes effect.
+        let number_from_cli = wild::args_os().any(|arg| {
+            let arg_str = arg.to_string_lossy();
+            if arg_str == "-n" || arg_str == "--number" {
+                return true;
+            }
+            // Handle combined short flags
+            // Only count -n if it's the LAST flag in the combined form (so -p doesn't override it)
+            // or if -p is not present in the combined form
+            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
+                let chars: Vec<char> = arg_str.chars().skip(1).collect();
+                let n_pos = chars.iter().position(|&c| c == 'n');
+                let p_pos = chars.iter().position(|&c| c == 'p');
+                // -n is in the combined flag and either:
+                // - -p is not present, OR
+                // - -n comes after -p (so -n takes effect)
+                if let Some(n) = n_pos {
+                    if p_pos.is_none() || n > p_pos.unwrap() {
+                        return true;
+                    }
+                }
+            }
+            false
+        });
+
+        let matches = Self::matches(interactive_output)?;
+
+        if matches.get_flag("help") {
+            let help_type = if wild::args_os().any(|arg| arg == "--help") {
+                HelpType::Long
+            } else {
+                HelpType::Short
+            };
+
+            let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
+                Some("never") => false,
+                _ => !matches.get_flag("no-paging"),
+            };
+
+            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => true,
+                Some("never") => false,
+                _ => interactive_output, // auto: use color if interactive
+            };
+
+            let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
+            let theme_options = Self::theme_options_from_matches(&matches);
+
+            Self::display_help(
+                interactive_output,
+                help_type,
+                use_pager,
+                use_color,
+                pager,
+                theme_options,
+            )?;
+            std::process::exit(0);
+        }
+
         Ok(App {
-            matches: Self::matches(interactive_output)?,
+            matches,
             interactive_output,
+            number_from_cli,
         })
+    }
+
+    fn display_help(
+        interactive_output: bool,
+        help_type: HelpType,
+        use_pager: bool,
+        use_color: bool,
+        pager: Option<&str>,
+        theme_options: ThemeOptions,
+    ) -> Result<()> {
+        use crate::assets::assets_from_cache_or_binary;
+        use crate::directories::PROJECT_DIRS;
+        use bat::{
+            config::Config,
+            controller::Controller,
+            input::Input,
+            style::{StyleComponent, StyleComponents},
+            theme::theme,
+            PagingMode,
+        };
+
+        let mut cmd = clap_app::build_app(interactive_output);
+        let help_text = match help_type {
+            HelpType::Short => cmd.render_help().to_string(),
+            HelpType::Long => cmd.render_long_help().to_string(),
+        };
+
+        let inputs: Vec<Input> = vec![Input::from_reader(Box::new(help_text.as_bytes()))];
+
+        let paging_mode = if use_pager {
+            PagingMode::QuitIfOneScreen
+        } else {
+            PagingMode::Never
+        };
+
+        let help_config = Config {
+            style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
+            paging_mode,
+            pager,
+            colored_output: use_color,
+            true_color: use_color,
+            language: if use_color { Some("help") } else { None },
+            theme: theme(theme_options).to_string(),
+            ..Default::default()
+        };
+
+        let cache_dir = PROJECT_DIRS.cache_dir();
+        let assets = assets_from_cache_or_binary(false, cache_dir)?;
+        Controller::new(&help_config, &assets)
+            .run(inputs, None)
+            .ok();
+
+        Ok(())
+    }
+
+    /// Build argument list with env vars and CLI args (without config file)
+    fn build_args_without_config() -> Vec<std::ffi::OsString> {
+        let mut cli_args = wild::args_os();
+        let mut args = get_args_from_env_vars();
+
+        // Put the zero-th CLI argument (program name) first
+        args.insert(0, cli_args.next().unwrap());
+
+        // .. and the rest at the end
+        cli_args.for_each(|a| args.push(a));
+
+        args
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {
         // Check if we should skip config file processing for special arguments
-        // that don't require full application setup (help, version, diagnostic)
+        // that don't require full application setup (version, diagnostic)
         let should_skip_config = wild::args_os().any(|arg| {
             matches!(
                 arg.to_str(),
-                Some("-h" | "--help" | "-V" | "--version" | "--diagnostic" | "--diagnostics")
+                Some("-V" | "--version" | "--diagnostic" | "--diagnostics")
             )
         });
 
-        let args = if wild::args_os().nth(1) == Some("cache".into()) {
+        // Check if help was requested - help should read the config file but be
+        // forgiving of invalid arguments (so configured theme etc. can be used)
+        let help_requested =
+            wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
+
+        if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
+            let args = wild::args_os().collect::<Vec<_>>();
+            return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
+        }
 
-            wild::args_os().collect::<Vec<_>>()
-        } else if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
+        if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
-            // or when user requests help, version, or diagnostic information
+            // or when user requests version or diagnostic information
+            let args = Self::build_args_without_config();
+            return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
+        }
 
-            let mut cli_args = wild::args_os();
-            let mut args = if should_skip_config {
-                // For special commands, don't even try to load env vars that might fail
-                vec![]
-            } else {
-                get_args_from_env_vars()
-            };
+        // Build arguments with config file
+        let mut cli_args = wild::args_os();
 
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
-
-            // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
-
-            args
-        } else {
-            let mut cli_args = wild::args_os();
-
-            // Read arguments from bats config file
-            let mut args = get_args_from_env_opts_var()
-                .unwrap_or_else(get_args_from_config_file)
-                .map_err(|_| "Could not parse configuration file")?;
-
-            // Selected env vars supersede config vars
-            args.extend(get_args_from_env_vars());
-
-            // Put the zero-th CLI argument (program name) first
-            args.insert(0, cli_args.next().unwrap());
-
-            // .. and the rest at the end
-            cli_args.for_each(|a| args.push(a));
-            args
+        // Read arguments from bats config file
+        let config_args = match get_args_from_env_opts_var() {
+            Some(result) => result,
+            None => get_args_from_config_file(),
         };
 
-        Ok(clap_app::build_app(interactive_output).get_matches_from(args))
+        // For help, ignore config file parse errors (use empty config instead)
+        // For non-help, propagate the error
+        let mut args = if help_requested {
+            config_args.unwrap_or_default()
+        } else {
+            config_args.map_err(|_| "Could not parse configuration file")?
+        };
+
+        // Selected env vars supersede config vars
+        args.extend(get_args_from_env_vars());
+
+        // Put the zero-th CLI argument (program name) first
+        args.insert(0, cli_args.next().unwrap());
+
+        // .. and the rest at the end
+        cli_args.for_each(|a| args.push(a));
+
+        // For help, try parsing with config, and if clap fails (e.g., invalid
+        // argument in config), fall back to parsing without config file args
+        if help_requested {
+            let app = clap_app::build_app(interactive_output);
+            match app.try_get_matches_from(args) {
+                Ok(matches) => Ok(matches),
+                Err(_) => {
+                    // Config has invalid arguments, fall back to just env vars + CLI args
+                    let fallback_args = Self::build_args_without_config();
+                    Ok(clap_app::build_app(interactive_output).get_matches_from(fallback_args))
+                }
+            }
+        } else {
+            Ok(clap_app::build_app(interactive_output).get_matches_from(args))
+        }
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
@@ -277,8 +435,7 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.matches.get_flag("number")
-                || self.matches.contains_id("style") && !style_components.plain()),
+                || self.number_from_cli),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -462,17 +619,18 @@ impl App {
     }
 
     fn theme_options(&self) -> ThemeOptions {
-        let theme = self
-            .matches
+        Self::theme_options_from_matches(&self.matches)
+    }
+
+    fn theme_options_from_matches(matches: &ArgMatches) -> ThemeOptions {
+        let theme = matches
             .get_one::<String>("theme")
             .map(|t| ThemePreference::from_str(t).unwrap())
             .unwrap_or_default();
-        let theme_dark = self
-            .matches
+        let theme_dark = matches
             .get_one::<String>("theme-dark")
             .map(|t| ThemeName::from_str(t).unwrap());
-        let theme_light = self
-            .matches
+        let theme_light = matches
             .get_one::<String>("theme-light")
             .map(|t| ThemeName::from_str(t).unwrap());
         ThemeOptions {

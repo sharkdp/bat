@@ -31,12 +31,6 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
   <br>
   <sub>Available on MacOS, Linux, Windows</sub>
 </a>
-</p><p>
-<a href="https://graphite.dev/?utm_source=github&utm_medium=repo&utm_campaign=bat">
-  <img src="doc/sponsors/graphite-logo.jpeg" width="200" alt="Graphite">
-  <br>
-  <strong>Graphite is the AI developer productivity platform helping<br>teams on GitHub ship higher quality software, faster</strong>
-</a>
 </p>
 
 ### Syntax highlighting
@@ -547,6 +541,12 @@ variable to make these changes permanent or use `bat`'s
 > `--style=-grid,+snip` to remove the grid and add back the `snip` component.
 > Or, if you want to override the styles completely, you use `--style=numbers` to
 > only show the line numbers.
+
+### Decorations
+
+By default, `bat` only shows decorations (such as line numbers, file headers, grid borders, etc.) when outputting to an interactive terminal. You can control this behavior with the `--decorations` option. Use `--decorations=always` to show decorations even when piping output to another command, or `--decorations=never` to disable them entirely. Possible values are `auto` (default), `never`, and `always`.
+
+There is also the `--force-colorization` option, which is an alias for `--decorations=always --color=always`. This is useful if you want to keep colorization and decorations when piping `bat`'s output to another program.
 
 ### Adding new syntaxes / language definitions
 
