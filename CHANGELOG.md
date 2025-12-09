@@ -4,7 +4,7 @@
 
 ## Bugfixes
 
-- Strip overstriking to better support man pages, see #3517 (@akirk)
+- Strip overstriking before applying syntax highlighting to better support man pages, see #3517 (@akirk)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 

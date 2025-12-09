@@ -168,19 +168,9 @@ impl Printer for SimplePrinter<'_> {
                 }
             } else {
                 match handle {
-                    OutputHandle::IoWrite(handle) => {
-                        // Only strip overstrike for valid UTF-8, otherwise write raw bytes
-                        if let Ok(line) = std::str::from_utf8(line_buffer) {
-                            let line = strip_overstrike(line);
-                            handle.write_all(line.as_bytes())?;
-                        } else {
-                            handle.write_all(line_buffer)?;
-                        }
-                    }
+                    OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
                     OutputHandle::FmtWrite(handle) => {
-                        let line = String::from_utf8_lossy(line_buffer);
-                        let line = strip_overstrike(&line);
-                        write!(handle, "{line}")?;
+                        write!(handle, "{}", String::from_utf8_lossy(line_buffer))?;
                     }
                 }
             };
@@ -216,6 +206,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    strip_overstrike: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -314,6 +305,9 @@ impl<'a> InteractivePrinter<'a> {
             _ => false,
         };
 
+        // Strip overstrike only when we have syntax highlighting (not plain text).
+        let strip_overstrike = !is_plain_text;
+
         Ok(InteractivePrinter {
             panel_width,
             colors,
@@ -327,6 +321,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            strip_overstrike,
         })
     }
 
@@ -639,8 +634,7 @@ impl Printer for InteractivePrinter<'_> {
                 }
             };
 
-            // Strip overstrike sequences (used by man pages for bold/underline).
-            if line.contains('\x08') {
+            if self.strip_overstrike && line.contains('\x08') {
                 line = Cow::Owned(strip_overstrike(&line).into_owned());
             }
 

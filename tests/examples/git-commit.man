@@ -1,0 +1,30 @@
+GIT-COMMIT(1)                     Git Manual                     GIT-COMMIT(1)
+
+NNAAMMEE
+       git-commit - Record changes to the repository
+
+SSYYNNOOPPSSIISS
+       ggiitt ccoommmmiitt [--aa | ----iinntteerraaccttiivvee | ----ppaattcchh] [--ss] [--vv] [--uu[_<_m_o_d_e_>]] [----aammeenndd]
+               [----ddrryy--rruunn] [(--cc | --CC | ----ssqquuaasshh) _<_c_o_m_m_i_t_> | ----ffiixxuupp [(aammeenndd|rreewwoorrdd)::]_<_c_o_m_m_i_t_>]
+               [--FF _<_f_i_l_e_> | --mm _<_m_s_g_>] [----rreesseett--aauutthhoorr] [----aallllooww--eemmppttyy]
+               [----aallllooww--eemmppttyy--mmeessssaaggee] [----nnoo--vveerriiffyy] [--ee] [----aauutthhoorr==_<_a_u_t_h_o_r_>]
+               [----ddaattee==_<_d_a_t_e_>] [----cclleeaannuupp==_<_m_o_d_e_>] [----[nnoo--]ssttaattuuss]
+               [--ii | --oo] [----ppaatthhssppeecc--ffrroomm--ffiillee==_<_f_i_l_e_> [----ppaatthhssppeecc--ffiillee--nnuull]]
+               [(----ttrraaiilleerr _<_t_o_k_e_n_>[(==|::)_<_v_a_l_u_e_>])...] [--SS[_<_k_e_y_i_d_>]]
+               [----] [_<_p_a_t_h_s_p_e_c_>...]
+
+DDEESSCCRRIIPPTTIIOONN
+       Create a new commit containing the current contents of the index and
+       the given log message describing the changes. The new commit is a
+       direct child of HEAD, usually the tip of the current branch, and the
+       branch is updated to point to it (unless no branch is associated with
+       the working tree, in which case HHEEAADD is "detached" as described in ggiitt--
+       cchheecckkoouutt(1)).
+
+       The content to be committed can be specified in several ways:
+
+        1. by using ggiitt--aadddd(1) to incrementally "add" changes to the index
+           before using the ccoommmmiitt command (Note: even modified files must be
+           "added");
+
+        2. by using ggiitt--rrmm(1) to remove files from the working tree and the
