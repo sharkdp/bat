@@ -158,17 +158,24 @@ pub fn strip_ansi(line: &str) -> String {
 ///
 /// This function removes these sequences, keeping only the visible character.
 pub fn strip_overstrike(line: &str) -> Cow<'_, str> {
-    if !line.contains('\x08') {
+    let Some(first_bs) = line.find('\x08') else {
         return Cow::Borrowed(line);
-    }
+    };
 
     let mut output = String::with_capacity(line.len());
+    output.push_str(&line[..first_bs]);
+    output.pop();
 
-    for c in line.chars() {
-        if c == '\x08' {
+    let mut remaining = &line[first_bs + 1..];
+
+    loop {
+        if let Some(bs_pos) = remaining.find('\x08') {
+            output.push_str(&remaining[..bs_pos]);
             output.pop();
+            remaining = &remaining[bs_pos + 1..];
         } else {
-            output.push(c);
+            output.push_str(remaining);
+            break;
         }
     }
 
