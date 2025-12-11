@@ -9,6 +9,7 @@
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 
 ## Other
+- Modify the non-printable introduction section in the README-zh.md file. See #3523 (@wm-uniontech)
 
 ## Syntaxes
 
