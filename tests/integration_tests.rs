@@ -2542,6 +2542,73 @@ fn binary_as_text() {
 }
 
 #[test]
+fn no_strip_overstrike_for_plain_text() {
+    // Overstrike is preserved for plain text files (no syntax highlighting)
+    bat()
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout("B\x08Bold t\x08te\x08ex\x08xt\x08t and _\x08u_\x08n_\x08d_\x08e_\x08r_\x08l_\x08i_\x08n_\x08e\n")
+        .stderr("");
+}
+
+#[test]
+fn strip_overstrike_with_syntax_highlighting() {
+    // Overstrike is stripped for certain syntax highlighting like command help.
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=help")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Bold text and underline"))
+        .stderr("");
+}
+
+#[test]
+fn strip_overstrike_for_manpage_syntax() {
+    // Overstrike is stripped for .man files (Manpage syntax)
+    bat()
+        .arg("--force-colorization")
+        .arg("git-commit.man")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("NAME"))
+        .stdout(predicate::str::contains("git-commit - Record changes"))
+        .stdout(predicate::str::is_match(r"\x1b\[38;[0-9;]+m--interactive\x1b\[").unwrap())
+        .stderr("");
+}
+
+#[test]
+fn no_strip_overstrike_for_other_syntax() {
+    // Overstrike is NOT stripped for other syntaxes (e.g., Rust)
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=rust")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x08"))
+        .stderr("");
+}
+
+#[test]
+fn show_all_shows_backspace_with_caret_notation() {
+    // --show-all should display backspace characters (not strip them)
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=caret")
+        .arg("--decorations=never")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("^H"))
+        .stderr("");
+}
+
+#[test]
 fn no_paging_arg() {
     bat()
         .arg("--no-paging")

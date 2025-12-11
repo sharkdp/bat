@@ -29,8 +29,7 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
-use crate::preprocessor::strip_ansi;
-use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::preprocessor::{expand_tabs, replace_nonprintable, strip_ansi, strip_overstrike};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
@@ -199,6 +198,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    strip_overstrike: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -263,17 +263,22 @@ impl<'a> InteractivePrinter<'a> {
             || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
-        let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
+        let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
             const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
+            const MANPAGE_SYNTAX: &str = "Manpage";
+            const COMMAND_HELP_SYNTAX: &str = "Command Help";
             match assets.get_syntax(config.language, input, &config.syntax_mapping) {
                 Ok(syntax_in_set) => (
                     syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
+                    syntax_in_set.syntax.name == MANPAGE_SYNTAX
+                        || syntax_in_set.syntax.name == COMMAND_HELP_SYNTAX,
                     Some(HighlighterFromSet::new(syntax_in_set, theme)),
                 ),
 
                 Err(Error::UndetectedSyntax(_)) => (
                     true,
+                    false,
                     Some(
                         assets
                             .find_syntax_by_name(PLAIN_TEXT_SYNTAX)?
@@ -285,7 +290,7 @@ impl<'a> InteractivePrinter<'a> {
                 Err(e) => return Err(e),
             }
         } else {
-            (false, None)
+            (false, false, None)
         };
 
         // Determine when to strip ANSI sequences
@@ -310,6 +315,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            strip_overstrike,
         })
     }
 
@@ -621,6 +627,12 @@ impl Printer for InteractivePrinter<'_> {
                     }
                 }
             };
+
+            if self.strip_overstrike {
+                if let Some(pos) = line.find('\x08') {
+                    line = strip_overstrike(&line, pos).into();
+                }
+            }
 
             // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
             if self.strip_ansi {
