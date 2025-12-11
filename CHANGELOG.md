@@ -2,7 +2,7 @@
 
 ## Features
 
-- Strip overstriking before applying syntax highlighting to better support man pages, see #3517 (@akirk)
+- Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
