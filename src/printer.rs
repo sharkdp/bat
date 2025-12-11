@@ -263,34 +263,34 @@ impl<'a> InteractivePrinter<'a> {
             || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
-        let (is_plain_text, highlighter_from_set, syntax_name) = if needs_to_match_syntax {
+        let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
             const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
+            const MANPAGE_SYNTAX: &str = "Manpage";
+            const COMMAND_HELP_SYNTAX: &str = "Command Help";
             match assets.get_syntax(config.language, input, &config.syntax_mapping) {
-                Ok(syntax_in_set) => {
-                    let syntax_name = syntax_in_set.syntax.name.as_str();
-                    (
-                        syntax_name == PLAIN_TEXT_SYNTAX,
-                        Some(HighlighterFromSet::new(syntax_in_set, theme)),
-                        syntax_name,
-                    )
-                }
+                Ok(syntax_in_set) => (
+                    syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
+                    syntax_in_set.syntax.name == MANPAGE_SYNTAX
+                        || syntax_in_set.syntax.name == COMMAND_HELP_SYNTAX,
+                    Some(HighlighterFromSet::new(syntax_in_set, theme)),
+                ),
 
                 Err(Error::UndetectedSyntax(_)) => (
                     true,
+                    false,
                     Some(
                         assets
                             .find_syntax_by_name(PLAIN_TEXT_SYNTAX)?
                             .map(|s| HighlighterFromSet::new(s, theme))
                             .expect("A plain text syntax is available"),
                     ),
-                    PLAIN_TEXT_SYNTAX,
                 ),
 
                 Err(e) => return Err(e),
             }
         } else {
-            (false, None, "")
+            (false, false, None)
         };
 
         // Determine when to strip ANSI sequences
@@ -301,9 +301,6 @@ impl<'a> InteractivePrinter<'a> {
             StripAnsiMode::Auto => true,
             _ => false,
         };
-
-        // Strip overstrike for man pages and help messages.
-        let strip_overstrike = matches!(syntax_name, "Manpage" | "Command Help");
 
         Ok(InteractivePrinter {
             panel_width,
