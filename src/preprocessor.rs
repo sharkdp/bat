@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::fmt::Write;
 
 use crate::{
@@ -157,29 +156,26 @@ pub fn strip_ansi(line: &str) -> String {
 /// - Underline: `_\x08X` (underscore, backspace, character)
 ///
 /// This function removes these sequences, keeping only the visible character.
-pub fn strip_overstrike(line: &str) -> Cow<'_, str> {
-    let Some(first_bs) = line.find('\x08') else {
-        return Cow::Borrowed(line);
-    };
-
+/// `first_backspace` is the position of the first backspace in the line.
+pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
     let mut output = String::with_capacity(line.len());
-    output.push_str(&line[..first_bs]);
+    output.push_str(&line[..first_backspace]);
     output.pop();
 
-    let mut remaining = &line[first_bs + 1..];
+    let mut remaining = &line[first_backspace + 1..];
 
     loop {
-        if let Some(bs_pos) = remaining.find('\x08') {
-            output.push_str(&remaining[..bs_pos]);
+        if let Some(pos) = remaining.find('\x08') {
+            output.push_str(&remaining[..pos]);
             output.pop();
-            remaining = &remaining[bs_pos + 1..];
+            remaining = &remaining[pos + 1..];
         } else {
             output.push_str(remaining);
             break;
         }
     }
 
-    Cow::Owned(output)
+    output
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
@@ -247,27 +243,21 @@ fn test_strip_ansi() {
 
 #[test]
 fn test_strip_overstrike() {
-    // No overstrike - should return borrowed reference
-    assert_eq!(strip_overstrike("no overstrike"), "no overstrike");
-
-    // Empty string
-    assert_eq!(strip_overstrike(""), "");
-
     // Bold: X\x08X (same char repeated)
-    assert_eq!(strip_overstrike("H\x08Hello"), "Hello");
+    assert_eq!(strip_overstrike("H\x08Hello", 1), "Hello");
 
     // Underline: _\x08X (underscore before char)
-    assert_eq!(strip_overstrike("_\x08Hello"), "Hello");
+    assert_eq!(strip_overstrike("_\x08Hello", 1), "Hello");
 
     // Multiple overstrike sequences
-    assert_eq!(strip_overstrike("B\x08Bo\x08ol\x08ld\x08d"), "Bold");
+    assert_eq!(strip_overstrike("B\x08Bo\x08ol\x08ld\x08d", 1), "Bold");
 
     // Backspace at start of line (nothing to pop)
-    assert_eq!(strip_overstrike("\x08Hello"), "Hello");
+    assert_eq!(strip_overstrike("\x08Hello", 0), "Hello");
 
     // Multiple consecutive backspaces
-    assert_eq!(strip_overstrike("ABC\x08\x08\x08XYZ"), "XYZ");
+    assert_eq!(strip_overstrike("ABC\x08\x08\x08XYZ", 3), "XYZ");
 
     // Unicode with overstrike
-    assert_eq!(strip_overstrike("ä\x08äöü"), "äöü");
+    assert_eq!(strip_overstrike("ä\x08äöü", 2), "äöü");
 }

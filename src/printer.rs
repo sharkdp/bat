@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -634,8 +633,10 @@ impl Printer for InteractivePrinter<'_> {
                 }
             };
 
-            if self.strip_overstrike && line.contains('\x08') {
-                line = Cow::Owned(strip_overstrike(&line).into_owned());
+            if self.strip_overstrike {
+                if let Some(pos) = line.find('\x08') {
+                    line = strip_overstrike(&line, pos).into();
+                }
             }
 
             // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
