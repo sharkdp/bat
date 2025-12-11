@@ -270,14 +270,18 @@ impl<'a> InteractivePrinter<'a> {
             || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
-        let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
+        let (is_plain_text, highlighter_from_set, syntax_name) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
             const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
             match assets.get_syntax(config.language, input, &config.syntax_mapping) {
-                Ok(syntax_in_set) => (
-                    syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
-                    Some(HighlighterFromSet::new(syntax_in_set, theme)),
-                ),
+                Ok(syntax_in_set) => {
+                    let syntax_name = syntax_in_set.syntax.name.as_str();
+                    (
+                        syntax_name == PLAIN_TEXT_SYNTAX,
+                        Some(HighlighterFromSet::new(syntax_in_set, theme)),
+                        syntax_name,
+                    )
+                }
 
                 Err(Error::UndetectedSyntax(_)) => (
                     true,
@@ -287,12 +291,13 @@ impl<'a> InteractivePrinter<'a> {
                             .map(|s| HighlighterFromSet::new(s, theme))
                             .expect("A plain text syntax is available"),
                     ),
+                    PLAIN_TEXT_SYNTAX,
                 ),
 
                 Err(e) => return Err(e),
             }
         } else {
-            (false, None)
+            (false, None, "")
         };
 
         // Determine when to strip ANSI sequences
@@ -304,8 +309,8 @@ impl<'a> InteractivePrinter<'a> {
             _ => false,
         };
 
-        // Strip overstrike only when we have syntax highlighting (not plain text).
-        let strip_overstrike = !is_plain_text;
+        // Strip overstrike for man pages and help messages.
+        let strip_overstrike = matches!(syntax_name, "Manpage" | "Command Help");
 
         Ok(InteractivePrinter {
             panel_width,

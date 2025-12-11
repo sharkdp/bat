@@ -2556,7 +2556,7 @@ fn no_strip_overstrike_for_plain_text() {
 
 #[test]
 fn strip_overstrike_with_syntax_highlighting() {
-    // Overstrike is stripped when syntax highlighting is applied (e.g., for help)
+    // Overstrike is stripped for certain syntax highlighting like command help.
     bat()
         .arg("--force-colorization")
         .arg("--language=help")
@@ -2578,6 +2578,19 @@ fn strip_overstrike_for_manpage_syntax() {
         .stdout(predicate::str::contains("NAME"))
         .stdout(predicate::str::contains("git-commit - Record changes"))
         .stdout(predicate::str::is_match(r"\x1b\[38;[0-9;]+m--interactive\x1b\[").unwrap())
+        .stderr("");
+}
+
+#[test]
+fn no_strip_overstrike_for_other_syntax() {
+    // Overstrike is NOT stripped for other syntaxes (e.g., Rust)
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=rust")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x08"))
         .stderr("");
 }
 
