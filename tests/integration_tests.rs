@@ -2582,6 +2582,20 @@ fn strip_overstrike_for_manpage_syntax() {
 }
 
 #[test]
+fn show_all_shows_backspace_with_caret_notation() {
+    // --show-all should display backspace characters (not strip them)
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=caret")
+        .arg("--decorations=never")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("^H"))
+        .stderr("");
+}
+
+#[test]
 fn no_paging_arg() {
     bat()
         .arg("--no-paging")
