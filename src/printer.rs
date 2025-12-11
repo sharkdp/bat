@@ -151,7 +151,7 @@ impl Printer for SimplePrinter<'_> {
                     self.config.nonprintable_notation,
                 );
                 write!(handle, "{line}")?;
-            } else if self.config.binary == BinaryBehavior::AsText {
+            } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
                     OutputHandle::FmtWrite(handle) => {
@@ -163,13 +163,6 @@ impl Printer for SimplePrinter<'_> {
                                     .to_string()
                             ))?
                         )?;
-                    }
-                }
-            } else {
-                match handle {
-                    OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
-                    OutputHandle::FmtWrite(handle) => {
-                        write!(handle, "{}", String::from_utf8_lossy(line_buffer))?;
                     }
                 }
             };
