@@ -5,6 +5,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Fix crash with BusyBox `less` on Windows, see #3518 (@Anchal-T)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 
