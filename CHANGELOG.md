@@ -2,7 +2,7 @@
 
 ## Features
 
-- Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
+- Improve native man pages and command help syntax highlighting by stripping overstriking, see #3527 (@akirk)
 
 ## Bugfixes
 - Fix crash with BusyBox `less` on Windows, see #3518 (@Anchal-T)
