@@ -405,7 +405,7 @@ impl App {
                         Some("character") => WrappingMode::Character,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if style_components.plain() {
+                            if style_components.plain() && maybe_term_width.is_none() {
                                 WrappingMode::NoWrapping(false)
                             } else {
                                 WrappingMode::Character
