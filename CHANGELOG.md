@@ -1,5 +1,7 @@
 # unreleased
 
+- Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
+
 ## Features
 
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
