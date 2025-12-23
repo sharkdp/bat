@@ -3631,3 +3631,17 @@ fn style_components_will_merge_with_env_var() {
         .stdout("     STDIN\n   1 test\n")
         .stderr("");
 }
+
+// Test for https://github.com/sharkdp/bat/issues/3526
+#[test]
+fn plain_with_sized_terminal_width() {
+    bat()
+        .arg("--plain")
+        .arg("--terminal-width=6")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello \nworld\n")
+        .stderr("");
+}
