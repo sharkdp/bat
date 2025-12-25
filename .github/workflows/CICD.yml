@@ -195,9 +195,7 @@ jobs:
 
     - name: Install cross
       if: matrix.job.use-cross
-      uses: taiki-e/install-action@v2
-      with:
-        tool: cross
+      run: cargo install cross --git https://github.com/cross-rs/cross --rev 588b3c99db52b5a9c5906fab96cfadcf1bde7863
 
     - name: Overwrite build command env variable
       if: matrix.job.use-cross
