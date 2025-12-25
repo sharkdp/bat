@@ -11,6 +11,7 @@
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 
 ## Other
+- Use git version of cross. See #3533 (@OctopusET)
 
 ## Syntaxes
 
