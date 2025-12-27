@@ -1357,27 +1357,33 @@ fn disable_pager_if_pp_flag_comes_after_paging() {
 }
 
 #[test]
+#[serial]
 fn enable_pager_if_disable_paging_flag_comes_before_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("-P")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("-P")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn enable_pager_if_pp_flag_comes_before_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("-pp")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("-pp")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -1394,15 +1400,18 @@ fn paging_does_not_override_simple_plain() {
 }
 
 #[test]
+#[serial]
 fn simple_plain_does_not_override_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("--paging=always")
-        .arg("--plain")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n"));
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("--plain")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
