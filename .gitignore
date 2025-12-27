@@ -1,6 +1,10 @@
 /target/
 **/*.rs.bk
 
+# Editors
+.idea/
+.vscode/
+
 # Generated files
 /assets/completions/_bat.ps1
 /assets/completions/bat.bash
