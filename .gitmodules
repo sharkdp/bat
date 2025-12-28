@@ -130,7 +130,7 @@
 	url = https://github.com/djuretic/SublimeStrace
 [submodule "assets/syntaxes/Jinja2"]
 	path = assets/syntaxes/02_Extra/Jinja2
-	url = https://github.com/Martin819/sublime-jinja2
+	url = https://github.com/ltrzesniewski/sublime-jinja2.git
 [submodule "assets/syntaxes/SLS"]
 	path = assets/syntaxes/02_Extra/SLS
 	url = https://github.com/saltstack/sublime-text
