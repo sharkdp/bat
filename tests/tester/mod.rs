@@ -52,7 +52,7 @@ impl BatTester {
 impl Default for BatTester {
     fn default() -> Self {
         let temp_dir = create_sample_directory().expect("sample directory");
-        
+
         let exe = assert_cmd::cargo::cargo_bin!("bat").to_path_buf();
 
         BatTester { temp_dir, exe }
