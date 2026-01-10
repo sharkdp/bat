@@ -9,6 +9,7 @@
 ## Bugfixes
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
+- Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
 
