@@ -20,6 +20,8 @@
 
 ## Themes
 
+- Remove the Visual Studio Dark+ theme, see #3552 (@CosmicHorrorDev)
+
 ## `bat` as a library
 
 # v0.26.1
