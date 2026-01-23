@@ -15,6 +15,7 @@
 
 ## Syntaxes
 
+- Add syntax highlighting for [Just](https://github.com/casey/just) command runner files, see #3557 (@an0nfunc)
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 
