@@ -99,13 +99,13 @@ pub struct Config<'a> {
     #[cfg(feature = "lessopen")]
     pub use_lessopen: bool,
 
-    // Weather or not to set terminal title when using a pager
+    // Whether or not to set terminal title when using a pager
     pub set_terminal_title: bool,
 
     /// The maximum number of consecutive empty lines to display
     pub squeeze_lines: Option<usize>,
 
-    // Weather or not to set terminal title when using a pager
+    // Whether or not to strip ANSI escape codes from the input
     pub strip_ansi: StripAnsiMode,
 }
 
