@@ -105,7 +105,7 @@ pub struct Config<'a> {
     /// The maximum number of consecutive empty lines to display
     pub squeeze_lines: Option<usize>,
 
-    // Whether or not to set terminal title when using a pager
+    // Whether or not to strip ANSI escape codes from the input 
     pub strip_ansi: StripAnsiMode,
 }
 
