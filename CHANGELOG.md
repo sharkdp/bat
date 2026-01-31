@@ -4,6 +4,7 @@
 
 ## Features
 
+- Add `--quiet-empty` (`-E`) flag to suppress output when input is empty, see #1936 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
