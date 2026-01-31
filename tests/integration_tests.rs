@@ -3654,3 +3654,33 @@ fn plain_with_sized_terminal_width() {
         .stdout("hello \nworld\n")
         .stderr("");
 }
+
+#[test]
+fn quiet_empty_suppresses_output_on_empty_stdin() {
+    bat()
+        .arg("--quiet-empty")
+        .write_stdin("")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn quiet_empty_does_not_affect_non_empty_input() {
+    bat()
+        .arg("--quiet-empty")
+        .write_stdin("hello\n")
+        .assert()
+        .success()
+        .stdout("hello\n");
+}
+
+#[test]
+fn quiet_empty_suppresses_output_on_empty_file() {
+    bat()
+        .arg("--quiet-empty")
+        .arg("empty.txt")
+        .assert()
+        .success()
+        .stdout("");
+}
