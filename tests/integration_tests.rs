@@ -3654,3 +3654,35 @@ fn plain_with_sized_terminal_width() {
         .stdout("hello \nworld\n")
         .stderr("");
 }
+
+
+#[test]
+fn no_header_flag_keeps_content() {
+    bat()
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=default")
+        .arg("--no-header")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("Single Line")
+                .and(predicate::str::contains("File:").not()),
+        )
+        .stderr("");
+}
+
+#[test]
+fn unknown_theme_errors() {
+    bat()
+        .arg("--theme=ThemeDoesNotExist")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Unknown theme 'ThemeDoesNotExist'"))
+        .stderr(predicate::str::contains("--list-themes"));
+}

@@ -516,6 +516,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("no-header")
+                .long("no-header")
+                .action(ArgAction::SetTrue)
+                .help("Disable the file header.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("line-range")
                 .long("line-range")
                 .short('r')

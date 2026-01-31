@@ -613,6 +613,11 @@ impl App {
             )),
         };
 
+        if matches.get_flag("no-header") {
+            styled_components.0.remove(&StyleComponent::HeaderFilename);
+            styled_components.0.remove(&StyleComponent::HeaderFilesize);
+        }
+
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
             bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
