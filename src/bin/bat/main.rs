@@ -276,6 +276,15 @@ fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
 
 fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
+    if config.theme != "ansi-light" && config.theme != "ansi-dark" {
+        let theme_known = assets.themes().any(|theme| theme == config.theme);
+        if !theme_known {
+            return Err(Error::Msg(format!(
+                "Unknown theme '{theme}'. Use '--list-themes' to list available themes.",
+                theme = config.theme,
+            )));
+        }
+    }
     let controller = Controller::new(config, &assets);
     if config.paging_mode != PagingMode::Never && config.set_terminal_title {
         set_terminal_title_to(get_new_terminal_title(&inputs));
