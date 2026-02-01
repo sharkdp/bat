@@ -688,6 +688,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long("build")
                         .short('b')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("clear")
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -699,9 +700,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long("clear")
                         .short('c')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("build")
                         .help("Remove the cached syntax definitions and themes."),
                 )
-                .group(ArgGroup::new("cache-actions").args(["build", "clear"]))
                 .arg(
                     Arg::new("source")
                         .long("source")
