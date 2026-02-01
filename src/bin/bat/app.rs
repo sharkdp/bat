@@ -403,6 +403,7 @@ impl App {
                 if !self.matches.get_flag("chop-long-lines") {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
+                        Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
                             if style_components.plain() && maybe_term_width.is_none() {
