@@ -1,3 +1,4 @@
+.direnv/
 /target/
 **/*.rs.bk
 
@@ -12,3 +13,5 @@
 /assets/completions/bat.zsh
 /assets/manual/bat.1
 /assets/metadata.yaml
+
+
