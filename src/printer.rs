@@ -454,6 +454,11 @@ impl Printer for InteractivePrinter<'_> {
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
+        // If input is empty and quiet_empty is enabled, skip all output
+        if self.content_type.is_none() && self.config.quiet_empty {
+            return Ok(());
+        }
+
         if add_header_padding && self.config.style_components.rule() {
             self.print_horizontal_line_term(handle, self.colors.rule)?;
         }
@@ -556,6 +561,11 @@ impl Printer for InteractivePrinter<'_> {
     }
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
+        // If input is empty and quiet_empty is enabled, skip footer
+        if self.content_type.is_none() && self.config.quiet_empty {
+            return Ok(());
+        }
+
         if self.config.style_components.grid()
             && (self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable

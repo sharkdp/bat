@@ -644,6 +644,18 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Show diagnostic information for bug reports."),
         )
         .arg(
+            Arg::new("quiet-empty")
+                .long("quiet-empty")
+                .short('E')
+                .action(ArgAction::SetTrue)
+                .help("Produce no output when the input is empty.")
+                .long_help(
+                    "When this flag is set, bat will produce no output at all when \
+                     the input is empty. This is useful when piping commands that may \
+                     produce empty output, like 'git diff'.",
+                ),
+        )
+        .arg(
             Arg::new("acknowledgements")
                 .long("acknowledgements")
                 .action(ArgAction::SetTrue)

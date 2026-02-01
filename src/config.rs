@@ -107,6 +107,9 @@ pub struct Config<'a> {
 
     // Whether or not to strip ANSI escape codes from the input
     pub strip_ansi: StripAnsiMode,
+
+    /// Whether or not to produce no output when input is empty
+    pub quiet_empty: bool,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
