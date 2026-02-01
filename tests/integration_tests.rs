@@ -3664,8 +3664,9 @@ fn cache_help_shows_help_message() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Modify the syntax-definition and theme cache"))
+        .stdout(predicate::str::contains(
+            "Modify the syntax-definition and theme cache",
+        ))
         .stdout(predicate::str::contains("--build"))
         .stdout(predicate::str::contains("--clear"));
 }
-
