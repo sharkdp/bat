@@ -186,6 +186,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--acknowledgements'      , 'acknowledgements'      , [CompletionResultType]::ParameterName, 'Show acknowledgements.')
             [CompletionResult]::new('--set-terminal-title'    , 'set-terminal-title'    , [CompletionResultType]::ParameterName, 'Sets terminal title to filenames when using a pager.')
             [CompletionResult]::new('--diagnostic'            , 'diagnostic'            , [CompletionResultType]::ParameterName, 'Show diagnostic information for bug reports.')
+            [CompletionResult]::new('--quiet-empty'           , 'quiet-empty'           , [CompletionResultType]::ParameterName, 'Do not produce any output when the input is empty.')
         #   [CompletionResult]::new('-h'                      , 'h'                     , [CompletionResultType]::ParameterName, 'Print this help message.')
             [CompletionResult]::new('--help'                  , 'help'                  , [CompletionResultType]::ParameterName, 'Print this help message.')
         #   [CompletionResult]::new('-V'                      , 'V'                     , [CompletionResultType]::ParameterName, 'Show version information.')

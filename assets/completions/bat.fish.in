@@ -61,7 +61,7 @@ function __bat_no_excl_args
         -s V -l version \
         -l acknowledgements \
         -l config-dir -l config-file \
-        -l diagnostic \
+        -l diagnostic -l quiet-empty \
         -l list-languages -l list-themes
 end
 
@@ -159,6 +159,7 @@ complete -c $bat -l config-file -f -d "Display location of configuration file" -
 complete -c $bat -l decorations -x -a "$decorations_opts" -d "When to use --style decorations" -n __bat_no_excl_args
 
 complete -c $bat -l diagnostic -d "Print diagnostic info for bug reports" -n __fish_is_first_arg
+complete -c $bat -l quiet-empty -d "Do not produce any output when the input is empty" -n __fish_is_first_arg
 
 complete -c $bat -s d -l diff -d "Only show lines with Git changes" -n __bat_no_excl_args
 

@@ -60,6 +60,8 @@ Options:
           Display all supported languages.
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
+  -E, --quiet-empty
+          Produce no output when the input is empty.
   -h, --help
           Print help (see more with '--help')
   -V, --version

@@ -212,6 +212,10 @@ Options:
       --diagnostic
           Show diagnostic information for bug reports.
 
+  -E, --quiet-empty
+          When this flag is set, bat will produce no output at all when the input is empty. This is
+          useful when piping commands that may produce empty output, like 'git diff'.
+
       --acknowledgements
           Show acknowledgements.
 

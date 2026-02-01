@@ -62,6 +62,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --completion='[show shell completion for a certain shell]:shell:(bash fish zsh ps1)'
         --set-terminal-title'[sets terminal title to filenames when using a pager]'
         --diagnostic'[show diagnostic information for bug reports]'
+        --quiet-empty'[do not produce any output when the input is empty]'
         -P'[disable paging]'
         "--no-config[don't use the configuration file]"
         "--no-custom-assets[don't load custom assets]"
