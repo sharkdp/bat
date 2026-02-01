@@ -11,4 +11,3 @@ impl Default for WrappingMode {
         WrappingMode::NoWrapping(false)
     }
 }
-
