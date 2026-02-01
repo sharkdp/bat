@@ -755,7 +755,7 @@ impl Printer for InteractivePrinter<'_> {
             }
         } else {
             let use_word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
-            
+
             for &(style, region) in &regions {
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
@@ -776,8 +776,9 @@ impl Printer for InteractivePrinter<'_> {
                             if use_word_wrap {
                                 // Word wrapping mode: wrap at word boundaries
                                 for word in text.split_inclusive(' ') {
-                                    let word_width: usize = word.chars().map(|c| c.width().unwrap_or(0)).sum();
-                                    
+                                    let word_width: usize =
+                                        word.chars().map(|c| c.width().unwrap_or(0)).sum();
+
                                     if current_width + word_width <= max_width {
                                         // Word fits on current line
                                         line_buf.push_str(word);
@@ -792,7 +793,9 @@ impl Printer for InteractivePrinter<'_> {
                                                         "{} ",
                                                         self.decorations
                                                             .iter()
-                                                            .map(|d| d.generate(line_number, true, self).text)
+                                                            .map(|d| d
+                                                                .generate(line_number, true, self)
+                                                                .text)
                                                             .collect::<Vec<String>>()
                                                             .join(" ")
                                                     ))
@@ -800,7 +803,7 @@ impl Printer for InteractivePrinter<'_> {
                                                     Some("".to_string())
                                                 }
                                             }
-                                            
+
                                             // Flush current line
                                             write!(
                                                 handle,
@@ -816,22 +819,27 @@ impl Printer for InteractivePrinter<'_> {
                                                 self.ansi_style.to_reset_sequence(),
                                                 panel_wrap.clone().unwrap()
                                             )?;
-                                            
+
                                             cursor = 0;
                                             max_width = cursor_max;
                                             line_buf.clear();
                                         }
-                                        
+
                                         // Add word to new line (trim leading space after wrap)
                                         let word_trimmed = word.trim_start();
                                         line_buf.push_str(word_trimmed);
-                                        current_width = word_trimmed.chars().map(|c| c.width().unwrap_or(0)).sum();
+                                        current_width = word_trimmed
+                                            .chars()
+                                            .map(|c| c.width().unwrap_or(0))
+                                            .sum();
                                     } else {
                                         // Word is too long for a single line, fall back to character wrapping
                                         for c in word.chars() {
                                             let cw = c.width().unwrap_or(0);
-                                            
-                                            if current_width + cw > max_width && !line_buf.is_empty() {
+
+                                            if current_width + cw > max_width
+                                                && !line_buf.is_empty()
+                                            {
                                                 // Generate wrap padding if not already generated
                                                 if panel_wrap.is_none() {
                                                     panel_wrap = if self.panel_width > 0 {
@@ -839,7 +847,13 @@ impl Printer for InteractivePrinter<'_> {
                                                             "{} ",
                                                             self.decorations
                                                                 .iter()
-                                                                .map(|d| d.generate(line_number, true, self).text)
+                                                                .map(|d| d
+                                                                    .generate(
+                                                                        line_number,
+                                                                        true,
+                                                                        self
+                                                                    )
+                                                                    .text)
                                                                 .collect::<Vec<String>>()
                                                                 .join(" ")
                                                         ))
@@ -847,7 +861,7 @@ impl Printer for InteractivePrinter<'_> {
                                                         Some("".to_string())
                                                     }
                                                 }
-                                                
+
                                                 write!(
                                                     handle,
                                                     "{}{}\n{}",
@@ -862,13 +876,13 @@ impl Printer for InteractivePrinter<'_> {
                                                     self.ansi_style.to_reset_sequence(),
                                                     panel_wrap.clone().unwrap()
                                                 )?;
-                                                
+
                                                 cursor = 0;
                                                 max_width = cursor_max;
                                                 line_buf.clear();
                                                 current_width = 0;
                                             }
-                                            
+
                                             line_buf.push(c);
                                             current_width += cw;
                                         }
