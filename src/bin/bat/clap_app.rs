@@ -701,10 +701,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .action(ArgAction::SetTrue)
                         .help("Remove the cached syntax definitions and themes."),
                 )
-                .group(
-                    ArgGroup::new("cache-actions")
-                        .args(["build", "clear"]),
-                )
+                .group(ArgGroup::new("cache-actions").args(["build", "clear"]))
                 .arg(
                     Arg::new("source")
                         .long("source")
