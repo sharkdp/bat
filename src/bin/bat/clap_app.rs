@@ -682,6 +682,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
+                .arg_required_else_help(true)
                 .arg(
                     Arg::new("build")
                         .long("build")
@@ -702,8 +703,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 )
                 .group(
                     ArgGroup::new("cache-actions")
-                        .args(["build", "clear"])
-                        .required(true),
+                        .args(["build", "clear"]),
                 )
                 .arg(
                     Arg::new("source")
