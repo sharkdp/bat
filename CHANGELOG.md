@@ -4,6 +4,7 @@
 
 ## Features
 
+- Add `--wrap=word` option to wrap text at word boundaries, see #3574 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
