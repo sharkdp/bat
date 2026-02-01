@@ -57,10 +57,6 @@ Options:
       --diff-context <N>
           Include N lines of context around added/removed/modified lines when using '--diff'.
 
-  -E, --quiet-empty
-          When this flag is set, bat will produce no output at all when the input is empty. This is
-          useful when piping commands that may produce empty output, like 'git diff'.
-
       --tabs <T>
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
@@ -215,6 +211,10 @@ Options:
 
       --diagnostic
           Show diagnostic information for bug reports.
+
+  -E, --quiet-empty
+          When this flag is set, bat will produce no output at all when the input is empty. This is
+          useful when piping commands that may produce empty output, like 'git diff'.
 
       --acknowledgements
           Show acknowledgements.
