@@ -87,7 +87,7 @@ default-features = false
 features = ["parsing"]
 
 [dependencies.clap]
-version = "4.5.46"
+version = "4.5.56"
 optional = true
 features = ["wrap_help", "cargo"]
 
@@ -123,7 +123,7 @@ toml = { version = "0.9.8", features = ["preserve_order"] }
 walkdir = "2.5"
 
 [build-dependencies.clap]
-version = "4.5.46"
+version = "4.5.56"
 optional = true
 features = ["wrap_help", "cargo"]
 
