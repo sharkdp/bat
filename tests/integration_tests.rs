@@ -3654,3 +3654,16 @@ fn plain_with_sized_terminal_width() {
         .stdout("hello \nworld\n")
         .stderr("");
 }
+#[test]
+fn cache_help_shows_help_message() {
+    // Test that `bat cache --help` works (fixes #3560)
+    bat()
+        .arg("cache")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Modify the syntax-definition and theme cache"))
+        .stdout(predicate::str::contains("--build"))
+        .stdout(predicate::str::contains("--clear"));
+}
+
