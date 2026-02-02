@@ -8,11 +8,14 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Fix pager spawn detection under QEMU user-mode emulation. See #3531 (@OctopusET)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
+- Use git version of cross. See #3533 (@OctopusET)
+- Add CI support for RISC-V 64-bit. See #3532 (@OctopusET)
 
 ## Syntaxes
 

@@ -113,6 +113,10 @@ impl OutputType {
         let args = pager.args;
 
         if pager.kind == PagerKind::Less {
+            if retrieve_less_version(&pager.bin).is_none() {
+                return Ok(OutputType::stdout());
+            }
+
             // less needs to be called with the '-R' option in order to properly interpret the
             // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
             // therefore need to overwrite the arguments and add '-R'.
@@ -166,10 +170,13 @@ impl OutputType {
             p.args(args);
         };
 
-        Ok(p.stdin(Stdio::piped())
-            .spawn()
-            .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout()))
+        Ok(match p.stdin(Stdio::piped()).spawn() {
+            Ok(mut child) => match child.try_wait() {
+                Ok(Some(status)) if !status.success() => OutputType::stdout(),
+                _ => OutputType::Pager(child),
+            },
+            Err(_) => OutputType::stdout(),
+        })
     }
 
     pub(crate) fn stdout() -> Self {
