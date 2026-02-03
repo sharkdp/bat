@@ -4,7 +4,7 @@ use assert_cmd::cargo::CommandCargoExt;
 use std::process::Command;
 
 pub fn bat_raw_command_with_config() -> Command {
-    let mut cmd = Command::cargo_bin("bat").unwrap();
+    let mut cmd = Command::new(assert_cmd::cargo::cargo_bin!("bat"));
     cmd.current_dir("tests/examples");
     cmd.env_remove("BAT_CACHE_PATH");
     cmd.env_remove("BAT_CONFIG_DIR");

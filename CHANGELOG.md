@@ -1,13 +1,18 @@
 # unreleased
 
+- Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
+
 ## Features
 
+- Added an initial `flake.nix` for a ready made development environment; see #3578 (@vorburger)
+- Add `--quiet-empty` (`-E`) flag to suppress output when input is empty. Closes #1936, see #3563 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
+- Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
 
@@ -17,6 +22,8 @@
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 
 ## Themes
+
+- Remove the Visual Studio Dark+ theme, see #3552 (@CosmicHorrorDev)
 
 ## `bat` as a library
 
