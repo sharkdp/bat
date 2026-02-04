@@ -31,12 +31,6 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
   <br>
   <sub>Available on MacOS, Linux, Windows</sub>
 </a>
-</p><p>
-<a href="https://graphite.dev/?utm_source=github&utm_medium=repo&utm_campaign=bat">
-  <img src="doc/sponsors/graphite-logo.jpeg" width="200" alt="Graphite">
-  <br>
-  <strong>Graphite is the AI developer productivity platform helping<br>teams on GitHub ship higher quality software, faster</strong>
-</a>
 </p>
 
 ### Syntax highlighting
@@ -201,17 +195,12 @@ bat main.cpp | xclip
 `MANPAGER` environment variable:
 
 ```bash
-export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
+export MANPAGER="bat -plman"
 man 2 select
 ```
 (replace `bat` with `batcat` if you are on Debian or Ubuntu)
 
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
-
-> [!WARNING]  
-> This will [not work](https://github.com/sharkdp/bat/issues/1145) out of the box with Mandoc's `man` implementation.
->
-> Please either use `batman`, or convert the shell script to a [shebang executable](https://en.wikipedia.org/wiki/Shebang_(Unix)) and point `MANPAGER` to that.
 
 Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
 
@@ -539,6 +528,12 @@ variable to make these changes permanent or use `bat`'s
 > `--style=-grid,+snip` to remove the grid and add back the `snip` component.
 > Or, if you want to override the styles completely, you use `--style=numbers` to
 > only show the line numbers.
+
+### Decorations
+
+By default, `bat` only shows decorations (such as line numbers, file headers, grid borders, etc.) when outputting to an interactive terminal. You can control this behavior with the `--decorations` option. Use `--decorations=always` to show decorations even when piping output to another command, or `--decorations=never` to disable them entirely. Possible values are `auto` (default), `never`, and `always`.
+
+There is also the `--force-colorization` option, which is an alias for `--decorations=always --color=always`. This is useful if you want to keep colorization and decorations when piping `bat`'s output to another program.
 
 ### Adding new syntaxes / language definitions
 

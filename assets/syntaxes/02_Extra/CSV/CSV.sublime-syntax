@@ -79,7 +79,7 @@ contexts:
 
   double_quoted_string:
     - meta_include_prototype: false
-    - meta_scope: string.quoted.double.csv
+    - meta_scope: meta.string.quoted.double.csv
     - match: '""'
       scope: constant.character.escape.csv
     - match: '"'

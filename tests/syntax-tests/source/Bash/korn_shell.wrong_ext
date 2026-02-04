@@ -1,0 +1,19 @@
+#!/bin/ksh
+#
+# https://www.qnx.com/developers/docs/6.4.0/neutrino/user_guide/scripts.html
+# tfind:
+# script to look for strings in various files and dump to less
+
+case $# in
+1)
+    find . -name '*.[ch]' | xargs grep $1 | less
+    exit 0   # good status
+esac
+
+echo "Use tfind stuff_to_find                               "
+echo "      where : stuff_to_find = search string           "
+echo "                                                      "
+echo "e.g. tfind console_state looks through all files in   "    
+echo "     the current directory and below and displays all "
+echo "     instances of console_state."
+exit 1    # bad status

@@ -282,6 +282,10 @@ Show bat's cache directory.
 .IP
 Show diagnostic information for bug reports.
 .HP
+\fB\-\-quiet\-empty\fR
+.IP
+Do not produce any output when the input is empty (e.g. an empty file or empty stdin). This is useful in scripts where silent behavior is preferred for empty input.
+.HP
 \fB\-\-acknowledgements\fR
 .IP
 Show acknowledgements.
