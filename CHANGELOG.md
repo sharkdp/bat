@@ -15,6 +15,7 @@
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
+- Modify the non-printable introduction section in the README-zh.md file. See #3523 (@wm-uniontech)
 
 ## Syntaxes
 
