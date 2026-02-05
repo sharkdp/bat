@@ -60,7 +60,7 @@ unicode-width = "0.2.1"
 globset = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
-serde_yaml = "0.9.28"
+serde_yaml_ng = "0.10.0"
 semver = "1.0"
 path_abs = { version = "0.5", default-features = false }
 clircle = { version = "0.6.1", default-features = false }
