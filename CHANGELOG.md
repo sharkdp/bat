@@ -15,6 +15,7 @@
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
+- Use git version of cross. See #3533 (@OctopusET)
 
 ## Syntaxes
 
