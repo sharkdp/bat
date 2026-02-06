@@ -9,6 +9,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
@@ -34,6 +35,7 @@
 - Add paging to '-h' and '--help' see PR #3478 (@MuntasirSZN)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
@@ -68,6 +70,7 @@
 - Add built-in 'minus' pager, e.g. `bat --pager=builtin` see PR #3402 (@academician)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix UTF-8 BOM not being stripped for syntax detection, see #3314 (@krikera)
 - Fix `BAT_THEME_DARK` and `BAT_THEME_LIGHT` being ignored, see issue #3171 and PR #3168 (@bash)
@@ -150,6 +153,7 @@
 - Syntax highlighting for puppet code blocks within Markdown files, see #3152 (@liliwilson)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix long file name wrapping in header, see #2835 (@FilipRazek)
 - Fix `NO_COLOR` support, see #2767 (@acuteenvy)
@@ -235,6 +239,7 @@
 - Add opt-in (`--features lessopen`) support for `LESSOPEN` and `LESSCLOSE`. See #1597, #1739, #2444, #2602, and #2662 (@Anomalocaridid)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix `more` not being found on Windows when provided via `BAT_PAGER`, see #2570, #2580, and #2651 (@mataha)
 - Switched default behavior of `--map-syntax` to be case insensitive #2520
@@ -280,6 +285,7 @@
 - Implemented `--nonprintable-notation=caret` to support showing non-printable characters using caret notation. See #2429 (@einfachIrgendwer0815)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix `bat cache --clear` not clearing the `--target` dir if specified. See #2393 (@miles170)
 
@@ -312,6 +318,7 @@
 # v0.22.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Bring back pre-processing of ANSI escape characters to so that some common `bat` use cases starts working again. See #2308 (@Enselic)
 
@@ -323,6 +330,7 @@
 - Support for separate system and user config files. See #668 (@patrickpichler)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Prevent fork nightmare with `PAGER=batcat`. See #2235 (@johnmatthiggins)
 - Make `--no-paging`/`-P` override `--paging=...` if passed as a later arg, see #2201 (@themkat)
@@ -361,6 +369,7 @@
 - File extensions are now matched case-insensitively. See #1854, #2181 (@Enselic)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Bump `regex` dependency from 1.5.4 to 1.5.5 to fix [CVE-2022-24713](https://blog.rust-lang.org/2022/03/08/cve-2022-24713.html), see #2145, #2139 (@Enselic)
 - `bat` no longer crashes when encountering files that references missing syntaxes. See #915, #2181 (@Enselic)
@@ -400,6 +409,7 @@
 - Use underline for line highlighting on ANSI, see #1730 (@mdibaiee)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix bash completion on bash 3.x and bash-completion 1.x. See #2066 (@joshpencheon)
 
@@ -439,6 +449,7 @@
 - Include git hash in `bat -V` and `bat --version` output if present. See #1921 (@Enselic)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - First line not shown in diff context. See #1891 (@divagant-martian)
 - Do not ignore syntaxes that handle file names with a `*.conf` extension. See #1703 (@cbolgiano)
@@ -476,6 +487,7 @@
 # v0.18.3
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Bump `git2` dependency to fix build with Rust 1.54, see #1761
 
@@ -487,6 +499,7 @@
 - Ignore known backup/template filename suffixes when selecting the syntax, see #1687 (@scop)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix for a security vulnerability on Windows. Prior to this release, `bat` would execute programs called `less`/`less.exe` from the current working directory (instead of the one from `PATH`) with priority. An attacker might be able to use this by placing a malicious program in a shared directory where the user would execute `bat`. `bat` users on Windows are advised to upgrade to this version. See #1724 and #1472 (@Ry0taK).
 
@@ -507,6 +520,7 @@
 # v0.18.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Mouse support and screen clearing broken for `less` versions with minor version number (581.2), see #1629 and #1639 (@aswild)
 
@@ -536,6 +550,7 @@
 - Use a pager when `bat --list-languages` is called, see #1394 (@stku1985)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - If the last line doesn't end with a newline character, don't add it if `--style=plain`, see #1438 (@Enselic)
 - Only print themes hint in interactive mode (`bat --list-themes`), see #1439 (@rsteube)
@@ -580,6 +595,7 @@
 # v0.17.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Running `bat` without arguments fails ("output file is also an input"), see #1396
 
@@ -592,6 +608,7 @@
 - Pass `-S` ("chop long lines") to `less` if `--wrap=never` is set in `bat`, see #1255 (@gahag)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Detect infinite loop when input and output are the same, see #1193 and #1197 (@niklasmohrin)
 - Throw an error when `bat` is being used as `pager`, see #1343 (@adrian-rivera)
@@ -622,6 +639,7 @@
 - Added `--force-colorization`/`-f` flag to provide an alias for forced color and decoration output, see #1141 (@alexanderkarlis)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fixed non-printable characters display for redirected output, see #1061 (@gsomix)
 - Handle file extension conflicts in `--list-languages`, see #1076 and #1135 (@Kienyew)
@@ -659,6 +677,7 @@
 # v0.15.4
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Added missing Solarized themes, see #1027
 - Fixed highlighting bug in Haskell source files, see #1026
@@ -666,6 +685,7 @@
 # v0.15.3
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Cannot run `bat` with relative paths, see #1022
 - bat mishighlights Users that start with digits in SSH config, see #984
@@ -681,6 +701,7 @@
 # v0.15.2
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix syntax detection for files called 'rails', see #1008
 - Fix potential errors with syntax detection for symlinked files, see #1001
@@ -702,6 +723,7 @@
 # v0.15.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix highlighting of Markdown files, see #963 and #977
 - Fix `base16` theme (was broken since in v0.14), see #972, #934 and #979 (@mk12).
@@ -722,6 +744,7 @@
   context can be controlled with `--diff-context=N`. See #23 and #940
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Error message printed in the middle of the output for another file, see #946
 - Performance improvements when using custom caches (via `bat cache --build`): the `bat` startup time should now be twice as fast (@lzutao).
@@ -746,6 +769,7 @@
   at the right place. See #870 (@jmick414)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Performance problems with C# source code have been fixed, see #677 (@keith-hall)
 - Performance problems with Makefiles have been fixed, see #750 (@keith-hall)
@@ -832,6 +856,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Support combination of multiple styles at the same time, see #857 (@aslpavel)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Do not pass '--no-init' on newer less versions, see #749 and #786 (@sharkdp)
 - 'bat cache' still takes precedence over existing files, see #666 (@sharkdp)
@@ -890,6 +915,7 @@ You can see the API documentation here: https://docs.rs/bat/
 # v0.12.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fixes a bug for older Windows versions (*"The procedure entry point `CreateFile2` could not be located"*), see #643 (@rivy)
 
@@ -903,6 +929,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Added `-L` as an alias for `--list-languages`
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Output looks unbalanced when using '--style=grid,numbers' without 'header', see #571 (@eth-p)
 - issues with filenames starting with "cache", see #584
@@ -944,6 +971,7 @@ You can see the API documentation here: https://docs.rs/bat/
   `--style` to "plain". The second `-p` disables the pager. See #560 and #552 (@eth-p)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Do not replace arguments to `less` when using `--pager`, see #509
 - Binary files will now be indicated by a warning in interactive mode, see #530 #466 #550 (@maxfilov)
@@ -984,6 +1012,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Move the `--config-dir` and `--cache-dir` options from `bat cache` to `bat` and hide them from the help text.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Blank line at the end of output when using `--style=plain`, see #379
 - EOF must be sent twice on stdin if no other input is sent, see #477 (@reidwagner)
@@ -1038,6 +1067,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Shell completions are currently *not* shipped anymore, see #372 for details.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Avoid endless recursion when `PAGER="bat"`, see #383 (@rodorgas)
 
@@ -1107,6 +1137,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Binary files are now detected and not displayed when the output goes to an interactive terminal, see #205
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - JavaDoc comments break syntax highlighting in .java files, see #81
 
@@ -1137,6 +1168,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Use the `ansi_colours` package by @mina86 for better true-color approximation on 8 bit color terminals, see #319 and #202.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Bat Panics on Haskell Source Code, see #314
 - Disable wrapping when `--style=plain`/`-p` is used, see #289
@@ -1168,6 +1200,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - Disable wrapping when `--plain` is used, see #289 (@eth-p)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Can read files named `cache`, see #275 (@BK1603)
 
@@ -1192,6 +1225,7 @@ You can see the API documentation here: https://docs.rs/bat/
 # v0.6.1
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fixed panic when running `bat --list-languages | head`, see #232 (@mchlrhw)
 - Respect `--color` settings for `--list-themes` and `--list-languages`, see #233
@@ -1218,6 +1252,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - The `Default.tmTheme` symlink is not necessary anymore.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 * Using `bat cache --init` leads to duplicated syntaxes, see #206
 
@@ -1243,6 +1278,7 @@ You can see the API documentation here: https://docs.rs/bat/
 - The color for the filename is now the default foreground color. The colors for the grid and the line numbers is now determined from the syntax highlighting theme, which now also works for light backgrounds, see #178.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Escape Sequences get partially stripped, see #182 (@eth-p)
 - Use separate Git repository for snapshot testing, see #165 and #161
@@ -1259,6 +1295,7 @@ You can see the API documentation here: https://docs.rs/bat/
 (this is just a small bugfix release, see 0.4.0 for all features and changes)
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fix problem with `cargo test` when `bat` is not checked out in a Git repository, see #161
 
@@ -1285,6 +1322,7 @@ You can see the API documentation here: https://docs.rs/bat/
 * Improved `--help` text.
 
 ## Bugfixes
+- Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 
 - Fixed crash for (really) small terminal sizes, see #117 (@eth-p)
 - Syntax detection for `.bashrc`, `CMakeLists.txt` etc., see #100
