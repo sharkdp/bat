@@ -1,7 +1,5 @@
 use bat::style::StyleComponentList;
-use clap::{
-    crate_name, crate_version, value_parser, Arg, ArgAction, ColorChoice, Command,
-};
+use clap::{crate_name, crate_version, value_parser, Arg, ArgAction, ColorChoice, Command};
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -694,6 +692,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
+                .disable_help_flag(false)
                 .arg_required_else_help(true)
                 .arg(
                     Arg::new("build")
