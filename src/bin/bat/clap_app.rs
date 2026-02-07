@@ -1,7 +1,5 @@
 use bat::style::StyleComponentList;
-use clap::{
-    crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
-};
+use clap::{crate_name, crate_version, value_parser, Arg, ArgAction, ColorChoice, Command};
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -694,11 +692,20 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
+                .arg_required_else_help(true)
+                .arg(
+                    Arg::new("help")
+                        .short('h')
+                        .long("help")
+                        .action(ArgAction::Help)
+                        .help("Print help"),
+                )
                 .arg(
                     Arg::new("build")
                         .long("build")
                         .short('b')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("clear")
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -710,12 +717,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long("clear")
                         .short('c')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("build")
                         .help("Remove the cached syntax definitions and themes."),
-                )
-                .group(
-                    ArgGroup::new("cache-actions")
-                        .args(["build", "clear"])
-                        .required(true),
                 )
                 .arg(
                     Arg::new("source")
