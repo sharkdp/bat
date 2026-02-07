@@ -16,6 +16,8 @@
 
 ## Other
 
+- Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
+
 ## Syntaxes
 
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
