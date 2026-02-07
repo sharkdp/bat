@@ -692,8 +692,14 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
-                .disable_help_flag(false)
                 .arg_required_else_help(true)
+                .arg(
+                    Arg::new("help")
+                        .short('h')
+                        .long("help")
+                        .action(ArgAction::Help)
+                        .help("Print help"),
+                )
                 .arg(
                     Arg::new("build")
                         .long("build")
