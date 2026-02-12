@@ -103,3 +103,4 @@ The following files have been manually modified after converting from a `.tmLang
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
 * `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.
+* `Just.sublime-syntax` has been added manually from https://github.com/nk9/just_sublime/blob/master/Syntax/Just.sublime-syntax with modifications to use bat's built-in Python and Bash scopes (syntect doesn't support the `extends:` feature used by the original embedded syntaxes).
