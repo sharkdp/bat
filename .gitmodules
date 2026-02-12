@@ -278,3 +278,6 @@
 [submodule "assets/syntaxes/02_Extra/Gomod"]
 	path = assets/syntaxes/02_Extra/Gomod
 	url = https://github.com/mitranim/sublime-gomod
+[submodule "assets/syntaxes/02_Extra/COBOL"]
+	path = assets/syntaxes/02_Extra/COBOL
+	url = https://github.com/adukhan99/sublime_cobol.git
