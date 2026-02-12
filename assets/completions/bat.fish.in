@@ -239,7 +239,7 @@ complete -c $bat -l theme-dark -x -a "(command $bat --list-themes | command cat)
 
 complete -c $bat -l theme-light -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for light backgrounds" -n __bat_no_excl_args
 
-complete -c $bat -s u -l unbuffered -d "This option exists for POSIX-compliance reasons" -n __bat_no_excl_args
+complete -c $bat -s u -l unbuffered -d "Enable unbuffered input reading for streaming use cases" -n __bat_no_excl_args
 
 complete -c $bat -s V -l version -f -d "Show version information" -n __fish_is_first_arg
 

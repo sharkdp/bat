@@ -58,7 +58,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
             default auto full plain changes header header-filename header-filesize grid rule numbers snip'
         \*{-r+,--line-range=}'[only print the specified line range]:start\:end'
         '(* -)'{-L,--list-languages}'[display all supported languages]'
-        '(-u --unbuffered)'--unbuffered'[this option exists for POSIX-compliance reasons]'
+        '(-u --unbuffered)'--unbuffered'[enable unbuffered input reading for streaming use cases]'
         --completion='[show shell completion for a certain shell]:shell:(bash fish zsh ps1)'
         --set-terminal-title'[sets terminal title to filenames when using a pager]'
         --diagnostic'[show diagnostic information for bug reports]'

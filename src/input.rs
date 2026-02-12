@@ -253,6 +253,7 @@ pub(crate) struct InputReader<'a> {
     inner: Box<dyn BufRead + 'a>,
     pub(crate) first_line: Vec<u8>,
     pub(crate) content_type: Option<ContentType>,
+    pub(crate) unbuffered: bool,
 }
 
 impl<'a> InputReader<'a> {
@@ -276,6 +277,7 @@ impl<'a> InputReader<'a> {
             inner: Box::new(reader),
             first_line,
             content_type,
+            unbuffered: false,
         }
     }
 
@@ -292,8 +294,28 @@ impl<'a> InputReader<'a> {
             return read_utf16_line(&mut self.inner, buf, 0x0A, 0x00);
         }
 
+        if self.unbuffered {
+            return self.read_line_unbuffered(buf);
+        }
+
         let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
         Ok(res)
+    }
+
+    fn read_line_unbuffered(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+        let available = self.inner.fill_buf()?;
+        if available.is_empty() {
+            return Ok(!buf.is_empty());
+        }
+        if let Some(pos) = available.iter().position(|&b| b == b'\n') {
+            buf.extend_from_slice(&available[..=pos]);
+            self.inner.consume(pos + 1);
+        } else {
+            let len = available.len();
+            buf.extend_from_slice(available);
+            self.inner.consume(len);
+        }
+        Ok(true)
     }
 }
 
@@ -375,6 +397,89 @@ fn utf16le() {
 
     buffer.clear();
 
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_returns_partial_data() {
+    use std::io::Cursor;
+
+    let content = b"first line\npartial";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line (buffered during new())
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"first line\n", &buffer[..]);
+
+    // Subsequent calls use unbuffered reading
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"partial", &buffer[..]);
+
+    // EOF
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_returns_complete_lines() {
+    use std::io::Cursor;
+
+    let content = b"line1\nline2\n";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"line1\n", &buffer[..]);
+
+    // Second call returns line2 (complete line with newline)
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"line2\n", &buffer[..]);
+
+    // EOF
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_eof_handling() {
+    use std::io::Cursor;
+
+    let content = b"only line\n";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"only line\n", &buffer[..]);
+
+    // EOF - empty buffer returns false
+    buffer.clear();
     let res = reader.read_line(&mut buffer);
     assert!(res.is_ok());
     assert!(!res.unwrap());
