@@ -548,11 +548,14 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('u')
                 .long("unbuffered")
                 .action(ArgAction::SetTrue)
-                .hide_short_help(true)
+                .help("Enable unbuffered input reading for streaming use cases.")
                 .long_help(
-                    "This option exists for POSIX-compliance reasons ('u' is for \
-                     'unbuffered'). The output is always unbuffered - this option \
-                     is simply ignored.",
+                    "Enable unbuffered input reading. When this flag is set, bat will \
+                     display data as soon as it is available, without waiting for a \
+                     complete line. This is useful for streaming use cases like \
+                     'tail -f logfile | bat -u --paging=never'. Note that line numbers \
+                     are automatically disabled in unbuffered mode, and syntax \
+                     highlighting may be imperfect on partial lines.",
                 ),
         )
         .arg(

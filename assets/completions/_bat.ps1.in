@@ -173,7 +173,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         #   [CompletionResult]::new('-L'                      , 'L'                     , [CompletionResultType]::ParameterName, 'Display all supported languages.')
             [CompletionResult]::new('--list-languages'        , 'list-languages'        , [CompletionResultType]::ParameterName, 'Display all supported languages.')
         #   [CompletionResult]::new('-u'                      , 'u'                     , [CompletionResultType]::ParameterName, 'u')
-            [CompletionResult]::new('--unbuffered'            , 'unbuffered'            , [CompletionResultType]::ParameterName, 'unbuffered')
+            [CompletionResult]::new('--unbuffered'            , 'unbuffered'            , [CompletionResultType]::ParameterName, 'Enable unbuffered input reading for streaming use cases')
             [CompletionResult]::new('--completion'            , 'completion'            , [CompletionResultType]::ParameterName, 'Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]')
             [CompletionResult]::new('--no-config'             , 'no-config'             , [CompletionResultType]::ParameterName, 'Do not use the configuration file')
             [CompletionResult]::new('--no-custom-assets'      , 'no-custom-assets'      , [CompletionResultType]::ParameterName, 'Do not load custom assets')

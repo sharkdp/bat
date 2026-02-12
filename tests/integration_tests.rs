@@ -3701,3 +3701,39 @@ fn cache_help_shows_help_message() {
         .stdout(predicate::str::contains("--build"))
         .stdout(predicate::str::contains("--clear"));
 }
+
+#[test]
+fn unbuffered_flag_is_accepted() {
+    bat()
+        .arg("--unbuffered")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn unbuffered_mode_disables_line_numbers() {
+    // When --unbuffered is used, line numbers should be auto-disabled even if requested
+    bat()
+        .arg("--unbuffered")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::starts_with("   1").not());
+}
+
+#[test]
+fn unbuffered_mode_plain_output() {
+    bat()
+        .arg("--unbuffered")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}

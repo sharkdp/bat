@@ -190,8 +190,8 @@ _bat() {
 	$split && return 0
 
 	if [[ $cur == -* ]]; then
-		# --unbuffered excluded intentionally (no-op)
 		COMPREPLY=($(compgen -W "
+			--unbuffered
 			--show-all
 			--nonprintable-notation
 			--binary

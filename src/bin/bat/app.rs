@@ -462,6 +462,7 @@ impl App {
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
             quiet_empty: self.matches.get_flag("quiet-empty"),
+            unbuffered: self.matches.get_flag("unbuffered"),
             theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
@@ -617,6 +618,11 @@ impl App {
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
             bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
+        }
+
+        // Auto-disable line numbers in unbuffered mode to avoid confusion with partial lines
+        if self.matches.get_flag("unbuffered") {
+            styled_components.0.remove(&StyleComponent::LineNumbers);
         }
 
         Ok(styled_components)
