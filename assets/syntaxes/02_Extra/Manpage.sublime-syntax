@@ -69,7 +69,7 @@ contexts:
       escape: '(?={{section_heading}})'
 
   function-call:
-    - match: '\b([A-Za-z0-9_\-]+\.)?([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
+    - match: '(?:\s+)(?:\e\[[\?=]?(?:\d+;?)+[A-Za-z])?([A-Za-z0-9_\-^\e]+\.)?([A-Za-z0-9_\-]+)(?:\e\[[\?=]?(?:\d+;?)+[A-Za-z])?(\()([^)]*)(\))'
       captures:
         1: entity.name.function.man
         2: entity.name.function.man
