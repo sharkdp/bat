@@ -17,6 +17,7 @@
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
+- Modify the non-printable introduction section in the README-zh.md file. See #3523 (@wm-uniontech)
 
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 
