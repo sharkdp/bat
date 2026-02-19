@@ -17,6 +17,7 @@
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 
 ## Other
+- Use git version of cross. See #3533 (@OctopusET)
 
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 
