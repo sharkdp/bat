@@ -107,7 +107,7 @@ impl OutputType {
             Err(_) => {
                 crate::bat_warning!(
                     "Pager '{}' not found, outputting to stdout instead",
-                    pager.bin.to_string_lossy()
+                    pager.bin
                 );
                 return Ok(OutputType::stdout());
             }
