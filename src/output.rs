@@ -105,10 +105,12 @@ impl OutputType {
         let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
             Ok(path) => path,
             Err(_) => {
-                crate::bat_warning!(
-                    "Pager '{}' not found, outputting to stdout instead",
-                    pager.bin
-                );
+                if pager.source != PagerSource::Default {
+                    crate::bat_warning!(
+                        "Pager '{}' not found, outputting to stdout instead",
+                        pager.bin
+                    );
+                }
                 return Ok(OutputType::stdout());
             }
         };
