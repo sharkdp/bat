@@ -365,6 +365,14 @@ You can install `bat` using the [nix package manager](https://nixos.org/nix):
 nix-env -i bat
 ```
 
+### Using mise
+
+You can install `bat` using [mise](https://github.com/jdx/mise), the polyglot tool version manager:
+
+```bash
+mise use -g bat@latest
+```
+
 ### On openSUSE
 
 You can install `bat` with zypper:
