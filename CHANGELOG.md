@@ -129,6 +129,7 @@
 - Map `/var/log/dmesg` files to Syslog syntax #3412 (@keith-hall)
 - Add syntax definition and test file for Go modules(`go.mod` and `go.sum`) highlighting, see #3424 (@DarkMatter-999)
 - Syntax highlighting for typescript code blocks within Markdown files, see #3435 (@MuntasirSZN)
+- Replace `serde_yaml` with `serde_yaml_ng` v0.10.0, see #3480 (@Sachin-Bhat)
 
 ## Themes
 
