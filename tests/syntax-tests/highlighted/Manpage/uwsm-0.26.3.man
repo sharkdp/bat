@@ -1,0 +1,399 @@
+[38;2;190;132;255mUWSM[0m[38;2;249;38;114m([0m[38;2;230;219;116m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                                 [0m[38;2;253;151;31mGeneral[0m[38;2;253;151;31m [0m[38;2;253;151;31mCommands[0m[38;2;253;151;31m [0m[38;2;253;151;31mManual[0m[38;2;248;248;242m                                [0m[38;2;190;132;255mUWSM[0m[38;2;249;38;114m([0m[38;2;230;219;116m1[0m[38;2;249;38;114m)[0m
+
+[38;2;253;151;31mNAME[0m
+[38;2;248;248;242m       UWSM - Universal Wayland Session Manager.[0m
+
+[38;2;253;151;31mSYNOPSIS[0m
+[38;2;248;248;242m       uwsm [0m[38;2;248;248;242m[[0m[38;2;166;226;46m-h[0m[38;2;249;38;114m|[0m[38;2;166;226;46m-v[0m[38;2;248;248;242m][0m[38;2;248;248;242m {subcommand} [0m[38;2;248;248;242m[[0m[38;2;248;248;242moptions ...[0m[38;2;248;248;242m][0m
+
+[38;2;253;151;31mDESCRIPTION[0m
+[38;2;248;248;242m       Launches arbitrary wayland compositor via a set of systemd user units to provide graphical user[0m
+[38;2;248;248;242m       session  with  environment  management, XDG autostart support, clean shutdown. Provides helpers[0m
+[38;2;248;248;242m       for launching applications as scopes or services.[0m
+
+[38;2;253;151;31mSUBCOMMANDS[0m
+[38;2;248;248;242m       select     Select default compositor Entry.[0m
+[38;2;248;248;242m       start      Start compositor and graphical session.[0m
+[38;2;248;248;242m       finalize   Send compositor-set variables and unit startup notification to systemd user manager.[0m
+[38;2;248;248;242m       stop       Stop graphical session and compositor.[0m
+[38;2;248;248;242m       app        Application unit launcher (with Desktop Entry support).[0m
+[38;2;248;248;242m       check      Perform state checks (for scripting and info).[0m
+[38;2;248;248;242m       aux        Technical functions for use inside units.[0m
+
+[38;2;248;248;242m       See corresponding SUBCOMMANDS subsections below for further info.[0m
+
+[38;2;248;248;242m       Help for each subcommand is accessible by running "uwsm {subcommand} [0m[38;2;166;226;46m-h[0m[38;2;248;248;242m".[0m
+
+[38;2;253;151;31mCONFIGURATION[0m
+[38;2;248;248;242m   Files[0m
+[38;2;248;248;242m       In XDG config hierarchy:[0m
+[38;2;248;248;242m       uwsm/env[0m
+[38;2;248;248;242m       uwsm/env.d/*[0m
+[38;2;248;248;242m       uwsm/env-${compositor}[0m
+[38;2;248;248;242m       uwsm/env-${compositor}.d/*   Environment (shell) to  be  sourced  for  the  graphical  session.[0m
+[38;2;248;248;242m                                    Sourced from directories of increasing priority, in each directory[0m
+[38;2;248;248;242m                                    common  file is sourced first, then suffixed files in the order of[0m
+[38;2;248;248;242m                                    items listed in XDG_CURRENT_SESSION var (lowercased).[0m
+[38;2;248;248;242m       uwsm/default-id              Stores Desktop Entry ID of default compositor.[0m
+
+[38;2;248;248;242m       Fallback is also extended into the system part of XDG data hierarchy, this can be used for dis‐[0m
+[38;2;248;248;242m       tro level defaults.[0m
+
+[38;2;248;248;242m   Environment vars[0m
+[38;2;248;248;242m       UWSM_UNIT_RUNG                  (run|home)[0m
+[38;2;248;248;242m                                       Which rung of systemd/user/ hierarchy to manage generated  unit[0m
+[38;2;248;248;242m                                       and drop-in files in: [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_RUNTIME_DIR[0m[38;2;248;248;242m or [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_CONFIG_HOME[0m[38;2;248;248;242m.[0m
+[38;2;248;248;242m       UWSM_TWEAKS                     (boolean value)[0m
+[38;2;248;248;242m                                       Set  to  False  to  remove  and not generate tweak drop-ins for[0m
+[38;2;248;248;242m                                       other software.[0m
+[38;2;248;248;242m       UWSM_FINALIZE_VARNAMES          (whitespace-separated names of env vars)[0m
+[38;2;248;248;242m                                       Additional variables for "uwsm finalize".[0m
+[38;2;248;248;242m       UWSM_WAIT_VARNAMES              (whitespace-separated names of env vars)[0m
+[38;2;248;248;242m                                       Variables to wait for in activation environment before proceed‐[0m
+[38;2;248;248;242m                                       ing to graphical session (in addition to WAYLAND_DISPLAY).[0m
+[38;2;248;248;242m       UWSM_WAIT_VARNAMES_TIMEOUT      (int value)[0m
+[38;2;248;248;242m                                       Seconds to wait for variables to appear in activation  environ‐[0m
+[38;2;248;248;242m                                       ment. Essentially, startup timeout (default: 10).[0m
+[38;2;248;248;242m       UWSM_WAIT_VARNAMES_SETTLETIME   (float value)[0m
+[38;2;248;248;242m                                       Seconds  to  pause  after all expected vars found in activation[0m
+[38;2;248;248;242m                                       environment (default: 0.2).[0m
+[38;2;248;248;242m       UWSM_APP_UNIT_TYPE              (scope|service)[0m
+[38;2;248;248;242m                                       Default unit type for launching apps (default: scope).[0m
+[38;2;248;248;242m       UWSM_SILENT_START               (int or boolean value)[0m
+[38;2;248;248;242m                                       True or 1 to inhibit stdout messages from "uwsm  start".  2  to[0m
+[38;2;248;248;242m                                       also inhibit warnings.[0m
+[38;2;248;248;242m       DEBUG                           (int or boolean value)[0m
+[38;2;248;248;242m                                       True or positive number to dump debug info to stderr.[0m
+
+[38;2;253;151;31mOPERATION OVERVIEW[0m
+[38;2;248;248;242m   Login Sequence Integration[0m
+[38;2;248;248;242m       uwsm  can  be  launched  by using conditional exec in shell profile to replace login shell (see[0m
+[38;2;248;248;242m       Shell Profile Integration section).[0m
+
+[38;2;248;248;242m       Alternatively "uwsm start ..." command can be put into wayland session's Desktop  Entry  to  be[0m
+[38;2;248;248;242m       launched by a display manager (see Use Inside Desktop Entry section).[0m
+
+[38;2;248;248;242m   Compositor Selection[0m
+[38;2;248;248;242m       uwsm  can  run arbitrary compositor command line or a Desktop Entry by ID (specifying Action ID[0m
+[38;2;248;248;242m       is also supported).[0m
+
+[38;2;248;248;242m       Desktop Entry can also be selected via a whiptail menu (see select subcommand section).[0m
+
+[38;2;248;248;242m   Startup[0m
+[38;2;248;248;242m       See start subcommand section for command syntax.[0m
+
+[38;2;248;248;242m       UWSM uses a set of units bound to standard user session targets:[0m
+
+[38;2;248;248;242m       •   wayland-session-pre@.target (bound to graphical-session-pre.target)[0m
+[38;2;248;248;242m           •   wayland-wm-env@.service (environment preloader service)[0m
+[38;2;248;248;242m       •   wayland-session@.target (bound to graphical-session.target)[0m
+[38;2;248;248;242m           •   wayland-wm@.service (service for the selected compositor)[0m
+[38;2;248;248;242m       •   wayland-session-xdg-autostart@.target (bound to xdg-desktop-autostart.target)[0m
+[38;2;248;248;242m       •   wayland-session-envelope@.target (lives through entire lifecycle)[0m
+[38;2;248;248;242m       •   wayland-session-shutdown.target (conflicts with targets above for shutdown)[0m
+[38;2;248;248;242m       •   wayland-session-bindpid@.service (PID-tracking session killswitch)[0m
+[38;2;248;248;242m       •   wayland-session-waitenv.service (delays graphical session until vars appear)[0m
+
+[38;2;248;248;242m       Compositor ID (Desktop Entry ID or executable name) becomes the  specifier  for  all  templated[0m
+[38;2;248;248;242m       units.[0m
+
+[38;2;248;248;242m       At  the  stage of graphical-session-pre.target, the environment saved from "uwsm start" context[0m
+[38;2;248;248;242m       is loaded (or POSIX shell profile is sourced), uwsm environment files are sourced. The delta is[0m
+[38;2;248;248;242m       exported to the systemd and D-Bus activation environments by the environment preloader  service[0m
+[38;2;248;248;242m       and  is  marked  for  cleanup  at  shutdown  stage. Preloader shell context for convenience has[0m
+[38;2;248;248;242m       IN_UWSM_ENV_PRELOADER var set to true.[0m
+
+[38;2;248;248;242m       At the stage  of  graphical-session.target  (before  it)  the  main  compositor  unit  wayland-[0m
+[38;2;248;248;242m       wm@${ID}.service and wayland-session-waitenv.service are started.[0m
+
+[38;2;248;248;242m       Compositor should at least put WAYLAND_DISPLAY variable to systemd activation environment. This[0m
+[38;2;248;248;242m       will  trigger  uwsm's automatic finalization logic. Without WAYLAND_DISPLAY in activation envi‐[0m
+[38;2;248;248;242m       ronment startup will timeout in 10 seconds.[0m
+
+[38;2;248;248;242m       Manual finalization is possible by running "uwsm finalize" (see finalize  subcommand  section),[0m
+[38;2;248;248;242m       also  in  combination  with  tweaking UWSM_WAIT_VARNAMES and UWSM_WAIT_VARNAMES_SETTLETIME vars[0m
+[38;2;248;248;242m       (see Environment vars section).[0m
+
+[38;2;248;248;242m       Successful activation of compositor unit and existence of WAYLAND_DISPLAY in  activation  envi‐[0m
+[38;2;248;248;242m       ronment will allow graphical-session.target to be declared reached.[0m
+
+[38;2;248;248;242m       Finally, xdg-desktop-autostart.target is activated.[0m
+
+[38;2;248;248;242m   Inside session[0m
+[38;2;248;248;242m       It  is  highly recommended to configure the compositor or app launcher to launch apps as scopes[0m
+[38;2;248;248;242m       or services in special user session slices (app.slice, background.slice,  session.slice).  uwsm[0m
+[38;2;248;248;242m       provides custom nested slices for apps to live in and be terminated on session end:[0m
+[38;2;248;248;242m       •   app-graphical.slice[0m
+[38;2;248;248;242m       •   background-graphical.slice[0m
+[38;2;248;248;242m       •   session-graphical.slice[0m
+
+[38;2;248;248;242m       A  helper app subcommand is provided to handle all the systemd-run invocations for you (see app[0m
+[38;2;248;248;242m       subcommand section).[0m
+
+[38;2;248;248;242m       The compositor is launched in session.slice by default (as recommended by [0m[38;2;166;226;46msystemd.[0m[38;2;166;226;46mspecial[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m[38;2;248;248;242m).[0m
+
+[38;2;248;248;242m   Shutdown[0m
+[38;2;248;248;242m       Can be initiated by either:[0m
+[38;2;248;248;242m       •   running uwsm stop[0m
+[38;2;248;248;242m       •   stopping wayland-wm@*.service or wayland-session-envelope@*.target[0m
+[38;2;248;248;242m       •   starting wayland-session-shutdown.target[0m
+
+[38;2;248;248;242m       Systemd stops all user units in reverse, as it usually does. During deactivation of  graphical-[0m
+[38;2;248;248;242m       session-pre.target,  the environment preloader service cleans activation environments by unset‐[0m
+[38;2;248;248;242m       ting all variables that were marked for removal during startup and finalization stages.[0m
+
+[38;2;248;248;242m       Do not use compositor's native exit mechanism or kill its process directly.[0m
+
+[38;2;253;151;31mSUBCOMMANDS[0m
+[38;2;248;248;242m   select[0m
+[38;2;248;248;242m       Selects default wayland session compositor Desktop Entry.[0m
+
+[38;2;248;248;242m           uwsm select[0m
+
+[38;2;248;248;242m       Invokes a whiptail menu to select default session among Desktop Entries in wayland-sessions XDG[0m
+[38;2;248;248;242m       data hierarchy. Writes to ${XDG_CONFIG_HOME}/uwsm/default-id. Nothing else is done.  Returns  1[0m
+[38;2;248;248;242m       if selection is cancelled. Can be used for scripting launch condition in shell profile.[0m
+
+[38;2;248;248;242m   check[0m
+[38;2;248;248;242m       Performs tests, returns 0 on success, 1 on failure.[0m
+
+[38;2;248;248;242m       is-active:[0m
+
+[38;2;248;248;242m           uwsm check is-active [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-v[0m[38;2;248;248;242m] [compositor][0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46m-v[0m[38;2;248;248;242m           show additional info[0m
+[38;2;248;248;242m           compositor   check for specific compositor[0m
+
+[38;2;248;248;242m       Checks  if  unit of specific compositor or graphical-session*.target in general is in active or[0m
+[38;2;248;248;242m       activating state.[0m
+
+[38;2;248;248;242m       may-start:[0m
+
+[38;2;248;248;242m           uwsm check may-start [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-g[0m[38;2;248;248;242m [S]] [[0m[38;2;166;226;46m-v[0m[38;2;248;248;242m|[0m[38;2;166;226;46m-q[0m[38;2;248;248;242m] [N ...][0m
+
+[38;2;248;248;242m           N ...   allowed VT numbers (default: 1)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-g[0m[38;2;248;248;242m S    wait S seconds for graphical.target in queue  (default:  60;  0  or  less  disables[0m
+[38;2;248;248;242m                   check).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-i[0m[38;2;248;248;242m      do not check for login shell[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-r[0m[38;2;248;248;242m      do not check for local session (allow remote session)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-v[0m[38;2;248;248;242m      show all failed tests[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-q[0m[38;2;248;248;242m      be quiet[0m
+
+[38;2;248;248;242m       Checks whether it is OK to launch a wayland session via the following conditions:[0m
+[38;2;248;248;242m       •   DBUS_SESSION_BUS_ADDRESS is set[0m
+[38;2;248;248;242m       •   Running from login shell[0m
+[38;2;248;248;242m       •   System is at graphical.target[0m
+[38;2;248;248;242m       •   User graphical-session*.target units are not yet active[0m
+[38;2;248;248;242m       •   Foreground VT is among allowed (default: 1)[0m
+[38;2;248;248;242m       •   Login session's VT is matching[0m
+
+[38;2;248;248;242m   start[0m
+[38;2;248;248;242m       Generates units for given compositor command line or Desktop Entry and starts them.[0m
+
+[38;2;248;248;242m           uwsm  start  [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m]  [[0m[38;2;166;226;46m-D[0m[38;2;248;248;242m  name[:name...]] [[0m[38;2;166;226;46m-a[0m[38;2;248;248;242m|[0m[38;2;166;226;46m-e[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-N[0m[38;2;248;248;242m Name] [[0m[38;2;166;226;46m-C[0m[38;2;248;248;242m Comment] [[0m[38;2;166;226;46m-U[0m[38;2;248;248;242m {run|home}] [[0m[38;2;166;226;46m-t[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           [[0m[38;2;166;226;46m-o[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-n[0m[38;2;248;248;242m] -- compositor [args ...][0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46m-F[0m[38;2;248;248;242m                  Hardcode mode, always write command line to unit drop-ins and use  full[0m
+[38;2;248;248;242m                               paths.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-D[0m[38;2;248;248;242m name[:name...]   Names to fill XDG_CURRENT_DESKTOP with (:[0m[38;2;166;226;46m-separated[0m[38;2;248;248;242m). Existing var con‐[0m
+[38;2;248;248;242m                               tent is a starting point if no active session is running.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-a[0m[38;2;248;248;242m                  Append desktop names set by [0m[38;2;166;226;46m-D[0m[38;2;248;248;242m to other sources (default).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-e[0m[38;2;248;248;242m                  Use desktop names set by [0m[38;2;166;226;46m-D[0m[38;2;248;248;242m exclusively, discard other sources.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-N[0m[38;2;248;248;242m Name             Fancy name for compositor (filled from Desktop Entry by default).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-C[0m[38;2;248;248;242m Comment          Fancy  description  for  compositor  (filled  from Desktop Entry by de‐[0m
+[38;2;248;248;242m                               fault).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-U[0m[38;2;248;248;242m {run|home}       Select  rung  for  generated  unit  files:  run:  [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_RUNTIME_DIR[0m[38;2;248;248;242m/sys‐[0m
+[38;2;248;248;242m                               temd/user  (default), or home: [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_CONFIG_HOME[0m[38;2;248;248;242m/systemd/user. Permanent[0m
+[38;2;248;248;242m                               destination will save some time by removing need for reloading systemd.[0m
+[38;2;248;248;242m                               Managed files from other rung will  be  removed.  Can  be  preset  with[0m
+[38;2;248;248;242m                               UWSM_UNIT_RUNG environment var.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m                  Do  not  generate  (and  remove)  tweak  unit files. Can be preset with[0m
+[38;2;248;248;242m                               UWSM_TWEAKS=false environment var.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-T[0m[38;2;248;248;242m                  Generate tweak unit files for other software. This is default behavior.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-g[0m[38;2;248;248;242m S                Wait for S seconds for system graphical.target in  queue  and  warn  if[0m
+[38;2;248;248;242m                               timed out or not in queue (default: 60, negative to disable).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-G[0m[38;2;248;248;242m S                Wait  for  S  seconds for system graphical.target in queue and abort if[0m
+[38;2;248;248;242m                               timed out or not in queue (overrides [0m[38;2;166;226;46m-g[0m[38;2;248;248;242m, default: [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m, (disabled)).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-o[0m[38;2;248;248;242m                  Only generate units, but do not start.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-n[0m[38;2;248;248;242m                  Dry run, do not write or start anything.[0m
+
+[38;2;248;248;242m       The first argument of the compositor command line acts as an ID and should be either one of:[0m
+[38;2;248;248;242m       •   Executable name[0m
+[38;2;248;248;242m       •   Desktop Entry ID (optionally with ":"[0m[38;2;166;226;46m-delimited[0m[38;2;248;248;242m action ID)[0m
+[38;2;248;248;242m       •   Special value:[0m
+[38;2;248;248;242m           •   select - invoke menu to select compositor.[0m
+[38;2;248;248;242m           •   default - run previously selected compositor (or select if no selection was saved).[0m
+
+[38;2;248;248;242m       If given as path, hardcode mode will be used implicitly.[0m
+
+[38;2;248;248;242m       Always use "--" to disambiguate dashed arguments intended for compositor itself.[0m
+
+[38;2;248;248;242m       After units are (re)generated, wayland-session-bindpid@${PID}.service is started, to track  the[0m
+[38;2;248;248;242m       PID  of  invoking  uwsm, then uwsm process replaces itself with systemctl execution that starts[0m
+[38;2;248;248;242m       wayland-wm@${ID}.service and waits for it to finish.[0m
+
+[38;2;248;248;242m       In order to complete the startup sequence, the compositor has to put WAYLAND_DISPLAY  into  the[0m
+[38;2;248;248;242m       systemd  activation environment. This can be done explicitly by making compositor run "uwsm fi‐[0m
+[38;2;248;248;242m       nalize" command (see the next subsection).[0m
+
+[38;2;248;248;242m   finalize[0m
+[38;2;248;248;242m       For running by a compositor on startup.[0m
+
+[38;2;248;248;242m           uwsm finalize [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m] [VAR_NAME ...][0m
+
+[38;2;248;248;242m       Exports WAYLAND_DISPLAY, DISPLAY and any defined vars mentioned by names  in  arguments  or  in[0m
+[38;2;248;248;242m       UWSM_FINALIZE_VARNAMES variable (whitespace-separated). Then sends startup notification for the[0m
+[38;2;248;248;242m       unit to systemd user manager.[0m
+
+[38;2;248;248;242m       This  is required if compositor itself does not put WAYLAND_DISPLAY to systemd activation envi‐[0m
+[38;2;248;248;242m       ronment, otherwise wayland-session@.service unit or a dedicated wayland-session-waitenv.service[0m
+[38;2;248;248;242m       unit will terminate due to startup timeout.[0m
+
+[38;2;248;248;242m       UWSM_FINALIZE_VARNAMES variable can be prefilled by plugins.[0m
+
+[38;2;248;248;242m       Direct assignment as VAR_NAME=value is also possible, but recommended only for  creating  flags[0m
+[38;2;248;248;242m       for UWSM_WAIT_VARNAMES mechanism.[0m
+
+[38;2;248;248;242m   stop[0m
+[38;2;248;248;242m       Stops compositor and optionally removes generated units.[0m
+
+[38;2;248;248;242m           uwsm stop [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-r[0m[38;2;248;248;242m [compositor] [[0m[38;2;166;226;46m-U[0m[38;2;248;248;242m {run|home}] [[0m[38;2;166;226;46m-n[0m[38;2;248;248;242m][0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46m-r[0m[38;2;248;248;242m [compositor]   Also remove units (all or only compositor-specific).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-U[0m[38;2;248;248;242m {run|home}     Select  rung for generated unit files: run: [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_RUNTIME_DIR[0m[38;2;248;248;242m/systemd/user[0m
+[38;2;248;248;242m                             (default), or home: [0m[38;2;255;255;255m$[0m[38;2;190;132;255mXDG_CONFIG_HOME[0m[38;2;248;248;242m/systemd/user. Permanent  destination[0m
+[38;2;248;248;242m                             will save some time by removing need for reloading systemd. Managed files[0m
+[38;2;248;248;242m                             from  other rung will be removed. Can be preset with UWSM_UNIT_RUNG envi‐[0m
+[38;2;248;248;242m                             ronment var.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-n[0m[38;2;248;248;242m                Dry run, do not stop or remove anything.[0m
+
+[38;2;248;248;242m   app[0m
+[38;2;248;248;242m       Application-to-unit launcher with Desktop Entry support.[0m
+
+[38;2;248;248;242m           uwsm app [[0m[38;2;166;226;46m-h[0m[38;2;248;248;242m] [[0m[38;2;166;226;46m-s[0m[38;2;248;248;242m {a,b,s,custom.slice}] [[0m[38;2;166;226;46m-t[0m[38;2;248;248;242m {scope,service}] [[0m[38;2;166;226;46m-a[0m[38;2;248;248;242m app_name]  [[0m[38;2;166;226;46m-u[0m[38;2;248;248;242m  unit_name][0m
+[38;2;248;248;242m           [[0m[38;2;166;226;46m-d[0m[38;2;248;248;242m unit_description] [[0m[38;2;166;226;46m-S[0m[38;2;248;248;242m ] [[0m[38;2;166;226;46m-T[0m[38;2;248;248;242m] -- application [args ...][0m
+
+[38;2;248;248;242m           [0m[38;2;166;226;46m-s[0m[38;2;248;248;242m {a,b,s,custom.slice}   Slice selector (default: a):[0m
+[38;2;248;248;242m                                        a - app-graphical.slice[0m
+[38;2;248;248;242m                                        b - background-graphical.slice[0m
+[38;2;248;248;242m                                        s - session-graphical.slice[0m
+[38;2;248;248;242m                                        any slice by full name[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m {scope,service}        Type  of  unit  to  launch  (default:  scope,  can  be  preset by[0m
+[38;2;248;248;242m                                     UWSM_APP_UNIT_TYPE env var).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-a[0m[38;2;248;248;242m app_name               Override app name (a substring in unit name).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-u[0m[38;2;248;248;242m unit_name              Override the whole autogenerated unit name.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-d[0m[38;2;248;248;242m unit_description       Unit Description.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-p[0m[38;2;248;248;242m Property=value         Set additional unit property (option is repeatable).[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-S[0m[38;2;248;248;242m {out,err,both}         Silence stdout, stderr, or both.[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46m-T[0m[38;2;248;248;242m                        Launch app in a terminal. Allows command  to  be  empty  to  just[0m
+[38;2;248;248;242m                                     launch a terminal.[0m
+
+[38;2;248;248;242m       Application  can  be  provided as a command with optional arguments, or a Desktop Entry ID, op‐[0m
+[38;2;248;248;242m       tionally suffixed with ":"[0m[38;2;166;226;46m-delimited[0m[38;2;248;248;242m Action ID. If Desktop Entry is being  launched,  arguments[0m
+[38;2;248;248;242m       should be compatible with it.[0m
+
+[38;2;248;248;242m       Always use "--" to disambiguate dashed arguments intended for application itself.[0m
+
+[38;2;248;248;242m   aux[0m
+[38;2;248;248;242m       For use in systemd user services. Can only be called by systemd user manager.[0m
+
+[38;2;248;248;242m       prepare-env   Prepares  environment  (for  use in ExecStart in wayland-wm-env@.service bound to[0m
+[38;2;248;248;242m                     wayland-session-pre@.target).[0m
+[38;2;248;248;242m       cleanup-env   Cleans up environment (for use ExecStop in in  wayland-wm-env@.service  bound  to[0m
+[38;2;248;248;242m                     wayland-session-pre@.target).[0m
+[38;2;248;248;242m       exec          Executes a command with arguments or a desktop entry (for use in Exec in wayland-[0m
+[38;2;248;248;242m                     wm@.service bound to wayland-session@.target).[0m
+[38;2;248;248;242m       app-daemon    Daemon for faster app argument generation, used by uwsm-app client.[0m
+
+[38;2;253;151;31mAPP DAEMON[0m
+[38;2;248;248;242m       Provided as wayland-wm-app-daemon.service to be started on-demand.[0m
+
+[38;2;248;248;242m       Daemon  receives app arguments from ${XDG_RUNTIME_DIR}/uwsm-app-daemon-in pipe. Resulting argu‐[0m
+[38;2;248;248;242m       ments are formatted as shell code and written to ${XDG_RUNTIME_DIR}/uwsm-app-daemon-out pipe.[0m
+
+[38;2;248;248;242m       Arguments are expected to be \0-delimited, leading \0 are stripped. One command is received per[0m
+[38;2;248;248;242m       write+close.[0m
+
+[38;2;248;248;242m       The first argument determines the behavior:[0m
+
+[38;2;248;248;242m       •   app  the rest is processed the same as in "uwsm app"[0m
+[38;2;248;248;242m       •   ping just "pong" is returnedn[0m
+[38;2;248;248;242m       •   stop daemon is stoppedn[0m
+
+[38;2;248;248;242m       Single commands are prepended with exec, iterated commands are assembled with trailing &  each,[0m
+[38;2;248;248;242m       followed by wait.[0m
+
+[38;2;248;248;242m       The  purpose  of  all this is to skip all the expensive Python startup and import routines that[0m
+[38;2;248;248;242m       slow things down every time "uwsm app" is called. Instead the daemon does it once and then lis‐[0m
+[38;2;248;248;242m       tens for requests, while a simple shell script may dump arguments to one pipe and run the  code[0m
+[38;2;248;248;242m       received from another via eval, which is much faster.[0m
+
+[38;2;248;248;242m       The simplest script is:[0m
+
+[38;2;248;248;242m                #!/bin/sh[0m
+[38;2;248;248;242m                printf '0%s' app "$@" > "${XDG_RUNTIME_DIR}/uwsm-app-daemon-in"[0m
+[38;2;248;248;242m                IFS='' read [0m[38;2;166;226;46m-r[0m[38;2;248;248;242m cmd < "${XDG_RUNTIME_DIR}/uwsm-app-daemon-out"[0m
+[38;2;248;248;242m                eval "[0m[38;2;255;255;255m$[0m[38;2;190;132;255mcmd[0m[38;2;248;248;242m"[0m
+
+[38;2;248;248;242m       Provided  uwsm-app  client  script is a bit smarter: it can start the daemon, applies timeouts,[0m
+[38;2;248;248;242m       and supports newlines in returned args.[0m
+
+[38;2;253;151;31mSHELL PROFILE INTEGRATION[0m
+[38;2;248;248;242m       To launch uwsm automatically on login, add one of constructs below (or similar) to  shell  pro‐[0m
+[38;2;248;248;242m       file.[0m
+
+[38;2;248;248;242m       This asks to select a compositor (or refuse and continue with login shell) when logged in on VT[0m
+[38;2;248;248;242m       1:[0m
+
+[38;2;248;248;242m                if uwsm check may-start && uwsm select; then[0m
+[38;2;248;248;242m                     exec systemd-cat [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m uwsm_start uwsm start default[0m
+[38;2;248;248;242m                fi[0m
+
+[38;2;248;248;242m       This just starts a specific compositor depending on foreground VT:[0m
+
+[38;2;248;248;242m                if uwsm check may-start 1; then[0m
+[38;2;248;248;242m                     exec systemd-cat [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m uwsm_start uwsm start sway.desktop[0m
+[38;2;248;248;242m                elif uwsm check may-start 2; then[0m
+[38;2;248;248;242m                     exec systemd-cat [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m uwsm_start uwsm start labwc.desktop[0m
+[38;2;248;248;242m                fi[0m
+
+[38;2;248;248;242m       Using  "uwsm  check  may-start"  as  a  condition  is essential, not only to prevent accidental[0m
+[38;2;248;248;242m       startup attempts where they are not expected, but also since startup may involve sourcing shell[0m
+[38;2;248;248;242m       profile, which might lead to nasty loops.[0m
+
+[38;2;248;248;242m       See check subcommand section for info on may-start checker.[0m
+
+[38;2;248;248;242m       exec allows uwsm to replace login shell in order to properly bind to user  session  and  handle[0m
+[38;2;248;248;242m       session termination.[0m
+
+[38;2;248;248;242m       "systemd-cat  [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m uwsm_start" (optional) executes the command given to it (uwsm) with its stdout[0m
+[38;2;248;248;242m       and stderr connected to the systemd journal, tagged with identifier "uwsm_start". See  systemd-[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mcat[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m for more options.[0m
+
+[38;2;253;151;31mUSE INSIDE DESKTOP ENTRY[0m
+[38;2;248;248;242m       To  launch  uwsm from a display/login manager, "uwsm start" can be used inside Desktop Entries.[0m
+[38;2;248;248;242m       Example /usr/local/share/wayland-sessions/my-compositor.desktop:[0m
+
+[38;2;248;248;242m                [Desktop Entry][0m
+[38;2;248;248;242m                Name=My compositor (with UWSM)[0m
+[38;2;248;248;242m                Comment=My cool compositor[0m
+[38;2;248;248;242m                Exec=uwsm start [0m[38;2;166;226;46m-N[0m[38;2;248;248;242m "My compositor" [0m[38;2;166;226;46m-D[0m[38;2;248;248;242m mycompositor [0m[38;2;166;226;46m-C[0m[38;2;248;248;242m "My cool compositor" mywm[0m
+[38;2;248;248;242m                DesktopNames=mycompositor[0m
+[38;2;248;248;242m                Type=Application[0m
+
+[38;2;248;248;242m       Things to keep in mind:[0m
+
+[38;2;248;248;242m       •   For consistency, command line arguments should mirror the keys of the entry[0m
+[38;2;248;248;242m       •   Command in Exec= should start with "uwsm start"[0m
+[38;2;248;248;242m       •   It should not point to itself (as a combination of Desktop Entry ID and Action ID)[0m
+[38;2;248;248;242m       •   It should not point to a Desktop Entry ID and Action ID that also uses ‘uwsm‘[0m
+
+[38;2;248;248;242m       Potentially such entries may be found and used by uwsm itself, i.e. in shell  profile  integra‐[0m
+[38;2;248;248;242m       tion  situation,  or  when  launched manually. Following the principles above ensures uwsm will[0m
+[38;2;248;248;242m       properly recognize itself and parse requested arguments inside the entry without any  side  ef‐[0m
+[38;2;248;248;242m       fects.[0m
+
+[38;2;253;151;31mSEE ALSO[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46muwsm-plugins[0m[38;2;249;38;114m([0m[38;2;190;132;255m3[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46msystemd-run[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46msystemd-cat[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, [0m[38;2;166;226;46msystemd.[0m[38;2;166;226;46mspecial[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m
+
+[38;2;248;248;242m                                              2026-02-14                                       [0m[38;2;166;226;46mUWSM[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m
