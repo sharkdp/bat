@@ -342,12 +342,20 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
     description: &str,
     compressed: bool,
 ) -> Result<T> {
-    if compressed {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(contents))
+    let decompressed = if compressed {
+        let mut decoder = flate2::read::ZlibDecoder::new(contents);
+        let mut buf = Vec::new();
+        use std::io::Read;
+        decoder
+            .read_to_end(&mut buf)
+            .map_err(|_| format!("Could not decompress {description}"))?;
+        buf
     } else {
-        bincode::deserialize_from(contents)
-    }
-    .map_err(|_| format!("Could not parse {description}").into())
+        contents.to_vec()
+    };
+    
+    postcard::from_bytes(&decompressed)
+        .map_err(|_| format!("Could not parse {description}").into())
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(

@@ -2,6 +2,10 @@
 
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
 
+## Dependencies
+
+- Replace unmaintained `bincode` dependency with maintained `postcard` serialization library to address RUSTSEC-2025-0141, see #3582
+
 ## Features
 
 - Implement `--unbuffered` mode for streaming input, allowing partial lines to display immediately (e.g. `tail -f | bat -u`). Closes #3555, see #3583 (@mainnebula)

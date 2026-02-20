@@ -142,17 +142,19 @@ pub(crate) fn asset_to_contents<T: serde::Serialize>(
     description: &str,
     compressed: bool,
 ) -> Result<Vec<u8>> {
-    let mut contents = vec![];
+    let serialized = postcard::to_allocvec(asset)
+        .map_err(|_| format!("Could not serialize {description}"))?;
+    
     if compressed {
-        bincode::serialize_into(
-            flate2::write::ZlibEncoder::new(&mut contents, flate2::Compression::best()),
-            asset,
-        )
+        let mut contents = vec![];
+        use std::io::Write;
+        flate2::write::ZlibEncoder::new(&mut contents, flate2::Compression::best())
+            .write_all(&serialized)
+            .map_err(|_| format!("Could not compress {description}"))?;
+        Ok(contents)
     } else {
-        bincode::serialize_into(&mut contents, asset)
+        Ok(serialized)
     }
-    .map_err(|_| format!("Could not serialize {description}"))?;
-    Ok(contents)
 }
 
 fn asset_to_cache<T: serde::Serialize>(
