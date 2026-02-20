@@ -2884,15 +2884,11 @@ fn no_wrapping_with_chop_long_lines() {
     wrapping_test("--chop-long-lines", false);
 }
 
-// Regression test for issue #3587: --wrap=never should be respected when paging is enabled
-// The fix ensures that bat respects the --wrap=never flag even when output is piped to a pager
-// by passing the -S flag to less to disable wrapping in the pager
 #[test]
 #[serial]
 fn wrap_never_flag_respected_with_paging_always() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            // Use cat as pager to pass through the output (avoiding the echo pager issue)
             .arg("--pager=cat")
             .arg("--paging=always")
             .arg("--wrap=never")
@@ -2902,19 +2898,16 @@ fn wrap_never_flag_respected_with_paging_always() {
             .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
             .assert()
             .success()
-            // With --wrap=never and cat pager, the line should NOT wrap
             .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
             .stderr("");
     });
 }
 
-// Regression test for issue #3587: -S flag should be respected when paging is enabled
 #[test]
 #[serial]
 fn s_flag_respected_with_paging_always() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
-            // Use cat as pager to pass through the output
             .arg("--pager=cat")
             .arg("--paging=always")
             .arg("-S")
@@ -2924,7 +2917,6 @@ fn s_flag_respected_with_paging_always() {
             .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
             .assert()
             .success()
-            // With -S flag and cat pager, the line should NOT wrap
             .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
             .stderr("");
     });

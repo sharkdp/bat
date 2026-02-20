@@ -400,7 +400,6 @@ impl App {
                 _ => unreachable!("other values for --binary are not allowed"),
             },
             wrapping_mode: {
-                // Check for explicit flags first (--chop-long-lines or --wrap)
                 if self.matches.get_flag("chop-long-lines") {
                     WrappingMode::NoWrapping(true)
                 } else {
@@ -408,7 +407,6 @@ impl App {
                         Some("character") => WrappingMode::Character,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            // For "auto" or default mode, respect interactive_output setting
                             if self.interactive_output || maybe_term_width.is_some() {
                                 if style_components.plain() && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
