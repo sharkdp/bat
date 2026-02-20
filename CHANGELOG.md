@@ -10,6 +10,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Report error when pager is missing instead of silently falling back, see #3588 (@IMaloney)
 - Fix `--wrap=never` and `-S` flags being ignored when piping to pager, see #3592 (@IMaloney)
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)

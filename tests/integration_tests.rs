@@ -1427,6 +1427,21 @@ fn pager_failed_to_parse() {
 
 #[test]
 #[serial]
+fn pager_missing_warning() {
+    bat()
+        .env("BAT_PAGER", "nonexistent-pager-xyz-missing")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("[bat warning]"))
+        .stderr(predicate::str::contains("not found"))
+        .stderr(predicate::str::contains("nonexistent-pager-xyz-missing"))
+        .stdout(predicate::str::contains("hello world\n"));
+}
+
+#[test]
+#[serial]
 fn env_var_bat_paging() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
@@ -1442,6 +1457,7 @@ fn env_var_bat_paging() {
 #[test]
 fn basic_set_terminal_title() {
     bat()
+        .env("BAT_PAGER", "cat")
         .arg("--paging=always")
         .arg("--set-terminal-title")
         .arg("test.txt")
