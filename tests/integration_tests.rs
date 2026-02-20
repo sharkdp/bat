@@ -1457,8 +1457,8 @@ fn env_var_bat_paging() {
 #[test]
 fn basic_set_terminal_title() {
     bat()
+        .env("BAT_PAGER", "cat")
         .arg("--paging=always")
-        .arg("--pager=builtin")
         .arg("--set-terminal-title")
         .arg("test.txt")
         .assert()
