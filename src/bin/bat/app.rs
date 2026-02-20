@@ -399,27 +399,29 @@ impl App {
                 Some("no-printing") => BinaryBehavior::NoPrinting,
                 _ => unreachable!("other values for --binary are not allowed"),
             },
-            wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
-                if !self.matches.get_flag("chop-long-lines") {
+            wrapping_mode: {
+                if self.matches.get_flag("chop-long-lines") {
+                    WrappingMode::NoWrapping(true)
+                } else {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if style_components.plain() && maybe_term_width.is_none() {
-                                WrappingMode::NoWrapping(false)
+                            if self.interactive_output || maybe_term_width.is_some() {
+                                if style_components.plain() && maybe_term_width.is_none() {
+                                    WrappingMode::NoWrapping(false)
+                                } else {
+                                    WrappingMode::Character
+                                }
                             } else {
-                                WrappingMode::Character
+                                // We don't have the tty width when piping to another program.
+                                // There's no point in wrapping when this is the case.
+                                WrappingMode::NoWrapping(false)
                             }
                         }
                         _ => unreachable!("other values for --wrap are not allowed"),
                     }
-                } else {
-                    WrappingMode::NoWrapping(true)
                 }
-            } else {
-                // We don't have the tty width when piping to another program.
-                // There's no point in wrapping when this is the case.
-                WrappingMode::NoWrapping(false)
             },
             colored_output: self.matches.get_flag("force-colorization")
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
