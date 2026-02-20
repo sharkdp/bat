@@ -13,6 +13,12 @@ const DEFAULT_SYSTEM_CONFIG_PREFIX: &str = "/etc";
 const DEFAULT_SYSTEM_CONFIG_PREFIX: &str = "C:\\ProgramData";
 
 pub fn system_config_file() -> PathBuf {
+    if let Ok(dir) = env::var("BAT_CONFIG_DIR") {
+        let mut path = PathBuf::from(dir);
+        path.push("config");
+        return path;
+    }
+
     let folder = option_env!("BAT_SYSTEM_CONFIG_PREFIX").unwrap_or(DEFAULT_SYSTEM_CONFIG_PREFIX);
     let mut path = PathBuf::from(folder);
 
@@ -23,10 +29,17 @@ pub fn system_config_file() -> PathBuf {
 }
 
 pub fn config_file() -> PathBuf {
-    env::var("BAT_CONFIG_PATH")
-        .ok()
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
+    if let Ok(path) = env::var("BAT_CONFIG_PATH") {
+        return PathBuf::from(path);
+    }
+
+    if let Ok(dir) = env::var("BAT_CONFIG_DIR") {
+        let mut path = PathBuf::from(dir);
+        path.push("config");
+        return path;
+    }
+
+    PROJECT_DIRS.config_dir().join("config")
 }
 
 pub fn generate_config_file() -> bat::error::Result<()> {
@@ -104,13 +117,18 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
     let mut config = String::new();
 
-    if let Ok(c) = fs::read_to_string(system_config_file()) {
+    let system_path = system_config_file();
+    let config_path = config_file();
+
+    if let Ok(c) = fs::read_to_string(&system_path) {
         config.push_str(&c);
         config.push('\n');
     }
 
-    if let Ok(c) = fs::read_to_string(config_file()) {
-        config.push_str(&c);
+    if system_path != config_path {
+        if let Ok(c) = fs::read_to_string(&config_path) {
+            config.push_str(&c);
+        }
     }
 
     get_args_from_str(&config)

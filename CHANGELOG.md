@@ -10,6 +10,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Add support for `BAT_CONFIG_DIR` environment variable to prevent duplicate flag errors when using system-wide config directories, see #3589
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
