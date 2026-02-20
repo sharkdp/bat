@@ -3037,6 +3037,22 @@ fn theme_env_overrides_config() {
 }
 
 #[test]
+fn theme_list_is_provided() {
+    bat()
+        .env("BAT_THEME_DARK", "Coldark-Dark")
+        .env("COLORTERM", "truecolor")
+        .arg("--theme")
+        .arg("some nonexistent theme")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(" ")
+        .assert()
+        .success()
+        .stdout("\x1b[38;2;248;248;242m \x1b[0m")
+        .stderr(predicate::str::starts_with("\x1b[33m[bat warning]\x1b[0m: Unknown theme \'some nonexistent theme\', using default. (Available themes: "));
+}
+
+#[test]
 fn highlighting_is_skipped_on_long_lines() {
     let expected = "\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mapi\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\n".to_owned() +
         "\u{1b}" +
