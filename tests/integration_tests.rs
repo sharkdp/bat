@@ -2885,6 +2885,44 @@ fn no_wrapping_with_chop_long_lines() {
 }
 
 #[test]
+#[serial]
+fn wrap_never_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=never")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
+}
+
+#[test]
+#[serial]
+fn s_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("-S")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
+}
+
+#[test]
 fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")
