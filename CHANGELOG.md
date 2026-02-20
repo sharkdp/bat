@@ -21,6 +21,7 @@
 ## Other
 
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
+- Replace unmaintained `bincode` dependency with `postcard` to address RUSTSEC-2025-0141, see #3595 (@IMaloney)
 
 ## Syntaxes
 
