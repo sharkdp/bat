@@ -346,15 +346,15 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
         use std::io::Read;
         let mut decoder = flate2::read::ZlibDecoder::new(contents);
         let mut decompressed = Vec::new();
-        decoder.read_to_end(&mut decompressed)
+        decoder
+            .read_to_end(&mut decompressed)
             .map_err(|_| format!("Could not decompress {description}"))?;
         decompressed
     } else {
         contents.to_vec()
     };
-    
-    postcard::from_bytes(&data)
-        .map_err(|_| format!("Could not parse {description}").into())
+
+    postcard::from_bytes(&data).map_err(|_| format!("Could not parse {description}").into())
 }
 
 fn asset_from_cache<T: serde::de::DeserializeOwned>(
