@@ -781,10 +781,23 @@ impl Printer for InteractivePrinter<'_> {
                             // Displayed width of line_buf
                             let mut current_width = 0;
 
+                            let word_wrap = matches!(
+                                self.config.wrapping_mode,
+                                WrappingMode::Word
+                            );
+
+                            // For word wrapping, track last whitespace position.
+                            let mut last_ws_idx: Option<usize> = None;
+
                             for c in text.chars() {
                                 // calculate the displayed width for next character
                                 let cw = c.width().unwrap_or(0);
                                 current_width += cw;
+
+                                // Track whitespace positions for word wrapping.
+                                if word_wrap && c.is_whitespace() {
+                                    last_ws_idx = Some(line_buf.len());
+                                }
 
                                 // if next character cannot be printed on this line,
                                 // flush the buffer.
@@ -807,13 +820,35 @@ impl Printer for InteractivePrinter<'_> {
                                         }
                                     }
 
+                                    // Determine the break point. For word wrapping,
+                                    // break at the last whitespace if one exists.
+                                    let (emit, remainder) =
+                                        if word_wrap && last_ws_idx.is_some() {
+                                            let ws_idx = last_ws_idx.unwrap();
+                                            let emit =
+                                                line_buf[..ws_idx].to_string();
+                                            // Skip the whitespace character itself
+                                            // and carry the rest to the next line.
+                                            let rest_start = ws_idx
+                                                + line_buf[ws_idx..]
+                                                    .chars()
+                                                    .next()
+                                                    .map(|ch| ch.len_utf8())
+                                                    .unwrap_or(0);
+                                            let remainder =
+                                                line_buf[rest_start..].to_string();
+                                            (emit, Some(remainder))
+                                        } else {
+                                            (line_buf.clone(), None)
+                                        };
+
                                     // It wraps.
                                     write!(
                                         handle,
                                         "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
-                                            &format!("{}{line_buf}", self.ansi_style),
+                                            &format!("{}{emit}", self.ansi_style),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
@@ -827,7 +862,19 @@ impl Printer for InteractivePrinter<'_> {
                                     max_width = cursor_max;
 
                                     line_buf.clear();
-                                    current_width = cw;
+                                    last_ws_idx = None;
+
+                                    if let Some(rem) = remainder {
+                                        // Recalculate width of carried-over text.
+                                        let rem_width: usize = rem
+                                            .chars()
+                                            .map(|ch| ch.width().unwrap_or(0))
+                                            .sum();
+                                        line_buf.push_str(&rem);
+                                        current_width = rem_width + cw;
+                                    } else {
+                                        current_width = cw;
+                                    }
                                 }
 
                                 line_buf.push(c);
