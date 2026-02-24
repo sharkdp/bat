@@ -118,6 +118,7 @@ set -l wrap_opts '
     auto\tdefault
     never\t
     character\t
+    word\t
 '
 
 # While --tabs theoretically takes any number, most people should be OK with these.
