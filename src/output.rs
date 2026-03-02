@@ -225,8 +225,8 @@ impl Drop for OutputType {
                 let _ = command.wait();
             }
             OutputType::BuiltinPager(ref mut pager) => {
-                if pager.handle.is_some() {
-                    let _ = pager.handle.take().unwrap().join().unwrap();
+                if let Some(handle) = pager.handle.take() {
+                    let _ = handle.join();
                 }
             }
             OutputType::Stdout(_) => (),
