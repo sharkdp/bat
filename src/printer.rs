@@ -819,9 +819,8 @@ impl Printer for InteractivePrinter<'_> {
 
                                     // Determine the break point and remainder
                                     // for word wrapping.
-                                    let (emit_end, rest_start) =
-                                        if word_wrap && last_ws_idx.is_some() {
-                                            let ws_idx = last_ws_idx.unwrap();
+                                    let (emit_end, rest_start) = if word_wrap {
+                                        if let Some(ws_idx) = last_ws_idx {
                                             // Skip the whitespace character itself
                                             // and carry the rest to the next line.
                                             let rs = ws_idx
@@ -833,7 +832,10 @@ impl Printer for InteractivePrinter<'_> {
                                             (ws_idx, Some(rs))
                                         } else {
                                             (line_buf.len(), None)
-                                        };
+                                        }
+                                    } else {
+                                        (line_buf.len(), None)
+                                    };
 
                                     // It wraps.
                                     write!(
