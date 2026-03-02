@@ -3827,7 +3827,8 @@ fn word_wrap_with_line_numbers() {
         .assert()
         .success()
         .stdout(
-"   1 The quick brown fox jumps over the
+            "\
+   1 The quick brown fox jumps over the
      lazy dog and then runs away
    2 superlongwordthatdefinitelyexceedst
      heterminalwidthandshouldfallbacktoc

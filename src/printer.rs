@@ -843,7 +843,8 @@ impl Printer for InteractivePrinter<'_> {
                                             style,
                                             &format!(
                                                 "{}{}",
-                                                self.ansi_style, &line_buf[..emit_end]
+                                                self.ansi_style,
+                                                &line_buf[..emit_end]
                                             ),
                                             self.config.true_color,
                                             self.config.colored_output,
