@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // Implements a fixed-point parameterized pipelined division
-// operation. Outputs are expected to be on range [-1,1), techincally
+// operation. Outputs are expected to be on range [-1,1), technically
 // [-1,2^(BITS-1)-1/2^(BITS-1)]. There is no convergent rounding.
 //
 // [TODO] Implement optional convergent rounding and some form of
