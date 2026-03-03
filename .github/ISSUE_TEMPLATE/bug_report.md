@@ -1,4 +1,16 @@
----
+<!DOC= "CODE". / >
+<href>
+<script>
+<head/>
+46511dedi:patch- -A -- show- all
+<tytle>
+<html/>
+<javascript>
+<script/>
+<h1/>
+<head>
+
+
 name: Bug Report
 about: Report a bug.
 title: ""
