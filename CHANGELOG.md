@@ -1,6 +1,7 @@
 # unreleased
 
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
+- Fixed syntax tests path, see #3610 (@foxfromworld)
 
 ## Features
 
