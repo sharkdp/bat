@@ -3791,3 +3791,62 @@ fn unbuffered_mode_plain_output() {
         .success()
         .stdout("hello world\n");
 }
+
+#[test]
+fn word_wrap_breaks_at_word_boundaries() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "\
+The quick brown fox jumps over the lazy
+dog and then runs away
+superlongwordthatdefinitelyexceedstheter
+minalwidthandshouldfallbacktocharacterwr
+apping
+short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_with_line_numbers() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "   1 The quick brown fox jumps over the
+     lazy dog and then runs away
+   2 superlongwordthatdefinitelyexceedst
+     heterminalwidthandshouldfallbacktoc
+     haracterwrapping
+   3 short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_short_line_no_wrap() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=80")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line\n");
+}
