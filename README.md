@@ -901,7 +901,7 @@ The syntax test script (`tests/syntax-tests/update.sh`) calls `bat` from your PA
 
   you need to add the debug build to your PATH before running the tests:
   ```bash
-  export PATH=$PATH:/path/to/bat/target/debug
+  export PATH="$PATH:$(pwd)/target/debug"
   ```
   Otherwise, you will see:
   ```bash
