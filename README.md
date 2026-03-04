@@ -889,30 +889,6 @@ features as a library, check out the [the API documentation](https://docs.rs/bat
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.
 
-### Running syntax tests
-
-The syntax test script (`tests/syntax-tests/update.sh`) calls `bat` from your PATH and regenerates the highlighted output files under
-`tests/syntax-tests/highlighted/`. These files are used to verify that syntax highlighting works as expected.
-
-- If you only built the binaries with:
-  ```bash
-  cargo build --bins
-  ```
-
-  you need to add the debug build to your PATH before running the tests:
-  ```bash
-  export PATH="$PATH:$(pwd)/target/debug"
-  ```
-  Otherwise, you will see:
-  ```bash
-  Error: Could not execute 'bat'. Please make sure that the executable is available on the PATH.
-  ```
-- If you installed bat with:
-  ```bash
-  cargo install --path . --locked
-  ```
-  then bat will be available in ~/.cargo/bin (usually already in PATH), and the tests will run without issues.
-
 ## Contributing
 
 Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
