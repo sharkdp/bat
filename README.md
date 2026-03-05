@@ -29,7 +29,7 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
   <br>
   <strong>Warp, the intelligent terminal</strong>
   <br>
-  <sub>Available on MacOS, Linux, Windows</sub>
+  <sub>Available on macOS, Linux, Windows</sub>
 </a>
 </p>
 
@@ -753,7 +753,7 @@ bat --generate-config-file
 ```
 
 There is also now a systemwide configuration file, which is located under `/etc/bat/config` on
-Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
+Linux and macOS and `C:\ProgramData\bat\config` on Windows. If the system wide configuration
 file is present, the content of the user configuration will simply be appended to it.
 
 ### Format
