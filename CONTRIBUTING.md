@@ -102,7 +102,9 @@ The syntax test script (`tests/syntax-tests/update.sh`) calls `bat` from your PA
   cargo build --bins
   ```
 
-  you need to add the debug build to your PATH from the bat project root before running the tests:
+  you need to add the debug build to your PATH from the bat project root before running the tests.
+  See also step 5 in [Syntax
+tests](https://github.com/sharkdp/bat/blob/master/doc/assets.md#syntax-tests) for related instructions.
   ```bash
   export PATH="$PATH:$(pwd)/target/debug"
   ```
