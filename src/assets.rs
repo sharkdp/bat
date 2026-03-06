@@ -262,6 +262,24 @@ impl HighlightingAssets {
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
     }
 
+    fn find_syntax_by_hidden_file_name(
+        &self,
+        file_name: &OsStr,
+    ) -> Result<Option<SyntaxReferenceInSet<'_>>> {
+        let Some(hidden_file_extension) = file_name
+            .to_str()
+            .and_then(|name| name.strip_prefix('.'))
+            .filter(|name| !name.is_empty())
+        else {
+            return Ok(None);
+        };
+
+        // syntect stores `hidden_file_extensions` in the same extension list as
+        // regular file extensions, but dotfiles must be queried without the
+        // leading period.
+        self.find_syntax_by_extension(Some(OsStr::new(hidden_file_extension)))
+    }
+
     fn find_syntax_by_token(&self, token: &str) -> Result<Option<SyntaxReferenceInSet<'_>>> {
         let syntax_set = self.get_syntax_set()?;
         Ok(syntax_set
@@ -275,6 +293,9 @@ impl HighlightingAssets {
         ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet<'_>>> {
         let mut syntax = self.find_syntax_by_extension(Some(file_name))?;
+        if syntax.is_none() {
+            syntax = self.find_syntax_by_hidden_file_name(file_name)?;
+        }
         if syntax.is_none() {
             syntax =
                 ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
@@ -659,6 +680,55 @@ mod tests {
             test.syntax_for_stdin_with_content("my_script", b"#!/bin/bash"),
             "Bourne Again Shell (bash)"
         );
+    }
+
+    #[cfg(feature = "build-assets")]
+    #[test]
+    fn syntax_detection_hidden_file_extensions() {
+        let source_dir = TempDir::new().expect("creation of temporary source directory");
+        let cache_dir = TempDir::new().expect("creation of temporary cache directory");
+        let syntax_dir = source_dir.path().join("syntaxes");
+
+        std::fs::create_dir_all(&syntax_dir).expect("creation of syntax directory succeeds");
+        std::fs::write(
+            syntax_dir.join("HiddenFileExtension.sublime-syntax"),
+            r#"%YAML 1.2
+---
+name: Hidden File Extension
+hidden_file_extensions:
+  - testrc
+scope: source.hiddenfileextension
+
+contexts:
+  main:
+    - match: .
+      scope: source.hiddenfileextension
+"#,
+        )
+        .expect("custom syntax can be written");
+
+        build(
+            source_dir.path(),
+            false,
+            false,
+            cache_dir.path(),
+            env!("CARGO_PKG_VERSION"),
+        )
+        .expect("custom assets can be built");
+
+        let test = SyntaxDetectionTest {
+            assets: HighlightingAssets::from_cache(cache_dir.path())
+                .expect("custom syntax cache can be loaded"),
+            syntax_mapping: SyntaxMapping::new(),
+            temp_dir: TempDir::new().expect("creation of temporary directory"),
+        };
+
+        assert_eq!(test.syntax_for_file(".testrc"), "Hidden File Extension");
+        assert_eq!(
+            test.syntax_for_stdin_with_content(".testrc", b""),
+            "Hidden File Extension"
+        );
+        assert!(test.syntax_is_same_for_inputkinds(".testrc", ""));
     }
 
     #[cfg(unix)]
