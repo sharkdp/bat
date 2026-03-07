@@ -13,6 +13,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 
 ## Bugfixes
+- Ignore paging for `--list-themes`, see #3616 (@kadaliao)
 - Report error when pager is missing instead of silently falling back, see #3588 (@IMaloney)
 - Fix `--wrap=never` and `-S` flags being ignored when piping to pager, see #3592 (@IMaloney)
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
