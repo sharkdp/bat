@@ -210,6 +210,7 @@ impl HighlightingAssets {
     pub(crate) fn get_syntax(
         &self,
         language: Option<&str>,
+        fallback_syntax: Option<&str>,
         input: &mut OpenedInput,
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet<'_>> {
@@ -234,9 +235,16 @@ impl HighlightingAssets {
         match path_syntax {
             // If a path wasn't provided, or if path based syntax detection
             // above failed, we fall back to first-line syntax detection.
-            Err(Error::UndetectedSyntax(path)) => self
-                .get_first_line_syntax(&mut input.reader)?
-                .ok_or(Error::UndetectedSyntax(path)),
+            Err(Error::UndetectedSyntax(path)) => {
+                if let Some(syntax_in_set) = self.get_first_line_syntax(&mut input.reader)? {
+                    Ok(syntax_in_set)
+                } else if let Some(language) = fallback_syntax {
+                    self.find_syntax_by_token(language)?
+                        .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
+                } else {
+                    Err(Error::UndetectedSyntax(path))
+                }
+            }
             _ => path_syntax,
         }
     }
@@ -416,11 +424,12 @@ mod tests {
         fn get_syntax_name(
             &self,
             language: Option<&str>,
+            fallback_syntax: Option<&str>,
             input: &mut OpenedInput,
             mapping: &SyntaxMapping,
         ) -> String {
             self.assets
-                .get_syntax(language, input, mapping)
+                .get_syntax(language, fallback_syntax, input, mapping)
                 .map(|syntax_in_set| syntax_in_set.syntax.name.clone())
                 .unwrap_or_else(|_| "!no syntax!".to_owned())
         }
@@ -440,7 +449,7 @@ mod tests {
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
+            self.get_syntax_name(None, None, &mut opened_input, &self.syntax_mapping)
         }
 
         fn syntax_for_file_with_content_os(&self, file_name: &OsStr, first_line: &str) -> String {
@@ -450,7 +459,7 @@ mod tests {
             let dummy_stdin: &[u8] = &[];
             let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
+            self.get_syntax_name(None, None, &mut opened_input, &self.syntax_mapping)
         }
 
         #[cfg(unix)]
@@ -470,7 +479,7 @@ mod tests {
             let input = Input::stdin().with_name(Some(file_name));
             let mut opened_input = input.open(content, None).unwrap();
 
-            self.get_syntax_name(None, &mut opened_input, &self.syntax_mapping)
+            self.get_syntax_name(None, None, &mut opened_input, &self.syntax_mapping)
         }
 
         fn syntax_is_same_for_inputkinds(&self, file_name: &str, content: &str) -> bool {
@@ -752,7 +761,7 @@ contexts:
         let mut opened_input = input.open(dummy_stdin, None).unwrap();
 
         assert_eq!(
-            test.get_syntax_name(None, &mut opened_input, &test.syntax_mapping),
+            test.get_syntax_name(None, None, &mut opened_input, &test.syntax_mapping),
             "SSH Config"
         );
     }
