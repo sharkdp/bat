@@ -204,6 +204,8 @@ pub fn list_themes(
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
+    // Theme previews are generated internally, so paging here only traps the output in the pager.
+    config.paging_mode = PagingMode::Never;
     config.style_components = StyleComponents(style);
 
     let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());

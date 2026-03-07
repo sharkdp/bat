@@ -813,6 +813,44 @@ fn no_args_doesnt_break() {
     assert!(exit_status.success());
 }
 
+#[cfg(unix)]
+#[test]
+fn list_themes_ignores_paging_from_bat_opts() {
+    let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
+    let master = File::from(master);
+    let stdin_file = File::from(slave);
+    let stdout_file = stdin_file.try_clone().unwrap();
+    let stdin = Stdio::from(stdin_file);
+    let stdout = Stdio::from(stdout_file);
+
+    let reader = thread::spawn(move || {
+        let mut master = master;
+        let mut output = Vec::new();
+        io::copy(&mut master, &mut output).expect("Couldn't read from the master end of the pty.");
+        output
+    });
+
+    let mut child = bat_raw_command()
+        .arg("--list-themes")
+        .stdin(stdin)
+        .stdout(stdout)
+        .env("BAT_OPTS", "--paging=always")
+        .spawn()
+        .expect("Failed to start.");
+
+    let exit_status = child
+        .wait_timeout(CHILD_WAIT_TIMEOUT)
+        .expect("Error polling exit status, this should never happen.")
+        .expect("Exit status not set, but the child should have exited already.");
+    assert!(exit_status.success());
+
+    let output = reader.join().expect("Reader thread panicked.");
+    let output = from_utf8(&output).expect("Output is not valid UTF-8.");
+
+    assert!(output.contains("DarkNeon"));
+    assert!(!output.contains("(END)"));
+}
+
 #[test]
 fn tabs_numbers() {
     bat()
