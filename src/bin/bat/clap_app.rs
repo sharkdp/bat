@@ -121,6 +121,17 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("fallback-syntax")
+                .long("fallback-syntax")
+                .visible_alias("fallback-language")
+                .help("Set a fallback language for undetected syntaxes.")
+                .long_help(
+                    "Set a fallback language for syntax highlighting when auto-detection fails. \
+                     Unlike '--language', this is only used when no syntax could be detected from \
+                     filename, custom syntax mappings, or first-line detection.",
+                ),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
