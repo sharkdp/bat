@@ -11,6 +11,7 @@
 - Added an initial `flake.nix` for a ready made development environment; see #3578 (@vorburger)
 - Add `--quiet-empty` (`-E`) flag to suppress output when input is empty. Closes #1936, see #3563 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
+- Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 
 ## Bugfixes
 - Report error when pager is missing instead of silently falling back, see #3588 (@IMaloney)
