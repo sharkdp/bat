@@ -223,18 +223,40 @@ impl HighlightingAssets {
         }
 
         let path = input.path();
-        let path_syntax = if let Some(path) = path {
-            self.get_syntax_for_path(
-                PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf()),
-                mapping,
-            )
+        let absolute_path = path.and_then(|p| {
+            PathAbs::new(p)
+                .ok()
+                .map(|abs| abs.as_path().to_path_buf())
+                .or_else(|| Some(p.to_owned()))
+        });
+
+        let path_syntax = if let Some(ref path) = absolute_path {
+            self.get_syntax_for_path(path, mapping).or_else(|e| {
+                // If syntax detection failed on the given path, retry with the
+                // canonicalized path (which resolves symlinks). This handles
+                // cases like `Aliases/0install -> ../Formula/zero-install.rb`
+                // where the symlink name has no extension but the target does.
+                // See #1001.
+                if matches!(e, Error::UndetectedSyntax(_)) {
+                    if let Ok(resolved) = fs::canonicalize(path) {
+                        if resolved != *path {
+                            return match self.get_syntax_for_path(&resolved, mapping) {
+                                Ok(syntax) => Ok(syntax),
+                                Err(Error::UndetectedSyntax(_)) => Err(e),
+                                Err(err) => Err(err),
+                            };
+                        }
+                    }
+                }
+                Err(e)
+            })
         } else {
             Err(Error::UndetectedSyntax("[unknown]".into()))
         };
 
+        // If a path wasn't provided, or if path based syntax detection
+        // above failed, we fall back to first-line syntax detection.
         match path_syntax {
-            // If a path wasn't provided, or if path based syntax detection
-            // above failed, we fall back to first-line syntax detection.
             Err(Error::UndetectedSyntax(path)) => {
                 if let Some(syntax_in_set) = self.get_first_line_syntax(&mut input.reader)? {
                     Ok(syntax_in_set)
@@ -763,6 +785,33 @@ contexts:
         assert_eq!(
             test.get_syntax_name(None, None, &mut opened_input, &test.syntax_mapping),
             "SSH Config"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn syntax_detection_for_symlinked_file_by_target_extension() {
+        use std::os::unix::fs::symlink;
+
+        let test = SyntaxDetectionTest::new();
+
+        let formula_dir = test.temp_dir.path().join("Formula");
+        std::fs::create_dir(&formula_dir).unwrap();
+        let target = formula_dir.join("zero-install.rb");
+        File::create(&target).unwrap();
+
+        let aliases_dir = test.temp_dir.path().join("Aliases");
+        std::fs::create_dir(&aliases_dir).unwrap();
+        let link = aliases_dir.join("0install");
+        symlink(&target, &link).unwrap();
+
+        let input = Input::ordinary_file(&link);
+        let dummy_stdin: &[u8] = &[];
+        let mut opened_input = input.open(dummy_stdin, None).unwrap();
+
+        assert_eq!(
+            test.get_syntax_name(None, None, &mut opened_input, &test.syntax_mapping),
+            "Ruby"
         );
     }
 }
