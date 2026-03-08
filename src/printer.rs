@@ -268,7 +268,12 @@ impl<'a> InteractivePrinter<'a> {
             const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
             const MANPAGE_SYNTAX: &str = "Manpage";
             const COMMAND_HELP_SYNTAX: &str = "Command Help";
-            match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+            match assets.get_syntax(
+                config.language,
+                config.fallback_syntax,
+                input,
+                &config.syntax_mapping,
+            ) {
                 Ok(syntax_in_set) => (
                     syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
                     syntax_in_set.syntax.name == MANPAGE_SYNTAX

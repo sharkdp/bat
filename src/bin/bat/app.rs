@@ -384,6 +384,10 @@ impl App {
                         None
                     }
                 }),
+            fallback_syntax: self
+                .matches
+                .get_one::<String>("fallback-syntax")
+                .map(|s| s.as_str()),
             show_nonprintable: self.matches.get_flag("show-all"),
             nonprintable_notation: match self
                 .matches

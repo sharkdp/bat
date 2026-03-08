@@ -2471,6 +2471,121 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
 }
 
 #[test]
+fn fallback_syntax_is_used_when_no_syntax_is_detected() {
+    let content = "# comment\nfoo=bar\n";
+
+    let fallback_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=bash")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=bash")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&fallback_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_detected_syntax() {
+    let content = "fn main() { println!(\"hello\"); }\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .arg("--fallback-syntax=json")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_explicit_language() {
+    let content = "{\"a\": 1}\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--fallback-syntax=rust")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn invalid_fallback_syntax_returns_error() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
