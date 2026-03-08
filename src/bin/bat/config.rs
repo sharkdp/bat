@@ -2,7 +2,7 @@ use std::env;
 use std::ffi::OsString;
 use std::fs;
 use std::io::{self, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::directories::PROJECT_DIRS;
 
@@ -104,16 +104,30 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
     let mut config = String::new();
 
-    if let Ok(c) = fs::read_to_string(system_config_file()) {
+    let system_config = system_config_file();
+    let user_config = config_file();
+
+    if let Ok(c) = fs::read_to_string(&system_config) {
         config.push_str(&c);
         config.push('\n');
     }
 
-    if let Ok(c) = fs::read_to_string(config_file()) {
-        config.push_str(&c);
+    // Skip the user config if it resolves to the same file as the system config,
+    // which can happen when BAT_CONFIG_DIR is set to e.g. "/etc/bat". See #3589.
+    if !same_file(&system_config, &user_config) {
+        if let Ok(c) = fs::read_to_string(&user_config) {
+            config.push_str(&c);
+        }
     }
 
     get_args_from_str(&config)
+}
+
+fn same_file(a: &Path, b: &Path) -> bool {
+    match (fs::canonicalize(a), fs::canonicalize(b)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => a == b,
+    }
 }
 
 pub fn get_args_from_env_opts_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
@@ -213,4 +227,41 @@ fn comments() {
         vec!["-p", "--style", "numbers,changes", "--color=always"],
         get_args_from_str(config).unwrap()
     );
+}
+
+#[test]
+fn same_file_identical_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let file = dir.path().join("config");
+    fs::write(&file, "").unwrap();
+    assert!(same_file(&file, &file));
+}
+
+#[test]
+fn same_file_different_paths() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = dir.path().join("a");
+    let b = dir.path().join("b");
+    fs::write(&a, "").unwrap();
+    fs::write(&b, "").unwrap();
+    assert!(!same_file(&a, &b));
+}
+
+#[test]
+fn same_file_nonexistent() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = dir.path().join("a");
+    let b = dir.path().join("b");
+    assert!(!same_file(&a, &b));
+}
+
+#[cfg(unix)]
+#[test]
+fn same_file_via_symlink() {
+    let dir = tempfile::tempdir().unwrap();
+    let original = dir.path().join("config");
+    let link = dir.path().join("link");
+    fs::write(&original, "").unwrap();
+    std::os::unix::fs::symlink(&original, &link).unwrap();
+    assert!(same_file(&original, &link));
 }
