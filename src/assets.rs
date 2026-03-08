@@ -1,13 +1,11 @@
 use std::ffi::OsStr;
 use std::fs;
-use std::path::Path;
+use std::path::{self, Component, Path, PathBuf};
 
 use once_cell::unsync::OnceCell;
 
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
-
-use path_abs::PathAbs;
 
 use crate::error::*;
 use crate::input::{InputReader, OpenedInput};
@@ -28,6 +26,40 @@ pub(crate) mod assets_metadata;
 mod build_assets;
 mod lazy_theme_set;
 mod serialized_syntax_set;
+
+fn absolute_normalized(path: &Path) -> PathBuf {
+    let absolute = match path::absolute(path) {
+        Ok(p) => p,
+        Err(_) => return path.to_owned(),
+    };
+    let mut normalized = PathBuf::new();
+    for component in absolute.components() {
+        match component {
+            Component::ParentDir => {
+                normalized.pop();
+            }
+            Component::CurDir => {}
+            _ => normalized.push(component),
+        }
+    }
+    strip_windows_verbatim_prefix(normalized)
+}
+
+/// On Windows, strip the extended-length `\\?\` prefix from paths so they
+/// match glob patterns built from environment variables (which are also
+/// stripped in `builtin.rs`).
+#[cfg(windows)]
+fn strip_windows_verbatim_prefix(path: PathBuf) -> PathBuf {
+    path.to_str()
+        .and_then(|s| s.strip_prefix(r"\\?\"))
+        .map(PathBuf::from)
+        .unwrap_or(path)
+}
+
+#[cfg(not(windows))]
+fn strip_windows_verbatim_prefix(path: PathBuf) -> PathBuf {
+    path
+}
 
 #[derive(Debug)]
 pub struct HighlightingAssets {
@@ -224,10 +256,7 @@ impl HighlightingAssets {
 
         let path = input.path();
         let path_syntax = if let Some(path) = path {
-            self.get_syntax_for_path(
-                PathAbs::new(path).map_or_else(|_| path.to_owned(), |p| p.as_path().to_path_buf()),
-                mapping,
-            )
+            self.get_syntax_for_path(absolute_normalized(path), mapping)
         } else {
             Err(Error::UndetectedSyntax("[unknown]".into()))
         };

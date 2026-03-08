@@ -25,6 +25,7 @@
 
 ## Other
 
+- Replace `path_abs` dependency with `std::path::absolute` (stable since Rust 1.79), see #3622 (@Xavrir)
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 
 ## Syntaxes

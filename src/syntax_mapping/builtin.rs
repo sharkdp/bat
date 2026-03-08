@@ -72,13 +72,28 @@ fn build_matcher_dynamic(segs: &[MatcherSegment]) -> Option<GlobMatcher> {
             MatcherSegment::Text(s) => buf.push_str(s),
             MatcherSegment::Env(var) => {
                 let replaced = env::var(var).ok()?;
-                buf.push_str(&replaced);
+                buf.push_str(&strip_verbatim_prefix(&replaced));
             }
         }
     }
     // compile glob matcher
     let matcher = make_glob_matcher(&buf).ok()?;
     Some(matcher)
+}
+
+/// On Windows, environment variables (e.g. `XDG_CONFIG_HOME`, `HOME`) may
+/// contain paths with the extended-length `\\?\` prefix if they were set from
+/// a canonicalized path. Since `std::path::absolute` does NOT produce this
+/// prefix, we strip it from env var values so that glob patterns and file
+/// paths use a consistent representation.
+#[cfg(windows)]
+fn strip_verbatim_prefix(s: &str) -> String {
+    s.strip_prefix(r"\\?\").unwrap_or(s).to_string()
+}
+
+#[cfg(not(windows))]
+fn strip_verbatim_prefix(s: &str) -> String {
+    s.to_string()
 }
 
 /// A segment of a dynamic builtin matcher.
