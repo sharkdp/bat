@@ -4,7 +4,7 @@ use syntect::parsing::SyntaxSet;
 
 use super::*;
 
-/// A SyntaxSet in serialized form, i.e. bincoded and flate2 compressed.
+/// A SyntaxSet in serialized form, i.e. postcard serialized and flate2 compressed.
 /// We keep it in this format since we want to load it lazily.
 #[derive(Debug)]
 pub enum SerializedSyntaxSet {
