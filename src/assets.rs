@@ -42,7 +42,23 @@ fn absolute_normalized(path: &Path) -> PathBuf {
             _ => normalized.push(component),
         }
     }
-    normalized
+    strip_windows_verbatim_prefix(normalized)
+}
+
+/// On Windows, strip the extended-length `\\?\` prefix from paths so they
+/// match glob patterns built from environment variables (which are also
+/// stripped in `builtin.rs`).
+#[cfg(windows)]
+fn strip_windows_verbatim_prefix(path: PathBuf) -> PathBuf {
+    path.to_str()
+        .and_then(|s| s.strip_prefix(r"\\?\"))
+        .map(PathBuf::from)
+        .unwrap_or(path)
+}
+
+#[cfg(not(windows))]
+fn strip_windows_verbatim_prefix(path: PathBuf) -> PathBuf {
+    path
 }
 
 #[derive(Debug)]
