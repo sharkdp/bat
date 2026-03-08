@@ -248,8 +248,11 @@ pub fn list_themes(
         ))?;
     }
 
-    let mut output_type =
-        OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
+    let paging_mode = match config.paging_mode {
+        PagingMode::Always => PagingMode::QuitIfOneScreen,
+        other => other,
+    };
+    let mut output_type = OutputType::from_mode(paging_mode, config.wrapping_mode, config.pager)?;
     let mut writer = output_type.handle()?;
     writer.write_fmt(format_args!("{buf}"))?;
 

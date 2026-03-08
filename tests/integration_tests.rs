@@ -613,6 +613,26 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn list_themes_ignores_paging_always() {
+    bat()
+        .arg("--paging=always")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize());
+}
+
+#[test]
+fn list_themes_ignores_paging_always_from_env() {
+    bat()
+        .env("BAT_OPTS", "--paging=always")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize());
+}
+
+#[test]
 fn list_languages() {
     bat()
         .arg("--list-languages")
