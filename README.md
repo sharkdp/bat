@@ -244,6 +244,13 @@ abbr -a --position anywhere -- --help '--help | bat -plhelp'
 abbr -a --position anywhere -- -h '-h | bat -plhelp'
 ```
 
+To remove these abbreviations later, run:
+
+```fish
+abbr --erase -- --help
+abbr --erase -- -h
+```
+
 This way, you can keep on using `cp --help`, but get colorized help pages.
 
 Be aware that in some cases, `-h` may not be a shorthand of `--help` (for example with `ls`). In cases where you need to use `-h` 
