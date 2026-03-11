@@ -613,6 +613,21 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+#[serial]
+fn list_themes_disables_forced_paging() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("BAT_PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("--list-themes")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("DarkNeon").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
+}
+
+#[test]
 fn list_languages() {
     bat()
         .arg("--list-languages")

@@ -287,7 +287,7 @@ impl App {
             .and_then(Iterator::max)
             .unwrap_or_default();
 
-        let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
+        let mut paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
             Some("always") => {
                 // Disable paging if the second -p (or -pp) is specified after --paging=always
                 if extra_plain && plain_last_index > paging_last_index {
@@ -321,6 +321,10 @@ impl App {
             }
             _ => unreachable!("other values for --paging are not allowed"),
         };
+
+        if self.matches.get_flag("list-themes") {
+            paging_mode = PagingMode::Never;
+        }
 
         let mut syntax_mapping = SyntaxMapping::new();
         // start building glob matchers for builtin mappings immediately
