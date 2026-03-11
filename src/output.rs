@@ -105,6 +105,10 @@ impl OutputType {
         let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
             Ok(path) => path,
             Err(_) => {
+                crate::bat_warning!(
+                    "Pager '{}' not found, outputting to stdout instead",
+                    pager.bin
+                );
                 return Ok(OutputType::stdout());
             }
         };
@@ -174,7 +178,13 @@ impl OutputType {
         Ok(p.stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout()))
+            .unwrap_or_else(|_| {
+                crate::bat_warning!(
+                    "Pager '{}' not found, outputting to stdout instead",
+                    &pager.bin
+                );
+                OutputType::stdout()
+            }))
     }
 
     pub(crate) fn stdout() -> Self {
@@ -215,8 +225,8 @@ impl Drop for OutputType {
                 let _ = command.wait();
             }
             OutputType::BuiltinPager(ref mut pager) => {
-                if pager.handle.is_some() {
-                    let _ = pager.handle.take().unwrap().join().unwrap();
+                if let Some(handle) = pager.handle.take() {
+                    let _ = handle.join();
                 }
             }
             OutputType::Stdout(_) => (),

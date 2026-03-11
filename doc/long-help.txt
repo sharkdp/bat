@@ -37,6 +37,13 @@ Options:
           name (like 'C++' or 'LaTeX') or possible file extension (like 'cpp', 'hpp' or 'md'). Use
           '--list-languages' to show all supported language names and file extensions.
 
+      --fallback-syntax <fallback-syntax>
+          Set a fallback language for syntax highlighting when auto-detection fails. Unlike
+          '--language', this is only used when no syntax could be detected from filename, custom
+          syntax mappings, or first-line detection.
+          
+          [aliases: --fallback-language]
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40
@@ -61,8 +68,8 @@ Options:
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character). The '--terminal-width' option
-          can be used in addition to control the output width.
+          Specify the text-wrapping mode (*auto*, never, character, word). The '--terminal-width'
+          option can be used in addition to control the output width.
 
   -S, --chop-long-lines
           Truncate all lines longer than screen width. Alias for '--wrap=never'.

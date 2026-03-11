@@ -102,8 +102,10 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
-Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
-can be used in addition to control the output width.
+Specify the text\-wrapping mode (*auto*, never, character, word). The '\-\-terminal\-width' option
+can be used in addition to control the output width. In \fBword\fR mode, lines are broken at
+whitespace boundaries. If a single word exceeds the terminal width, it falls back to
+character wrapping.
 .HP
 \fB\-S\fR, \fB\-\-chop\-long\-lines\fR
 .IP

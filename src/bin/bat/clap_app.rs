@@ -121,6 +121,17 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("fallback-syntax")
+                .long("fallback-syntax")
+                .visible_alias("fallback-language")
+                .help("Set a fallback language for undetected syntaxes.")
+                .long_help(
+                    "Set a fallback language for syntax highlighting when auto-detection fails. \
+                     Unlike '--language', this is only used when no syntax could be detected from \
+                     filename, custom syntax mappings, or first-line detection.",
+                ),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
@@ -211,11 +222,11 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("wrap")
                 .overrides_with("wrap")
                 .value_name("mode")
-                .value_parser(["auto", "never", "character"])
+                .value_parser(["auto", "never", "character", "word"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+                .help("Specify the text-wrapping mode (*auto*, never, character, word).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word). \
                            The '--terminal-width' option can be used in addition to \
                            control the output width."),
         )

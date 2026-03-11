@@ -1427,6 +1427,21 @@ fn pager_failed_to_parse() {
 
 #[test]
 #[serial]
+fn pager_missing_warning() {
+    bat()
+        .env("BAT_PAGER", "nonexistent-pager-xyz-missing")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("[bat warning]"))
+        .stderr(predicate::str::contains("not found"))
+        .stderr(predicate::str::contains("nonexistent-pager-xyz-missing"))
+        .stdout(predicate::str::contains("hello world\n"));
+}
+
+#[test]
+#[serial]
 fn env_var_bat_paging() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
@@ -1442,6 +1457,7 @@ fn env_var_bat_paging() {
 #[test]
 fn basic_set_terminal_title() {
     bat()
+        .env("BAT_PAGER", "cat")
         .arg("--paging=always")
         .arg("--set-terminal-title")
         .arg("test.txt")
@@ -2455,6 +2471,121 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
 }
 
 #[test]
+fn fallback_syntax_is_used_when_no_syntax_is_detected() {
+    let content = "# comment\nfoo=bar\n";
+
+    let fallback_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=bash")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=bash")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&fallback_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_detected_syntax() {
+    let content = "fn main() { println!(\"hello\"); }\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .arg("--fallback-syntax=json")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_explicit_language() {
+    let content = "{\"a\": 1}\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--fallback-syntax=rust")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn invalid_fallback_syntax_returns_error() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
@@ -2882,6 +3013,44 @@ fn no_line_wrapping_with_s_flag() {
 #[test]
 fn no_wrapping_with_chop_long_lines() {
     wrapping_test("--chop-long-lines", false);
+}
+
+#[test]
+#[serial]
+fn wrap_never_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=never")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
+}
+
+#[test]
+#[serial]
+fn s_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("-S")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
 }
 
 #[test]
@@ -3736,4 +3905,63 @@ fn unbuffered_mode_plain_output() {
         .assert()
         .success()
         .stdout("hello world\n");
+}
+
+#[test]
+fn word_wrap_breaks_at_word_boundaries() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "\
+The quick brown fox jumps over the lazy
+dog and then runs away
+superlongwordthatdefinitelyexceedstheter
+minalwidthandshouldfallbacktocharacterwr
+apping
+short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_with_line_numbers() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "   1 The quick brown fox jumps over the
+     lazy dog and then runs away
+   2 superlongwordthatdefinitelyexceedst
+     heterminalwidthandshouldfallbacktoc
+     haracterwrapping
+   3 short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_short_line_no_wrap() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=80")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line\n");
 }

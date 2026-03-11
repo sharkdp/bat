@@ -1,15 +1,23 @@
 # unreleased
 
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
+- Fixed syntax tests path, see #3610 (@foxfromworld)
 
 ## Features
 
+- Added support for `hidden_file_extensions` from `.sublime-syntax` files, see #3613 (@Matei02355)
+- Add word wrapping mode via `--wrap=word`, see #3597 (@veeceey)
 - Implement `--unbuffered` mode for streaming input, allowing partial lines to display immediately (e.g. `tail -f | bat -u`). Closes #3555, see #3583 (@mainnebula)
 - Added an initial `flake.nix` for a ready made development environment; see #3578 (@vorburger)
 - Add `--quiet-empty` (`-E`) flag to suppress output when input is empty. Closes #1936, see #3563 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
+- Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 
 ## Bugfixes
+- Fix `BAT_CONFIG_DIR` pointing at system config directory causing duplicate flag errors. Closes #3589, see #3620 (@Xavrir)
+- Fix syntax highlighting for symlinked files when the symlink name has no extension but the target does. Closes #1001, see #3621 (@Xavrir)
+- Report error when pager is missing instead of silently falling back, see #3588 (@IMaloney)
+- Fix `--wrap=never` and `-S` flags being ignored when piping to pager, see #3592 (@IMaloney)
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
@@ -25,6 +33,7 @@
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 - Add syntax highlighting support for COBOL, see #3584 (@adukhan99)
+- Fixed manpage syntax so that ANSI escape codes don't get incorrectly highlighted and thus broken, see #3586 (@BlueElectivire)
 
 ## Themes
 
