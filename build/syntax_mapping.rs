@@ -51,7 +51,13 @@ impl ToTokens for MappingTarget {
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
-struct Matcher(Vec<MatcherSegment>);
+struct Matcher {
+    segments: Vec<MatcherSegment>,
+    /// Whether the glob pattern should be matched case-insensitively.
+    ///
+    /// Defaults to `true` (case-insensitive) for backwards compatibility.
+    case_insensitive: bool,
+}
 /// Parse a matcher.
 ///
 /// Note that this implementation is rather strict: it will greedily interpret
@@ -116,18 +122,24 @@ impl FromStr for Matcher {
             bail!(r#"Invalid matcher: "{s}""#);
         }
 
-        Ok(Self(non_empty_segments))
+        Ok(Self {
+            segments: non_empty_segments,
+            case_insensitive: true,
+        })
     }
 }
 impl ToTokens for Matcher {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let t = match self.0.as_slice() {
+        let case_insensitive = self.case_insensitive;
+        let t = match self.segments.as_slice() {
             [] => unreachable!("0-length matcher should never be created"),
             [MatcherSegment::Text(text)] => {
-                quote! { Lazy::new(|| Some(build_matcher_fixed(#text))) }
+                quote! { Lazy::new(|| Some(build_matcher_fixed(#text, #case_insensitive))) }
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
-            segs @ [_, ..] => quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ])) },
+            segs @ [_, ..] => {
+                quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ], #case_insensitive)) }
+            }
         };
         tokens.append_all(t);
     }
@@ -175,7 +187,12 @@ impl MatcherSegment {
 /// A struct that models a single .toml file in /src/syntax_mapping/builtins/.
 #[derive(Clone, Debug, Deserialize)]
 struct MappingDefModel {
+    #[serde(default)]
     mappings: IndexMap<MappingTarget, Vec<Matcher>>,
+    /// Case-sensitive mappings. Unlike `mappings`, these glob patterns are
+    /// matched case-sensitively.
+    #[serde(default)]
+    case_sensitive_mappings: IndexMap<MappingTarget, Vec<Matcher>>,
 }
 impl MappingDefModel {
     fn into_mapping_list(self) -> MappingList {
@@ -188,6 +205,19 @@ impl MappingDefModel {
                     .map(|matcher| (matcher, target.clone()))
                     .collect::<Vec<_>>()
             })
+            .chain(
+                self.case_sensitive_mappings
+                    .into_iter()
+                    .flat_map(|(target, matchers)| {
+                        matchers
+                            .into_iter()
+                            .map(|mut matcher| {
+                                matcher.case_insensitive = false;
+                                (matcher, target.clone())
+                            })
+                            .collect::<Vec<_>>()
+                    }),
+            )
             .collect();
         MappingList(list)
     }

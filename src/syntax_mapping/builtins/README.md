@@ -20,9 +20,9 @@ syntax mappings defined by all TOML files, and embed them into the binary.
 
 ## File syntax
 
-Each TOML file should contain a single section named `mappings`, with each of
-its keys being a language identifier (first column of `bat -L`; also referred to
-as "target").
+Each TOML file should contain a single section named `mappings` and/or a single
+section named `case_sensitive_mappings`, with each of its keys being a language
+identifier (first column of `bat -L`; also referred to as "target").
 
 The value of each key should be an array of strings, with each item being a glob
 matcher. We will call each of these items a "rule".
