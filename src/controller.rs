@@ -158,6 +158,7 @@ impl Controller<'_> {
             #[cfg(not(feature = "lessopen"))]
             input.open(stdin, stdout_identifier)?
         };
+        opened_input.reader.unbuffered = self.config.unbuffered;
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())
@@ -327,6 +328,9 @@ impl Controller<'_> {
                     }
 
                     printer.print_line(false, writer, line_nr, &line, max_buffered_line_number)?;
+                    if self.config.unbuffered {
+                        writer.flush()?;
+                    }
                 }
                 RangeCheckResult::AfterLastRange => {
                     break;

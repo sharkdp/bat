@@ -102,8 +102,10 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
-Specify the text\-wrapping mode (*auto*, never, character). The '\-\-terminal\-width' option
-can be used in addition to control the output width.
+Specify the text\-wrapping mode (*auto*, never, character, word). The '\-\-terminal\-width' option
+can be used in addition to control the output width. In \fBword\fR mode, lines are broken at
+whitespace boundaries. If a single word exceeds the terminal width, it falls back to
+character wrapping.
 .HP
 \fB\-S\fR, \fB\-\-chop\-long\-lines\fR
 .IP
@@ -263,8 +265,10 @@ Display a list of supported languages for syntax highlighting.
 .HP
 \fB\-u\fR, \fB\-\-unbuffered\fR
 .IP
-This option exists for POSIX\-compliance reasons ('u' is for 'unbuffered'). The output is
-always unbuffered \- this option is simply ignored.
+Enable unbuffered input reading. When this flag is set, bat will display data as soon as it
+is available, without waiting for a complete line. This is useful for streaming use cases like
+\&'tail \-f logfile | bat \-u \-\-paging=never'. Note that line numbers are automatically disabled
+in unbuffered mode, and syntax highlighting may be imperfect on partial lines.
 .HP
 \fB\-\-no\-custom\-assets\fR
 .IP

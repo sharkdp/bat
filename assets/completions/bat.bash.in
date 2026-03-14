@@ -117,7 +117,7 @@ _bat() {
 		return 0
 		;;
 	--wrap)
-		COMPREPLY=($(compgen -W "auto never character" -- "$cur"))
+		COMPREPLY=($(compgen -W "auto never character word" -- "$cur"))
 		return 0
 		;;
 	--binary)
@@ -190,8 +190,8 @@ _bat() {
 	$split && return 0
 
 	if [[ $cur == -* ]]; then
-		# --unbuffered excluded intentionally (no-op)
 		COMPREPLY=($(compgen -W "
+			--unbuffered
 			--show-all
 			--nonprintable-notation
 			--binary

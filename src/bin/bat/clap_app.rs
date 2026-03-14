@@ -1,7 +1,5 @@
 use bat::style::StyleComponentList;
-use clap::{
-    crate_name, crate_version, value_parser, Arg, ArgAction, ArgGroup, ColorChoice, Command,
-};
+use clap::{crate_name, crate_version, value_parser, Arg, ArgAction, ColorChoice, Command};
 use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
@@ -123,6 +121,17 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("fallback-syntax")
+                .long("fallback-syntax")
+                .visible_alias("fallback-language")
+                .help("Set a fallback language for undetected syntaxes.")
+                .long_help(
+                    "Set a fallback language for syntax highlighting when auto-detection fails. \
+                     Unlike '--language', this is only used when no syntax could be detected from \
+                     filename, custom syntax mappings, or first-line detection.",
+                ),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
@@ -213,11 +222,11 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("wrap")
                 .overrides_with("wrap")
                 .value_name("mode")
-                .value_parser(["auto", "never", "character"])
+                .value_parser(["auto", "never", "character", "word"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character). \
+                .help("Specify the text-wrapping mode (*auto*, never, character, word).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word). \
                            The '--terminal-width' option can be used in addition to \
                            control the output width."),
         )
@@ -550,11 +559,14 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('u')
                 .long("unbuffered")
                 .action(ArgAction::SetTrue)
-                .hide_short_help(true)
+                .help("Enable unbuffered input reading for streaming use cases.")
                 .long_help(
-                    "This option exists for POSIX-compliance reasons ('u' is for \
-                     'unbuffered'). The output is always unbuffered - this option \
-                     is simply ignored.",
+                    "Enable unbuffered input reading. When this flag is set, bat will \
+                     display data as soon as it is available, without waiting for a \
+                     complete line. This is useful for streaming use cases like \
+                     'tail -f logfile | bat -u --paging=never'. Note that line numbers \
+                     are automatically disabled in unbuffered mode, and syntax \
+                     highlighting may be imperfect on partial lines.",
                 ),
         )
         .arg(
@@ -694,11 +706,20 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
+                .arg_required_else_help(true)
+                .arg(
+                    Arg::new("help")
+                        .short('h')
+                        .long("help")
+                        .action(ArgAction::Help)
+                        .help("Print help"),
+                )
                 .arg(
                     Arg::new("build")
                         .long("build")
                         .short('b')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("clear")
                         .help("Initialize (or update) the syntax/theme cache.")
                         .long_help(
                             "Initialize (or update) the syntax/theme cache by loading from \
@@ -710,12 +731,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .long("clear")
                         .short('c')
                         .action(ArgAction::SetTrue)
+                        .conflicts_with("build")
                         .help("Remove the cached syntax definitions and themes."),
-                )
-                .group(
-                    ArgGroup::new("cache-actions")
-                        .args(["build", "clear"])
-                        .required(true),
                 )
                 .arg(
                     Arg::new("source")

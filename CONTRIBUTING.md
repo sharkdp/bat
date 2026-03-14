@@ -91,3 +91,29 @@ To learn how to write regression tests for theme and syntax changes, read the
 [Syntax
 tests](https://github.com/sharkdp/bat/blob/master/doc/assets.md#syntax-tests)
 section in `assets.md`.
+
+### Ensuring bat is available for Syntax tests
+
+The syntax test script (`tests/syntax-tests/update.sh`) calls `bat` from your PATH and regenerates the highlighted output files under
+`tests/syntax-tests/highlighted/`. These files are used to verify that syntax highlighting works as expected.
+
+- If you only built the binaries with:
+  ```bash
+  cargo build --bins
+  ```
+
+  you need to add the debug build to your PATH from the bat project root before running the tests.
+  See also step 5 in [Syntax
+tests](https://github.com/sharkdp/bat/blob/master/doc/assets.md#syntax-tests) for related instructions.
+  ```bash
+  export PATH="$PATH:$(pwd)/target/debug"
+  ```
+  Otherwise, you will see:
+  ```bash
+  Error: Could not execute 'bat'. Please make sure that the executable is available on the PATH.
+  ```
+- If you installed bat with:
+  ```bash
+  cargo install --path . --locked
+  ```
+  then bat will be available in ~/.cargo/bin (usually already in PATH), and the tests will run without issues.

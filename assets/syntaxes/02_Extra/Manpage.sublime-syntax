@@ -9,6 +9,7 @@ scope: source.man
 variables:
   section_heading: '^(?!#)\S.*$'
   command_line_option: '(--?[A-Za-z0-9][_A-Za-z0-9-]*)'
+  ansi_escape_sequence: '\e\[[\?=]?(?:\d+;?)*[A-Za-z]'
 
 contexts:
   prototype:
@@ -69,7 +70,7 @@ contexts:
       escape: '(?={{section_heading}})'
 
   function-call:
-    - match: '\b([A-Za-z0-9_\-]+\.)?([A-Za-z0-9_\-]+)(\()([^)]*)(\))'
+    - match: '(?<!\e\[)(?:\b|\s)(?:{{ansi_escape_sequence}})?([A-Za-z0-9_\-]+\.)?([A-Za-z0-9_\-]+)(?:{{ansi_escape_sequence}})?(\()([^)]*)(\))'
       captures:
         1: entity.name.function.man
         2: entity.name.function.man

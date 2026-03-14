@@ -38,6 +38,9 @@ pub struct Config<'a> {
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
 
+    /// The fallback syntax used when auto-detection fails
+    pub fallback_syntax: Option<&'a str>,
+
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
@@ -110,6 +113,9 @@ pub struct Config<'a> {
 
     /// Whether or not to produce no output when input is empty
     pub quiet_empty: bool,
+
+    /// Whether or not to use unbuffered input reading for streaming use cases
+    pub unbuffered: bool,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

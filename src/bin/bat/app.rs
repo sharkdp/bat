@@ -384,6 +384,10 @@ impl App {
                         None
                     }
                 }),
+            fallback_syntax: self
+                .matches
+                .get_one::<String>("fallback-syntax")
+                .map(|s| s.as_str()),
             show_nonprintable: self.matches.get_flag("show-all"),
             nonprintable_notation: match self
                 .matches
@@ -399,27 +403,30 @@ impl App {
                 Some("no-printing") => BinaryBehavior::NoPrinting,
                 _ => unreachable!("other values for --binary are not allowed"),
             },
-            wrapping_mode: if self.interactive_output || maybe_term_width.is_some() {
-                if !self.matches.get_flag("chop-long-lines") {
+            wrapping_mode: {
+                if self.matches.get_flag("chop-long-lines") {
+                    WrappingMode::NoWrapping(true)
+                } else {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
+                        Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if style_components.plain() && maybe_term_width.is_none() {
-                                WrappingMode::NoWrapping(false)
+                            if self.interactive_output || maybe_term_width.is_some() {
+                                if style_components.plain() && maybe_term_width.is_none() {
+                                    WrappingMode::NoWrapping(false)
+                                } else {
+                                    WrappingMode::Character
+                                }
                             } else {
-                                WrappingMode::Character
+                                // We don't have the tty width when piping to another program.
+                                // There's no point in wrapping when this is the case.
+                                WrappingMode::NoWrapping(false)
                             }
                         }
                         _ => unreachable!("other values for --wrap are not allowed"),
                     }
-                } else {
-                    WrappingMode::NoWrapping(true)
                 }
-            } else {
-                // We don't have the tty width when piping to another program.
-                // There's no point in wrapping when this is the case.
-                WrappingMode::NoWrapping(false)
             },
             colored_output: self.matches.get_flag("force-colorization")
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
@@ -462,6 +469,7 @@ impl App {
                 _ => unreachable!("other values for --strip-ansi are not allowed"),
             },
             quiet_empty: self.matches.get_flag("quiet-empty"),
+            unbuffered: self.matches.get_flag("unbuffered"),
             theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
@@ -617,6 +625,11 @@ impl App {
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
             bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
+        }
+
+        // Auto-disable line numbers in unbuffered mode to avoid confusion with partial lines
+        if self.matches.get_flag("unbuffered") {
+            styled_components.0.remove(&StyleComponent::LineNumbers);
         }
 
         Ok(styled_components)
