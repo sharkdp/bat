@@ -198,7 +198,7 @@ bat main.cpp | xclip
 export MANPAGER="bat -plman"
 man 2 select
 ```
-(replace `bat` with `batcat` if you are on Debian or Ubuntu)
+(on some older Debian or Ubuntu releases, the executable is named `batcat` instead of `bat`)
 
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
@@ -276,8 +276,8 @@ If your Ubuntu/Debian installation is new enough you can simply run:
 sudo apt install bat
 ```
 
-**Important**: If you install `bat` this way, please note that the executable may be installed as `batcat` instead of `bat` (due to [a name
-clash with another package](https://github.com/sharkdp/bat/issues/982)). You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
+**Important**: On some older Ubuntu/Debian releases, the executable is installed as `batcat` instead of `bat` (due to [a name
+clash with another package](https://github.com/sharkdp/bat/issues/982)). On newer releases, the executable is available as `bat`. If `bat --version` does not work after installation, try `batcat --version` instead. You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
