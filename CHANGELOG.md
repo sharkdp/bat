@@ -34,6 +34,7 @@
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 - Add syntax highlighting support for COBOL, see #3584 (@adukhan99)
 - Fixed manpage syntax so that ANSI escape codes don't get incorrectly highlighted and thus broken, see #3586 (@BlueElectivire)
+- Map several Google Cloud CLI config files to their appropriate syntax #3635 (@victor-gp)
 
 ## Themes
 
