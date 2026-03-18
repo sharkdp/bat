@@ -68,6 +68,8 @@ users, please read the corresponding
 [documentation](https://github.com/sharkdp/bat/blob/master/doc/assets.md)
 first.
 
+To map a file name pattern to an existing syntax, read [the documentation here](https://github.com/sharkdp/bat/blob/master/src/syntax_mapping/builtins/README.md).
+
 Note: We are currently not accepting new default themes.
 
 
