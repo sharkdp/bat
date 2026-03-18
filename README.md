@@ -43,7 +43,7 @@ languages:
 ### Git integration
 
 `bat` communicates with `git` to show modifications with respect to the index
-(see left side bar):
+(see left sidebar):
 
 ![Git integration example](https://i.imgur.com/2lSW4RE.png)
 
