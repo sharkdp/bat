@@ -47,16 +47,34 @@ impl ToTokens for MappingTarget {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, DeserializeFromStr)]
+/// Whether a glob pattern should be matched case-sensitively or case-insensitively.
+///
+/// Mirrors the runtime `Case` type in `src/syntax_mapping.rs`.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum Case {
+    Sensitive,
+    Insensitive,
+}
+impl ToTokens for Case {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let t = match self {
+            Self::Sensitive => quote! { Case::Sensitive },
+            Self::Insensitive => quote! { Case::Insensitive },
+        };
+        tokens.append_all(t);
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
 struct Matcher {
     segments: Vec<MatcherSegment>,
-    /// Whether the glob pattern should be matched case-insensitively.
+    /// Whether the glob pattern should be matched case-sensitively.
     ///
-    /// Defaults to `true` (case-insensitive) for backwards compatibility.
-    case_insensitive: bool,
+    /// Defaults to `Case::Insensitive` for backwards compatibility.
+    case: Case,
 }
 /// Parse a matcher.
 ///
@@ -124,21 +142,53 @@ impl FromStr for Matcher {
 
         Ok(Self {
             segments: non_empty_segments,
-            case_insensitive: true,
+            case: Case::Insensitive,
         })
+    }
+}
+
+/// Helper type for deserializing a `Matcher` from either a plain string or a
+/// `{ glob = "...", case_sensitive = true }` struct.
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawMatcher {
+    Simple(String),
+    Full {
+        glob: String,
+        #[serde(default)]
+        case_sensitive: bool,
+    },
+}
+
+impl<'de> serde::Deserialize<'de> for Matcher {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let raw = RawMatcher::deserialize(deserializer)?;
+        match raw {
+            RawMatcher::Simple(s) => Matcher::from_str(&s).map_err(serde::de::Error::custom),
+            RawMatcher::Full { glob, case_sensitive } => {
+                let mut matcher =
+                    Matcher::from_str(&glob).map_err(serde::de::Error::custom)?;
+                matcher.case = if case_sensitive {
+                    Case::Sensitive
+                } else {
+                    Case::Insensitive
+                };
+                Ok(matcher)
+            }
+        }
     }
 }
 impl ToTokens for Matcher {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let case_insensitive = self.case_insensitive;
+        let case = &self.case;
         let t = match self.segments.as_slice() {
             [] => unreachable!("0-length matcher should never be created"),
             [MatcherSegment::Text(text)] => {
-                quote! { Lazy::new(|| Some(build_matcher_fixed(#text, #case_insensitive))) }
+                quote! { Lazy::new(|| Some(build_matcher_fixed(#text, #case))) }
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
             segs @ [_, ..] => {
-                quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ], #case_insensitive)) }
+                quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ], #case)) }
             }
         };
         tokens.append_all(t);
@@ -189,10 +239,6 @@ impl MatcherSegment {
 struct MappingDefModel {
     #[serde(default)]
     mappings: IndexMap<MappingTarget, Vec<Matcher>>,
-    /// Case-sensitive mappings. Unlike `mappings`, these glob patterns are
-    /// matched case-sensitively.
-    #[serde(default)]
-    case_sensitive_mappings: IndexMap<MappingTarget, Vec<Matcher>>,
 }
 impl MappingDefModel {
     fn into_mapping_list(self) -> MappingList {
@@ -205,19 +251,6 @@ impl MappingDefModel {
                     .map(|matcher| (matcher, target.clone()))
                     .collect::<Vec<_>>()
             })
-            .chain(
-                self.case_sensitive_mappings
-                    .into_iter()
-                    .flat_map(|(target, matchers)| {
-                        matchers
-                            .into_iter()
-                            .map(|mut matcher| {
-                                matcher.case_insensitive = false;
-                                (matcher, target.clone())
-                            })
-                            .collect::<Vec<_>>()
-                    }),
-            )
             .collect();
         MappingList(list)
     }

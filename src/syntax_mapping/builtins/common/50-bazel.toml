@@ -1,2 +1,2 @@
-[case_sensitive_mappings]
-"Python" = ["BUILD"]
+[mappings]
+"Python" = [{ glob = "BUILD", case_sensitive = true }]

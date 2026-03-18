@@ -17,9 +17,16 @@ use ignored_suffixes::IgnoredSuffixes;
 mod builtin;
 pub mod ignored_suffixes;
 
-fn make_glob_matcher(from: &str, case_insensitive: bool) -> Result<GlobMatcher> {
+/// Whether a glob pattern should be matched case-sensitively or case-insensitively.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Case {
+    Sensitive,
+    Insensitive,
+}
+
+fn make_glob_matcher(from: &str, case: Case) -> Result<GlobMatcher> {
     let matcher = GlobBuilder::new(from)
-        .case_insensitive(case_insensitive)
+        .case_insensitive(matches!(case, Case::Insensitive))
         .literal_separator(true)
         .build()?
         .compile_matcher();
@@ -97,14 +104,14 @@ impl<'a> SyntaxMapping<'a> {
     }
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
-        let matcher = make_glob_matcher(from, true)?;
+        let matcher = make_glob_matcher(from, Case::Insensitive)?;
         self.custom_mappings.push((matcher, to));
         Ok(())
     }
 
     /// Like [`Self::insert`], but the glob pattern is matched case-sensitively.
     pub fn insert_case_sensitive(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
-        let matcher = make_glob_matcher(from, false)?;
+        let matcher = make_glob_matcher(from, Case::Sensitive)?;
         self.custom_mappings.push((matcher, to));
         Ok(())
     }
