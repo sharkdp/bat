@@ -165,9 +165,11 @@ impl<'de> serde::Deserialize<'de> for Matcher {
         let raw = RawMatcher::deserialize(deserializer)?;
         match raw {
             RawMatcher::Simple(s) => Matcher::from_str(&s).map_err(serde::de::Error::custom),
-            RawMatcher::Full { glob, case_sensitive } => {
-                let mut matcher =
-                    Matcher::from_str(&glob).map_err(serde::de::Error::custom)?;
+            RawMatcher::Full {
+                glob,
+                case_sensitive,
+            } => {
+                let mut matcher = Matcher::from_str(&glob).map_err(serde::de::Error::custom)?;
                 matcher.case = if case_sensitive {
                     Case::Sensitive
                 } else {

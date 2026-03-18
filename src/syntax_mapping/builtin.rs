@@ -54,8 +54,7 @@ include!(concat!(
 ///
 /// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
 fn build_matcher_fixed(from: &str, case: Case) -> GlobMatcher {
-    make_glob_matcher(from, case)
-        .expect("A builtin fixed glob matcher failed to compile")
+    make_glob_matcher(from, case).expect("A builtin fixed glob matcher failed to compile")
 }
 
 /// Join a list of matcher segments to create a glob string, replacing all
