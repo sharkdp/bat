@@ -614,7 +614,7 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
-        let line = if self.config.show_nonprintable {
+        let line = if self.config.show_nonprintable || matches!(self.config.binary, BinaryBehavior::AsText) {
             replace_nonprintable(
                 line_buffer,
                 self.config.tab_width,
