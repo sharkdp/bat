@@ -3993,8 +3993,7 @@ fn setup_diff_test_repo() -> tempfile::TempDir {
         .output()
         .expect("git config name");
 
-    std::fs::write(repo.join("test.txt"), "line 1\nline 2\nline 3\n")
-        .expect("can write test file");
+    std::fs::write(repo.join("test.txt"), "line 1\nline 2\nline 3\n").expect("can write test file");
 
     Command::new("git")
         .args(["add", "test.txt"])
@@ -4009,8 +4008,11 @@ fn setup_diff_test_repo() -> tempfile::TempDir {
         .expect("git commit");
 
     // Modify the file so --diff has something to show
-    std::fs::write(repo.join("test.txt"), "line 1\nline 2 modified\nline 3\nline 4 added\n")
-        .expect("can write modified test file");
+    std::fs::write(
+        repo.join("test.txt"),
+        "line 1\nline 2 modified\nline 3\nline 4 added\n",
+    )
+    .expect("can write modified test file");
 
     dir
 }
