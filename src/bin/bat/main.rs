@@ -297,11 +297,13 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
         .map_err(|e| format!("Failed to create file watcher: {e}"))?;
 
     for path in &file_paths {
-        let canonical = path.canonicalize()
+        let canonical = path
+            .canonicalize()
             .map_err(|e| format!("Failed to resolve path '{}': {e}", path.display()))?;
         // Watch parent directory to catch editors that do atomic saves (write to temp + rename)
         let watch_path = canonical.parent().unwrap_or(&canonical);
-        watcher.watch(watch_path, RecursiveMode::NonRecursive)
+        watcher
+            .watch(watch_path, RecursiveMode::NonRecursive)
             .map_err(|e| format!("Failed to watch '{}': {e}", watch_path.display()))?;
     }
 
@@ -313,7 +315,8 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
     io::stdout().flush().unwrap();
     Controller::new(config, &assets).run(inputs, None).ok();
 
-    let canonical_paths: Vec<PathBuf> = file_paths.iter()
+    let canonical_paths: Vec<PathBuf> = file_paths
+        .iter()
         .filter_map(|p| p.canonicalize().ok())
         .collect();
 
@@ -328,7 +331,8 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
             Ok(Ok(event)) => {
                 // Check if the event is relevant to our files
                 let relevant = event.paths.iter().any(|event_path| {
-                    let event_canonical = event_path.canonicalize()
+                    let event_canonical = event_path
+                        .canonicalize()
                         .unwrap_or_else(|_| event_path.clone());
                     canonical_paths.iter().any(|cp| *cp == event_canonical)
                 });
@@ -351,7 +355,8 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
                 std::thread::sleep(Duration::from_millis(50));
 
                 // Re-display
-                let inputs: Vec<Input> = file_paths.iter().map(|p| Input::ordinary_file(p)).collect();
+                let inputs: Vec<Input> =
+                    file_paths.iter().map(|p| Input::ordinary_file(p)).collect();
                 print!("\x1b[2J\x1b[H");
                 io::stdout().flush().unwrap();
                 Controller::new(config, &assets).run(inputs, None).ok();
@@ -503,13 +508,17 @@ fn run() -> Result<bool> {
                 #[cfg(feature = "watch")]
                 if app.matches.get_flag("watch") {
                     // Collect file paths for watching
-                    let file_paths: Vec<PathBuf> = app.matches
+                    let file_paths: Vec<PathBuf> = app
+                        .matches
                         .get_many::<PathBuf>("FILE")
                         .map(|vs| vs.cloned().collect())
                         .unwrap_or_default();
 
                     if file_paths.is_empty() {
-                        return Err("--watch requires at least one file argument (stdin is not supported).".into());
+                        return Err(
+                            "--watch requires at least one file argument (stdin is not supported)."
+                                .into(),
+                        );
                     }
 
                     // Force disable paging in watch mode
