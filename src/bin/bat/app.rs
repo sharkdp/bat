@@ -596,6 +596,7 @@ impl App {
             if self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
+                #[cfg(feature = "git")]
                 components.insert(StyleComponent::Changes);
                 components.insert(StyleComponent::Snip);
             }
