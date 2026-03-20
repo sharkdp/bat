@@ -310,7 +310,7 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
 
     // Initial display
-    let inputs: Vec<Input> = file_paths.iter().map(|p| Input::ordinary_file(p)).collect();
+    let inputs: Vec<Input> = file_paths.iter().map(Input::ordinary_file).collect();
     print!("\x1b[2J\x1b[H");
     io::stdout().flush().unwrap();
     Controller::new(config, &assets).run(inputs, None).ok();
@@ -334,7 +334,7 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
                     let event_canonical = event_path
                         .canonicalize()
                         .unwrap_or_else(|_| event_path.clone());
-                    canonical_paths.iter().any(|cp| *cp == event_canonical)
+                    canonical_paths.contains(&event_canonical)
                 });
 
                 if !relevant {
@@ -356,7 +356,7 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
 
                 // Re-display
                 let inputs: Vec<Input> =
-                    file_paths.iter().map(|p| Input::ordinary_file(p)).collect();
+                    file_paths.iter().map(Input::ordinary_file).collect();
                 print!("\x1b[2J\x1b[H");
                 io::stdout().flush().unwrap();
                 Controller::new(config, &assets).run(inputs, None).ok();

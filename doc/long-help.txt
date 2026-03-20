@@ -216,6 +216,12 @@ Options:
           automatically disabled in unbuffered mode, and syntax highlighting may be imperfect on
           partial lines.
 
+  -w, --watch
+          Watch the specified file(s) for changes. When a file is modified externally (e.g., in an
+          editor like VS Code or nano), bat will automatically clear the screen and re-display the
+          updated content with syntax highlighting. Press Ctrl+C to stop watching. This option
+          disables paging automatically.
+
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
 

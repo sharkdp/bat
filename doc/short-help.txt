@@ -62,6 +62,8 @@ Options:
           Display all supported languages.
   -u, --unbuffered
           Enable unbuffered input reading for streaming use cases.
+  -w, --watch
+          Watch file for changes and re-display on modification.
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
   -E, --quiet-empty
