@@ -355,8 +355,7 @@ fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Res
                 std::thread::sleep(Duration::from_millis(50));
 
                 // Re-display
-                let inputs: Vec<Input> =
-                    file_paths.iter().map(Input::ordinary_file).collect();
+                let inputs: Vec<Input> = file_paths.iter().map(Input::ordinary_file).collect();
                 print!("\x1b[2J\x1b[H");
                 io::stdout().flush().unwrap();
                 Controller::new(config, &assets).run(inputs, None).ok();
