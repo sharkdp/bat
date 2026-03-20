@@ -29,11 +29,13 @@ minimal-application = [
     "etcetera",
     "paging",
     "regex-onig",
+    "watch",
     "wild",
 ]
 git = ["git2"] # Support indicating git modifications
 vendored-libgit2 = ["git2/vendored-libgit2"]
 paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
+watch = ["notify"] # Support watching files for changes
 lessopen = ["execute"] # Support $LESSOPEN preprocessor
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
 
@@ -72,6 +74,7 @@ walkdir = { version = "2.5", optional = true }
 bytesize = { version = "2.3.1" }
 encoding_rs = "0.8.35"
 execute = { version = "0.2.15", optional = true }
+notify = { version = "7.0", optional = true }
 terminal-colorsaurus = "1.0"
 unicode-segmentation = "1.12.0"
 itertools = "0.14.0"
