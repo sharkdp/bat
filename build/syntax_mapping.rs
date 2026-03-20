@@ -50,9 +50,10 @@ impl ToTokens for MappingTarget {
 /// Whether a glob pattern should be matched case-sensitively or case-insensitively.
 ///
 /// Mirrors the runtime `Case` type in `src/syntax_mapping.rs`.
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
 enum Case {
     Sensitive,
+    #[default]
     Insensitive,
 }
 impl ToTokens for Case {
@@ -65,7 +66,7 @@ impl ToTokens for Case {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
