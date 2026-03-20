@@ -26,6 +26,7 @@
 
 ## Other
 
+- Replace unmaintained `bincode` with `postcard` for asset serialization (RUSTSEC-2025-0141). Closes #3582, see #3618 (@Xavrir)
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 
 ## Syntaxes

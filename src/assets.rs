@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
 use std::fs;
+use std::io::Read;
 use std::path::Path;
 
 use once_cell::unsync::OnceCell;
@@ -394,9 +395,13 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
     compressed: bool,
 ) -> Result<T> {
     if compressed {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(contents))
+        let mut decompressed = Vec::new();
+        flate2::read::ZlibDecoder::new(contents)
+            .read_to_end(&mut decompressed)
+            .map_err(|_| format!("Could not decompress {description}"))?;
+        postcard::from_bytes(&decompressed)
     } else {
-        bincode::deserialize_from(contents)
+        postcard::from_bytes(contents)
     }
     .map_err(|_| format!("Could not parse {description}").into())
 }
