@@ -20,12 +20,10 @@ syntax mappings defined by all TOML files, and embed them into the binary.
 
 ## File syntax
 
-Each TOML file should contain a single section named `mappings` and/or a single
-section named `case_sensitive_mappings`, with each of its keys being a language
+Each TOML file should contain a single section named `mappings`, with each of its keys being a language
 identifier (first column of `bat -L`; also referred to as "target").
 
-The value of each key should be an array of strings, with each item being a glob
-matcher. We will call each of these items a "rule".
+The value of each key should be an array of "rules". The rules are expected to be objects with a `glob` string and a `case_sensitive` boolean. For simplification, a rule can be just a glob string, which is shorthand for the default case insensitive mode.
 
 For example, if `foo-application` uses both TOML and YAML configuration files,
 we could write something like this:
@@ -96,6 +94,15 @@ like this:
 "MappingTarget::MapExtensionToUnknown" = [
     "*.conf",
 ]
+```
+
+### Case sensitivity
+
+By default, all glob patterns are matched case-insensitively. To match a pattern case-sensitively, use the object form of the rule with the `case_sensitive` option:
+
+```toml
+[mappings]
+"Python" = [{ glob = "BUILD", case_sensitive = true }]
 ```
 
 ## Ordering
