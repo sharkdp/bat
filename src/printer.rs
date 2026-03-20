@@ -37,6 +37,16 @@ use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
 use crate::StripAnsiMode;
 
+// Return the displayed width of a character.
+//
+// Control characters (0x00..=0x1F and 0x7F) are rendered by the terminal
+// in caret notation (e.g. ^@, ^A, ..., ^?), which occupies two columns.
+// UnicodeWidthChar::width() returns None for these, so we map them to 2
+// here instead of the previous default of 0.
+fn char_width(c: char) -> usize {
+    c.width().unwrap_or(if c.is_control() { 2 } else { 0 })
+}
+
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
     raw_sequence: "\x1B[4m",
     parameters: "4",
@@ -793,7 +803,7 @@ impl Printer for InteractivePrinter<'_> {
 
                             for c in text.chars() {
                                 // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
+                                let cw = char_width(c);
                                 current_width += cw;
 
                                 // Track whitespace positions for word wrapping.
@@ -868,10 +878,8 @@ impl Printer for InteractivePrinter<'_> {
                                     if let Some(rs) = rest_start {
                                         // Word wrap: carry remainder to next line.
                                         let remainder = line_buf[rs..].to_string();
-                                        let rem_width: usize = remainder
-                                            .chars()
-                                            .map(|ch| ch.width().unwrap_or(0))
-                                            .sum();
+                                        let rem_width: usize =
+                                            remainder.chars().map(char_width).sum();
                                         line_buf.clear();
                                         line_buf.push_str(&remainder);
                                         current_width = rem_width + cw;
