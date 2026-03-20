@@ -66,7 +66,8 @@ impl ToTokens for Case {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, Deserialize)]
+#[serde(try_from = "RawMatcher")]
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
@@ -161,16 +162,17 @@ enum RawMatcher {
     },
 }
 
-impl<'de> serde::Deserialize<'de> for Matcher {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let raw = RawMatcher::deserialize(deserializer)?;
+impl TryFrom<RawMatcher> for Matcher {
+    type Error = anyhow::Error;
+
+    fn try_from(raw: RawMatcher) -> Result<Self, Self::Error> {
         match raw {
-            RawMatcher::Simple(s) => Matcher::from_str(&s).map_err(serde::de::Error::custom),
+            RawMatcher::Simple(s) => Matcher::from_str(&s),
             RawMatcher::Full {
                 glob,
                 case_sensitive,
             } => {
-                let mut matcher = Matcher::from_str(&glob).map_err(serde::de::Error::custom)?;
+                let mut matcher = Matcher::from_str(&glob)?;
                 matcher.case = if case_sensitive {
                     Case::Sensitive
                 } else {
