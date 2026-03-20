@@ -590,7 +590,16 @@ impl App {
 
         // Plain if `--plain` is specified at least once.
         if self.matches.get_count("plain") > 0 {
-            return Some(StyleComponents(HashSet::from([StyleComponent::Plain])));
+            let mut components = HashSet::from([StyleComponent::Plain]);
+            // When --diff is active, preserve change markers and snip separators
+            // so that diff output remains visually useful.
+            if self.matches.try_contains_id("diff").unwrap_or_default()
+                && self.matches.get_flag("diff")
+            {
+                components.insert(StyleComponent::Changes);
+                components.insert(StyleComponent::Snip);
+            }
+            return Some(StyleComponents(components));
         }
 
         // Default behavior.
