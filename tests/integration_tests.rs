@@ -2682,6 +2682,25 @@ fn binary_as_text() {
 }
 
 #[test]
+fn binary_as_text_control_char_width() {
+    // Control characters are displayed as caret notation (e.g. ^@) by the
+    // terminal, occupying 2 columns each. With 20 NUL bytes (40 columns) +
+    // "END" (3 columns) = 43 columns, wrapping at terminal width 40 must
+    // produce 2 lines, not 1. See #3631.
+    bat()
+        .arg("--binary=as-text")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("regression_tests/issue_3631.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 2));
+}
+
+#[test]
 fn no_strip_overstrike_for_plain_text() {
     // Overstrike is preserved for plain text files (no syntax highlighting)
     bat()

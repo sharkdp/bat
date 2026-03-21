@@ -15,6 +15,8 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 
 ## Bugfixes
+- Fix inconsistent `.deb` MUSL package names (aarch64-musl used `arm64` instead of `musl-linux-arm64`, and `musleabihf` target missed `bat-musl` prefix). Closes #3482, see #3642 (@mvanhorn)
+- Fix incorrect text width computation when using `--binary=as-text` with non-printable characters in caret notation, see #3640 and #3631 (@eyupcanakman)
 - Fix `BAT_CONFIG_DIR` pointing at system config directory causing duplicate flag errors. Closes #3589, see #3620 (@Xavrir)
 - Fix syntax highlighting for symlinked files when the symlink name has no extension but the target does. Closes #1001, see #3621 (@Xavrir)
 - Report error when pager is missing instead of silently falling back, see #3588 (@IMaloney)
