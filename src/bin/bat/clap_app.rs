@@ -570,6 +570,20 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("watch")
+                .long("watch")
+                .short('w')
+                .action(ArgAction::SetTrue)
+                .help("Watch file for changes and re-display on modification.")
+                .long_help(
+                    "Watch the specified file(s) for changes. When a file is modified \
+                     externally (e.g., in an editor like VS Code or nano), bat will \
+                     automatically clear the screen and re-display the updated content \
+                     with syntax highlighting. Press Ctrl+C to stop watching. \
+                     This option disables paging automatically.",
+                ),
+        )
+        .arg(
             Arg::new("no-config")
                 .long("no-config")
                 .action(ArgAction::SetTrue)

@@ -14,6 +14,8 @@ use std::fmt::Write as _;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
+#[cfg(feature = "watch")]
+use std::path::PathBuf;
 use std::process;
 
 use bat::output::{OutputHandle, OutputType};
@@ -283,6 +285,89 @@ fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Resu
     controller.run(inputs, None)
 }
 
+#[cfg(feature = "watch")]
+fn run_watch(file_paths: Vec<PathBuf>, config: &Config, cache_dir: &Path) -> Result<bool> {
+    use notify::{Config as NotifyConfig, RecommendedWatcher, RecursiveMode, Watcher};
+    use std::sync::mpsc;
+    use std::time::{Duration, Instant};
+
+    let (tx, rx) = mpsc::channel();
+
+    let mut watcher = RecommendedWatcher::new(tx, NotifyConfig::default())
+        .map_err(|e| format!("Failed to create file watcher: {e}"))?;
+
+    for path in &file_paths {
+        let canonical = path
+            .canonicalize()
+            .map_err(|e| format!("Failed to resolve path '{}': {e}", path.display()))?;
+        // Watch parent directory to catch editors that do atomic saves (write to temp + rename)
+        let watch_path = canonical.parent().unwrap_or(&canonical);
+        watcher
+            .watch(watch_path, RecursiveMode::NonRecursive)
+            .map_err(|e| format!("Failed to watch '{}': {e}", watch_path.display()))?;
+    }
+
+    let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
+
+    // Initial display
+    let inputs: Vec<Input> = file_paths.iter().map(Input::ordinary_file).collect();
+    print!("\x1b[2J\x1b[H");
+    io::stdout().flush().unwrap();
+    Controller::new(config, &assets).run(inputs, None).ok();
+
+    let canonical_paths: Vec<PathBuf> = file_paths
+        .iter()
+        .filter_map(|p| p.canonicalize().ok())
+        .collect();
+
+    eprintln!("Watching for changes. Press Ctrl+C to stop.");
+
+    // Debounce interval
+    let debounce = Duration::from_millis(100);
+    let mut last_update = Instant::now();
+
+    loop {
+        match rx.recv() {
+            Ok(Ok(event)) => {
+                // Check if the event is relevant to our files
+                let relevant = event.paths.iter().any(|event_path| {
+                    let event_canonical = event_path
+                        .canonicalize()
+                        .unwrap_or_else(|_| event_path.clone());
+                    canonical_paths.contains(&event_canonical)
+                });
+
+                if !relevant {
+                    continue;
+                }
+
+                // Debounce: skip if too recent
+                let now = Instant::now();
+                if now.duration_since(last_update) < debounce {
+                    continue;
+                }
+                last_update = now;
+
+                // Drain any pending events
+                while rx.try_recv().is_ok() {}
+
+                // Small delay to let the editor finish writing
+                std::thread::sleep(Duration::from_millis(50));
+
+                // Re-display
+                let inputs: Vec<Input> = file_paths.iter().map(Input::ordinary_file).collect();
+                print!("\x1b[2J\x1b[H");
+                io::stdout().flush().unwrap();
+                Controller::new(config, &assets).run(inputs, None).ok();
+            }
+            Ok(Err(_)) => continue,
+            Err(_) => break, // Channel closed
+        }
+    }
+
+    Ok(true)
+}
+
 #[cfg(feature = "bugreport")]
 fn invoke_bugreport(app: &App, cache_dir: &Path) {
     use bugreport::{bugreport, collector::*, format::Markdown};
@@ -419,6 +504,29 @@ fn run() -> Result<bool> {
                 writeln!(io::stdout(), "{}", bat::assets::get_acknowledgements())?;
                 Ok(true)
             } else {
+                #[cfg(feature = "watch")]
+                if app.matches.get_flag("watch") {
+                    // Collect file paths for watching
+                    let file_paths: Vec<PathBuf> = app
+                        .matches
+                        .get_many::<PathBuf>("FILE")
+                        .map(|vs| vs.cloned().collect())
+                        .unwrap_or_default();
+
+                    if file_paths.is_empty() {
+                        return Err(
+                            "--watch requires at least one file argument (stdin is not supported)."
+                                .into(),
+                        );
+                    }
+
+                    // Force disable paging in watch mode
+                    let mut watch_config = config;
+                    watch_config.paging_mode = PagingMode::Never;
+
+                    return run_watch(file_paths, &watch_config, cache_dir);
+                }
+
                 run_controller(inputs, &config, cache_dir)
             }
         }
