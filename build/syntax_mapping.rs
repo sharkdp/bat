@@ -47,11 +47,37 @@ impl ToTokens for MappingTarget {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, DeserializeFromStr)]
+/// Whether a glob pattern should be matched case-sensitively or case-insensitively.
+///
+/// Mirrors the runtime `Case` type in `src/syntax_mapping.rs`.
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Default)]
+enum Case {
+    Sensitive,
+    #[default]
+    Insensitive,
+}
+impl ToTokens for Case {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let t = match self {
+            Self::Sensitive => quote! { Case::Sensitive },
+            Self::Insensitive => quote! { Case::Insensitive },
+        };
+        tokens.append_all(t);
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Hash, Deserialize)]
+#[serde(try_from = "RawMatcher")]
 /// A single matcher.
 ///
 /// Codegen converts this into a `Lazy<Option<GlobMatcher>>`.
-struct Matcher(Vec<MatcherSegment>);
+struct Matcher {
+    segments: Vec<MatcherSegment>,
+    /// Whether the glob pattern should be matched case-sensitively.
+    ///
+    /// Defaults to `Case::Insensitive` for backwards compatibility.
+    case: Case,
+}
 /// Parse a matcher.
 ///
 /// Note that this implementation is rather strict: it will greedily interpret
@@ -116,18 +142,59 @@ impl FromStr for Matcher {
             bail!(r#"Invalid matcher: "{s}""#);
         }
 
-        Ok(Self(non_empty_segments))
+        Ok(Self {
+            segments: non_empty_segments,
+            case: Case::Insensitive,
+        })
+    }
+}
+
+/// Helper type for deserializing a `Matcher` from either a plain string or a
+/// `{ glob = "...", case_sensitive = true }` struct.
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum RawMatcher {
+    Simple(String),
+    Full {
+        glob: String,
+        #[serde(default)]
+        case_sensitive: bool,
+    },
+}
+
+impl TryFrom<RawMatcher> for Matcher {
+    type Error = anyhow::Error;
+
+    fn try_from(raw: RawMatcher) -> Result<Self, Self::Error> {
+        match raw {
+            RawMatcher::Simple(s) => Matcher::from_str(&s),
+            RawMatcher::Full {
+                glob,
+                case_sensitive,
+            } => {
+                let mut matcher = Matcher::from_str(&glob)?;
+                matcher.case = if case_sensitive {
+                    Case::Sensitive
+                } else {
+                    Case::Insensitive
+                };
+                Ok(matcher)
+            }
+        }
     }
 }
 impl ToTokens for Matcher {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let t = match self.0.as_slice() {
+        let case = &self.case;
+        let t = match self.segments.as_slice() {
             [] => unreachable!("0-length matcher should never be created"),
             [MatcherSegment::Text(text)] => {
-                quote! { Lazy::new(|| Some(build_matcher_fixed(#text))) }
+                quote! { Lazy::new(|| Some(build_matcher_fixed(#text, #case))) }
             }
             // parser logic ensures that this case can only happen when there are dynamic segments
-            segs @ [_, ..] => quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ])) },
+            segs @ [_, ..] => {
+                quote! { Lazy::new(|| build_matcher_dynamic(&[ #(#segs),* ], #case)) }
+            }
         };
         tokens.append_all(t);
     }
@@ -175,6 +242,7 @@ impl MatcherSegment {
 /// A struct that models a single .toml file in /src/syntax_mapping/builtins/.
 #[derive(Clone, Debug, Deserialize)]
 struct MappingDefModel {
+    #[serde(default)]
     mappings: IndexMap<MappingTarget, Vec<Matcher>>,
 }
 impl MappingDefModel {

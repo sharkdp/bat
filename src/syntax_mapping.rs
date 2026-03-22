@@ -17,9 +17,16 @@ use ignored_suffixes::IgnoredSuffixes;
 mod builtin;
 pub mod ignored_suffixes;
 
-fn make_glob_matcher(from: &str) -> Result<GlobMatcher> {
+/// Whether a glob pattern should be matched case-sensitively or case-insensitively.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Case {
+    Sensitive,
+    Insensitive,
+}
+
+fn make_glob_matcher(from: &str, case: Case) -> Result<GlobMatcher> {
     let matcher = GlobBuilder::new(from)
-        .case_insensitive(true)
+        .case_insensitive(matches!(case, Case::Insensitive))
         .literal_separator(true)
         .build()?
         .compile_matcher();
@@ -97,7 +104,14 @@ impl<'a> SyntaxMapping<'a> {
     }
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
-        let matcher = make_glob_matcher(from)?;
+        let matcher = make_glob_matcher(from, Case::Insensitive)?;
+        self.custom_mappings.push((matcher, to));
+        Ok(())
+    }
+
+    /// Like [`Self::insert`], but the glob pattern is matched case-sensitively.
+    pub fn insert_case_sensitive(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
+        let matcher = make_glob_matcher(from, Case::Sensitive)?;
         self.custom_mappings.push((matcher, to));
         Ok(())
     }
@@ -259,6 +273,43 @@ mod tests {
         assert_eq!(
             map.get_syntax_for("/path/to/foo"),
             Some(MappingTarget::MapTo("alpha"))
+        );
+    }
+
+    #[test]
+    fn case_sensitive_custom_mappings_work() {
+        let mut map = SyntaxMapping::new();
+        map.insert_case_sensitive("MY_SPECIAL_FILE", MappingTarget::MapTo("Python"))
+            .ok();
+
+        // Exact case matches
+        assert_eq!(
+            map.get_syntax_for("/path/to/MY_SPECIAL_FILE"),
+            Some(MappingTarget::MapTo("Python"))
+        );
+        // Different case should NOT match the case-sensitive rule
+        assert_eq!(map.get_syntax_for("/path/to/my_special_file"), None);
+        assert_eq!(map.get_syntax_for("/path/to/My_Special_File"), None);
+    }
+
+    #[test]
+    fn builtin_mappings_build_is_case_sensitive() {
+        let map = SyntaxMapping::new();
+
+        // "BUILD" (uppercase) should map to Python via case-sensitive builtin
+        assert_eq!(
+            map.get_syntax_for("/path/to/BUILD"),
+            Some(MappingTarget::MapTo("Python"))
+        );
+        // "build" (lowercase) should still map to MapToUnknown
+        assert_eq!(
+            map.get_syntax_for("/path/to/build"),
+            Some(MappingTarget::MapToUnknown)
+        );
+        // Mixed case should NOT match the Python rule
+        assert_eq!(
+            map.get_syntax_for("/path/to/Build"),
+            Some(MappingTarget::MapToUnknown)
         );
     }
 }
