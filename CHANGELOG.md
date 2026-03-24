@@ -1,7 +1,5 @@
 # unreleased
 
-- Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
-- Fixed syntax tests path, see #3610 (@foxfromworld)
 
 ## Features
 
@@ -28,11 +26,13 @@
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
+- Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
+- Fixed syntax tests path, see #3610 (@foxfromworld)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
-
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
+- Allow home and end keys to be used with builtin pager, see #3651 (@keith-hall)
 
 ## Syntaxes
 
