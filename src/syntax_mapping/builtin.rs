@@ -1,7 +1,6 @@
-use std::env;
+use std::{env, sync::LazyLock};
 
 use globset::GlobMatcher;
-use once_cell::sync::Lazy;
 
 use crate::syntax_mapping::{make_glob_matcher, Case, MappingTarget};
 
@@ -22,7 +21,7 @@ include!(concat!(
 // ```
 // enum BuiltinMatcher {
 //     Fixed(&'static str),
-//     Dynamic(Lazy<Option<String>>),
+//     Dynamic(LazyLock<Option<String>>),
 // }
 // ```
 //
@@ -34,7 +33,7 @@ include!(concat!(
 // implementing the lazy matcher compilation logic, I realised that it's most
 // convenient for `BUILTIN_MAPPINGS` to have the following type:
 //
-// `[(Lazy<Option<GlobMatcher>>, MappingTarget); N]`
+// `[(LazyLock<Option<GlobMatcher>>, MappingTarget); N]`
 //
 // The benefit for this is that operations like listing all builtin mappings
 // would be effectively memoised. The caller would not have to compile another
@@ -52,7 +51,7 @@ include!(concat!(
 ///
 /// A failure to compile is a fatal error.
 ///
-/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
+/// Used internally by `LazyLock<Option<GlobMatcher>>`'s lazy evaluation closure.
 fn build_matcher_fixed(from: &str, case: Case) -> GlobMatcher {
     make_glob_matcher(from, case).expect("A builtin fixed glob matcher failed to compile")
 }
@@ -63,7 +62,7 @@ fn build_matcher_fixed(from: &str, case: Case) -> GlobMatcher {
 /// Returns `None` if any replacement fails, or if the joined glob string fails
 /// to compile.
 ///
-/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
+/// Used internally by `LazyLock<Option<GlobMatcher>>`'s lazy evaluation closure.
 fn build_matcher_dynamic(segs: &[MatcherSegment], case: Case) -> Option<GlobMatcher> {
     // join segments
     let mut buf = String::new();
@@ -83,7 +82,7 @@ fn build_matcher_dynamic(segs: &[MatcherSegment], case: Case) -> Option<GlobMatc
 
 /// A segment of a dynamic builtin matcher.
 ///
-/// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
+/// Used internally by `LazyLock<Option<GlobMatcher>>`'s lazy evaluation closure.
 #[derive(Clone, Debug)]
 enum MatcherSegment {
     Text(&'static str),
