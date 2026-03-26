@@ -1,6 +1,10 @@
 # unreleased
 
 
+## Other
+
+- Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
+
 ## Features
 
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)
