@@ -261,7 +261,7 @@ impl Drop for Preprocessed {
                 }
             };
 
-            if lessclose_output.status.success() {
+            if !lessclose_output.status.success() {
                 bat_warning!("$LESSCLOSE exited with nonzero exit code",)
             };
         }
