@@ -3984,3 +3984,36 @@ fn word_wrap_short_line_no_wrap() {
         .success()
         .stdout("Single Line\n");
 }
+
+#[test]
+fn tcl_shebang_detection_tclsh() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_tclsh")
+        .assert()
+        .success();
+}
+
+#[test]
+fn tcl_shebang_detection_wish() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_wish")
+        .assert()
+        .success();
+}
+
+#[test]
+fn tcl_shebang_detection_expect() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_expect")
+        .assert()
+        .success();
+}

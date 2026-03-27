@@ -5,7 +5,6 @@
 
 ## Features
 
-- Add shebang-based detection for Tcl (`tclsh`, `wish`) and Expect (`expect`) scripts, see #3647 (@mvanhorn)
 - Added support for `hidden_file_extensions` from `.sublime-syntax` files, see #3613 (@Matei02355)
 - Add word wrapping mode via `--wrap=word`, see #3597 (@veeceey)
 - Implement `--unbuffered` mode for streaming input, allowing partial lines to display immediately (e.g. `tail -f | bat -u`). Closes #3555, see #3583 (@mainnebula)
@@ -33,6 +32,7 @@
 
 ## Syntaxes
 
+- Add shebang-based detection for Tcl (`tclsh`, `wish`) and Expect (`expect`) scripts, see #3647 (@mvanhorn)
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 - Add syntax highlighting support for COBOL, see #3584 (@adukhan99)
