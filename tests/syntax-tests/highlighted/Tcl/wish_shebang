@@ -1,0 +1,5 @@
+[38;2;248;248;242m#!/usr/bin/wish[0m
+[38;2;248;248;242m# Tk script detected via wish shebang[0m
+[38;2;248;248;242mpackage require Tk[0m
+[38;2;248;248;242mbutton .b -text "Click" -command {puts "clicked"}[0m
+[38;2;248;248;242mpack .b[0m

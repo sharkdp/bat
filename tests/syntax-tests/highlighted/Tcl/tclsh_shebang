@@ -1,0 +1,7 @@
+[38;2;248;248;242m#!/usr/bin/env tclsh[0m
+[38;2;248;248;242m# Tcl script detected via tclsh shebang[0m
+[38;2;248;248;242mputs "Hello from tclsh"[0m
+[38;2;248;248;242mset x 42[0m
+[38;2;248;248;242mif {$x > 0} {[0m
+[38;2;248;248;242m    puts "positive"[0m
+[38;2;248;248;242m}[0m

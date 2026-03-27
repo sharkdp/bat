@@ -1,0 +1,7 @@
+[38;2;248;248;242m#!/usr/bin/expect -f[0m
+[38;2;248;248;242m# Expect script detected via expect shebang[0m
+[38;2;248;248;242mset timeout 30[0m
+[38;2;248;248;242mspawn ssh user@host[0m
+[38;2;248;248;242mexpect "password:"[0m
+[38;2;248;248;242msend "secret\r"[0m
+[38;2;248;248;242mexpect eof[0m
