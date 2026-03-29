@@ -90,7 +90,7 @@ impl Controller<'_> {
 
         let attached_to_pager = match (&output_handle, &output_type_opt) {
             (Some(_), _) => true,
-            (None, Some(ot)) => ot.is_pager(),
+            (None, Some(output_type)) => output_type.is_pager(),
             (None, None) => false,
         };
 
@@ -103,7 +103,7 @@ impl Controller<'_> {
         let mut writer = match (output_handle, &mut output_type_opt) {
             (Some(OutputHandle::FmtWrite(w)), _) => OutputHandle::FmtWrite(w),
             (Some(OutputHandle::IoWrite(w)), _) => OutputHandle::IoWrite(w),
-            (None, Some(ot)) => ot.handle()?,
+            (None, Some(output_type)) => output_type.handle()?,
             (None, None) => unreachable!("No output handle and no output type available"),
         };
         let mut no_errors: bool = true;
