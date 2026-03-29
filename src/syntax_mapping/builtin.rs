@@ -3,7 +3,7 @@ use std::env;
 use globset::GlobMatcher;
 use once_cell::sync::Lazy;
 
-use crate::syntax_mapping::{make_glob_matcher, MappingTarget};
+use crate::syntax_mapping::{make_glob_matcher, Case, MappingTarget};
 
 // Static syntax mappings generated from /src/syntax_mapping/builtins/ by the
 // build script (/build/syntax_mapping.rs).
@@ -53,8 +53,8 @@ include!(concat!(
 /// A failure to compile is a fatal error.
 ///
 /// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
-fn build_matcher_fixed(from: &str) -> GlobMatcher {
-    make_glob_matcher(from).expect("A builtin fixed glob matcher failed to compile")
+fn build_matcher_fixed(from: &str, case: Case) -> GlobMatcher {
+    make_glob_matcher(from, case).expect("A builtin fixed glob matcher failed to compile")
 }
 
 /// Join a list of matcher segments to create a glob string, replacing all
@@ -64,7 +64,7 @@ fn build_matcher_fixed(from: &str) -> GlobMatcher {
 /// to compile.
 ///
 /// Used internally by `Lazy<Option<GlobMatcher>>`'s lazy evaluation closure.
-fn build_matcher_dynamic(segs: &[MatcherSegment]) -> Option<GlobMatcher> {
+fn build_matcher_dynamic(segs: &[MatcherSegment], case: Case) -> Option<GlobMatcher> {
     // join segments
     let mut buf = String::new();
     for seg in segs {
@@ -77,7 +77,7 @@ fn build_matcher_dynamic(segs: &[MatcherSegment]) -> Option<GlobMatcher> {
         }
     }
     // compile glob matcher
-    let matcher = make_glob_matcher(&buf).ok()?;
+    let matcher = make_glob_matcher(&buf, case).ok()?;
     Some(matcher)
 }
 

@@ -23,6 +23,18 @@ pub struct BuiltinPager {
 impl BuiltinPager {
     fn new() -> Self {
         let pager = minus::Pager::new();
+
+        let mut input_register = minus::input::HashedEventRegister::default();
+        input_register.add_key_events(&["home"], |_, _| {
+            minus::input::InputEvent::UpdateUpperMark(0)
+        });
+        input_register.add_key_events(&["end"], |_, _| {
+            minus::input::InputEvent::UpdateUpperMark(usize::MAX)
+        });
+        pager
+            .set_input_classifier(Box::new(input_register))
+            .expect("failed to set input classifier on newly created pager");
+
         let handle = {
             let pager = pager.clone();
             Some(spawn(move || {
@@ -105,6 +117,10 @@ impl OutputType {
         let resolved_path = match grep_cli::resolve_binary(&pager.bin) {
             Ok(path) => path,
             Err(_) => {
+                crate::bat_warning!(
+                    "Pager '{}' not found, outputting to stdout instead",
+                    pager.bin
+                );
                 return Ok(OutputType::stdout());
             }
         };
@@ -131,8 +147,13 @@ impl OutputType {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
+                let less_version = retrieve_less_version(&pager.bin);
+
                 // Ensures that 'less' quits together with 'bat'
-                p.arg("-K"); // Short version of '--quit-on-intr'
+                // The BusyBox version of less does not support -K
+                if less_version != Some(LessVersion::BusyBox) {
+                    p.arg("-K"); // Short version of '--quit-on-intr'
+                }
 
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
@@ -142,7 +163,7 @@ impl OutputType {
                 // For newer versions (530 or 558 on Windows), we omit '--no-init' as it
                 // is not needed anymore.
                 if single_screen_action == SingleScreenAction::Quit {
-                    match retrieve_less_version(&pager.bin) {
+                    match less_version {
                         None => {
                             p.arg("--no-init");
                         }
@@ -169,7 +190,13 @@ impl OutputType {
         Ok(p.stdin(Stdio::piped())
             .spawn()
             .map(OutputType::Pager)
-            .unwrap_or_else(|_| OutputType::stdout()))
+            .unwrap_or_else(|_| {
+                crate::bat_warning!(
+                    "Pager '{}' not found, outputting to stdout instead",
+                    &pager.bin
+                );
+                OutputType::stdout()
+            }))
     }
 
     pub(crate) fn stdout() -> Self {
@@ -210,8 +237,8 @@ impl Drop for OutputType {
                 let _ = command.wait();
             }
             OutputType::BuiltinPager(ref mut pager) => {
-                if pager.handle.is_some() {
-                    let _ = pager.handle.take().unwrap().join().unwrap();
+                if let Some(handle) = pager.handle.take() {
+                    let _ = handle.join();
                 }
             }
             OutputType::Stdout(_) => (),
@@ -229,6 +256,13 @@ impl OutputHandle<'_> {
         match self {
             Self::IoWrite(handle) => handle.write_fmt(args).map_err(Into::into),
             Self::FmtWrite(handle) => handle.write_fmt(args).map_err(Into::into),
+        }
+    }
+
+    pub fn flush(&mut self) -> Result<()> {
+        match self {
+            Self::IoWrite(handle) => handle.flush().map_err(Into::into),
+            Self::FmtWrite(_) => Ok(()),
         }
     }
 }

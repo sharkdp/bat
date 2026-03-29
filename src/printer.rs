@@ -29,14 +29,23 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
-use crate::preprocessor::strip_ansi;
-use crate::preprocessor::{expand_tabs, replace_nonprintable};
+use crate::preprocessor::{expand_tabs, replace_nonprintable, strip_ansi, strip_overstrike};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
 use crate::StripAnsiMode;
+
+// Return the displayed width of a character.
+//
+// Control characters (0x00..=0x1F and 0x7F) are rendered by the terminal
+// in caret notation (e.g. ^@, ^A, ..., ^?), which occupies two columns.
+// UnicodeWidthChar::width() returns None for these, so we map them to 2
+// here instead of the previous default of 0.
+fn char_width(c: char) -> usize {
+    c.width().unwrap_or(if c.is_control() { 2 } else { 0 })
+}
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
     raw_sequence: "\x1B[4m",
@@ -199,6 +208,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    strip_overstrike: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -263,17 +273,27 @@ impl<'a> InteractivePrinter<'a> {
             || matches!(config.binary, BinaryBehavior::AsText))
             && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
-        let (is_plain_text, highlighter_from_set) = if needs_to_match_syntax {
+        let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
             const PLAIN_TEXT_SYNTAX: &str = "Plain Text";
-            match assets.get_syntax(config.language, input, &config.syntax_mapping) {
+            const MANPAGE_SYNTAX: &str = "Manpage";
+            const COMMAND_HELP_SYNTAX: &str = "Command Help";
+            match assets.get_syntax(
+                config.language,
+                config.fallback_syntax,
+                input,
+                &config.syntax_mapping,
+            ) {
                 Ok(syntax_in_set) => (
                     syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
+                    syntax_in_set.syntax.name == MANPAGE_SYNTAX
+                        || syntax_in_set.syntax.name == COMMAND_HELP_SYNTAX,
                     Some(HighlighterFromSet::new(syntax_in_set, theme)),
                 ),
 
                 Err(Error::UndetectedSyntax(_)) => (
                     true,
+                    false,
                     Some(
                         assets
                             .find_syntax_by_name(PLAIN_TEXT_SYNTAX)?
@@ -285,7 +305,7 @@ impl<'a> InteractivePrinter<'a> {
                 Err(e) => return Err(e),
             }
         } else {
-            (false, None)
+            (false, false, None)
         };
 
         // Determine when to strip ANSI sequences
@@ -310,6 +330,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            strip_overstrike,
         })
     }
 
@@ -448,6 +469,11 @@ impl Printer for InteractivePrinter<'_> {
         input: &OpenedInput,
         add_header_padding: bool,
     ) -> Result<()> {
+        // If input is empty and quiet_empty is enabled, skip all output
+        if self.content_type.is_none() && self.config.quiet_empty {
+            return Ok(());
+        }
+
         if add_header_padding && self.config.style_components.rule() {
             self.print_horizontal_line_term(handle, self.colors.rule)?;
         }
@@ -550,6 +576,11 @@ impl Printer for InteractivePrinter<'_> {
     }
 
     fn print_footer(&mut self, handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
+        // If input is empty and quiet_empty is enabled, skip footer
+        if self.content_type.is_none() && self.config.quiet_empty {
+            return Ok(());
+        }
+
         if self.config.style_components.grid()
             && (self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
@@ -621,6 +652,12 @@ impl Printer for InteractivePrinter<'_> {
                     }
                 }
             };
+
+            if self.strip_overstrike {
+                if let Some(pos) = line.find('\x08') {
+                    line = strip_overstrike(&line, pos).into();
+                }
+            }
 
             // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
             if self.strip_ansi {
@@ -759,10 +796,20 @@ impl Printer for InteractivePrinter<'_> {
                             // Displayed width of line_buf
                             let mut current_width = 0;
 
+                            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
+
+                            // For word wrapping, track last whitespace position.
+                            let mut last_ws_idx: Option<usize> = None;
+
                             for c in text.chars() {
                                 // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
+                                let cw = char_width(c);
                                 current_width += cw;
+
+                                // Track whitespace positions for word wrapping.
+                                if word_wrap && c.is_whitespace() {
+                                    last_ws_idx = Some(line_buf.len());
+                                }
 
                                 // if next character cannot be printed on this line,
                                 // flush the buffer.
@@ -785,13 +832,37 @@ impl Printer for InteractivePrinter<'_> {
                                         }
                                     }
 
+                                    // Determine the break point and remainder
+                                    // for word wrapping.
+                                    let (emit_end, rest_start) = if word_wrap {
+                                        if let Some(ws_idx) = last_ws_idx {
+                                            // Skip the whitespace character itself
+                                            // and carry the rest to the next line.
+                                            let rs = ws_idx
+                                                + line_buf[ws_idx..]
+                                                    .chars()
+                                                    .next()
+                                                    .map(|ch| ch.len_utf8())
+                                                    .unwrap_or(0);
+                                            (ws_idx, Some(rs))
+                                        } else {
+                                            (line_buf.len(), None)
+                                        }
+                                    } else {
+                                        (line_buf.len(), None)
+                                    };
+
                                     // It wraps.
                                     write!(
                                         handle,
                                         "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
-                                            &format!("{}{line_buf}", self.ansi_style),
+                                            &format!(
+                                                "{}{}",
+                                                self.ansi_style,
+                                                &line_buf[..emit_end]
+                                            ),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
@@ -804,8 +875,19 @@ impl Printer for InteractivePrinter<'_> {
                                     cursor = 0;
                                     max_width = cursor_max;
 
-                                    line_buf.clear();
-                                    current_width = cw;
+                                    if let Some(rs) = rest_start {
+                                        // Word wrap: carry remainder to next line.
+                                        let remainder = line_buf[rs..].to_string();
+                                        let rem_width: usize =
+                                            remainder.chars().map(char_width).sum();
+                                        line_buf.clear();
+                                        line_buf.push_str(&remainder);
+                                        current_width = rem_width + cw;
+                                    } else {
+                                        line_buf.clear();
+                                        current_width = cw;
+                                    }
+                                    last_ws_idx = None;
                                 }
 
                                 line_buf.push(c);

@@ -53,16 +53,7 @@ impl Default for BatTester {
     fn default() -> Self {
         let temp_dir = create_sample_directory().expect("sample directory");
 
-        let root = env::current_exe()
-            .expect("tests executable")
-            .parent()
-            .expect("tests executable directory")
-            .parent()
-            .expect("bat executable directory")
-            .to_path_buf();
-
-        let exe_name = if cfg!(windows) { "bat.exe" } else { "bat" };
-        let exe = root.join(exe_name);
+        let exe = assert_cmd::cargo::cargo_bin!("bat").to_path_buf();
 
         BatTester { temp_dir, exe }
     }

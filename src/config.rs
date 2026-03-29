@@ -38,6 +38,9 @@ pub struct Config<'a> {
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
 
+    /// The fallback syntax used when auto-detection fails
+    pub fallback_syntax: Option<&'a str>,
+
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
@@ -99,14 +102,20 @@ pub struct Config<'a> {
     #[cfg(feature = "lessopen")]
     pub use_lessopen: bool,
 
-    // Weather or not to set terminal title when using a pager
+    // Whether or not to set terminal title when using a pager
     pub set_terminal_title: bool,
 
     /// The maximum number of consecutive empty lines to display
     pub squeeze_lines: Option<usize>,
 
-    // Weather or not to set terminal title when using a pager
+    // Whether or not to strip ANSI escape codes from the input
     pub strip_ansi: StripAnsiMode,
+
+    /// Whether or not to produce no output when input is empty
+    pub quiet_empty: bool,
+
+    /// Whether or not to use unbuffered input reading for streaming use cases
+    pub unbuffered: bool,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]

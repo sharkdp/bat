@@ -17,6 +17,8 @@ Options:
           Show plain style (alias for '--style=plain').
   -l, --language <language>
           Set the language for syntax highlighting.
+      --fallback-syntax <fallback-syntax>
+          Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
   -H, --highlight-line <N:M>
           Highlight lines N through M.
       --file-name <name>
@@ -26,7 +28,7 @@ Options:
       --tabs <T>
           Set the tab width to T spaces.
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character).
+          Specify the text-wrapping mode (*auto*, never, character, word).
   -S, --chop-long-lines
           Truncate all lines longer than screen width. Alias for '--wrap=never'.
   -n, --number
@@ -58,8 +60,12 @@ Options:
           Only print the lines from N to M.
   -L, --list-languages
           Display all supported languages.
+  -u, --unbuffered
+          Enable unbuffered input reading for streaming use cases.
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
+  -E, --quiet-empty
+          Produce no output when the input is empty.
   -h, --help
           Print help (see more with '--help')
   -V, --version

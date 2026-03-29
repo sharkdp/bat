@@ -1357,27 +1357,33 @@ fn disable_pager_if_pp_flag_comes_after_paging() {
 }
 
 #[test]
+#[serial]
 fn enable_pager_if_disable_paging_flag_comes_before_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("-P")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("-P")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
+#[serial]
 fn enable_pager_if_pp_flag_comes_before_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("-pp")
-        .arg("--paging=always")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("-pp")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -1394,15 +1400,18 @@ fn paging_does_not_override_simple_plain() {
 }
 
 #[test]
+#[serial]
 fn simple_plain_does_not_override_paging() {
-    bat()
-        .env("PAGER", "echo pager-output")
-        .arg("--paging=always")
-        .arg("--plain")
-        .arg("test.txt")
-        .assert()
-        .success()
-        .stdout(predicate::eq("pager-output\n"));
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("--plain")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("pager-output\n").normalize());
+    });
 }
 
 #[test]
@@ -1414,6 +1423,21 @@ fn pager_failed_to_parse() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("Could not parse pager command"));
+}
+
+#[test]
+#[serial]
+fn pager_missing_warning() {
+    bat()
+        .env("BAT_PAGER", "nonexistent-pager-xyz-missing")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("[bat warning]"))
+        .stderr(predicate::str::contains("not found"))
+        .stderr(predicate::str::contains("nonexistent-pager-xyz-missing"))
+        .stdout(predicate::str::contains("hello world\n"));
 }
 
 #[test]
@@ -1433,6 +1457,7 @@ fn env_var_bat_paging() {
 #[test]
 fn basic_set_terminal_title() {
     bat()
+        .env("BAT_PAGER", "cat")
         .arg("--paging=always")
         .arg("--set-terminal-title")
         .arg("test.txt")
@@ -2446,6 +2471,121 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
 }
 
 #[test]
+fn fallback_syntax_is_used_when_no_syntax_is_detected() {
+    let content = "# comment\nfoo=bar\n";
+
+    let fallback_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=bash")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=bash")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&fallback_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_detected_syntax() {
+    let content = "fn main() { println!(\"hello\"); }\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .arg("--fallback-syntax=json")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=test.rs")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn fallback_syntax_does_not_override_explicit_language() {
+    let content = "{\"a\": 1}\n";
+
+    let with_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--fallback-syntax=rust")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let without_fallback = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&with_fallback).expect("output is valid utf-8"),
+        from_utf8(&without_fallback).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn invalid_fallback_syntax_returns_error() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--file-name=unknown.fallbacksyntax")
+        .arg("--fallback-syntax=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
 fn show_all_mode() {
     bat()
         .arg("--show-all")
@@ -2538,6 +2678,92 @@ fn binary_as_text() {
         .arg("control_characters.txt")
         .assert()
         .stdout("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F")
+        .stderr("");
+}
+
+#[test]
+fn binary_as_text_control_char_width() {
+    // Control characters are displayed as caret notation (e.g. ^@) by the
+    // terminal, occupying 2 columns each. With 20 NUL bytes (40 columns) +
+    // "END" (3 columns) = 43 columns, wrapping at terminal width 40 must
+    // produce 2 lines, not 1. See #3631.
+    bat()
+        .arg("--binary=as-text")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("regression_tests/issue_3631.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 2));
+}
+
+#[test]
+fn no_strip_overstrike_for_plain_text() {
+    // Overstrike is preserved for plain text files (no syntax highlighting)
+    bat()
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout("B\x08Bold t\x08te\x08ex\x08xt\x08t and _\x08u_\x08n_\x08d_\x08e_\x08r_\x08l_\x08i_\x08n_\x08e\n")
+        .stderr("");
+}
+
+#[test]
+fn strip_overstrike_with_syntax_highlighting() {
+    // Overstrike is stripped for certain syntax highlighting like command help.
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=help")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Bold text and underline"))
+        .stderr("");
+}
+
+#[test]
+fn strip_overstrike_for_manpage_syntax() {
+    // Overstrike is stripped for .man files (Manpage syntax)
+    bat()
+        .arg("--force-colorization")
+        .arg("git-commit.man")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("NAME"))
+        .stdout(predicate::str::contains("git-commit - Record changes"))
+        .stdout(predicate::str::is_match(r"\x1b\[38;[0-9;]+m--interactive\x1b\[").unwrap())
+        .stderr("");
+}
+
+#[test]
+fn no_strip_overstrike_for_other_syntax() {
+    // Overstrike is NOT stripped for other syntaxes (e.g., Rust)
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=rust")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x08"))
+        .stderr("");
+}
+
+#[test]
+fn show_all_shows_backspace_with_caret_notation() {
+    // --show-all should display backspace characters (not strip them)
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=caret")
+        .arg("--decorations=never")
+        .arg("overstrike.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("^H"))
         .stderr("");
 }
 
@@ -2806,6 +3032,44 @@ fn no_line_wrapping_with_s_flag() {
 #[test]
 fn no_wrapping_with_chop_long_lines() {
     wrapping_test("--chop-long-lines", false);
+}
+
+#[test]
+#[serial]
+fn wrap_never_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=never")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
+}
+
+#[test]
+#[serial]
+fn s_flag_respected_with_paging_always() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("-S")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .arg("--style=plain")
+            .write_stdin("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz").normalize())
+            .stderr("");
+    });
 }
 
 #[test]
@@ -3563,4 +3827,308 @@ fn style_components_will_merge_with_env_var() {
         .success()
         .stdout("     STDIN\n   1 test\n")
         .stderr("");
+}
+
+// Test for https://github.com/sharkdp/bat/issues/3526
+#[test]
+fn plain_with_sized_terminal_width() {
+    bat()
+        .arg("--plain")
+        .arg("--terminal-width=6")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello \nworld\n")
+        .stderr("");
+}
+
+#[test]
+fn quiet_empty_suppresses_output_on_empty_stdin() {
+    bat()
+        .arg("--quiet-empty")
+        .write_stdin("")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn quiet_empty_does_not_affect_non_empty_input() {
+    bat()
+        .arg("--quiet-empty")
+        .write_stdin("hello\n")
+        .assert()
+        .success()
+        .stdout("hello\n");
+}
+
+#[test]
+fn quiet_empty_suppresses_output_on_empty_file() {
+    bat()
+        .arg("--quiet-empty")
+        .arg("empty.txt")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn cache_help_shows_help_message() {
+    // Test that `bat cache --help` works (fixes #3560)
+    // Run in cache_source directory which doesn't have a file named "cache"
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("cache_source"))
+        .arg("cache")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Modify the syntax-definition and theme cache",
+        ))
+        .stdout(predicate::str::contains("--build"))
+        .stdout(predicate::str::contains("--clear"));
+}
+
+#[test]
+fn unbuffered_flag_is_accepted() {
+    bat()
+        .arg("--unbuffered")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn unbuffered_mode_disables_line_numbers() {
+    // When --unbuffered is used, line numbers should be auto-disabled even if requested
+    bat()
+        .arg("--unbuffered")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::starts_with("   1").not());
+}
+
+#[test]
+fn unbuffered_mode_plain_output() {
+    bat()
+        .arg("--unbuffered")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn word_wrap_breaks_at_word_boundaries() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "\
+The quick brown fox jumps over the lazy
+dog and then runs away
+superlongwordthatdefinitelyexceedstheter
+minalwidthandshouldfallbacktocharacterwr
+apping
+short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_with_line_numbers() {
+    bat()
+        .arg("word-wrap.txt")
+        .arg("--wrap=word")
+        .arg("--terminal-width=40")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .assert()
+        .success()
+        .stdout(
+            "   1 The quick brown fox jumps over the
+     lazy dog and then runs away
+   2 superlongwordthatdefinitelyexceedst
+     heterminalwidthandshouldfallbacktoc
+     haracterwrapping
+   3 short words here
+",
+        );
+}
+
+#[test]
+fn word_wrap_short_line_no_wrap() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=80")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("Single Line\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+fn setup_diff_test_repo() -> tempfile::TempDir {
+    use std::process::Command;
+
+    let dir = tempfile::tempdir().expect("can create temporary directory");
+    let repo = dir.path();
+
+    // Initialize a git repo and commit a file
+    Command::new("git")
+        .args(["init"])
+        .current_dir(repo)
+        .output()
+        .expect("git init");
+
+    Command::new("git")
+        .args(["config", "user.email", "test@test.com"])
+        .current_dir(repo)
+        .output()
+        .expect("git config email");
+
+    Command::new("git")
+        .args(["config", "user.name", "Test"])
+        .current_dir(repo)
+        .output()
+        .expect("git config name");
+
+    std::fs::write(repo.join("test.txt"), "line 1\nline 2\nline 3\n").expect("can write test file");
+
+    Command::new("git")
+        .args(["add", "test.txt"])
+        .current_dir(repo)
+        .output()
+        .expect("git add");
+
+    Command::new("git")
+        .args(["commit", "-m", "initial"])
+        .current_dir(repo)
+        .output()
+        .expect("git commit");
+
+    // Modify the file so --diff has something to show
+    std::fs::write(
+        repo.join("test.txt"),
+        "line 1\nline 2 modified\nline 3\nline 4 added\n",
+    )
+    .expect("can write modified test file");
+
+    dir
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_plain_preserves_change_markers() {
+    let repo = setup_diff_test_repo();
+
+    // With --diff --plain, output should contain the change marker column
+    // but not other decorations like line numbers or grid
+    let output = bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let stdout = std::str::from_utf8(&output).expect("valid utf-8");
+
+    // The output should contain the modified and added lines
+    assert!(
+        stdout.contains("line 2 modified"),
+        "diff plain output should contain modified line, got: {stdout}"
+    );
+    assert!(
+        stdout.contains("line 4 added"),
+        "diff plain output should contain added line, got: {stdout}"
+    );
+
+    // Should NOT contain line numbers (a decoration that --plain disables)
+    assert!(
+        !stdout.contains("   1"),
+        "diff plain output should not contain line numbers, got: {stdout}"
+    );
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_plain_does_not_show_grid_or_header() {
+    let repo = setup_diff_test_repo();
+
+    let output = bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let stdout = std::str::from_utf8(&output).expect("valid utf-8");
+
+    // Grid lines use box-drawing characters
+    assert!(
+        !stdout.contains('─'),
+        "diff plain output should not contain grid lines, got: {stdout}"
+    );
+    assert!(
+        !stdout.contains('│'),
+        "diff plain output should not contain grid separators, got: {stdout}"
+    );
+
+    // Header shows "File: <filename>"
+    assert!(
+        !stdout.contains("File:"),
+        "diff plain output should not contain file header, got: {stdout}"
+    );
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn plain_without_diff_still_works() {
+    let repo = setup_diff_test_repo();
+
+    // --plain without --diff should output file content with no decorations at all
+    bat()
+        .current_dir(repo.path())
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
 }

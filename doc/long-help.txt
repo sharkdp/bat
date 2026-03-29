@@ -37,6 +37,13 @@ Options:
           name (like 'C++' or 'LaTeX') or possible file extension (like 'cpp', 'hpp' or 'md'). Use
           '--list-languages' to show all supported language names and file extensions.
 
+      --fallback-syntax <fallback-syntax>
+          Set a fallback language for syntax highlighting when auto-detection fails. Unlike
+          '--language', this is only used when no syntax could be detected from filename, custom
+          syntax mappings, or first-line detection.
+          
+          [aliases: --fallback-language]
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40
@@ -61,8 +68,8 @@ Options:
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character). The '--terminal-width' option
-          can be used in addition to control the output width.
+          Specify the text-wrapping mode (*auto*, never, character, word). The '--terminal-width'
+          option can be used in addition to control the output width.
 
   -S, --chop-long-lines
           Truncate all lines longer than screen width. Alias for '--wrap=never'.
@@ -203,14 +210,21 @@ Options:
           Display a list of supported languages for syntax highlighting.
 
   -u, --unbuffered
-          This option exists for POSIX-compliance reasons ('u' is for 'unbuffered'). The output is
-          always unbuffered - this option is simply ignored.
+          Enable unbuffered input reading. When this flag is set, bat will display data as soon as
+          it is available, without waiting for a complete line. This is useful for streaming use
+          cases like 'tail -f logfile | bat -u --paging=never'. Note that line numbers are
+          automatically disabled in unbuffered mode, and syntax highlighting may be imperfect on
+          partial lines.
 
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
 
       --diagnostic
           Show diagnostic information for bug reports.
+
+  -E, --quiet-empty
+          When this flag is set, bat will produce no output at all when the input is empty. This is
+          useful when piping commands that may produce empty output, like 'git diff'.
 
       --acknowledgements
           Show acknowledgements.

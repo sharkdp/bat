@@ -34,7 +34,6 @@ fn all_themes_are_present() {
             "Solarized (light)",
             "Sublime Snazzy",
             "TwoDark",
-            "Visual Studio Dark+",
             "ansi",
             "base16",
             "base16-256",
