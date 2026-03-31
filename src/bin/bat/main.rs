@@ -285,7 +285,29 @@ fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Resu
 
 #[cfg(feature = "bugreport")]
 fn invoke_bugreport(app: &App, cache_dir: &Path) {
-    use bugreport::{bugreport, collector::*, format::Markdown};
+    use bugreport::{bugreport, collector::*, format::Markdown, report::ReportEntry};
+
+    struct ColorSchemeCollector;
+
+    impl Collector for ColorSchemeCollector {
+        fn description(&self) -> &str {
+            "Detected terminal color scheme"
+        }
+
+        fn collect(
+            &mut self,
+            _: &bugreport::CrateInfo,
+        ) -> std::result::Result<ReportEntry, CollectionError> {
+            let color_scheme =
+                bat::theme::color_scheme(bat::theme::DetectColorScheme::Always);
+            let text = match color_scheme {
+                Some(bat::theme::ColorScheme::Dark) => "dark",
+                Some(bat::theme::ColorScheme::Light) => "light",
+                None => "not detected",
+            };
+            Ok(ReportEntry::Text(text.to_string()))
+        }
+    }
     let pager = bat::config::get_pager_executable(
         app.matches.get_one::<String>("pager").map(|s| s.as_str()),
     )
@@ -328,6 +350,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             custom_assets_metadata,
         ))
         .info(DirectoryEntries::new("Custom assets", cache_dir))
+        .info(ColorSchemeCollector)
         .info(CompileTimeInformation::default());
 
     #[cfg(feature = "paging")]
