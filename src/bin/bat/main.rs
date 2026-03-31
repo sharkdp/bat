@@ -298,8 +298,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             &mut self,
             _: &bugreport::CrateInfo,
         ) -> std::result::Result<ReportEntry, CollectionError> {
-            let color_scheme =
-                bat::theme::color_scheme(bat::theme::DetectColorScheme::Always);
+            let color_scheme = bat::theme::color_scheme(bat::theme::DetectColorScheme::Always);
             let text = match color_scheme {
                 Some(bat::theme::ColorScheme::Dark) => "dark",
                 Some(bat::theme::ColorScheme::Light) => "light",
