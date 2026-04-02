@@ -27,14 +27,14 @@ impl AssetsMetadata {
     #[cfg(feature = "build-assets")]
     pub(crate) fn save_to_folder(&self, path: &Path) -> Result<()> {
         let file = File::create(path.join(FILENAME))?;
-        serde_yaml::to_writer(file, self)?;
+        serde_yaml_ng::to_writer(file, self)?;
 
         Ok(())
     }
 
     fn try_load_from_folder(path: &Path) -> Result<Self> {
         let file = File::open(path.join(FILENAME))?;
-        Ok(serde_yaml::from_reader(file)?)
+        Ok(serde_yaml_ng::from_reader(file)?)
     }
 
     /// Load metadata about the stored cache file from the given folder.
