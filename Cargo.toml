@@ -56,7 +56,7 @@ minus = { version = "5.6", optional = true, features = [
   "dynamic_output",
   "search",
 ] }
-unicode-width = "0.2.1"
+unicode-width = "0.2.2"
 globset = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
@@ -73,7 +73,7 @@ bytesize = { version = "2.3.1" }
 encoding_rs = "0.8.35"
 execute = { version = "0.2.15", optional = true }
 terminal-colorsaurus = "1.0"
-unicode-segmentation = "1.12.0"
+unicode-segmentation = "1.13.2"
 itertools = "0.14.0"
 
 [dependencies.git2]
@@ -100,7 +100,7 @@ expect-test = "1.5.0"
 serial_test = { version = "2.0.0", default-features = false }
 predicates = "3.1.3"
 wait-timeout = "0.2.1"
-tempfile = "3.23.0"
+tempfile = "3.27.0"
 serde = { version = "1.0", features = ["derive"] }
 
 [target.'cfg(unix)'.dev-dependencies]
@@ -113,13 +113,13 @@ itertools = "0.14.0"
 once_cell = "1.20"
 prettyplease = "0.2.37"
 proc-macro2 = "1.0.106"
-quote = "1.0.40"
+quote = "1.0.45"
 regex = "1.12.2"
 serde = "1.0"
 serde_derive = "1.0"
 serde_with = { version = "3.17.0", default-features = false, features = ["macros"] }
 syn = { version = "2.0.104", features = ["full"] }
-toml = { version = "0.9.8", features = ["preserve_order"] }
+toml = { version = "1.1.1", features = ["preserve_order"] }
 walkdir = "2.5"
 
 [build-dependencies.clap]
