@@ -126,6 +126,7 @@
 - Update onig_sys dependency to 69.9.1 to fix a gcc build failure #3400 (@CosmicHorrorDev)
 - Add a cargo feature (`vendored-libgit2`) to build with vendored libgit2 version without depending on the system's one #3426 (@0x61nas)
 - Update syntect dependency to v5.3.0 to fix a few minor bugs, see #3410 (@keith-hall)
+- Remove dependency on once_cell #3653 (@cyqsimon)
 
 ## Syntaxes
 

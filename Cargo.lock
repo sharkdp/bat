@@ -135,7 +135,6 @@ dependencies = [
  "minus",
  "nix",
  "nu-ansi-term",
- "once_cell",
  "path_abs",
  "plist",
  "predicates",
