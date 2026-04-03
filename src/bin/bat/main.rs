@@ -205,6 +205,7 @@ pub fn list_themes(
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
+    config.paging_mode = PagingMode::QuitIfOneScreen;
 
     let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
     let mut buf = String::new();
