@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Build/">
+    <File Path="Directory.Build.props" />
+    <File Path="projectname.targets" />
+  </Folder>
+  <Project Path="console.csproj" />
+</Solution>
