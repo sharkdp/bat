@@ -4,6 +4,7 @@
 ## Other
 
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
+- Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
 ## Features
 
