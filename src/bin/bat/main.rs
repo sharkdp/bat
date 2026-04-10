@@ -328,6 +328,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "BAT_STYLE",
             "BAT_TABS",
             "BAT_THEME",
+            "BAT_WIDTH",
             bat::theme::env::BAT_THEME_DARK,
             bat::theme::env::BAT_THEME_LIGHT,
             "COLORTERM",

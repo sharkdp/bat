@@ -240,6 +240,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("terminal-width")
                 .long("terminal-width")
+                .overrides_with("terminal-width")
                 .value_name("width")
                 .hide_short_help(true)
                 .allow_hyphen_values(true)
@@ -255,10 +256,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                             })
                             .map_err(|e| e.to_string())
                     })
-                .help(
+                .help("Explicitly set the width of the terminal instead of determining it automatically.")
+                .long_help(
                     "Explicitly set the width of the terminal instead of determining it \
                      automatically. If prefixed with '+' or '-', the value will be treated \
-                     as an offset to the actual terminal width. See also: '--wrap'.",
+                     as an offset to the actual terminal width. This can also be configured \
+                     via the BAT_WIDTH environment variable (e.g. export BAT_WIDTH=\"100\"). \
+                     See also: '--wrap'.",
                 ),
         )
         .arg(

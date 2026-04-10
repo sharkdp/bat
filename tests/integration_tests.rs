@@ -1048,6 +1048,57 @@ fn tabs_4_arg_overrides_env_noconfig() {
 }
 
 #[test]
+fn terminal_width_env_var_is_respected() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("long.txt");
+    std::fs::write(
+        &tmp_path,
+        "0123456789abcdef0123456789abcdef0123456789abcdef\n",
+    )
+    .expect("can write temporary file");
+
+    bat()
+        .env("BAT_WIDTH", "20")
+        .arg(&tmp_path)
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--wrap=character")
+        .assert()
+        .success()
+        .stdout("   1 0123456789abcde\n     f0123456789abcd\n     ef0123456789abc\n     def\n")
+        .stderr("");
+}
+
+#[test]
+fn terminal_width_arg_overrides_env() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("long.txt");
+    std::fs::write(
+        &tmp_path,
+        "0123456789abcdef0123456789abcdef0123456789abcdef\n",
+    )
+    .expect("can write temporary file");
+
+    bat()
+        .env("BAT_WIDTH", "20")
+        .arg(&tmp_path)
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--wrap=character")
+        .arg("--terminal-width=10")
+        .assert()
+        .success()
+        .stdout(
+            "   1 01234\n     56789\n     abcde\n     f0123\n     45678\n     9abcd\n     ef012\n     34567\n     89abc\n     def\n",
+        )
+        .stderr("");
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }
@@ -1474,6 +1525,7 @@ fn diagnostic_sanity_check() {
         .assert()
         .success()
         .stdout(predicate::str::contains("BAT_PAGER="))
+        .stdout(predicate::str::contains("BAT_WIDTH="))
         .stderr("");
 }
 
