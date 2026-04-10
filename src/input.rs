@@ -261,11 +261,7 @@ impl<'a> InputReader<'a> {
         let mut first_line = vec![];
         reader.read_until(b'\n', &mut first_line).ok();
 
-        let content_type = if first_line.is_empty() {
-            None
-        } else {
-            Some(content_inspector::inspect(&first_line[..]))
-        };
+        let content_type = inspect_content_type(&first_line);
 
         if content_type == Some(ContentType::UTF_16LE) {
             read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A).ok();
@@ -317,6 +313,25 @@ impl<'a> InputReader<'a> {
         }
         Ok(true)
     }
+}
+
+fn inspect_content_type(first_line: &[u8]) -> Option<ContentType> {
+    if first_line.is_empty() {
+        return None;
+    }
+
+    let content_type = content_inspector::inspect(first_line);
+    if content_type == ContentType::UTF_8 && has_zip_signature(first_line) {
+        Some(ContentType::BINARY)
+    } else {
+        Some(content_type)
+    }
+}
+
+fn has_zip_signature(bytes: &[u8]) -> bool {
+    [b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"]
+        .into_iter()
+        .any(|signature| bytes.starts_with(signature))
 }
 
 fn read_utf16_line<R: BufRead>(
@@ -372,6 +387,22 @@ fn basic() {
     assert!(res.is_ok());
     assert!(!res.unwrap());
     assert!(buffer.is_empty());
+}
+
+#[test]
+fn zip_magic_headers_are_treated_as_binary() {
+    for content in [b"PK\x03\x04hello", b"PK\x05\x06hello", b"PK\x07\x08hello"] {
+        let reader = InputReader::new(&content[..]);
+        assert_eq!(Some(ContentType::BINARY), reader.content_type);
+    }
+}
+
+#[test]
+fn non_zip_pk_prefix_is_not_treated_as_binary() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"PK\x03\x03hello")
+    );
 }
 
 #[test]

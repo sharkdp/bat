@@ -2094,6 +2094,24 @@ fn header_binary() {
 }
 
 #[test]
+fn header_zip_file_is_binary() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("test.zip");
+    std::fs::write(&tmp_path, b"PK\x03\x04hello").expect("can write temporary file");
+
+    bat()
+        .arg(&tmp_path)
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("--file-name=test.zip")
+        .assert()
+        .success()
+        .stdout("File: test.zip   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
 fn header_full_binary() {
     bat()
         .arg("test.binary")
