@@ -30,6 +30,7 @@
 - Fix `--wrap=never` and `-S` flags being ignored when piping to pager, see #3592 (@IMaloney)
 - Fix crash with BusyBox `less` on Windows, see #3527 (@Anchal-T)
 - Fix `bat cache --help` failing with 'unexpected argument' error, see #3580 and #3560 (@NORMAL-EX)
+- Fix pager spawn detection under QEMU user-mode emulation. See #3531 (@OctopusET)
 - `--help` now correctly honors `--pager=builtin`. See #3516 (@keith-hall)
 - `--help` now correctly honors custom themes. See #3524 (@keith-hall)
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
@@ -38,6 +39,8 @@
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
+- Add CI support for RISC-V 64-bit. See #3532 (@OctopusET)
+
 - Bump MSRV to 1.88, update `time` crate to 0.3.47 to fix RUSTSEC-2026-0009, see #3581 (@NORMAL-EX)
 - Allow home and end keys to be used with builtin pager, see #3651 (@keith-hall)
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
