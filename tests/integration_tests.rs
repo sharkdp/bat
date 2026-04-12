@@ -3105,6 +3105,53 @@ fn no_wrapping_with_chop_long_lines() {
 }
 
 #[test]
+fn line_wrapping_when_set_to_character() {
+    wrapping_test("--wrap=character", true);
+}
+
+#[test]
+fn no_line_wrapping_when_character_wrap_from_config() {
+    // --wrap=character in a config file should be ignored when output is not interactive
+    // (e.g. when piping), since wrapping is only useful with a pager.
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("wrap-character.conf");
+    std::fs::write(&tmp_config_path, "--wrap=character").expect("can write config file");
+
+    let expected = "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
+
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("--style=rule")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
+fn no_line_wrapping_when_character_wrap_from_bat_opts() {
+    // --wrap=character in BAT_OPTS should be ignored when output is not interactive,
+    // since it was not explicitly provided on the command line.
+    let expected = "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
+
+    bat_with_config()
+        .env("BAT_OPTS", "--wrap=character")
+        .arg("--style=rule")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
 #[serial]
 fn wrap_never_flag_respected_with_paging_always() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
