@@ -4,6 +4,7 @@ import itertools
 import subprocess
 import pathlib
 import shutil
+from typing import Iterable
 
 
 def generate_snapshots():
@@ -19,14 +20,14 @@ def generate_snapshots():
 
 
 def generate_style_snapshot(style):
-    generate_snapshot(style.replace(",", "_"), "--style={}".format(style))
+    generate_snapshot(style.replace(",", "_"), ["--style={}".format(style)])
 
 
-def generate_snapshot(name, arguments):
+def generate_snapshot(name: str, arguments: Iterable[str]):
     output_file = "output/{name}.snapshot.txt".format(name=name)
     command = [
         "cargo", "run", "--", "--paging=never", "--color=never",
-        "--decorations=always", arguments, "sample.rs"
+        "--decorations=always", *arguments, "sample.rs"
     ]
     print("generating snapshot for {}".format(name))
     with open(output_file, "w") as f:
