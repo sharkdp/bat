@@ -77,7 +77,8 @@ Options:
       --terminal-width <width>
           Explicitly set the width of the terminal instead of determining it automatically. If
           prefixed with '+' or '-', the value will be treated as an offset to the actual terminal
-          width. See also: '--wrap'.
+          width. This can also be configured via the BAT_WIDTH environment variable (e.g. export
+          BAT_WIDTH="100"). See also: '--wrap'.
 
   -n, --number
           Only show line numbers, no other decorations. This is an alias for '--style=numbers'
