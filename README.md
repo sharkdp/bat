@@ -192,10 +192,11 @@ bat main.cpp | xclip
 #### `man`
 
 `bat` can be used as a colorizing pager for `man`, by setting the
-`MANPAGER` environment variable:
+`MANPAGER` and `MANROFFOPT` environment variables:
 
 ```bash
-export MANPAGER="bat -plman"
+export MANPAGER="sh -c 'col -bx | bat -plman'"
+export MANROFFOPT="-c"
 man 2 select
 ```
 (on some older Debian or Ubuntu releases, the executable is named `batcat` instead of `bat`)
