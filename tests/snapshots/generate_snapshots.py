@@ -23,18 +23,19 @@ def generate_style_snapshot(style):
 
 
 def generate_snapshot(name, arguments):
-    command = "cargo run -- --paging=never --color=never --decorations=always "
-    command += "{args} sample.rs > output/{name}.snapshot.txt".format(
-        name=name,
-        args=arguments
-    )
+    output_file = "output/{name}.snapshot.txt".format(name=name)
+    command = [
+        "cargo", "run", "--", "--paging=never", "--color=never",
+        "--decorations=always", arguments, "sample.rs"
+    ]
     print("generating snapshot for {}".format(name))
-    subprocess.call(command, shell=True)
+    with open(output_file, "w") as f:
+        subprocess.call(command, stdout=f)
 
 
 def build_bat():
     print("building bat")
-    subprocess.call("cargo build", cwd="../..", shell=True)
+    subprocess.call(["cargo", "build"], cwd="../..")
 
 
 def prepare_output_dir():
@@ -49,7 +50,7 @@ def modify_sample_file():
 
 def undo_sample_file_modification():
     print("undoing sample.rs modifications")
-    subprocess.call("git checkout -- sample.rs", shell=True)
+    subprocess.call(["git", "checkout", "--", "sample.rs"])
 
 
 build_bat()
