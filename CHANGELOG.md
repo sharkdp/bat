@@ -18,6 +18,7 @@
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
+- Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
 - Treat ZIP archives as binary content based on their magic header, see #3686 (@officialasishkumar)
