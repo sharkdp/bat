@@ -1,0 +1,800 @@
+%YAML 1.2
+---
+# Syntax for the just command runner
+#
+# Based on the just.sublime-syntax file by @TonioGela
+# Largely rewritten in 2022 by @nk9 using examples by @deathaxe
+
+# https://www.sublimetext.com/docs/syntax.html
+name: Just
+scope: source.just
+version: 2
+hidden: false
+
+file_extensions:
+  - .justfile
+  - just
+  - justfile
+
+variables:
+  valid_name: '[a-zA-Z_][a-zA-Z0-9_-]*'
+  built_in_functions: |-
+    (?x:
+      absolute_path
+    | append
+    | arch
+    | blake3
+    | blake3_file
+    | cache_dir
+    | cache_directory
+    | canonicalize
+    | capitalize
+    | choose
+    | clean
+    | config_dir
+    | config_directory
+    | config_local_dir
+    | config_local_directory
+    | data_dir
+    | data_directory
+    | data_local_dir
+    | data_local_directory
+    | datetime
+    | datetime_utc
+    | encode_uri_component
+    | env
+    | env_var
+    | env_var_or_default
+    | error
+    | executable_dir
+    | executable_directory
+    | extension
+    | file_name
+    | file_stem
+    | home_dir
+    | home_directory
+    | invocation_dir
+    | invocation_dir_native
+    | invocation_directory
+    | invocation_directory_native
+    | is_dependency
+    | join
+    | just_executable
+    | just_pid
+    | justfile
+    | justfile_dir
+    | justfile_directory
+    | kebabcase
+    | lowercamelcase
+    | lowercase
+    | module_dir
+    | module_directory
+    | module_file
+    | num_cpus
+    | os
+    | os_family
+    | parent_dir
+    | parent_directory
+    | path_exists
+    | prepend
+    | quote
+    | read
+    | replace
+    | replace_regex
+    | require
+    | semver_matches
+    | sha256
+    | sha256_file
+    | shell
+    | shoutykebabcase
+    | shoutysnakecase
+    | snakecase
+    | source_dir
+    | source_directory
+    | source_file
+    | style
+    | titlecase
+    | trim
+    | trim_end
+    | trim_end_match
+    | trim_end_matches
+    | trim_start
+    | trim_start_match
+    | trim_start_matches
+    | uppercamelcase
+    | uppercase
+    | uuid
+    | which
+    | without_extension
+    )
+  boolean_settings: |-
+    (?x:
+      allow-duplicate-recipes
+    | allow-duplicate-variables
+    | dotenv-load
+    | export
+    | fallback
+    | ignore-comments
+    | positional-arguments
+    | quiet
+    | unstable
+    )
+  string_settings: |-
+    (?x:
+      dotenv-filename
+    | dotenv-path
+    | tempdir
+    | working-directory
+    )
+  shell_settings: |-
+    (?x:
+      script-interpreter
+    | shell
+    | windows-shell
+    )
+  deprecated_settings: |-
+    (?x: windows-powershell )
+  recipe_attributes_bare: |-
+    (?x:
+      confirm
+    | linux
+    | macos
+    | no-cd
+    | no-exit-message
+    | no-quiet
+    | openbsd
+    | positional-arguments
+    | private
+    | script
+    | unix
+    | windows
+    )
+  recipe_attributes_arguments: |-
+    (?x:
+      confirm
+    | doc
+    | extension
+    | group
+    | script
+    | working-directory
+    )
+
+###############################################################################
+# MAIN CONTEXT
+###############################################################################
+
+contexts:
+  main:
+    - include: includes
+    - include: modules
+    - include: settings
+    - include: aliases
+    - include: comments
+    - include: assignment
+    - include: recipe-attributes
+    - include: recipe-definition
+    - include: recipe-generic-line
+
+  prototype:
+    - include: comments
+
+###[ COMMENTS ]################################################################
+
+  comments:
+    - match: '#[^!]'
+      scope: punctuation.definition.comment.begin.just
+      push: comment-line
+
+  comment-line:
+    - meta_include_prototype: false
+    - meta_scope: comment.line.number-sign.just
+    - include: line-end
+
+
+###[ IMPORTS ]#################################################################
+
+  includes:
+    - match: ^(!include) (.*)$
+      scope: meta.statement.import.just
+      captures:
+        1: keyword.control.import.just
+        2: meta.generic-name.just
+
+  modules:
+    - match: ^(mod)(\??)(\s+\w+)
+      scope: meta.statement.mod.just
+      captures:
+        1: keyword.control.import.just
+        2: keyword.operator.assignment.just
+        3: meta.generic-name.just
+    - match: '`'
+      scope: invalid.illegal.just
+      pop: 2
+    - include: quoted-strings
+
+###[ ALIASES ]#################################################################
+
+  aliases:
+    - match: ^(alias)\s+({{valid_name}})\s*(:=)\s+({{valid_name}})(?=.*$)
+      captures:
+        1: support.function.export.just
+        2: variable.other.just
+        3: keyword.operator.assignment.just
+        4: variable.function.just
+
+
+###[ STATEMENTS ]##############################################################
+
+  just-expressions:
+    - include: groups
+    - include: operators
+    - include: function-calls
+    - include: if-statements
+    - include: all-strings
+    - include: operands-variables
+
+
+###[ FUNCTION CALL ]###########################################################
+
+  function-calls:
+    - match: '{{built_in_functions}}\s*(?=\()'
+      scope:
+        meta.function-call.identifier.just
+        support.function.builtin.just
+      push: function-call-arguments
+
+  function-call-arguments:
+    - meta_include_prototype: false
+    - match: \(
+      scope: punctuation.section.group.begin.just
+      set: function-call-arguments-body
+
+  function-call-arguments-body:
+    - meta_scope: meta.function-call.arguments.just
+    - include: group-end
+    - include: just-expressions
+    - match: ({{valid_name}})\s*
+      captures:
+        1: variable.parameter.just
+
+
+###[ GROUPS ]##################################################################
+
+  groups:
+    - match: \(
+      scope: punctuation.section.group.begin.just
+      push: group-body
+
+  group-end:
+    - match: \)
+      scope: punctuation.section.group.end.just
+      pop: 1
+
+  group-body:
+    - meta_scope: meta.group.just
+    - include: group-end
+    - include: just-expressions
+
+
+###[ IF STATEMENT ]############################################################
+
+  if-statements:
+    - match: if\b
+      scope: keyword.control.conditional.if.just
+      push: if-statement-condition-body
+    - match: else\b
+      scope: keyword.control.conditional.else.just
+      push: else-statement-block
+
+  if-statement-condition-body:
+    - meta_scope: meta.statement.conditional.if.just
+    - match: \{
+      scope: punctuation.section.block.begin.just
+      push: if-else-block-body
+    - match: '!=|==|=~'
+      scope: keyword.operator.comparison.just
+    - include: just-expressions
+    - include: else-pop
+
+  else-statement-block:
+    - meta_scope: meta.statement.conditional.else.just
+    - match: \{
+      scope: punctuation.section.block.begin.just
+      push: if-else-block-body
+    - include: else-pop
+
+  if-else-block-body:
+    - meta_scope: meta.block.just
+    - match: \}
+      scope: punctuation.section.block.end.just
+      pop: 2
+    - include: just-expressions
+
+
+###[ OPERATORS ]###############################################################
+
+  operators:
+    - include: punctuation-separators
+    - match: (\+|\/)
+      scope: keyword.operator.arithmetic.just
+
+  punctuation-separators:
+    - match: ','
+      scope: punctuation.separator.sequence.just
+
+
+###[ CHARACTERS ]##############################################################
+
+  all-strings:
+    - include: quoted-strings
+    - include: backtick-strings
+
+  quoted-strings:
+    - include: single-quote-block-strings
+    - include: single-quote-strings
+    - include: double-quote-block-strings
+    - include: double-quote-strings
+
+  backtick-strings:
+    - include: backtick-quote-block-strings
+    - include: backtick-quote-strings
+
+
+  backtick-quote-block-strings:
+    - match: '```'
+      scope: punctuation.section.interpolation.begin.just
+      push:
+        - meta_scope: meta.string.shell meta.interpolation.command.shell
+        - meta_include_prototype: false
+        - match: '```'
+          scope: punctuation.section.interpolation.end.just
+          pop: 1
+
+
+  backtick-quote-strings:
+    - match: '`'
+      scope: punctuation.section.interpolation.begin.just
+      push:
+        - meta_scope: meta.string.shell meta.interpolation.command.shell
+        - meta_include_prototype: false
+        - match: '`'
+          scope: punctuation.section.interpolation.end.just
+          pop: 1
+
+  double-quote-block-strings:
+    - match: '"""'
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: string.quoted.double.block.just
+        - meta_include_prototype: false
+        - match: \\.
+          scope: constant.character.escape.just
+        - match: '"""'
+          scope: punctuation.definition.string.end.just
+          pop: 1
+
+  double-quote-strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: string.quoted.double.just
+        - meta_include_prototype: false
+        - match: \\.
+          scope: constant.character.escape.just
+        - match: '"'
+          scope: punctuation.definition.string.end.just
+          pop: 1
+
+  single-quote-block-strings:
+    - match: "'''"
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: string.quoted.single.block.just
+        - meta_include_prototype: false
+        - match: "'''"
+          scope: punctuation.definition.string.end.just
+          pop: 1
+
+  single-quote-strings:
+    - match: "'"
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: string.quoted.single.just
+        - meta_include_prototype: false
+        - match: "'"
+          scope: punctuation.definition.string.end.just
+          pop: 1
+
+
+###[ VARIABLES ]###############################################################
+
+  operands-variables:
+    # First check for an invalid function
+    - match: \b({{valid_name}})\b\s*(\()
+      captures:
+        1: source.just
+        2: invalid.illegal.just
+    - match: \b(?:{{valid_name}})\b
+      scope: variable.other.just
+
+
+###[ VARIABLE ASSIGNMENT ]#####################################################
+
+  assignment:
+    - match: (export)?\s*({{valid_name}})\s*(?=:=)
+      captures:
+        1: keyword.declaration.variable.just
+        2: variable.other.just
+      push: assignment-value
+
+  assignment-value:
+    - meta_include_prototype: false
+    - match: :=
+      scope: keyword.operator.assignment.just
+      set: assignment-value-body
+
+  assignment-value-body:
+    - include: eol-pop
+    - include: just-expressions
+
+
+###[ RECIPE DEFINITION ]#######################################################
+# Recipe definition lines, including attributes, arguments and dependencies
+
+  recipe-attributes:
+    - match: ^\[
+      scope: meta.annotation.just variable.annotation.just
+      push:
+        - recipe-attributes-body
+        - expect-recipe-attribute-name
+    - include: eol-pop
+
+  recipe-attributes-body:
+    - meta_scope: meta.sequence.list.just meta.annotation.just
+    - match: \]
+      scope: variable.annotation.just
+      pop: 1
+    - match: ','
+      scope: punctuation.separator.parameters.just
+      push: expect-recipe-attribute-name
+    - include: eol-pop
+
+  expect-recipe-attribute-name:
+    - match: ({{recipe_attributes_arguments}})
+      scope: variable.annotation.just
+      set: recipe-attribute-argument
+    - match: ({{recipe_attributes_bare}})
+      scope: variable.annotation.just
+      pop: 1
+    - match: \]
+      scope: invalid.illegal.just
+      comment: If properly handled, this frame will be popped before the \] is encountered
+      pop: 2
+    - include: else-pop
+
+  recipe-attribute-argument:
+    - match: \(
+      scope:  punctuation.definition.annotation.begin.just
+      set: recipe-attribute-argument-paren-body
+    - match: ':'
+      scope: keyword.operator.assignment.just
+      set: recipe-attribute-argument-colon-body
+    - include: else-pop
+
+  recipe-attribute-argument-paren-body:
+    - match: \)
+      scope: punctuation.definition.annotation.end.just
+      pop: 1
+    - match: ','
+      scope: punctuation.separator.parameters.just
+    - match: '`'
+      scope: invalid.illegal.just
+      pop: 1
+    - include: quoted-strings
+
+  recipe-attribute-argument-colon-body:
+    - match: '`'
+      scope: invalid.illegal.just
+      pop: 1
+    - include: quoted-strings
+    - include: else-pop
+
+  recipe-definition:
+    - match: (?=^@?{{valid_name}}(?![^:]*:=)) # Matches '^recipeName' but not '^varName :='
+      push:
+        - recipe-body
+        - recipe-name
+        - recipe-modifier
+
+  recipe-modifier:
+    - match: ^@
+      scope: meta.function.just storage.modifier.quiet.just
+    - include: else-pop
+
+  recipe-name:
+    - match: \b{{valid_name}}
+      scope: meta.function.just entity.name.function.just
+      pop: 1 # Only match the first instance
+      push:
+        - recipe-dependencies
+        - recipe-assignment
+        - recipe-parameter
+    - include: else-pop
+
+  recipe-assignment:
+    - match: ':'
+      scope: keyword.operator.assignment.just
+    - include: eol-pop
+    - include: else-pop
+
+  recipe-parameter:
+    - meta_content_scope: meta.function.parameters.just
+    - match: (?=[\+\*$a-zA-Z_])
+      push:
+        - recipe-parameter-assignment
+        - recipe-parameter-name
+        - recipe-export-operator
+        - recipe-variadic-operator
+    - include: else-pop
+
+  recipe-variadic-operator:
+    - match: '[\+\*](?!\s*:)'
+      scope: keyword.operator.variadic.just
+      pop: 1 # Only one allowed
+    - include: else-pop
+
+  recipe-export-operator:
+    - match: \$(?=\s*{{valid_name}})
+      scope: keyword.operator.exported.just
+    - match: '[\+\*\$]'
+      scope: invalid.illegal.just
+    - include: else-pop
+
+  recipe-parameter-assignment:
+    - match: =
+      scope: keyword.operator.assignment.just
+      push:
+        - include: just-expressions
+        - match: (\s+|(?=:))
+          pop: 1
+    - include: else-pop
+
+  recipe-parameter-name:
+    - match: \b{{valid_name}}\b
+      scope: variable.parameter.just
+    - include: else-pop
+
+  recipe-dependencies:
+    - match: (?=\()
+      push: recipe-dependency-with-args
+    - match: \b{{valid_name}}\b
+      scope: variable.function.just
+    - match: '&&'
+      scope: keyword.operator.logical.just
+    - include: eol-pop
+    - include: else-pop
+
+  recipe-dependency-with-args:
+    - match: \(
+      scope: punctuation.section.group.begin.just
+      push: recipe-dependency-with-args-body
+
+  recipe-dependency-with-args-body:
+    - meta_scope: meta.group.just
+    - match: \b{{valid_name}}
+      scope: variable.function.just
+      push:
+        - include: just-expressions
+        - include: else-pop
+    - include: recipe-dependency-group-end
+
+  recipe-dependency-group-end:
+    - match: \)
+      scope: punctuation.section.group.end.just
+      pop: 2 # End dependency group
+
+  recipe-body:
+    # Python script shebang
+    - match: ^\s+(?=#!.*\bpython(?:\d(?:\.\d+)?)?\b)
+      pop: 1
+      embed: scope:source.python
+      escape: ^(?=\S)
+    # Shell script shebang
+    - match: ^\s+(?=#!.*\b(bash|zsh|sh)\b)
+      pop: 1
+      embed: scope:source.shell.bash
+      escape: ^(?=\S)
+    - match: ^
+      comment: Content using the default shell
+      pop: 1
+
+###[ RECIPE CONTENTS ]#########################################################
+
+  recipe-generic-line:
+    - match: ^(?=\s+\S)
+      push:
+        - recipe-generic-content
+        - recipe-content-modifiers
+
+  recipe-generic-content:
+    - include: recipe-content-interpolations
+    - include: recipe-content-strings
+    - match: (\\)$\n?
+      captures:
+        1: punctuation.separator.continuation.line.just
+    - match: $\n
+      comment: |
+        No trailing '?', so this will NOT match lines matched by the previous rule.
+        There is no pop there, so this context will remain on the stack WITHOUT the
+        recipe-content-modifiers. This ensures those modifiers are matched
+        IFF they occur at the beginning of non-continuation lines.
+      pop: 1
+
+  recipe-content-modifiers:
+    - match: ^\s+((@)|(-)(@)|(-)|(@)(-))(?!-)
+      captures:
+        2: storage.modifier.quiet.just
+        3: storage.modifier.ignore-error.just
+        4: storage.modifier.quiet.just
+        5: storage.modifier.ignore-error.just
+        6: storage.modifier.quiet.just
+        7: storage.modifier.ignore-error.just
+    - include: else-pop
+
+  recipe-content-interpolations:
+    - match: \{\{\{\{
+      comment: Escaped double brace. Do nothing
+    - match: \{\{(?!\{)
+      scope: punctuation.section.interpolation.begin.just
+      push: recipe-content-interpolation-body
+
+  recipe-content-interpolation-body:
+    - meta_scope: meta.interpolation.just
+    - match: \}\}
+      scope: punctuation.section.interpolation.end.just
+      pop: 1
+    - include: just-expressions
+
+  # Sadly, almost an exact duplicate of the 'strings' context, but
+  # needed to include interpolations, which would have to be nested
+  # inside a push: in the other context.
+  recipe-content-strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: meta.string.just string.quoted.double.just
+        - meta_include_prototype: false
+        - match: \\.
+          scope: constant.character.escape.just
+        - match: '"'
+          scope: punctuation.definition.string.end.just
+          pop: 1
+        - include: recipe-content-string-interpolations
+    - match: "'"
+      scope: punctuation.definition.string.begin.just
+      push:
+        - meta_scope: meta.string.just string.quoted.single.just
+        - meta_include_prototype: false
+        - match: "'"
+          scope: punctuation.definition.string.end.just
+          pop: 1
+        - include: recipe-content-string-interpolations
+
+  recipe-content-string-interpolations:
+    - match: \{\{\{\{
+      comment: Escaped double brace. Do nothing
+    - match: \{\{(?!\{)
+      scope: punctuation.section.interpolation.begin.just
+      push: recipe-content-string-interpolation-body
+
+  recipe-content-string-interpolation-body:
+    - clear_scopes: 1
+    - meta_scope: meta.interpolation.just
+    - include: recipe-content-interpolation-body
+
+
+###[ Set Expressions ]#########################################################
+# Ex: "set shell := ['zsh', '-cu']", "set dotenv-load", "set export := false"
+
+  settings:
+    - match: ^set(?=\s)
+      scope: storage.modifier.definition.just
+      push: settings-name
+
+  settings-name:
+    - meta_scope: meta.setting-name.just
+    - include: settings-boolean-name
+    - include: settings-shell-name
+    - include: settings-string-name
+    - include: settings-deprecated-name
+    - include: settings-invalid-name
+    - include: else-pop
+
+  settings-boolean-name:
+    - match: '{{boolean_settings}}\b'
+      scope: entity.name.definition.just
+      set:
+        - settings-boolean-value
+        - assignment-operator
+
+  settings-boolean-value:
+    - match: (?:true|false)\b
+      scope: constant.language.boolean.just
+      pop: 1
+    - include: else-pop
+    - include: eol-pop
+
+  settings-deprecated-name:
+    - match: ({{deprecated_settings}})\b
+      captures:
+        1: invalid.deprecated.just
+      push: eol-pop
+
+  settings-invalid-name:
+    - match: ({{valid_name}})\b\s*:=
+      captures:
+        1: invalid.illegal.just
+      push: eol-pop
+
+  settings-shell-name:
+    - match: '{{shell_settings}}\b'
+      scope: entity.name.definition.just
+      set:
+        - settings-shell-value
+        - assignment-operator
+
+  settings-shell-value:
+    - match: \[
+      scope: punctuation.section.brackets.start.just
+      set: string-array-body
+    - include: else-pop
+    - include: eol-pop
+
+  string-array-body:
+    - meta_scope: meta.sequence.list.just
+    - match: \]
+      scope: punctuation.section.brackets.end.just
+      pop: 1
+    - match: ','
+      scope: punctuation.separator.parameters.just
+    - include: all-strings
+    - include: eol-pop #??
+
+  settings-string-name:
+    - match: '{{string_settings}}\b'
+      scope: entity.name.definition.just
+      set:
+        - settings-string-value
+        - assignment-operator
+
+  settings-string-value:
+    - include: all-strings
+    - include: eol-pop
+
+# ###[ General Types ]##########################################################
+
+  variable-name:
+    - match: \b{{valid_name}}\b
+      scope: variable.other.just
+    - include: else-pop
+
+  assignment-operator:
+    - match: :=
+      scope: keyword.operator.assignment.just
+    - include: else-pop
+
+###[ Common Prototypes ]#######################################################
+
+  line-end:
+    - match: $
+      pop: 1
+
+# Remove the current stack item when we're about to reach a new character
+# Learn more: https://github.com/sublimehq/Packages/issues/757#issuecomment-287193733
+  else-pop:
+    - match: (?=\S)
+      pop: 1
+
+  eol-pop:
+    - match: $\n?
+      pop: 1

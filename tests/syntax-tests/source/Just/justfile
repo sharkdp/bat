@@ -1,0 +1,82 @@
+# Test justfile for bat syntax highlighting
+
+set shell := ['bash', '-cu']
+set dotenv-load := true
+set positional-arguments
+
+export MY_VAR := "exported value"
+version := "1.0.0"
+build_dir := "target"
+
+alias b := build
+alias t := test
+
+# Build the project
+[group('build')]
+build target='release':
+    cargo build --{{target}}
+
+# Run tests with optional filter
+[confirm, doc("Run the test suite")]
+test *args='':
+    cargo test {{args}}
+
+# Clean build artifacts
+[private]
+clean:
+    rm -rf {{build_dir}}
+
+# Run a Python script
+python-task:
+    #!/usr/bin/env python3
+    import os
+    print("Python version check")
+    for i in range(3):
+        print(f"Count: {i}")
+
+# Run a bash script
+bash-task:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Running bash task"
+    if [[ -d "{{build_dir}}" ]]; then
+        echo "Build directory exists"
+    fi
+
+# Recipe with dependencies
+all: clean build test
+
+# Recipe with variadic parameters
+@install +packages:
+    echo "Installing: {{packages}}"
+
+# Recipe with exported parameter
+run $PORT='8080':
+    echo "Starting server on port $PORT"
+
+# Conditional expression
+greeting := if env_var_or_default("FORMAL", "false") == "true" { "Good day" } else { "Hi" }
+
+# Using built-in functions
+home := home_directory()
+now := `date +%Y-%m-%d`
+project_name := file_stem(justfile())
+
+# Backtick expressions
+kernel := `uname -r`
+
+# Multi-line string
+description := """
+    This is a multi-line
+    description string
+    """
+
+# Recipe with line continuation
+complex-command:
+    echo "This is a very long command that \
+        continues on the next line"
+
+# Recipe with interpolation in strings
+echo-vars:
+    echo "Version: {{version}}"
+    echo 'Single quotes: {{version}}'
