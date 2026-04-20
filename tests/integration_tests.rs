@@ -3305,6 +3305,28 @@ fn all_global_git_config_locations_syntax_mapping_work() {
 }
 
 #[test]
+fn ignored_suffixes_work_for_hidden_file_name_mappings() {
+    let fake_home = Path::new(EXAMPLES_DIR).join("git").canonicalize().unwrap();
+    let expected = "\u{1b}[38;5;231m[\u{1b}[0m\u{1b}[38;5;149muser\u{1b}[0m\u{1b}[38;5;231m]\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231memail\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoo@bar.net\u{1b}[0m
+\u{1b}[38;5;231m    \u{1b}[0m\u{1b}[38;5;231mname\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;203m=\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186mfoobar\u{1b}[0m
+";
+
+    bat()
+        .env("HOME", fake_home.as_os_str())
+        .arg("-f")
+        .arg("--theme")
+        .arg("Monokai Extended")
+        .arg("-p")
+        .arg("--ignored-suffix=.suffix")
+        .arg("git/.gitconfig.suffix")
+        .assert()
+        .success()
+        .stdout(expected)
+        .stderr("");
+}
+
+#[test]
 fn map_syntax_and_ignored_suffix_work_together() {
     bat()
         .arg("-f")
