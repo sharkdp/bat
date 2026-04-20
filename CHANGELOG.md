@@ -36,6 +36,7 @@
 - Fixed test compatibility with future Cargo build directory changes, see #3550 (@nmacl)
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
 - Fixed syntax tests path, see #3610 (@foxfromworld)
+- Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
