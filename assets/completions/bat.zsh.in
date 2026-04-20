@@ -90,7 +90,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         languages)
             local IFS=$'\n'
             local -a languages
-            languages=( $({{PROJECT_EXECUTABLE}} --list-languages | awk -F':|,' '{ for (i = 1; i <= NF; ++i) printf("%s:%s\n", $i, $1) }') )
+            languages=( ${(f)"$({{PROJECT_EXECUTABLE}} --list-languages | awk -F':|,' '{ for (i = 1; i <= NF; ++i) printf("%s:%s\n", $i, $1) }')"} )
 
             _describe 'language' languages && ret=0
         ;;
