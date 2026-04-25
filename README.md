@@ -33,6 +33,12 @@ A special *thank you* goes to our biggest <a href="doc/sponsors.md">sponsors</a>
 </a>
 </p>
 
+### Demo
+
+<p align="center">
+  <img src="media/demo.gif" alt="bat demo" width="800">
+</p>
+
 ### Syntax highlighting
 
 `bat` supports syntax highlighting for a large number of programming and markup
