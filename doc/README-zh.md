@@ -13,7 +13,8 @@
   <a href="#自定义">自定义</a> •
   <a href="#project-goals-and-alternatives">项目目标和替代方案</a><br>
   [<a href="../README.md">English</a>]
-  [中文]
+  [简体中文]
+  [<a href="README-zh-tw.md">繁體中文</a>]
   [<a href="README-ja.md">日本語</a>]
   [<a href="README-ko.md">한국어</a>]
   [<a href="README-ru.md">Русский</a>]
