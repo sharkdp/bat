@@ -1,10 +1,13 @@
 #![cfg(feature = "git")]
 
+use gix::diff::blob::pipeline::{Mode, WorktreeRoots};
+use gix::diff::blob::{Algorithm, HunkIter, ResourceKind};
+use gix::index::hash::Kind;
+use gix::object::tree::EntryKind;
+use gix::{self, ObjectId};
+use path_abs::PathInfo;
 use std::collections::HashMap;
-use std::fs;
 use std::path::Path;
-
-use git2::{DiffOptions, IntoCString, Repository};
 
 #[derive(Copy, Clone, Debug)]
 pub enum LineChange {
@@ -16,68 +19,70 @@ pub enum LineChange {
 
 pub type LineChanges = HashMap<u32, LineChange>;
 
-pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
-    let repo = Repository::discover(filename).ok()?;
-
-    let repo_path_absolute = fs::canonicalize(repo.workdir()?).ok()?;
-
-    let filepath_absolute = fs::canonicalize(filename).ok()?;
-    let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_path_absolute).ok()?;
-
-    let mut diff_options = DiffOptions::new();
-    let pathspec = filepath_relative_to_repo.into_c_string().ok()?;
-    diff_options.pathspec(pathspec);
-    diff_options.context_lines(0);
-
-    let diff = repo
-        .diff_index_to_workdir(None, Some(&mut diff_options))
-        .ok()?;
-
-    let mut line_changes: LineChanges = HashMap::new();
-
-    let mark_section =
-        |line_changes: &mut LineChanges, start: u32, end: i32, change: LineChange| {
-            for line in start..=end as u32 {
-                line_changes.insert(line, change);
+fn collect_changes_from_hunks(hunks: HunkIter) -> Option<LineChanges> {
+    let mut changes: LineChanges = HashMap::new();
+    for hunk in hunks {
+        if hunk.before.is_empty() && !hunk.after.is_empty() {
+            for line in hunk.after {
+                changes.insert(line + 1, LineChange::Added);
             }
-        };
-
-    let _ = diff.foreach(
-        &mut |_, _| true,
-        None,
-        Some(&mut |delta, hunk| {
-            let path = delta.new_file().path().unwrap_or_else(|| Path::new(""));
-
-            if filepath_relative_to_repo != path {
-                return false;
-            }
-
-            let old_lines = hunk.old_lines();
-            let new_start = hunk.new_start();
-            let new_lines = hunk.new_lines();
-            let new_end = (new_start + new_lines) as i32 - 1;
-
-            if old_lines == 0 && new_lines > 0 {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Added);
-            } else if new_lines == 0 && old_lines > 0 {
-                if new_start == 0 {
-                    mark_section(&mut line_changes, 1, 1, LineChange::RemovedAbove);
-                } else {
-                    mark_section(
-                        &mut line_changes,
-                        new_start,
-                        new_start as i32,
-                        LineChange::RemovedBelow,
-                    );
-                }
+        } else if hunk.after.is_empty() && !hunk.before.is_empty() {
+            if hunk.after.start == 0 {
+                changes.insert(1, LineChange::RemovedAbove);
             } else {
-                mark_section(&mut line_changes, new_start, new_end, LineChange::Modified);
+                changes.insert(hunk.after.start, LineChange::RemovedBelow);
             }
+        } else {
+            for line in hunk.after {
+                changes.insert(line + 1, LineChange::Modified);
+            }
+        }
+    }
 
-            true
-        }),
-        None,
+    Some(changes)
+}
+
+pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
+    let filepath_absolute = filename.canonicalize().ok()?;
+    let repository = gix::discover(filepath_absolute.parent().ok()?).unwrap();
+    let repo_path_absolute = repository.workdir()?.canonicalize().ok()?;
+    let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_path_absolute).ok()?;
+    let mut cache = repository
+        .diff_resource_cache(
+            Mode::ToGit,
+            WorktreeRoots {
+                old_root: None,
+                new_root: repository.workdir().map(Path::to_path_buf),
+            },
+        )
+        .ok()?;
+    cache
+        .set_resource(
+            repository
+                .head_tree()
+                .ok()?
+                .lookup_entry_by_path(filepath_relative_to_repo.to_str()?)
+                .ok()??
+                .object_id(),
+            EntryKind::Blob,
+            filepath_relative_to_repo.to_str()?.into(),
+            ResourceKind::OldOrSource,
+            &repository,
+        )
+        .ok()?;
+    cache
+        .set_resource(
+            ObjectId::null(Kind::Sha1),
+            EntryKind::Blob,
+            filepath_relative_to_repo.to_str()?.into(),
+            ResourceKind::NewOrDestination,
+            &repository,
+        )
+        .ok()?;
+    let diff = gix::diff::blob::diff_with_slider_heuristics(
+        Algorithm::Myers,
+        &cache.prepare_diff().ok()?.interned_input(),
     );
 
-    Some(line_changes)
+    collect_changes_from_hunks(diff.hunks())
 }
