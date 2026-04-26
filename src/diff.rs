@@ -80,7 +80,7 @@ pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
         )
         .ok()?;
     let diff = gix::diff::blob::diff_with_slider_heuristics(
-        Algorithm::Myers,
+        Algorithm::Histogram,
         &cache.prepare_diff().ok()?.interned_input(),
     );
 
