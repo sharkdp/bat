@@ -116,7 +116,7 @@ mod tests {
     fn create_and_track_file(repo: &tempfile::TempDir, filename: &str) -> PathBuf {
         let filepath = repo.path().join(filename);
         std::fs::write(&filepath, "file\n").expect("can write file");
-        git(repo.path(), &["add", &filename]);
+        git(repo.path(), &["add", filename]);
         git(repo.path(), &["commit", "-m", "initial"]);
 
         filepath.to_owned()
