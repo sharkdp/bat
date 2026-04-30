@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use git2::{DiffOptions, IntoCString, Repository};
 
@@ -16,13 +16,30 @@ pub enum LineChange {
 
 pub type LineChanges = HashMap<u32, LineChange>;
 
+/// Walk up from a path to find the directory containing `.git`.
+/// This correctly handles git worktrees where the file sits under
+/// the worktree directory, not the main repository workdir.
+fn find_repo_root(path: &Path) -> Option<PathBuf> {
+    let mut current = path.parent()?.to_path_buf();
+    loop {
+        if current.join(".git").exists() {
+            return fs::canonicalize(&current).ok();
+        }
+        current = current.parent()?.to_path_buf();
+    }
+}
+
 pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
     let repo = Repository::discover(filename).ok()?;
 
-    let repo_path_absolute = fs::canonicalize(repo.workdir()?).ok()?;
-
     let filepath_absolute = fs::canonicalize(filename).ok()?;
-    let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_path_absolute).ok()?;
+
+    // Determine the repo root by walking up from the file to find .git.
+    // Uses filesystem lookup instead of repo.workdir() to correctly handle
+    // git worktrees, where the file lives under the worktree directory
+    // rather than the main repository workdir.
+    let repo_root = find_repo_root(&filepath_absolute)?;
+    let filepath_relative_to_repo = filepath_absolute.strip_prefix(&repo_root).ok()?;
 
     let mut diff_options = DiffOptions::new();
     let pathspec = filepath_relative_to_repo.into_c_string().ok()?;
