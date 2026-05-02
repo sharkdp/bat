@@ -623,9 +623,10 @@ impl App {
                 StyleComponentList::to_components(lists, self.interactive_output, true)
             }
 
-            // Use the default.
+            // Use the automatic default behavior: default style for terminals,
+            // plain output for non-interactive destinations.
             None => StyleComponents(HashSet::from_iter(
-                StyleComponent::Default
+                StyleComponent::Auto
                     .components(self.interactive_output)
                     .iter()
                     .cloned(),
