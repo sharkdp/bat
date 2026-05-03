@@ -1,0 +1,83 @@
+# SYNTAX TEST "source.toon"
+
+# This is a comment
+# <- comment.line.number-sign.toon
+
+# Simple key-value pairs
+id: 123
+# <- entity.name.tag.toon
+#  ^ punctuation.separator.toon
+#    ^^^ constant.numeric.toon
+
+name: Shudhi ch
+# <- entity.name.tag.toon
+#     ^^^^^^^^^^^^^ string.unquoted.toon
+
+active: true
+#       ^^^^ constant.language.boolean.toon
+
+deleted: false
+#        ^^^^^ constant.language.boolean.toon
+
+nickname: null
+#         ^^^^ constant.language.null.toon
+
+# Quoted string value
+label: "hello world"
+#       ^^^^^^^^^^^^^ string.quoted.double.toon
+
+# Quoted string with escape
+escaped: "say \"hi\""
+#              ^^ constant.character.escape.toon
+
+# Nested object (key with no value opens a nested block)
+user:
+# <- entity.name.tag.toon
+#   ^ punctuation.separator.toon
+
+# Primitive array (inline)
+tags[3]: admin,ops,dev
+# <- entity.name.tag.toon
+#   ^ punctuation.section.brackets.begin.toon
+#    ^ constant.numeric.toon
+#     ^ punctuation.section.brackets.end.toon
+#      ^ punctuation.separator.toon
+
+# Tabular array header
+items[2]{sku,qty,price}:
+# <- entity.name.tag.toon
+#    ^ punctuation.section.brackets.begin.toon
+#     ^ constant.numeric.toon
+#      ^ punctuation.section.brackets.end.toon
+#       ^ punctuation.section.braces.begin.toon
+#        ^^^^^^^^^^^^^^ variable.parameter.toon
+#                      ^ punctuation.section.braces.end.toon
+#                       ^ punctuation.separator.toon
+
+# Tabular rows (comma-separated values)
+  A1,2,9.99
+#    ^ punctuation.separator.toon
+#      ^ constant.numeric.toon
+
+# Pipe-delimited tabular array header
+data[2|]{id|name|role}:
+#      ^ keyword.operator.delimiter.toon
+
+# List item marker
+items[2]:
+  - first
+# ^ punctuation.definition.list.toon
+  - second
+
+# Key folding (dotted path)
+data.metadata.count: 42
+# <- entity.name.tag.toon
+#                    ^^ constant.numeric.toon
+
+# Float value
+price: 9.99
+#      ^^^^ constant.numeric.toon
+
+# Negative number
+balance: -42
+#        ^^^ constant.numeric.toon
