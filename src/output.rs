@@ -151,7 +151,11 @@ impl OutputType {
 
                 // Ensures that 'less' quits together with 'bat'
                 // The BusyBox version of less does not support -K
-                if less_version != Some(LessVersion::BusyBox) {
+                // Only add -K if the pager came from the generic PAGER env var,
+                // not if it came from BAT_PAGER, --pager, or config
+                if less_version != Some(LessVersion::BusyBox)
+                    && pager.source == PagerSource::EnvVarPager
+                {
                     p.arg("-K"); // Short version of '--quit-on-intr'
                 }
 
