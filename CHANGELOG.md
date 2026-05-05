@@ -22,6 +22,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Strip 8-bit C1 introducers (U+0090, U+0098, U+009B, U+009D, U+009E, U+009F) and DCS/SOS/PM/APC sequence bodies in `--strip-ansi=always`. Previously these passed through as text, see #3725 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
 - Sanitize control characters in filenames before displaying them in the file header, error messages, and the terminal title, preventing ANSI escape injection via crafted filenames. Closes #3054, see #3691 (@curious-rabbit)

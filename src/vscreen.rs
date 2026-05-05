@@ -386,12 +386,23 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 
     fn next_text(&mut self) -> Option<EscapeSequenceOffsets> {
-        self.chars_take_while(|c| c != '\x1B')
+        self.chars_take_while(|c| !is_sequence_introducer(c))
             .map(|(start, end)| EscapeSequenceOffsets::Text { start, end })
     }
 
     fn next_sequence(&mut self) -> Option<EscapeSequenceOffsets> {
         let (start_sequence, c) = self.chars.next().expect("to not be finished");
+
+        // Handle 8-bit C1 introducers as their 7-bit `ESC <x>` equivalents.
+        match c {
+            '\u{9B}' => return self.next_csi_body(start_sequence),
+            '\u{9D}' => return self.next_osc_body(start_sequence),
+            '\u{90}' | '\u{98}' | '\u{9E}' | '\u{9F}' => {
+                return self.next_string_terminated_body(start_sequence)
+            }
+            _ => {}
+        }
+
         match self.chars.peek() {
             None => Some(EscapeSequenceOffsets::Unknown {
                 start: start_sequence,
@@ -400,6 +411,11 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
 
             Some((_, ']')) => self.next_osc(start_sequence),
             Some((_, '[')) => self.next_csi(start_sequence),
+            // 7-bit DCS/SOS/PM/APC: `ESC P/X/^/_` introduces a string body.
+            Some((_, 'P' | 'X' | '^' | '_')) => {
+                self.chars.next();
+                self.next_string_terminated_body(start_sequence)
+            }
             Some((i, c)) => match c {
                 '\x20'..='\x2F' => self.next_nf(start_sequence),
                 c => Some(EscapeSequenceOffsets::Unknown {
@@ -413,12 +429,27 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     fn next_osc(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
         let (osc_open_index, osc_open_char) = self.chars.next().expect("to not be finished");
         debug_assert_eq!(osc_open_char, ']');
+        let start_command = osc_open_index + osc_open_char.len_utf8();
+        Some(self.read_osc_body(start_sequence, start_command))
+    }
 
+    /// OSC body parser entered after the 8-bit introducer U+009D was consumed.
+    fn next_osc_body(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
+        let start_command = start_sequence + '\u{9D}'.len_utf8();
+        Some(self.read_osc_body(start_sequence, start_command))
+    }
+
+    fn read_osc_body(
+        &mut self,
+        start_sequence: usize,
+        start_command: usize,
+    ) -> EscapeSequenceOffsets {
         let mut start_terminator: usize;
         let mut end_sequence: usize;
 
         loop {
-            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B')) {
+            // ST is BEL, ESC `\\`, or U+009C.
+            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B' | '\u{9C}')) {
                 None => {
                     start_terminator = self.text.len();
                     end_sequence = start_terminator;
@@ -434,6 +465,11 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
             match self.chars.next() {
                 Some((ti, '\x07')) => {
                     end_sequence = ti + '\x07'.len_utf8();
+                    break;
+                }
+
+                Some((ti, '\u{9C}')) => {
+                    end_sequence = ti + '\u{9C}'.len_utf8();
                     break;
                 }
 
@@ -466,10 +502,61 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
             }
         }
 
-        Some(EscapeSequenceOffsets::OSC {
+        EscapeSequenceOffsets::OSC {
             start_sequence,
-            start_command: osc_open_index + osc_open_char.len_utf8(),
+            start_command,
             start_terminator,
+            end: end_sequence,
+        }
+    }
+
+    /// DCS/SOS/PM/APC body parser. Emitted as `Unknown` so the body is stripped.
+    fn next_string_terminated_body(
+        &mut self,
+        start_sequence: usize,
+    ) -> Option<EscapeSequenceOffsets> {
+        let mut end_sequence: usize;
+
+        loop {
+            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B' | '\u{9C}')) {
+                None => {
+                    end_sequence = self.text.len();
+                    break;
+                }
+                Some((_, end)) => {
+                    end_sequence = end;
+                }
+            }
+
+            match self.chars.next() {
+                Some((ti, '\x07')) => {
+                    end_sequence = ti + '\x07'.len_utf8();
+                    break;
+                }
+                Some((ti, '\u{9C}')) => {
+                    end_sequence = ti + '\u{9C}'.len_utf8();
+                    break;
+                }
+                Some((ti, '\x1B')) => match self.chars.next() {
+                    Some((i, '\\')) => {
+                        end_sequence = i + '\\'.len_utf8();
+                        break;
+                    }
+                    None => {
+                        end_sequence = ti + '\x1B'.len_utf8();
+                        break;
+                    }
+                    _ => {}
+                },
+                None => break,
+                Some((_, tc)) => {
+                    panic!("this should not be reached: char {tc:?}")
+                }
+            }
+        }
+
+        Some(EscapeSequenceOffsets::Unknown {
+            start: start_sequence,
             end: end_sequence,
         })
     }
@@ -477,9 +564,20 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     fn next_csi(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
         let (csi_open_index, csi_open_char) = self.chars.next().expect("to not be finished");
         debug_assert_eq!(csi_open_char, '[');
+        Some(self.read_csi_body(start_sequence, csi_open_index + csi_open_char.len_utf8()))
+    }
 
-        let start_parameters: usize = csi_open_index + csi_open_char.len_utf8();
+    /// CSI body parser entered after the 8-bit introducer U+009B was consumed.
+    fn next_csi_body(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
+        let start_parameters = start_sequence + '\u{9B}'.len_utf8();
+        Some(self.read_csi_body(start_sequence, start_parameters))
+    }
 
+    fn read_csi_body(
+        &mut self,
+        start_sequence: usize,
+        start_parameters: usize,
+    ) -> EscapeSequenceOffsets {
         // Keep iterating while within the range of `0x30-0x3F`.
         let mut start_intermediates: usize = start_parameters;
         if let Some((_, end)) = self.chars_take_while(|c| matches!(c, '\x30'..='\x3F')) {
@@ -498,13 +596,13 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
             Some((i, c)) => i + c.len_utf8(),
         };
 
-        Some(EscapeSequenceOffsets::CSI {
+        EscapeSequenceOffsets::CSI {
             start_sequence,
             start_parameters,
             start_intermediates,
             start_final_byte,
             end: end_of_sequence,
-        })
+        }
     }
 
     fn next_nf(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
@@ -543,11 +641,20 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
     type Item = EscapeSequenceOffsets;
     fn next(&mut self) -> Option<Self::Item> {
         match self.chars.peek() {
-            Some((_, '\x1B')) => self.next_sequence(),
+            Some((_, c)) if is_sequence_introducer(*c) => self.next_sequence(),
             Some((_, _)) => self.next_text(),
             None => None,
         }
     }
+}
+
+/// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
+#[inline]
+fn is_sequence_introducer(c: char) -> bool {
+    matches!(
+        c,
+        '\x1B' | '\u{90}' | '\u{98}' | '\u{9B}' | '\u{9D}' | '\u{9E}' | '\u{9F}'
+    )
 }
 
 /// An iterator over ANSI/VT escape sequences within a string.
@@ -715,6 +822,79 @@ mod tests {
                 end: 4,
             })
         );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_8bit_csi() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\u{9B}31m");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::CSI {
+                start_sequence: 0,
+                start_parameters: 2,
+                start_intermediates: 4,
+                start_final_byte: 4,
+                end: 5,
+            })
+        );
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_8bit_osc_with_8bit_st() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\u{9D}0;title\u{9C}");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::OSC {
+                start_sequence: 0,
+                start_command: 2,
+                start_terminator: 9,
+                end: 11,
+            })
+        );
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_parses_7bit_dcs_consumes_body() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\x1BP1;0;|payload\x1B\\rest");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Unknown { start: 0, end: 16 })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Text { start: 16, end: 20 })
+        );
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_8bit_dcs_consumes_body() {
+        let mut iter = EscapeSequenceOffsetsIterator::new("\u{90}body\u{9C}rest");
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Unknown { start: 0, end: 8 })
+        );
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Text { start: 8, end: 12 })
+        );
+    }
+
+    #[test]
+    fn test_escape_sequence_offsets_iterator_truncated_dcs_consumes_to_eof() {
+        // Unterminated DCS must still be consumed, not emitted as `Text`.
+        let input = "\x1BPno-terminator";
+        let mut iter = EscapeSequenceOffsetsIterator::new(input);
+        assert_eq!(
+            iter.next(),
+            Some(EscapeSequenceOffsets::Unknown {
+                start: 0,
+                end: input.len(),
+            })
+        );
+        assert_eq!(iter.next(), None);
     }
 
     #[test]

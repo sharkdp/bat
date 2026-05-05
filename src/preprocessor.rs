@@ -271,6 +271,16 @@ fn test_strip_ansi() {
 }
 
 #[test]
+fn test_strip_ansi_8bit_c1() {
+    // 8-bit CSI introducer (U+009B) followed by SGR.
+    assert_eq!(strip_ansi("a\u{9B}31mRED\u{9B}0mb"), "aREDb");
+    // 7-bit DCS body must also be consumed.
+    assert_eq!(strip_ansi("a\x1bP1;0|payload\x1b\\b"), "ab");
+    // 8-bit DCS body via U+0090 + U+009C terminator.
+    assert_eq!(strip_ansi("a\u{90}body\u{9C}b"), "ab");
+}
+
+#[test]
 fn test_strip_overstrike() {
     // Bold: X\x08X (same char repeated)
     assert_eq!(strip_overstrike("H\x08Hello", 1), "Hello");
