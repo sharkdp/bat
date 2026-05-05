@@ -22,6 +22,9 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Replace the unmaintained `serde_yaml` crate with the maintained `serde_yaml_ng` fork, see #3727 (@curious-rabbit)
+- Cap bincode asset deserialisation at 256 MiB so a corrupt or malicious cache file cannot trigger an unbounded allocation, see #3727 (@curious-rabbit)
+- Cap per-line reads at 64 MiB so a file with no newline does not grow the line buffer without bound, see #3727 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
 - Sanitize control characters in filenames before displaying them in the file header, error messages, and the terminal title, preventing ANSI escape injection via crafted filenames. Closes #3054, see #3691 (@curious-rabbit)

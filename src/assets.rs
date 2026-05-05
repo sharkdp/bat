@@ -389,6 +389,9 @@ pub fn get_acknowledgements() -> String {
     )
 }
 
+/// Cap on bytes consumed by a single bincode asset deserialization.
+const ASSET_DESERIALIZE_LIMIT: u64 = 256 * 1024 * 1024;
+
 pub(crate) fn from_binary<T: serde::de::DeserializeOwned>(v: &[u8], compressed: bool) -> T {
     asset_from_contents(v, "n/a", compressed)
         .expect("data integrated in binary is never faulty, but make sure `compressed` is in sync!")
@@ -399,10 +402,17 @@ fn asset_from_contents<T: serde::de::DeserializeOwned>(
     description: &str,
     compressed: bool,
 ) -> Result<T> {
+    use bincode::Options;
+    // Default options + size limit, so a hostile length prefix can't OOM.
+    let opts = bincode::DefaultOptions::new()
+        .with_fixint_encoding()
+        .allow_trailing_bytes()
+        .with_limit(ASSET_DESERIALIZE_LIMIT);
+
     if compressed {
-        bincode::deserialize_from(flate2::read::ZlibDecoder::new(contents))
+        opts.deserialize_from(flate2::read::ZlibDecoder::new(contents))
     } else {
-        bincode::deserialize_from(contents)
+        opts.deserialize_from(contents)
     }
     .map_err(|_| format!("Could not parse {description}").into())
 }

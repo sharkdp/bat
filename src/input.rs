@@ -264,14 +264,17 @@ impl<'a> InputReader<'a> {
 
     pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {
         let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line)?;
+        let mut truncated = false;
+        read_until_capped(&mut reader, b'\n', &mut first_line, &mut truncated)?;
 
         let content_type = inspect_content_type(&first_line);
 
-        if content_type == Some(ContentType::UTF_16LE) {
-            read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
-        } else if content_type == Some(ContentType::UTF_16BE) {
-            read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
+        if !truncated {
+            if content_type == Some(ContentType::UTF_16LE) {
+                read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
+            } else if content_type == Some(ContentType::UTF_16BE) {
+                read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
+            }
         }
 
         Ok(InputReader {
@@ -299,8 +302,8 @@ impl<'a> InputReader<'a> {
             return self.read_line_unbuffered(buf);
         }
 
-        let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
-        Ok(res)
+        let mut truncated = false;
+        read_until_capped(&mut self.inner, b'\n', buf, &mut truncated)
     }
 
     fn read_line_unbuffered(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
@@ -317,6 +320,53 @@ impl<'a> InputReader<'a> {
             self.inner.consume(len);
         }
         Ok(true)
+    }
+}
+
+/// Cap on bytes for a single line; protects against files with no `\n`.
+pub(crate) const MAX_LINE_BYTES: usize = 64 * 1024 * 1024;
+
+/// `BufRead::read_until` capped at `MAX_LINE_BYTES`; on cap, drains to next `delim`.
+fn read_until_capped<R: BufRead + ?Sized>(
+    reader: &mut R,
+    delim: u8,
+    buf: &mut Vec<u8>,
+    truncated: &mut bool,
+) -> io::Result<bool> {
+    let initial = buf.len();
+    loop {
+        let remaining = MAX_LINE_BYTES.saturating_sub(buf.len());
+        if remaining == 0 {
+            *truncated = true;
+            let mut sink = vec![];
+            loop {
+                let chunk = reader.fill_buf()?;
+                if chunk.is_empty() {
+                    break;
+                }
+                if let Some(pos) = chunk.iter().position(|&b| b == delim) {
+                    reader.consume(pos + 1);
+                    break;
+                }
+                let len = chunk.len();
+                sink.clear();
+                sink.extend_from_slice(chunk);
+                reader.consume(len);
+            }
+            return Ok(true);
+        }
+        let chunk = reader.fill_buf()?;
+        if chunk.is_empty() {
+            return Ok(buf.len() != initial);
+        }
+        let take = chunk.len().min(remaining);
+        if let Some(pos) = chunk[..take].iter().position(|&b| b == delim) {
+            buf.extend_from_slice(&chunk[..=pos]);
+            reader.consume(pos + 1);
+            return Ok(true);
+        }
+        buf.extend_from_slice(&chunk[..take]);
+        reader.consume(take);
     }
 }
 
@@ -346,13 +396,20 @@ fn read_utf16_line<R: BufRead>(
     preceded_by_char: u8,
 ) -> io::Result<bool> {
     loop {
+        if buf.len() >= MAX_LINE_BYTES {
+            break;
+        }
         let mut temp = Vec::new();
-        let n = reader.read_until(read_until_char, &mut temp)?;
-        if n == 0 {
+        let mut truncated = false;
+        let n = read_until_capped(reader, read_until_char, &mut temp, &mut truncated)?;
+        if !n {
             // EOF reached
             break;
         }
         buf.extend_from_slice(&temp);
+        if truncated {
+            break;
+        }
         if buf.len() >= 2
             && buf[buf.len() - 2] == preceded_by_char
             && buf[buf.len() - 1] == read_until_char
@@ -591,4 +648,53 @@ fn utf16le_issue3367() {
     assert!(res.is_ok());
     assert!(!res.unwrap());
     assert!(buffer.is_empty());
+}
+
+#[test]
+fn read_line_caps_unbounded_line() {
+    use std::io::Cursor;
+
+    let content = vec![b'A'; MAX_LINE_BYTES + 1024];
+    let mut reader = InputReader::new(Cursor::new(content));
+
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(buffer.len(), MAX_LINE_BYTES);
+
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn read_line_cap_then_resumes_on_next_line() {
+    use std::io::Cursor;
+
+    let mut content = vec![b'A'; MAX_LINE_BYTES + 1024];
+    content.push(b'\n');
+    content.extend_from_slice(b"second line\n");
+    let mut reader = InputReader::new(Cursor::new(content));
+
+    let mut buffer = vec![];
+    reader.read_line(&mut buffer).unwrap();
+    assert_eq!(buffer.len(), MAX_LINE_BYTES);
+
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"second line\n", &buffer[..]);
+}
+
+#[test]
+fn first_line_caps_unbounded_input() {
+    use std::io::Cursor;
+
+    let content = vec![b'A'; MAX_LINE_BYTES + 4096];
+    let reader = InputReader::new(Cursor::new(content));
+    assert!(reader.first_line.len() <= MAX_LINE_BYTES);
 }
