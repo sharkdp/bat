@@ -651,9 +651,13 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
 /// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
 #[inline]
 fn is_sequence_introducer(c: char) -> bool {
+    // Fast path: most bytes are ASCII non-ESC.
+    if (c as u32) < 0x80 {
+        return c == '\x1B';
+    }
     matches!(
         c,
-        '\x1B' | '\u{90}' | '\u{98}' | '\u{9B}' | '\u{9D}' | '\u{9E}' | '\u{9F}'
+        '\u{90}' | '\u{98}' | '\u{9B}' | '\u{9D}' | '\u{9E}' | '\u{9F}'
     )
 }
 
