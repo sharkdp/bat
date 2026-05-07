@@ -3,6 +3,7 @@
 
 ## Other
 
+- Warn about `zsh` global `-h` alias side effects in README, see #3732 (@MrSebicu). Closes #3486
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
