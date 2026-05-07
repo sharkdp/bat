@@ -210,12 +210,13 @@ help() {
 
 Then you can do `$ help cp` or `$ help git commit`.
 
-When you are using `zsh`, you can also use global aliases to override `-h` and `--help` entirely:
+When you are using `zsh`, you can also use a global alias for `--help`:
 
 ```bash
-alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 ```
+
+Avoid installing a `zsh` global alias for `-h` unless you are comfortable with its side effects. `zsh` expands global aliases anywhere on the command line, including sourced shell scripts and conditionals such as `[[ -h "$path" ]]`, so a global `-h` alias can break tools that use `-h` as the "is symlink" test.
 
 For `fish`, you can use abbreviations:
 
