@@ -416,12 +416,19 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
                 self.chars.next();
                 self.next_string_terminated_body(start_sequence)
             }
-            Some((i, c)) => match c {
+            Some(&(i, c)) => match c {
                 '\x20'..='\x2F' => self.next_nf(start_sequence),
-                c => Some(EscapeSequenceOffsets::Unknown {
-                    start: start_sequence,
-                    end: i + c.len_utf8(),
-                }),
+                c => {
+                    // Single-byte ESC sequence (RIS, DECSC/DECRC, keypad, VT52 etc.).
+                    let end = match self.chars.next() {
+                        Some((j, fc)) => j + fc.len_utf8(),
+                        None => i + c.len_utf8(),
+                    };
+                    Some(EscapeSequenceOffsets::Unknown {
+                        start: start_sequence,
+                        end,
+                    })
+                }
             },
         }
     }

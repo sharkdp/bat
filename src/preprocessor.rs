@@ -281,6 +281,16 @@ fn test_strip_ansi_8bit_c1() {
 }
 
 #[test]
+fn test_strip_ansi_single_char_esc() {
+    // Single-byte ESC sequences (RIS, DECSC/DECRC, keypad, VT52). The byte
+    // after ESC is part of the sequence; both must be stripped.
+    assert_eq!(strip_ansi("a\x1bcb"), "ab");
+    assert_eq!(strip_ansi("a\x1b7b\x1b8c"), "abc");
+    assert_eq!(strip_ansi("a\x1b=b\x1b>c"), "abc");
+    assert_eq!(strip_ansi("a\x1bZb"), "ab");
+}
+
+#[test]
 fn test_strip_overstrike() {
     // Bold: X\x08X (same char repeated)
     assert_eq!(strip_overstrike("H\x08Hello", 1), "Hello");
