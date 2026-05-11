@@ -1,0 +1,87 @@
+[package]
+authors = ["David Peter <mail@david-peter.de>"]
+categories = ["command-line-utilities"]
+description="A cat(1) clone with wings."
+homepage = "https://github.com/sharkdp/bat"
+license = "MIT/Apache-2.0"
+name = "bat"
+readme = "README.md"
+repository = "https://github.com/sharkdp/bat"
+version = "0.15.4"
+exclude = [
+    "assets/syntaxes/*",
+    "assets/themes/*",
+]
+build = "build.rs"
+edition = '2018'
+
+[features]
+default = ["application"]
+# Feature required for bat the application. Should be disabled when depending on
+# bat as a library.
+application = [
+    "atty",
+    "clap",
+    "dirs",
+    "git",
+    "lazy_static",
+    "liquid",
+    "paging",
+    "wild",
+    "regex-onig",
+]
+git = ["git2"] # Support indicating git modifications
+paging = ["shell-words"] # Support applying a pager on the output
+regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
+regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
+
+[dependencies]
+atty = { version = "0.2.14", optional = true }
+ansi_term = "^0.12.1"
+ansi_colours = "^1.0"
+console = "0.11.3"
+dirs = { version = "3.0", optional = true }
+lazy_static = { version = "1.4", optional = true }
+wild = { version = "2.0", optional = true }
+content_inspector = "0.2.4"
+encoding = "0.2"
+shell-words = { version = "1.0.0", optional = true }
+unicode-width = "0.1.8"
+globset = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
+semver = "0.10"
+path_abs = { version = "0.5", default-features = false }
+
+[dependencies.git2]
+version = "0.13"
+optional = true
+default-features = false
+
+[dependencies.syntect]
+version = "4.2.0"
+default-features = false
+features = ["parsing", "yaml-load", "dump-load", "dump-create"]
+
+[dependencies.clap]
+version = "2.33"
+optional = true
+default-features = false
+features = ["suggestions", "color", "wrap_help"]
+
+[dependencies.error-chain]
+version = "0.12"
+default-features = false
+
+[dev-dependencies]
+tempdir = "0.3"
+assert_cmd = "1.0.1"
+predicates = "1.0.5"
+
+[build-dependencies]
+clap = { version = "2.33", optional = true }
+liquid = { version = "0.21", optional = true }
+
+[profile.release]
+lto = true
+codegen-units = 1

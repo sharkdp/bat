@@ -1,0 +1,48 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: group
+file_extensions:
+  - group
+scope: source.group
+
+contexts:
+  main:
+    - comment: name
+      match: ^[^:]+
+      scope: keyword
+
+    - comment: password
+      match: ":"
+      push: password
+
+  password:
+    - comment: uid
+      match: ":"
+      set: gid
+
+    - comment: shadowpassword
+      match: "[^:]+"
+      scope: invalid
+
+  gid:
+    - comment: gid
+      match: ":"
+      set: users
+
+    - comment: number
+      match: "[0-9]+"
+      scope: constant.numeric
+
+  users:
+    - comment: newline
+      match: "\n"
+      pop: true
+
+    - comment: directory
+      match: "[^:\n]+"
+      scope: variable.parameter
+
+    - comment: separator
+      match: ","
+      scope: punctuation

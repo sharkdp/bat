@@ -1,0 +1,41 @@
+digraph {
+	label = <Label <font color='red'><b>formating</b></font>,<br/> test <font point-size='20'>is</font> done<br/> here <i>now.</i>>;
+
+	node [shape=box]
+	rankdir=LR
+	margin=0.1
+	a->b
+
+	// http://www.graphviz.org/doc/info/colors.html
+	// note: style=filled!
+	node [shape=box colorscheme=paired12 style=filled]
+	margin=0.1
+	a2[fillcolor=1]
+	b2[fillcolor=3]
+	a2->b2->x2
+
+	// http://www.graphviz.org/doc/info/colors.html
+	// note: style=filled!
+	node [shape=box colorscheme=paired12 style=filled]
+	rankdir=LR
+	margin=0.1
+	c1[fillcolor=1]
+	c2[fillcolor=2]
+	c3[fillcolor=3]
+	c4[fillcolor=4]
+	c5[fillcolor=5]
+	c6[fillcolor=6]
+	c7[fillcolor=7]
+	c8[fillcolor=8]
+	c9[fillcolor=9]
+	c10[fillcolor=10]
+	c11[fillcolor=11]
+	c12[fillcolor=12]
+	c->{c1 c3 c5 c7 c9 c11}
+	c1->c2
+	c3->c4
+	c5->c6
+	c7->c8
+	c9->c10
+	c11->c12
+}

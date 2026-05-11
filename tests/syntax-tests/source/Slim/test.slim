@@ -1,0 +1,20 @@
+doctype html
+html lang=locale
+  head
+    meta charset='utf-8'
+    title #{@title ? "#{@title} | Testing" : 'Testing'}
+    == stylesheet('app.css')
+
+  body
+    header
+      h1.title Testing
+
+      - @links.each do |link|
+        a href=link.href
+          =link.title
+    div
+      == yield
+
+    - if APP_ENV == 'production'
+      footer
+        p Testing

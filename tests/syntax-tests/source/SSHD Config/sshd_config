@@ -1,0 +1,36 @@
+# This test sshd config file is intended for syntax testing
+# purposes only.
+#
+# Definitely do not use this in production for sshd.
+
+Port 22
+
+# Here's a directive commented out:
+#ListenAddress 0.0.0.0
+
+ListenAddress 127.0.0.1
+
+HostKey /etc/ssh/ssh_host_rsa_key
+IgnoreRhosts yes
+PrintMotd yes
+X11Forwarding no
+AllowAgentForwarding no
+PermitRootLogin forced-commands-only
+SyslogFacility AUTH
+
+LogLevel VERBOSE
+
+AuthorizedKeysFile /etc/ssh/authorized-keys/%u
+
+PasswordAuthentication yes
+PermitEmptyPasswords no
+AllowUsers alice
+
+# pass locale information
+AcceptEnv LANG LC_*
+
+Banner /etc/sshd_banner
+
+AllowTcpForwarding yes
+PermitTunnel no
+PermitTTY yes

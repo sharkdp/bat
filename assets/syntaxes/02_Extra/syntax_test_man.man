@@ -1,0 +1,270 @@
+# SYNTAX TEST "Manpage.sublime-syntax"
+SOMETHING(8)                System Manager's Manual               SOMETHING(8)
+# ^^^^^ meta.preprocessor
+#                           ^^^^^^^^^^^^^^^^^^^^^^^ markup.heading.title
+#                                                                   ^^^^^^^ meta.preprocessor
+
+NAME
+#^^^ markup.heading.other
+       example - do something useful
+
+SYNOPSIS
+       example  [options]  [--home  DIR]  [--shell  SHELL]  [--no-create-home]
+#                          ^ punctuation.section.brackets.begin
+#                           ^^^^^^ entity.name.command-line-option
+#                                   ^^^ variable.parameter
+#                                      ^ punctuation.section.brackets.end
+#                                         ^ punctuation.section.brackets.begin
+#                                          ^^^^^^^ entity.name.command-line-option
+#                                                   ^^^^^ variable.parameter
+#                                                        ^ punctuation.section.brackets.end
+#                                                           ^ punctuation.section.brackets.begin
+#                                                            ^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                                                            ^ punctuation.section.brackets.end
+                  [-u | --set-upstream] [-o <string> | --push-option=<string>]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^ entity.name.command-line-option
+#                     ^ keyword.operator.logical
+#                       ^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                     ^ punctuation.section.brackets.end
+#                                                      ^^^^^^^^^^^^^ entity.name.command-line-option
+                  [--force-with-lease[=<refname>[:<expect>]]]
+#                 ^ punctuation.section.brackets.begin
+#                  ^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                    ^ punctuation.section.brackets.begin
+#                                     ^ keyword.operator
+#                                       ^^^^^^^ variable.parameter
+#                                               ^ punctuation.section.brackets.begin
+#                                                  ^^^^^^ variable.parameter
+#                                                         ^^^ punctuation.section.brackets.end
+
+       example --system [options]
+#              ^^^^^^^^ entity.name
+
+   COMMON OPTIONS
+       [--quiet] [--debug] [--help|-h]  [--version]  [--conf FILE]
+
+        /* According to POSIX.1-2001, POSIX.1-2008 */
+#       ^^ source.c comment.block punctuation.definition.comment
+       #include <sys/select.h>
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+           struct timeval {
+#          ^^^^^^ source.c storage.type
+            
+               time_t         tv_sec;     /* seconds */
+               suseconds_t    tv_usec;    /* microseconds */
+           };
+
+
+
+DESCRIPTION
+       example does something useful in  relation  to the command line options
+       and configuration information in /etc/example.conf.
+
+OPTIONS
+       --conf FILE
+#      ^^^^^^ entity.name.command-line-option
+#^^^^^^ - variable - entity - markup
+#             ^^^^ variable.parameter
+              Use FILE instead of /etc/example.conf.
+#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+
+       --disabled-login
+              Do  not  run passwd to set the password.  The user won't be able
+              to use her account until the password is set.
+
+       --disabled-password
+              Like --disabled-login, but logins are still possible (for  exam-
+#                  ^^^^^^^^^^^^^^^^ entity.name
+#^^^^^^^^^^^^^^^^^^ - entity - variable - markup
+#                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - entity - variable - markup
+              ple using SSH RSA keys) but not using password authentication.
+
+       --help Display brief instructions.
+#      ^^^^^^ entity.name.command-line-option
+#             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable.parameter
+
+       --home DIR
+#      ^^^^^^ entity.name.command-line-option
+#             ^^^ variable.parameter
+#                ^ - variable - entity - markup
+              Use DIR as the user's home directory, rather  than  the  default
+              specified  by the configuration file.  If the directory does not
+              exist, it is created and skeleton files are copied.
+
+       --[no-]signed, --signed=(true|false|if-asked)
+#      ^^^^^^^^^^^^^ entity.name.command-line-option
+#                   ^ punctuation.separator
+#                     ^^^^^^^^ entity.name.command-line-option
+#                             ^ keyword.operator
+#                              ^ - variable
+#                               ^^^^ variable.parameter
+#                                   ^ keyword.operator.logical
+#                                    ^^^^^ variable.parameter
+#                                         ^ keyword.operator.logical
+#                                          ^^^^^^^^ variable.parameter
+#                                                  ^ - variable
+       --no-recurse-submodules, --recurse-submodules=check|on-demand|only|no
+#      ^^^^^^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                             ^ punctuation.separator
+#                               ^^^^^^^^^^^^^^^^^^^^ entity.name.command-line-option
+#                                                   ^ keyword.operator
+#                                                    ^^^^^ variable.parameter
+#                                                         ^ keyword.operator.logical
+#                                                          ^^^^^^^^^ variable.parameter
+#                                                                   ^ keyword.operator.logical
+#                                                                    ^^^^ variable.parameter
+#                                                                        ^ keyword.operator.logical
+#                                                                         ^^ variable.parameter
+           May be used to make sure all submodule commits used by the
+
+       -c, -C NUM, --context[=NUM]
+#      ^^ entity.name.command-line-option
+#        ^ punctuation.separator
+#          ^^ entity.name.command-line-option
+#             ^^^ variable.parameter
+#                ^ punctuation.separator
+#                  ^^^^^^^^^ entity.name.command-line-option
+#                           ^^^^^^^ - entity.name
+#                            ^ keyword.operator
+#                             ^^^ variable.parameter
+#                                ^^ - variable
+              output NUM (default 3) lines of copied context
+
+       -      This is  not really a switch, but indicates that standard input
+#      ^ entity.name.command-line-option.man
+#       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - entity - variable
+              is coming from a file or a pipe and not interactively from the
+              command line.
+
+EXAMPLE
+       #include <stdio.h>
+#      ^^^^^^^^ source.c meta.preprocessor.include keyword.control.import.include
+
+    (This is not C code.)
+#   ^^^^^^^^^^^^^^^^^^^^^^ - source.c
+
+           struct timeval {
+               time_t      tv_sec;         /* seconds */
+               suseconds_t tv_usec;        /* microseconds */
+           };
+#           ^ source.c punctuation.terminator
+
+       The corresponding argument for pselect() has the following type:
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - source.c
+           #define POLLIN_SET  (EPOLLRDNORM | EPOLLRDBAND | EPOLLIN |
+                                EPOLLHUP | EPOLLERR)
+#                                                  ^ source.c meta.preprocessor.macro meta.group punctuation.section.group.end
+
+ENVIRONMENT
+       $SYSTEMD_LOG_LEVEL
+#      ^ punctuation.definition.variable
+#       ^^^^^^^^^^^^^^^^^ constant.other
+           systemd reads the log level from this environment variable. This
+           can be overridden with --log-level=.
+
+ENVIRONMENT VARIABLES
+       Various Git commands use the following environment variables:
+
+   The Git Repository
+       These environment variables apply to all core Git commands. Nb: it is
+       worth noting that they may be used/overridden by SCMS sitting above Git
+       so take care if using a foreign front-end.
+
+       GIT_INDEX_FILE
+#      ^^^^^^^^^^^^^^ support.constant.environment-variable
+           This environment allows the specification of an alternate index
+           file. If not specified, the default of $GIT_DIR/index is used.
+
+       GIT_INDEX_VERSION
+#      ^^^^^^^^^^^^^^^^^ support.constant.environment-variable
+           This environment variable allows the specification of an index
+           version for new repositories. It won’t affect existing index files.
+           By default index file version 2 or 3 is used. See git-update-
+           index(1) for more information.
+
+COMMANDS
+       This section only lists general commands. For input and output com‐
+       mands, refer to sway-input(5) and sway-output(5).
+
+       The following commands may only be used in the configuration file.
+
+       bar [<bar-id>] <bar-subcommands...>
+#      ^^^ entity.name.command
+#          ^ punctuation.section.brackets.begin
+#           ^ punctuation.definition.generic.begin
+#            ^^^^^^ variable.parameter
+#                  ^ punctuation.definition.generic.end
+#                   ^ punctuation.section.brackets.end
+#                     ^ punctuation.definition.generic.begin
+#                      ^^^^^^^^^^^^^^^ variable.parameter
+#                                        ^ punctuation.definition.generic.end
+           For details on bar subcommands, see sway-bar(5).
+
+       default_orientation horizontal|vertical|auto
+#      ^^^^^^^^^^^^^^^^^^^ entity.name.command
+#                          ^^^^^^^^^^ variable.parameter
+#                                    ^ keyword.operator.logical
+#                                     ^^^^^^^^ variable.parameter
+#                                             ^ keyword.operator.logical
+#                                              ^^^^ variable.parameter
+           Sets the default container layout for tiled containers.
+
+       include <path>
+           Includes another file from path. path can be either a full path or
+           a path relative to the parent config, and expands shell syntax (see
+           wordexp(3) for details). The same include file can only be included
+           once; subsequent attempts will be ignored.
+
+       The following commands cannot be used directly in the configuration
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+       file. They are expected to be used with bindsym or at runtime through
+#      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - variable - entity
+       swaymsg(1).
+
+       border none|normal|csd|pixel [<n>]
+           Set border style for focused window. normal includes a border of
+           thickness n and a title bar. pixel is a border without title bar n
+           pixels thick. Default is normal with border thickness 2. csd is
+           short for client-side-decorations, which allows the client to draw
+           its own decorations.
+
+       border toggle
+#      ^^^^^^ entity.name.command
+           Cycles through the available border styles.
+
+       exit
+#      ^^^^ entity.name.command
+           Exit sway and end your Wayland session.
+
+       floating enable|disable|toggle
+           Make focused view floating, non-floating, or the opposite of what
+           it is now.
+
+       <criteria> focus
+#      ^ punctuation.definition.generic.begin
+#       ^^^^^^^^ variable.parameter
+#               ^ punctuation.definition.generic.end
+#                 ^^^^^ variable.parameter
+           Moves focus to the container that matches the specified criteria.
+
+       gaps inner|outer|horizontal|vertical|top|right|bottom|left all|current
+       set|plus|minus|toggle <amount>
+#      ^^^ variable.parameter
+#         ^ keyword.operator.logical
+           Changes the inner or outer gaps for either all workspaces or the
+           current workspace. outer gaps can be altered per side with top,
+           right, bottom, and left or per direction with horizontal and verti‐
+           cal.
+
+       layout toggle [split|tabbed|stacking|splitv|splith]
+       [split|tabbed|stacking|splitv|splith]...
+#      ^ punctuation.section.brackets.begin
+#       ^^^^^ variable.parameter
+#            ^ keyword.operator.logical
+           Cycles the layout mode of the focused container through a list of
+           layouts.
+
+SEE ALSO
+       The systemd Homepage[11], systemd-system.conf(5), locale.conf(5)
+#                                ^^^^^^^^^^^^^^^^^^^ entity.name.function

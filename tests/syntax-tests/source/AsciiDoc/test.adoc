@@ -1,0 +1,173 @@
+= This is the document title
+Author McAuthorson <author@author.org>
+
+== Table of Content
+
+:toc:
+
+== Paragraphs
+
+[.lead]
+This text will be styled as a lead paragraph with a larger font.
+
+This is a normal paragraph.
+
+ This is a literal paragraph that is offset by one space, 
+ it will be rendered in a fixed-width font.
+
+NOTE: This is an admonition paragraph
+
+TIP: This is another admonition paragraph
+
+== Formatted text
+
+*bold text*
+
+_italic text_
+
+*_bold italic text_*
+
+`monospace text`
+
+`*bold monospace*`
+
+`_italic monospace_`
+
+`*_bold and italic monospace_*`
+
+The following word is #highlighted#
+
+The following words are [.small]#small print#
+
+The following word is [.underline]#underlined#
+
+The following word is [.line-through]#line-through#
+
+The following word is [.big]#big#
+
+The following word is printed in ^superscript^
+
+The following word is printed in ~sub-script~
+
+== Include
+
+include::not_existing.adoc[]
+
+== Breaks
+Here we have a +
+line break.
+
+Below is a horizontal rule.
+
+'''
+
+And below here is a page break.
+
+<<<
+
+== Lists
+
+* This is
+* an unordered
+* list
+** with nested
+*** elements
+
+'''
+
+- This is also an
+- unordered
+- list
+
+'''
+
+. And this is
+. an ordered
+. list
+.. with nested
+... elements
+
+'''
+
+//* [*] checked
+* [x] also checked
+* [ ] not checked
+*     normal list item
+
+'''
+
+[qanda]
+What is this?::
+  This is a Q&A
+And what is this?:: Also a Q&A
+
+== Links
+The following link will be created automatically: https://asciidoctor.org
+
+.An image caption
+image::not_existing.jpg[alt text]
+
+.A video caption
+video::not_existing.mp4[alt text]
+
+== Source Code
+The following word is `monospace`.
+
+....
+This is a literal block
+where linebreaks are rendered
+....
+
+.example.java
+[source,java]
+----
+public class Example { // <1>
+    private static boolean isExample = true; // <2>
+}
+----
+<1> This is a callout
+<2> This is another callout
+
+== Misc
+
+.A sidebar
+****
+This will be rendered like a sidebar
+****
+
+____
+This is a random blockquote
+____
+
+[quote, Albert Einstein, 'Scientist']
+____
+This is not actually something Einstein said
+____
+
+// here we have a single line comment
+
+////
+and this is a
+multiline comment
+////
+
+.A Table
+[%header]
+|===
+|Header Column 1 |Header Column 2 |And the last header column
+|Cell in col1
+|Cell in col2
+|Cell in col3
+
+|Cell in col1, row2
+|Cell in col2, row2
+|Cell in col3, row2
+|===
+
+.A Table from CSV
+[%header, format=csv]
+|===
+header col1, header col2, header col3
+This,is the first, row
+This, is the second, row
+|===

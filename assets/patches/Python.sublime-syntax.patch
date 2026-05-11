@@ -1,0 +1,24 @@
+diff --git syntaxes/01_Packages/Python/Python.sublime-syntax syntaxes/01_Packages/Python/Python.sublime-syntax
+index 2acd86d8..86257f7b 100644
+--- syntaxes/01_Packages/Python/Python.sublime-syntax
++++ syntaxes/01_Packages/Python/Python.sublime-syntax
+@@ -25,7 +31,7 @@ file_extensions:
+   - wscript
+   - bazel
+   - bzl
+-first_line_match: ^#!\s*/.*\bpython(\d(\.\d)?)?\b
++first_line_match: ^#!\s*/.*\b(python(\d(\.\d)?)?|uv)\b
+ scope: source.python
+
+ variables:
+@@ -988,10 +988,6 @@ contexts:
+         - match: \}
+           scope: punctuation.section.mapping-or-set.end.python
+           set: after-expression
+-        - match: (?={{simple_expression}}:|\s*\*\*)
+-          set: inside-dictionary
+-        - match: (?={{simple_expression}}[,}]|\s*\*)
+-          set: inside-set
+         - match: ','
+           scope: punctuation.separator.set.python
+           set: inside-set

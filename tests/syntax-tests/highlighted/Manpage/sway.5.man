@@ -1,0 +1,1033 @@
+[38;2;248;248;242msway(5)                       File Formats Manual                      sway(5)[0m
+
+[38;2;253;151;31mNAME[0m
+[38;2;248;248;242m       sway - configuration file and commands[0m
+
+[38;2;253;151;31mDESCRIPTION[0m
+[38;2;248;248;242m       A sway configuration file is a list of sway commands that are executed[0m
+[38;2;248;248;242m       by sway on startup.  These commands usually consist of setting your[0m
+[38;2;248;248;242m       preferences and setting key bindings. An example config is likely[0m
+[38;2;248;248;242m       present in /etc/sway/config for you to check out.[0m
+
+[38;2;248;248;242m       Lines in the configuration file might be extended through multiple[0m
+[38;2;248;248;242m       lines by adding a '\' character at the end of line. e.g.:[0m
+
+[38;2;248;248;242m           bindsym Shift+XF86AudioRaiseVolume exec \[0m
+[38;2;248;248;242m                pactl set-sink-volume @DEFAULT_SINK@ [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m%[0m
+
+[38;2;248;248;242m       Commands can also be given as a block in the form command { <subcom‐[0m
+[38;2;248;248;242m       mands...> }. Anything before the opening { will be prepended to the[0m
+[38;2;248;248;242m       lines inside the block. For example:[0m
+
+[38;2;248;248;242m           output eDP-1 {[0m
+[38;2;248;248;242m                background ~/wallpaper.png fill[0m
+[38;2;248;248;242m                resolution 1920x1080[0m
+[38;2;248;248;242m           }[0m
+
+[38;2;248;248;242m       is identical to[0m
+
+[38;2;248;248;242m           output eDP-1 background ~/wallpaper.png fill[0m
+[38;2;248;248;242m           output eDP-1 resolution 1920x1080[0m
+
+[38;2;248;248;242m       These commands can be executed in your config file, via [0m[38;2;166;226;46mswaymsg[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m, or[0m
+[38;2;248;248;242m       via the bindsym command.[0m
+
+[38;2;253;151;31mCOMMAND CONVENTIONS[0m
+[38;2;248;248;242m       Commands are split into several arguments using spaces. You can enclose[0m
+[38;2;248;248;242m       arguments with quotation marks ("..." or '...') to add spaces to a sin‐[0m
+[38;2;248;248;242m       gle argument. You may also run several commands in order by separating[0m
+[38;2;248;248;242m       each with , or ;. Criteria is retained across commands separated by ,,[0m
+[38;2;248;248;242m       but will be reset (and allow for new criteria, if desired) for commands[0m
+[38;2;248;248;242m       separated by a ;.[0m
+
+[38;2;248;248;242m       Throughout the documentation, | is used to distinguish between argu‐[0m
+[38;2;248;248;242m       ments for which you may only select one. [...] is used for optional ar‐[0m
+[38;2;248;248;242m       guments, and <...> for arguments where you are expected to supply some[0m
+[38;2;248;248;242m       value.[0m
+
+[38;2;253;151;31mCOMMANDS[0m
+[38;2;248;248;242m       This section only lists general commands. For input and output com‐[0m
+[38;2;248;248;242m       mands, refer to sway-input(5) and sway-output(5).[0m
+
+[38;2;248;248;242m       The following commands may only be used in the configuration file.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mbar[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mbar-id[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mbar-subcommands[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           For details on bar subcommands, see sway-bar(5).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mdefault_orientation[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mhorizontal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mauto[0m
+[38;2;248;248;242m           Sets the default container layout for tiled containers.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46minclude[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mpath[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Includes another file from path. path can be either a full path or[0m
+[38;2;248;248;242m           a path relative to the parent config, and expands shell syntax (see[0m
+[38;2;248;248;242m           wordexp(3) for details). The same include file can only be included[0m
+[38;2;248;248;242m           once; subsequent attempts will be ignored.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mswaybg_command[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Executes custom background command. Default is swaybg. Refer to[0m
+[38;2;248;248;242m           sway-output(5) for more information.[0m
+
+[38;2;248;248;242m           It can be disabled by setting the command to a single dash:[0m
+[38;2;248;248;242m           swaybg_command -[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mswaynag_command[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Executes custom command for swaynag. Default is swaynag. Additional[0m
+[38;2;248;248;242m           arguments may be appended to the end. This should only be used to[0m
+[38;2;248;248;242m           either direct sway to call swaynag from a custom path or to provide[0m
+[38;2;248;248;242m           additional arguments. This should be placed at the top of the con‐[0m
+[38;2;248;248;242m           fig for the best results.[0m
+
+[38;2;248;248;242m           It can be disabled by setting the command to a single dash: sway‐[0m
+[38;2;248;248;242m           nag_command -[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace_layout[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mdefault[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mstacking[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtabbed[0m
+[38;2;248;248;242m           Specifies the initial layout for new containers in an empty[0m
+[38;2;248;248;242m           workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mxwayland[0m[38;2;248;248;242m [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mforce[0m
+[38;2;248;248;242m           Enables or disables Xwayland support, which allows X11 applications[0m
+[38;2;248;248;242m           to be used. enable will lazily load Xwayland so Xwayland will not[0m
+[38;2;248;248;242m           be launched until the first client attempts to connect. In some[0m
+[38;2;248;248;242m           cases, such as slower machines, it may be desirable to have Xway‐[0m
+[38;2;248;248;242m           land started immediately by using force instead of enable.[0m
+
+[38;2;248;248;242m       The following commands cannot be used directly in the configuration[0m
+[38;2;248;248;242m       file. They are expected to be used with bindsym or at runtime through[0m
+[38;2;248;248;242m       swaymsg(1).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mborder[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnormal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcsd[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mpixel[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mn[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Set border style for focused window. normal includes a border of[0m
+[38;2;248;248;242m           thickness n and a title bar. pixel is a border without title bar n[0m
+[38;2;248;248;242m           pixels thick. Default is normal with border thickness 2. csd is[0m
+[38;2;248;248;242m           short for client-side-decorations, which allows the client to draw[0m
+[38;2;248;248;242m           its own decorations.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mborder[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mtoggle[0m
+[38;2;248;248;242m           Cycles through the available border styles.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mexit[0m
+[38;2;248;248;242m           Exit sway and end your Wayland session.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfloating[0m[38;2;248;248;242m [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m
+[38;2;248;248;242m           Make focused view floating, non-floating, or the opposite of what[0m
+[38;2;248;248;242m           it is now.[0m
+
+[38;2;248;248;242m       [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcriteria[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfocus[0m
+[38;2;248;248;242m           Moves focus to the container that matches the specified criteria.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m
+[38;2;248;248;242m           Moves focus to the next container in the specified direction.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprev[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnext[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31msibling[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Moves focus to the previous or next container in the current lay‐[0m
+[38;2;248;248;242m           out. By default, the last active child of the newly focused con‐[0m
+[38;2;248;248;242m           tainer will be focused. The sibling option indicates not to immedi‐[0m
+[38;2;248;248;242m           ately focus a child of the container.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mchild[0m
+[38;2;248;248;242m           Moves focus to the last-focused child of the focused container.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mparent[0m
+[38;2;248;248;242m           Moves focus to the parent of the focused container.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m
+[38;2;248;248;242m           Moves focus to the next output in the specified direction.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Moves focus to the named output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mtiling[0m
+[38;2;248;248;242m           Sets focus to the last focused tiling container.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfloating[0m
+[38;2;248;248;242m           Sets focus to the last focused floating container.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mmode_toggle[0m
+[38;2;248;248;242m           Moves focus between the floating and tiled layers.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfullscreen[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mglobal[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Makes focused view fullscreen, non-fullscreen, or the opposite of[0m
+[38;2;248;248;242m           what it is now. If no argument is given, it does the same as tog‐[0m
+[38;2;248;248;242m           gle. If global is specified, the view will be fullscreen across all[0m
+[38;2;248;248;242m           outputs.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mgaps[0m[38;2;248;248;242m [0m[3;38;2;253;151;31minner[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mouter[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mhorizontal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtop[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mbottom[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mall[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcurrent[0m
+[38;2;248;248;242m       [0m[3;38;2;253;151;31mset[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mplus[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mminus[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mamount[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Changes the inner or outer gaps for either all workspaces or the[0m
+[38;2;248;248;242m           current workspace. outer gaps can be altered per side with top,[0m
+[38;2;248;248;242m           right, bottom, and left or per direction with horizontal and verti‐[0m
+[38;2;248;248;242m           cal.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46minhibit_idle[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfocus[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mfullscreen[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mopen[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvisible[0m
+[38;2;248;248;242m           Set/unset an idle inhibitor for the view. focus will inhibit idle[0m
+[38;2;248;248;242m           when the view is focused by any seat. fullscreen will inhibit idle[0m
+[38;2;248;248;242m           when the view is fullscreen (or a descendant of a fullscreen con‐[0m
+[38;2;248;248;242m           tainer) and is visible. open will inhibit idle until the view is[0m
+[38;2;248;248;242m           closed (or the inhibitor is unset/changed). visible will inhibit[0m
+[38;2;248;248;242m           idle when the view is visible on any output. none will remove any[0m
+[38;2;248;248;242m           existing idle inhibitor for the view.[0m
+
+[38;2;248;248;242m           This can also be used with criteria to set an idle inhibitor for[0m
+[38;2;248;248;242m           any existing view or with for_window to set idle inhibitors for fu‐[0m
+[38;2;248;248;242m           ture views.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mlayout[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mdefault[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplith[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplitv[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mstacking[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtabbed[0m
+[38;2;248;248;242m           Sets the layout mode of the focused container.[0m
+
+[38;2;248;248;242m           When using the stacking layout, only the focused window in the con‐[0m
+[38;2;248;248;242m           tainer is displayed, with the opened windows' list on the top of[0m
+[38;2;248;248;242m           the container.[0m
+
+[38;2;248;248;242m           The tabbed layout is similar to stacking, but the windows’ list is[0m
+[38;2;248;248;242m           vertically split.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mlayout[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mtoggle[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31msplit[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mall[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Cycles the layout mode of the focused container though a preset[0m
+[38;2;248;248;242m           list of layouts. If no argument is given, then it cycles through[0m
+[38;2;248;248;242m           stacking, tabbed and the last split layout. If split is given, then[0m
+[38;2;248;248;242m           it cycles through splith and splitv. If all is given, then it cy‐[0m
+[38;2;248;248;242m           cles through every layout.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mlayout[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mtoggle[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31msplit[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtabbed[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mstacking[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplitv[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplith[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m       [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31msplit[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtabbed[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mstacking[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplitv[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msplith[0m[38;2;248;248;242m][0m[38;2;248;248;242m...[0m
+[38;2;248;248;242m           Cycles the layout mode of the focused container through a list of[0m
+[38;2;248;248;242m           layouts.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmax_render_time[0m[38;2;248;248;242m [0m[3;38;2;253;151;31moff[0m[38;2;249;38;114m|[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmsec[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Controls when the relevant application is told to render this win‐[0m
+[38;2;248;248;242m           dow, as a positive number of milliseconds before the next time sway[0m
+[38;2;248;248;242m           composites the output. A smaller number leads to fresher rendered[0m
+[38;2;248;248;242m           frames being composited by sway and lower perceived input latency,[0m
+[38;2;248;248;242m           but if set too low, the application may not finish rendering before[0m
+[38;2;248;248;242m           sway composites the output, leading to delayed frames.[0m
+
+[38;2;248;248;242m           When set to off, the relevant application is told to render this[0m
+[38;2;248;248;242m           window immediately after display refresh. How much time is left for[0m
+[38;2;248;248;242m           rendering before sway composites the output at that point depends[0m
+[38;2;248;248;242m           on the output max_render_time setting.[0m
+
+[38;2;248;248;242m           To set this up for optimal latency:[0m
+[38;2;248;248;242m           1.   Set up output max_render_time (see sway-output(5)).[0m
+[38;2;248;248;242m           2.   Put the target application in full-screen and have it continu‐[0m
+[38;2;248;248;242m               ously render something.[0m
+[38;2;248;248;242m           3.   Start by setting max_render_time 1. If the application drops[0m
+[38;2;248;248;242m               frames, increment by 1.[0m
+
+[38;2;248;248;242m           This setting only has an effect if a per-output max_render_time is[0m
+[38;2;248;248;242m           in effect on the output the window is currently on. See sway-out‐[0m
+[38;2;248;248;242m           put(5) for further details.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mleft[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mpx[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mpx[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Moves the focused container in the direction specified. The op‐[0m
+[38;2;248;248;242m           tional px argument specifies how many pixels to move the container.[0m
+[38;2;248;248;242m           If unspecified, the default is 10 pixels. Pixels are ignored when[0m
+[38;2;248;248;242m           moving tiled containers.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mabsolute[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mposition[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mpos_x[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mpos_y[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Moves the focused container to the specified position in the[0m
+[38;2;248;248;242m           workspace. The position can be specified in pixels or percentage[0m
+[38;2;248;248;242m           points, omitting the unit defaults to pixels. If absolute is used,[0m
+[38;2;248;248;242m           the position is relative to all outputs. absolute can not be used[0m
+[38;2;248;248;242m           with percentage points.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mabsolute[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mposition[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcenter[0m
+[38;2;248;248;242m           Moves the focused container to be centered on the workspace. If ab‐[0m
+[38;2;248;248;242m           solute is used, it is moved to the center of all outputs.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mposition[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcursor[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mmouse[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mpointer[0m
+[38;2;248;248;242m           Moves the focused container to be centered on the cursor.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mmark[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmark[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Moves the focused container to the specified mark.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-auto-back-and-forth[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mnum[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       [0m[3;38;2;253;151;31mber[0m[38;2;248;248;242m] <name>[0m
+[38;2;248;248;242m           Moves the focused container to the specified workspace. The string[0m
+[38;2;248;248;242m           number is optional and is used to match a workspace with the same[0m
+[38;2;248;248;242m           number, even if it has a different name.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprev[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnext[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcurrent[0m
+[38;2;248;248;242m           Moves the focused container to the previous, next or current[0m
+[38;2;248;248;242m           workspace on this output, or if no workspaces remain, the previous[0m
+[38;2;248;248;242m           or next output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprev_on_output[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnext_on_output[0m
+[38;2;248;248;242m           Moves the focused container to the previous or next workspace on[0m
+[38;2;248;248;242m           this output, wrapping around if already at the first or last[0m
+[38;2;248;248;242m           workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mback_and_forth[0m
+[38;2;248;248;242m           Moves the focused container to previously focused workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname-or-id[0m[38;2;248;248;242m>[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcurrent[0m
+[38;2;248;248;242m           Moves the focused container to the specified output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m
+[38;2;248;248;242m           Moves the focused container to next output in the specified direc‐[0m
+[38;2;248;248;242m           tion.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mwindow[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mscratchpad[0m
+[38;2;248;248;242m           Moves the focused container to the scratchpad.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname-or-id[0m[38;2;248;248;242m>[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcurrent[0m
+[38;2;248;248;242m           Moves the focused workspace to the specified output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname-or-id[0m[38;2;248;248;242m>[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcurrent[0m
+[38;2;248;248;242m           Moves the focused workspace to the specified output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m
+[38;2;248;248;242m           Moves the focused workspace to next output in the specified direc‐[0m
+[38;2;248;248;242m           tion.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmove[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m
+[38;2;248;248;242m           Moves the focused workspace to next output in the specified direc‐[0m
+[38;2;248;248;242m           tion.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mnop[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcomment[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           A no operation command that can be used to override default behav‐[0m
+[38;2;248;248;242m           iour. The optional comment argument is ignored, but logged for de‐[0m
+[38;2;248;248;242m           bugging purposes.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mreload[0m
+[38;2;248;248;242m           Reloads the sway config file and applies any changes. The config[0m
+[38;2;248;248;242m           file is located at path specified by the command line arguments[0m
+[38;2;248;248;242m           when started, otherwise according to the priority stated in[0m
+[38;2;248;248;242m           sway(1).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mrename[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mold_name[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mnew_name[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Rename either <old_name> or the focused workspace to the <new_name>[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mresize[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mshrink[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mgrow[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mwidth[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mamount[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Resizes the currently focused container by amount, specified in[0m
+[38;2;248;248;242m           pixels or percentage points. If the units are omitted, floating[0m
+[38;2;248;248;242m           containers are resized in px and tiled containers by ppt. amount[0m
+[38;2;248;248;242m           will default to 10 if omitted.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mresize[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Sets the height of the container to height, specified in pixels or[0m
+[38;2;248;248;242m           percentage points. If the units are omitted, floating containers[0m
+[38;2;248;248;242m           are resized in px and tiled containers by ppt. If height is 0, the[0m
+[38;2;248;248;242m           container will not be resized.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mresize[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Sets the width of the container to width, specified in pixels or[0m
+[38;2;248;248;242m           percentage points. If the units are omitted, floating containers[0m
+[38;2;248;248;242m           are resized in px and tiled containers by ppt. If width is 0, the[0m
+[38;2;248;248;242m           container will not be resized.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mresize[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mset[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpx[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mppt[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Sets the width and height of the container to width and height,[0m
+[38;2;248;248;242m           specified in pixels or percentage points. If the units are omitted,[0m
+[38;2;248;248;242m           floating containers are resized in px and tiled containers by ppt.[0m
+[38;2;248;248;242m           If width or height is 0, the container will not be resized on that[0m
+[38;2;248;248;242m           axis.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mscratchpad[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mshow[0m
+[38;2;248;248;242m           Shows a window from the scratchpad. Repeatedly using this command[0m
+[38;2;248;248;242m           will cycle through the windows in the scratchpad.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mshortcuts_inhibitor[0m[38;2;248;248;242m [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m
+[38;2;248;248;242m           Enables or disables the ability of clients to inhibit keyboard[0m
+[38;2;248;248;242m           shortcuts for a view. This is primarily useful for virtualization[0m
+[38;2;248;248;242m           and remote desktop software. It affects either the currently fo‐[0m
+[38;2;248;248;242m           cused view or a set of views selected by criteria. Subcommand dis‐[0m
+[38;2;248;248;242m           able additionally deactivates any active inhibitors for the given[0m
+[38;2;248;248;242m           view(s). Criteria are particularly useful with the for_window com‐[0m
+[38;2;248;248;242m           mand to configure a class of views differently from the per-seat[0m
+[38;2;248;248;242m           defaults established by the seat subcommand of the same name. See[0m
+[38;2;248;248;242m           sway-input(5) for more ways to affect inhibitors.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msplit[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mv[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mhorizontal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mh[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mn[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mt[0m
+[38;2;248;248;242m           Splits the current container, vertically or horizontally. When none[0m
+[38;2;248;248;242m           is specified, the effect of a previous split is undone if the cur‐[0m
+[38;2;248;248;242m           rent container is the only child of a split parent. When toggle is[0m
+[38;2;248;248;242m           specified, the current container is split opposite to the parent[0m
+[38;2;248;248;242m           container's layout.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msplith[0m
+[38;2;248;248;242m           Equivalent to split horizontal[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msplitv[0m
+[38;2;248;248;242m           Equivalent to split vertical[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msplitt[0m
+[38;2;248;248;242m           Equivalent to split toggle[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msticky[0m[38;2;248;248;242m [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m
+[38;2;248;248;242m           "Sticks" a floating window to the current output so that it shows[0m
+[38;2;248;248;242m           up on all workspaces.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mswap[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcontainer[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mwith[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mid[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcon_id[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mmark[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31marg[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Swaps the position, geometry, and fullscreen status of two contain‐[0m
+[38;2;248;248;242m           ers. The first container can be selected either by criteria or fo‐[0m
+[38;2;248;248;242m           cus. The second container can be selected by id, con_id, or mark.[0m
+[38;2;248;248;242m           id can only be used with xwayland views. If the first container has[0m
+[38;2;248;248;242m           focus, it will retain focus unless it is moved to a different[0m
+[38;2;248;248;242m           workspace or the second container becomes fullscreen on the same[0m
+[38;2;248;248;242m           workspace as the first container. In either of those cases, the[0m
+[38;2;248;248;242m           second container will gain focus.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtitle_format[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mformat[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Sets the format of window titles. The following placeholders may be[0m
+[38;2;248;248;242m           used:[0m
+
+[38;2;248;248;242m               %title - The title supplied by the window[0m
+[38;2;248;248;242m                         %app_id - The wayland app ID (applicable to wayland[0m
+[38;2;248;248;242m               windows only)[0m
+[38;2;248;248;242m                         %class - The X11 classname (applicable to xwayland[0m
+[38;2;248;248;242m               windows only)[0m
+[38;2;248;248;242m                         %instance - The X11 instance (applicable to xwayland[0m
+[38;2;248;248;242m               windows only)[0m
+[38;2;248;248;242m                         %shell - The protocol the window is using (typically[0m
+[38;2;248;248;242m               xwayland or[0m
+[38;2;248;248;242m                   xdg_shell)[0m
+
+[38;2;248;248;242m           This command is typically used with for_window criteria. For exam‐[0m
+[38;2;248;248;242m           ple:[0m
+
+[38;2;248;248;242m               for_window [title="."] title_format "<b>%title</b> (%app_id)"[0m
+
+[38;2;248;248;242m           Note that markup requires pango to be enabled via the font command.[0m
+
+[38;2;248;248;242m           The default format is "%title".[0m
+
+[38;2;248;248;242m       The following commands may be used either in the configuration file or[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mat[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mruntime[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46massign[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcriteria[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m→[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mnumber[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mworkspace[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Assigns views matching criteria (see CRITERIA for details) to[0m
+[38;2;248;248;242m           workspace. The → (U+2192) is optional and cosmetic. This command is[0m
+[38;2;248;248;242m           equivalent to:[0m
+
+[38;2;248;248;242m               for_window <criteria> move container to workspace <workspace>[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46massign[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcriteria[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m→[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mleft[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mup[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdown[0m[38;2;249;38;114m|[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Assigns views matching criteria (see CRITERIA for details) to the[0m
+[38;2;248;248;242m           specified output. The → (U+2192) is optional and cosmetic. This[0m
+[38;2;248;248;242m           command is equivalent to:[0m
+
+[38;2;248;248;242m               for_window <criteria> move container to output <output>[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mbindsym[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--whole-window[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--border[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--exclude-titlebar[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--release[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m       [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--locked[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--to-code[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--input-device[0m[38;2;248;248;242m=[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mdevice[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-warn[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-re[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       [0m[3;38;2;253;151;31mpeat[0m[38;2;248;248;242m] [Group<1-4>+]<key combo> <command>[0m
+[38;2;248;248;242m           Binds key combo to execute the sway command command when pressed.[0m
+[38;2;248;248;242m           You may use XKB key names here (wev(1) is a good tool for discover‐[0m
+[38;2;248;248;242m           ing these). With the flag --release, the command is executed when[0m
+[38;2;248;248;242m           the key combo is released. If input-device is given, the binding[0m
+[38;2;248;248;242m           will only be executed for that input device and will be executed[0m
+[38;2;248;248;242m           instead of any binding that is generic to all devices. If a group[0m
+[38;2;248;248;242m           number is given, then the binding will only be available for that[0m
+[38;2;248;248;242m           group. By default, if you overwrite a binding, swaynag will give[0m
+[38;2;248;248;242m           you a warning. To silence this, use the --no-warn flag.[0m
+
+[38;2;248;248;242m           Unless the flag --locked is set, the command will not be run when a[0m
+[38;2;248;248;242m           screen locking program is active. If there is a matching binding[0m
+[38;2;248;248;242m           with and without --locked, the one with will be preferred when[0m
+[38;2;248;248;242m           locked and the one without will be preferred when unlocked. If[0m
+[38;2;248;248;242m           there are matching bindings and one has both --input-device and[0m
+[38;2;248;248;242m           --locked and the other has neither, the former will be preferred[0m
+[38;2;248;248;242m           even when unlocked.[0m
+
+[38;2;248;248;242m           Unless the flag --inhibited is set, the command will not be run[0m
+[38;2;248;248;242m           when a keyboard shortcuts inhibitor is active for the currently fo‐[0m
+[38;2;248;248;242m           cused window. Such inhibitors are usually requested by remote desk‐[0m
+[38;2;248;248;242m           top and virtualization software to enable the user to send keyboard[0m
+[38;2;248;248;242m           shortcuts to the remote or virtual session. The --inhibited flag[0m
+[38;2;248;248;242m           allows one to define bindings which will be exempt from pass-[0m
+[38;2;248;248;242m           through to such software. The same preference logic as for --locked[0m
+[38;2;248;248;242m           applies.[0m
+
+[38;2;248;248;242m           Unless the flag --no-repeat is set, the command will be run repeat‐[0m
+[38;2;248;248;242m           edly when the key is held, according to the repeat settings speci‐[0m
+[38;2;248;248;242m           fied in the input configuration.[0m
+
+[38;2;248;248;242m           Bindings to keysyms are layout-dependent. This can be changed with[0m
+[38;2;248;248;242m           the --to-code flag. In this case, the keysyms will be translated[0m
+[38;2;248;248;242m           into the corresponding keycodes in the first configured layout.[0m
+
+[38;2;248;248;242m           Mouse bindings operate on the container under the cursor instead of[0m
+[38;2;248;248;242m           the container that has focus. Mouse buttons can either be specified[0m
+[38;2;248;248;242m           in the form button[1-9] or by using the name of the event code (ex[0m
+[38;2;248;248;242m           BTN_LEFT or BTN_RIGHT). For the former option, the buttons will be[0m
+[38;2;248;248;242m           mapped to their values in X11 (1=left, 2=middle, 3=right, 4=scroll[0m
+[38;2;248;248;242m           up, 5=scroll down, 6=scroll left, 7=scroll right, 8=back, 9=for‐[0m
+[38;2;248;248;242m           ward). For the latter option, you can find the event names using[0m
+[38;2;248;248;242m           libinput debug-events.[0m
+
+[38;2;248;248;242m           The priority for matching bindings is as follows: input device,[0m
+[38;2;248;248;242m           group, and locked state.[0m
+
+[38;2;248;248;242m           --whole-window, --border, and --exclude-titlebar are mouse-only op‐[0m
+[38;2;248;248;242m           tions which affect the region in which the mouse bindings can be[0m
+[38;2;248;248;242m           triggered.  By default, mouse bindings are only triggered when over[0m
+[38;2;248;248;242m           the title bar. With the --border option, the border of the window[0m
+[38;2;248;248;242m           will be included in this region. With the --whole-window option,[0m
+[38;2;248;248;242m           the cursor can be anywhere over a window including the title, bor‐[0m
+[38;2;248;248;242m           der, and content. --exclude-titlebar can be used in conjunction[0m
+[38;2;248;248;242m           with any other option to specify that the titlebar should be ex‐[0m
+[38;2;248;248;242m           cluded from the region of consideration.[0m
+
+[38;2;248;248;242m           If --whole-window is given, the command can be triggered when the[0m
+[38;2;248;248;242m           cursor is over an empty workspace. Using a mouse binding over a[0m
+[38;2;248;248;242m           layer surface's exclusive region is not currently possible.[0m
+
+[38;2;248;248;242m           Example:[0m
+[38;2;248;248;242m                     # Execute firefox when alt, shift, and f are pressed together[0m
+[38;2;248;248;242m                     bindsym Mod1+Shift+f exec firefox[0m
+
+[38;2;248;248;242m           bindcode [--whole-window] [--border] [--exclude-titlebar] [--re‐[0m
+[38;2;248;248;242m           lease] [--locked] [--input-device=<device>] [--no-warn][0m
+[38;2;248;248;242m           [Group<1-4>+]<code> <command> is also available for binding with[0m
+[38;2;248;248;242m           key/button codes instead of key/button names.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mbindswitch[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--locked[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-warn[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--reload[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mswitch[0m[38;2;248;248;242m>[0m[38;2;248;248;242m:[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mstate[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Binds <switch> to execute the sway command command on state[0m
+[38;2;248;248;242m           changes. Supported switches are lid (laptop lid) and tablet (tablet[0m
+[38;2;248;248;242m           mode) switches. Valid values for state are on, off and toggle.[0m
+[38;2;248;248;242m           These switches are on when the device lid is shut and when tablet[0m
+[38;2;248;248;242m           mode is active respectively. toggle is also supported to run a com‐[0m
+[38;2;248;248;242m           mand both when the switch is toggled on or off.[0m
+
+[38;2;248;248;242m           Unless the flag --locked is set, the command will not be run when a[0m
+[38;2;248;248;242m           screen locking program is active. If there is a matching binding[0m
+[38;2;248;248;242m           with and without --locked, the one with will be preferred when[0m
+[38;2;248;248;242m           locked and the one without will be preferred when unlocked.[0m
+
+[38;2;248;248;242m           If the --reload flag is given, the binding will also be executed[0m
+[38;2;248;248;242m           when the config is reloaded. toggle bindings will not be executed[0m
+[38;2;248;248;242m           on reload. The --locked flag will operate as normal so if the con‐[0m
+[38;2;248;248;242m           fig is reloaded while locked and --locked is not given, the binding[0m
+[38;2;248;248;242m           will not be executed.[0m
+
+[38;2;248;248;242m           By default, if you overwrite a binding, swaynag will give you a[0m
+[38;2;248;248;242m           warning. To silence this, use the --no-warn flag.[0m
+
+[38;2;248;248;242m           Example:[0m
+[38;2;248;248;242m                     # Show the virtual keyboard when tablet mode is entered.[0m
+[38;2;248;248;242m                     bindswitch tablet:on busctl call --user sm.puri.OSK0 /sm/puri/OSK0 sm.puri.OSK0 SetVisible b true[0m
+
+[38;2;248;248;242m                     # Log a message when the laptop lid is opened or closed.[0m
+[38;2;248;248;242m                     bindswitch lid:toggle exec echo "Lid moved"[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mbindgesture[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--exact[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--input-device[0m[38;2;248;248;242m=[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mdevice[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-warn[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mges[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       ture>[:<fingers>][:directions] <command>[0m
+[38;2;248;248;242m           Binds gesture to execute the sway command command when detected.[0m
+[38;2;248;248;242m           Currently supports the hold, pinch or swipe gesture. Optionally can[0m
+[38;2;248;248;242m           be limited to bind to a certain number of fingers or, for a pinch[0m
+[38;2;248;248;242m           or swipe gesture, to certain directions.[0m
+
+[38;2;248;248;242m       ┌──────┬─────────┬─────────────────────────────────────────────────────┐[0m
+[38;2;248;248;242m       │type  │ fingers │ direction                                           │[0m
+[38;2;248;248;242m       ├──────┼─────────┼─────────────────────────────────────────────────────┤[0m
+[38;2;248;248;242m       │hold  │  1 - 5  │ none                                                │[0m
+[38;2;248;248;242m       ├──────┼─────────┼─────────────────────────────────────────────────────┤[0m
+[38;2;248;248;242m       │swipe │  3 - 5  │ up, down, left, right                               │[0m
+[38;2;248;248;242m       ├──────┼─────────┼─────────────────────────────────────────────────────┤[0m
+[38;2;248;248;242m       │pinch │  2 - 5  │ all above + inward, outward, clockwise, counter‐    │[0m
+[38;2;248;248;242m       │      │         │ clockwise                                           │[0m
+[38;2;248;248;242m       └──────┴─────────┴─────────────────────────────────────────────────────┘[0m
+[38;2;248;248;242m           The fingers can be limited to any sensible number or left empty to[0m
+[38;2;248;248;242m           accept any finger counts. Valid directions are up, down, left and[0m
+[38;2;248;248;242m           right, as well as inward, outward, clockwise, counterclockwise for[0m
+[38;2;248;248;242m           the pinch gesture. Multiple directions can be combined by a plus.[0m
+
+[38;2;248;248;242m           If a input-device is given, the binding will only be executed for[0m
+[38;2;248;248;242m           that input device and will be executed instead of any binding that[0m
+[38;2;248;248;242m           is generic to all devices. By default, if you overwrite a binding,[0m
+[38;2;248;248;242m           swaynag will give you a warning. To silence this, use the --no-warn[0m
+[38;2;248;248;242m           flag.[0m
+
+[38;2;248;248;242m           The --exact flag can be used to ensure a binding only matches when[0m
+[38;2;248;248;242m           exactly all specified directions are matched and nothing more. If[0m
+[38;2;248;248;242m           there is matching binding with --exact, it will be preferred.[0m
+
+[38;2;248;248;242m           The priority for matching bindings is as follows: input device,[0m
+[38;2;248;248;242m           then exact matches followed by matches with the highest number of[0m
+[38;2;248;248;242m           matching directions.[0m
+
+[38;2;248;248;242m           Gestures executed while the pointer is above a bar are not handled[0m
+[38;2;248;248;242m           by sway. See the respective documentation, e.g. bindgesture in[0m
+[38;2;248;248;242m           sway-bar(5).[0m
+
+[38;2;248;248;242m           Example:[0m
+[38;2;248;248;242m                     # Allow switching between workspaces with left and right swipes[0m
+[38;2;248;248;242m                     bindgesture swipe:right workspace prev[0m
+[38;2;248;248;242m                     bindgesture swipe:left workspace next[0m
+
+[38;2;248;248;242m                     # Allow container movements by pinching them[0m
+[38;2;248;248;242m                     bindgesture pinch:inward+up move up[0m
+[38;2;248;248;242m                     bindgesture pinch:inward+down move down[0m
+[38;2;248;248;242m                     bindgesture pinch:inward+left move left[0m
+[38;2;248;248;242m                     bindgesture pinch:inward+right move right[0m
+
+[38;2;248;248;242m       client.background <color>[0m
+[38;2;248;248;242m           This command is ignored and is only present for i3 compatibility.[0m
+
+[38;2;248;248;242m       client.<class> <border> <background> <text> [<indicator> [<child_bor‐[0m
+[38;2;248;248;242m       der>]][0m
+[38;2;248;248;242m           Configures the color of window borders and title bars. The first[0m
+[38;2;248;248;242m           three colors are required. When omitted indicator will use a sane[0m
+[38;2;248;248;242m           default and child_border will use the color set for background.[0m
+[38;2;248;248;242m           Colors may be specified in hex, either as #RRGGBB or #RRGGBBAA.[0m
+
+[38;2;248;248;242m           The available classes are:[0m
+
+[38;2;248;248;242m           client.focused[0m
+[38;2;248;248;242m               The window that has focus.[0m
+
+[38;2;248;248;242m           client.focused_inactive[0m
+[38;2;248;248;242m               The most recently focused view within a container which is not[0m
+[38;2;248;248;242m               focused.[0m
+
+[38;2;248;248;242m           client.focused_tab_title[0m
+[38;2;248;248;242m               A view that has focused descendant container. Tab or stack con‐[0m
+[38;2;248;248;242m               tainer title that is the parent of the focused container but is[0m
+[38;2;248;248;242m               not directly focused. Defaults to focused_inactive if not spec‐[0m
+[38;2;248;248;242m               ified and does not use the indicator and child_border colors.[0m
+
+[38;2;248;248;242m           client.placeholder[0m
+[38;2;248;248;242m               Ignored (present for i3 compatibility).[0m
+
+[38;2;248;248;242m           client.unfocused[0m
+[38;2;248;248;242m               A view that does not have focus.[0m
+
+[38;2;248;248;242m           client.urgent[0m
+[38;2;248;248;242m               A view with an urgency hint. Note: Native Wayland windows do[0m
+[38;2;248;248;242m               not support urgency. Urgency only works for Xwayland windows.[0m
+
+[38;2;248;248;242m           The meaning of each color is:[0m
+
+[38;2;248;248;242m           border[0m
+[38;2;248;248;242m               The border around the title bar.[0m
+
+[38;2;248;248;242m           background[0m
+[38;2;248;248;242m               The background of the title bar.[0m
+
+[38;2;248;248;242m           text[0m
+[38;2;248;248;242m               The text color of the title bar.[0m
+
+[38;2;248;248;242m           indicator[0m
+[38;2;248;248;242m               The color used to indicate where a new view will open. In a[0m
+[38;2;248;248;242m               tiled container, this would paint the right border of the cur‐[0m
+[38;2;248;248;242m               rent view if a new view would be opened to the right.[0m
+
+[38;2;248;248;242m           child_border[0m
+[38;2;248;248;242m               The border around the view itself.[0m
+
+[38;2;248;248;242m       The default colors are:[0m
+
+[38;2;248;248;242m       ┌──────────────┬─────────┬────────────┬─────────┬───────────┬────────────┐[0m
+[38;2;248;248;242m       │    class     │ border  │ background │ text    │ indicator │ child_bor‐ │[0m
+[38;2;248;248;242m       │              │         │            │         │           │ der        │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │background    │ n/a     │ #ffffff    │ n/a     │ n/a       │ n/a        │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │focused       │ #4c7899 │ #285577    │ #ffffff │ #2e9ef4   │ #285577    │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │focused_in‐   │ #333333 │ #5f676a    │ #ffffff │ #484e50   │ #5f676a    │[0m
+[38;2;248;248;242m       │active        │         │            │         │           │            │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │fo‐           │ #333333 │ #5f676a    │ #ffffff │ n/a       │ n/a        │[0m
+[38;2;248;248;242m       │cused_tab_ti‐ │         │            │         │           │            │[0m
+[38;2;248;248;242m       │tle           │         │            │         │           │            │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │unfocused     │ #333333 │ #222222    │ #888888 │ #292d2e   │ #222222    │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │urgent        │ #2f343a │ #900000    │ #ffffff │ #900000   │ #900000    │[0m
+[38;2;248;248;242m       ├──────────────┼─────────┼────────────┼─────────┼───────────┼────────────┤[0m
+[38;2;248;248;242m       │placeholder   │ #000000 │ #0c0c0c    │ #ffffff │ #000000   │ #0c0c0c    │[0m
+[38;2;248;248;242m       └──────────────┴─────────┴────────────┴─────────┴───────────┴────────────┘[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mdefault_border[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnormal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mpixel[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mn[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Set default border style for new tiled windows.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mdefault_floating_border[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnormal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mpixel[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mn[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Set default border style for new floating windows. This only ap‐[0m
+[38;2;248;248;242m           plies to windows that are spawned in floating mode, not windows[0m
+[38;2;248;248;242m           that become floating afterwards.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mexec[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mshell[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Executes shell command with sh.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mexec_always[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mshell[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Like exec, but the shell command will be executed again after[0m
+[38;2;248;248;242m           reload.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfloating_maximum_size[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mx[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Specifies the maximum size of floating windows. -1 x -1 removes the[0m
+[38;2;248;248;242m           upper limit. The default is 0 x 0, which will use the width and[0m
+[38;2;248;248;242m           height of the entire output layout as the maximums[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfloating_minimum_size[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mwidth[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mx[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mheight[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Specifies the minimum size of floating windows. The default is 75 x[0m
+[38;2;248;248;242m           50.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfloating_modifier[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmodifier[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mnormal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31minverse[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           When the modifier key is held down, you may hold left click to move[0m
+[38;2;248;248;242m           windows, and right click to resize them. Setting modifier to none[0m
+[38;2;248;248;242m           disables this feature. If inverse is specified, left click is used[0m
+[38;2;248;248;242m           for resizing and right click for moving.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus_follows_mouse[0m[38;2;248;248;242m [0m[3;38;2;253;151;31myes[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mno[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31malways[0m
+[38;2;248;248;242m           If set to yes, moving your mouse over a window will focus that win‐[0m
+[38;2;248;248;242m           dow. If set to always, the window under the cursor will always be[0m
+[38;2;248;248;242m           focused, even after switching between workspaces.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus_on_window_activation[0m[38;2;248;248;242m [0m[3;38;2;253;151;31msmart[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31murgent[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mfocus[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m
+[38;2;248;248;242m           This option determines what to do when a client requests window ac‐[0m
+[38;2;248;248;242m           tivation. If set to urgent, the urgent state will be set for that[0m
+[38;2;248;248;242m           window. If set to focus, the window will become focused. If set to[0m
+[38;2;248;248;242m           smart, the window will become focused only if it is already visi‐[0m
+[38;2;248;248;242m           ble, otherwise the urgent state will be set. Default is urgent.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfocus_wrapping[0m[38;2;248;248;242m [0m[3;38;2;253;151;31myes[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mno[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mforce[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mworkspace[0m
+[38;2;248;248;242m           This option determines what to do when attempting to focus over the[0m
+[38;2;248;248;242m           edge of a container. If set to no, the focused container will re‐[0m
+[38;2;248;248;242m           tain focus, if there are no other containers in the direction. If[0m
+[38;2;248;248;242m           set to yes, focus will be wrapped to the opposite edge of the con‐[0m
+[38;2;248;248;242m           tainer, if there are no other containers in the direction. If set[0m
+[38;2;248;248;242m           to force, focus will be wrapped to the opposite edge of the con‐[0m
+[38;2;248;248;242m           tainer, even if there are other containers in the direction. If set[0m
+[38;2;248;248;242m           to workspace, focus will wrap like in the yes case and additionally[0m
+[38;2;248;248;242m           wrap when moving outside of workspaces boundaries. Default is yes.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfont[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mpango[0m[38;2;248;248;242m:[0m[38;2;248;248;242m][0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mfont[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Sets font to use for the title bars. To enable support for pango[0m
+[38;2;248;248;242m           markup, preface the font name with pango:. For example, monospace[0m
+[38;2;248;248;242m           10 is the default font. To enable support for pango markup,[0m
+[38;2;248;248;242m           pango:monospace 10 should be used instead. Regardless of whether[0m
+[38;2;248;248;242m           pango markup is enabled, font should be specified as a pango font[0m
+[38;2;248;248;242m           description. For more information on pango font descriptions, see[0m
+[38;2;248;248;242m           https://docs.gtk.org/Pango/type_func.FontDescrip‐[0m
+[38;2;248;248;242m           tion.from_string.html#description[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mforce_display_urgency_hint[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mtimeout[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mms[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           If an application on another workspace sets an urgency hint,[0m
+[38;2;248;248;242m           switching to this workspace may lead to immediate focus of the ap‐[0m
+[38;2;248;248;242m           plication, which also means the window decoration color would be[0m
+[38;2;248;248;242m           immediately reset to client.focused. This may make it unnecessarily[0m
+[38;2;248;248;242m           hard to tell which window originally raised the event. This option[0m
+[38;2;248;248;242m           allows one to set a timeout in ms to delay the urgency hint reset.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtitlebar_border_thickness[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mthickness[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Thickness of the titlebar border in pixels[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtitlebar_padding[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mhorizontal[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mvertical[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           Padding of the text in the titlebar. horizontal value affects hori‐[0m
+[38;2;248;248;242m           zontal padding of the text while vertical value affects vertical[0m
+[38;2;248;248;242m           padding (space above and below text). Padding includes titlebar[0m
+[38;2;248;248;242m           borders so their value should be greater than titlebar_bor‐[0m
+[38;2;248;248;242m           der_thickness. If vertical value is not specified it is set to the[0m
+[38;2;248;248;242m           horizontal value.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mfor_window[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcriteria[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcommand[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Whenever a window that matches criteria appears, run list of com‐[0m
+[38;2;248;248;242m           mands. See CRITERIA for more details.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mgaps[0m[38;2;248;248;242m [0m[3;38;2;253;151;31minner[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mouter[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mhorizontal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtop[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mbottom[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mamount[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Sets default amount pixels of inner or outer gap, where the inner[0m
+[38;2;248;248;242m           affects spacing around each view and outer affects the spacing[0m
+[38;2;248;248;242m           around each workspace. Outer gaps are in addition to inner gaps. To[0m
+[38;2;248;248;242m           reduce or remove outer gaps, outer gaps can be set to a negative[0m
+[38;2;248;248;242m           value. outer gaps can also be specified per side with top, right,[0m
+[38;2;248;248;242m           bottom, and left or per direction with horizontal and vertical.[0m
+
+[38;2;248;248;242m           This affects new workspaces only, and is used when the workspace[0m
+[38;2;248;248;242m           doesn't have its own gaps settings (see: workspace <ws> gaps ...).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mhide_edge_borders[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--i3[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[3;38;2;253;151;31mnone[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mhorizon[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       [0m[3;38;2;253;151;31mtal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mboth[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msmart[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31msmart_no_gaps[0m
+[38;2;248;248;242m           Hides window borders adjacent to the screen edges. Default is none.[0m
+[38;2;248;248;242m           The --i3 option enables i3-compatible behavior to hide the title[0m
+[38;2;248;248;242m           bar on tabbed and stacked containers with one child. The[0m
+[38;2;248;248;242m           smart|smart_no_gaps options are equivalent to setting smart_borders[0m
+[38;2;248;248;242m           smart|no_gaps and hide_edge_borders none.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46minput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31minput_device[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31minput-subcommands[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           For details on input subcommands, see sway-input(5).[0m
+
+[38;2;248;248;242m           * may be used in lieu of a specific device name to configure all[0m
+[38;2;248;248;242m           input devices. A list of input device names may be obtained via[0m
+[38;2;248;248;242m           swaymsg -t get_inputs.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mseat[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mseat[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mseat-subcommands[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           For details on seat subcommands, see sway-input(5).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mkill[0m
+[38;2;248;248;242m           Kills (closes) the currently focused container and all of its chil‐[0m
+[38;2;248;248;242m           dren.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msmart_borders[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mon[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mno_gaps[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31moff[0m
+[38;2;248;248;242m           If smart_borders are on, borders will only be enabled if the[0m
+[38;2;248;248;242m           workspace has more than one visible child. If smart_borders is set[0m
+[38;2;248;248;242m           to no_gaps, borders will only be enabled if the workspace has more[0m
+[38;2;248;248;242m           than one visible child and gaps equal to zero.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46msmart_gaps[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mon[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31moff[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31minverse_outer[0m
+[38;2;248;248;242m           If smart_gaps are on gaps will only be enabled if a workspace has[0m
+[38;2;248;248;242m           more than one child. If smart_gaps are inverse_outer outer gaps[0m
+[38;2;248;248;242m           will only be enabled if a workspace has exactly one child.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmark[0m[38;2;248;248;242m [0m[3;38;2;253;151;31m--add[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31m--replace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--toggle[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31midentifier[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Marks are arbitrary labels that can be used to identify certain[0m
+[38;2;248;248;242m           windows and then jump to them at a later time. Each identifier can[0m
+[38;2;248;248;242m           only be set on a single window at a time since they act as a unique[0m
+[38;2;248;248;242m           identifier. By default, mark sets identifier as the only mark on a[0m
+[38;2;248;248;242m           window. --add will instead add identifier to the list of current[0m
+[38;2;248;248;242m           marks for that window. If --toggle is specified mark will remove[0m
+[38;2;248;248;242m           identifier if it is already marked.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmode[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmode[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Switches to the specified mode. The default mode is default.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmode[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--pango_markup[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmode[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mmode-subcommands[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           The only valid mode-subcommands... are bindsym, bindcode,[0m
+[38;2;248;248;242m           bindswitch, and set. If --pango_markup is given, then mode will be[0m
+[38;2;248;248;242m           interpreted as pango markup.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mmouse_warping[0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcontainer[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnone[0m
+[38;2;248;248;242m           If output is specified, the mouse will be moved to new outputs as[0m
+[38;2;248;248;242m           you move focus between them. If container is specified, the mouse[0m
+[38;2;248;248;242m           will be moved to the middle of the container on switch. Default is[0m
+[38;2;248;248;242m           output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mno_focus[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mcriteria[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Prevents windows matching <criteria> from being focused automati‐[0m
+[38;2;248;248;242m           cally when they're created. This has no effect on the first window[0m
+[38;2;248;248;242m           in a workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46moutput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31moutput_name[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31moutput-subcommands[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           For details on output subcommands, see sway-output(5).[0m
+
+[38;2;248;248;242m           * may be used in lieu of a specific output name to configure all[0m
+[38;2;248;248;242m           outputs. A list of output names may be obtained via swaymsg -t[0m
+[38;2;248;248;242m           get_outputs.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mpopup_during_fullscreen[0m[38;2;248;248;242m [0m[3;38;2;253;151;31msmart[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mignore[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleave_fullscreen[0m
+[38;2;248;248;242m           Determines what to do when a fullscreen view opens a dialog. If[0m
+[38;2;248;248;242m           smart (the default), the dialog will be displayed. If ignore, the[0m
+[38;2;248;248;242m           dialog will not be rendered. If leave_fullscreen, the view will[0m
+[38;2;248;248;242m           exit fullscreen mode and the dialog will be rendered.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mset[0m[38;2;248;248;242m $[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mvalue[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Sets variable $name to value. You can use the new variable in the[0m
+[38;2;248;248;242m           arguments of future commands. When the variable is used, it can be[0m
+[38;2;248;248;242m           escaped with an additional $ (ie $$name) to have the replacement[0m
+[38;2;248;248;242m           happen at run time instead of when reading the config. However, it[0m
+[38;2;248;248;242m           does not always make sense for the variable to be replaced at run[0m
+[38;2;248;248;242m           time since some arguments do need to be known at config time.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mshow_marks[0m[38;2;248;248;242m [0m[3;38;2;253;151;31myes[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mno[0m
+[38;2;248;248;242m           If show_marks is yes, marks will be displayed in the window bor‐[0m
+[38;2;248;248;242m           ders. Any mark that starts with an underscore will not be drawn[0m
+[38;2;248;248;242m           even if show_marks is yes. The default is yes.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mopacity[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mset[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mplus[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mminus[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mvalue[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Adjusts the opacity of the window between 0 (completely transpar‐[0m
+[38;2;248;248;242m           ent) and 1 (completely opaque). If the operation is omitted, set[0m
+[38;2;248;248;242m           will be used.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtiling_drag[0m[38;2;248;248;242m  [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtoggle[0m
+[38;2;248;248;242m           Sets whether or not tiling containers can be dragged with the[0m
+[38;2;248;248;242m           mouse. If enabled (default), the floating_mod can be used to drag[0m
+[38;2;248;248;242m           tiling, as well as floating, containers. Using the left mouse but‐[0m
+[38;2;248;248;242m           ton on title bars without the floating_mod will also allow the con‐[0m
+[38;2;248;248;242m           tainer to be dragged. toggle should not be used in the config file.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtiling_drag_threshold[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mthreshold[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Sets the threshold that must be exceeded for a container to be[0m
+[38;2;248;248;242m           dragged by its titlebar. This has no effect if floating_mod is used[0m
+[38;2;248;248;242m           or if tiling_drag is set to disable.  Once the threshold has been[0m
+[38;2;248;248;242m           exceeded once, the drag starts and the cursor can come back inside[0m
+[38;2;248;248;242m           the threshold without stopping the drag.  threshold is multiplied[0m
+[38;2;248;248;242m           by the scale of the output that the cursor on.  The default is 9.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mtitle_align[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mleft[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mcenter[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m
+[38;2;248;248;242m           Sets the title alignment. If right is selected and show_marks is[0m
+[38;2;248;248;242m           set to yes, the marks will be shown on the left side instead of the[0m
+[38;2;248;248;242m           right side.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46munbindswitch[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mswitch[0m[38;2;248;248;242m>[0m[38;2;248;248;242m:[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mstate[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Removes a binding for when <switch> changes to <state>.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46munbindgesture[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--exact[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--input-device[0m[38;2;248;248;242m=[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mdevice[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mgesture[0m[38;2;248;248;242m>[0m[38;2;248;248;242m[[0m[38;2;248;248;242m:[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mfin[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       gers>][:directions][0m
+[38;2;248;248;242m           Removes a binding for the specified gesture, fingers and directions[0m
+[38;2;248;248;242m           combination.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46munbindsym[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--whole-window[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--border[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--exclude-titlebar[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--release[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m       [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--locked[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--to-code[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--input-device[0m[38;2;248;248;242m=[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mdevice[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mkey[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcombo[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Removes the binding for key combo that was previously bound with[0m
+[38;2;248;248;242m           the given flags.  If input-device is given, only the binding for[0m
+[38;2;248;248;242m           that input device will be unbound.[0m
+
+[38;2;248;248;242m           unbindcode [--whole-window] [--border] [--exclude-titlebar] [--re‐[0m
+[38;2;248;248;242m           lease] [--locked] [--input-device=<device>] <code> is also avail‐[0m
+[38;2;248;248;242m           able for unbinding with key/button codes instead of key/button[0m
+[38;2;248;248;242m           names.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46munmark[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[38;2;248;248;242m<[0m[3;38;2;253;151;31midentifier[0m[38;2;248;248;242m>[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m           unmark will remove identifier from the list of current marks on a[0m
+[38;2;248;248;242m           window. If identifier is omitted, all marks are removed.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46murgent[0m[38;2;248;248;242m [0m[3;38;2;253;151;31menable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdisable[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mallow[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mdeny[0m
+[38;2;248;248;242m           Using enable or disable manually sets or unsets the window's urgent[0m
+[38;2;248;248;242m           state. Using allow or deny controls the window's ability to set it‐[0m
+[38;2;248;248;242m           self as urgent. By default, windows are allowed to set their own[0m
+[38;2;248;248;242m           urgency.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31m--no-auto-back-and-forth[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mnumber[0m[38;2;248;248;242m][0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mnum[0m[38;2;248;248;242m:[0m[38;2;248;248;242m][0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Switches to the specified workspace. The num: portion of the name[0m
+[38;2;248;248;242m           is optional and will be used for ordering. If num: is not given and[0m
+[38;2;248;248;242m           name is a number, then it will be also be used for ordering.[0m
+
+[38;2;248;248;242m           If the no-auto-back-and-forth option is given, then this command[0m
+[38;2;248;248;242m           will not perform a back-and-forth operation when the workspace is[0m
+[38;2;248;248;242m           already focused and workspace_auto_back_and_forth is enabled.[0m
+
+[38;2;248;248;242m           If the number keyword is specified and a workspace with the number[0m
+[38;2;248;248;242m           already exists, then the workspace with the number will be used. If[0m
+[38;2;248;248;242m           a workspace with the number does not exist, a new workspace will be[0m
+[38;2;248;248;242m           created with the name name.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprev[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnext[0m
+[38;2;248;248;242m           Switches to the next workspace on the current output or on the next[0m
+[38;2;248;248;242m           output if currently on the last workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprev_on_output[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mnext_on_output[0m
+[38;2;248;248;242m           Switches to the next workspace on the current output.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mback_and_forth[0m
+[38;2;248;248;242m           Switches to the previously focused workspace.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mgaps[0m[38;2;248;248;242m [0m[3;38;2;253;151;31minner[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mouter[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mhorizontal[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mvertical[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mtop[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mright[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mbot[0m[38;2;248;248;242m‐[0m
+[38;2;248;248;242m       [0m[3;38;2;253;151;31mtom[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mleft[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mamount[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Specifies that workspace name should have the given gaps settings[0m
+[38;2;248;248;242m           when it is created.[0m
+
+[38;2;248;248;242m           This command does not affect existing workspaces. To alter the gaps[0m
+[38;2;248;248;242m           of an existing workspace, use the gaps command.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31mname[0m[38;2;248;248;242m>[0m[38;2;248;248;242m [0m[3;38;2;253;151;31moutput[0m[38;2;248;248;242m [0m[38;2;248;248;242m<[0m[3;38;2;253;151;31moutputs[0m[38;2;248;248;242m...[0m[38;2;248;248;242m>[0m
+[38;2;248;248;242m           Specifies that workspace name should be shown on the specified out‐[0m
+[38;2;248;248;242m           puts. Multiple outputs can be listed and the first available will[0m
+[38;2;248;248;242m           be used. If the workspace gets placed on an output further down the[0m
+[38;2;248;248;242m           list and an output that is higher on the list becomes available,[0m
+[38;2;248;248;242m           the workspace will be moved to the higher priority output.[0m
+
+[38;2;248;248;242m           This command does not affect existing workspaces. To move an exist‐[0m
+[38;2;248;248;242m           ing workspace, use the move command in combination with the[0m
+[38;2;248;248;242m           workspace criteria (non-empty workspaces only) or workspace command[0m
+[38;2;248;248;242m           (to switch to the workspace before moving).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46mworkspace_auto_back_and_forth[0m[38;2;248;248;242m [0m[3;38;2;253;151;31myes[0m[38;2;249;38;114m|[0m[3;38;2;253;151;31mno[0m
+[38;2;248;248;242m           When yes, repeating a workspace switch command will switch back to[0m
+[38;2;248;248;242m           the prior workspace. For example, if you are currently on workspace[0m
+[38;2;248;248;242m           1, switch to workspace 2, then invoke the workspace 2 command[0m
+[38;2;248;248;242m           again, you will be returned to workspace 1. Default is no.[0m
+
+[38;2;253;151;31mCRITERIA[0m
+[38;2;248;248;242m       A criteria is a string in the form of, for example:[0m
+
+[38;2;248;248;242m           [class="[Rr]egex.*" title="some title"][0m
+
+[38;2;248;248;242m       The string contains one or more (space separated) attribute/value[0m
+[38;2;248;248;242m       pairs. They are used by some commands to choose which views to execute[0m
+[38;2;248;248;242m       actions on. All attributes must match for the criteria to match. Crite‐[0m
+[38;2;248;248;242m       ria is retained across commands separated by a ,, but will be reset[0m
+[38;2;248;248;242m       (and allow for new criteria, if desired) for commands separated by a ;.[0m
+
+[38;2;248;248;242m       Criteria may be used with either the for_window or assign commands to[0m
+[38;2;248;248;242m       specify operations to perform on new views. A criteria may also be used[0m
+[38;2;248;248;242m       to perform specific commands (ones that normally act upon one window)[0m
+[38;2;248;248;242m       on all views that match that criteria. For example:[0m
+
+[38;2;248;248;242m       Focus on a window with the mark "IRC":[0m
+
+[38;2;248;248;242m           [con_mark="IRC"] focus[0m
+
+[38;2;248;248;242m       Kill all windows with the title "Emacs":[0m
+
+[38;2;248;248;242m           [class="Emacs"] kill[0m
+
+[38;2;248;248;242m       You may like to use swaymsg [0m[38;2;166;226;46m-t[0m[38;2;248;248;242m get_tree for finding the values of these[0m
+[38;2;248;248;242m       properties in practice for your applications.[0m
+
+[38;2;248;248;242m       The following attributes may be matched with:[0m
+
+[38;2;248;248;242m       app_id[0m
+[38;2;248;248;242m           Compare value against the app id. Can be a regular expression. If[0m
+[38;2;248;248;242m           value is __focused__, then the app id must be the same as that of[0m
+[38;2;248;248;242m           the currently focused window. app_id are specific to Wayland appli‐[0m
+[38;2;248;248;242m           cations.[0m
+
+[38;2;248;248;242m       class[0m
+[38;2;248;248;242m           Compare value against the window class. Can be a regular expres‐[0m
+[38;2;248;248;242m           sion. If value is __focused__, then the window class must be the[0m
+[38;2;248;248;242m           same as that of the currently focused window. class are specific to[0m
+[38;2;248;248;242m           X11 applications and require XWayland.[0m
+
+[38;2;248;248;242m       con_id[0m
+[38;2;248;248;242m           Compare against the internal container ID, which you can find via[0m
+[38;2;248;248;242m           IPC. If value is __focused__, then the id must be the same as that[0m
+[38;2;248;248;242m           of the currently focused window.[0m
+
+[38;2;248;248;242m       con_mark[0m
+[38;2;248;248;242m           Compare against the window marks. Can be a regular expression.[0m
+
+[38;2;248;248;242m       floating[0m
+[38;2;248;248;242m           Matches floating windows.[0m
+
+[38;2;248;248;242m       id[0m
+[38;2;248;248;242m           Compare value against the X11 window ID. Must be numeric. id is[0m
+[38;2;248;248;242m           specific to X11 applications and requires XWayland.[0m
+
+[38;2;248;248;242m       instance[0m
+[38;2;248;248;242m           Compare value against the window instance. Can be a regular expres‐[0m
+[38;2;248;248;242m           sion. If value is __focused__, then the window instance must be the[0m
+[38;2;248;248;242m           same as that of the currently focused window. instance is specific[0m
+[38;2;248;248;242m           to X11 applications and requires XWayland.[0m
+
+[38;2;248;248;242m       pid[0m
+[38;2;248;248;242m           Compare value against the window's process ID. Must be numeric.[0m
+
+[38;2;248;248;242m       shell[0m
+[38;2;248;248;242m           Compare value against the window shell, such as "xdg_shell" or[0m
+[38;2;248;248;242m           "xwayland". Can be a regular expression. If value is __focused__,[0m
+[38;2;248;248;242m           then the shell must be the same as that of the currently focused[0m
+[38;2;248;248;242m           window.[0m
+
+[38;2;248;248;242m       tiling[0m
+[38;2;248;248;242m           Matches tiling windows.[0m
+
+[38;2;248;248;242m       title[0m
+[38;2;248;248;242m           Compare against the window title. Can be a regular expression. If[0m
+[38;2;248;248;242m           value is __focused__, then the window title must be the same as[0m
+[38;2;248;248;242m           that of the currently focused window.[0m
+
+[38;2;248;248;242m       urgent[0m
+[38;2;248;248;242m           Compares the urgent state of the window. Can be first, last, lat‐[0m
+[38;2;248;248;242m           est, newest, oldest or recent.[0m
+
+[38;2;248;248;242m       window_role[0m
+[38;2;248;248;242m           Compare against the window role (WM_WINDOW_ROLE). Can be a regular[0m
+[38;2;248;248;242m           expression. If value is __focused__, then the window role must be[0m
+[38;2;248;248;242m           the same as that of the currently focused window. window_role is[0m
+[38;2;248;248;242m           specific to X11 applications and requires XWayland.[0m
+
+[38;2;248;248;242m       window_type[0m
+[38;2;248;248;242m           Compare against the window type (_NET_WM_WINDOW_TYPE). Possible[0m
+[38;2;248;248;242m           values are normal, dialog, utility, toolbar, splash, menu, drop‐[0m
+[38;2;248;248;242m           down_menu, popup_menu, tooltip and notification. window_type is[0m
+[38;2;248;248;242m           specific to X11 applications and requires XWayland.[0m
+
+[38;2;248;248;242m       workspace[0m
+[38;2;248;248;242m           Compare against the workspace name for this view. Can be a regular[0m
+[38;2;248;248;242m           expression. If the value is __focused__, then all the views on the[0m
+[38;2;248;248;242m           currently focused workspace matches.[0m
+
+[38;2;253;151;31mSEE ALSO[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46msway[0m[38;2;249;38;114m([0m[38;2;190;132;255m1[0m[38;2;249;38;114m)[0m[38;2;248;248;242m [0m[38;2;166;226;46msway-input[0m[38;2;249;38;114m([0m[38;2;190;132;255m5[0m[38;2;249;38;114m)[0m[38;2;248;248;242m [0m[38;2;166;226;46msway-output[0m[38;2;249;38;114m([0m[38;2;190;132;255m5[0m[38;2;249;38;114m)[0m[38;2;248;248;242m [0m[38;2;166;226;46msway-bar[0m[38;2;249;38;114m([0m[38;2;190;132;255m5[0m[38;2;249;38;114m)[0m[38;2;248;248;242m [0m[38;2;166;226;46msway-ipc[0m[38;2;249;38;114m([0m[38;2;190;132;255m7[0m[38;2;249;38;114m)[0m
+
+[38;2;248;248;242m                                  2022-12-25                           [0m[38;2;166;226;46msway[0m[38;2;249;38;114m([0m[38;2;190;132;255m5[0m[38;2;249;38;114m)[0m

@@ -1,0 +1,5 @@
+[mappings]
+"MappingTarget::MapExtensionToUnknown" = [
+    # common extension used for all kinds of formats
+    "*.conf",
+]

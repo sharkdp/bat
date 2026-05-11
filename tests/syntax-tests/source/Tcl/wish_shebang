@@ -1,0 +1,5 @@
+#!/usr/bin/wish
+# Tk script detected via wish shebang
+package require Tk
+button .b -text "Click" -command {puts "clicked"}
+pack .b

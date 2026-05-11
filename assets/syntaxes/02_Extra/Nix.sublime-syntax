@@ -1,0 +1,609 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Nix
+file_extensions:
+  - nix
+scope: source.nix
+contexts:
+  main:
+    - include: expression
+  comment:
+    - match: '/\*([^*]|\*[^\/])*'
+      push:
+        - meta_scope: comment.block.nix
+        - match: \*\/
+          pop: true
+        - include: comment-remark
+    - match: '\#'
+      push:
+        - meta_scope: comment.line.number-sign.nix
+        - match: $
+          pop: true
+        - include: comment-remark
+  attribute-bind:
+    - include: attribute-name
+    - include: attribute-bind-from-equals
+  attribute-bind-from-equals:
+    - match: \=
+      captures:
+        0: keyword.operator.bind.nix
+      push:
+        - match: \;
+          captures:
+            0: punctuation.terminator.bind.nix
+          pop: true
+        - include: expression
+  attribute-inherit:
+    - match: \binherit\b
+      captures:
+        0: keyword.other.inherit.nix
+      push:
+        - match: \;
+          captures:
+            0: punctuation.terminator.inherit.nix
+          pop: true
+        - match: \(
+          captures:
+            0: punctuation.section.function.arguments.nix
+          push:
+            - match: (?=\;)
+              pop: true
+            - match: \)
+              captures:
+                0: punctuation.section.function.arguments.nix
+              push:
+                - match: (?=\;)
+                  pop: true
+                - include: bad-reserved
+                - include: attribute-name-single
+                - include: others
+            - include: expression
+        - match: '(?=[a-zA-Z\_])'
+          push:
+            - match: (?=\;)
+              pop: true
+            - include: bad-reserved
+            - include: attribute-name-single
+            - include: others
+        - include: others
+  attribute-name:
+    - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+      scope: entity.other.attribute-name.multipart.nix
+    - match: \.
+    - include: string-quoted
+    - include: interpolation
+  attribute-name-single:
+    - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+      scope: entity.other.attribute-name.single.nix
+  attrset-contents:
+    - include: attribute-inherit
+    - include: bad-reserved
+    - include: attribute-bind
+    - include: others
+  attrset-definition:
+    - match: '(?=\{)'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - match: '(\{)'
+          captures:
+            0: punctuation.definition.attrset.nix
+          push:
+            - match: '(\})'
+              captures:
+                0: punctuation.definition.attrset.nix
+              pop: true
+            - include: attrset-contents
+        - match: '(?<=\})'
+          push:
+            - match: '(?=([\])};,]|\b(else|then)\b))'
+              pop: true
+            - include: expression-cont
+  attrset-definition-brace-opened:
+    - match: '(?<=\})'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+    - match: (?=.?)
+      push:
+        - match: '\}'
+          captures:
+            0: punctuation.definition.attrset.nix
+          pop: true
+        - include: attrset-contents
+  attrset-for-sure:
+    - match: (?=\brec\b)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - match: \brec\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: '(?=\{)'
+              pop: true
+            - include: others
+        - include: attrset-definition
+        - include: others
+    - match: '(?=\{\s*(\}|[^,?]*(=|;)))'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: attrset-definition
+        - include: others
+  attrset-or-function:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.attrset-or-function.nix
+      push:
+        - match: '(?=([\])};]|\b(else|then)\b))'
+          pop: true
+        - match: '(?=(\s*\}|\"|\binherit\b|\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*(\s*\.|\s*=[^=])|\$\{[a-zA-z0-9\_\''\-]+\}(\s*\.|\s*=[^=])))'
+          push:
+            - match: '(?=([\])};,]|\b(else|then)\b))'
+              pop: true
+            - include: attrset-definition-brace-opened
+        - match: '(?=(\.\.\.|\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*\s*[,?]))'
+          push:
+            - match: '(?=([\])};,]|\b(else|then)\b))'
+              pop: true
+            - include: function-definition-brace-opened
+        - include: bad-reserved
+        - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+          captures:
+            0: variable.parameter.function.maybe.nix
+          push:
+            - match: '(?=([\])};]|\b(else|then)\b))'
+              pop: true
+            - match: (?=\.)
+              push:
+                - match: '(?=([\])};,]|\b(else|then)\b))'
+                  pop: true
+                - include: attrset-definition-brace-opened
+            - match: \s*(\,)
+              captures:
+                1: keyword.operator.nix
+              push:
+                - match: '(?=([\])};,]|\b(else|then)\b))'
+                  pop: true
+                - include: function-definition-brace-opened
+            - match: (?=\=)
+              push:
+                - match: '(?=([\])};,]|\b(else|then)\b))'
+                  pop: true
+                - include: attribute-bind-from-equals
+                - include: attrset-definition-brace-opened
+            - match: (?=\?)
+              push:
+                - match: '(?=([\])};,]|\b(else|then)\b))'
+                  pop: true
+                - include: function-parameter-default
+                - match: \,
+                  captures:
+                    0: keyword.operator.nix
+                  push:
+                    - match: '(?=([\])};,]|\b(else|then)\b))'
+                      pop: true
+                    - include: function-definition-brace-opened
+            - include: others
+        - include: others
+  bad-reserved:
+    - match: '(?<![\w''-])(if|then|else|assert|with|let|in|rec|inherit)(?![\w''-])'
+      scope: invalid.illegal.reserved.nix
+  comment-remark:
+    - match: (TODO|FIXME|BUG|\!\!\!):?
+      captures:
+        1: markup.bold.comment.nix
+  constants:
+    - match: \b(builtins|true|false|null)\b
+      captures:
+        0: constant.language.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+    - match: \b(scopedImport|import|isNull|abort|throw|baseNameOf|dirOf|removeAttrs|map|toString|derivationStrict|derivation)\b
+      captures:
+        0: support.function.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+    - match: '\b[0-9]+\b'
+      captures:
+        0: constant.numeric.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+  expression:
+    - include: parens-and-cont
+    - include: list-and-cont
+    - include: string
+    - include: interpolation
+    - include: with-assert
+    - include: function-for-sure
+    - include: attrset-for-sure
+    - include: attrset-or-function
+    - include: let
+    - include: if
+    - include: operator-unary
+    - include: constants
+    - include: bad-reserved
+    - include: parameter-name-and-cont
+    - include: others
+  expression-cont:
+    - match: (?=.?)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: parens
+        - include: list
+        - include: string
+        - include: interpolation
+        - include: function-for-sure
+        - include: attrset-for-sure
+        - include: attrset-or-function
+        - match: '(\bor\b|\.|==|!=|!|\<\=|\<|\>\=|\>|&&|\|\||-\>|//|\?|\+\+|-|\*|/(?=([^*]|$))|\+)'
+          scope: keyword.operator.nix
+        - include: constants
+        - include: bad-reserved
+        - include: parameter-name
+        - include: others
+  function-body:
+    - match: '(@\s*([a-zA-Z\_][a-zA-Z0-9\_\''\-]*)\s*)?(\:)'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression
+  function-body-from-colon:
+    - match: (\:)
+      captures:
+        0: punctuation.definition.function.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression
+  function-contents:
+    - include: bad-reserved
+    - include: function-parameter
+    - include: others
+  function-definition:
+    - match: (?=.?)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: function-body-from-colon
+        - match: (?=.?)
+          push:
+            - match: (?=\:)
+              pop: true
+            - match: '(\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*)'
+              captures:
+                0: variable.parameter.function.4.nix
+              push:
+                - match: (?=\:)
+                  pop: true
+                - match: \@
+                  push:
+                    - match: (?=\:)
+                      pop: true
+                    - include: function-header-until-colon-no-arg
+                    - include: others
+                - include: others
+            - match: '(?=\{)'
+              push:
+                - match: (?=\:)
+                  pop: true
+                - include: function-header-until-colon-with-arg
+        - include: others
+  function-definition-brace-opened:
+    - match: (?=.?)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: function-body-from-colon
+        - match: (?=.?)
+          push:
+            - match: (?=\:)
+              pop: true
+            - include: function-header-close-brace-with-arg
+            - match: (?=.?)
+              push:
+                - match: '(?=\})'
+                  pop: true
+                - include: function-contents
+        - include: others
+  function-for-sure:
+    - match: '(?=(\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*\s*[:@]|\{[^}]*\}\s*:|\{[^#}"''/=]*[,\?]))'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: function-definition
+  function-header-close-brace-no-arg:
+    - match: '\}'
+      captures:
+        0: punctuation.definition.entity.function.nix
+      push:
+        - match: (?=\:)
+          pop: true
+        - include: others
+  function-header-close-brace-with-arg:
+    - match: '\}'
+      captures:
+        0: punctuation.definition.entity.function.nix
+      push:
+        - match: (?=\:)
+          pop: true
+        - include: function-header-terminal-arg
+        - include: others
+  function-header-open-brace:
+    - match: '\{'
+      captures:
+        0: punctuation.definition.entity.function.2.nix
+      push:
+        - match: '(?=\})'
+          pop: true
+        - include: function-contents
+  function-header-terminal-arg:
+    - match: (?=@)
+      push:
+        - match: (?=\:)
+          pop: true
+        - match: \@
+          push:
+            - match: (?=\:)
+              pop: true
+            - match: '(\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*)'
+              push:
+                - meta_scope: variable.parameter.function.3.nix
+                - match: (?=\:)
+                  pop: true
+            - include: others
+        - include: others
+  function-header-until-colon-no-arg:
+    - match: '(?=\{)'
+      push:
+        - match: (?=\:)
+          pop: true
+        - include: function-header-open-brace
+        - include: function-header-close-brace-no-arg
+  function-header-until-colon-with-arg:
+    - match: '(?=\{)'
+      push:
+        - match: (?=\:)
+          pop: true
+        - include: function-header-open-brace
+        - include: function-header-close-brace-with-arg
+  function-parameter:
+    - match: (\.\.\.)
+      push:
+        - meta_scope: keyword.operator.nix
+        - match: '(,|(?=\}))'
+          pop: true
+        - include: others
+    - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+      captures:
+        0: variable.parameter.function.1.nix
+      push:
+        - match: '(,|(?=\}))'
+          captures:
+            0: keyword.operator.nix
+          pop: true
+        - include: whitespace
+        - include: comment
+        - include: function-parameter-default
+        - include: expression
+    - include: others
+  function-parameter-default:
+    - match: \?
+      captures:
+        0: keyword.operator.nix
+      push:
+        - match: "(?=[,}])"
+          pop: true
+        - include: expression
+  if:
+    - match: (?=\bif\b)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - match: \bif\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: \bth(?=en\b)
+              captures:
+                0: keyword.other.nix
+              pop: true
+            - include: expression
+        - match: (?<=th)en\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: \bel(?=se\b)
+              captures:
+                0: keyword.other.nix
+              pop: true
+            - include: expression
+        - match: (?<=el)se\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: '(?=([\])};,]|\b(else|then)\b))'
+              captures:
+                0: keyword.other.nix
+              pop: true
+            - include: expression
+  illegal:
+    - match: .
+      scope: invalid.illegal
+  interpolation:
+    - match: '\$\{'
+      captures:
+        0: punctuation.section.embedded.begin.nix
+      push:
+        - meta_scope: markup.italic
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.end.nix
+          pop: true
+        - include: expression
+  let:
+    - match: (?=\blet\b)
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - match: \blet\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: '(?=([\])};,]|\b(in|else|then)\b))'
+              pop: true
+            - match: '(?=\{)'
+              push:
+                - match: '(?=([\])};,]|\b(else|then)\b))'
+                  pop: true
+                - match: '\{'
+                  push:
+                    - match: '\}'
+                      pop: true
+                    - include: attrset-contents
+                - match: '(^|(?<=\}))'
+                  push:
+                    - match: '(?=([\])};,]|\b(else|then)\b))'
+                      pop: true
+                    - include: expression-cont
+                - include: others
+            - include: attrset-contents
+            - include: others
+        - match: \bin\b
+          captures:
+            0: keyword.other.nix
+          push:
+            - match: '(?=([\])};,]|\b(else|then)\b))'
+              pop: true
+            - include: expression
+  list:
+    - match: '\['
+      captures:
+        0: punctuation.definition.list.nix
+      push:
+        - match: '\]'
+          captures:
+            0: punctuation.definition.list.nix
+          pop: true
+        - include: expression
+  list-and-cont:
+    - match: '(?=\[)'
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: list
+        - include: expression-cont
+  operator-unary:
+    - match: (!|-)
+      scope: keyword.operator.unary.nix
+  others:
+    - include: whitespace
+    - include: comment
+    - include: illegal
+  parameter-name:
+    - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+      captures:
+        0: variable.parameter.name.nix
+  parameter-name-and-cont:
+    - match: '\b[a-zA-Z\_][a-zA-Z0-9\_\''\-]*'
+      captures:
+        0: variable.parameter.name.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+  parens:
+    - match: \(
+      captures:
+        0: punctuation.definition.expression.nix
+      push:
+        - match: \)
+          captures:
+            0: punctuation.definition.expression.nix
+          pop: true
+        - include: expression
+  parens-and-cont:
+    - match: (?=\()
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: parens
+        - include: expression-cont
+  string:
+    - match: (?=\'\')
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - match: \'\'
+          captures:
+            0: punctuation.definition.string.other.start.nix
+          push:
+            - meta_scope: string.quoted.other.nix
+            - match: \'\'(?!\$|\'|\\.)
+              captures:
+                0: punctuation.definition.string.other.end.nix
+              pop: true
+            - match: \'\'(\$|\'|\\.)
+              scope: constant.character.escape.nix
+            - include: interpolation
+        - include: expression-cont
+    - match: (?=\")
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: string-quoted
+        - include: expression-cont
+    - match: '(~?[a-zA-Z0-9\.\_\-\+]*(\/[a-zA-Z0-9\.\_\-\+]+)+)'
+      captures:
+        0: string.unquoted.path.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+    - match: '(\<[a-zA-Z0-9\.\_\-\+]+(\/[a-zA-Z0-9\.\_\-\+]+)*\>)'
+      captures:
+        0: string.unquoted.spath.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+    - match: '([a-zA-Z][a-zA-Z0-9\+\-\.]*\:[a-zA-Z0-9\%\/\?\:\@\&\=\+\$\,\-\_\.\!\~\*\'']+)'
+      captures:
+        0: string.unquoted.url.nix
+      push:
+        - match: '(?=([\])};,]|\b(else|then)\b))'
+          pop: true
+        - include: expression-cont
+  string-quoted:
+    - match: \"
+      captures:
+        0: punctuation.definition.string.double.start.nix
+      push:
+        - meta_scope: string.quoted.double.nix
+        - match: \"
+          captures:
+            0: punctuation.definition.string.double.end.nix
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.nix
+        - include: interpolation
+  whitespace:
+    - match: \s+
+  with-assert:
+    - match: '(?<![\w''-])(with|assert)(?![\w''-])'
+      captures:
+        0: keyword.other.nix
+      push:
+        - match: \;
+          pop: true
+        - include: expression

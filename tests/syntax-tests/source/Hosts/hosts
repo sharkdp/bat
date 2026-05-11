@@ -1,0 +1,8 @@
+#this is a comment in the hosts file
+127.0.0.1            localhost
+
+192.168.0.1          sample.test             #a comment
+192.160.0.200        try.sample.test try     #another comment
+216.58.223.238       google.com
+
+::1 localhost.try ip6-localhost

@@ -1,0 +1,107 @@
+[alias]
+	br = branch
+	branch = branch -a
+	c = clone --recursive
+	ci = commit
+	cl = clone
+	co = checkout
+	contributors = shortlog --summary --numbered
+	lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+	remote = remote -v
+	st = status
+	tag = tag -l
+[apply]
+	whitespace = fix
+[color]
+	ui = true
+[color "branch"]
+	current = yellow
+	local = yellow
+	remote = green
+[color "diff"]
+	commit = yellow bold
+	frag = magenta bold
+	meta = yellow
+	new = green bold
+	old = red bold
+	whitespace = red reverse
+[color "diff-highlight"]
+	newHighlight = green bold 22
+	newNormal = green bold
+	oldHighlight = red bold 52
+	oldNormal = red bold
+[color "status"]
+	added = green
+	changed = yellow
+	untracked = cyan
+[commit]
+	gpgsign = true
+[core]
+	editor = /usr/bin/vim
+	# global exclude
+	excludesfile = /home/frank/.config/git/ignore
+	pager = delta
+	; broken on old machines
+	untrackedCache = true
+[credential]
+	helper = store
+[delta]
+	features = line-numbers decorations
+	max-line-length = 1024
+	whitespace-error-style = 22 reverse
+[delta "decorations"]
+	commit-decoration-style = bold yellow box ul
+	file-decoration-style = none
+	file-style = bold yellow
+	syntax-theme = gruvbox
+[diff]
+	submodule = diff
+	algorithm = histogram
+	renames = copies
+[difftool]
+	prompt = false
+[difftool "wrapper"]
+	binary = true
+	cmd = git-difftool-wrapper \"$LOCAL\" \"$REMOTE\"
+[diff "pdfconv"]
+	textconv = pdftohtml -stdout
+[fetch]
+	negotiationAlgorithm = skipping
+	parallel = 0
+[help]
+	autocorrect = 1
+[index]
+	version = 4
+[interactive]
+	diffFilter = delta --color-only
+[merge]
+	log = true
+[protocol]
+	version = 2
+[pull]
+	rebase = true
+[push]
+	default = current
+	recurseSubmodules = on-demand
+[rebase]
+	autoStash = true
+[rerere]
+	autoUpdate = true
+	enabled = true
+[sequence]
+	editor = interactive-rebase-tool
+[submodule]
+	fetchJobs = 0
+[tag]
+	gpgSign = true
+	sort = -version:refname
+[url "git@gist.github.com:"]
+	insteadOf = gist:
+	pushInsteadOf = https://gist.github.com/
+[url "git@github.com:"]
+	insteadOf = gh:
+	pushInsteadOf = https://github.com/
+[user]
+	email = f.nord@example.com
+	name = Frank Nord
+	signingkey = AAAAAAAAAAAAAAAA

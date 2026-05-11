@@ -1,0 +1,247 @@
+cabal-version:       2.4
+
+name:                semantic
+version:             0.11.0.1
+synopsis:            Framework and executable for analyzing and diffing untrusted code.
+description:         Semantic is a library for parsing, analyzing, and comparing source code across many languages.
+homepage:            http://github.com/github/semantic#readme
+bug-reports:         https://github.com/github/semantic/issues
+license:             MIT
+license-file:        LICENSE
+author:              The Semantic authors
+maintainer:          opensource+semantic@github.com
+copyright:           (c) 2015-2020 GitHub, Inc.
+category:            Language
+build-type:          Simple
+stability:           alpha
+extra-source-files:  README.md
+
+tested-with:         GHC == 8.10.1
+
+flag release
+  description: Build with optimizations on (for CI or deployment builds)
+  default:     False
+
+-- GHC extensions shared between targets
+common haskell
+  default-language:    Haskell2010
+  default-extensions:  StrictData
+  ghc-options:
+    -Weverything
+    -Wno-missing-local-signatures
+    -Wno-missing-import-lists
+    -Wno-implicit-prelude
+    -Wno-safe
+    -Wno-unsafe
+    -Wno-name-shadowing
+    -Wno-monomorphism-restriction
+    -Wno-missed-specialisations
+    -Wno-all-missed-specialisations
+    -Wno-star-is-type
+  cpp-options:
+    -DBAZEL_BUILD=0
+  if (impl(ghc >= 8.8))
+    ghc-options: -Wno-missing-deriving-strategies
+  if (impl(ghc >= 8.10))
+    ghc-options:
+      -Wno-missing-safe-haskell-mode
+      -Wno-prepositive-qualified-module
+
+common executable-flags
+  ghc-options:         -threaded -rtsopts "-with-rtsopts=-N -A4m -n2m"
+
+library
+  import:              haskell
+  hs-source-dirs:      src
+  exposed-modules:     Control.Carrier.Parse.Measured
+                     , Control.Carrier.Parse.Simple
+                     -- Effects
+                     , Control.Effect.Parse
+                     , Control.Effect.Sum.Project
+                     , Control.Effect.Timeout
+                     -- General datatype definitions & generic algorithms
+                     , Data.Blob
+                     , Data.Blob.IO
+                     , Data.Duration
+                     , Data.Edit
+                     , Data.Error
+                     , Data.Flag
+                     , Data.Graph.Algebraic
+                     , Data.Handle
+                     , Data.Maybe.Exts
+                     , Data.Semigroup.App
+                     -- Parser glue
+                     , Parsing.Parser
+                     , Parsing.TreeSitter
+                     -- API
+                     , Semantic.Api
+                     , Semantic.Api.Bridge
+                     , Semantic.Api.StackGraph
+                     , Semantic.Api.Symbols
+                     , Semantic.Api.Terms
+                     , Semantic.CLI
+                     , Semantic.Config
+                     , Semantic.Env
+                     , Semantic.IO
+                     , Semantic.Task
+                     , Semantic.Task.Files
+                     , Semantic.Telemetry
+                     , Semantic.Telemetry.AsyncQueue
+                     , Semantic.Telemetry.Error
+                     , Semantic.Telemetry.Log
+                     , Semantic.Telemetry.Stat
+                     , Semantic.Util
+                     , Semantic.Util.Pretty
+                     , Semantic.Version
+                     -- Serialization
+                     , Serializing.Format
+                     , Serializing.SExpression.Precise
+                     -- Custom Prelude
+  autogen-modules:     Paths_semantic
+  other-modules:       Paths_semantic
+  -- Except in case of vendored dependencies, these deps should be expressed
+  -- as caret-operator bounds relative to a version in Stackage.
+  -- These are currently pinned to lts-13.13.
+  build-depends:
+    , aeson ^>= 1.4.2.0
+    , algebraic-graphs ^>= 0.3
+    , ansi-terminal >= 0.8.2 && <1
+    , async ^>= 2.2.1
+    , base >= 4.13 && < 5
+    , bytestring ^>= 0.10.8.2
+    , containers ^>= 0.6.0.1
+    , directory-tree ^>= 0.12.1
+    , filepath ^>= 1.4.2.1
+    , fused-effects ^>= 1.1
+    , ghc-prim >= 0.5 && < 0.7
+    , hostname ^>= 1.0
+    , hscolour ^>= 1.24.4
+    , lens >= 4.17 && < 4.20
+    , network ^>= 2.8.0.0
+    , network-uri ^>= 2.6.1.0
+    , optparse-applicative >= 0.14.3 && < 0.16
+    , pathtype ^>= 0.8.1
+    , pretty-show ^>= 1.9.5
+    , proto-lens >= 0.5 && < 0.8
+    , semantic-analysis ^>= 0
+    , semantic-ast
+    , semantic-codeql ^>= 0
+    , semantic-go ^>= 0
+    , semantic-java ^>= 0
+    , semantic-json ^>= 0
+    , semantic-php ^>= 0
+    , semantic-proto ^>= 0
+    , semantic-python ^>= 0
+    , semantic-ruby ^>= 0
+    , semantic-scope-graph ^>= 0
+    , semantic-source ^>= 0.1.0.1
+    , semantic-tags ^>= 0
+    , semantic-tsx ^>= 0
+    , semantic-typescript ^>= 0
+    , semilattices ^>= 0.0.0.3
+    , split ^>= 0.2.3.3
+    , stm-chans ^>= 3.0.0.4
+    , text ^>= 1.2.3.2
+    , time >= 1.8.0.2 && < 1.10
+    , tree-sitter ^>= 0.9.0.1
+    , tree-sitter-go ^>= 0.5.0.0
+    , tree-sitter-java ^>= 0.7.0.0
+    , tree-sitter-json ^>= 0.7.0.0
+    , tree-sitter-php ^>= 0.5.0.0
+    , tree-sitter-python ^>= 0.9.0.1
+    , tree-sitter-ql ^>= 0.1.0.1
+    , tree-sitter-ruby ^>= 0.5.0.0
+    , tree-sitter-tsx ^>= 0.5.0.0
+    , tree-sitter-typescript ^>= 0.5.0.0
+    , unix ^>= 2.7.2.2
+
+executable semantic
+  import:              haskell, executable-flags
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  build-depends:
+    , base
+    , semantic
+
+test-suite test
+  import:              haskell, executable-flags
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  other-modules:       Data.Graph.Spec
+                     , Data.Language.Spec
+                     , Data.Semigroup.App.Spec
+                     , Integration.Spec
+                     , Semantic.Spec
+                     , Semantic.CLI.Spec
+                     , Semantic.IO.Spec
+                     , Semantic.Stat.Spec
+                     , Tags.Spec
+                     , SpecHelpers
+                     , Generators
+                     , Properties
+  build-depends:
+    , algebraic-graphs ^>= 0.3
+    , base >= 4.13 && < 5
+    , bytestring ^>= 0.10.8.2
+    , fused-effects
+    , Glob ^>= 0.10.0
+    , hedgehog ^>= 1
+    , hspec >= 2.6 && <3
+    , hspec-expectations ^>= 0.8.2
+    , network ^>= 2.8.0.0
+    , pathtype ^>= 0.8.1
+    , semantic
+    , semantic-analysis
+    , semantic-ast
+    , semantic-proto
+    , semantic-source ^>= 0.1.0.1
+    , semantic-tags
+    , semilattices
+    , tasty ^>= 1.2.3
+    , tasty-golden ^>= 2.3.2
+    , tasty-hedgehog ^>= 1.0.0.1
+    , tasty-hspec ^>= 1.1.5.1
+    , tasty-hunit ^>= 0.10.0.2
+
+test-suite parse-examples
+  import:              haskell, executable-flags
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Examples.hs
+  build-depends:
+    , async ^>= 2.2.1
+    , base
+    , fused-effects ^>= 1.1
+    , Glob
+    , lens >= 4.17 && < 4.20
+    , pathtype ^>= 0.8.1
+    , process ^>= 1.6.3.0
+    , semantic
+    , semantic-analysis ^>= 0
+    , semantic-ast
+    , semantic-proto ^>= 0
+    , tasty
+    , tasty-hunit
+    , text ^>= 1.2.3.2
+
+benchmark benchmarks
+  import:              haskell, executable-flags
+  hs-source-dirs:      bench
+  type:                exitcode-stdio-1.0
+  main-is:             Main.hs
+  other-modules:       Tagging
+  ghc-options:         -static
+  build-depends:
+    , base
+    , fused-effects ^>= 1.1
+    , gauge ^>= 0.2.5
+    , Glob
+    , pathtype ^>= 0.8.1
+    , semantic
+    , semantic-analysis ^>= 0
+    , semantic-proto
+
+source-repository head
+  type:     git
+  location: https://github.com/github/semantic

@@ -1,0 +1,5 @@
+# Make sure that the pager gets executed
+--paging=always
+
+# Output a dummy message for the integration test.
+--pager="echo dummy-pager-from-system-config"

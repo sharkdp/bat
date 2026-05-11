@@ -1,0 +1,17 @@
+.direnv/
+/target/
+**/*.rs.bk
+
+# Editors
+.idea/
+.vscode/
+
+# Generated files
+/assets/completions/_bat.ps1
+/assets/completions/bat.bash
+/assets/completions/bat.fish
+/assets/completions/bat.zsh
+/assets/manual/bat.1
+/assets/metadata.yaml
+
+

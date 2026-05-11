@@ -1,0 +1,12 @@
+# A comment
+
+IdentityFile "custom/id_ed25519"
+Port 1984
+
+Host example.com
+    User dummy
+    Compression no
+
+Host *.co.uk
+    BatchMode no
+    GlobalKnownHostsFile "/etc/ssh/ssh_known_hosts"

@@ -1,0 +1,8 @@
+# see https://github.com/containers/image/tree/main/docs
+[mappings]
+"TOML" = [
+    "/usr/share/containers/**/*.conf",
+    "/etc/containers/**/*.conf",
+    "${HOME}/.config/containers/**/*.conf",
+    "${XDG_CONFIG_HOME}/containers/**/*.conf",
+]

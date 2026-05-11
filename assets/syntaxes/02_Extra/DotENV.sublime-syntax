@@ -1,0 +1,98 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: DotENV
+file_extensions:
+  - .env
+  - .env.dist
+  - .env.local
+  - .env.sample
+  - .env.example
+  - .env.template
+  - .env.test
+  - .env.test.local
+  - .env.testing
+  - .env.dev
+  - .env.development
+  - .env.development.local
+  - .env.prod
+  - .env.production
+  - .env.production.local
+  - .env.dusk.local
+  - .env.staging
+  - .env.default
+  - .env.defaults
+  - .envrc
+  - .flaskenv
+  - env
+  - env.example
+  - env.sample
+  - env.template
+scope: source.env
+contexts:
+  main:
+    - match: (#).*$\n?
+      comment: "Comments - starts with #"
+      scope: comment.line.number-sign.env
+      captures:
+        1: punctuation.definition.comment.env
+    - match: (\")
+      comment: Strings (double)
+      captures:
+        1: punctuation.definition.string.begin.env
+      push:
+        - meta_scope: string.quoted.double.env
+        - match: (\")
+          captures:
+            1: punctuation.definition.string.end
+          pop: true
+        - include: interpolation
+        - include: variable
+        - include: escape-characters
+    - match: (\')
+      comment: Strings (single)
+      captures:
+        1: punctuation.definition.string.begin.env
+      push:
+        - meta_scope: string.quoted.single.env
+        - match: (\')
+          captures:
+            1: punctuation.definition.string.end
+          pop: true
+    - match: '(?<=[\w])\s?='
+      comment: Assignment Operator
+      scope: keyword.operator.assignment.env
+    - match: '([\w]+)(?=\s?\=)'
+      comment: Variable
+      scope: variable.other.env
+    - match: (?i)\s?(export)
+      comment: Keywords
+      scope: keyword.other.env
+    - match: (?i)(?<=\=)\s?(true|false|null)
+      comment: Constants
+      scope: constant.language.env
+    - match: '\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b'
+      comment: Numeric
+      scope: constant.numeric.env
+  escape-characters:
+    - match: '\\[nrt\\\$\"\'']'
+      scope: constant.character.escape.env
+  interpolation:
+    - match: '(\$\{|\{)'
+      comment: 'Template Syntax: "foo ${bar} {$baz}"'
+      captures:
+        1: string.interpolated.env keyword.other.template.begin.env
+      push:
+        - match: '(\})'
+          captures:
+            1: string.interpolated.env keyword.other.template.end.env
+          pop: true
+        - match: '(?x)(\$+)?([a-zA-Z_\x{7f}-\x{ff}][a-zA-Z0-9_\x{7f}-\x{ff}]*?\b)'
+          captures:
+            1: punctuation.definition.variable.env variable.other.env
+            2: variable.other.env
+  variable:
+    - match: '(?x)(\$+)([a-zA-Z_\x{7f}-\x{ff}][a-zA-Z0-9_\x{7f}-\x{ff}]*?\b)'
+      captures:
+        1: punctuation.definition.variable.env variable.other.env
+        2: variable.other.env

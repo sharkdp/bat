@@ -1,0 +1,38 @@
+diff --git themes/TwoDark/TwoDark.tmTheme themes/TwoDark/TwoDark.tmTheme
+index 87fd358..56376d3 100644
+--- themes/TwoDark/TwoDark.tmTheme
++++ themes/TwoDark/TwoDark.tmTheme
+@@ -125,7 +125,7 @@
+ 			<key>name</key>
+ 			<string>Classes</string>
+ 			<key>scope</key>
+-			<string>support.class, entity.name.class, entity.name.type.class</string>
++			<string>support.class, entity.name.class, entity.name.type.class, entity.name</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>foreground</key>
+@@ -290,7 +290,7 @@
+ 			<key>name</key>
+ 			<string>Headings</string>
+ 			<key>scope</key>
+-			<string>markup.heading punctuation.definition.heading, entity.name.section</string>
++			<string>markup.heading punctuation.definition.heading, entity.name.section, markup.heading - text.html.markdown</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>fontStyle</key>
+@@ -533,7 +533,7 @@
+ 			<key>name</key>
+ 			<string>Json key</string>
+ 			<key>scope</key>
+-			<string>source.json                           meta.structure.dictionary.json                              string.quoted.double.json</string>
++			<string>source.json                           meta.mapping.key.json                              string.quoted.double.json</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>foreground</key>
+@@ -875,4 +875,4 @@
+ 	<key>comment</key>
+ 	<string>Work in progress</string>
+ </dict>
+-</plist>
+\ No newline at end of file
++</plist>

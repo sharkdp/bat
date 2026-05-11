@@ -1,0 +1,33 @@
+name: Changelog
+
+on:
+  pull_request:
+
+jobs:
+  check-changelog:
+    name: Check for changelog entry
+    runs-on: ubuntu-latest
+    # dependabot PRs are automerged if CI passes; we shouldn't block these
+    if: github.actor != 'dependabot[bot]'
+    env:
+      PR_NUMBER: ${{ github.event.number }}
+      PR_BASE: ${{ github.base_ref }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Fetch PR base
+        run: git fetch --no-tags --prune --depth=1 origin
+
+      # cannot use `github.actor`: the triggering commit may be authored by a maintainer
+      - name: Get PR submitter
+        id: get-submitter
+        run: curl -sSfL https://api.github.com/repos/sharkdp/bat/pulls/${PR_NUMBER} | jq -r '"submitter=" + .user.login' | tee -a $GITHUB_OUTPUT
+
+      - name: Search for added line in changelog
+        env:
+          PR_SUBMITTER: ${{ steps.get-submitter.outputs.submitter }}
+        run: |
+          ADDED=$(git diff -U0 "origin/${PR_BASE}" HEAD -- CHANGELOG.md | grep -P '^\+[^\+].+$')
+          echo "Added lines in CHANGELOG.md:"
+          echo "$ADDED"
+          echo "Grepping for PR info (see CONTRIBUTING.md):"
+          grep "#${PR_NUMBER}\\b.*${PR_SUBMITTER}\\b" <<< "$ADDED"

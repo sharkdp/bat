@@ -1,0 +1,52 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Racket
+file_extensions:
+  - rkt
+scope: source.racket
+contexts:
+  main:
+    - match: '[^\\](\"[^\"]*\")'
+      captures:
+        1: string.quoted.double.source.racket
+    - match: '\((define)\s+([a-zA-Z0-9_\-?\+^]+)\s*'
+      scope: meta.variable.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.variable.source.racket
+    - match: '\((define)\s+\(([a-zA-Z0-9_\-?\+^]+)\s*'
+      scope: meta.function.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.function
+    - match: '\((struct)\s+([a-zA-Z0-9_\-?\+^]+)\s+'
+      scope: meta.struct.source.racket
+      captures:
+        1: keyword.source.racket
+        2: entity.name.type
+    - match: '[\s\(](if|lambda|cond|define|type-case|let|letrec|let!|\#lang|require|test|else|first|rest|define-type|define-type-alias|define-struct|not|local|error|lang)[\s\)]'
+      scope: meta.keywords.source.racket
+      captures:
+        1: keyword.source.racket
+    - match: '[\s\(](true|false|empty|null)[\s\)]'
+      captures:
+        1: constant.language.source.racket
+    - match: '[\s\(\[\{](#t|#true|#f|#false)[\s\)\]\}]'
+      captures:
+        1: constant.language.source.racket
+    - match: '(#\\[a-zA-Z0-9_\-?\+\.\!\"]+)'
+      captures:
+        1: constant.language.source.racket
+    - match: '\b(0|([1-9][0-9_]*))\b'
+      scope: constant.numeric.integer.source.racket
+    - match: ;
+      push:
+        - meta_scope: comment.line.documentation.source.racket
+        - match: $\n
+          pop: true
+    - match: '#\|'
+      push:
+        - meta_scope: comment.block.source.racket
+        - match: '\|#'
+          pop: true

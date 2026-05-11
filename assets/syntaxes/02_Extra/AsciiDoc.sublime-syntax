@@ -1,0 +1,997 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: AsciiDoc (Asciidoctor)
+file_extensions:
+  - adoc
+  - ad
+  - asciidoc
+scope: text.asciidoc
+contexts:
+  main:
+    - include: lists
+    - include: blocks
+    - include: section_titles
+    - include: lines
+    - include: inline
+    - include: characters
+  attribute_entry:
+    - match: |-
+        (?x)
+        ^(:)                          # opening delimiter
+        (!)?                          # bang symbol (unset attribute)
+        ([A-Za-z0-9_][A-Za-z0-9_-]*)  # attribute name
+        (!)?                          # bang symbol (unset attribute)
+        (:)                           # closing delimiter
+        (?:\s+|(?=$))
+      comment: |
+        An attribute entry.
+
+        Examples:
+          :my-attribute: value
+          :sectnums!:
+          :!sectnums:
+      captures:
+        1: punctuation.definition.attributeentry.attrname.begin.asciidoc
+        2: punctuation.definition.attributeentry.unset.asciidoc
+        3: support.variable.attribute.asciidoc
+        4: punctuation.definition.attributeentry.unset.asciidoc
+        5: punctuation.definition.attributeentry.attrname.end.asciidoc
+      push:
+        - meta_scope: meta.attributeentry.asciidoc
+        - meta_content_scope: meta.attributeentry.value.asciidoc
+        - match: $\n?
+          pop: true
+        - include: characters
+  attribute_list_line:
+    - match: '^(\[)[^\[\]]*(\])\s*$\n?'
+      comment: "Attribute list as paragraph: single brackets. No need for special treatment of escape; follows literal block, section template as being a more general regex."
+      scope: support.variable.attributelist.asciidoc
+      captures:
+        1: punctuation.definition.attributelistline.begin.asciidoc
+        2: punctuation.definition.attributelistline.end.asciidoc
+  attribute_reference:
+    - match: "({)([A-Za-z0-9_][A-Za-z0-9_-]*)(})"
+      comment: |
+        Examples:
+          {my-attribute}
+      scope: variable.other
+      captures:
+        1: constant.character.attributes.reference.begin.asciidoc
+        2: support.variable.attribute.asciidoc
+        3: constant.character.attributes.reference.end.asciidoc
+  biblio_anchor:
+    - match: '(?<!\[)(\[\[\[).*?(\]\]\])(?!\])'
+      comment: |
+        Bibliography anchor
+
+        Examples:
+          [[[Lorem ipsum]]]
+      scope: storage.type.reference.biblioanchor.asciidoc
+      captures:
+        1: punctuation.definition.biblioanchor.begin.asciidoc
+        2: punctuation.definition.biblioanchor.end.asciidoc
+  block_admonition_label:
+    - match: ^(NOTE|TIP|IMPORTANT|WARNING|CAUTION):(?=\s+)
+      comment: |
+        Label of an admonition block.
+
+        Examples:
+          NOTE: This is a admonition block.
+          WARNING:  Be aware of them!
+      scope: support.constant.admonitionword.asciidoc
+  block_comment:
+    - match: '^(/{4,})\s*$\n?'
+      comment: |
+        Examples:
+          ////
+          A multi-line comment.
+          Notice it's a delimited block.
+          ////
+      captures:
+        0: punctuation.definition.comment.begin.asciidoc
+      push:
+        - meta_scope: comment.block.asciidoc
+        - meta_content_scope: meta.block.comment.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: punctuation.definition.comment.end.asciidoc
+          pop: true
+        - include: macro
+  block_example:
+    - match: '^(={4,})\s*$\n?'
+      comment: |
+        Examples:
+          ====
+          Lorem ipsum.
+          ====
+
+        Note: Might need to add more includes, but these are the ones that arise in
+        practice for me.
+      captures:
+        0: constant.delimiter.example.begin.asciidoc
+      push:
+        - meta_scope: string.unquoted.block.example.asciidoc
+        - meta_content_scope: meta.block.example.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.example.end.asciidoc
+          pop: true
+        - include: lists
+        - include: block_listing
+        - include: lines
+        - include: inline
+        - include: characters
+  block_id:
+    - match: '^(\[\[)([^\[].*)(\]\])\s*$\n?'
+      comment: |
+        A block id (i.e. anchor).
+
+        Examples:
+          [[myid]]
+          Lorem ipsum dolor.
+      scope: meta.tag.blockid.asciidoc
+      captures:
+        1: punctuation.definition.blockid.begin.asciidoc
+        2: markup.underline.blockid.id.asciidoc
+        3: punctuation.definition.blockid.end.asciidoc
+  block_listing:
+    - match: '^(\-{4,})\s*$\n?'
+      comment: |
+        Examples:
+          ----
+          Lorem ipsum.
+          ----
+      captures:
+        0: constant.delimiter.listing.begin.asciidoc
+      push:
+        - meta_scope: meta.embedded.block.listing.asciidoc
+        - meta_content_scope: source.block.listing.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.listing.end.asciidoc
+          pop: true
+        - include: inline_callout
+  block_literal:
+    - match: '^(\.{4,})\s*$\n?'
+      comment: |
+        Examples:
+          ....
+          Lorem ipsum.
+          ....
+      captures:
+        0: constant.delimiter.block.literal.begin.asciidoc
+      push:
+        - meta_scope: string.literal.block.delimited.asciidoc
+        - meta_content_scope: meta.block.literal.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.block.literal.end.asciidoc
+          pop: true
+        - include: inline_callout
+  block_open:
+    - match: ^\-\-\s*$\n?
+      comment: |
+        Examples:
+          --
+          Lorem ipsum
+          --
+        Note: Might need to check on these includes.
+      captures:
+        0: constant.delimiter.block.open.begin.asciidoc
+      push:
+        - meta_scope: meta.block.open.asciidoc
+        - meta_content_scope: meta.block.open.content.asciidoc
+        - match: ^\-\-\s*$\n?
+          captures:
+            0: constant.delimiter.block.open.end.asciidoc
+          pop: true
+        - include: lists
+        - include: block_comment
+        - include: block_listing
+        - include: block_pass
+        - include: lines
+        - include: inline
+        - include: characters
+  block_page_break:
+    - match: '^<{3,}$\n?'
+      comment: |
+        A page break.
+
+        Examples:
+          <<<
+          <<<<<
+      scope: meta.separator.pagebreak.asciidoc
+  block_pass:
+    - match: '^(\+{4,})\s*$\n?'
+      captures:
+        0: constant.delimiter.block.passthrough.begin.asciidoc
+      push:
+        - meta_scope: meta.embedded.block.passthrough.asciidoc
+        - meta_content_scope: text.xml.block.passthrough.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.block.passthrough.end.asciidoc
+          pop: true
+        - include: scope:text.xml
+  block_quote:
+    - match: '^(_{4,})\s*$\n?'
+      comment: |
+        Examples:
+          ____
+          Lorem ipsum
+          ____
+
+        Note: Might need to add more includes, but these are the ones that arise for me in practice.
+      captures:
+        0: constant.delimiter.block.quote.begin.asciidoc
+      push:
+        - meta_scope: markup.quote.block.asciidoc
+        - meta_content_scope: meta.block.quote.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.block.quote.end.asciidoc
+          pop: true
+        - include: lines
+        - include: inline
+        - include: characters
+  block_sidebar:
+    - match: '^(\*{4,})\s*$\n?'
+      comment: |
+        Examples:
+          ****
+          Lorem ipsum
+          ****
+
+        Note: Might need to add more includes, but these are the ones that arise
+        for me in practice.
+      captures:
+        0: constant.delimiter.block.sidebar.begin.asciidoc
+      push:
+        - meta_scope: string.quoted.block.sidebar.asciidoc
+        - meta_content_scope: meta.block.sidebar.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.block.sidebar.end.asciidoc
+          pop: true
+        - include: lists
+        - include: block_comment
+        - include: block_listing
+        - include: lines
+        - include: inline
+        - include: characters
+  block_source_fenced:
+    - match: ^(```)(\w+)?\s*$\n?
+      comment: |
+        Fenced code block (ala Markdown)
+
+        Examples:
+          ```rb
+          puts 'Hello world!'
+          ```
+      captures:
+        0: constant.delimiter.listing.begin.asciidoc
+      push:
+        - meta_scope: meta.embedded.block.listing.asciidoc
+        - meta_content_scope: source.block.listing.content.asciidoc
+        - match: ^\1\s*$\n?
+          captures:
+            0: constant.delimiter.listing.end.asciidoc
+          pop: true
+        - include: inline_callout
+  block_thematic_break:
+    - match: '^''{3,}$\n?'
+      comment: |
+        A thematic break (aka horizontal rule).
+
+        Examples:
+          '''
+          ''''''
+      scope: meta.separator.ruler.asciidoc
+  block_title:
+    - match: ^(\.)\w.*$\n?
+      comment: |
+        Title of a block.
+
+        Examples:
+          .My title
+          Lorem ipsum dolor.
+      scope: markup.heading.block.asciidoc
+      captures:
+        1: punctuation.definition.blockheading.asciidoc
+  blocks:
+    - include: block_literal
+    - include: block_comment
+    - include: block_listing
+    - include: block_source_fenced
+    - include: block_sidebar
+    - include: block_pass
+    - include: block_quote
+    - include: block_example
+    - include: block_open
+  characters:
+    - include: attribute_reference
+    - include: entity_number
+    - include: entity_name
+    - include: escape
+    - include: replacement
+    - include: macro_pass
+    - include: macro
+    - include: xref
+    - include: biblio_anchor
+    - include: indexterm_triple
+    - include: indexterm_double
+  colist_item_marker:
+    - match: ^(\s*((<)\d+?(>)))\s+(?=\S)
+      comment: |
+        Marker of a callout list item.
+
+        Examples:
+          <1> a callout
+          <42> another callout
+      scope: markup.list.numbered.callout.asciidoc
+      captures:
+        1: string.unquoted.list.callout.asciidoc
+        2: constant.numeric.callout.asciidoc
+        3: punctuation.definition.calloutlistnumber.begin.asciidoc
+        4: punctuation.definition.calloutlistnumber.end.asciidoc
+  dlist_item_label:
+    - match: '^\s*(?=.*:{2,4}(?:\s|$))'
+      comment: |
+        Label of a definition (labeled) list item.
+
+        Examples:
+          Label level 1:: lorem ipsum
+          Label level 2::: dolor sit amet
+          Label level 3:::: consectetur
+          Label level 1::
+            lorem ipsum
+          Another label :: lorem ipsum
+          Last::label:: dolor sit amet
+
+        Note: This rule is not strictly correct, because Asciidoctor allows
+        double colon followed by a space inside a label, i.e. it matches the
+        *last* double colon, not the first. I don't know how to do that
+        *effectively.
+      push:
+        - meta_scope: markup.list.labeled.asciidoc
+        - meta_content_scope: meta.list.label.asciidoc
+        - match: '(:{2,4})(?:\s|$\n?)'
+          captures:
+            1: constant.labeledlist.separator.asciidoc
+          pop: true
+        - include: inline
+        - include: characters
+  emphasis:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?      # might be preceded by an attributes list
+        (?<=^|\W)(?<!\\|})  # must be preceded by nonword character, and not by escape or } (attribute)
+        (_)(?=\S)           # delimiter underscore that must be followed by a nonspace character
+      comment: |
+        Emphasized (italic) text (constrained variant).
+
+        Examples:
+          _Lorem ipsum_ dolor
+          [red]_Lorem ipsum_ dolor
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.italic.single.begin.asciidoc
+      push:
+        - meta_scope: markup.italic.single.asciidoc
+        - meta_content_scope: meta.italicinner.single.asciidoc
+        - match: |-
+            (?x)
+            (?<=\S)(_)        # delimiter underscore that must be preceded by a nonspace character
+            (?!\w)            # ...and followed by a nonword character
+          captures:
+            1: punctuation.definition.italic.single.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: strong
+        - include: monospaced
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  emphasis_double:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with attribute list
+        (?<!\\)         # must not be preceded by escape
+        (__)
+      comment: |
+        Emphasized (italic) text (unconstrained variant).
+
+        Examples:
+          Lo__re__m __ipsum dolor__.
+          Lo[red]__re__m
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.italic.double.begin.asciidoc
+      push:
+        - meta_scope: markup.italic.double.asciidoc
+        - meta_content_scope: meta.italicinner.double.asciidoc
+        - match: __
+          captures:
+            0: punctuation.definition.italic.double.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: strong
+        - include: monospaced
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  entity_name:
+    - match: '(?<!\\)&([a-zA-Z][a-zA-Z0-9]*);'
+      comment: |
+        Character entity reference
+
+        Examples:
+          &nbsp;
+          &sup2;
+      scope: constant.character.entity.xml.asciidoc
+  entity_number:
+    - match: '(?<!\\)&#(x?[0-9a-fA-f]{2,4});'
+      comment: |
+        Numeric character reference
+
+        Examples:
+          &#x278a;
+          &#182;
+      scope: constant.character.entity.asciidoc
+  escape:
+    - match: '\\(?=[-`*_#+.!(){}\[\]\\>:])'
+      comment: |
+        List of special characters that may be escaped.
+
+        Note: I do not really know if this is a good list, adopted wholesale from
+        original bundle.
+      scope: constant.character.escape.asciidoc
+  indexterm_double:
+    - match: '(?<!\()(\({2})([^\(\s].*?)(\){2})(?!\))'
+      comment: |
+        Double parenthesis indexterm.
+
+        Examples:
+          ((Arthur))
+      scope: variable.other.indexterm.double.asciidoc
+      captures:
+        1: constant.character.indexterm.double.begin.asciidoc
+        3: constant.character.indexterm.double.end.asciidoc
+  indexterm_triple:
+    - match: '(?<!\()(\({3})([^\(].*?)(\){3})(?!\))'
+      comment: |
+        Triple parenthesis indexterm.
+
+        Examples:
+          (((Sword, Broadsword, Excalibur)))
+      scope: variable.other.indexterm.triple.asciidoc
+      captures:
+        1: constant.character.indexterm.triple.begin.asciidoc
+        3: constant.character.indexterm.triple.end.asciidoc
+  inline:
+    - include: passthrough
+    - include: strong_double
+    - include: emphasis_double
+    - include: monospaced_double
+    - include: mark_double
+    - include: strong
+    - include: emphasis
+    - include: monospaced
+    - include: mark
+    - include: superscript
+    - include: subscript
+  inline_break:
+    - match: (?<=\s)\+$\n?
+      comment: |
+        Line hard break with a plus sign (+).
+
+        Examples:
+          Rubies are red, +
+          Topazes are blue.
+      scope: constant.linebreak.asciidoc
+  inline_callout:
+    - match: (?<!\\)(<)\d+(>)
+      comment: |
+        Callout label
+
+        Examples:
+          <1>
+          <42>
+      scope: constant.other.callout.asciidoc
+      captures:
+        1: punctuation.definition.callout.begin.asciidoc
+        2: punctuation.definition.callout.end.asciidoc
+  inline_comment:
+    - match: '^(//)([^/\n].*|)$\n?'
+      comment: |
+        Inline comment.
+
+        Examples:
+          // This is just a comment!
+      scope: comment.line.double-slash.asciidoc
+      captures:
+        1: punctuation.definition.comment.line.asciidoc
+        2: meta.line.comment.content.asciidoc
+  lines:
+    - include: inline_comment
+    - include: list_continuation
+    - include: inline_break
+    - include: block_page_break
+    - include: block_thematic_break
+    - include: block_title
+    - include: block_id
+    - include: section_template
+    - include: attribute_list_line
+    - include: attribute_entry
+  list_continuation:
+    - match: ^\+\s*$\n?
+      scope: constant.listcontinuation.asciidoc
+  lists:
+    - include: block_admonition_label
+    - include: ulist_item_marker
+    - include: olist_item_marker
+    - include: dlist_item_label
+    - include: colist_item_marker
+  macro:
+    - match: |-
+        (?x)
+        (?:
+          ((?:https?|mailto|ftp|file)  # specify separately so we can mark them as links that TextMate opens
+          ?:{1}  # inline only
+          \S*)   # (others such as image are partial URLs and/or TextMate cannot handle them)
+        |
+          (([a-zA-Z0-9][a-zA-Z0-9_]*)
+          (:{1,2})
+          (\S*))
+        )
+        (?:(\[)([^\]]*)(\]))
+      comment: |
+        Note: There are other macro notations, but I match only those that end in
+        square brackets.
+      scope: meta.macro.asciidoc
+      captures:
+        1: markup.underline.link.macro.asciidoc
+        3: keyword.control.name.macro.asciidoc
+        4: constant.character.separator.macro.asciidoc
+        5: markup.underline.target.macro.asciidoc
+        6: constant.character.attributes.macro.begin.asciidoc
+        7: variable.parameter.attributes.macro.asciidoc
+        8: constant.character.attributes.macro.end.asciidoc
+  macro_pass:
+    - match: |-
+        (?x)
+        (pass)
+        (:{1,2})
+        (\S*)
+        (\[)(?=[^\]]*\])
+      comment: |
+        Passthrough macro
+
+        Examples:
+          pass:[Lorem ipsum]
+          pass::[Lorem ipsum]
+      captures:
+        1: keyword.control.name.macro.pass.asciidoc
+        2: constant.character.separator.macro.asciidoc
+        3: markup.underline.target.macro.asciidoc
+        4: constant.character.attributes.macro.begin.asciidoc
+      push:
+        - meta_scope: meta.macro.pass.asciidoc
+        - meta_content_scope: variable.parameter.attributes.macro.pass.asciidoc
+        - match: '\]'
+          captures:
+            0: constant.character.attributes.macro.end.asciidoc
+          pop: true
+        - include: scope:text.xml
+  mark:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?      # might start with attribute list (darned well better or why are we here)
+        (?<=^|\W)(?<!\\|})  # must be preceded by nonword character, and not by escape or } (attribute)
+        (\#)(?=\S)          # delimiter hash that must be followed by a nonspace character
+      comment: |
+        Marked text (constrained variant).
+
+        Examples:
+          #Lorem ipsum# dolor
+          [red]#Lorem ipsum# dolor
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.string.unquoted.single.begin.asciidoc
+      push:
+        - meta_scope: string.other.unquoted.single.asciidoc
+        - meta_content_scope: string.unquoted.unquotedinner.single.asciidoc
+        - match: |-
+            (?x)
+            (?<=\S)(\#)       # delimiter hash that must be preceded by a nonspace character
+            (?!\w)            # ...and followed by a nonword character
+          captures:
+            1: punctuation.definition.string.unquoted.single.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: strong
+        - include: emphasis
+        - include: monospaced
+        - include: superscript
+        - include: subscript
+        - include: characters
+  mark_double:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with an attribute list (indeed, that is its purpose)
+        (?<!\\)         # must not be preceded by escape
+        (\#\#)
+      comment: |
+        Marked text (unconstrained variant).
+
+        Examples:
+          Lo##re##m ##ipsum dolor##.
+          Lo[red]##re##m
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.string.unquoted.double.begin.asciidoc
+      push:
+        - meta_scope: string.other.unquoted.double.asciidoc
+        - meta_content_scope: string.unquoted.unquotedinner.double.asciidoc
+        - match: '\#\#'
+          captures:
+            0: punctuation.definition.string.unquoted.double.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: strong
+        - include: emphasis
+        - include: monospaced
+        - include: superscript
+        - include: subscript
+        - include: characters
+  monospaced:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?      # might start with attributes list
+        (?<=^|\W)(?<!\\|})  # must be preceded by nonword character, and not by escape or } (attribute)
+        (`)(?=\S)           # delimiter backtick that must be followed by a nonspace character
+      comment: |
+        Monospaced text (constrained variant).
+
+        Examples:
+          `Lorem ipsum` dolor
+          [red]`Lorem ipsum` dolor
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.literal.single.begin.asciidoc
+      push:
+        - meta_scope: string.other.literal.single.asciidoc
+        - meta_content_scope: meta.literalinner.single.asciidoc
+        - match: |-
+            (?x)
+            (?<=\S)(`)        # delimiter backtick that must be preceded by a nonspace character
+            (?!\w)            # ...and followed by a nonword character
+          captures:
+            1: punctuation.definition.literal.single.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: mark_double
+        - include: strong
+        - include: emphasis
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  monospaced_double:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with attribute list
+        (?<!\\)         # must not be preceded by escape
+        (``)
+      comment: |
+        Monospaced text (unconstrained variant).
+
+        Examples:
+          Lo``re``m ``ipsum dolor``.
+          Lo[red]``re``m
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.literal.double.begin.asciidoc
+      push:
+        - meta_scope: string.other.literal.double.asciidoc
+        - meta_content_scope: meta.literalinner.double.asciidoc
+        - match: "``"
+          captures:
+            0: punctuation.definition.literal.double.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: mark_double
+        - include: strong
+        - include: emphasis
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  olist_item_marker:
+    - match: '^(\s*(\.{1,5}))\s+(?=\S)'
+      comment: |
+        Marker of an ordered (numbered) list item.
+
+        Examples:
+          . level 1
+          .. level 2
+          ... level 3
+          .... level 4
+          ..... level 5
+
+        Note: The space distinguishes it from a block title.
+      scope: markup.list.numbered.dotted.asciidoc
+      captures:
+        1: string.unquoted.list.dotted.asciidoc
+        2: constant.numeric.list.dot.asciidoc
+  passthrough:
+    - match: (\+\+\+|\$\$)
+      comment: |
+        Inline triple-plus and double dolar passthrough.
+
+        Examples:
+          Lo+++re++++m +++ipsum dolor+++.
+          Lo$$re$$m $$ipsum dolor$$.
+
+        Note: Must be dead first among the inlines, so as to take priority.
+      captures:
+        1: constant.character.passthru.begin.asciidoc
+      push:
+        - meta_scope: meta.passthru.inline.asciidoc
+        - meta_content_scope: variable.parameter.passthruinner.asciidoc
+        - match: \1
+          captures:
+            0: constant.character.passthru.end.asciidoc
+          pop: true
+  replacement:
+    - match: |-
+        (?x)
+        (?<!\\)  # must not be escaped
+        (
+          \(C\)
+          | \(TM\)
+          | \(R\)
+          | ((?<!\-)\-\-(?!\-))    # exactly two, and even this may not rule out all that I want to
+          | ((?<!\.)\.\.\.(?!\.))  # exactly three
+          | \->
+          | <\-
+          | =>
+          | <=
+        )
+      scope: constant.character.replacement.asciidoc
+  section_template:
+    - match: |-
+        (?x)^
+        (\[)  # in square brackets
+        (template\s*=\s*)?(")?  # might start with template-equals and might have template name in quotes
+        (
+        sect\d|abstract|preface|colophon|dedication|glossary|bibliography|synopsis|appendix|index # fixed list of known templates
+        )
+        (".*(\])|(\]))  # either close the quote (and perhaps go on) and close the bracket, or close the bracket immediately
+        \s*$\n?
+      comment: fixed list of known template names
+      scope: variable.parameter.sectiontemplate.asciidoc
+      captures:
+        1: punctuation.definition.sectiontemplate.begin.asciidoc
+        4: meta.tag.sectiontemplate.asciidoc
+        6: punctuation.definition.sectiontemplate.end.asciidoc
+        7: punctuation.definition.sectiontemplate.end.asciidoc
+  section_titles:
+    - include: title_level_5
+    - include: title_level_4
+    - include: title_level_3
+    - include: title_level_2
+    - include: title_level_1
+    - include: title_level_0
+  strong:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?      # might start with an attributes list
+        (?<=^|\W)(?<!\\|})  # must be preceded by nonword character, and not by escape or } (attribute)
+        (\*)(?=\S)          # delimiter star that must be followed by a nonspace character
+      comment: |
+        Strong (bold) text (constrained variant).
+
+        Examples:
+          *Lorem ipsum* dolor
+          [red]*Lorem ipsum* dolor
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.bold.single.begin.asciidoc
+      push:
+        - meta_scope: markup.bold.single.asciidoc
+        - meta_content_scope: meta.boldinner.single.asciidoc
+        - match: |-
+            (?x)
+            (?<=\S)(\*)       # delimiter star that must be preceded by a nonspace character
+            (?!\w)            # ...and followed by a nonword character
+          captures:
+            1: punctuation.definition.bold.single.end.asciidoc
+          pop: true
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: emphasis
+        - include: monospaced
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  strong_double:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with an attribute list
+        (?<!\\)         # must not be preceded by escape
+        (\*\*)
+      comment: |
+        Strong (bold) text (unconstrained variant).
+
+        Examples:
+          Lo**re**m **ipsum dolor**.
+          Lo[red]**re**m
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.bold.double.begin.asciidoc
+      push:
+        - meta_scope: markup.bold.double.asciidoc
+        - meta_content_scope: meta.boldinner.double.asciidoc
+        - match: \*\*
+          captures:
+            0: punctuation.definition.bold.double.end.asciidoc
+          pop: true
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: emphasis
+        - include: monospaced
+        - include: mark
+        - include: superscript
+        - include: subscript
+        - include: characters
+  subscript:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with attribute list
+        (?<!\\)         # must not be preceded by escape
+        (~)
+      comment: |
+       Subscript text.
+
+        Examples:
+          E=mc^2^
+          E=mc[red]^2^
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.string.subscript.begin.asciidoc
+      push:
+        - meta_scope: string.other.subscript.asciidoc
+        - meta_content_scope: meta.subscriptinner.asciidoc
+        - match: '~' # this tilda a problem if unquoted
+          captures:
+            0: punctuation.definition.string.subscript.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: strong
+        - include: emphasis
+        - include: monospaced
+        - include: mark
+        - include: superscript
+        - include: characters
+  superscript:
+    - match: |-
+        (?x)
+        (\[[^\]]*?\])?  # might start with attribute list
+        (?<!\\)         # no preceding escape
+        (\^)
+      comment: |
+        Superscript text.
+
+        Examples:
+          H~2~O
+          H[red]~2~O
+      captures:
+        1: support.variable.attributelist.asciidoc
+        2: punctuation.definition.string.superscript.begin.asciidoc
+      push:
+        - meta_scope: string.other.superscript.asciidoc
+        - meta_content_scope: meta.superscriptinner.asciidoc
+        - match: ^
+          captures:
+            0: punctuation.definition.string.superscript.end.asciidoc
+          pop: true
+        - include: strong_double
+        - include: emphasis_double
+        - include: monospaced_double
+        - include: mark_double
+        - include: strong
+        - include: emphasis
+        - include: monospaced
+        - include: mark
+        - include: subscript
+        - include: characters
+  title_level_0:
+    - match: ^(=) (\w.*)$\n?
+      scope: markup.heading.level.0.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  title_level_1:
+    - match: ^(==) (\w.*)$\n?
+      scope: markup.heading.level.1.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  title_level_2:
+    - match: ^(===) (\w.*)$\n?
+      scope: markup.heading.level.2.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  title_level_3:
+    - match: ^(====) (\w.*)$\n?
+      scope: markup.heading.level.3.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  title_level_4:
+    - match: ^(=====) (\w.*)$\n?
+      scope: markup.heading.level.4.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  title_level_5:
+    - match: ^(======) (\w.*)$\n?
+      scope: markup.heading.level.5.asciidoc
+      captures:
+        1: punctuation.definition.heading.asciidoc
+        2: entity.name.section.asciidoc
+  ulist_item_marker:
+    - match: '^(\s*(\-|\*{1,5}))\s+(?=\S)'
+      comment: |
+        Marker of an unordered (bullet) list item.
+
+        Examples:
+          * level 1
+          ** level 2
+          *** level 3
+          **** level 4
+          ***** level 5
+          - level 1
+          -- level 2
+          --- level 3
+          ---- level 4
+          ----- level 5
+      scope: markup.list.bulleted.asciidoc
+      captures:
+        1: string.unquoted.list.bullet.asciidoc
+        2: constant.numeric.list.bullet.asciidoc
+  xref:
+    - match: '(?<!<)(<<)([^,]*?)((,\s*)(.*?))?(>>)(?!<)'
+      comment: |
+        Internal cross-reference
+
+        Examples:
+          <<lorem>>
+          <<lorem, see here>>
+      scope: meta.xref.asciidoc
+      captures:
+        1: constant.character.xref.begin.asciidoc
+        2: markup.underline.term.xref.asciidoc
+        5: variable.parameter.xref.asciidoc
+        6: constant.character.xref.end.asciidoc

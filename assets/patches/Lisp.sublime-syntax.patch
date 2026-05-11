@@ -1,0 +1,2365 @@
+diff --git syntaxes/01_Packages/Lisp/Lisp.sublime-syntax syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
+index 50e5dad3..44a9795d 100644
+--- syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
++++ syntaxes/01_Packages/Lisp/Lisp.sublime-syntax
+@@ -1,11 +1,14 @@
+ %YAML 1.2
+ ---
+-# http://www.sublimetext.com/docs/3/syntax.html
++# https://www.sublimetext.com/docs/syntax.html
+ #
+ # `Common Lisp` Language Reference:
+-# http://www.cs.cmu.edu/Groups/AI/html/cltl/clm/index.html
+-#
++# https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/index.html
++# https://www.lispworks.com/documentation/lw70/CLHS/Front/Contents.htm
+ name: Lisp
++scope: source.lisp
++version: 2
++
+ file_extensions:
+   - lisp
+   - cl
+@@ -17,108 +20,2268 @@ file_extensions:
+   - ss
+   - lsp
+   - fasl # Scheme dialect of Lisp
+-scope: source.lisp
++  - sld  # Scheme r7rs library
++
++first_line_match: |-
++  (?xi:
++    ^ \s* ; .*? -\*- .*? \blisp\b .*? -\*-  # editorconfig
++  )
++
++###############################################################################
++
+ contexts:
+   main:
+-    - include: comments
++    - include: statements
++
++  statements:
+     - include: parens
++    - include: expressions
++    - match: \)
++      scope: invalid.illegal.stray-bracket-end.lisp
+ 
+   expressions:
+     - include: comments
+     - include: numbers
+-    - include: constants
+     - include: strings
+-    - include: variables
++    - include: annotations
++    - include: keywords
++    - include: quotes
++    - include: macros
++    - include: modifiers
++    - include: identifiers
++
++###[ COMMENTS ]################################################################
++
++  comments:
++    - include: line-comments
++    - include: block-comments
++    - match: \|#
++      scope: invalid.illegal.stray-comment-end.lisp
++
++  block-comments:
++    - match: '#\|'
++      scope: punctuation.definition.comment.begin.lisp
++      push: block-comment-body
++
++  block-comment-body:
++    - meta_scope: comment.block.lisp
++    - match: '\|#'
++      scope: punctuation.definition.comment.end.lisp
++      pop: 1
++    - include: block-comments
++
++  line-comments:
++    - match: ;+
++      scope: punctuation.definition.comment.lisp
++      push: line-comment-body
++
++  line-comment-body:
++    - meta_scope: comment.line.semicolon.lisp
++    - match: $\n?
++      pop: 1
++
++###[ PARENTHESES ]#############################################################
++
++  parens:
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push:
++        - paren-body
++        - paren-begin
++
++  paren-begin:
++    - include: class-declaration
++    - include: function-declaration
++    - include: macro-declaration
++    - include: struct-declaration
++    - include: type-declaration
++    - include: variable-declaration
++    - include: other-declaration
++    - include: declare
+     - include: control
+-    - include: functions
+-    - include: operators
++    - include: loop
++    - include: operator
++    - include: quote
++    - include: namespaces
++    - include: builtin-function
++    - include: other-function
++    - include: comments
++    - include: else-pop
+ 
+-  variables:
+-    - match: (\*)(?i:trace-output|terminal-io|suppress-series-warnings|standard-output|standard-input|readtable|read-suppress|read-eval|read-default-float-format|read-base|random-state|query-io|print-right-margin|print-readably|print-radix|print-pretty|print-pprint-dispatch|print-miser-width|print-lines|print-level|print-length|print-gensym|print-escape|print-circle|print-case|print-base|print-array|package|modules|macroexpand-hook|load-verbose|load-truename|load-print|load-pathname|gensym-counter|features|evalhook|error-output|default-pathname-defaults|debugger-hook|debug-io|compile-verbose|compile-print|compile-file-truename|compile-file-pathname|break-on-warnings|break-on-signals|applyhook)(\*)
+-      scope: variable.language.lisp
++  paren-body:
++    - meta_scope: meta.parens.lisp
++    - include: paren-end
++    - include: parens
++    - include: expressions
++
++  paren-end:
++    - meta_include_prototype: false
++    - meta_scope: meta.parens.lisp
++    - match: \)
++      scope: punctuation.section.parens.end.lisp
++      pop: 1
++
++###[ LISTS ]###################################################################
++
++  expect-list:
++    # a list expression
++    # skips function-like parentheses on next level
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: paren-body
++    - include: comments
++    - include: else-pop
++
++  expect-lists-list:
++    # a list of list expressions
++    # skips function-like parentheses on next 2 levels
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: lists-list-body
++    - include: comments
++    - include: else-pop
++
++  lists-list-body:
++    - meta_scope: meta.parens.lisp
++    - include: paren-end
++    - include: lists
++    - include: expressions
++
++  lists:
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push: paren-body
++
++###[ QUOTED EXPRESSIONS ]######################################################
++
++  quotes:
++    # abbreviation of (quote ...) function
++    - match: \'
++      scope: punctuation.definition.quoted.lisp
++      push: quoted-content
++
++  quoted-content:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: quoted-paren-body
++    # A quoted symbol evaluates to the symbol.
++    - match: '{{identifier}}'
++      scope: constant.other.symbol.lisp
+       captures:
+-        1: punctuation.definition.variable.begin.lisp
+-        2: punctuation.definition.variable.end.lisp
+-    - match: (\*)(\S*)(\*)
+-      scope: variable.other.global.lisp
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: immediately-pop
++
++  quoted-parens:
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push: quoted-paren-body
++
++  quoted-paren-body:
++    - meta_scope: meta.parens.lisp
++    - include: paren-end
++    - include: quoted-parens
++    - include: expressions
++
++###[ CLASS DECLARATIONS ]######################################################
++
++  class-declaration:
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_defcla.htm
++    - match: (?i:defclass|define-class){{break}}
++      scope: meta.class.lisp keyword.declaration.class.lisp
++      set:
++        - class-declaration-slots
++        - class-declaration-parent-list
++        - class-declaration-name
++
++  class-declaration-name:
++    - match: '{{identifier}}'
++      scope: entity.name.class.lisp
+       captures:
+-        1: punctuation.definition.variable.begin.lisp
+-        3: punctuation.definition.variable.end.lisp
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  class-declaration-parent-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: class-declaration-parent-list-body
++    - include: comments
++    - include: else-pop
++
++  class-declaration-parent-list-body:
++    - meta_scope: meta.parens.lisp
++    - include: namespaces
++    - match: '{{identifier}}'
++      scope: entity.other.inherited-class.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++    - include: comments
++    - include: paren-end
++
++  class-declaration-slots:
++    - meta_content_scope: meta.class.lisp
++    - include: paren-pop
++    - include: lists
++    - include: expressions
++
++###[ FUNCTION DECLARATIONS ]###################################################
++
++  function-declaration:
++    # https://www.lispworks.com/documentation/HyperSpec/Body/s_lambda.htm
++    - match: (?i:lambda){{break}}
++      scope: meta.function.lisp keyword.declaration.function.inline.lisp
++      set:
++        - function-body
++        - function-parameter-list
++    # https://www.lispworks.com/documentation/HyperSpec/Body/m_defun.htm
++    - match: (?i:def(?:[a-z]+f)?un|defgeneric|define-(?:command(?:-global)?|parenscript)){{break}}
++      scope: meta.function.lisp keyword.declaration.function.lisp
++      set:
++        - function-body
++        - function-parameter-list
++        - function-declaration-name
++    # https://www.lispworks.com/documentation/HyperSpec/Body/m_defmet.htm
++    - match: (?i:defmethod){{break}}
++      scope: meta.function.lisp keyword.declaration.function.lisp
++      set:
++        - function-body
++        - function-parameter-list
++        - method-qualifier
++        - function-declaration-name
++    # https://www.lispworks.com/documentation/HyperSpec/Body/s_flet_.htm
++    - match: (?i:flet|labels){{break}}
++      scope: keyword.declaration.function.lisp
++      set: function-declaration-list
++
++  function-declaration-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: function-declaration-list-body
++    - include: comments
++    - include: else-pop
++
++  function-declaration-list-body:
++    - meta_scope: meta.parens.lisp
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push:
++        - paren-end
++        - function-body
++        - function-parameter-list
++        - function-declaration-name
++    - include: comments
++    - include: paren-end
++
++  function-declaration-name:
++    - include: namespaces
++    - match: '{{identifier}}'
++      scope: entity.name.function.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  method-qualifier:
++    # qualifiers may be anything but lists
++    - include: expressions
++    - include: else-pop
++
++  function-parameter-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parameters.begin.lisp
++      set: function-parameter-list-body
++    - include: comments
++    - include: else-pop
++
++  function-parameter-list-body:
++    - clear_scopes: 1
++    - meta_scope: meta.function.parameters.lisp
++    - match: \)
++      scope: punctuation.section.parameters.end.lisp
++      pop: 1
++    - include: comments
++    - include: annotations
++    - include: keywords
++    - include: modifiers
++    - include: parameters
++
++  function-body:
++    - meta_content_scope: meta.function.lisp
++    - include: paren-pop
++    - include: parens
++    - include: expressions
++
++###[ MACRO DECLARATIONS ]######################################################
++
++  macro-declaration:
++    # https://www.lispworks.com/documentation/HyperSpec/Body/m_defmac.htm
++    - match: (?i:defmacro){{break}}
++      scope: meta.macro.lisp keyword.declaration.macro.lisp
++      set:
++        - macro-body
++        - macro-parameter-list
++        - macro-declaration-name
++    # https://www.lispworks.com/documentation/HyperSpec/Body/s_flet_.htm
++    - match: (?i:macrolet){{break}}
++      scope: keyword.declaration.macro.lisp
++      set: macro-declaration-list
++
++  macro-declaration-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: macro-declaration-list-body
++    - include: comments
++    - include: else-pop
++
++  macro-declaration-list-body:
++    - meta_scope: meta.parens.lisp
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push:
++        - paren-end
++        - macro-body
++        - macro-parameter-list
++        - macro-declaration-name
++    - include: comments
++    - include: paren-end
++
++  macro-declaration-name:
++    - include: namespaces
++    - match: '{{identifier}}'
++      scope: entity.name.macro.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  macro-parameter-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parameters.begin.lisp
++      set: macro-parameter-list-body
++    - include: comments
++    - include: else-pop
++
++  macro-parameter-list-body:
++    - clear_scopes: 1
++    - meta_scope: meta.macro.parameters.lisp
++    - match: \)
++      scope: punctuation.section.parameters.end.lisp
++      pop: 1
++    - include: comments
++    - include: annotations
++    - include: keywords
++    - include: modifiers
++    - include: parameters
++
++  macro-body:
++    - meta_content_scope: meta.macro.lisp
++    - include: paren-pop
++    - include: parens
++    - include: expressions
++
++###[ STRUCT DECLARATIONS ]#####################################################
++
++  struct-declaration:
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_defstr.htm
++    - match: (?i:defstruct|define-struct){{break}}
++      scope: meta.struct.lisp keyword.declaration.struct.lisp
++      set:
++        - struct-declaration-body
++        - struct-declaration-name
++
++  struct-declaration-name:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set:
++        - paren-body
++        - struct-declaration-qualified-name
++    - include: struct-declaration-qualified-name
++
++  struct-declaration-qualified-name:
++    - include: namespaces
++    - match: '{{identifier}}'
++      scope: entity.name.struct.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  struct-declaration-body:
++    - meta_content_scope: meta.struct.lisp
++    - include: paren-pop
++    - include: lists
++    - include: expressions
++
++###[ TYPE DECLARATIONS ]#######################################################
++
++  type-declaration:
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_deftp.htm
++    - match: (?i:deftype|define-type){{break}}
++      scope: meta.type.lisp keyword.declaration.type.lisp
++      set:
++        - type-body
++        - type-parameter-list
++        - type-declaration-name
++
++  type-declaration-name:
++    - include: namespaces
++    - match: '{{identifier}}'
++      scope: entity.name.type.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  type-parameter-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parameters.begin.lisp
++      set: type-parameter-list-body
++    - include: comments
++    - include: else-pop
++
++  type-parameter-list-body:
++    - clear_scopes: 1
++    - meta_scope: meta.type.parameters.lisp
++    - match: \)
++      scope: punctuation.section.parameters.end.lisp
++      pop: 1
++    - include: comments
++    - include: annotations
++    - include: keywords
++    - include: modifiers
++    - include: parameters
++
++  type-body:
++    - meta_content_scope: meta.type.lisp
++    - include: paren-pop
++    - include: parens
++    - include: expressions
++
++###[ VARIABLE DECLARATIONS ]###################################################
++
++  variable-declaration:
++    # https://www.lispworks.com/documentation/HyperSpec/Body/s_let_l.htm
++    - match: (?i:let\*?){{break}}
++      scope: keyword.declaration.variable.lisp
++      set: variable-declaration-list
++    # https://www.lispworks.com/documentation/lw445/CLHS/Body/m_defcon.htm
++    - match: (?i:defconstant){{break}}
++      scope: meta.declaration.lisp keyword.declaration.constant.lisp
++      set: constant-declaration-name
++    # https://www.lispworks.com/documentation/HyperSpec/Body/m_defpar.htm
++    - match: (?i:defparameter|defvar){{break}}
++      scope: meta.declaration.lisp keyword.declaration.variable.lisp
++      set: variable-declaration-name
++
++  variable-declaration-list:
++    - meta_include_prototype: false
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      set: variable-declaration-list-body
++    - include: comments
++    - include: else-pop
++
++  variable-declaration-list-body:
++    - meta_scope: meta.parens.lisp
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push:
++        - paren-body
++        - variable-declaration-name
++    - match: '{{identifier}}'
++      scope: meta.declaration.lisp variable.other.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++    - include: comments
++    - include: paren-end
++
++  constant-declaration-name:
++    - meta_content_scope: meta.declaration.lisp
++    - match: '{{identifier}}'
++      scope: meta.declaration.lisp constant.other.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  variable-declaration-name:
++    - meta_content_scope: meta.declaration.lisp
++    - match: '{{identifier}}'
++      scope: meta.declaration.lisp variable.other.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++###[ OTHER DECLARATIONS ]######################################################
++
++  other-declaration:
++    - match: '{{declaration_keywords}}'
++      scope: keyword.declaration.lisp
++      pop: 1
++
++###[ DECLARE STATEMENTS ]######################################################
++
++  declare:
++    # https://www.lispworks.com/documentation/HyperSpec/Body/s_declar.htm
++    - match: (?i:declare){{break}}
++      scope: keyword.declaration.declare.lisp
++      set: declare-specifier-list
++
++  declare-specifier-list:
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
++      push:
++        - paren-body
++        - declare-identifier
++    - include: comments
++    - include: else-pop
++
++  declare-identifier:
++    - match: '{{declaration_identifiers}}'
++      scope: storage.modifier.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++###[ CONTROL FLOW STATEMENTS ]#################################################
+ 
+   control:
+-    - match: \b(?i:with|while|when|unless|typecase|to|thereis|then|return-from name|return|repeat|prog*|prog|never|named|maplist|mapl|mapcon|mapcar|mapcan|mapc|loop|let|initially|if|from|for|finally|etypecase|else|dotimes|dolist|doing|do*|do|ctypecase|cond|case|block|as|always)\b
++    # Conditional
++    - match: (?i:if|case|cond|otherwise|unless|when|[ce]?typecase){{break}}
++      scope: keyword.control.conditional.lisp
++      pop: 1
++    # Flow
++    - match: (?i:return(?:-from)?){{break}}
++      scope: keyword.control.flow.return.lisp
++      pop: 1
++    # Loop
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_dolist.htm
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_dotime.htm
++    - match: (?i:dolist|dotimes){{break}}
++      scope: keyword.control.loop.lisp
++      set: expect-list
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_do_do.htm
++    - match: (?i:do\*?|do-(?:all-|external-)?symbols|iterate){{break}}
++      scope: keyword.control.loop.lisp
++      set: expect-lists-list
++    # Other
++    - match: (?xi:block|map(?:can|car|con|c|list|l)){{break}}
+       scope: keyword.control.lisp
++      pop: 1
++
++###[ LOOP STATEMENTS ]#########################################################
++
++  loop:
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/06_a.htm
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/m_loop.htm
++    - match: (?i:loop){{break}}
++      scope: keyword.control.loop.lisp
++      set: loop-body
++
++  loop-body:
++    - meta_scope: meta.loop.lisp
++    - include: paren-pop
++
++    # declaration keywords
++    - match: (?i:named){{break}}
++      scope: keyword.declaration.name.lisp
++      push: loop-name
++    - match: (?i:with){{break}}
++      scope: keyword.declaration.variable.lisp
++
++    # loop termination test keywords
++    - match: (?i:always|as|do|doing|for|never|repeat|thereis|until|while){{break}}
++      scope: keyword.control.loop.lisp
++    # conditional keywords
++    - match: (?i:end|else|if|then|unless|when){{break}}
++      scope: keyword.control.conditional.lisp
++    # control flow keywords
++    - match: (?i:finally|initially){{break}}
++      scope: keyword.control.flow.lisp
++    - match: (?i:return(?:-from)?){{break}}
++      scope: keyword.control.flow.return.lisp
+ 
+-  functions:
+-    - match: \b(?i:(defun|defmethod|defmacro))\b\s+([\w\-!?<>]*)
+-      scope: meta.function.lisp
++    # operator keywords
++    - match: ={{break}} # can be both, assignment and comparison
++      scope: keyword.operator.lisp
++    - match: (?i:into){{break}}
++      scope: keyword.operator.assignment.lisp
++    - match: (?i:and){{break}}
++      scope: keyword.operator.logical.lisp
++    - match: |-
++        (?xi: across | above | being | below | by | each | in | of | on | the
++        | (?:down|up)?to | (?:up)?from | using ){{break}}
++      scope: keyword.other.loop.lisp
++
++    # expressions
++    - include: comments
++    - include: parens
++    - include: numbers
++    - include: strings
++    - include: annotations
++    - include: keywords
++    - include: quotes
++    - include: macros
++    - include: modifiers
++    - match: (?={{identifier}})
++      push: loop-identifier
++
++  loop-identifier:
++    - include: builtin-function
++    - include: identifier
++
++  loop-name:
++    - match: '{{identifier}}'
++      scope: entity.name.loop.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++###[ QUOTE STATEMENTS ]########################################################
++
++  quote:
++    - match: (?i:quote){{break}}
++      scope: meta.function-call.lisp support.function.lisp
++      set: quote-args
++
++  quote-args:
++    - include: paren-pop
++    - include: quoted-parens
++    - include: expressions
++
++###[ FUNCTIONS ]###############################################################
++
++  builtin-function:
++    - match: '{{builtin_functions}}'
++      scope: meta.function-call.lisp support.function.lisp
++      pop: 1
++
++  other-function:
++    # functions starting with `make-` are most likely used as constructors
++    - match: make-{{identifier}}
++      scope: meta.function-call.lisp variable.function.constructor.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    # mutating functions changing data in-place end with !
++    - match: (?![+*#`'&]\S){{identifier}}\!{{break}}
++      scope: meta.function-call.lisp variable.function.mutating.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    # predicate functions returning boolean values end with ? or -p
++    - match: (?![+*#`'&]\S){{identifier}}(?:\?|-p){{break}}
++      scope: meta.function-call.lisp variable.function.predicate.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    # anything not looking like global variable, constant or macro
++    - match: (?![+*#`'&]\S|{{builtin_constants}}|{{builtin_types}}){{identifier}}
++      scope: meta.function-call.lisp variable.function.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++
++###[ MACROS ]##################################################################
++
++  macros:
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node191.html
++    - include: macro-arrays
++    - include: macro-characters
++    - include: macro-conditionals
++    - include: macro-functions
++    - include: macro-numbers
++    - include: macro-pathnames
++    - include: macro-structures
++    - include: macro-throw-exceptions
++    - include: macro-variables
++    - include: macro-vectors
++
++  macro-conditionals:
++    # Feature-flags
++    - match: (#[-+])({{identifier}})?
++      captures:
++        1: keyword.control.conditional.lisp
++        2: constant.other.feature.lisp
++        3: punctuation.definition.symbol.begin.lisp
++        4: punctuation.definition.symbol.end.lisp
++
++  macro-arrays:
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node29.html
++    - match: (#\d*[aA])(\()
++      captures:
++        1: punctuation.definition.array.lisp
++        2: meta.parens.lisp punctuation.section.parens.begin.lisp
++      push: macro-array-body
++    - match: (#\d*[aA])({{identifier}})
++      captures:
++        1: punctuation.definition.array.lisp
++        2: variable.other.lisp
++        3: punctuation.definition.symbol.begin.lisp
++        4: punctuation.definition.symbol.end.lisp
++
++  macro-array-body:
++    - meta_scope: meta.array.lisp
++    - meta_content_scope: meta.parens.lisp
++    - match: \)
++      scope: meta.parens.lisp punctuation.section.parens.end.lisp
++      pop: 1
++    - include: parens
++    - include: expressions
++
++  macro-characters:
++    # Standard Characters
++    #   https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node22.html
++    # Non-Standard Characters
++    #   https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node24.html
++    # Character Attributes
++    #   https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node25.html
++    - match: (#(\d*)\\){{char_attributes}}?(?i:Space|NewLine){{break}}
++      scope: constant.character.standard.lisp
++      captures:
++        1: punctuation.definition.constant.lisp
++        2: storage.modifier.attributes.lisp
++    - match: (#(\d*)\\){{char_attributes}}?(?i:Backspace|Tab|Linefeed|Page|Return|RubOut){{break}}
++      scope: constant.character.semi-standard.lisp
++      captures:
++        1: punctuation.definition.constant.lisp
++        2: storage.modifier.attributes.lisp
++    - match: (#(\d*)\\){{char_attributes}}?{{standard_char}}{{break}}
++      scope: constant.character.standard.lisp
+       captures:
+-        1: storage.type.function-type.lisp
+-        2: entity.name.function.lisp
+-    - match: \b(?i:zerop|yes-or-no-p|y-or-n-p|write-to-string|write-string|write-char|write-byte|write|with-standard-io-syntax|with-slots|with-simple-restart|with-package-iterator|with-output-to-string|with-open-stream|with-open-file|with-input-from-string|with-hash-table-iterator|with-condition-restarts|with-compilation-unit|with-accessors|wild-pathname-p|warn|vectorp|vector-push-extend|vector-push|vector-pop|vector|variable-information|values-list|values|user-homedir-pathname|use-value|use-package|upper-case-p|upgraded-complex-part-type|upgraded-array-element-type|update-instance-for-redefined-class|update-instance-for-different-class|unuse-package|untrace|until-if|until|unread-char|union|unintern|unexport|typep|type-of|type-error-expected-type|type-error-datum|two-way-stream-output-stream|two-way-stream-input-stream|truncate|truename|tree-equal|translate-pathname|translate-logical-pathname|trace|to-alter|time|third|terpri|terminate-producing|tenth|tanh|tan|tailp|synonym-stream-symbol|symbolp|symbol-value|symbol-plist|symbol-package|symbol-name|symbol-function|sxhash|svref|summing|sum|subtypep|substitute-if-not|substitute-if|substitute|subst-if-not|subst-if|subst|subsetp|subseries|subseq|sublis|stringp|string>=|string>|string=|string<=|string<|string/=|string-upcase|string-trim|string-right-trim|string-not-lessp|string-not-greaterp|string-not-equal|string-lessp|string-left-trim|string-greaterp|string-equal|string-downcase|string-char-p|string-capitalize|string|streamp|stream-external-format|stream-error-stream|stream-element-type|store-value|step|standard-char-p|stable-sort|sqrt|split-if|split|special-form-p|sort|some|software-version|software-type|slot-value|slot-unbound|slot-missing|slot-makunbound|slot-exists-p|slot-boundp|sleep|sixth|sinh|sin|simple-vector-p|simple-string-p|simple-condition-format-string|simple-condition-format-arguments|simple-bit-vector-p|signum|signal|short-site-name|shiftf|shared-initialize|shadowing-import|shadow|seventh|setq|setf|set-syntax-from-char|set-pprint-dispatch|set-macro-character|set-exclusive-or|set-dispatch-macro-character|set-difference|set-char-bit|set|series|second|search|schar|scan-symbols|scan-sublists|scan-range|scan-plist|scan-multiple|scan-lists-of-lists-fringe|scan-lists-of-lists|scan-hash|scan-fn-inclusive|scan-fn|scan-file|scan-alist|scan|scale-float|sbit|rplacd|rplaca|row-major-aref|round|rotatef|room|reverse|revappend|result-of|restart-name|restart-case|restart-bind|rest|require|replace|rename-package|rename-file|remprop|remove-method|remove-duplicates|remove|remhash|remf|reinitialize-instance|reduce|realpart|realp|readtablep|readtable-case|read-preserving-whitespace|read-line|read-from-string|read-delimited-list|read-char-no-hang|read-char|read-byte|read|rationalp|rationalize|rational|rassoc-if-not|rassoc-if|rassoc|random-state-p|random|quote|pushnew|push|psetq|psetf|provide|progn|prog2|prog1|producing|proclaim|probe-file|print-unreadable-object|print-object|print|prin1|previous|pprint-tabular|pprint-tab|pprint-pop|pprint-newline|pprint-logical-block|pprint-linear|pprint-indent|pprint-fill|pprint-exit-if-list-exhausted|pprint-dispatch|positions|position-if-not|position-if|position|pop|plusp|phase|peek-char|pathnamep|pathname-version|pathname-type|pathname-name|pathname-match-p|pathname-host|pathname-directory|pathname-device|pathname|parse-namestring|parse-macro|parse-integer|pairlis|packagep|package-used-by-list|package-use-list|package-shadowing-symbols|package-nicknames|package-name|package-error-package|output-stream-p|open-stream-p|open|oddp|nunion|numerator|numberp|nthcdr|nth-value|nth|nsubstitute-if-not|nsubstitute-if|nsubstitute|nsubst-if-not|nsubst-if|nsubst|nsublis|nstring-upcase|nstring-downcase|nstring-capitalize|nset-exclusive-or|nset-difference|nreverse|nreconc|notevery|notany|no-next-method|no-applicable-method|ninth|nintersection|next-out|next-method-p|next-in|nconcing|nconc|nbutlast|namestring|name-char|multiple-value-setq|multiple-value-list|multiple-value-bind|muffle-warning|mismatch|minusp|minimizing|minimize|mingle|method-qualifiers|method-combination-error|merge-pathnames|merge|memberp|member-if-not|member-if|member|maximizing|maximize|mask-field|mask|mapping|maphash|map-into|map-fn|map|makunbound|make-two-way-stream|make-synonym-stream|make-symbol|make-string-output-stream|make-string-input-stream|make-string|make-sequence|make-random-state|make-pathname|make-package|make-load-form-saving-slots|make-load-form|make-list|make-instances-obsolete|make-instance|make-hash-table|make-echo-stream|make-dispatch-macro-character|make-condition|make-concatenated-stream|make-char|make-broadcast-stream|make-array|macroexpand-1|macroexpand|macro-function|machine-version|machine-type|machine-instance|lower-case-p|loop-finish|long-site-name|logtest|logorc2|logorc1|lognot|lognand|logical-pathname-translations|logical-pathname|logcount|logbitp|logandc2|logandc1|log|locally|load-logical-pathname-translations|load|listp|listen|list-length|list-all-packages|list*|list|lisp-implementation-version|lisp-implementation-type|length|ldiff|ldb-test|ldb|lcm|latch|last|lambda|keywordp|iterate|isqrt|invoke-restart|invoke-debugger|invalid-method-error|intersection|intern|interactive-stream-p|integerp|integer-length|integer-decode-float|int-char|inspect|input-stream-p|initialize-instance|in-package|import|imagpart|ignore-errors|identity|host-namestring|hash-table-test|hash-table-size|hash-table-rehash-threshold|hash-table-rehash-size|hash-table-p|hash-table-count|handler-case|handler-bind|graphic-char-p|gethash|getf|get-universal-time|get-setf-method-multiple-value|get-setf-method|get-properties|get-output-stream-string|get-internal-run-time|get-internal-real-time|get-decoded-time|get|gentemp|gensym|generic-function|generator|gcd|gathering|gatherer|functionp|function-lambda-expression|function-keywords|function-information|funcall|fourth|formatter|format|floor|floatp|float-sign|float-radix|float-precision|float-digits|float|first|finish-output|find-symbol|find-restart|find-package|find-method|find-if-not|find-if|find-class|find-all-symbols|find|fill-pointer|fill|file-write-date|file-string-length|file-position|file-namestring|file-length|file-error-pathname|file-author|fifth|ffloor|fdefinition|fboundp|f|expt|export|expand|exp|every|evenp|evalhook|eval|error|ensure-generic-function|enough-namestring|endp|encode-universal-time|enclose|encapsulated|elt|eighth|ed|echo-stream-output-stream|echo-stream-input-stream|ecase|dribble|dpb|documentation|do-symbols|do-external-symbols|do-all-symbols|disassemble|directory-namestring|directory|digit-char-p|digit-char|destructuring-bind|describe-object|describe|deposit-field|denominator|delete-package|delete-if-not|delete-if|delete-file|delete-duplicates|delete|defvar|deftype|defstruct|defpackage|define-setf-method|define-modify-macro|define-method-combination|define-declaration|define-condition|define-compiler-macro|defgeneric|defclass|decode-universal-time|decode-float|declaration-information|declaim|counting|count-if-not|count-if|count|cotruncate|cosh|cos|copy-tree|copy-symbol|copy-seq|copy-readtable|copy-pprint-dispatch|copy-list|copy-alist|continue|constantp|consp|cons|conjugate|concatenated-stream-streams|concatenate|compute-restarts|compute-applicable-methods|complexp|complex|complement|compiler-macroexpand-1|compiler-macroexpand|compiler-macro-function|compiler-let|compiled-function-p|compile-file-pathname|compile-file|compile|commonp|collecting-fn|collecting|collect-sum|collect-plist|collect-or|collect-nth|collect-nconc|collect-min|collect-max|collect-length|collect-last|collect-hash|collect-fn|collect-first|collect-file|collect-append|collect-and|collect-alist|collect|coerce|code-char|clrhash|close|clear-input|class-of|class-name|cis|chunk|choose-if|choose|check-type|characterp|character|char>=|char>|char=|char<=|char<|char/=|char-upcase|char-not-lessp|char-not-greaterp|char-not-equal|char-name|char-lessp|char-int|char-greaterp|char-font|char-equal|char-downcase|char-code|char-bits|char-bit|char|change-class|cerror|cell-error-name|ceiling|cdr|cddr|cdddr|cddddr|cdddar|cddar|cddadr|cddaar|cdar|cdadr|cdaddr|cdadar|cdaar|cdaadr|cdaaar|ccase|catenate|car|call-next-method|call-method|cadr|caddr|cadddr|caddar|cadar|cadadr|cadaar|caar|caadr|caaddr|caadar|caaar|caaadr|caaaar|byte-size|byte-position|byte|butlast|broadcast-stream-streams|break|boundp|both-case-p|boole|bit-xor|bit-vector-p|bit-orc2|bit-orc1|bit-not|bit-nor|bit-nand|bit-ior|bit-eqv|bit-andc2|bit-andc1|bit-and|bit|augment-environment|atom|atanh|atan|assoc-if-not|assoc-if|assoc|assert|asinh|asin|ash|arrayp|array-total-size|array-row-major-index|array-rank|array-in-bounds-p|array-has-fill-pointer-p|array-element-type|array-dimensions|array-dimension|arithmetic-error-operation|arithmetic-error-operands|aref|apropos-list|apropos|applyhook|apply|appending|append|alter|alphanumericp|alpha-char-p|adjustable-array-p|adjust-array|adjoin|add-method|acosh|acos|acons|abs|abort)\b
+-      scope: support.function.lisp
++        1: punctuation.definition.constant.lisp
++        2: storage.modifier.attributes.lisp
++    - match: (#(\d*)\\){{char_attributes}}?{{identifier_char}}+{{break}}
++      scope: constant.character.non-standard.lisp
++      captures:
++        1: punctuation.definition.constant.lisp
++        2: storage.modifier.attributes.lisp
++
++  macro-functions:
++    # Function reference
++    - match: \#[Mm']
++      scope: punctuation.definition.function.lisp
++      push: macro-function-name
++
++  macro-function-name:
++    - include: namespaces
++    - include: operator
++    - include: builtin-function
++    - include: other-function
++    - include: immediately-pop
++
++  macro-numbers:
++    # binary rational numbers
++    - match: |-
++        (?xi)
++        ( \#(?: b | 2r ) )
++        ( [-+]? )
++        ( [01]+ (/) [01]+ )
++        {{break}}
++      scope: meta.number.rational.binary.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: keyword.operator.arithmetic.lisp
++    # binary integer numbers
++    - match: |-
++        (?xi)
++        ( \#(?: b | 2r ) )
++        ( [-+]? )
++        ( [01]+ (?: (\.)(?![01]) | {{break}} ) )
++      scope: meta.number.integer.binary.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: punctuation.separator.decimal.lisp
++    # octal rational numbers
++    - match: |-
++        (?xi)
++        ( \#(?: o | 8r ) )
++        ( [-+]? )
++        ( [0-7]+ (/) [0-7]+ )
++        {{break}}
++      scope: meta.number.rational.octal.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: keyword.operator.arithmetic.lisp
++    # octal integer numbers
++    - match: |-
++        (?xi)
++        ( \#(?: o | 8r ) )
++        ( [-+]? )
++        ( [0-7]+ (?: (\.)(?![0-7]) | {{break}} ) )
++      scope: meta.number.integer.octal.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: punctuation.separator.decimal.lisp
++    # hexadecimal rational numbers
++    - match: |-
++        (?xi)
++        ( \#(?: x | 16r ) )
++        ( [-+]? )
++        ( \h+ (/) \h+ )
++        {{break}}
++      scope: meta.number.rational.hexadecimal.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: keyword.operator.arithmetic.lisp
++    # hexadecimal integer numbers
++    - match: |-
++        (?xi)
++        ( \#(?: x | 16r ) )
++        ( [-+]? )
++        ( \h+ (?: (\.)(?!\h) | {{break}} ) )
++      scope: meta.number.integer.hexadecimal.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: punctuation.separator.decimal.lisp
++    # radix rational numbers
++    - match: |-
++        (?xi)
++        ( \#\d+r )
++        ( [-+]? )
++        ( [[:alnum:]]+ (/) [[:alnum:]]+ )
++        {{break}}
++      scope: meta.number.rational.other.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: keyword.operator.arithmetic.lisp
++    # radix integer numbers
++    - match: |-
++        (?xi)
++        ( \#\d+r )
++        ( [-+]? )
++        ( [[:alnum:]]+ (?: (\.)(?![[:alnum:]]) | {{break}} ) )
++      scope: meta.number.integer.other.lisp
++      captures:
++        1: constant.numeric.base.lisp
++        2: keyword.operator.arithmetic.lisp
++        3: constant.numeric.value.lisp
++        4: punctuation.separator.decimal.lisp
++    # complex numbers
++    - match: (#[cC])(\()
++      captures:
++        1: punctuation.definition.complex.lisp
++        2: meta.parens.lisp punctuation.section.parens.begin.lisp
++      push: macro-numbers-complex-body
++
++  macro-numbers-complex-body:
++    - meta_scope: meta.number.complex.lisp
++    - meta_content_scope: meta.parens.lisp
++    - match: \)
++      scope: meta.parens.lisp punctuation.section.parens.end.lisp
++      pop: 1
++    - include: parens
++    - include: expressions
+ 
+-  operators:
+-    - match: '\/\=|\>\=|\<\=|\=|\>|\<|\b(?i:max|min|eq|neq|eql|equalp|equal)\b'
++  macro-pathnames:
++    - match: (#\d*[pP])(\")
++      captures:
++        1: punctuation.definition.pathname.lisp
++        2: string.quoted.double.lisp punctuation.definition.string.begin.lisp
++      push: macro-pathname-body
++
++  macro-pathname-body:
++    - meta_scope: meta.path.lisp
++    - meta_content_scope: string.quoted.double.lisp
++    - match: \"
++      scope: string.quoted.double.lisp punctuation.definition.string.end.lisp
++      pop: 1
++    - match: \\.
++      scope: constant.character.escape.lisp
++
++  macro-structures:
++    # Structures
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node39.html
++    - match: (#\d*[sS])(\()
++      captures:
++        1: punctuation.definition.struct.lisp
++        2: meta.parens.lisp punctuation.section.parens.begin.lisp
++      push:
++        - macro-struct-body
++        - macro-struct-name
++
++  macro-struct-name:
++    - match: '{{identifier}}'
++      scope: entity.name.struct.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: else-pop
++
++  macro-struct-body:
++    - meta_scope: meta.struct.lisp
++    - meta_content_scope: meta.parens.lisp
++    - match: \)
++      scope: meta.parens.lisp punctuation.section.parens.end.lisp
++      pop: 1
++    - include: lists
++    - include: expressions
++
++  macro-vectors:
++    # Vector
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node30.html
++    - match: (#\d*)(\()
++      captures:
++        1: punctuation.definition.vector.lisp
++        2: meta.parens.lisp punctuation.section.parens.begin.lisp
++      push: macro-vector-body
++    # Bit vector
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node32.html
++    - match: (#\d*\*)([01]*){{break}}
++      scope: meta.vector.lisp
++      captures:
++        1: punctuation.definition.vector.lisp
++        2: meta.number.integer.binary constant.numeric.value.lisp
++
++  macro-vector-body:
++    - meta_scope: meta.vector.lisp
++    - meta_content_scope: meta.parens.lisp
++    - match: \)
++      scope: meta.parens.lisp punctuation.section.parens.end.lisp
++      pop: 1
++    - include: parens
++    - include: expressions
++
++  macro-throw-exceptions:
++    - match: '#[ \t\n\r)<]'
++      scope: keyword.control.exception.throw.lisp
++
++  macro-variables:
++    # Inline runtime/loadtime eval
++    - match: \#[.,:]
++      scope: punctuation.definition.variable.lisp
++    # Local assignment
++    - match: ((#)\d+)\s*(=)
++      captures:
++        1: variable.other.local.lisp
++        2: punctuation.definition.variable.lisp
++        3: keyword.operator.assignment.lisp
++    - match: (#)(\d+)(#)
++      scope: variable.other.lisp
++      captures:
++        1: punctuation.definition.variable.begin.lisp
++        2: variable.other.local.lisp
++        3: punctuation.definition.variable.end.lisp
++
++###[ OPERATORS ]###############################################################
++
++  modifiers:
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/02_df.htm
++    - match: '[`'']'
++      scope: punctuation.definition.quoted.lisp
++    - match: ',@?'
++      scope: punctuation.definition.variable.lisp
++
++  operator:
++    # Contains 'Standardized Compound Type Specifier Names'
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/04_bc.htm
++    - match: (?:(?:/=|>=|<=|=|>|<)|(?i:max|min|eq|neq|eql|equalp|equal)){{break}}
+       scope: keyword.operator.comparison.lisp
+-    - match: '\+|\-|\*|\/|\b(?i:mod|rem|incf|decf)\b'
++      pop: 1
++    - match: ={{break}}
++      scope: keyword.operator.assignment.lisp
++      pop: 1
++    - match: (?:[-+*/]|(?i:mod|rem|incf|decf)){{break}}
+       scope: keyword.operator.arithmetic.lisp
+-    - match: \b(?i:and|or|not)\b
++      pop: 1
++    - match: (?i:and|or|not|satisfies){{break}}
+       scope: keyword.operator.logical.lisp
+-    - match: \b(?i:logand|logior|logxor|lognor|logeqv)\b
++      pop: 1
++    - match: (?i:logand|logior|logxor|lognor|logeqv){{break}}
+       scope: keyword.operator.bitwise.lisp
++      pop: 1
+ 
+-  parens:
+-    - match: '\('
+-      scope: punctuation.definition.group.begin.lisp
+-      push:
+-        - meta_scope: meta.group.lisp
+-        - match: '\)'
+-          scope: punctuation.definition.group.end.lisp
+-          pop: true
+-        - include: expressions
+-        - include: parens
+-    - match: '\)'
+-      scope: invalid.illegal.stray-bracket-end.lisp
+-
+-  constants:
+-    - match: \b(?i:null|t|single-float-negative-epsilon|single-float-epsilon|short-float-negative-epsilon|short-float-epsilon|pi|nil|multiple-values-limit|most-positive-single-float|most-positive-short-float|most-positive-long-float|most-positive-fixnum|most-positive-double-float|most-negative-single-float|most-negative-short-float|most-negative-long-float|most-negative-fixnum|most-negative-double-float|long-float-negative-epsilon|long-float-epsilon|least-positive-single-float|least-positive-short-float|least-positive-normalized-single-float|least-positive-normalized-short-float|least-positive-normalized-long-float|least-positive-normalized-double-float|least-positive-long-float|least-positive-double-float|least-negative-single-float|least-negative-short-float|least-negative-normalized-single-float|least-negative-normalized-short-float|least-negative-normalized-long-float|least-negative-normalized-double-float|least-negative-long-float|least-negative-double-float|lambda-parameters-limit|lambda-list-keywords|internal-time-units-per-second|double-float-negative-epsilon|double-float-epsilon|char-super-bit|char-meta-bit|char-hyper-bit|char-font-limit|char-control-bit|char-code-limit|char-bits-limit|call-arguments-limit|array-total-size-limit|array-rank-limit|array-dimension-limit)\b
+-      scope: constant.language.lisp
+-    - match: '(#)(\w|[\\+-=<>''"&#])+'
+-      scope: constant.character.lisp
+-      captures:
+-        1: punctuation.definition.constant.lisp
++###[ LITERALS ]################################################################
+ 
+   numbers:
+-    - match: '\b((0(x|X)\h*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)(?i:l|ul|u|f|ll|ull)?\b'
+-      scope: constant.numeric.lisp
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node16.html
++    # https://www.lispworks.com/documentation/lw70/CLHS/Body/02_ca.htm
++    # decimal floating point
++    - match: |-
++        (?x)
++        ( [-+]? )
++        ( \d* (?: (\.) \d+ )  {{exponent}}?
++        | \d+ (?: (\.) \d* )? {{exponent}})
++        {{break}}
++      scope: meta.number.float.decimal.lisp
++      captures:
++        1: keyword.operator.arithmetic.lisp
++        2: constant.numeric.value.lisp
++        3: punctuation.separator.decimal.lisp
++        4: punctuation.separator.decimal.lisp
++    # decimal rational numbers
++    - match: |-
++        (?x)
++        ( [-+]? )
++        ( \d+ (/) \d+ )
++        {{break}}
++      scope: meta.number.rational.decimal.lisp
++      captures:
++        1: keyword.operator.arithmetic.lisp
++        2: constant.numeric.value.lisp
++        3: keyword.operator.arithmetic.lisp
++    # decimal integer numbers
++    - match: |-
++        (?x)
++        ( [-+]? )
++        ( \d+ (?: (\.)(?!\d) | {{break}} ) )
++      scope: meta.number.integer.decimal.lisp
++      captures:
++        1: keyword.operator.arithmetic.lisp
++        2: constant.numeric.value.lisp
++        3: punctuation.separator.decimal.lisp
+ 
+   strings:
+-    - match: '"'
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node31.html
++    - match: \"
+       scope: punctuation.definition.string.begin.lisp
++      push: string-body
++
++  string-body:
++    - meta_include_prototype: false
++    - meta_scope: meta.string.lisp string.quoted.double.lisp
++    - match: \"
++      scope: punctuation.definition.string.end.lisp
++      pop: 1
++    - match: \\.
++      scope: constant.character.escape.lisp
++    - include: string-format-mini-language
++
++  string-format-mini-language:
++    # https://www.hexstreamsoft.com/articles/common-lisp-format-reference/clhs-summary/#subsections-summary-table
++    - match: (~)(\d*)[%&|~]
++      scope: constant.character.escape.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        # 2: constant.numeric.integer.decimal.lisp
++    - match: (~):?@?[CR]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++    # ~R
++    - match: |-
++        (?x:
++          (~)
++          (?:(\d*)             # Radix
++            (?:(,)\d*          # mincol
++              (?:(,)(?:'.)?    # padchar
++                (?:(,)(?:'.)?  # comma-char
++                  (?:(,)\d*)?  # comma-interval
++          )?)?)?)
++        ):?@?[rR]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.definition.numeric.base.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++        5: punctuation.separator.sequence.lisp
++        6: punctuation.separator.sequence.lisp
++    # ~b, ~o, ~d, ~x
++    - match: |-
++        (?x:
++          (~)
++          (?:\d*             # mincol
++            (?:(,)(?:'.)?    # padchar
++              (?:(,)(?:'.)?  # comma-char
++                (?:(,)\d*)?  # comma-interval
++          )?)?)?
++        ):?@?[bBoOdDxX]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.separator.sequence.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++    # ~f
++    - match: |-
++        (?x:
++          (~)
++          (?:\d*                 # width
++            (?:(,)\d*            # decimals
++              (?:(,)\d*          # scale
++                (?:(,)(?:'.)?    # overflowchar
++                  (?:(,)(?:'.)?  # padchar
++          )?)?)?)?)?
++        )@?[fF]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.separator.sequence.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++        5: punctuation.separator.sequence.lisp
++    # ~e, ~g
++    - match: |-
++        (?x:
++          (~)
++          (?:\d*                     # width
++            (?:(,)\d*                # decimals
++              (?:(,)\d*              # exponent-width
++                (?:(,)\d*            # scale
++                  (?:(,)(?:'.)?      # overflowchar
++                    (?:(,)(?:'.)?    # padchar
++                      (?:(,)(?:'.)?  # exponentchar
++          )?)?)?)?)?)?)?
++        )@?[eEgG]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.separator.sequence.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++        5: punctuation.separator.sequence.lisp
++        6: punctuation.separator.sequence.lisp
++        7: punctuation.separator.sequence.lisp
++    # ~$
++    - match: |-
++        (?x:
++          (~)
++          (?:\d*               # decimals
++            (?:(,)\d*          # min-units
++              (?:(,)\d*        # min-width
++                (?:(,)(?:'.)?  # padchar
++          )?)?)?)?
++        ):?@?\$
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.separator.sequence.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++    # ~a, ~s
++    - match: |-
++        (?x:
++          (~)
++          (?:\d*               # min-col
++            (?:(,)\d*          # col-inc
++              (?:(,)\d*        # min-pad
++                (?:(,)(?:'.)?  # padchar
++          )?)?)?)?
++        ):?@?[aAsS]
++      scope: constant.other.placeholder.lisp
++      captures:
++        1: punctuation.definition.placeholder.lisp
++        2: punctuation.separator.sequence.lisp
++        3: punctuation.separator.sequence.lisp
++        4: punctuation.separator.sequence.lisp
++
++###[ SYMBOLS ]#################################################################
++
++  annotations:
++    - match: (&){{identifier}}
++      scope: variable.annotation.lisp
++      captures:
++        1: punctuation.definition.annotation.lisp
++        2: punctuation.definition.symbol.begin.lisp
++        3: punctuation.definition.symbol.end.lisp
++
++  keywords:
++    # The colon : is a package marker.
++    # If the package name is missing, the symbol is in the KEYWORD package.
++    - match: (::?)({{identifier}})
++      captures:
++        1: punctuation.accessor.lisp
++        2: keyword.other.symbol.lisp
++        3: punctuation.definition.symbol.begin.lisp
++        4: punctuation.definition.symbol.end.lisp
++    - match: \.{{break}}
++      scope: keyword.control.lisp
++
++  identifiers:
++    # https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node27.html
++    # Pushing a dedicated context reduces syntax cache size
++    # and increases parsing performance, significantly.
++    - match: (?={{identifier}})
++      push: identifier
++
++  identifier:
++    - include: namespaces
++    # types
++    - match: '{{builtin_types}}'
++      scope: storage.type.lisp
++      pop: 1
++    # constants
++    - match: (?i:true|false){{break}}
++      scope: constant.language.boolean.lisp
++      pop: 1
++    - match: (?i:nil|null){{break}}
++      scope: constant.language.null.lisp
++      pop: 1
++    - match: '{{builtin_constants}}'
++      scope: constant.language.lisp
++      pop: 1
++    - match: \+\S+\+{{break}}
++      scope: constant.other.lisp
++      pop: 1
++    # variables
++    - match: '{{builtin_variables}}'
++      scope: variable.language.lisp
++      pop: 1
++    - match: '{{identifier}}'
++      scope: variable.other.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: immediately-pop
++
++  parameters:
++    # parameter with initial value
++    - match: \(
++      scope: punctuation.section.parens.begin.lisp
+       push:
+-        - meta_scope: string.quoted.double.lisp
+-        - match: '"'
+-          scope: punctuation.definition.string.end.lisp
+-          pop: true
+-        - match: \\.
+-          scope: constant.character.escape.lisp
+-
+-  block-comment:
+-    - match: '#\|'
+-      scope: punctuation.definition.comment.begin.lisp
+-      push:
+-        - meta_scope: comment.block.lisp
+-        - include: block-comment
+-        - match: '\|#'
+-          scope: punctuation.definition.comment.end.lisp
+-          pop: true
++        - paren-body
++        - parameter-name
++    # parameter without initial value
++    - match: '{{identifier}}'
++      scope: variable.parameter.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
+ 
+-  comments:
+-    - include: block-comment
+-    - match: '\|#'
+-      scope: invalid.illegal.stray-comment-end.lisp
+-    - match: (;).*$\n?
+-      scope: comment.line.semicolon.lisp
++  parameter-name:
++    - include: annotations
++    - include: keywords
++    - include: modifiers
++    - match: '{{identifier}}'
++      scope: variable.parameter.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++      pop: 1
++    - include: comments
++    - include: else-pop
++
++  namespaces:
++    # built-in namespace indicating keyword symbols
++    # note: accessor is consumed by `keywords` context
++    - match: (\|?)keyword(\|?)(?=:)
++      scope: variable.namespace.lisp
++      captures:
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++    # normal namespaces but not an escaped char #\:
++    - match: ((?!#\\?){{identifier}})(::?)
++      captures:
++        1: variable.namespace.lisp
++        2: punctuation.definition.symbol.begin.lisp
++        3: punctuation.definition.symbol.end.lisp
++        4: punctuation.accessor.lisp
++
++  variables:
++    # Symbols evaluate to their values
++    #   https://www.cs.cmu.edu/Groups/AI/html/cltl/clm/node27.html
++    - match: '{{identifier}}'
++      scope: variable.other.lisp
+       captures:
+-        1: punctuation.definition.comment.lisp
++        1: punctuation.definition.symbol.begin.lisp
++        2: punctuation.definition.symbol.end.lisp
++
++###[ PROTOTYPES ]##############################################################
++
++  else-pop:
++    - match: (?=\S)
++      pop: 1
++
++  immediately-pop:
++    - match: ''
++      pop: 1
++
++  paren-pop:
++    - match: (?=\))
++      pop: 1
++
++###############################################################################
++
++variables:
++
++  # variables / keyword-symbols
++  identifier: (?:{{identifier_char}}*{{identifier_must_have}}{{identifier_char}}*|{{quoted_identifier}})
++  identifier_char: (?:\\.|[^{{break_char}}])
++  identifier_must_have: (?:\\.|[^\d.{{break_char}}]) # May not be only digits or periods
++  quoted_identifier: (\|)(?:\\.|[^|])*(\|)
++
++  break: (?={{break_char}}|$)
++  break_char: '[\s()"'',:;|]'
++
++  # caracters
++  standard_char: '[0-9A-Za-z!"#$%&''()*+,\-./:;<=>?@\\\[\]^_`{|}~]'
++  char_attributes: (?:(?:[[:alnum:]_]+-)+\\?)
++
++  # numbers
++  exponent: (?:[esfdlESFDL][-+]?\d+)
++
++  declaration_keywords: |-
++    (?xi:
++      declaim
++    | define-(?: compiler-macro | condition | declaration | method-combination | modify-macro | setf-method )
++    | def(?: class | constant | generic | macro | method | package | parameter | setf | struct | type | un | var )
++    | generic-(?: flet | function | labels )
++    | flet
++    | labels
++    | let\*?
++    | locally
++    | macrolet
++    | multiple-value-bind
++    | proclaim
++    | prog\*?
++    | with-(?: accessors | added-methods | condition-restarts | input-from-string | open-file | open-stream | output-to-string | standard-io-syntax )
++    ){{break}}
++
++  declaration_identifiers: |-
++    (?xi:
++      dynamic-extent
++    | ftype
++    | ignorable
++    | ignore
++    | inline
++    | notinline
++    | optimize
++    | special
++    | type
++    ){{break}}
++
++  builtin_constants: |-
++    (?xi:
++      t | true | false | null | nil | pi
++    | array-(?: rank | dimension | total-size )-limit
++    | call-arguments-limit
++    | char-(?: (?: super | hyper | meta | control )-bit | (?: font | code | bits )-limit )
++    | internal-time-units-per-second
++    | lambda-(?: parameters-limit | list-keywords )
++    | least-(?: positive | negative )-normalized-(?: single | short | long | double )-float
++    | most-(?: positive | negative )-fixnum
++    | (?: most | least )-(?: positive | negative )-(?: single | short | long | double )-float
++    | multiple-values-limit
++    | (?: single | short | long | double )-float-(?: negative- )?epsilon
++    ){{break}}
++
++  builtin_functions: |-
++    (?xi:
++      abort
++    | abs
++    | acons
++    | acos
++    | acosh
++    | add-method
++    | adjoin
++    | adjust-array
++    | adjustable-array-p
++    | alpha-char-p
++    | alphanumericp
++    | alter
++    | append
++    | appending
++    | apply
++    | applyhook
++    | apropos
++    | apropos-list
++    | aref
++    | arithmetic-error-operands
++    | arithmetic-error-operation
++    | array-dimension
++    | array-dimensions
++    | array-element-type
++    | array-has-fill-pointer-p
++    | array-in-bounds-p
++    | array-rank
++    | array-row-major-index
++    | array-total-size
++    | arrayp
++    | ash
++    | asin
++    | asinh
++    | assert
++    | assoc
++    | assoc-if
++    | assoc-if-not
++    | atan
++    | atanh
++    | atom
++    | augment-environment
++    | bit
++    | bit-and
++    | bit-andc1
++    | bit-andc2
++    | bit-eqv
++    | bit-ior
++    | bit-nand
++    | bit-nor
++    | bit-not
++    | bit-orc1
++    | bit-orc2
++    | bit-vector-p
++    | bit-xor
++    | boole
++    | both-case-p
++    | boundp
++    | break
++    | broadcast-stream-streams
++    | butlast
++    | byte
++    | byte-position
++    | byte-size
++    | caaaar
++    | caaadr
++    | caaar
++    | caadar
++    | caaddr
++    | caadr
++    | caar
++    | cadaar
++    | cadadr
++    | cadar
++    | caddar
++    | cadddr
++    | caddr
++    | cadr
++    | call-method
++    | call-next-method
++    | car
++    | catenate
++    | ccase
++    | cdaaar
++    | cdaadr
++    | cdaar
++    | cdadar
++    | cdaddr
++    | cdadr
++    | cdar
++    | cddaar
++    | cddadr
++    | cddar
++    | cdddar
++    | cddddr
++    | cdddr
++    | cddr
++    | cdr
++    | ceiling
++    | cell-error-name
++    | cerror
++    | change-class
++    | char
++    | char-bit
++    | char-bits
++    | char-code
++    | char-downcase
++    | char-equal
++    | char-font
++    | char-greaterp
++    | char-int
++    | char-lessp
++    | char-name
++    | char-not-equal
++    | char-not-greaterp
++    | char-not-lessp
++    | char-upcase
++    | char/=
++    | char<
++    | char<=
++    | char=
++    | char>
++    | char>=
++    | character
++    | characterp
++    | check-type
++    | choose
++    | choose-if
++    | chunk
++    | cis
++    | class-name
++    | class-of
++    | clear-input
++    | close
++    | clrhash
++    | code-char
++    | coerce
++    | collect
++    | collect-alist
++    | collect-and
++    | collect-append
++    | collect-file
++    | collect-first
++    | collect-fn
++    | collect-hash
++    | collect-last
++    | collect-length
++    | collect-max
++    | collect-min
++    | collect-nconc
++    | collect-nth
++    | collect-or
++    | collect-plist
++    | collect-sum
++    | collecting
++    | collecting-fn
++    | commonp
++    | compile
++    | compile-file
++    | compile-file-pathname
++    | compiled-function-p
++    | compiler-let
++    | compiler-macro-function
++    | compiler-macroexpand
++    | compiler-macroexpand-1
++    | complement
++    | complex
++    | complexp
++    | compute-applicable-methods
++    | compute-restarts
++    | concatenate
++    | concatenated-stream-streams
++    | conjugate
++    | cons
++    | consp
++    | constantp
++    | continue
++    | copy-alist
++    | copy-list
++    | copy-pprint-dispatch
++    | copy-readtable
++    | copy-seq
++    | copy-symbol
++    | copy-tree
++    | cos
++    | cosh
++    | cotruncate
++    | count
++    | count-if
++    | count-if-not
++    | counting
++    | declaim
++    | declaration-information
++    | decode-float
++    | decode-universal-time
++    | delete
++    | delete-duplicates
++    | delete-file
++    | delete-if
++    | delete-if-not
++    | delete-package
++    | denominator
++    | deposit-field
++    | describe
++    | describe-object
++    | destructuring-bind
++    | digit-char
++    | digit-char-p
++    | directory
++    | directory-namestring
++    | disassemble
++    | do-all-keyword-symbols
++    | do-external-keyword-symbols
++    | do-keyword-symbols
++    | documentation
++    | dolist
++    | dpb
++    | dribble
++    | ecase
++    | echo-stream-input-stream
++    | echo-stream-output-stream
++    | ed
++    | eighth
++    | elt
++    | encapsulated
++    | enclose
++    | encode-universal-time
++    | endp
++    | enough-namestring
++    | ensure-generic-function
++    | error
++    | eval
++    | evalhook
++    | evenp
++    | every
++    | exp
++    | expand
++    | export
++    | expt
++    | f
++    | fboundp
++    | fdefinition
++    | ffloor
++    | fifth
++    | file-author
++    | file-error-pathname
++    | file-length
++    | file-namestring
++    | file-position
++    | file-string-length
++    | file-write-date
++    | fill
++    | fill-pointer
++    | find
++    | find-all-keyword-symbols
++    | find-class
++    | find-if
++    | find-if-not
++    | find-method
++    | find-package
++    | find-restart
++    | find-symbol
++    | finish-output
++    | first
++    | float
++    | float-digits
++    | float-precision
++    | float-radix
++    | float-sign
++    | floatp
++    | floor
++    | format
++    | formatter
++    | fourth
++    | funcall
++    | function-information
++    | function-keywords
++    | function-lambda-expression
++    | functionp
++    | gatherer
++    | gathering
++    | gcd
++    | generator
++    | generic-function
++    | gensym
++    | gentemp
++    | get
++    | get-decoded-time
++    | get-internal-real-time
++    | get-internal-run-time
++    | get-output-stream-string
++    | get-properties
++    | get-setf-method
++    | get-setf-method-multiple-value
++    | get-universal-time
++    | getf
++    | gethash
++    | graphic-char-p
++    | handler-bind
++    | handler-case
++    | hash-table-count
++    | hash-table-p
++    | hash-table-rehash-size
++    | hash-table-rehash-threshold
++    | hash-table-size
++    | hash-table-test
++    | host-namestring
++    | identity
++    | ignore-errors
++    | imagpart
++    | import
++    | in-package
++    | initialize-instance
++    | input-stream-p
++    | inspect
++    | int-char
++    | integer-decode-float
++    | integer-length
++    | integerp
++    | interactive-stream-p
++    | intern
++    | intersection
++    | invalid-method-error
++    | invoke-debugger
++    | invoke-restart
++    | isqrt
++    | iterate
++    | keywordp
++    | last
++    | latch
++    | lcm
++    | ldb
++    | ldb-test
++    | ldiff
++    | length
++    | lisp-implementation-type
++    | lisp-implementation-version
++    | list
++    | list-all-packages
++    | list-length
++    | list\*
++    | listen
++    | listp
++    | load
++    | load-logical-pathname-translations
++    | locally
++    | log
++    | logandc1
++    | logandc2
++    | logbitp
++    | logcount
++    | logical-pathname
++    | logical-pathname-translations
++    | lognand
++    | lognot
++    | logorc1
++    | logorc2
++    | logtest
++    | long-site-name
++    | loop-finish
++    | lower-case-p
++    | machine-instance
++    | machine-type
++    | machine-version
++    | macro-function
++    | macroexpand
++    | macroexpand-1
++    | make-array
++    | make-broadcast-stream
++    | make-char
++    | make-concatenated-stream
++    | make-condition
++    | make-dispatch-macro-character
++    | make-echo-stream
++    | make-hash-table
++    | make-instance
++    | make-instances-obsolete
++    | make-list
++    | make-load-form
++    | make-load-form-saving-slots
++    | make-package
++    | make-pathname
++    | make-random-state
++    | make-sequence
++    | make-string
++    | make-string-input-stream
++    | make-string-output-stream
++    | make-symbol
++    | make-synonym-stream
++    | make-two-way-stream
++    | makunbound
++    | map
++    | map-fn
++    | map-into
++    | maphash
++    | mapping
++    | mask
++    | mask-field
++    | maximize
++    | maximizing
++    | member
++    | member-if
++    | member-if-not
++    | memberp
++    | merge
++    | merge-pathnames
++    | method-combination-error
++    | method-qualifiers
++    | mingle
++    | minimize
++    | minimizing
++    | minusp
++    | mismatch
++    | muffle-warning
++    | multiple-value-bind
++    | multiple-value-list
++    | multiple-value-setq
++    | name-char
++    | namestring
++    | nbutlast
++    | nconc
++    | nconcing
++    | next-in
++    | next-method-p
++    | next-out
++    | nintersection
++    | ninth
++    | no-applicable-method
++    | no-next-method
++    | notany
++    | notevery
++    | nreconc
++    | nreverse
++    | nset-difference
++    | nset-exclusive-or
++    | nstring-capitalize
++    | nstring-downcase
++    | nstring-upcase
++    | nsublis
++    | nsubst
++    | nsubst-if
++    | nsubst-if-not
++    | nsubstitute
++    | nsubstitute-if
++    | nsubstitute-if-not
++    | nth
++    | nth-value
++    | nthcdr
++    | numberp
++    | numerator
++    | nunion
++    | oddp
++    | open
++    | open-stream-p
++    | output-stream-p
++    | package-error-package
++    | package-name
++    | package-nicknames
++    | package-shadowing-keyword-symbols
++    | package-use-list
++    | package-used-by-list
++    | packagep
++    | pairlis
++    | parse-integer
++    | parse-macro
++    | parse-namestring
++    | pathname
++    | pathname-device
++    | pathname-directory
++    | pathname-host
++    | pathname-match-p
++    | pathname-name
++    | pathname-type
++    | pathname-version
++    | pathnamep
++    | peek-char
++    | phase
++    | plusp
++    | pop
++    | position
++    | position-if
++    | position-if-not
++    | positions
++    | pprint-dispatch
++    | pprint-exit-if-list-exhausted
++    | pprint-fill
++    | pprint-indent
++    | pprint-linear
++    | pprint-logical-block
++    | pprint-newline
++    | pprint-pop
++    | pprint-tab
++    | pprint-tabular
++    | previous
++    | prin1
++    | print
++    | print-object
++    | print-unreadable-object
++    | probe-file
++    | producing
++    | prog1
++    | prog2
++    | progn
++    | provide
++    | psetf
++    | psetq
++    | push
++    | pushnew
++    | quote
++    | random
++    | random-state-p
++    | rassoc
++    | rassoc-if
++    | rassoc-if-not
++    | rational
++    | rationalize
++    | rationalp
++    | read
++    | read-byte
++    | read-char
++    | read-char-no-hang
++    | read-delimited-list
++    | read-from-string
++    | read-line
++    | read-preserving-whitespace
++    | readtable-case
++    | readtablep
++    | realp
++    | realpart
++    | reduce
++    | reinitialize-instance
++    | remf
++    | remhash
++    | remove
++    | remove-duplicates
++    | remove-method
++    | remprop
++    | rename-file
++    | rename-package
++    | replace
++    | require
++    | rest
++    | restart-bind
++    | restart-case
++    | restart-name
++    | result-of
++    | revappend
++    | reverse
++    | room
++    | rotatef
++    | round
++    | row-major-aref
++    | rplaca
++    | rplacd
++    | sbit
++    | scale-float
++    | scan
++    | scan-alist
++    | scan-file
++    | scan-fn
++    | scan-fn-inclusive
++    | scan-hash
++    | scan-lists-of-lists
++    | scan-lists-of-lists-fringe
++    | scan-multiple
++    | scan-plist
++    | scan-range
++    | scan-sublists
++    | scan-symbols
++    | schar
++    | search
++    | second
++    | series
++    | set
++    | set-char-bit
++    | set-difference
++    | set-dispatch-macro-character
++    | set-exclusive-or
++    | set-macro-character
++    | set-pprint-dispatch
++    | set-syntax-from-char
++    | setf
++    | setq
++    | seventh
++    | shadow
++    | shadowing-import
++    | shared-initialize
++    | shiftf
++    | short-site-name
++    | signal
++    | signum
++    | simple-bit-vector-p
++    | simple-condition-format-arguments
++    | simple-condition-format-string
++    | simple-string-p
++    | simple-vector-p
++    | sin
++    | sinh
++    | sixth
++    | sleep
++    | slot-boundp
++    | slot-exists-p
++    | slot-makunbound
++    | slot-missing
++    | slot-unbound
++    | slot-value
++    | software-type
++    | software-version
++    | some
++    | sort
++    | special-form-p
++    | split
++    | split-if
++    | sqrt
++    | stable-sort
++    | standard-char-p
++    | step
++    | store-value
++    | stream-element-type
++    | stream-error-stream
++    | stream-external-format
++    | streamp
++    | string
++    | string-capitalize
++    | string-downcase
++    | string-equal
++    | string-greaterp
++    | string-left-trim
++    | string-lessp
++    | string-not-equal
++    | string-not-greaterp
++    | string-not-lessp
++    | string-right-trim
++    | string-trim
++    | string-upcase
++    | string/=
++    | string<
++    | string<=
++    | string=
++    | string>
++    | string>=
++    | stringp
++    | sublis
++    | subseq
++    | subseries
++    | subsetp
++    | subst
++    | subst-if
++    | subst-if-not
++    | substitute
++    | substitute-if
++    | substitute-if-not
++    | subtypep
++    | sum
++    | summing
++    | svref
++    | sxhash
++    | symbol-function
++    | symbol-name
++    | symbol-package
++    | symbol-plist
++    | symbol-value
++    | symbolp
++    | synonym-stream-symbol
++    | tailp
++    | tan
++    | tanh
++    | tenth
++    | terminate-producing
++    | terpri
++    | third
++    | time
++    | to-alter
++    | trace
++    | translate-logical-pathname
++    | translate-pathname
++    | tree-equal
++    | truename
++    | truncate
++    | two-way-stream-input-stream
++    | two-way-stream-output-stream
++    | type-error-datum
++    | type-error-expected-type
++    | type-of
++    | typep
++    | unexport
++    | unintern
++    | union
++    | unread-char
++    | untrace
++    | unuse-package
++    | update-instance-for-different-class
++    | update-instance-for-redefined-class
++    | upgraded-array-element-type
++    | upgraded-complex-part-type
++    | upper-case-p
++    | use-package
++    | use-value
++    | user-homedir-pathname
++    | values
++    | values-list
++    | variable-information
++    | vector
++    | vector-pop
++    | vector-push
++    | vector-push-extend
++    | vectorp
++    | warn
++    | wild-pathname-p
++    | with-compilation-unit
++    | with-hash-table-iterator
++    | with-package-iterator
++    | with-simple-restart
++    | with-standard-io-syntax
++    | write
++    | write-byte
++    | write-char
++    | write-string
++    | write-to-string
++    | y-or-n-p
++    | yes-or-no-p
++    | zerop
++    ){{break}}
++
++  # Built-in atomic type specifiers
++  # https://www.lispworks.com/documentation/lw70/CLHS/Body/04_bc.htm
++  # Note: Some of them are scoped function when appearing as first list item.
++  builtin_types: |-
++    (?xi:
++      arithmetic-error
++    | array
++    | atom
++    | base-char
++    | base-string
++    | bignum
++    | bit
++    | bit-vector
++    | broadcast-stream
++    | built-in-class
++    | cell-error
++    | character
++    | class
++    | compiled-function
++    | complex
++    | concatenated-stream
++    | condition
++    | cons
++    | control-error
++    | division-by-zero
++    | double-float
++    | echo-stream
++    | end-of-file
++    | error
++    | extended-char
++    | file-error
++    | file-stream
++    | fixnum
++    | float
++    | floating-point-inexact
++    | floating-point-invalid-operation
++    | floating-point-overflow
++    | floating-point-underflow
++    | function
++    | generic-function
++    | hash-table
++    | integer
++    | keyword
++    | list
++    | logical-pathname
++    | long-float
++    | method
++    | method-combination
++    | number
++    | package
++    | package-error
++    | parse-error
++    | pathname
++    | print-not-readable
++    | program-error
++    | random-state
++    | ratio
++    | rational
++    | reader-error
++    | readtable
++    | real
++    | restart
++    | sequence
++    | serious-condition
++    | short-float
++    | signed-byte
++    | simple-array
++    | simple-base-string
++    | simple-bit-vector
++    | simple-condition
++    | simple-error
++    | simple-string
++    | simple-type-error
++    | simple-vector
++    | simple-warning
++    | single-float
++    | standard-char
++    | standard-class
++    | standard-generic-function
++    | standard-method
++    | standard-object
++    | storage-condition
++    | stream
++    | stream-error
++    | string
++    | string-stream
++    | structure-class
++    | structure-object
++    | style-warning
++    | symbol
++    | synonym-stream
++    | two-way-stream
++    | type-error
++    | unbound-slot
++    | unbound-variable
++    | undefined-function
++    | unsigned-byte
++    | vector
++    | warning
++    ){{break}}
++
++  builtin_variables: |-
++    \*(?xi:
++      applyhook
++    | break-on-signals
++    | break-on-warnings
++    | compile-file-pathname
++    | compile-file-truename
++    | compile-print
++    | compile-verbose
++    | debug-io
++    | debugger-hook
++    | default-pathname-defaults
++    | error-output
++    | evalhook
++    | features
++    | gensym-counter
++    | load-pathname
++    | load-print
++    | load-truename
++    | load-verbose
++    | macroexpand-hook
++    | modules
++    | package
++    | print-array
++    | print-base
++    | print-case
++    | print-circle
++    | print-escape
++    | print-gensym
++    | print-length
++    | print-level
++    | print-lines
++    | print-miser-width
++    | print-pprint-dispatch
++    | print-pretty
++    | print-radix
++    | print-readably
++    | print-right-margin
++    | query-io
++    | random-state
++    | read-base
++    | read-default-float-format
++    | read-eval
++    | read-suppress
++    | readtable
++    | standard-input
++    | standard-output
++    | suppress-series-warnings
++    | terminal-io
++    | trace-output
++    )\*{{break}}

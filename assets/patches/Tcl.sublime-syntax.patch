@@ -1,0 +1,12 @@
+diff --git syntaxes/01_Packages/TCL/Tcl.sublime-syntax syntaxes/01_Packages/TCL/Tcl.sublime-syntax
+index 1234567..abcdefg 100644
+--- syntaxes/01_Packages/TCL/Tcl.sublime-syntax
++++ syntaxes/01_Packages/TCL/Tcl.sublime-syntax
+@@ -3,6 +3,7 @@
+ # http://www.sublimetext.com/docs/3/syntax.html
+ name: Tcl
+ file_extensions:
+   - tcl
++first_line_match: ^\#!.*\b(tclsh|wish|expect)\b
+ scope: source.tcl
+ variables:

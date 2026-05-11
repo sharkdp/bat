@@ -1,0 +1,594 @@
+use std::convert::TryFrom;
+use std::fs;
+use std::fs::File;
+use std::io::{self, BufRead, BufReader, Read};
+use std::path::{Path, PathBuf};
+
+use clircle::{Clircle, Identifier};
+use content_inspector::{self, ContentType};
+
+use crate::error::*;
+
+/// A description of an Input source.
+/// This tells bat how to refer to the input.
+#[derive(Clone)]
+pub struct InputDescription {
+    pub(crate) name: String,
+
+    /// The input title.
+    /// This replaces the name if provided.
+    title: Option<String>,
+
+    /// The input kind.
+    kind: Option<String>,
+
+    /// A summary description of the input.
+    /// Defaults to "{kind} '{name}'"
+    summary: Option<String>,
+}
+
+impl InputDescription {
+    /// Creates a description for an input.
+    pub fn new(name: impl Into<String>) -> Self {
+        InputDescription {
+            name: name.into(),
+            title: None,
+            kind: None,
+            summary: None,
+        }
+    }
+
+    pub fn set_kind(&mut self, kind: Option<String>) {
+        self.kind = kind;
+    }
+
+    pub fn set_summary(&mut self, summary: Option<String>) {
+        self.summary = summary;
+    }
+
+    pub fn set_title(&mut self, title: Option<String>) {
+        self.title = title;
+    }
+
+    pub fn title(&self) -> &String {
+        match &self.title {
+            Some(title) => title,
+            None => &self.name,
+        }
+    }
+
+    pub fn kind(&self) -> Option<&String> {
+        self.kind.as_ref()
+    }
+
+    pub fn summary(&self) -> String {
+        self.summary.clone().unwrap_or_else(|| match &self.kind {
+            None => self.name.clone(),
+            Some(kind) => format!("{} '{}'", kind.to_lowercase(), self.name),
+        })
+    }
+}
+
+pub(crate) enum InputKind<'a> {
+    OrdinaryFile(PathBuf),
+    StdIn,
+    CustomReader(Box<dyn Read + 'a>),
+}
+
+impl InputKind<'_> {
+    pub fn description(&self) -> InputDescription {
+        match self {
+            InputKind::OrdinaryFile(ref path) => InputDescription::new(path.to_string_lossy()),
+            InputKind::StdIn => InputDescription::new("STDIN"),
+            InputKind::CustomReader(_) => InputDescription::new("READER"),
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+pub(crate) struct InputMetadata {
+    pub(crate) user_provided_name: Option<PathBuf>,
+    pub(crate) size: Option<u64>,
+}
+
+pub struct Input<'a> {
+    pub(crate) kind: InputKind<'a>,
+    pub(crate) metadata: InputMetadata,
+    pub(crate) description: InputDescription,
+}
+
+pub(crate) enum OpenedInputKind {
+    OrdinaryFile(PathBuf),
+    StdIn,
+    CustomReader,
+}
+
+pub(crate) struct OpenedInput<'a> {
+    pub(crate) kind: OpenedInputKind,
+    pub(crate) metadata: InputMetadata,
+    pub(crate) reader: InputReader<'a>,
+    pub(crate) description: InputDescription,
+}
+
+impl OpenedInput<'_> {
+    /// Get the path of the file:
+    /// If this was set by the metadata, that will take priority.
+    /// If it wasn't, it will use the real file path (if available).
+    pub(crate) fn path(&self) -> Option<&PathBuf> {
+        self.metadata
+            .user_provided_name
+            .as_ref()
+            .or(match self.kind {
+                OpenedInputKind::OrdinaryFile(ref path) => Some(path),
+                _ => None,
+            })
+    }
+}
+
+impl<'a> Input<'a> {
+    pub fn ordinary_file(path: impl AsRef<Path>) -> Self {
+        Self::_ordinary_file(path.as_ref())
+    }
+
+    fn _ordinary_file(path: &Path) -> Self {
+        let kind = InputKind::OrdinaryFile(path.to_path_buf());
+        let metadata = InputMetadata {
+            size: fs::metadata(path).map(|m| m.len()).ok(),
+            ..InputMetadata::default()
+        };
+
+        Input {
+            description: kind.description(),
+            metadata,
+            kind,
+        }
+    }
+
+    pub fn stdin() -> Self {
+        let kind = InputKind::StdIn;
+        Input {
+            description: kind.description(),
+            metadata: InputMetadata::default(),
+            kind,
+        }
+    }
+
+    pub fn from_reader(reader: Box<dyn Read + 'a>) -> Self {
+        let kind = InputKind::CustomReader(reader);
+        Input {
+            description: kind.description(),
+            metadata: InputMetadata::default(),
+            kind,
+        }
+    }
+
+    pub fn is_stdin(&self) -> bool {
+        matches!(self.kind, InputKind::StdIn)
+    }
+
+    pub fn with_name(self, provided_name: Option<impl AsRef<Path>>) -> Self {
+        self._with_name(provided_name.as_ref().map(|it| it.as_ref()))
+    }
+
+    fn _with_name(mut self, provided_name: Option<&Path>) -> Self {
+        if let Some(name) = provided_name {
+            self.description.name = name.to_string_lossy().to_string()
+        }
+
+        self.metadata.user_provided_name = provided_name.map(|n| n.to_owned());
+        self
+    }
+
+    pub fn description(&self) -> &InputDescription {
+        &self.description
+    }
+
+    pub fn description_mut(&mut self) -> &mut InputDescription {
+        &mut self.description
+    }
+
+    pub(crate) fn open<R: BufRead + 'a>(
+        self,
+        stdin: R,
+        stdout_identifier: Option<&Identifier>,
+    ) -> Result<OpenedInput<'a>> {
+        let description = self.description().clone();
+        match self.kind {
+            InputKind::StdIn => {
+                if let Some(stdout) = stdout_identifier {
+                    let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
+                        .map_err(|e| format!("Stdin: Error identifying file: {e}"))?;
+                    if stdout.surely_conflicts_with(&input_identifier) {
+                        return Err("IO circle detected. The input from stdin is also an output. Aborting to avoid infinite loop.".into());
+                    }
+                }
+
+                Ok(OpenedInput {
+                    kind: OpenedInputKind::StdIn,
+                    description,
+                    metadata: self.metadata,
+                    reader: InputReader::try_new(stdin)?,
+                })
+            }
+
+            InputKind::OrdinaryFile(path) => Ok(OpenedInput {
+                kind: OpenedInputKind::OrdinaryFile(path.clone()),
+                description,
+                metadata: self.metadata,
+                reader: {
+                    let path_display =
+                        crate::preprocessor::sanitize_for_terminal(&path.to_string_lossy());
+                    let mut file =
+                        File::open(&path).map_err(|e| format!("'{path_display}': {e}"))?;
+                    if file.metadata()?.is_dir() {
+                        return Err(format!("'{path_display}' is a directory.").into());
+                    }
+
+                    if let Some(stdout) = stdout_identifier {
+                        let input_identifier = Identifier::try_from(file)
+                            .map_err(|e| format!("{path_display}: Error identifying file: {e}"))?;
+                        if stdout.surely_conflicts_with(&input_identifier) {
+                            return Err(format!(
+                                "IO circle detected. The input from '{path_display}' is also an output. Aborting to avoid infinite loop.",
+                            )
+                            .into());
+                        }
+                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
+                    }
+
+                    InputReader::try_new(BufReader::new(file))?
+                },
+            }),
+            InputKind::CustomReader(reader) => Ok(OpenedInput {
+                description,
+                kind: OpenedInputKind::CustomReader,
+                metadata: self.metadata,
+                reader: InputReader::try_new(BufReader::new(reader))?,
+            }),
+        }
+    }
+}
+
+pub(crate) struct InputReader<'a> {
+    inner: Box<dyn BufRead + 'a>,
+    pub(crate) first_line: Vec<u8>,
+    pub(crate) content_type: Option<ContentType>,
+    pub(crate) unbuffered: bool,
+}
+
+impl<'a> InputReader<'a> {
+    #[cfg(test)]
+    pub(crate) fn new<R: BufRead + 'a>(reader: R) -> InputReader<'a> {
+        Self::try_new(reader).expect("reading the first line failed")
+    }
+
+    pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {
+        let mut first_line = vec![];
+        reader.read_until(b'\n', &mut first_line)?;
+
+        let content_type = inspect_content_type(&first_line);
+
+        if content_type == Some(ContentType::UTF_16LE) {
+            read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
+        } else if content_type == Some(ContentType::UTF_16BE) {
+            read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
+        }
+
+        Ok(InputReader {
+            inner: Box::new(reader),
+            first_line,
+            content_type,
+            unbuffered: false,
+        })
+    }
+
+    pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+        if !self.first_line.is_empty() {
+            buf.append(&mut self.first_line);
+            return Ok(true);
+        }
+
+        if self.content_type == Some(ContentType::UTF_16LE) {
+            return read_utf16_line(&mut self.inner, buf, 0x00, 0x0A);
+        }
+        if self.content_type == Some(ContentType::UTF_16BE) {
+            return read_utf16_line(&mut self.inner, buf, 0x0A, 0x00);
+        }
+
+        if self.unbuffered {
+            return self.read_line_unbuffered(buf);
+        }
+
+        let res = self.inner.read_until(b'\n', buf).map(|size| size > 0)?;
+        Ok(res)
+    }
+
+    fn read_line_unbuffered(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
+        let available = self.inner.fill_buf()?;
+        if available.is_empty() {
+            return Ok(!buf.is_empty());
+        }
+        if let Some(pos) = available.iter().position(|&b| b == b'\n') {
+            buf.extend_from_slice(&available[..=pos]);
+            self.inner.consume(pos + 1);
+        } else {
+            let len = available.len();
+            buf.extend_from_slice(available);
+            self.inner.consume(len);
+        }
+        Ok(true)
+    }
+}
+
+fn inspect_content_type(first_line: &[u8]) -> Option<ContentType> {
+    if first_line.is_empty() {
+        return None;
+    }
+
+    let content_type = content_inspector::inspect(first_line);
+    if content_type == ContentType::UTF_8 && has_zip_signature(first_line) {
+        Some(ContentType::BINARY)
+    } else {
+        Some(content_type)
+    }
+}
+
+fn has_zip_signature(bytes: &[u8]) -> bool {
+    [b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"]
+        .into_iter()
+        .any(|signature| bytes.starts_with(signature))
+}
+
+fn read_utf16_line<R: BufRead>(
+    reader: &mut R,
+    buf: &mut Vec<u8>,
+    read_until_char: u8,
+    preceded_by_char: u8,
+) -> io::Result<bool> {
+    loop {
+        let mut temp = Vec::new();
+        let n = reader.read_until(read_until_char, &mut temp)?;
+        if n == 0 {
+            // EOF reached
+            break;
+        }
+        buf.extend_from_slice(&temp);
+        if buf.len() >= 2
+            && buf[buf.len() - 2] == preceded_by_char
+            && buf[buf.len() - 1] == read_until_char
+        {
+            // end of line found
+            break;
+        }
+        // end of line not found, keep going
+    }
+    Ok(!buf.is_empty())
+}
+
+#[test]
+fn basic() {
+    let content = b"#!/bin/bash\necho hello";
+    let mut reader = InputReader::new(&content[..]);
+
+    assert_eq!(b"#!/bin/bash\n", &reader.first_line[..]);
+
+    let mut buffer = vec![];
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"#!/bin/bash\n", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"echo hello", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn zip_magic_headers_are_treated_as_binary() {
+    for content in [b"PK\x03\x04hello", b"PK\x05\x06hello", b"PK\x07\x08hello"] {
+        let reader = InputReader::new(&content[..]);
+        assert_eq!(Some(ContentType::BINARY), reader.content_type);
+    }
+}
+
+#[test]
+fn non_zip_pk_prefix_is_not_treated_as_binary() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"PK\x03\x03hello")
+    );
+}
+
+#[test]
+fn input_open_returns_initial_read_errors() {
+    struct FailingRead;
+
+    impl Read for FailingRead {
+        fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> {
+            Err(io::Error::other("initial read failed"))
+        }
+    }
+
+    let input = Input::from_reader(Box::new(FailingRead));
+    let result = input.open(io::empty(), None);
+
+    assert!(result.is_err());
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("initial read failed"));
+}
+
+#[test]
+fn utf16le() {
+    let content = b"\xFF\xFE\x73\x00\x0A\x00\x64\x00";
+    let mut reader = InputReader::new(&content[..]);
+
+    assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &reader.first_line[..]);
+
+    let mut buffer = vec![];
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"\xFF\xFE\x73\x00\x0A\x00", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"\x64\x00", &buffer[..]);
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_returns_partial_data() {
+    use std::io::Cursor;
+
+    let content = b"first line\npartial";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line (buffered during new())
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"first line\n", &buffer[..]);
+
+    // Subsequent calls use unbuffered reading
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"partial", &buffer[..]);
+
+    // EOF
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_returns_complete_lines() {
+    use std::io::Cursor;
+
+    let content = b"line1\nline2\n";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"line1\n", &buffer[..]);
+
+    // Second call returns line2 (complete line with newline)
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"line2\n", &buffer[..]);
+
+    // EOF
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn unbuffered_eof_handling() {
+    use std::io::Cursor;
+
+    let content = b"only line\n";
+    let mut reader = InputReader::new(Cursor::new(&content[..]));
+    reader.unbuffered = true;
+
+    // First call returns first_line
+    let mut buffer = vec![];
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(b"only line\n", &buffer[..]);
+
+    // EOF - empty buffer returns false
+    buffer.clear();
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}
+
+#[test]
+fn utf16le_issue3367() {
+    let content = b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00\
+        \x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00\
+        \x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00";
+    let mut reader = InputReader::new(&content[..]);
+
+    assert_eq!(
+        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00",
+        &reader.first_line[..]
+    );
+
+    let mut buffer = vec![];
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(
+        b"\xFF\xFE\x0A\x4E\x00\x4E\x0A\x4F\x00\x52\x0A\x00",
+        &buffer[..]
+    );
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(
+        b"\x6F\x00\x20\x00\x62\x00\x61\x00\x72\x00\x0A\x00",
+        &buffer[..]
+    );
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(res.unwrap());
+    assert_eq!(
+        b"\x68\x00\x65\x00\x6C\x00\x6C\x00\x6F\x00\x20\x00\x77\x00\x6F\x00\x72\x00\x6C\x00\x64\x00",
+        &buffer[..]
+    );
+
+    buffer.clear();
+
+    let res = reader.read_line(&mut buffer);
+    assert!(res.is_ok());
+    assert!(!res.unwrap());
+    assert!(buffer.is_empty());
+}

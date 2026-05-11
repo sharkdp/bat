@@ -1,0 +1,47 @@
+diff --git themes/onehalf/sublimetext/OneHalfDark.tmTheme themes/onehalf/sublimetext/OneHalfDark.tmTheme
+index b16050c..b021071 100644
+--- themes/onehalf/sublimetext/OneHalfDark.tmTheme
++++ themes/onehalf/sublimetext/OneHalfDark.tmTheme
+@@ -28,7 +28,7 @@
+ <plist version="1.0">
+ <dict>
+ 	<key>name</key>
+-	<string>OneHalfLight</string>
++	<string>OneHalfDark</string>
+ 	<key>semanticClass</key>
+ 	<string>theme.dark.one_half_dark</string>
+ 	<key>uuid</key>
+@@ -155,7 +155,7 @@
+ 			<key>name</key>
+ 			<string>Classes</string>
+ 			<key>scope</key>
+-			<string>support.class, entity.name.class, entity.name.type.class</string>
++			<string>support.class, entity.name.class, entity.name.type.class, entity.name</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>foreground</key>
+@@ -188,7 +188,7 @@
+ 			<key>name</key>
+ 			<string>Storage</string>
+ 			<key>scope</key>
+-			<string>storage</string>
++			<string>storage, meta.mapping.key string</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>foreground</key>
+@@ -309,7 +309,7 @@
+ 			<key>name</key>
+ 			<string>Markdown: Headings</string>
+ 			<key>scope</key>
+-			<string>markup.heading punctuation.definition.heading, entity.name.section</string>
++			<string>markup.heading punctuation.definition.heading, entity.name.section, markup.heading - text.html.markdown</string>
+ 			<key>settings</key>
+ 			<dict>
+ 				<key>fontStyle</key>
+@@ -660,4 +660,4 @@
+ 		</dict>
+ 	</array>
+ </dict>
+-</plist>
+\ No newline at end of file
++</plist>

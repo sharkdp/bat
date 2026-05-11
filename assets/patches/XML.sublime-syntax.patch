@@ -1,0 +1,12 @@
+diff --git syntaxes/01_Packages/XML/XML.sublime-syntax syntaxes/01_Packages/XML/XML.sublime-syntax
+index ad7d9c87..af4a00f0 100644
+--- syntaxes/01_Packages/XML/XML.sublime-syntax
++++ syntaxes/01_Packages/XML/XML.sublime-syntax
+@@ -12,6 +12,7 @@ file_extensions:
+   - rss
+   - opml
+   - svg
++  - xaml
+ first_line_match: |-
+     (?x:
+       ^(?:

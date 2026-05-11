@@ -1,0 +1,10 @@
+# Global git config files rooted in `$XDG_CONFIG_HOME/git/` or `$HOME/.config/git/`
+# See e.g. https://git-scm.com/docs/git-config#FILES
+
+[mappings]
+"Git Config" = ["${XDG_CONFIG_HOME}/git/config", "${HOME}/.config/git/config"]
+"Git Ignore" = ["${XDG_CONFIG_HOME}/git/ignore", "${HOME}/.config/git/ignore"]
+"Git Attributes" = [
+    "${XDG_CONFIG_HOME}/git/attributes",
+    "${HOME}/.config/git/attributes",
+]

@@ -1,0 +1,7 @@
+#!/usr/bin/expect -f
+# Expect script detected via expect shebang
+set timeout 30
+spawn ssh user@host
+expect "password:"
+send "secret\r"
+expect eof

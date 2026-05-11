@@ -1,0 +1,21 @@
+[mappings]
+"INI" = [
+    "**/systemd/**/*.conf",
+    "**/systemd/**/*.example",
+    "*.automount",
+    "*.device",
+    "*.dnssd",
+    "*.link",
+    "*.mount",
+    "*.netdev",
+    "*.network",
+    "*.nspawn",
+    "*.path",
+    "*.service",
+    "*.scope",
+    "*.slice",
+    "*.socket",
+    "*.swap",
+    "*.target",
+    "*.timer",
+]
