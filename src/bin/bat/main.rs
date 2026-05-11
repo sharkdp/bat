@@ -9,7 +9,7 @@ mod config;
 mod directories;
 mod input;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fmt::Write as _;
 use std::io;
 use std::io::{BufReader, Write};
@@ -30,7 +30,6 @@ use crate::config::system_config_file;
 
 use assets::{assets_from_cache_or_binary, clear_assets};
 use directories::PROJECT_DIRS;
-use globset::GlobMatcher;
 
 use bat::{
     config::Config,
@@ -39,7 +38,7 @@ use bat::{
     input::Input,
     style::{StyleComponent, StyleComponents},
     theme::{default_theme, theme, ColorScheme, ThemeOptions},
-    MappingTarget, PagingMode,
+    PagingMode,
 };
 
 const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.rs");
@@ -82,21 +81,6 @@ fn run_cache_subcommand(
     Ok(())
 }
 
-fn get_syntax_mapping_to_paths<'r, 't, I>(mappings: I) -> HashMap<&'t str, Vec<String>>
-where
-    I: IntoIterator<Item = (&'r GlobMatcher, &'r MappingTarget<'t>)>,
-    't: 'r, // target text outlives rule
-{
-    let mut map = HashMap::new();
-    for mapping in mappings {
-        if let (matcher, MappingTarget::MapTo(s)) = mapping {
-            let globs = map.entry(*s).or_insert_with(Vec::new);
-            globs.push(matcher.glob().glob().into());
-        }
-    }
-    map
-}
-
 pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
     let mut result: String = String::new();
 
@@ -129,14 +113,12 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
 
     languages.sort_by_key(|lang| lang.name.to_uppercase());
 
-    let configured_languages = get_syntax_mapping_to_paths(config.syntax_mapping.all_mappings());
-
-    for lang in &mut languages {
-        if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
-            lang.file_extensions
-                .extend(additional_paths.iter().cloned());
-        }
-    }
+    // Note: We intentionally do NOT include syntax mappings from config.syntax_mapping
+    // in the --list-languages output. These mappings contain glob patterns (*.ext),
+    // absolute paths (/etc/profile), and full filenames (bashrc) that work for file
+    // auto-detection but fail when used explicitly with --language. Only the syntax
+    // definitions' own file_extensions (which come from .sublime-syntax files) are
+    // valid for use with --language flag.
 
     if config.loop_through {
         for lang in languages {
