@@ -23,6 +23,7 @@
 
 ## Bugfixes
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
+- Fix `--list-themes` ignoring `BAT_OPTS` paging options (e.g., `--paging=always`), see #1618
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
 - Sanitize control characters in filenames before displaying them in the file header, error messages, and the terminal title, preventing ANSI escape injection via crafted filenames. Closes #3054, see #3691 (@curious-rabbit)

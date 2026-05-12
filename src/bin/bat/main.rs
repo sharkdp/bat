@@ -247,6 +247,10 @@ pub fn list_themes(
         ))?;
     }
 
+    // Ignore paging options for --list-themes to fix issue #1618
+    let mut config = config.clone();
+    config.paging_mode = PagingMode::Never;
+
     let mut output_type =
         OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
     let mut writer = output_type.handle()?;
