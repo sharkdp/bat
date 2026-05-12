@@ -1,0 +1,9 @@
+# comment
+id: 123
+name: Alice
+active: true
+score: null
+tags[3]: a,b,c
+items[2]{id,name}:
+  1,Alice
+  2,Bob

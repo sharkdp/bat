@@ -1,0 +1,128 @@
+%YAML 1.2
+---
+# TOON (Token-Oriented Object Notation) syntax highlighting for bat
+# https://toonformat.dev/
+# Spec: https://github.com/toon-format/spec
+name: TOON
+file_extensions:
+  - toon
+scope: source.toon
+
+contexts:
+  main:
+    # Comments: lines starting with #
+    - match: '(#).*$'
+      scope: comment.line.number-sign.toon
+      captures:
+        1: punctuation.definition.comment.toon
+
+    # Tabular array header with fields: key[N]{f1,f2,...}:
+    - match: '([A-Za-z_][A-Za-z0-9_.]*)\s*(\[)(\d+)([|\t]?)(\])(\{)([^}]*)(\})(:)'
+      captures:
+        1: entity.name.tag.toon
+        2: punctuation.section.brackets.begin.toon
+        3: constant.numeric.toon
+        4: keyword.operator.delimiter.toon
+        5: punctuation.section.brackets.end.toon
+        6: punctuation.section.braces.begin.toon
+        7: variable.parameter.toon
+        8: punctuation.section.braces.end.toon
+        9: punctuation.separator.toon
+
+    # Primitive array header: key[N]: or key[N|]:
+    - match: '([A-Za-z_][A-Za-z0-9_.]*)\s*(\[)(\d+)([|\t]?)(\])(:)'
+      captures:
+        1: entity.name.tag.toon
+        2: punctuation.section.brackets.begin.toon
+        3: constant.numeric.toon
+        4: keyword.operator.delimiter.toon
+        5: punctuation.section.brackets.end.toon
+        6: punctuation.separator.toon
+
+    # Root-level array header without key: [N]{fields}:
+    - match: '(\[)(\d+)([|\t]?)(\])(\{)([^}]*)(\})(:)'
+      captures:
+        1: punctuation.section.brackets.begin.toon
+        2: constant.numeric.toon
+        3: keyword.operator.delimiter.toon
+        4: punctuation.section.brackets.end.toon
+        5: punctuation.section.braces.begin.toon
+        6: variable.parameter.toon
+        7: punctuation.section.braces.end.toon
+        8: punctuation.separator.toon
+
+    # Root-level primitive array header: [N]:
+    - match: '(\[)(\d+)([|\t]?)(\])(:)'
+      captures:
+        1: punctuation.section.brackets.begin.toon
+        2: constant.numeric.toon
+        3: keyword.operator.delimiter.toon
+        4: punctuation.section.brackets.end.toon
+        5: punctuation.separator.toon
+
+    # List item marker
+    - match: '^\s*(-)\s'
+      captures:
+        1: punctuation.definition.list.toon
+
+    # Key-value pair: key: value
+    - match: '([A-Za-z_][A-Za-z0-9_.]*)\s*(:)(?=\s|$)'
+      captures:
+        1: entity.name.tag.toon
+        2: punctuation.separator.toon
+      push: value
+
+    - include: value-inline
+
+  value:
+    - match: '$'
+      pop: true
+
+    - match: '"'
+      scope: punctuation.definition.string.begin.toon
+      push: quoted-string
+
+    - match: '\b(true|false)\b'
+      scope: constant.language.boolean.toon
+      pop: true
+
+    - match: '\bnull\b'
+      scope: constant.language.null.toon
+      pop: true
+
+    - match: '-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?'
+      scope: constant.numeric.toon
+      pop: true
+
+    - match: '\S.*'
+      scope: string.unquoted.toon
+      pop: true
+
+    - match: '\s+'
+
+  value-inline:
+    - match: '"'
+      scope: punctuation.definition.string.begin.toon
+      push: quoted-string
+
+    - match: '\b(true|false)\b'
+      scope: constant.language.boolean.toon
+
+    - match: '\bnull\b'
+      scope: constant.language.null.toon
+
+    - match: '-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?'
+      scope: constant.numeric.toon
+
+    - match: '[,|]'
+      scope: punctuation.separator.toon
+
+  quoted-string:
+    - meta_scope: string.quoted.double.toon
+    - match: '"'
+      scope: punctuation.definition.string.end.toon
+      pop: true
+    - match: '\\[\\\"nrt]'
+      scope: constant.character.escape.toon
+    - match: '\\.'
+      scope: invalid.illegal.toon
