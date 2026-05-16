@@ -52,6 +52,13 @@ fn restore_path(original_path: String) {
     env::set_var("PATH", original_path);
 }
 
+/// Allows tests that need a mocked `less` in PATH (see `tests/mocked-pagers/less`).
+pub fn with_mocked_less_in_path(actual_test: fn()) {
+    let original_path = prepend_dir_to_path_env_var(get_mocked_pagers_dir());
+    actual_test();
+    restore_path(original_path);
+}
+
 /// Allows test to run that require our mocked versions of 'more' and 'most'
 /// in PATH. Temporarily changes PATH while the test code runs, and then restore it
 /// to avoid pollution of global state

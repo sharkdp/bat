@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Mock `less` for integration tests. Verifies bat passes `+J` to override $LESS=-J (#2497).
+for arg in "$@"; do
+    if [[ "$arg" == "+J" ]]; then
+        has_plus_j=1
+        break
+    fi
+done
+if [[ -z "${has_plus_j:-}" ]]; then
+    echo "mock less: expected +J in arguments: $*" >&2
+    exit 1
+fi
+if [[ "${1:-}" == "--version" ]]; then
+    echo "less 608 (PCRE2 regular expressions)"
+    exit 0
+fi
+cat
