@@ -1,6 +1,8 @@
 use predicates::boolean::PredicateBooleanExt;
 use predicates::{prelude::predicate, str::PredicateStrExt};
 use serial_test::serial;
+#[cfg(unix)]
+use std::env;
 use std::path::Path;
 use std::str::from_utf8;
 use tempfile::tempdir;
@@ -692,6 +694,36 @@ fn setup_temp_file(content: &[u8]) -> io::Result<(PathBuf, tempfile::TempDir)> {
 }
 
 #[cfg(unix)]
+fn setup_mock_less() -> io::Result<(tempfile::TempDir, PathBuf, std::ffi::OsString)> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let dir = tempfile::tempdir().expect("Couldn't create tempdir");
+    let less = dir.path().join("less");
+    let captured_args = dir.path().join("less_args");
+    std::fs::write(
+        &less,
+        r#"#!/bin/sh
+if [ "$1" = "--version" ]; then
+  printf 'less 668 (POSIX regular expressions)\n'
+  exit 0
+fi
+printf '%s\n' "$@" > "$BAT_TEST_LESS_ARGS"
+cat >/dev/null
+"#,
+    )?;
+    std::fs::set_permissions(&less, std::fs::Permissions::from_mode(0o755))?;
+
+    let path = env::join_paths(
+        std::iter::once(dir.path().to_path_buf()).chain(env::split_paths(
+            &env::var_os("PATH").expect("PATH should be set for tests"),
+        )),
+    )
+    .expect("PATH should be joinable");
+
+    Ok((dir, captured_args, path))
+}
+
+#[cfg(unix)]
 #[test]
 fn basic_io_cycle() -> io::Result<()> {
     let (filename, dir) = setup_temp_file(b"I am not empty")?;
@@ -1304,6 +1336,59 @@ fn pager_more() {
             .success()
             .stdout(predicate::eq("hello world\n").normalize());
     });
+}
+
+#[cfg(unix)]
+#[test]
+#[serial]
+fn less_pager_wrap_never_omits_chop_long_lines_when_quitting_if_one_screen() {
+    let (_dir, captured_args, path) = setup_mock_less().unwrap();
+
+    bat()
+        .env("PATH", path)
+        .env("LESS", "--quit-if-one-screen")
+        .env("BAT_TEST_LESS_ARGS", &captured_args)
+        .arg("--paging=always")
+        .arg("--wrap=never")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("--style=plain")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout("");
+
+    let args = std::fs::read_to_string(captured_args).unwrap();
+    assert!(
+        !args.lines().any(|arg| arg == "-S"),
+        "less -S prevents --quit-if-one-screen from quitting for long one-screen lines: {args:?}"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+#[serial]
+fn less_pager_wrap_never_keeps_chop_long_lines_without_quit_if_one_screen() {
+    let (_dir, captured_args, path) = setup_mock_less().unwrap();
+
+    bat()
+        .env("PATH", path)
+        .env("BAT_TEST_LESS_ARGS", &captured_args)
+        .arg("--paging=always")
+        .arg("--wrap=never")
+        .arg("--color=never")
+        .arg("--decorations=never")
+        .arg("--style=plain")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout("");
+
+    let args = std::fs::read_to_string(captured_args).unwrap();
+    assert!(
+        args.lines().any(|arg| arg == "-S"),
+        "--wrap=never should still pass -S to less when quit-if-one-screen is inactive: {args:?}"
+    );
 }
 
 #[test]
