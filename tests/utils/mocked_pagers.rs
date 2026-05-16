@@ -52,17 +52,12 @@ fn restore_path(original_path: String) {
     env::set_var("PATH", original_path);
 }
 
-
 /// Uses `tests/mocked-pagers/less-no-chop-with-quit` as `less` on PATH.
 pub fn with_mocked_less_no_chop_with_quit_in_path(actual_test: fn()) {
     let dir = get_mocked_pagers_dir();
     let original_path = prepend_dir_to_path_env_var(dir.clone());
     let less_mock = dir.join("less-no-chop-with-quit");
-    let less_name = if cfg!(windows) {
-        "less.bat"
-    } else {
-        "less"
-    };
+    let less_name = if cfg!(windows) { "less.bat" } else { "less" };
     let less_link = dir.join(less_name);
     let _ = std::fs::remove_file(&less_link);
     #[cfg(unix)]
