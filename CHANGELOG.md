@@ -23,7 +23,6 @@
 
 ## Bugfixes
 - Disable less's status column when paging so `$LESS=-J` does not overlap bat decorations, see #2497, closes #3744 (@leno23)
-- Fix `bat cache --build` failing when a `cache` directory exists in the working directory, see #1726, closes #3743 (@leno23)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)

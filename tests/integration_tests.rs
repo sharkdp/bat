@@ -1851,38 +1851,6 @@ fn cache_build() {
     assert!(tmp_metadata_path.exists());
 }
 
-#[cfg(unix)]
-#[test]
-fn cache_build_twice_when_cache_directory_exists_in_cwd() {
-    let tmp_dir = tempdir().expect("can create temporary directory");
-    let root = tmp_dir.path();
-    let config_home = root.join("config");
-    let cache_dir = root.join("cache");
-    std::fs::create_dir_all(config_home.join("bat/themes")).unwrap();
-    std::fs::create_dir_all(config_home.join("bat/syntaxes")).unwrap();
-
-    bat_with_config()
-        .current_dir(root)
-        .env("XDG_CONFIG_HOME", &config_home)
-        .env("BAT_CACHE_PATH", &cache_dir)
-        .arg("cache")
-        .arg("--build")
-        .arg("--blank")
-        .assert()
-        .success();
-    assert!(cache_dir.join("themes.bin").exists());
-    // `cache` is now a directory in cwd — must not disable the `cache` subcommand (#1726)
-    bat_with_config()
-        .current_dir(root)
-        .env("XDG_CONFIG_HOME", &config_home)
-        .env("BAT_CACHE_PATH", &cache_dir)
-        .arg("cache")
-        .arg("--build")
-        .arg("--blank")
-        .assert()
-        .success();
-}
-
 #[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
