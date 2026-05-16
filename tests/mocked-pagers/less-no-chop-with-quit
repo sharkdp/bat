@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Mock `less` for #3738: bat must not pass `-S` together with `-F` (--quit-if-one-screen).
+has_f=false
+has_s=false
+for arg in "$@"; do
+    case "$arg" in
+        -F | --quit-if-one-screen) has_f=true ;;
+        -S | --chop-long-lines) has_s=true ;;
+    esac
+done
+if [[ "$has_f" == true && "$has_s" == true ]]; then
+    echo "mock less: -F and -S must not be used together: $*" >&2
+    exit 1
+fi
+if [[ "${1:-}" == "--version" ]]; then
+    echo "less 608 (PCRE2 regular expressions)"
+    exit 0
+fi
+cat
