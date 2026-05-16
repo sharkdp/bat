@@ -3095,6 +3095,23 @@ fn line_wrapping_when_auto() {
 }
 
 #[test]
+fn no_wrapping_when_piped_with_paging_never_without_terminal_width() {
+    let input = "abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n";
+
+    bat()
+        .arg("--paging=never")
+        .arg("--wrap=character")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=rule")
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout(input)
+        .stderr("");
+}
+
+#[test]
 fn no_line_wrapping_with_s_flag() {
     wrapping_test("-S", false);
 }

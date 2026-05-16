@@ -404,10 +404,17 @@ impl App {
                 _ => unreachable!("other values for --binary are not allowed"),
             },
             wrapping_mode: {
+                let output_is_pipe_without_width = !self.interactive_output
+                    && paging_mode == PagingMode::Never
+                    && maybe_term_width.is_none();
+
                 if self.matches.get_flag("chop-long-lines") {
                     WrappingMode::NoWrapping(true)
                 } else {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
+                        Some("character") | Some("word") if output_is_pipe_without_width => {
+                            WrappingMode::NoWrapping(false)
+                        }
                         Some("character") => WrappingMode::Character,
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
