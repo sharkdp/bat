@@ -22,7 +22,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
-- Fix `bat cache --build` failing when a `cache` directory exists in the working directory, see #1726 (@leno23)
+- Fix `bat cache --build` failing when a `cache` directory exists in the working directory, see #1726, closes #3743 (@leno23)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
