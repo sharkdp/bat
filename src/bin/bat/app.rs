@@ -623,14 +623,24 @@ impl App {
                 StyleComponentList::to_components(lists, self.interactive_output, true)
             }
 
-            // Use the automatic default behavior: default style for terminals,
-            // plain output for non-interactive destinations.
-            None => StyleComponents(HashSet::from_iter(
-                StyleComponent::Auto
-                    .components(self.interactive_output)
-                    .iter()
-                    .cloned(),
-            )),
+            // Honor `--decorations=auto` (the default): plain style when output is not
+            // interactive. `--decorations=always` keeps the full default style even when piped.
+            None => {
+                let decorations = self
+                    .matches
+                    .get_one::<String>("decorations")
+                    .map(|s| s.as_str());
+                let default_style = match decorations {
+                    Some("auto") => StyleComponent::Auto,
+                    _ => StyleComponent::Default,
+                };
+                StyleComponents(HashSet::from_iter(
+                    default_style
+                        .components(self.interactive_output)
+                        .iter()
+                        .cloned(),
+                ))
+            }
         };
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
