@@ -22,7 +22,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
-- Do not pass `-S` to `less` when quit-if-one-screen is active and `--wrap=never` is set, so `$LESS=--quit-if-one-screen` works as expected, see #3738 (@leno23)
+- Do not pass `-S` to `less` when quit-if-one-screen is active and `--wrap=never` is set, so `$LESS=--quit-if-one-screen` works as expected, see #3738, closes #3745 (@leno23)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
