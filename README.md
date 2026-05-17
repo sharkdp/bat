@@ -591,12 +591,14 @@ syntax:
 
 ### Adding new themes
 
-This works very similar to how we add new syntax definitions.
+This works similarly to [adding new syntax definitions](#adding-new-syntaxes--language-definitions), but themes use a different file format than syntaxes.
+
 > [!NOTE]
-> Custom themes must be stored in [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html).
+> Custom themes must be stored in [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html) (XML).
+> Sublime Text `.sublime-syntax` files are for syntax highlighting only and cannot be used as themes.
 > Newer `.sublime-color-scheme` files are currently not supported.
 
-First, create a folder with the new syntax highlighting themes:
+First, create a folder with the new color themes:
 ```bash
 mkdir -p "$(bat --config-dir)/themes"
 cd "$(bat --config-dir)/themes"
