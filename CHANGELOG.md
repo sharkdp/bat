@@ -44,6 +44,7 @@
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
 - Fixed syntax tests path, see #3610 (@foxfromworld)
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
+- Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
