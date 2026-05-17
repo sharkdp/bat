@@ -2811,6 +2811,22 @@ fn strip_overstrike_for_manpage_syntax() {
 }
 
 #[test]
+fn manpage_does_not_echo_sgr_reset_codes() {
+    // Regression test for https://github.com/sharkdp/bat/issues/3724
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--paging=never")
+        .arg("--language=man")
+        .arg("manpage-sgr-reset.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("NAME"))
+        .stdout(predicate::str::is_match(r"\x1b\[22m").unwrap().not())
+        .stderr("");
+}
+
+#[test]
 fn no_strip_overstrike_for_other_syntax() {
     // Overstrike is NOT stripped for other syntaxes (e.g., Rust)
     bat()

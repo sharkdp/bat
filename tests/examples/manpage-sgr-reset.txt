@@ -1,0 +1,2 @@
+[1mNAME[22m
+       uname - print system information

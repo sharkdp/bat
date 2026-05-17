@@ -9,10 +9,15 @@ scope: source.man
 variables:
   section_heading: '^(?!#)\S.*$'
   command_line_option: '(--?[A-Za-z0-9][_A-Za-z0-9-]*)'
-  ansi_escape_sequence: '\e\[[\?=]?(?:\d+;?)*[A-Za-z]'
+  ansi_escape_sequence: '\e\[[\?=]?(?:\d+(?:;\d+)*)?[A-Za-z]'
+  osc_escape_sequence: '\e\][^\x07\x1b]*(?:\x07|\e\\)'
 
 contexts:
   prototype:
+    - match: '{{osc_escape_sequence}}'
+      scope: punctuation.definition.escape.man
+    - match: '{{ansi_escape_sequence}}'
+      scope: punctuation.definition.escape.man
     # ignore syntax test lines
     - match: '^#'
       push:
@@ -42,6 +47,7 @@ contexts:
       set: body
 
   body:
+    - include: scope:source.man#prototype
     # English, ..., ..., ..., Russian, ...
 
     - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SKŁADNIA|СИНТАКСИС|書式)'

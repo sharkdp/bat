@@ -772,8 +772,20 @@ impl Printer for InteractivePrinter<'_> {
 
                         // ANSI escape passthrough.
                         _ => {
-                            write!(handle, "{}", chunk.raw())?;
-                            self.ansi_style.update(chunk);
+                            let is_sgr = matches!(
+                                &chunk,
+                                EscapeSequence::CSI {
+                                    final_byte: "m",
+                                    ..
+                                }
+                            );
+                            let raw = chunk.raw();
+                            let handled = self.ansi_style.update(chunk);
+                            // Avoid echoing SGR sequences that were applied to ansi_style
+                            // (e.g. man pages' ^[[22m after bat already reset with ^[[0m).
+                            if !handled || !is_sgr {
+                                write!(handle, "{raw}")?;
+                            }
                         }
                     }
                 }
@@ -915,8 +927,18 @@ impl Printer for InteractivePrinter<'_> {
 
                         // ANSI escape passthrough.
                         _ => {
-                            write!(handle, "{}", chunk.raw())?;
-                            self.ansi_style.update(chunk);
+                            let is_sgr = matches!(
+                                &chunk,
+                                EscapeSequence::CSI {
+                                    final_byte: "m",
+                                    ..
+                                }
+                            );
+                            let raw = chunk.raw();
+                            let handled = self.ansi_style.update(chunk);
+                            if !handled || !is_sgr {
+                                write!(handle, "{raw}")?;
+                            }
                         }
                     }
                 }
