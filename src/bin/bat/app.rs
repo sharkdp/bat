@@ -632,6 +632,20 @@ impl App {
             )),
         };
 
+        if self
+            .matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str())
+            == Some("auto")
+            && !self.interactive_output
+        {
+            styled_components.clear();
+
+            if self.number_from_cli && self.matches.get_flag("number") {
+                styled_components.insert(StyleComponent::LineNumbers);
+            }
+        }
+
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
         if styled_components.grid() && styled_components.0.remove(&StyleComponent::Rule) {
             bat_warning!("Style 'rule' is a subset of style 'grid', 'rule' will not be visible.");
