@@ -2,7 +2,7 @@
 # Copy or symlink to $XDG_CONFIG_HOME/fish/completions/{{PROJECT_EXECUTABLE}}.fish
 # ($XDG_CONFIG_HOME is usually set to ~/.config)
 
-# `bat` is `batcat` on Debian and Ubuntu
+# `bat` is `batcat` on older Debian/Ubuntu releases (Debian 12+ uses `bat`)
 set bat {{PROJECT_EXECUTABLE}}
 
 # Helper functions:
