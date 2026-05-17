@@ -3,7 +3,8 @@
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  A <i>cat(1)</i> clone with syntax highlighting and Git integration.
+  A command-line tool that reads files and writes them to stdout (like Unix
+  <i>cat(1)</i>), with syntax highlighting and Git integration.
 </p>
 
 <p align="center">
@@ -184,7 +185,7 @@ bat main.cpp | xclip
 export MANPAGER="bat -plman"
 man 2 select
 ```
-(on some older Debian or Ubuntu releases, the executable is named `batcat` instead of `bat`)
+(on Debian releases before 12 and some older Ubuntu releases, the executable is named `batcat` instead of `bat`; Debian 12+ installs `bat`)
 
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
@@ -264,8 +265,7 @@ If your Ubuntu/Debian installation is new enough you can simply run:
 sudo apt install bat
 ```
 
-**Important**: On some older Ubuntu/Debian releases, the executable is installed as `batcat` instead of `bat` (due to [a name
-clash with another package](https://github.com/sharkdp/bat/issues/982)). On newer releases, the executable is available as `bat`. If `bat --version` does not work after installation, try `batcat --version` instead. You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
+**Important**: On Debian 12 ("Bookworm") and newer, the executable is installed as `bat`. On older Debian/Ubuntu releases, it may be installed as `batcat` instead (due to [a name clash with another package](https://github.com/sharkdp/bat/issues/982)). If `bat --version` does not work after installation, try `batcat --version` instead. On older releases, you can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat
