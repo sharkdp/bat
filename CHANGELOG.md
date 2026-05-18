@@ -63,6 +63,7 @@
 - Map all ignore dotfiles to Git Ignore syntax #3636 (@victor-gp)
 - Improved Kotlin syntax, see #3699 (@guille)
 - Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
+- Add Ghostty syntax mapping, see #3759 (@injust)
 
 ## Themes
 
