@@ -143,7 +143,11 @@ impl OutputType {
                     p.arg("-F"); // Short version of --quit-if-one-screen for compatibility
                 }
 
-                if wrapping_mode == WrappingMode::NoWrapping(true) {
+                // `-S` (chop long lines) breaks `-F` (quit-if-one-screen) when lines are wider than
+                // the terminal but the file fits vertically — see #3738.
+                if wrapping_mode == WrappingMode::NoWrapping(true)
+                    && single_screen_action != SingleScreenAction::Quit
+                {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
