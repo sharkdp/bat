@@ -178,6 +178,71 @@ fn line_numbers_from_cli_in_loop_through_mode() {
 }
 
 #[test]
+fn decorations_auto_suppresses_default_style_when_color_is_forced_to_pipe() {
+    bat()
+        .arg("test.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("hello world"))
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("   1").not())
+        .stdout(predicate::str::contains("│").not());
+}
+
+#[test]
+fn decorations_auto_suppresses_explicit_style_when_color_is_forced_to_pipe() {
+    bat()
+        .arg("test.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .arg("--style=full")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("hello world"))
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("   1").not())
+        .stdout(predicate::str::contains("│").not());
+}
+
+#[test]
+fn decorations_auto_keeps_line_numbers_from_cli_when_color_is_forced_to_pipe() {
+    bat()
+        .arg("test.txt")
+        .arg("-n")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .arg("--style=full")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("   1"))
+        .stdout(predicate::str::contains("hello world"))
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("│").not());
+}
+
+#[test]
+fn decorations_auto_respects_plain_overriding_number_when_color_is_forced_to_pipe() {
+    bat()
+        .arg("test.txt")
+        .arg("--number")
+        .arg("--plain")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B["))
+        .stdout(predicate::str::contains("hello world"))
+        .stdout(predicate::str::contains("   1").not())
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("│").not());
+}
+
+#[test]
 fn style_from_env_var_ignored_and_line_numbers_from_cli_in_loop_through_mode() {
     bat()
         .env("BAT_STYLE", "full")
