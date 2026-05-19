@@ -487,6 +487,17 @@ fn piped_output_with_auto_style() {
 }
 
 #[test]
+fn piped_output_with_color_always_and_auto_decorations_for_file() {
+    bat()
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("\u{1b}[38;5;231mhello world\u{1b}[0m\n");
+}
+
+#[test]
 #[cfg(not(target_os = "windows"))]
 fn piped_output_with_default_style_flag() {
     bat()
