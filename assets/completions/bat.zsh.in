@@ -95,20 +95,20 @@ _{{PROJECT_EXECUTABLE}}_main() {
             # language name is offered as the completion value; the matchers
             # show up as the menu description. See
             # https://github.com/sharkdp/bat/issues/3735.
-            languages=( ${(f)"$({{PROJECT_EXECUTABLE}} --color=never --decorations=never --list-languages)"} )
+            languages=( ${(f)"$({{PROJECT_EXECUTABLE}} --no-paging --color=never --decorations=never --list-languages)"} )
 
             _describe 'language' languages && ret=0
         ;;
 
         themes)
             local -a themes expl
-            themes=(${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --color=never --decorations=never --list-themes)"} )
+            themes=(${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --no-paging --color=never --decorations=never --list-themes)"} )
 
             _wanted themes expl 'theme' compadd -a themes && ret=0
         ;;
         theme_preferences)
             local -a themes expl
-            themes=(auto dark light auto:always auto:system ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --color=never --decorations=never --list-themes)"} )
+            themes=(auto dark light auto:always auto:system ${(f)"$(_call_program themes {{PROJECT_EXECUTABLE}} --no-paging --color=never --decorations=never --list-themes)"} )
 
             _wanted themes expl 'theme' compadd -a themes && ret=0
         ;;

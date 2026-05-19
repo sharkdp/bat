@@ -14,12 +14,12 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
     $ArrayPrint      = @('unicode', 'caret')
 
     function Get-MyThemes(){
-        $themes = {{PROJECT_EXECUTABLE}} --list-themes | ForEach-Object {$_  -replace "^(.*)$", '''$1'''} | select-object
+        $themes = {{PROJECT_EXECUTABLE}} --no-paging --list-themes | ForEach-Object {$_  -replace "^(.*)$", '''$1'''} | select-object
         return $themes
     }
 
     function Get-MyLanguages(){
-        $themes = {{PROJECT_EXECUTABLE}} --list-languages | ForEach-Object{[pscustomobject]@{MyParameter=$_.Substring(0,$_.IndexOf(":")).Trim();MyDescription=$_.Substring($_.IndexOf(":")+1)}} | select-object
+        $themes = {{PROJECT_EXECUTABLE}} --no-paging --list-languages | ForEach-Object{[pscustomobject]@{MyParameter=$_.Substring(0,$_.IndexOf(":")).Trim();MyDescription=$_.Substring($_.IndexOf(":")+1)}} | select-object
         return $themes
     }
 
