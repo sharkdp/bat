@@ -701,9 +701,10 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Print version"),
         );
 
-    // Check if the current directory contains a file name cache. Otherwise,
-    // enable the 'bat cache' subcommand.
-    if Path::new("cache").exists() {
+    // Check if the current directory contains a file named `cache`. Otherwise,
+    // enable the `bat cache` subcommand. A directory named `cache` must not
+    // disable the subcommand (see #1726).
+    if Path::new("cache").is_file() {
         app
     } else {
         app.subcommand(
