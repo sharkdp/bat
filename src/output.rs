@@ -178,6 +178,13 @@ impl OutputType {
             } else {
                 p.args(args);
             }
+
+            // Disable less's status column; it conflicts with bat's line decorations when
+            // set via $LESS (e.g. `LESS=-J`). Command-line `+J` overrides `$LESS`, see #2497.
+            if retrieve_less_version(&pager.bin) != Some(LessVersion::BusyBox) {
+                p.arg("+J");
+            }
+
             p.env("LESSCHARSET", "UTF-8");
 
             #[cfg(feature = "lessopen")]

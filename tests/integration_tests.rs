@@ -1120,6 +1120,32 @@ fn do_not_exit_directory() {
 
 #[test]
 #[serial]
+#[cfg(unix)]
+fn less_status_column_disabled_when_less_env_has_j() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let less_mock = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("mocked-pagers")
+        .join("less");
+    let mut perms = std::fs::metadata(&less_mock).unwrap().permissions();
+    perms.set_mode(0o755);
+    std::fs::set_permissions(&less_mock, perms).unwrap();
+
+    mocked_pagers::with_mocked_less_in_path(|| {
+        bat()
+            .env("LESS", "-J")
+            .env("PAGER", "less")
+            .arg("--paging=always")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("hello world").normalize());
+    });
+}
+
+#[test]
+#[serial]
 fn pager_basic() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
