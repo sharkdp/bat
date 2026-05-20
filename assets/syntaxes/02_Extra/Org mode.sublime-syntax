@@ -1,0 +1,219 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: orgmode
+file_extensions:
+  - org
+scope: text.orgmode
+contexts:
+  main:
+    - match: |-
+        (?x)
+        ^(\*+)               # leading stars
+        \s*([A-Z_]{2,})?     # todo keywords
+        \s*(\[\#[A-Ca-c]\])? # priority
+        \s*(?=\s+[A-Za-z0-9]+)  # expected heading text
+      comment: Outline headings
+      captures:
+        1: punctuation.definition.heading.orgmode
+        2: keyword.other.todo.orgmode
+        3: constant.other.priority.orgmode
+      push:
+        - meta_scope: markup.heading.orgmode
+        - meta_content_scope: entity.name.section.orgmode
+        - match: (?=\s*$\n?)
+          pop: true
+        - include: heading-inline
+    - match: "^-{5,}$"
+      scope: meta.separator.orgmode
+    - match: '^\s*([-+]|\s+\*)\s+(.*?)\s+::'
+      captures:
+        1: keyword.operator.list.orgmode
+        2: markup.bold.definition.orgmode
+      push:
+        - meta_scope: meta.list.definition.orgmode
+        - match: $
+          pop: true
+        - include: inline
+    - match: '^\s*?([-+]|\s+\*|\d+[).])'
+      captures:
+        1: keyword.operator.list.orgmode
+      push:
+        - meta_scope: meta.list.plain.orgmode
+        - match: $
+          pop: true
+        - include: list-inline
+    - match: (?i)^#\+(BEGIN_(QUOTE|VERSE|CENTER))$
+      captures:
+        1: keyword.control.block.orgmode
+      push:
+        - meta_scope: markup.quote.orgmode
+        - match: (?i)^#\+(END_\2)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+    - match: "^#[^+].*$"
+      scope: comment.line.number-sign.orgmode
+    - match: ^:(PROPERTIES):$
+      captures:
+        1: keyword.control.drawer.orgmode
+      push:
+        - meta_scope: meta.drawer.properties.orgmode
+        - match: ^:(END):$
+          captures:
+            1: keyword.control.drawer.orgmode
+          pop: true
+        - include: properties
+    - match: ^:(.+):$
+      captures:
+        1: keyword.control.drawer.orgmode
+      push:
+        - meta_scope: meta.drawer.other.orgmode
+        - match: ^:(END):$
+          captures:
+            1: keyword.control.drawer.orgmode
+          pop: true
+    - match: (?i)#\+(BEGIN_LaTeX)$
+      captures:
+        1: keyword.control.block.orgmode
+      push:
+        - meta_scope: meta.block.latex.orgmode
+        - match: (?i)#\+(END_LaTeX)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:text.tex.latex
+    - match: (?i)#\+(BEGIN_HTML)$
+      captures:
+        1: keyword.control.block.orgmode
+      push:
+        - meta_scope: meta.block.html.orgmode
+        - match: (?i)#\+(END_HTML)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:text.html.basic
+    - match: (?i)#\+(BEGIN_SRC)\s+(python)\s*(.*)$
+      captures:
+        1: keyword.control.block.orgmode
+        2: constant.other.language.orgmode
+        3: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.block.source.python.orgmode
+        - match: (?i)#\+(END_SRC)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:source.python
+    - match: (?i)#\+(BEGIN_SRC)\s+(ruby)\s*(.*)$
+      captures:
+        1: keyword.control.block.orgmode
+        2: constant.other.language.orgmode
+        3: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.block.source.ruby.orgmode
+        - match: (?i)#\+(END_SRC)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:source.ruby
+    - match: (?i)#\+(BEGIN_SRC)\s+((?:emacs-)?lisp)\s*(.*)$
+      captures:
+        1: keyword.control.block.orgmode
+        2: constant.other.language.orgmode
+        3: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.block.source.lisp.orgmode
+        - match: (?i)#\+(END_SRC)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:source.lisp
+    - match: (?i)#\+(BEGIN_SRC)\s+(sh)\s*(.*)$
+      captures:
+        1: keyword.control.block.orgmode
+        2: constant.other.language.orgmode
+        3: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.block.source.shell.orgmode
+        - match: (?i)#\+(END_SRC)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+        - include: scope:source.shell
+    - match: '(?i)#\+(BEGIN_(SRC|EXAMPLE))(?:\s+([\w-]+)?\s*(.*))?$'
+      captures:
+        1: keyword.control.block.orgmode
+        3: constant.other.language.orgmode
+        4: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.block.source.other.orgmode
+        - meta_content_scope: markup.raw.block.orgmode
+        - match: (?i)#\+(END_\2)$
+          captures:
+            1: keyword.control.block.orgmode
+          pop: true
+    - match: '#\+(OPTIONS):'
+      captures:
+        1: keyword.control.pragma.orgmode
+      push:
+        - meta_scope: meta.pragma.options.orgmode
+        - match: $
+          pop: true
+        - match: '([^\s]+):([^\s]+)'
+          scope: meta.option.orgmode
+          captures:
+            1: variable.parameter.option.orgmode
+            2: string.other.option.orgmode
+    - match: '#\+(CALL):\s+[A-Za-z-]+(?:\[([^\]]*)\])?\(?'
+      captures:
+        1: keyword.control.pragma.orgmode
+        2: string.other.header-args.orgmode
+      push:
+        - meta_scope: meta.pragma.call.orgmode
+        - match: '\)?([^)]*)$'
+          captures:
+            1: string.other.header-args.orgmode
+          pop: true
+        - match: (\w+)=
+          scope: meta.assignment.orgmode
+          captures:
+            1: variable.parameter.header-args.orgmode
+    - match: '^#\+([a-zA-Z_-]+): ?(.*)$'
+      scope: meta.pragma.orgmode
+      captures:
+        1: keyword.control.pragma.orgmode
+        2: string.unquoted.pragma.orgmode
+    - include: inline
+  heading-inline:
+    - match: ':([^:^\s]*)(?=:)'
+      scope: meta.keyword.orgmode
+      captures:
+        1: string.quoted.keyword.orgmode
+    - include: inline
+  inline:
+    - match: '(?<=^|[.,:;\s])/[^/]+/(?=$|[.,:;\s])'
+      scope: markup.italic.orgmode
+    - match: '(?<=^|[.,:;\s])\*[^*]+\*(?=$|[.,:;\s])'
+      scope: markup.bold.orgmode
+    - match: '(?<=^|[.,:;\s])_[^_]+_(?=$|[.,:;\s])'
+      scope: markup.underline.orgmode
+    - match: '(?<=^|[.,:;\s])([~=]).+?\1(?=$|[.,:;\s])'
+      scope: markup.raw.inline.orgmode
+    - match: '\[(?:\[([^\]]*)\])?\[([^\]]*)\]\]'
+      scope: meta.link.orgmode
+      captures:
+        1: markup.underline.link.orgmode
+        2: string.other.link.orgmode
+    - match: (?:http|ftp)s?:\/\/\S+
+      scope: markup.underline.url.orgmode
+  list-inline:
+    - match: '\[[ -X]\]'
+      scope: keyword.operator.checkbox.orgmode
+    - include: inline
+  properties:
+    - match: '^:([A-Za-z_]+):\s(.*)$'
+      scope: meta.property.orgmode
+      captures:
+        1: keyword.control.property.orgmode
+        2: string.unquoted.propval.orgmode

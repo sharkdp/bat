@@ -1,0 +1,34 @@
+--- 
+# Simple example
+id: 3595
+name: Test User
+username: "testuser"
+other_names: ['Bob', 'Bill', 'George']
+hexa: 0x11c3 #inline comment
+octa: 021131
+lastseen: .NAN
+enabled: true
+locked: false
+groups: 
+  - administrators
+  - engineering
+  - sfa
+address: >
+  123 Alphabet Way
+  San Francisco, CA
+bio: |
+  I am a hardworking person
+  and a member of the
+  executive staff
+phone: null
+email: ~
+building_access: yes
+secure_access: no
+bulb: On
+fans: Off
+emails:
+    executives:
+      - bob@example.com
+      - bill@example.com
+    supervisors:
+      - george@example.com

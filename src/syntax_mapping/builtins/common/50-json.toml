@@ -1,0 +1,3 @@
+# JSON Lines is a simple variation of JSON #2535
+[mappings]
+"JSON" = ["*.jsonl", "*.jsonc", "*.jsonld", "*.geojson", "*.ndjson"]

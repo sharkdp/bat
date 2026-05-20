@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CpuInfo
+file_extensions:
+  - cpuinfo
+scope: source.cpuinfo
+
+contexts:
+  main:
+    - match: '^([^:]+)\w*:\w*(.*)$'
+      captures:
+        1: keyword.other.cpuinfo-key
+        2: string.other.cpuinfo-value

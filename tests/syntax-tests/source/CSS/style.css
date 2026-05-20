@@ -1,0 +1,115 @@
+/*Scrolling*/
+html { scroll-behavior: smooth; }
+
+/*Header text*/
+.jumbotron {
+    background-image: linear-gradient(90deg, #849EB5, #30394A);
+    padding-bottom: 20px;
+    padding-top: 20px;
+    text-shadow: 0px 2px 4px #000000;
+}
+
+.container {
+    margin-top: -25px;
+}
+
+/*Background related*/
+body {
+    background: #161616;
+}
+
+/*Text related CSS*/
+h4 {
+    font-size: 70px;
+    color: #FFFFFF;
+    font-family: News Cycle, serif;
+}
+
+h3 {
+    color: #e5e5e5;
+}
+
+p {
+    font-size: 17px;
+    font-family: News Cycle, serif;
+    color: #DEDEDE;
+}
+
+p2 {
+    font-size: 24px;
+    color: #DEDEDE;
+    font-family: News Cycle, serif;
+}
+
+date {
+    font-family: News Cycle, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: #DEDEDE;
+}
+
+jobtitle {
+    font-size: 17px;
+    font-weight: bold;
+    font-family: News Cycle, serif;
+    color: #DEDEDE;
+}
+
+jobtilenolink {
+    font-size: 17px;
+    font-weight: bold;
+    font-family: News Cycle, serif;
+    color: #DEDEDE;
+}
+
+li {
+    font-family: News Cycle, serif;
+    color: #DEDEDE;
+}
+
+
+
+a {
+    color: #4A8ECC;
+}
+
+p a:visited {
+    color: #4A8ECC;
+}
+
+.href {
+    color: #4A8ECC;
+}
+
+a:visited {
+    color: #4A8ECC;
+}
+
+p a:hover {
+    color: #4FB1F4;
+}
+
+a:hover {
+    color: #4FB1F4;
+}
+
+jobtitle:hover {
+    color: #4FB1F4;
+}
+
+/*Section*/
+section {
+    background-color: #1B1B1B;
+    padding: 20px;
+    margin: -5px;
+    margin-bottom: 30px;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.3);
+}
+
+
+/*Icon related*/
+.icon {
+    position: relative;
+    top: 3px;
+    right: 5px;
+}

@@ -1,0 +1,15 @@
+[38;2;117;113;94m#[0m[38;2;117;113;94m See http://help.ubuntu.com/community/UpgradeNotes for how to upgrade to[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m newer versions of the distribution.[0m
+
+[38;2;190;132;255mdeb[0m[38;2;248;248;242m [0m[4;38;2;166;226;46mhttps://deb.debian.org/debian[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mbookworm[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mmain[0m[38;2;248;248;242m [0m[38;2;190;132;255mnon-free-firmware[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94mdeb-src https://deb.debian.org/debian bookworm main non-free-firmware[0m
+
+[38;2;117;113;94m#[0m[38;2;117;113;94m# Major bug fix updates produced after the final release of the[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m# distribution.[0m
+[38;2;117;113;94m#[0m[38;2;117;113;94m deb-src http://lt.archive.ubuntu.com/ubuntu/ xenial-updates main restricted[0m
+
+[38;2;190;132;255mdeb[0m[38;2;248;248;242m [0m[4;38;2;166;226;46mhttps://security.debian.org/debian-security[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mbookworm-security[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mmain[0m[38;2;248;248;242m [0m[38;2;190;132;255mnon-free-firmware[0m
+[38;2;190;132;255mdeb-src[0m[38;2;248;248;242m [0m[4;38;2;166;226;46mhttps://security.debian.org/debian-security[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mbookworm-security[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mmain[0m[38;2;248;248;242m [0m[38;2;190;132;255mnon-free-firmware[0m
+
+[38;2;190;132;255mdeb[0m[38;2;248;248;242m [0m[4;38;2;166;226;46mhttps://deb.debian.org/debian[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mbookworm-updates[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mmain[0m[38;2;248;248;242m [0m[38;2;190;132;255mnon-free-firmware[0m
+[38;2;190;132;255mdeb-src[0m[38;2;248;248;242m [0m[4;38;2;166;226;46mhttps://deb.debian.org/debian[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mbookworm-updates[0m[38;2;248;248;242m [0m[3;38;2;166;226;46mmain[0m[38;2;248;248;242m [0m[38;2;190;132;255mnon-free-firmware[0m

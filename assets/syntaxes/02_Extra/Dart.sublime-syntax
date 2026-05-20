@@ -1,0 +1,211 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Dart
+file_extensions:
+  - dart
+scope: source.dart
+contexts:
+  main:
+    - match: ^(#!.*)$
+      scope: meta.preprocessor.script.dart
+    - match: ^\w*\b(library|import|part of|part|export)\b
+      captures:
+        0: keyword.other.import.dart
+      push:
+        - meta_scope: meta.declaration.dart
+        - match: ;
+          captures:
+            0: punctuation.terminator.dart
+          pop: true
+        - include: strings
+        - include: comments
+        - match: \b(as|show|hide)\b
+          scope: keyword.other.import.dart
+    - include: comments
+    - include: punctuation
+    - include: annotations
+    - include: keywords
+    - include: constants-and-special-vars
+    - include: strings
+  annotations:
+    - match: '@[a-zA-Z]+'
+      scope: storage.type.annotation.dart
+  comments:
+    - match: /\*\*/
+      scope: comment.block.empty.dart
+      captures:
+        0: punctuation.definition.comment.dart
+    - include: comments-doc-oldschool
+    - include: comments-doc
+    - include: comments-inline
+  comments-block:
+    - match: /\*
+      push:
+        - meta_scope: comment.block.dart
+        - match: \*/
+          pop: true
+        - include: comments-block
+  comments-doc:
+    - match: ///
+      push:
+        - meta_scope: comment.block.documentation.dart
+        - match: .*
+          pop: true
+        - include: dartdoc
+  comments-doc-oldschool:
+    - match: /\*\*
+      push:
+        - meta_scope: comment.block.documentation.dart
+        - match: \*/
+          pop: true
+        - include: comments-doc-oldschool
+        - include: comments-block
+        - include: dartdoc
+  comments-inline:
+    - include: comments-block
+    - match: ((//).*)$
+      captures:
+        1: comment.line.double-slash.dart
+  constants-and-special-vars:
+    - match: (?<!\$)\b(true|false|null)\b(?!\$)
+      scope: constant.language.dart
+    - match: (?<!\$)\b(this|super)\b(?!\$)
+      scope: variable.language.dart
+    - match: '(?<!\$)\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\.?[0-9]*)|(\.[0-9]+))((e|E)(\+|-)?[0-9]+)?)\b(?!\$)'
+      scope: constant.numeric.dart
+    - match: '(?<![a-zA-Z0-9_$])([_$]*[A-Z][a-zA-Z0-9_$]*|bool\b|num\b|int\b|double\b|dynamic\b)'
+      scope: support.class.dart
+    - match: '([_$]*[a-z][a-zA-Z0-9_$]*)(<|\(|\s+=>)'
+      captures:
+        1: entity.name.function.dart
+  dartdoc:
+    - match: '(\[.*?\])'
+      captures:
+        0: variable.name.source.dart
+    - match: '^ {4,}(?![ \*]).*'
+      captures:
+        0: variable.name.source.dart
+    - match: '```.*?$'
+      push:
+        - meta_content_scope: variable.other.source.dart
+        - match: '```'
+          pop: true
+    - match: (`.*?`)
+      captures:
+        0: variable.other.source.dart
+    - match: (`.*?`)
+      captures:
+        0: variable.other.source.dart
+    - match: (\* ((    ).*))$
+      captures:
+        2: variable.other.source.dart
+    - match: (\*    .*)$
+  keywords:
+    - match: (?<!\$)\bas\b(?!\$)
+      scope: keyword.cast.dart
+    - match: (?<!\$)\b(try|on|catch|finally|throw|rethrow)\b(?!\$)
+      scope: keyword.control.catch-exception.dart
+    - match: (?<!\$)\b(break|case|continue|default|do|else|for|if|in|return|switch|while)\b(?!\$)
+      scope: keyword.control.dart
+    - match: (?<!\$)\b(sync(\*)?|async(\*)?|await|yield(\*)?)\b(?!\$)
+      scope: keyword.control.dart
+    - match: (?<!\$)\bassert\b(?!\$)
+      scope: keyword.control.dart
+    - match: (?<!\$)\b(new)\b(?!\$)
+      scope: keyword.control.new.dart
+    - match: (?<!\$)\b(abstract|class|enum|extends|external|factory|implements|get|mixin|native|operator|set|typedef|with|covariant)\b(?!\$)
+      scope: keyword.declaration.dart
+    - match: (?<!\$)\b(is\!?)\b(?!\$)
+      scope: keyword.operator.dart
+    - match: '\?|:'
+      scope: keyword.operator.ternary.dart
+    - match: (<<|>>>?|~|\^|\||&)
+      scope: keyword.operator.bitwise.dart
+    - match: ((&|\^|\||<<|>>>?)=)
+      scope: keyword.operator.assignment.bitwise.dart
+    - match: (=>)
+      scope: keyword.operator.closure.dart
+    - match: (==|!=|<=?|>=?)
+      scope: keyword.operator.comparison.dart
+    - match: '(([+*/%-]|\~)=)'
+      scope: keyword.operator.assignment.arithmetic.dart
+    - match: (=)
+      scope: keyword.operator.assignment.dart
+    - match: (\-\-|\+\+)
+      scope: keyword.operator.increment-decrement.dart
+    - match: (\-|\+|\*|\/|\~\/|%)
+      scope: keyword.operator.arithmetic.dart
+    - match: (!|&&|\|\|)
+      scope: keyword.operator.logical.dart
+    - match: (?<!\$)\b(static|final|const)\b(?!\$)
+      scope: storage.modifier.dart
+    - match: (?<!\$)\b(?:void|var)\b(?!\$)
+      scope: storage.type.primitive.dart
+  punctuation:
+    - match: ','
+      scope: punctuation.comma.dart
+    - match: ;
+      scope: punctuation.terminator.dart
+    - match: \.
+      scope: punctuation.dot.dart
+  string-interp:
+    - match: '\$((\w+)|\{([^{}]+)\})'
+      captures:
+        2: variable.parameter.dart
+        3: variable.parameter.dart
+    - match: \\.
+      scope: constant.character.escape.dart
+  strings:
+    - match: (?<!r)"""
+      push:
+        - meta_scope: string.interpolated.triple.double.dart
+        - match: '"""(?!")'
+          pop: true
+        - include: string-interp
+    - match: (?<!r)'''
+      push:
+        - meta_scope: string.interpolated.triple.single.dart
+        - match: '''''''(?!'')'
+          pop: true
+        - include: string-interp
+    - match: r"""
+      push:
+        - meta_scope: string.quoted.triple.double.dart
+        - match: '"""(?!")'
+          pop: true
+    - match: r'''
+      push:
+        - meta_scope: string.quoted.triple.single.dart
+        - match: '''''''(?!'')'
+          pop: true
+    - match: (?<!\|r)"
+      push:
+        - meta_scope: string.interpolated.double.dart
+        - match: '"'
+          pop: true
+        - match: \n
+          scope: invalid.string.newline
+        - include: string-interp
+    - match: r"
+      push:
+        - meta_scope: string.quoted.double.dart
+        - match: '"'
+          pop: true
+        - match: \n
+          scope: invalid.string.newline
+    - match: (?<!\|r)'
+      push:
+        - meta_scope: string.interpolated.single.dart
+        - match: "'"
+          pop: true
+        - match: \n
+          scope: invalid.string.newline
+        - include: string-interp
+    - match: r'
+      push:
+        - meta_scope: string.quoted.single.dart
+        - match: "'"
+          pop: true
+        - match: \n
+          scope: invalid.string.newline

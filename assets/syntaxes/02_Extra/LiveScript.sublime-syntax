@@ -1,0 +1,400 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: LiveScript
+comment: "LiveScript Syntax: version 1"
+file_extensions:
+  - ls
+  - Slakefile
+  - ls.erb
+first_line_match: ^#!.*\bls
+scope: source.livescript
+contexts:
+  main:
+    - match: |-
+        (?x)
+          !?[~-]{1,2}>\*?
+          |<[~-]{1,2}!?
+          |\(\s* (?=    instanceof[\s)]|and[\s)]|or[\s)]|is[\s)]|isnt[\s)]|in[\s)]|import[\s)]|import\ all[\s)]     |\.|[-+/*%^&<>=|][\b\s)\w$]|\*\*|\%\%)
+          |      (?<=[\s(]instanceof|[\s(]and|[\s(]or|[\s(]is|[\s(]isnt|[\s(]in|[\s(]import|[\s(]import\ all|[\s(]do|\.|\*\*|\%\%|[\b\s(\w$][-+/*%^&<>=|]) \s*\)
+      scope: storage.type.function.livescript
+    - match: \/\*
+      captures:
+        0: punctuation.definition.comment.livescript
+      push:
+        - meta_scope: comment.block.livescript
+        - match: \*\/
+          captures:
+            0: punctuation.definition.comment.livescript
+          pop: true
+        - match: '@\w*'
+          scope: storage.type.annotation.livescriptscript
+    - match: '(#)(?!\{).*$\n?'
+      scope: comment.line.number-sign.livescript
+      captures:
+        1: punctuation.definition.comment.livescript
+    - match: '((?:!|~|!~|~!)?function\*?)\s+([$\w\-]*[$\w]+)'
+      captures:
+        1: storage.type.function.livescript
+        2: entity.name.function.livescript
+    - match: (new)\s+(\w+(?:\.\w*)*)
+      captures:
+        1: keyword.operator.new.livescript
+        2: entity.name.type.instance.livescript
+    - match: \b(package|private|protected|public|interface|enum|static)(?!-)\b
+      scope: keyword.illegal.livescript
+    - match: "'''"
+      captures:
+        0: punctuation.definition.string.begin.livescript
+      push:
+        - meta_scope: string.quoted.heredoc.livescript
+        - match: "'''"
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin.livescript
+      push:
+        - meta_scope: string.quoted.double.heredoc.livescript
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+        - match: \\.
+          scope: constant.character.escape.livescript
+        - include: interpolated_livescript
+    - match: "``"
+      captures:
+        0: punctuation.definition.string.begin.livescript
+      push:
+        - meta_scope: string.quoted.script.livescript
+        - match: "``"
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.livescript
+    - match: '<\['
+      push:
+        - meta_scope: string.array-literal.livescript
+        - match: '\]>'
+          pop: true
+    - match: '/{2}(?![\s=/*+{}?]).*?[^\\]/[igmy]{0,4}(?![a-zA-Z0-9])/{2}'
+      scope: string.regexp.livescript
+    - match: '/{2}\n'
+      push:
+        - meta_scope: string.regexp.livescript
+        - match: "/{2}[imgy]{0,4}"
+          pop: true
+        - include: embedded_spaced_comment
+        - include: interpolated_livescript
+    - match: "/{2}"
+      push:
+        - meta_scope: string.regexp.livescript
+        - match: "/{2}[imgy]{0,4}"
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.livescript
+        - include: interpolated_livescript
+    - match: '/(?![\s=/*+{}?]).*?[^\\]/[igmy]{0,4}(?![a-zA-Z0-9])'
+      scope: string.regexp.livescript
+    - match: |-
+        (?x)
+          \b(?<![\.\$\-@])(
+            instanceof|new|delete|typeof|and|or|is|isnt|not
+          )(?!\-|\s*:)\b
+      scope: keyword.operator.livescript
+    - match: <\||\|>
+      scope: keyword.operator.livescript
+    - match: "=>"
+      scope: keyword.control.livescript
+    - match: |-
+        (?x)
+          \b(?<![\.\$\-@])(?:
+          return|break|continue|throw
+          |try|if|while|for|for\s+own|switch|unless|until
+          |catch|finally|else|nobreak|case|default|fallthrough|when|otherwise|then
+          |yield
+          )(?!\-|\s*:)\b
+      scope: keyword.control.livescript
+    - match: |-
+        (?x)
+          and=|or=|%|&|\^|\*|\/|(?<![a-zA-Z$_])(\-)?\-(?!\-?>)|\+\+|\+|
+          ~(?!~?>)|==|=|!=|<=|>=|<<=|>>=|
+          >>>=|<>|<(?!\[)|(?<!\])>|(?<!\w)!(?!([~\-]+)?>)|&&|\.\.(\.)?|\s\.\s|\?|\|\||\:|\*=|(?<!\()/=|%=|\+=|\-=|\.=|&=
+          |\^=
+      scope: keyword.operator.livescript
+    - match: |-
+        (?x)
+          \b(?<![\.\$\-@])(?:
+          function
+          )(?!\-|\s*:)\b
+      scope: storage.type.function.livescript
+    - match: |-
+        (?x)
+          \b(?<![\.\$\-@])(?:
+          this|throw|then|try|typeof!?|til|to
+          |continue|const|case|catch|class
+          |in|instanceof|import|import\s+all|implements|if|is
+          |default|delete|debugger|do
+          |for|for\s+own|finally|function|from|fallthrough
+          |super|switch
+          |else|nobreak|extends|export|eval
+          |and|arguments
+          |new|not
+          |unless|until
+          |while|with|when
+          |of|or|otherwise
+          |let|var|loop
+          |match
+          |by|yield
+          )(?!\-|\s*:)\b
+      scope: keyword.other.livescript
+    - match: '([a-zA-Z\$_](?:[\w$.-])*)\s*(?!\::)((:)|(=(?!>)))\s*(?!(\s*!?\s*\(.*\))?\s*(!?[~-]{1,2}>\*?))'
+      captures:
+        1: variable.assignment.livescript
+        3: punctuation.separator.key-value, keyword.operator.livescript
+        4: keyword.operator.livescript
+    - match: '(?<=\s|^)([\[\{])(?=.*?[\]\}]\s+[:=])'
+      captures:
+        0: keyword.operator.livescript
+      push:
+        - meta_scope: meta.variable.assignment.destructured.livescript
+        - match: '([\]\}]\s*[:=])'
+          captures:
+            0: keyword.operator.livescript
+          pop: true
+        - include: variable_name
+        - include: instance_variable
+        - include: single_quoted_string
+        - include: double_quoted_string
+        - include: numeric
+    - match: |-
+        (?x)
+          (\s*)
+          (?=[a-zA-Z\$_])
+          ([a-zA-Z\$_]([\w$.:-])*)\s*
+          (?=[:=](\s*!?\s*\(.*\))?\s*(!?[~-]{1,2}>\*?))
+      scope: meta.function.livescript
+      captures:
+        2: entity.name.function.livescript
+        3: entity.name.function.livescript
+        4: variable.parameter.function.livescript
+        5: storage.type.function.livescript
+    - match: \b(?<!\.)(true|on|yes)(?!\s*:)\b
+      scope: constant.language.boolean.true.livescript
+    - match: \b(?<!\.)(false|off|no)(?!\s*:)\b
+      scope: constant.language.boolean.false.livescript
+    - match: \b(?<!\.)(null|void)(?!\s*:)\b
+      scope: constant.language.null.livescript
+    - match: \b(?<!\.)(super|this|extends)(?!\s*:)\b
+      scope: variable.language.livescript
+    - match: '(class\b)\s+(@?[a-zA-Z$_][\w$.-]*)?(?:\s+(extends)\s+(@?[a-zA-Z$_][\w$.-]*))?'
+      scope: meta.class.livescript
+      captures:
+        1: storage.type.class.livescript
+        2: entity.name.type.class.livescript
+        3: keyword.control.inheritance.livescript
+        4: entity.other.inherited-class.livescript
+    - match: \b(debugger|\\)\b
+      scope: keyword.other.livescript
+    - match: |-
+        (?x)\b(
+          Array|ArrayBuffer|Blob|Boolean|Date|document|event|Function|
+          Int(8|16|32|64)Array|Math|Map|Number|
+          Object|Proxy|RegExp|Set|String|WeakMap|
+          window|Uint(8|16|32|64)Array|XMLHttpRequest
+        )\b
+      scope: support.class.livescript
+    - match: \b(console)\b
+      scope: entity.name.type.object.livescript
+    - match: \b(Infinity|NaN|undefined)\b
+      scope: constant.language.livescript
+    - match: \;
+      scope: punctuation.terminator.statement.livescript
+    - match: ',[ |\t]*'
+      scope: meta.delimiter.object.comma.livescript
+    - match: \.
+      scope: meta.delimiter.method.period.livescript
+    - match: '\{|\}'
+      scope: meta.brace.curly.livescript
+    - match: \(|\)
+      scope: meta.brace.round.livescript
+    - match: '\[|\]\s*'
+      scope: meta.brace.square.livescript
+    - include: instance_variable
+    - include: backslash_string
+    - include: single_quoted_string
+    - include: double_quoted_string
+    - include: numeric
+    - match: '()(@|@@|[$\w\-]*[$\w]+)\s*(`)'
+      captures:
+        1: keyword.operator.livescript
+        2: meta.function-call.livescript
+        3: keyword.operator.livescript
+    - match: "`"
+      scope: keyword.operator.livescript
+    - match: '()(@|@@|[$\w\-]*[$\w]+)(?:(\??\!)|[(])'
+      captures:
+        1: keyword.operator.livescript
+        2: meta.function-call.livescript
+        3: keyword.operator.livescript
+    - match: '(@|@@|[$\w\-]*[$\w]+)(\?)? (?!\s*(((by|of|and|or|with|when|unless|if|is|isnt|else|nobreak|for|from|not in|in|catch|til|to|then|import|extends|implements|instanceof)\b)|[=:.*\/+\-%\^<>][ =)]|[`}%*)]|/(?!.*?/)|&&|[.][^.]|=>|\/ +|\||\|\||\-\-|\+\+|\|>|<|\||$|\n|\#|/\*))'
+      captures:
+        1: meta.function-call.livescript
+        2: keyword.operator.livescript
+    - match: \| _
+      scope: keyword.control.livescript
+    - match: '\|(?![.])'
+      scope: keyword.control.livescript
+    - match: \|
+      scope: keyword.operator.livescript
+    - match: ((?<=console\.)(debug|warn|info|log|error|time(End|-end)|assert))\b
+      scope: support.function.console.livescript
+    - match: |-
+        (?x)\b(
+          decodeURI(Component)?|encodeURI(Component)?|eval|parse(Float|Int)|require
+        )\b
+      scope: support.function.livescript
+    - match: |-
+        (?x)(?<![.-])\b(
+          map|filter|reject|partition|find|each|head|tail|last|initial|empty|
+          values|keys|length|cons|append|join|reverse|fold(l|r)?1?|unfoldr|
+          and(List|-list)|or(List|-list)|any|all|unique|sum|product|mean|compact|
+          concat(Map|-map)?|maximum|minimum|scan(l|r)?1?|replicate|slice|apply|
+          split(At|-at)?|take(While|-while)?|drop(While|-while)?|span|first|
+          break(It|-it)|list(ToObj|-to-obj)|obj(ToFunc|-to-func)|
+          pairs(ToObj|-to-obj)|obj(ToPairs|-to-pairs|ToLists|-to-lists)|
+          zip(All|-all)?(With|-with)?|compose|curry|partial|flip|fix|
+          sort(With|-with|By|-by)?|group(By|-by)|break(List|-list|Str|-str)|
+          difference|intersection|union|average|flatten|chars|unchars|repeat|
+          lines|unlines|words|unwords|max|min|negate|abs|signum|quot|rem|div|mod|
+          recip|pi|tau|exp|sqrt|ln|pow|sin|cos|tan|asin|acos|atan|atan2|truncate|
+          round|ceiling|floor|is(It|-it)NaN|even|odd|gcd|lcm|disabled__id
+        )\b(?![.-])
+      comment: |
+        Generated by DOM query from http://gkz.github.com/prelude-ls/:
+                    [].slice
+                    .call(document.querySelectorAll(".nav-pills li a"))
+                    .map(function(_) {return _.innerText})
+                    .filter(function(_) {return _.trim() !== '})
+                    .slice(2)
+                    .join("|")
+      scope: support.function.prelude.livescript
+    - match: '(?x)(?<![.-])\b(that|it|e|_)\b'
+      scope: support.function.semireserved.livescript
+    - match: |-
+        (?x)((?<=(\.|\]|\)))(
+          apply|call|concat|every|filter|for(Each|-each)|
+          from|has(Own|-own)(Property|-property)|index(Of|-of)|
+          is(Prototype|-prototype)(Of|-of)|join|last(Index|-index)(Of|-of)|
+          map|of|pop|property(Is|-is)(Enumerable|-enumerable)|push|
+          reduce(Right|-right)?|reverse|shift|slice|some|sort|
+          splice|to(Locale|-locale)?(String|-string)|unshift|valueOf
+        ))\b(?!-)
+      scope: support.function.method.array.livescript
+    - match: |-
+        (?x)((?<=Array\.)(
+          isArray
+        ))\b
+      scope: support.function.static.array.livescript
+    - match: |-
+        (?x)((?<=Object\.)(
+          create|define(Propert|-propert)(ies|y)|freeze|
+          get(Own|-own)(Property|-property)(Descriptors?|Names)|
+          get(Property|-property)(Descriptor|Names)|getPrototypeOf|
+          is((Extensible|-extensible)|(Frozen|-frozen)|(Sealed|-sealed))?|
+          keys|prevent(Extensions|-extensions)|seal
+        ))\b
+      scope: support.function.static.object.livescript
+    - match: |-
+        (?x)((?<=Math\.)(
+          abs|acos|acosh|asin|asinh|atan|atan2|atanh|ceil|cos|cosh|exp|expm1|floor|
+          hypot|log|log10|log1p|log2|max|min|pow|random|round|sign|sin|sinh|sqrt|
+          tan|tanh|trunc
+        ))\b
+      scope: support.function.static.math.livescript
+    - match: |-
+        (?x)((?<=Number\.)(
+          is(Finite|Integer|NaN)|to(Integer|-integer)
+        ))\b
+      scope: support.function.static.number.livescript
+    - match: '[\$\w][\w-]*'
+      scope: variable.other.livescript
+  backslash_string:
+    - match: '\\([\\)\s,\};\]])?'
+      captures:
+        0: string.quoted.single.livescript
+      push:
+        - meta_content_scope: string.quoted.single.livescript
+        - match: '([\\)\s,\};\]])'
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+  constructor_variable:
+    - match: '([a-zA-Z$_][\w$-]*)(@{2})([a-zA-Z$_][\w$-]*)?'
+      scope: variable.other.readwrite.constructor.livescript
+  double_quoted_string:
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin.livescript
+      push:
+        - meta_scope: string.quoted.double.livescript
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.livescript
+        - include: interpolated_livescript
+  embedded_comment:
+    - match: (?<!\\)(#).*$\n
+      scope: comment.line.number-sign.livescript
+      captures:
+        1: punctuation.definition.comment.livescript
+  embedded_spaced_comment:
+    - match: (?<!\\)(#\s).*$\n
+      scope: comment.line.number-sign.livescript
+      captures:
+        1: punctuation.definition.comment.livescript
+  instance_variable:
+    - match: '(?<![$\w\-])(@)'
+      scope: variable.other.readwrite.instance.livescript
+  interpolated_livescript:
+    - match: '\#\{'
+      captures:
+        0: punctuation.section.embedded.livescript
+      push:
+        - meta_scope: source.livescript.embedded.source
+        - match: '\}'
+          captures:
+            0: punctuation.section.embedded.livescript
+          pop: true
+        - include: main
+    - match: '\#'
+      push:
+        - meta_scope: source.livescript.embedded.source.simple
+        - match: ""
+          pop: true
+        - include: main
+  numeric:
+    - match: '(?<![\$@a-zA-Z_])(([0-9]+r[0-9_]+)|((16r|0[xX])[0-9a-fA-F_]+)|([0-9]+(\.[0-9]+[0-9_]*)?(e[+\-]?[0-9_]+)?)[_a-zA-Z0-9]*)'
+      scope: constant.numeric.livescript
+  single_quoted_string:
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin.livescript
+      push:
+        - meta_scope: string.quoted.single.livescript
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end.livescript
+          pop: true
+        - match: '\\(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)'
+          scope: constant.character.escape.livescript
+  variable_name:
+    - match: '([a-zA-Z\$_][\w$-]*(\.\w+)*)(?!\-)'
+      scope: variable.assignment.livescript
+      captures:
+        1: variable.assignment.livescript

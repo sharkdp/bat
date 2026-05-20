@@ -1,0 +1,6 @@
+# KornShell is backward-compatible with the Bourne shell #2633
+[mappings]
+"Bourne Again Shell (bash)" = [
+    "*.ksh",
+    "*.kshrc" 
+]

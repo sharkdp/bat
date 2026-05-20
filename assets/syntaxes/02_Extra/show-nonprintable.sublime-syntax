@@ -1,0 +1,31 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Highlight non-printables
+file_extensions:
+    - show-nonprintable
+scope: whitespace
+contexts:
+  main:
+    - match: "·"
+      scope: support.function.show-nonprintable.space
+    - match: "├─*┤"
+      scope: constant.character.escape.show-nonprintable.tab
+    - match: "↹"
+      scope: constant.character.escape.show-nonprintable.tab
+    - match: "␊"
+      scope: keyword.operator.show-nonprintable.line-feed
+    - match: "␍"
+      scope: string.show-nonprintable.carriage-return
+    - match: "␀"
+      scope: entity.other.attribute-name.show-nonprintable.null
+    - match: "␇"
+      scope: entity.other.attribute-name.show-nonprintable.bell
+    - match: "␛"
+      scope: entity.other.attribute-name.show-nonprintable.escape
+    - match: "␈"
+      scope: entity.other.attribute-name.show-nonprintable.backspace
+    - match: "\\\\x[A-Z0-9][A-Z0-9]"
+      scope: comment.block.show-nonprintable.backspace
+    - match: "\\\\u\\{[a-z0-9]+\\}"
+      scope: comment.block.show-nonprintable.backspace

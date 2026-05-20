@@ -1,0 +1,135 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: fstab
+file_extensions:
+  - fstab
+  - crypttab
+  - mtab
+scope: source.fstab
+
+contexts:
+  main:
+    - include: comment
+    - match: '^'
+      push: fstab_device
+      comment: leading spaces
+
+  fstab_device:
+    - include: comment
+    - match: '\s*([^=\s]+=)([^\s]+)\s*'
+      comment: device by uuid or label
+      set: fstab_mountpoint
+      captures:
+        1: punctuation.accessor
+        2: keyword.other.device
+    - match: '\s*(//|\\\\)([^\s]+)\s*'
+      comment: device by samba share
+      set: fstab_mountpoint
+      captures:
+        1: punctuation.accessor
+        2: keyword.other.device
+    - match: '\s*([^\s]+)(:)([^\s]+)\s*'
+      comment: device by server
+      set: fstab_mountpoint
+      captures:
+        1: keyword.other.device
+        2: punctuation.accessor
+        3: keyword.other.device
+    - match: '\s*[^\s/\\]+\s*'
+      comment: device by dev name
+      set: fstab_mountpoint
+      scope: keyword.other.device
+    - match: '\s*(/dev/)([^\s]+)\s*'
+      comment: device by dev path
+      set: fstab_mountpoint
+      captures: 
+        1: punctuation.accessor
+        2: keyword.other.device
+    - match: '\s*([^\s/]*/)*([^\s]+)\s*'
+      comment: device by unknown path
+      set: fstab_mountpoint
+      captures:
+        1: punctuation.accessor
+        2: keyword.other.device
+    - include: clear
+
+  fstab_mountpoint:
+    - include: comment
+    - match: '\s*/[^\s]*\s*'
+      comment: mount point
+      set: fstab_filesystem
+      scope: string.unquoted.mountpoint
+    - match: '\s*[^\s]+\s*'
+      comment: mount point without leading slash (invalid)
+      set: fstab_filesystem
+      scope: invalid.illegal
+    - include: clear
+
+  fstab_filesystem:
+    - include: comment
+    - match: '\s*[^\s]+\s*'
+      comment: filesystem type
+      set: fstab_options
+      scope: variable.parameter.filesystem
+    - include: clear
+
+  fstab_options:
+    - include: comment
+    - match: '([^\s,=]+)(=)([^\s,]+)'
+      comment: key-value option
+      captures:
+       1: entity.name.option
+       2: entity.other.separator
+       3: variable.parameter
+    - match: '[^\s,]+'
+      comment: flag option
+      scope: entity.name.option
+    - match: ','
+      comment: option separator
+      scope: punctuation.separator
+    - match: '\s+'
+      comment: next field
+      set: fstab_dump
+    - include: clear
+
+  fstab_dump:
+    - include: comment
+    - match: '\s*[012]\s*'
+      comment: dump field
+      scope: constant.numeric
+      set: fstab_pass
+    - match: '\s*[^\s]+\s*'
+      comment: invalid dump field
+      scope: invalid.illegal
+      set: fstab_pass
+    - include: clear
+
+  fstab_pass:
+    - include: comment
+    - match: '\s*[012]\s*'
+      comment: pass field
+      scope: constant.numeric
+      set: expected_eol
+    - match: '\s*[^\s]+\s*'
+      comment: invalid pass field
+      scope: invalid.illegal
+      set: expected_eol
+    - include: clear
+
+  expected_eol:
+    - include: comment
+    - include: clear
+    - match: '.*'
+      scope: invalid.illegal
+
+  comment:
+    - match: '\s*#.*$'
+      comment: comment using the number sign
+      scope: comment.line
+
+  clear:
+    - match: '.*$'
+      comment: used for clearing the context
+      pop: true
+

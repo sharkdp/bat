@@ -1,0 +1,405 @@
+.TH {{PROJECT_EXECUTABLE_UPPERCASE}} "1"
+.SH NAME
+{{PROJECT_EXECUTABLE}} \- a cat(1) clone with syntax highlighting and Git integration.
+.SH "USAGE"
+.IP "{{PROJECT_EXECUTABLE}} [OPTIONS] [FILE]..."
+.IP "{{PROJECT_EXECUTABLE}} cache [CACHE-OPTIONS] [--build|--clear]
+.SH DESCRIPTION
+{{PROJECT_EXECUTABLE}} prints the syntax-highlighted content of a collection of FILEs to the
+terminal. If no FILE is specified, or when FILE is '-', it reads from standard input.
+
+{{PROJECT_EXECUTABLE}} supports a large number of programming and markup languages.
+It also communicates with git(1) to show modifications with respect to the git index.
+{{PROJECT_EXECUTABLE}} automatically pipes its output through a pager (by default: less).
+
+Whenever the output of {{PROJECT_EXECUTABLE}} goes to a non-interactive terminal, i.e. when the
+output is piped into another process or into a file, {{PROJECT_EXECUTABLE}} will act as a drop-in
+replacement for cat(1) and fall back to printing the plain file contents,
+unless an explicit style is requested.
+
+.SH "OPTIONS"
+General remarks: Command-line options like '-l'/'--language' that take values can be specified as
+either '--language value', '--language=value', '-l value' or '-lvalue'.
+.HP
+\fB\-A\fR, \fB\-\-show\-all\fR
+.IP
+Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
+control the width of the tab\-placeholders.
+.HP
+\fB\-\-nonprintable\-notation\fR <notation>
+.IP
+Specify how to display non-printable characters when using \-\-show\-all.
+
+Possible values:
+.RS
+.IP "caret"
+Use character sequences like ^G, ^J, ^@, .. to identify non-printable characters
+.IP "unicode"
+Use special Unicode code points to identify non-printable characters
+.RE
+.HP
+\fB\-\-binary\fR <behavior>
+.IP
+How to treat binary content.
+
+Possible values:
+.RS
+.IP "no\-printing"
+Do not print any binary content (default)
+.IP "as\-text"
+Treat binary content as normal text
+.RE
+.HP
+\fB\-\-completion\fR <SHELL>
+.IP
+Show shell completion for a certain shell.
+Possible values: bash, fish, zsh, ps1
+.HP
+\fB\-p\fR, \fB\-\-plain\fR
+.IP
+Only show plain style, no decorations. This is an alias for
+\&'\-\-style=plain'. When '\-p' is used twice ('\-pp'), it also disables
+automatic paging (alias for '\-\-style=plain \fB\-\-paging\fR=\fI\,never\/\fR').
+.HP
+\fB\-l\fR, \fB\-\-language\fR <language>
+.IP
+Explicitly set the language for syntax highlighting. The language can be
+specified as a name (like 'C++' or 'LaTeX') or possible file extension
+(like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
+language names and file extensions.
+.HP
+\fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
+.IP
+Highlight the specified line ranges with a different background color. For example:
+.RS
+.IP "\-\-highlight\-line 40"
+highlights line 40
+.IP "\-\-highlight\-line 30:40"
+highlights lines 30 to 40
+.IP "\-\-highlight\-line :40"
+highlights lines 1 to 40
+.IP "\-\-highlight\-line 40:"
+highlights lines 40 to the end of the file
+.IP "\-\-highlight\-line 30:+10"
+highlights lines 30 to 40
+.RE
+.HP
+\fB\-\-file\-name\fR <name>...
+.IP
+Specify the name to display for a file. Useful when piping data to {{PROJECT_EXECUTABLE}} from STDIN when {{PROJECT_EXECUTABLE}} does not otherwise know the filename. Note that the provided file name is also used for syntax detection.
+.HP
+\fB\-d\fR, \fB\-\-diff\fR
+.IP
+Only show lines that have been added/removed/modified with respect to the Git index. Use '\-\-diff\-context=N' to control how much context you want to see.
+.HP
+\fB\-\-diff\-context\fR <N>...
+.IP
+Include N lines of context around added/removed/modified lines when using '\-\-diff'.
+.HP
+\fB\-\-tabs\fR <T>
+.IP
+Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
+.HP
+\fB\-\-wrap\fR <mode>
+.IP
+Specify the text\-wrapping mode (*auto*, never, character, word). The '\-\-terminal\-width' option
+can be used in addition to control the output width. In \fBword\fR mode, lines are broken at
+whitespace boundaries. If a single word exceeds the terminal width, it falls back to
+character wrapping.
+.HP
+\fB\-S\fR, \fB\-\-chop\-long\-lines\fR
+.IP
+Truncate all lines longer than screen width. Alias for '\-\-wrap=never'.
+.HP
+\fB\-\-terminal\-width\fR <width>
+.IP
+Explicitly set the width of the terminal instead of determining it automatically. If
+prefixed with '+' or '\-', the value will be treated as an offset to the actual terminal
+width. See also: '\-\-wrap'.
+.HP
+\fB\-n\fR, \fB\-\-number\fR
+.IP
+Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
+.HP
+\fB\-\-color\fR <when>
+.IP
+Specify when to use colored output. The automatic mode only enables colors if an
+interactive terminal is detected. Possible values: *auto*, never, always.
+.HP
+\fB\-\-italic\-text\fR <when>
+.IP
+Specify when to use ANSI sequences for italic text in the output. Possible values:
+always, *never*.
+.HP
+\fB\-\-decorations\fR <when>
+.IP
+Specify when to use the decorations that have been specified via '\-\-style'. The
+automatic mode only enables decorations if an interactive terminal is detected. The
+always mode will show decorations even when piping output. Possible
+values: *auto*, never, always.
+.HP
+\fB\-f\fR, \fB\-\-force\-colorization\fR
+.IP
+Alias for '--decorations=always --color=always'. This is useful \
+if the output of {{PROJECT_EXECUTABLE}} is piped to another program, but you want \
+to keep the colorization/decorations.
+.HP
+\fB\-\-paging\fR <when>
+.IP
+Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or its alias,
+\fB-P\fR. To disable the pager permanently, set BAT_PAGER to an empty string. To control
+which pager is used, see the '\-\-pager' option. Possible values: *auto*, never, always.
+.HP
+\fB\-\-pager\fR <command>
+.IP
+Determine which pager is used. This option will override the PAGER and BAT_PAGER
+environment variables. The default pager is 'less'. If you provide '\-\-pager=builtin', use
+the built-in 'minus' pager. To control when the pager is used, see the '\-\-paging' option.
+Example: '\-\-pager "less \fB\-RF\fR"'.
+
+Note: By default, if the pager is set to 'less' (and no command-line options are specified), 'bat' will pass the following command line options to the pager: '-R'/'--RAW-CONTROL-CHARS', '-F'/'--quit-if-one-screen' and '-X'/'--no-init'. The last option ('-X') is only used for 'less' versions older than 530. The '-R' option is needed to interpret ANSI colors correctly. The second option ('-F') instructs less to exit immediately if the output size is smaller than the vertical size of the terminal. This is convenient for small files because you do not have to press 'q' to quit the pager. The third option ('-X') is needed to fix a bug with the '--quit-if-one-screen' feature in old versions of 'less'. Unfortunately, it also breaks mouse-wheel support in 'less'. If you want to enable mouse-wheel scrolling on older versions of 'less', you can pass just '-R' (as in the example above, this will disable the quit-if-one-screen feature). For less 530 or newer, it should work out of the box.
+.HP
+\fB\-m\fR, \fB\-\-map\-syntax\fR <glob-pattern:syntax-name>...
+.IP
+Map a glob pattern to an existing syntax name. The glob pattern is matched on the full
+path and the filename. For example, to highlight *.build files with the Python syntax,
+use -m '*.build:Python'. To highlight files named '.myignore' with the Git Ignore
+syntax, use -m '.myignore:Git Ignore'.
+Note that the right-hand side is the *name* of the syntax, not a file extension.
+.HP
+\fB\-\-ignored\-suffix\fR <ignored-suffix>
+.IP
+Ignore extension. For example: 'bat \-\-ignored-suffix ".dev" my_file.json.dev'
+will use JSON syntax, and ignore '.dev'
+.HP
+\fB\-\-theme\fR <theme>
+.IP
+Set the theme for syntax highlighting. Use \fB\-\-list\-themes\fP to see all available themes.
+To set a default theme, add the \fB\-\-theme="..."\fP option to the configuration file or
+export the \fBBAT_THEME\fP environment variable (e.g.: \fBexport BAT_THEME="..."\fP).
+
+Special values:
+.RS
+.IP "auto (\fIdefault\fR)"
+Picks a dark or light theme depending on the terminal's colors.
+Use \fB-\-theme\-light\fR and \fB-\-theme\-dark\fR to customize the selected theme.
+.IP "auto:always"
+Variation of \fBauto\fR where where the terminal's colors are detected even when the output is redirected.
+.IP "auto:system (macOS only)"
+Variation of \fBauto\fR where the color scheme is detected from the system-wide preference instead.
+.IP "dark"
+Use the dark theme specified by \fB-\-theme-dark\fR.
+.IP "light"
+Use the light theme specified by \fB-\-theme-light\fR.
+.RE
+.HP
+\fB\-\-theme\-dark\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a dark background.
+To set a default theme, add the \fB\-\-theme-dark="..."\fP option to the configuration file or
+export the \fBBAT_THEME_DARK\fP environment variable (e.g. \fBexport BAT_THEME_DARK="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBdark\fR.
+.HP
+\fB\-\-theme\-light\fR <theme>
+.IP
+Sets the theme name for syntax highlighting used when the terminal uses a light background.
+To set a default theme, add the \fB\-\-theme-light="..."\fP option to the configuration file or
+export the \fBBAT_THEME_LIGHT\fP environment variable (e.g. \fBexport BAT_THEME_LIGHT="..."\fP).
+This option only has an effect when \fB\-\-theme\fP option is set to \fBauto\fR or \fBlight\fR.
+.HP
+\fB\-\-list\-themes\fR
+.IP
+Display a list of supported themes for syntax highlighting.
+.HP
+\fB\-s\fR, \fB\-\-squeeze\-blank\fR
+.IP
+Squeeze consecutive empty lines into a single empty line.
+.HP
+\fB\-\-squeeze\-limit\fR <squeeze-limit>
+.IP
+Set the maximum number of consecutive empty lines to be printed.
+.HP
+\fB\-\-strip\-ansi\fR <when>
+.IP
+Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
+escape sequences unless the syntax highlighting language is plain text. Possible values:
+auto, always, *never*.
+.HP
+\fB\-\-style\fR <style\-components>
+.IP
+Configure which elements (line numbers, file headers, grid borders, Git modifications,
+\&..) to display in addition to the file contents. The argument is a comma\-separated list
+of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style ('full').
+To set a default style, add the '\-\-style=".."' option to the configuration file or
+export the BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
+.IP
+When styles are specified in multiple places, the "nearest" set of styles take precedence.
+The command\-line arguments are the highest priority, followed by the BAT_STYLE environment
+variable, and then the configuration file. If any set of styles consists entirely of
+components prefixed with "+" or "\-", it will modify the previous set of styles instead of
+replacing them.
+.IP
+By default, the following components are enabled:
+changes, grid, header\-filename, numbers, snip
+.IP
+Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
+rule, numbers, snip.
+.HP
+\fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
+.IP
+Only print the specified range of lines for each file. For example:
+.RS
+.IP "\-\-line\-range 30:40"
+prints lines 30 to 40
+.IP "\-\-line\-range :40"
+prints lines 1 to 40
+.IP "\-\-line\-range 40:"
+prints lines 40 to the end of the file
+.IP "\-\-line\-range 30:+10"
+prints lines 30 to 40
+.RE
+.HP
+\fB\-L\fR, \fB\-\-list\-languages\fR
+.IP
+Display a list of supported languages for syntax highlighting.
+.HP
+\fB\-u\fR, \fB\-\-unbuffered\fR
+.IP
+Enable unbuffered input reading. When this flag is set, bat will display data as soon as it
+is available, without waiting for a complete line. This is useful for streaming use cases like
+\&'tail \-f logfile | bat \-u \-\-paging=never'. Note that line numbers are automatically disabled
+in unbuffered mode, and syntax highlighting may be imperfect on partial lines.
+.HP
+\fB\-\-no\-custom\-assets\fR
+.IP
+Do not load custom assets.
+.HP
+\fB\-\-config\-dir\fR
+.IP
+Show bat's configuration directory.
+.HP
+\fB\-\-cache\-dir\fR
+.IP
+Show bat's cache directory.
+.HP
+\fB\-\-diagnostic\fR
+.IP
+Show diagnostic information for bug reports.
+.HP
+\fB\-\-quiet\-empty\fR
+.IP
+Do not produce any output when the input is empty (e.g. an empty file or empty stdin). This is useful in scripts where silent behavior is preferred for empty input.
+.HP
+\fB\-\-acknowledgements\fR
+.IP
+Show acknowledgements.
+.HP
+\fB\-\-set\-terminal\-title\fR
+.IP
+Sets terminal title to filenames when using a pager.
+.HP
+\fB\-h\fR, \fB\-\-help\fR
+.IP
+Print this help message.
+.HP
+\fB\-V\fR, \fB\-\-version\fR
+.IP
+Show version information.
+.SH "POSITIONAL ARGUMENTS"
+.HP
+\fB<FILE>...\fR
+.IP
+Files to print and concatenate. Use a dash ('\-') or no argument at all to read from
+standard input.
+.SH "SUBCOMMANDS"
+.HP
+\fBcache\fR - Modify the syntax\-definition and theme cache.
+.SH "FILES"
+{{PROJECT_EXECUTABLE}} can also be customized with a configuration file. The location of the file
+is dependent on your operating system. To get the default path for your system, call:
+
+\fB{{PROJECT_EXECUTABLE}} --config-file\fR
+
+Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
+location of the configuration file.
+
+To generate a default configuration file, call:
+
+\fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR
+
+These are related options:
+.HP
+\fB\-\-config\-file\fR
+.IP
+Show path to the configuration file.
+.HP
+\fB\-\-generate-config\-file\fR
+.IP
+Generates a default configuration file.
+.HP
+\fB\-\-no\-config\fR
+.IP
+Do not use the configuration file.
+.SH "ADDING CUSTOM LANGUAGES"
+{{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
+customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
+files to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes\fR` and run `\fB{{PROJECT_EXECUTABLE}} cache --build\fR`.
+
+\fBExample:\fR
+
+.RS 0.5i
+mkdir -p "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+.br
+cd "$({{PROJECT_EXECUTABLE}} --config-dir)/syntaxes"
+
+# Put new '.sublime-syntax' language definition files
+.br
+# in this folder (or its subdirectories), for example:
+.br
+git clone https://github.com/tellnobody1/sublime-purescript-syntax
+
+# And then build the cache.
+.br
+{{PROJECT_EXECUTABLE}} cache --build
+.RE
+
+Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
+.br
+If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`.
+
+.SH "ADDING CUSTOM THEMES"
+Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.
+These can be installed to `\fB$({{PROJECT_EXECUTABLE}} --config-dir)/themes\fR`, and are added to the cache with
+`\fB{{PROJECT_EXECUTABLE}} cache --build`.
+
+.SH "INPUT PREPROCESSOR"
+Much like less(1) does, {{PROJECT_EXECUTABLE}} supports input preprocessors via the LESSOPEN and LESSCLOSE environment variables.
+In addition, {{PROJECT_EXECUTABLE}} attempts to be as compatible with less's preprocessor implementation as possible.
+
+To use the preprocessor, call:
+
+\fB{{PROJECT_EXECUTABLE}} --lessopen\fR
+
+Alternatively, the preprocessor may be enabled by default by adding the '\-\-lessopen' option to the configuration file.
+
+To temporarily disable the preprocessor if it is enabled by default, call:
+
+\fB{{PROJECT_EXECUTABLE}} --no-lessopen\fR
+
+These are related options:
+.HP
+\fB\-\-lessopen\fR
+.IP
+Enable the $LESSOPEN preprocessor.
+.HP
+\fB\-\-no\-lessopen\fR
+.IP
+Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)
+.PP
+For more information, see the "INPUT PREPROCESSOR" section of less(1).
+
+.SH "MORE INFORMATION"
+
+For more information and up-to-date documentation, visit the {{PROJECT_EXECUTABLE}} repo:
+.br
+\fBhttps://github.com/sharkdp/bat\fR

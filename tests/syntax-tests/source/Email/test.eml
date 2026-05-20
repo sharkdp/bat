@@ -1,0 +1,16 @@
+Return-Path: <user@example.com>
+Received: from mail.example ([1.1.1.1])
+	by mail.example with LMTP
+	id 123
+	(envelope-from <user@example.com>)
+	for <a@b>; Sun, 13 Oct 2019 13:53:24 +0000
+From: "User, Test" <user@example.com>
+To: "User2, Test" <user2@example.com>
+Subject:
+Date: Sun, 13 Oct 2019 13:53:08 +0000
+Accept-Language: de-DE, en-US
+Content-Language: de-DE
+X-MS-Has-Attach: yes
+MIME-Version: 1.0
+
+Test

@@ -1,0 +1,15 @@
+%html
+  %head
+    %title Test Title
+  %body
+    %navigation
+      = render :partial => "navigation_top"
+    %h1= page.title
+    %p
+      Here is a point to emphasize:
+        %strong.highlighted#search_item_found= item1.text
+        %span{:class => "fancy", :id => "fancy1"}= item2.text
+    .special= special.text
+    %ol
+      %li First
+      %li Second

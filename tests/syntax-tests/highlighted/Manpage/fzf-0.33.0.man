@@ -1,0 +1,773 @@
+[38;2;248;248;242mfzf(1)                                                                         fzf - a command-line fuzzy finder                                                                         fzf(1)[0m
+
+[38;2;253;151;31mNAME[0m
+[38;2;248;248;242m       fzf - a command-line fuzzy finder[0m
+
+[38;2;253;151;31mSYNOPSIS[0m
+[38;2;248;248;242m       fzf [0m[38;2;248;248;242m[[0m[38;2;248;248;242moptions[0m[38;2;248;248;242m][0m
+
+[38;2;253;151;31mDESCRIPTION[0m
+[38;2;248;248;242m       fzf is a general-purpose command-line fuzzy finder.[0m
+
+[38;2;253;151;31mOPTIONS[0m
+[38;2;248;248;242m   Search mode[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-x[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--extended[0m
+[38;2;248;248;242m              Extended-search mode. Since 0.10.9, this is enabled by default. You can disable it with +x or [0m[38;2;166;226;46m--no-extended[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-e[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--exact[0m
+[38;2;248;248;242m              Enable exact-match[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-i[0m[38;2;248;248;242m     [0m[3;38;2;253;151;31mCase-insensitive[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mmatch[0m[38;2;248;248;242m ([0m[3;38;2;253;151;31mdefault[0m[38;2;248;248;242m: [0m[3;38;2;253;151;31msmart-case[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mmatch[0m[38;2;248;248;242m)[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m+i[0m[38;2;248;248;242m     [0m[3;38;2;253;151;31mCase-sensitive[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mmatch[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--literal[0m
+[38;2;248;248;242m              Do not normalize latin script letters for matching.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--scheme[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSCHEME[0m
+[38;2;248;248;242m              Choose scoring scheme tailored for different types of input.[0m
+
+[38;2;248;248;242m              default  Generic scoring scheme designed to work well with any type of input[0m
+[38;2;248;248;242m              path     Scoring scheme for paths (additional bonus point only after path separator)[0m
+[38;2;248;248;242m              history  Scoring scheme for command history (no additional bonus points).[0m
+[38;2;248;248;242m                       Sets [0m[38;2;166;226;46m--tiebreak[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mindex[0m[38;2;248;248;242m as well.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--algo[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mTYPE[0m
+[38;2;248;248;242m              Fuzzy matching algorithm (default: v2)[0m
+
+[38;2;248;248;242m              v2     Optimal scoring algorithm (quality)[0m
+[38;2;248;248;242m              v1     Faster but not guaranteed to find the optimal result (performance)[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-n[0m[38;2;248;248;242m, [0m[38;2;166;226;46m--nth[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mN[[0m[38;2;248;248;242m,..][0m
+[38;2;248;248;242m              Comma-separated list of field index expressions for limiting search scope.  See FIELD INDEX EXPRESSION for the details.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--with-nth[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mN[0m[38;2;248;248;242m[[0m[38;2;248;248;242m,..][0m
+[38;2;248;248;242m              Transform the presentation of each line using field index expressions[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-d[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--delimiter[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Field delimiter regex for [0m[38;2;166;226;46m--nth[0m[38;2;248;248;242m and [0m[38;2;166;226;46m--with-nth[0m[38;2;248;248;242m (default: AWK-style)[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--disabled[0m
+[38;2;248;248;242m              Do  not  perform  search.  With this option, fzf becomes a simple selector interface rather than a "fuzzy finder". You can later enable the search using enable-search or toggle-[0m
+[38;2;248;248;242m              search action.[0m
+
+[38;2;248;248;242m   Search result[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m+s[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--no-sort[0m
+[38;2;248;248;242m              Do not sort the result[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--tac[0m[38;2;248;248;242m  [0m[3;38;2;253;151;31mReverse[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mthe[0m[38;2;248;248;242m [0m[3;38;2;253;151;31morder[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mof[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mthe[0m[38;2;248;248;242m [0m[3;38;2;253;151;31minput[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   history | fzf [0m[38;2;166;226;46m--tac[0m[38;2;248;248;242m [0m[38;2;166;226;46m--no-sort[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--tiebreak[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mCRI[0m[38;2;248;248;242m[[0m[38;2;248;248;242m,..][0m
+[38;2;248;248;242m              Comma-separated list of sort criteria to apply when the scores are tied.[0m
+
+[38;2;248;248;242m              length  Prefers line with shorter length[0m
+[38;2;248;248;242m              chunk   Prefers line with shorter matched chunk (delimited by whitespaces)[0m
+[38;2;248;248;242m              begin   Prefers line with matched substring closer to the beginning[0m
+[38;2;248;248;242m              end     Prefers line with matched substring closer to the end[0m
+[38;2;248;248;242m              index   Prefers line that appeared earlier in the input stream[0m
+
+[38;2;248;248;242m              - Each criterion should appear only once in the list[0m
+[38;2;248;248;242m              - index is only allowed at the end of the list[0m
+[38;2;248;248;242m              - index is implicitly appended to the list when not specified[0m
+[38;2;248;248;242m              - Default is length (or equivalently length,index)[0m
+[38;2;248;248;242m              - If end is found in the list, fzf will scan each line backwards[0m
+
+[38;2;248;248;242m   Interface[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-m[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--multi[0m
+[38;2;248;248;242m              Enable multi-select with tab/shift-tab. It optionally takes an integer argument which denotes the maximum number of items that can be selected.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m+m[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--no-multi[0m
+[38;2;248;248;242m              Disable multi-select[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-mouse[0m
+[38;2;248;248;242m              Disable mouse[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--bind[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mKEYBINDS[0m
+[38;2;248;248;242m              Comma-separated list of custom key bindings. See KEY/EVENT BINDINGS for the details.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--cycle[0m
+[38;2;248;248;242m              Enable cyclic scroll[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--keep-right[0m
+[38;2;248;248;242m              Keep the right end of the line visible when it's too long. Effective only when the query string is empty.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--scroll-off[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mLINES[0m
+[38;2;248;248;242m              Number of screen lines to keep above or below when scrolling to the top or to the bottom (default: 0).[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-hscroll[0m
+[38;2;248;248;242m              Disable horizontal scroll[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--hscroll-off[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mCOLS[0m
+[38;2;248;248;242m              Number of screen columns to keep to the right of the highlighted substring (default: 10). Setting it to a large value will cause the text to be positioned on the center  of  the[0m
+[38;2;248;248;242m              screen.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--filepath-word[0m
+[38;2;248;248;242m              Make word-wise movements and actions respect path separators. The following actions are affected:[0m
+
+[38;2;248;248;242m              backward-kill-word[0m
+[38;2;248;248;242m              backward-word[0m
+[38;2;248;248;242m              forward-word[0m
+[38;2;248;248;242m              kill-word[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--jump-labels[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mCHARS[0m
+[38;2;248;248;242m              Label characters for jump and jump-accept[0m
+
+[38;2;248;248;242m   Layout[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--height[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mHEIGHT[0m[38;2;248;248;242m[[0m[38;2;248;248;242m%[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m              Display fzf window below the cursor with the given height instead of using the full screen.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--min-height[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mHEIGHT[0m
+[38;2;248;248;242m              Minimum height when [0m[38;2;166;226;46m--height[0m[38;2;248;248;242m is given in percent (default: 10).  Ignored when [0m[38;2;166;226;46m--height[0m[38;2;248;248;242m is not specified.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--layout[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mLAYOUT[0m
+[38;2;248;248;242m              Choose the layout (default: default)[0m
+
+[38;2;248;248;242m              default       Display from the bottom of the screen[0m
+[38;2;248;248;242m              reverse       Display from the top of the screen[0m
+[38;2;248;248;242m              reverse-list  Display from the top of the screen, prompt at the bottom[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--reverse[0m
+[38;2;248;248;242m              A synonym for [0m[38;2;166;226;46m--layout[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mreverse[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--border[0m[38;2;248;248;242m[[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mBORDER_OPT[0m[38;2;248;248;242m][0m
+[38;2;248;248;242m              Draw border around the finder[0m
+
+[38;2;248;248;242m              rounded       Border with rounded corners (default)[0m
+[38;2;248;248;242m              sharp         Border with sharp corners[0m
+[38;2;248;248;242m              horizontal    Horizontal lines above and below the finder[0m
+[38;2;248;248;242m              vertical      Vertical lines on each side of the finder[0m
+[38;2;248;248;242m              top (up)[0m
+[38;2;248;248;242m              bottom (down)[0m
+[38;2;248;248;242m              left[0m
+[38;2;248;248;242m              right[0m
+[38;2;248;248;242m              none[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-unicode[0m
+[38;2;248;248;242m              Use ASCII characters instead of Unicode box drawing characters to draw border[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--margin[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mMARGIN[0m
+[38;2;248;248;242m              Comma-separated expression for margins around the finder.[0m
+
+[38;2;248;248;242m              TRBL     Same margin for top, right, bottom, and left[0m
+[38;2;248;248;242m              TB,RL    Vertical, horizontal margin[0m
+[38;2;248;248;242m              T,RL,B   Top, horizontal, bottom margin[0m
+[38;2;248;248;242m              T,R,B,L  Top, right, bottom, left margin[0m
+
+[38;2;248;248;242m              Each part can be given in absolute number or in percentage relative to the terminal size with % suffix.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--margin[0m[38;2;248;248;242m 10%[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--margin[0m[38;2;248;248;242m 1,5%[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--padding[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mPADDING[0m
+[38;2;248;248;242m              Comma-separated expression for padding inside the border. Padding is distinguishable from margin only when [0m[38;2;166;226;46m--border[0m[38;2;248;248;242m option is used.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--margin[0m[38;2;248;248;242m 5% [0m[38;2;166;226;46m--padding[0m[38;2;248;248;242m 5% [0m[38;2;166;226;46m--border[0m[38;2;248;248;242m [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'cat {}' \[0m
+[38;2;248;248;242m                       [0m[38;2;166;226;46m--color[0m[38;2;248;248;242m bg:#222222,preview-bg:#333333[0m
+
+[38;2;248;248;242m              TRBL     Same padding for top, right, bottom, and left[0m
+[38;2;248;248;242m              TB,RL    Vertical, horizontal padding[0m
+[38;2;248;248;242m              T,RL,B   Top, horizontal, bottom padding[0m
+[38;2;248;248;242m              T,R,B,L  Top, right, bottom, left padding[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--info[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTYLE[0m
+[38;2;248;248;242m              Determines the display style of finder info.[0m
+
+[38;2;248;248;242m              default       Display on the next line to the prompt[0m
+[38;2;248;248;242m              inline        Display on the same line[0m
+[38;2;248;248;242m              hidden        Do not display finder info[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-info[0m
+[38;2;248;248;242m              A synonym for [0m[38;2;166;226;46m--info[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mhidden[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--prompt[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Input prompt (default: '> ')[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--pointer[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Pointer to the current line (default: '>')[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--marker[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Multi-select marker (default: '>')[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--header[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              The  given  string  will  be  printed  as the sticky header. The lines are displayed in the given order from top to bottom regardless of [0m[38;2;166;226;46m--layout[0m[38;2;248;248;242m option, and are not affected by[0m
+[38;2;248;248;242m              [0m[38;2;166;226;46m--with-nth[0m[38;2;248;248;242m. ANSI color codes are processed even when [0m[38;2;166;226;46m--ansi[0m[38;2;248;248;242m is not set.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--header-lines[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mN[0m
+[38;2;248;248;242m              The first N lines of the input are treated as the sticky header. When [0m[38;2;166;226;46m--with-nth[0m[38;2;248;248;242m is set, the lines are transformed just like the other lines that follow.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--header-first[0m
+[38;2;248;248;242m              Print header before the prompt line[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--ellipsis[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Ellipsis to show when line is truncated (default: '..')[0m
+
+[38;2;248;248;242m   Display[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--ansi[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mEnable[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mprocessing[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mof[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mANSI[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcolor[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mcodes[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--tabstop[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSPACES[0m
+[38;2;248;248;242m              Number of spaces for a tab character (default: 8)[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mBASE_SCHEME[0m[38;2;248;248;242m][0m[38;2;248;248;242m[[0m[38;2;248;248;242m,COLOR_NAME[:ANSI_COLOR][:ANSI_ATTRIBUTES]]...[0m
+[38;2;248;248;242m              Color configuration. The name of the base color scheme is followed by custom color mappings.[0m
+
+[38;2;248;248;242m              BASE SCHEME:[0m
+[38;2;248;248;242m                  (default: dark on 256-color terminal, otherwise 16)[0m
+
+[38;2;248;248;242m                  dark    Color scheme for dark 256-color terminal[0m
+[38;2;248;248;242m                  light   Color scheme for light 256-color terminal[0m
+[38;2;248;248;242m                  16      Color scheme for 16-color terminal[0m
+[38;2;248;248;242m                  bw      No colors (equivalent to [0m[38;2;166;226;46m--no-color[0m[38;2;248;248;242m)[0m
+
+[38;2;248;248;242m              COLOR NAMES:[0m
+[38;2;248;248;242m                  fg         Text[0m
+[38;2;248;248;242m                  bg         Background[0m
+[38;2;248;248;242m                  preview-fg Preview window text[0m
+[38;2;248;248;242m                  preview-bg Preview window background[0m
+[38;2;248;248;242m                  hl         Highlighted substrings[0m
+[38;2;248;248;242m                  fg+        Text (current line)[0m
+[38;2;248;248;242m                  bg+        Background (current line)[0m
+[38;2;248;248;242m                  gutter     Gutter on the left (defaults to bg+)[0m
+[38;2;248;248;242m                  hl+        Highlighted substrings (current line)[0m
+[38;2;248;248;242m                  query      Query string[0m
+[38;2;248;248;242m                  disabled   Query string when search is disabled[0m
+[38;2;248;248;242m                  info       Info line (match counters)[0m
+[38;2;248;248;242m                  border     Border around the window ([0m[38;2;166;226;46m--border[0m[38;2;248;248;242m and [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m)[0m
+[38;2;248;248;242m                  prompt     Prompt[0m
+[38;2;248;248;242m                  pointer    Pointer to the current line[0m
+[38;2;248;248;242m                  marker     Multi-select marker[0m
+[38;2;248;248;242m                  spinner    Streaming input indicator[0m
+[38;2;248;248;242m                  header     Header[0m
+
+[38;2;248;248;242m              ANSI COLORS:[0m
+[38;2;248;248;242m                  [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m         Default terminal foreground/background color[0m
+[38;2;248;248;242m                             (or the original color of the text)[0m
+[38;2;248;248;242m                  0 ~ 15     16 base colors[0m
+[38;2;248;248;242m                    black[0m
+[38;2;248;248;242m                    red[0m
+[38;2;248;248;242m                    green[0m
+[38;2;248;248;242m                    yellow[0m
+[38;2;248;248;242m                    blue[0m
+[38;2;248;248;242m                    magenta[0m
+[38;2;248;248;242m                    cyan[0m
+[38;2;248;248;242m                    white[0m
+[38;2;248;248;242m                    bright-black (gray | grey)[0m
+[38;2;248;248;242m                    bright-red[0m
+[38;2;248;248;242m                    bright-green[0m
+[38;2;248;248;242m                    bright-yellow[0m
+[38;2;248;248;242m                    bright-blue[0m
+[38;2;248;248;242m                    bright-magenta[0m
+[38;2;248;248;242m                    bright-cyan[0m
+[38;2;248;248;242m                    bright-white[0m
+[38;2;248;248;242m                  16 ~ 255   ANSI 256 colors[0m
+[38;2;248;248;242m                  #rrggbb    24-bit colors[0m
+
+[38;2;248;248;242m              ANSI ATTRIBUTES: (Only applies to foreground colors)[0m
+[38;2;248;248;242m                  regular    Clears previously set attributes; should precede the other ones[0m
+[38;2;248;248;242m                  bold[0m
+[38;2;248;248;242m                  underline[0m
+[38;2;248;248;242m                  reverse[0m
+[38;2;248;248;242m                  dim[0m
+[38;2;248;248;242m                  italic[0m
+[38;2;248;248;242m                  strikethrough[0m
+
+[38;2;248;248;242m              EXAMPLES:[0m
+
+[38;2;248;248;242m                   # Seoul256 theme with 8-bit colors[0m
+[38;2;248;248;242m                   # (https://github.com/junegunn/seoul256.vim)[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'bg:237[0m[38;2;248;248;242m,bg+:236,info:143,border:240,spinner:108' \[0m
+[38;2;248;248;242m                       [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'hl:65[0m[38;2;248;248;242m,fg:252,header:65,fg+:252' \[0m
+[38;2;248;248;242m                       [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'pointer:161[0m[38;2;248;248;242m,marker:168,prompt:110,hl+:108'[0m
+
+[38;2;248;248;242m                   # Seoul256 theme with 24-bit colors[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'bg:#4B4B4B[0m[38;2;248;248;242m,bg+:#3F3F3F,info:#BDBB72,border:#6B6B6B,spinner:#98BC99' \[0m
+[38;2;248;248;242m                       [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'hl:#719872[0m[38;2;248;248;242m,fg:#D9D9D9,header:#719872,fg+:#D9D9D9' \[0m
+[38;2;248;248;242m                       [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'pointer:#E12672[0m[38;2;248;248;242m,marker:#E17899,prompt:#98BEDE,hl+:#98BC99'[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-bold[0m
+[38;2;248;248;242m              Do not use bold text[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--black[0m
+[38;2;248;248;242m              Use black background[0m
+
+[38;2;248;248;242m   History[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--history[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mHISTORY_FILE[0m
+[38;2;248;248;242m              Load search history from the specified file and update the file on completion.  When enabled, CTRL-N and CTRL-P are automatically remapped to next-history and previous-history.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--history-size[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mN[0m
+[38;2;248;248;242m              Maximum number of entries in the history file (default: 1000). The file is automatically truncated when the number of the lines exceeds the value.[0m
+
+[38;2;248;248;242m   Preview[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mCOMMAND[0m
+[38;2;248;248;242m              Execute the given command for the current line and display the result on the preview window. {} in the command is the placeholder that is replaced to the single-quoted string of[0m
+[38;2;248;248;242m              the current line. To transform the replacement string, specify field index expressions between the braces (See FIELD INDEX EXPRESSION for the details).[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'head[0m[38;2;248;248;242m -[0m[38;2;255;255;255m$[0m[38;2;190;132;255mLINES[0m[38;2;248;248;242m {}'[0m
+[38;2;248;248;242m                   ls [0m[38;2;166;226;46m-l[0m[38;2;248;248;242m | fzf [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m"echo[0m[38;2;248;248;242m user={3} when={[0m[38;2;166;226;46m-4[0m[38;2;248;248;242m..[0m[38;2;166;226;46m-2[0m[38;2;248;248;242m}; cat {[0m[38;2;166;226;46m-1[0m[38;2;248;248;242m}" [0m[38;2;166;226;46m--header-lines[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m1[0m
+
+[38;2;248;248;242m              fzf  exports [0m[38;2;255;255;255m$[0m[38;2;190;132;255mFZF_PREVIEW_LINES[0m[38;2;248;248;242m and [0m[38;2;255;255;255m$[0m[38;2;190;132;255mFZF_PREVIEW_COLUMNS[0m[38;2;248;248;242m so that they represent the exact size of the preview window. (It also overrides [0m[38;2;255;255;255m$[0m[38;2;190;132;255mLINES[0m[38;2;248;248;242m and [0m[38;2;255;255;255m$[0m[38;2;190;132;255mCOLUMNS[0m[38;2;248;248;242m with the same values[0m
+[38;2;248;248;242m              but they can be reset by the default shell, so prefer to refer to the ones with FZF_PREVIEW_ prefix.)[0m
+
+[38;2;248;248;242m              A placeholder expression starting with + flag will be replaced to the space-separated list of the selected lines (or the current line if  no  selection  was  made)  individually[0m
+[38;2;248;248;242m              quoted.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m'head[0m[38;2;248;248;242m [0m[38;2;166;226;46m-10[0m[38;2;248;248;242m {+}'[0m
+[38;2;248;248;242m                   git log [0m[38;2;166;226;46m--oneline[0m[38;2;248;248;242m | fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'git show {+1}'[0m
+
+[38;2;248;248;242m              When using a field index expression, leading and trailing whitespace is stripped from the replacement string. To preserve the whitespace, use the s flag.[0m
+
+[38;2;248;248;242m              Also,  {q}  is  replaced to the current query string, and {n} is replaced to zero-based ordinal index of the line. Use {+n} if you want all index numbers when multiple lines are[0m
+[38;2;248;248;242m              selected.[0m
+
+[38;2;248;248;242m              A placeholder expression with f flag is replaced to the path of a temporary file that holds the evaluated list. This is useful when you multi-select a large number of items  and[0m
+[38;2;248;248;242m              the length of the evaluated string may exceed ARG_MAX.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   # Press CTRL-A to select 100K items and see the sum of all the numbers.[0m
+[38;2;248;248;242m                   # This won't work properly without 'f' flag due to ARG_MAX limit.[0m
+[38;2;248;248;242m                   seq 100000 | fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m ctrl-a:select-all \[0m
+[38;2;248;248;242m                                    [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m "awk '{sum+=\$1} END {print sum}' {+f}"[0m
+
+[38;2;248;248;242m              Note that you can escape a placeholder pattern by prepending a backslash.[0m
+
+[38;2;248;248;242m              Preview window will be updated even when there is no match for the current query if any of the placeholder expressions evaluates to a non-empty string.[0m
+
+[38;2;248;248;242m              Since  0.24.0,  fzf can render partial preview content before the preview command completes. ANSI escape sequence for clearing the display (CSI 2 J) is supported, so you can use[0m
+[38;2;248;248;242m              it to implement preview window that is constantly updating.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                    fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'for i in $(seq 100000); do[0m
+[38;2;248;248;242m                      (( i % 200 == 0 )) && printf "\033[2J"[0m
+[38;2;248;248;242m                      echo "[0m[38;2;255;255;255m$[0m[38;2;190;132;255mi[0m[38;2;248;248;242m"[0m
+[38;2;248;248;242m                      sleep 0.01[0m
+[38;2;248;248;242m                    done'[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--preview-window[0m[38;2;249;38;114m=[0m[38;2;248;248;242m[[0m[3;38;2;253;151;31mPOSITION[0m[38;2;248;248;242m][0m[38;2;248;248;242m[[0m[38;2;248;248;242m,[0m[38;2;166;226;46mSIZE[0m[38;2;166;226;46m[%][0m[38;2;248;248;242m][,border-BORDER_OPT][,[no]wrap][,[no]follow][,[no]cycle][,[no]hidden][,+SCROLL[OFFSETS][/DENOM]][,~HEADER_LINES][,default][,<SIZE_THRESHOLD(ALTER‐[0m
+[38;2;248;248;242m       NATIVE_LAYOUT)][0m
+
+[38;2;248;248;242m              POSITION: (default: right)[0m
+[38;2;248;248;242m                  up[0m
+[38;2;248;248;242m                  down[0m
+[38;2;248;248;242m                  left[0m
+[38;2;248;248;242m                  right[0m
+
+[38;2;248;248;242m              Determines the layout of the preview window.[0m
+
+[38;2;248;248;242m              * If the argument contains :hidden, the preview window will be hidden by default until toggle-preview action is triggered.[0m
+
+[38;2;248;248;242m              * If size is given as 0, preview window will not be visible, but fzf will still execute the command in the background.[0m
+
+[38;2;248;248;242m              * Long lines are truncated by default. Line wrap can be enabled with wrap flag.[0m
+
+[38;2;248;248;242m              * Preview window will automatically scroll to the bottom when follow flag is set, similarly to how tail [0m[38;2;166;226;46m-f[0m[38;2;248;248;242m works.[0m
+
+[38;2;248;248;242m                     e.g.[0m
+[38;2;248;248;242m                           fzf [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m follow [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'for i in $(seq 100000); do[0m
+[38;2;248;248;242m                             echo "[0m[38;2;255;255;255m$[0m[38;2;190;132;255mi[0m[38;2;248;248;242m"[0m
+[38;2;248;248;242m                             sleep 0.01[0m
+[38;2;248;248;242m                             (( i % 300 == 0 )) && printf "\033[2J"[0m
+[38;2;248;248;242m                           done'[0m
+
+[38;2;248;248;242m              * Cyclic scrolling is enabled with cycle flag.[0m
+
+[38;2;248;248;242m              *  To  change  the  style  of the border of the preview window, specify one of the options for [0m[38;2;166;226;46m--border[0m[38;2;248;248;242m with border- prefix.  e.g. border-rounded (border with rounded edges, de‐[0m
+[38;2;248;248;242m              fault), border-sharp (border with sharp edges), border-left, border-none, etc.[0m
+
+[38;2;248;248;242m              * [:+SCROLL[OFFSETS][/DENOM]] determines the initial scroll offset of the preview window.[0m
+
+[38;2;248;248;242m                - SCROLL can be either a numeric integer or a single-field index expression that refers to a numeric integer.[0m
+
+[38;2;248;248;242m                - The optional OFFSETS part is for adjusting the base offset. It should be given as a series of signed integers ([0m[38;2;166;226;46m-INTEGER[0m[38;2;248;248;242m or +INTEGER).[0m
+
+[38;2;248;248;242m                - The final /DENOM part is for specifying a fraction of the preview window height.[0m
+
+[38;2;248;248;242m              * ~HEADER_LINES keeps the top N lines as the fixed header so that they are always visible.[0m
+
+[38;2;248;248;242m              * default resets all options previously set to the default.[0m
+
+[38;2;248;248;242m                     e.g.[0m
+[38;2;248;248;242m                          # Non-default scroll window positions and sizes[0m
+[38;2;248;248;242m                          fzf [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m"head[0m[38;2;248;248;242m {}" [0m[38;2;166;226;46m--preview-window[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mup[0m[38;2;248;248;242m,30%[0m
+[38;2;248;248;242m                          fzf [0m[38;2;166;226;46m--preview[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m"file[0m[38;2;248;248;242m {}" [0m[38;2;166;226;46m--preview-window[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mdown[0m[38;2;248;248;242m,1[0m
+
+[38;2;248;248;242m                          # Initial scroll offset is set to the line number of each line of[0m
+[38;2;248;248;242m                          # git grep output *minus* 5 lines ([0m[38;2;166;226;46m-5[0m[38;2;248;248;242m)[0m
+[38;2;248;248;242m                          git grep [0m[38;2;166;226;46m--line-number[0m[38;2;248;248;242m '' |[0m
+[38;2;248;248;242m                            fzf [0m[38;2;166;226;46m--delimiter[0m[38;2;248;248;242m : [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'nl {1}' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m '+{2}[0m[38;2;166;226;46m-5[0m[38;2;248;248;242m'[0m
+
+[38;2;248;248;242m                          # Preview with bat, matching line in the middle of the window below[0m
+[38;2;248;248;242m                          # the fixed header of the top 3 lines[0m
+[38;2;248;248;242m                          #[0m
+[38;2;248;248;242m                          #   ~3    Top 3 lines as the fixed header[0m
+[38;2;248;248;242m                          #   +{2}  Base scroll offset extracted from the second field[0m
+[38;2;248;248;242m                          #   +3    Extra offset to compensate for the 3-line header[0m
+[38;2;248;248;242m                          #   /2    Put in the middle of the preview area[0m
+[38;2;248;248;242m                          #[0m
+[38;2;248;248;242m                          git grep [0m[38;2;166;226;46m--line-number[0m[38;2;248;248;242m '' |[0m
+[38;2;248;248;242m                            fzf [0m[38;2;166;226;46m--delimiter[0m[38;2;248;248;242m : \[0m
+[38;2;248;248;242m                                [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'bat [0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mfull[0m[38;2;248;248;242m [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31malways[0m[38;2;248;248;242m [0m[38;2;166;226;46m--highlight-line[0m[38;2;248;248;242m {2} {1}' \[0m
+[38;2;248;248;242m                                [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m '~3,+{2}+3/2'[0m
+
+[38;2;248;248;242m                          # Display top 3 lines as the fixed header[0m
+[38;2;248;248;242m                          fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'bat [0m[38;2;166;226;46m--style[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mfull[0m[38;2;248;248;242m [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31malways[0m[38;2;248;248;242m {}' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m '~3'[0m
+
+[38;2;248;248;242m              * You can specify an alternative set of options that are used only when the size[0m
+[38;2;248;248;242m                of the preview window is below a certain threshold. Note that only one[0m
+[38;2;248;248;242m                alternative layout is allowed.[0m
+
+[38;2;248;248;242m                     e.g.[0m
+[38;2;248;248;242m                           fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'cat {}' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m 'right,border-left,<[0m[38;2;166;226;46m30[0m[38;2;249;38;114m([0m[38;2;190;132;255mup,30%,border-bottom[0m[38;2;249;38;114m)[0m[38;2;248;248;242m'[0m
+
+[38;2;248;248;242m   Scripting[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-q[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--query[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Start the finder with the given query[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--select-1[0m
+[38;2;248;248;242m              If there is only one match for the initial query ([0m[38;2;166;226;46m--query[0m[38;2;248;248;242m), do not start interactive finder and automatically select the only match[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-0[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--exit-0[0m
+[38;2;248;248;242m              If there is no match for the initial query ([0m[38;2;166;226;46m--query[0m[38;2;248;248;242m), do not start interactive finder and exit immediately[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m-f[0m[38;2;248;248;242m,[0m[38;2;248;248;242m [0m[38;2;166;226;46m--filter[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mSTR[0m
+[38;2;248;248;242m              Filter mode. Do not start interactive finder. When used with [0m[38;2;166;226;46m--no-sort[0m[38;2;248;248;242m, fzf becomes a fuzzy-version of grep.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--print-query[0m
+[38;2;248;248;242m              Print query as the first line[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--expect[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mKEY[0m[38;2;248;248;242m[[0m[38;2;248;248;242m,..][0m
+[38;2;248;248;242m              Comma-separated list of keys that can be used to complete fzf in addition to the default enter key. When this option is set, fzf will print the name of the key  pressed  as  the[0m
+[38;2;248;248;242m              first  line  of  its  output  (or as the second line if [0m[38;2;166;226;46m--print-query[0m[38;2;248;248;242m is also used). The line will be empty if fzf is completed with the default enter key. If [0m[38;2;166;226;46m--expect[0m[38;2;248;248;242m option is[0m
+[38;2;248;248;242m              specified multiple times, fzf will expect the union of the keys. [0m[38;2;166;226;46m--no-expect[0m[38;2;248;248;242m will clear the list.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--expect[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mctrl-v[0m[38;2;248;248;242m,ctrl-t,alt-s [0m[38;2;166;226;46m--expect[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mf1[0m[38;2;248;248;242m,f2,~,@[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--read0[0m
+[38;2;248;248;242m              Read input delimited by ASCII NUL characters instead of newline characters[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--print0[0m
+[38;2;248;248;242m              Print output delimited by ASCII NUL characters instead of newline characters[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--no-clear[0m
+[38;2;248;248;242m              Do not clear finder interface on exit. If fzf was started in full screen mode, it will not switch back to the original screen, so you'll have to manually run tput rmcup  to  re‐[0m
+[38;2;248;248;242m              turn. This option can be used to avoid flickering of the screen when your application needs to start fzf multiple times in order.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--sync[0m[38;2;248;248;242m Synchronous search for multi-staged filtering. If specified, fzf will launch ncurses finder only after the input stream is complete.[0m
+
+[38;2;248;248;242m              e.g. fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m | fzf [0m[38;2;166;226;46m--sync[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--version[0m
+[38;2;248;248;242m              Display version information and exit[0m
+
+[38;2;248;248;242m       Note that most options have the opposite versions with [0m[38;2;166;226;46m--no-[0m[38;2;248;248;242m prefix.[0m
+
+[38;2;253;151;31mENVIRONMENT VARIABLES[0m
+[38;2;248;248;242m       [0m[38;2;102;217;239mFZF_DEFAULT_COMMAND[0m
+[38;2;248;248;242m              Default  command to use when input is tty. On *nix systems, fzf runs the command with $SHELL -c if SHELL is set, otherwise with sh -c, so in this case make sure that the command[0m
+[38;2;248;248;242m              is POSIX-compliant.[0m
+
+[38;2;248;248;242m       [0m[38;2;102;217;239mFZF_DEFAULT_OPTS[0m
+[38;2;248;248;242m              Default options. e.g. export FZF_DEFAULT_OPTS="--extended --cycle"[0m
+
+[38;2;253;151;31mEXIT STATUS[0m
+[38;2;248;248;242m       0      Normal exit[0m
+[38;2;248;248;242m       1      No match[0m
+[38;2;248;248;242m       2      Error[0m
+[38;2;248;248;242m       130    Interrupted with CTRL-C or ESC[0m
+
+[38;2;253;151;31mFIELD INDEX EXPRESSION[0m
+[38;2;248;248;242m       A field index expression can be a non-zero integer or a range expression ([BEGIN]..[END]). [0m[38;2;166;226;46m--nth[0m[38;2;248;248;242m and [0m[38;2;166;226;46m--with-nth[0m[38;2;248;248;242m take a comma-separated list of field index expressions.[0m
+
+[38;2;248;248;242m   Examples[0m
+[38;2;248;248;242m       1      The 1st field[0m
+[38;2;248;248;242m       2      The 2nd field[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-1[0m[38;2;248;248;242m     [0m[3;38;2;253;151;31mThe[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mlast[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfield[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m-2[0m[38;2;248;248;242m     [0m[3;38;2;253;151;31mThe[0m[38;2;248;248;242m [0m[3;38;2;253;151;31m2nd[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mto[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mlast[0m[38;2;248;248;242m [0m[3;38;2;253;151;31mfield[0m
+[38;2;248;248;242m       3..5   From the 3rd field to the 5th field[0m
+[38;2;248;248;242m       2..    From the 2nd field to the last field[0m
+[38;2;248;248;242m       ..[0m[38;2;166;226;46m-3[0m[38;2;248;248;242m   From the 1st field to the 3rd to the last field[0m
+[38;2;248;248;242m       ..     All the fields[0m
+
+[38;2;253;151;31mEXTENDED SEARCH MODE[0m
+[38;2;248;248;242m       Unless specified otherwise, fzf will start in "extended-search mode". In this mode, you can specify multiple patterns delimited by spaces, such as: 'wild ^music .mp3$ sbtrkt !rmx[0m
+
+[38;2;248;248;242m       You can prepend a backslash to a space (\ ) to match a literal space character.[0m
+
+[38;2;248;248;242m   Exact-match (quoted)[0m
+[38;2;248;248;242m       A term that is prefixed by a single-quote character (') is interpreted as an "exact-match" (or "non-fuzzy") term. fzf will search for the exact occurrences of the string.[0m
+
+[38;2;248;248;242m   Anchored-match[0m
+[38;2;248;248;242m       A term can be prefixed by ^, or suffixed by $ to become an anchored-match term. Then fzf will search for the lines that start with or end with the given string. An anchored-match  term[0m
+[38;2;248;248;242m       is also an exact-match term.[0m
+
+[38;2;248;248;242m   Negation[0m
+[38;2;248;248;242m       If a term is prefixed by !, fzf will exclude the lines that satisfy the term from the result. In this case, fzf performs exact match by default.[0m
+
+[38;2;248;248;242m   Exact-match by default[0m
+[38;2;248;248;242m       If you don't prefer fuzzy matching and do not wish to "quote" (prefixing with ') every word, start fzf with [0m[38;2;166;226;46m-e[0m[38;2;248;248;242m or [0m[38;2;166;226;46m--exact[0m[38;2;248;248;242m option. Note that when [0m[38;2;166;226;46m--exact[0m[38;2;248;248;242m is set, '[0m[38;2;166;226;46m-prefix[0m[38;2;248;248;242m "unquotes" the[0m
+[38;2;248;248;242m       term.[0m
+
+[38;2;248;248;242m   OR operator[0m
+[38;2;248;248;242m       A single bar character term acts as an OR operator. For example, the following query matches entries that start with core and end with either go, rb, or py.[0m
+
+[38;2;248;248;242m       e.g. ^core go$ | rb$ | py$[0m
+
+[38;2;253;151;31mKEY/EVENT BINDINGS[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m option allows you to bind a key or an event to one or more actions. You can use it to customize key bindings or implement dynamic behaviors.[0m
+
+[38;2;248;248;242m       [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m takes a comma-separated list of binding expressions. Each binding expression is KEY:ACTION or EVENT:ACTION.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--bind[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mctrl-j:accept[0m[38;2;248;248;242m,ctrl-k:kill-line[0m
+
+[38;2;248;248;242m   AVAILABLE KEYS: (SYNONYMS)[0m
+[38;2;248;248;242m       ctrl-[a-z][0m
+[38;2;248;248;242m       ctrl-space[0m
+[38;2;248;248;242m       ctrl-\[0m
+[38;2;248;248;242m       ctrl-][0m
+[38;2;248;248;242m       ctrl-^      (ctrl-6)[0m
+[38;2;248;248;242m       ctrl-/      (ctrl-_)[0m
+[38;2;248;248;242m       ctrl-alt-[a-z][0m
+[38;2;248;248;242m       alt-[*]     (Any case-sensitive single character is allowed)[0m
+[38;2;248;248;242m       f[1-12][0m
+[38;2;248;248;242m       enter       (return ctrl-m)[0m
+[38;2;248;248;242m       space[0m
+[38;2;248;248;242m       bspace      (bs)[0m
+[38;2;248;248;242m       alt-up[0m
+[38;2;248;248;242m       alt-down[0m
+[38;2;248;248;242m       alt-left[0m
+[38;2;248;248;242m       alt-right[0m
+[38;2;248;248;242m       alt-enter[0m
+[38;2;248;248;242m       alt-space[0m
+[38;2;248;248;242m       alt-bspace  (alt-bs)[0m
+[38;2;248;248;242m       tab[0m
+[38;2;248;248;242m       btab        (shift-tab)[0m
+[38;2;248;248;242m       esc[0m
+[38;2;248;248;242m       del[0m
+[38;2;248;248;242m       up[0m
+[38;2;248;248;242m       down[0m
+[38;2;248;248;242m       left[0m
+[38;2;248;248;242m       right[0m
+[38;2;248;248;242m       home[0m
+[38;2;248;248;242m       end[0m
+[38;2;248;248;242m       insert[0m
+[38;2;248;248;242m       pgup        (page-up)[0m
+[38;2;248;248;242m       pgdn        (page-down)[0m
+[38;2;248;248;242m       shift-up[0m
+[38;2;248;248;242m       shift-down[0m
+[38;2;248;248;242m       shift-left[0m
+[38;2;248;248;242m       shift-right[0m
+[38;2;248;248;242m       alt-shift-up[0m
+[38;2;248;248;242m       alt-shift-down[0m
+[38;2;248;248;242m       alt-shift-left[0m
+[38;2;248;248;242m       alt-shift-right[0m
+[38;2;248;248;242m       left-click[0m
+[38;2;248;248;242m       right-click[0m
+[38;2;248;248;242m       double-click[0m
+[38;2;248;248;242m       or any single character[0m
+
+[38;2;248;248;242m   AVAILABLE EVENTS:[0m
+[38;2;248;248;242m       change[0m
+[38;2;248;248;242m              Triggered whenever the query string is changed[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   # Move cursor to the first entry whenever the query is changed[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m change:first[0m
+
+[38;2;248;248;242m       backward-eof[0m
+[38;2;248;248;242m              Triggered when the query string is already empty and you try to delete it backward.[0m
+
+[38;2;248;248;242m              e.g.[0m
+[38;2;248;248;242m                   fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m backward-eof:abort[0m
+
+[38;2;248;248;242m   AVAILABLE ACTIONS:[0m
+[38;2;248;248;242m       A key or an event can be bound to one or more of the following actions.[0m
+
+[38;2;248;248;242m         ACTION:                   DEFAULT BINDINGS (NOTES):[0m
+[38;2;248;248;242m           abort                      ctrl-c  ctrl-g  ctrl-q  esc[0m
+[38;2;248;248;242m           accept                     enter   double-click[0m
+[38;2;248;248;242m           accept-non-empty           (same as accept except that it prevents fzf from exiting without selection)[0m
+[38;2;248;248;242m           backward-char              ctrl-b  left[0m
+[38;2;248;248;242m           backward-delete-char       ctrl-h  bspace[0m
+[38;2;248;248;242m           backward-delete-char/eof   (same as backward-delete-char except aborts fzf if query is empty)[0m
+[38;2;248;248;242m           backward-kill-word         alt-bs[0m
+[38;2;248;248;242m           backward-word              alt-b   shift-left[0m
+[38;2;248;248;242m           beginning-of-line          ctrl-a  home[0m
+[38;2;248;248;242m           cancel                     (clear query string if not empty, abort fzf otherwise)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mchange-preview[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m        (change [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m option)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mchange-preview-window[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m (change [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m option; rotate through the multiple option sets separated by '|')[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mchange-prompt[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m         (change prompt to the given string)[0m
+[38;2;248;248;242m           clear-screen               ctrl-l[0m
+[38;2;248;248;242m           clear-selection            (clear multi-selection)[0m
+[38;2;248;248;242m           close                      (close preview window if open, abort fzf otherwise)[0m
+[38;2;248;248;242m           clear-query                (clear query string)[0m
+[38;2;248;248;242m           delete-char                del[0m
+[38;2;248;248;242m           delete-char/eof            ctrl-d (same as delete-char except aborts fzf if query is empty)[0m
+[38;2;248;248;242m           deselect[0m
+[38;2;248;248;242m           deselect-all               (deselect all matches)[0m
+[38;2;248;248;242m           disable-search             (disable search functionality)[0m
+[38;2;248;248;242m           down                       ctrl-j  ctrl-n  down[0m
+[38;2;248;248;242m           enable-search              (enable search functionality)[0m
+[38;2;248;248;242m           end-of-line                ctrl-e  end[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mexecute[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m               (see below for the details)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mexecute-silent[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m        (see below for the details)[0m
+[38;2;248;248;242m           first                      (move to the first match)[0m
+[38;2;248;248;242m           forward-char               ctrl-f  right[0m
+[38;2;248;248;242m           forward-word               alt-f   shift-right[0m
+[38;2;248;248;242m           ignore[0m
+[38;2;248;248;242m           jump                       (EasyMotion-like 2-keystroke movement)[0m
+[38;2;248;248;242m           jump-accept                (jump and accept)[0m
+[38;2;248;248;242m           kill-line[0m
+[38;2;248;248;242m           kill-word                  alt-d[0m
+[38;2;248;248;242m           last                       (move to the last match)[0m
+[38;2;248;248;242m           next-history               (ctrl-n on [0m[38;2;166;226;46m--history[0m[38;2;248;248;242m)[0m
+[38;2;248;248;242m           page-down                  pgdn[0m
+[38;2;248;248;242m           page-up                    pgup[0m
+[38;2;248;248;242m           half-page-down[0m
+[38;2;248;248;242m           half-page-up[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mpreview[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m               (see below for the details)[0m
+[38;2;248;248;242m           preview-down               shift-down[0m
+[38;2;248;248;242m           preview-up                 shift-up[0m
+[38;2;248;248;242m           preview-page-down[0m
+[38;2;248;248;242m           preview-page-up[0m
+[38;2;248;248;242m           preview-half-page-down[0m
+[38;2;248;248;242m           preview-half-page-up[0m
+[38;2;248;248;242m           preview-bottom[0m
+[38;2;248;248;242m           preview-top[0m
+[38;2;248;248;242m           previous-history           (ctrl-p on [0m[38;2;166;226;46m--history[0m[38;2;248;248;242m)[0m
+[38;2;248;248;242m           print-query                (print query and exit)[0m
+[38;2;248;248;242m           put                        (put the character to the prompt)[0m
+[38;2;248;248;242m           refresh-preview[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mrebind[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                (rebind bindings after unbind)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46mreload[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                (see below for the details)[0m
+[38;2;248;248;242m           replace-query              (replace query string with the current selection)[0m
+[38;2;248;248;242m           select[0m
+[38;2;248;248;242m           select-all                 (select all matches)[0m
+[38;2;248;248;242m           toggle                     (right-click)[0m
+[38;2;248;248;242m           toggle-all                 (toggle all matches)[0m
+[38;2;248;248;242m           toggle+down                ctrl-i  (tab)[0m
+[38;2;248;248;242m           toggle-in                  ([0m[38;2;166;226;46m--layout[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mreverse*[0m[38;2;248;248;242m ? toggle+up : toggle+down)[0m
+[38;2;248;248;242m           toggle-out                 ([0m[38;2;166;226;46m--layout[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mreverse*[0m[38;2;248;248;242m ? toggle+down : toggle+up)[0m
+[38;2;248;248;242m           toggle-preview[0m
+[38;2;248;248;242m           toggle-preview-wrap[0m
+[38;2;248;248;242m           toggle-search              (toggle search functionality)[0m
+[38;2;248;248;242m           toggle-sort[0m
+[38;2;248;248;242m           toggle+up                  btab    (shift-tab)[0m
+[38;2;248;248;242m           [0m[38;2;166;226;46munbind[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m                (unbind bindings)[0m
+[38;2;248;248;242m           unix-line-discard          ctrl-u[0m
+[38;2;248;248;242m           unix-word-rubout           ctrl-w[0m
+[38;2;248;248;242m           up                         ctrl-k  ctrl-p  up[0m
+[38;2;248;248;242m           yank                       ctrl-y[0m
+
+[38;2;248;248;242m   ACTION COMPOSITION[0m
+[38;2;248;248;242m       Multiple actions can be chained using + separator.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-a:select-all+accept'[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--multi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-a:select-all' [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-a:+accept'[0m
+
+[38;2;248;248;242m   ACTION ARGUMENT[0m
+[38;2;248;248;242m       An action denoted with (...) suffix takes an argument.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-a:[0m[38;2;166;226;46mchange-prompt[0m[38;2;249;38;114m([0m[38;2;190;132;255mNewPrompt> [0m[38;2;249;38;114m)[0m[38;2;248;248;242m'[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-v:[0m[38;2;166;226;46mpreview[0m[38;2;249;38;114m([0m[38;2;190;132;255mcat {}[0m[38;2;249;38;114m)[0m[38;2;248;248;242m' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m hidden[0m
+
+[38;2;248;248;242m       If the argument contains parentheses, fzf may fail to parse the expression. In that case, you can use any of the following alternative notations to avoid parse errors.[0m
+
+[38;2;248;248;242m           action-name[...][0m
+[38;2;248;248;242m           action-name~...~[0m
+[38;2;248;248;242m           action-name!...![0m
+[38;2;248;248;242m           action-name@...@[0m
+[38;2;248;248;242m           action-name#...#[0m
+[38;2;248;248;242m           action-name$...$[0m
+[38;2;248;248;242m           action-name%...%[0m
+[38;2;248;248;242m           action-name^...^[0m
+[38;2;248;248;242m           action-name&...&[0m
+[38;2;248;248;242m           action-name*...*[0m
+[38;2;248;248;242m           action-name;...;[0m
+[38;2;248;248;242m           action-name/.../[0m
+[38;2;248;248;242m           action-name|...|[0m
+[38;2;248;248;242m           action-name:...[0m
+[38;2;248;248;242m              The last one is the special form that frees you from parse errors as it does not expect the closing character. The catch is that it should be the last one in the comma-separated[0m
+[38;2;248;248;242m              list of key-action pairs.[0m
+
+[38;2;248;248;242m   COMMAND EXECUTION[0m
+[38;2;248;248;242m       With  [0m[38;2;166;226;46mexecute[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m  action,  you  can execute arbitrary commands without leaving fzf. For example, you can turn fzf into a simple file browser by binding enter key to less command like[0m
+[38;2;248;248;242m       follows.[0m
+
+[38;2;248;248;242m           fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m "enter:[0m[38;2;166;226;46mexecute[0m[38;2;249;38;114m([0m[38;2;190;132;255mless {}[0m[38;2;249;38;114m)[0m[38;2;248;248;242m"[0m
+
+[38;2;248;248;242m       You can use the same placeholder expressions as in [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       fzf switches to the alternate screen when executing a command. However, if the command is expected to complete quickly, and you are not interested in its output, you might want to  use[0m
+[38;2;248;248;242m       execute-silent instead, which silently executes the command without the switching. Note that fzf will not be responsive until the command is complete. For asynchronous execution, start[0m
+[38;2;248;248;242m       your command as a background process (i.e. appending &).[0m
+
+[38;2;248;248;242m       On *nix systems, fzf runs the command with [0m[38;2;255;255;255m$[0m[38;2;190;132;255mSHELL[0m[38;2;248;248;242m [0m[38;2;166;226;46m-c[0m[38;2;248;248;242m if SHELL is set, otherwise with sh [0m[38;2;166;226;46m-c[0m[38;2;248;248;242m, so in this case make sure that the command is POSIX-compliant.[0m
+
+[38;2;248;248;242m   RELOAD INPUT[0m
+[38;2;248;248;242m       [0m[38;2;166;226;46mreload[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m action is used to dynamically update the input list without restarting fzf. It takes the same command template with placeholder expressions as [0m[38;2;166;226;46mexecute[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m.[0m
+
+[38;2;248;248;242m       See https://github.com/junegunn/fzf/issues/1750 for more info.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            # Update the list of processes by pressing CTRL-R[0m
+[38;2;248;248;242m            ps [0m[38;2;166;226;46m-ef[0m[38;2;248;248;242m | fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-r:[0m[38;2;166;226;46mreload[0m[38;2;249;38;114m([0m[38;2;190;132;255mps -ef[0m[38;2;249;38;114m)[0m[38;2;248;248;242m' [0m[38;2;166;226;46m--header[0m[38;2;248;248;242m 'Press CTRL-R to reload' \[0m
+[38;2;248;248;242m                         [0m[38;2;166;226;46m--header-lines[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31m1[0m[38;2;248;248;242m [0m[38;2;166;226;46m--layout[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31mreverse[0m
+
+[38;2;248;248;242m            # Integration with ripgrep[0m
+[38;2;248;248;242m            RG_PREFIX="rg [0m[38;2;166;226;46m--column[0m[38;2;248;248;242m [0m[38;2;166;226;46m--line-number[0m[38;2;248;248;242m [0m[38;2;166;226;46m--no-heading[0m[38;2;248;248;242m [0m[38;2;166;226;46m--color[0m[38;2;249;38;114m=[0m[3;38;2;253;151;31malways[0m[38;2;248;248;242m [0m[38;2;166;226;46m--smart-case[0m[38;2;248;248;242m "[0m
+[38;2;248;248;242m            INITIAL_QUERY="foobar"[0m
+[38;2;248;248;242m            FZF_DEFAULT_COMMAND="[0m[38;2;255;255;255m$[0m[38;2;190;132;255mRG_PREFIX[0m[38;2;248;248;242m '[0m[38;2;255;255;255m$[0m[38;2;190;132;255mINITIAL_QUERY[0m[38;2;248;248;242m'" \[0m
+[38;2;248;248;242m              fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m "change:reload:[0m[38;2;255;255;255m$[0m[38;2;190;132;255mRG_PREFIX[0m[38;2;248;248;242m {q} || true" \[0m
+[38;2;248;248;242m                  [0m[38;2;166;226;46m--ansi[0m[38;2;248;248;242m [0m[38;2;166;226;46m--disabled[0m[38;2;248;248;242m [0m[38;2;166;226;46m--query[0m[38;2;248;248;242m "[0m[38;2;255;255;255m$[0m[38;2;190;132;255mINITIAL_QUERY[0m[38;2;248;248;242m"[0m
+
+[38;2;248;248;242m   PREVIEW BINDING[0m
+[38;2;248;248;242m       With [0m[38;2;166;226;46mpreview[0m[38;2;249;38;114m([0m[38;2;190;132;255m...[0m[38;2;249;38;114m)[0m[38;2;248;248;242m action, you can specify multiple different preview commands in addition to the default preview command given by [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m option.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            # Default preview command with an extra preview binding[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'file {}' [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m '?:preview:cat {}'[0m
+
+[38;2;248;248;242m            # A preview binding with no default preview command[0m
+[38;2;248;248;242m            # (Preview window is initially empty)[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m '?:preview:cat {}'[0m
+
+[38;2;248;248;242m            # Preview window hidden by default, it appears when you first hit '?'[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m '?:preview:cat {}' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m hidden[0m
+
+[38;2;248;248;242m   CHANGE PREVIEW WINDOW ATTRIBUTES[0m
+[38;2;248;248;242m       change-preview-window action can be used to change the properties of the preview window. Unlike the [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m option, you can specify multiple sets of options separated  by  '|'[0m
+[38;2;248;248;242m       characters.[0m
+
+[38;2;248;248;242m       e.g.[0m
+[38;2;248;248;242m            # Rotate through the options using CTRL-/[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'cat {}' [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-/:[0m[38;2;166;226;46mchange-preview-window[0m[38;2;249;38;114m([0m[38;2;190;132;255mright,70%|down,40%,border-horizontal|hidden|right[0m[38;2;249;38;114m)[0m[38;2;248;248;242m'[0m
+
+[38;2;248;248;242m            # The default properties given by `[0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m` are inherited, so an empty string in the list is interpreted as the default[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'cat {}' [0m[38;2;166;226;46m--preview-window[0m[38;2;248;248;242m 'right,40%,border-left' [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-/:[0m[38;2;166;226;46mchange-preview-window[0m[38;2;249;38;114m([0m[38;2;190;132;255m70%|down,border-top|hidden|[0m[38;2;249;38;114m)[0m[38;2;248;248;242m'[0m
+
+[38;2;248;248;242m            # This is equivalent to toggle-preview action[0m
+[38;2;248;248;242m            fzf [0m[38;2;166;226;46m--preview[0m[38;2;248;248;242m 'cat {}' [0m[38;2;166;226;46m--bind[0m[38;2;248;248;242m 'ctrl-/:[0m[38;2;166;226;46mchange-preview-window[0m[38;2;249;38;114m([0m[38;2;190;132;255mhidden|[0m[38;2;249;38;114m)[0m[38;2;248;248;242m'[0m
+
+[38;2;253;151;31mAUTHOR[0m
+[38;2;248;248;242m       Junegunn Choi (junegunn.c@gmail.com)[0m
+
+[38;2;253;151;31mSEE ALSO[0m
+[38;2;248;248;242m       Project homepage:[0m
+[38;2;248;248;242m              https://github.com/junegunn/fzf[0m
+
+[38;2;248;248;242m       Extra Vim plugin:[0m
+[38;2;248;248;242m              https://github.com/junegunn/fzf.vim[0m
+
+[38;2;253;151;31mLICENSE[0m
+[38;2;248;248;242m       MIT[0m
+
+[38;2;253;151;31mfzf 0.33.0                                                                                  Aug 2022                                                                                     fzf(1)[0m

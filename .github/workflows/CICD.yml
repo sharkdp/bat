@@ -1,0 +1,464 @@
+name: CICD
+
+env:
+  CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
+  MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+jobs:
+  all-jobs:
+    if: always() # Otherwise this job is skipped if the matrix job fails
+    name: all-jobs
+    runs-on: ubuntu-latest
+    needs:
+      - crate_metadata
+      - lint
+      - min_version
+      - license_checks
+      - test_with_new_syntaxes_and_themes
+      - test_with_system_config
+      - documentation
+      - cargo-audit
+      - build
+    steps:
+      - run: jq --exit-status 'all(.result == "success")' <<< '${{ toJson(needs) }}'
+
+  crate_metadata:
+    name: Extract crate metadata
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Extract crate information
+      id: crate_metadata
+      run: |
+        cargo metadata --no-deps --format-version 1 | jq -r '"name=" + .packages[0].name' | tee -a $GITHUB_OUTPUT
+        cargo metadata --no-deps --format-version 1 | jq -r '"version=" + .packages[0].version' | tee -a $GITHUB_OUTPUT
+        cargo metadata --no-deps --format-version 1 | jq -r '"maintainer=" + .packages[0].authors[0]' | tee -a $GITHUB_OUTPUT
+        cargo metadata --no-deps --format-version 1 | jq -r '"homepage=" + .packages[0].homepage' | tee -a $GITHUB_OUTPUT
+        cargo metadata --no-deps --format-version 1 | jq -r '"msrv=" + .packages[0].rust_version' | tee -a $GITHUB_OUTPUT
+    outputs:
+      name: ${{ steps.crate_metadata.outputs.name }}
+      version: ${{ steps.crate_metadata.outputs.version }}
+      maintainer: ${{ steps.crate_metadata.outputs.maintainer }}
+      homepage: ${{ steps.crate_metadata.outputs.homepage }}
+      msrv: ${{ steps.crate_metadata.outputs.msrv }}
+
+  lint:
+    name: Ensure code quality
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt,clippy
+    - uses: actions/checkout@v6
+    - run: cargo fmt -- --check
+    - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+  min_version:
+    name: Minimum supported rust version
+    runs-on: ubuntu-latest
+    needs: crate_metadata
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v6
+    - name: Install rust toolchain (v${{ needs.crate_metadata.outputs.msrv }})
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ needs.crate_metadata.outputs.msrv }}
+    - name: Run tests
+      run: cargo test --locked ${{ env.MSRV_FEATURES }}
+
+  license_checks:
+    name: License checks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: true # we especially want to perform license checks on submodules
+    - run: tests/scripts/license-checks.sh
+
+  test_with_new_syntaxes_and_themes:
+    name: Run tests with updated syntaxes and themes
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v6
+      with:
+        submodules: true # we need all syntax and theme submodules
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Build and install bat
+      run: cargo install --locked --path .
+    - name: Rebuild binary assets (syntaxes and themes)
+      run: bash assets/create.sh
+    - name: Build and install bat with updated assets
+      run: cargo install --locked --path .
+    - name: Run unit tests with new syntaxes and themes
+      run: cargo test --locked --release
+    - name: Run ignored-by-default unit tests with new syntaxes and themes
+      run: cargo test --locked --release --test assets -- --ignored
+    - name: Syntax highlighting regression test
+      run: tests/syntax-tests/regression_test.sh
+    - name: List of languages
+      run: bat --list-languages
+    - name: List of themes
+      run: bat --list-themes
+    - name: Test custom assets
+      run: tests/syntax-tests/test_custom_assets.sh
+
+  test_with_system_config:
+    name: Run tests with system wide configuration
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v6
+    - name: Prepare environment variables
+      run: |
+        echo "BAT_SYSTEM_CONFIG_PREFIX=$GITHUB_WORKSPACE/tests/examples/system_config" >> $GITHUB_ENV
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Build and install bat
+      run: cargo install --locked --path .
+    - name: Run unit tests
+      run: cargo test --locked --test system_wide_config -- --ignored
+
+  documentation:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Git checkout
+      uses: actions/checkout@v6
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      run: cargo doc --locked --no-deps --document-private-items --all-features
+    - name: Show man page
+      run: man $(find . -name bat.1)
+
+  cargo-audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - run: cargo install cargo-audit --locked
+      - uses: actions/checkout@v6
+      - run: cargo audit
+
+  build:
+    name: ${{ matrix.job.target }} (${{ matrix.job.os }})
+    runs-on: ${{ matrix.job.os }}
+    needs: crate_metadata
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { target: aarch64-unknown-linux-musl  , os: ubuntu-latest , dpkg_arch: musl-linux-arm64, use-cross: true }
+          - { target: aarch64-unknown-linux-gnu   , os: ubuntu-latest , dpkg_arch: arm64,            use-cross: true }
+          - { target: arm-unknown-linux-gnueabihf , os: ubuntu-latest , dpkg_arch: armhf,            use-cross: true }
+          - { target: arm-unknown-linux-musleabihf, os: ubuntu-latest , dpkg_arch: musl-linux-armhf, use-cross: true }
+          - { target: i686-pc-windows-msvc        , os: windows-2025  ,                                              }
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-latest , dpkg_arch: i386,             use-cross: true }
+          - { target: i686-unknown-linux-musl     , os: ubuntu-latest , dpkg_arch: musl-linux-i686,  use-cross: true }
+          - { target: x86_64-apple-darwin         , os: macos-15-intel,                                              }
+          - { target: aarch64-apple-darwin        , os: macos-latest  ,                                              }
+          - { target: x86_64-pc-windows-msvc      , os: windows-2025  ,                                              }
+          - { target: aarch64-pc-windows-msvc     , os: windows-11-arm,                                              }
+          - { target: x86_64-unknown-linux-gnu    , os: ubuntu-latest , dpkg_arch: amd64,            use-cross: true }
+          - { target: x86_64-unknown-linux-musl   , os: ubuntu-latest , dpkg_arch: musl-linux-amd64, use-cross: true }
+    env:
+      BUILD_CMD: cargo
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v6
+
+    - name: Install prerequisites
+      shell: bash
+      run: |
+        case ${{ matrix.job.target }} in
+          arm-unknown-linux-*) sudo apt-get -y update ; sudo apt-get -y install gcc-arm-linux-gnueabihf ;;
+          aarch64-unknown-linux-gnu) sudo apt-get -y update ; sudo apt-get -y install gcc-aarch64-linux-gnu ;;
+        esac
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.job.target }}
+
+    - name: Install cross
+      if: matrix.job.use-cross
+      run: cargo install cross --git https://github.com/cross-rs/cross --rev 588b3c99db52b5a9c5906fab96cfadcf1bde7863
+
+    - name: Overwrite build command env variable
+      if: matrix.job.use-cross
+      shell: bash
+      run: echo "BUILD_CMD=cross" >> $GITHUB_ENV
+
+    - name: Show version information (Rust, cargo, GCC)
+      shell: bash
+      run: |
+        gcc --version || true
+        rustup -V
+        rustup toolchain list
+        rustup default
+        cargo -V
+        rustc -V
+
+    - name: Build
+      shell: bash
+      run: $BUILD_CMD build --locked --release --target=${{ matrix.job.target }}
+
+    - name: Set binary name & path
+      id: bin
+      shell: bash
+      run: |
+        # Figure out suffix of binary
+        EXE_suffix=""
+        case ${{ matrix.job.target }} in
+          *-pc-windows-*) EXE_suffix=".exe" ;;
+        esac;
+
+        # Setup paths
+        BIN_NAME="${{ needs.crate_metadata.outputs.name }}${EXE_suffix}"
+        BIN_PATH="target/${{ matrix.job.target }}/release/${BIN_NAME}"
+
+        # Let subsequent steps know where to find the binary
+        echo "BIN_PATH=${BIN_PATH}" >> $GITHUB_OUTPUT
+        echo "BIN_NAME=${BIN_NAME}" >> $GITHUB_OUTPUT
+
+    - name: Set testing options
+      id: test-options
+      shell: bash
+      run: |
+        # test only library unit tests and binary for arm-type targets
+        unset CARGO_TEST_OPTIONS
+        unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${{ needs.crate_metadata.outputs.name }}" ;; esac;
+        echo "CARGO_TEST_OPTIONS=${CARGO_TEST_OPTIONS}" >> $GITHUB_OUTPUT
+
+    - name: Run tests
+      shell: bash
+      run: |
+        if [[ ${{ matrix.job.os }} = windows-* ]]
+        then
+          powershell.exe -command "$BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}"
+        else
+          $BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        fi
+
+    - name: Run bat
+      shell: bash
+      run: $BUILD_CMD run --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs
+
+    - name: Show diagnostics (bat --diagnostic)
+      shell: bash
+      run: $BUILD_CMD run --locked --target=${{ matrix.job.target }} -- --paging=never --color=always --theme=ansi Cargo.toml src/config.rs --diagnostic
+
+    - name: "Feature check: regex-onig"
+      shell: bash
+      run: $BUILD_CMD check --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig
+
+    - name: "Feature check: regex-onig,git"
+      shell: bash
+      run: $BUILD_CMD check --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git
+
+    - name: "Feature check: regex-onig,paging"
+      shell: bash
+      run: $BUILD_CMD check --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,paging
+
+    - name: "Feature check: regex-onig,git,paging"
+      shell: bash
+      run: $BUILD_CMD check --locked --target=${{ matrix.job.target }} --verbose --lib --no-default-features --features regex-onig,git,paging
+
+    - name: "Feature check: minimal-application"
+      shell: bash
+      run: $BUILD_CMD check --locked --target=${{ matrix.job.target }} --verbose --no-default-features --features minimal-application
+
+    - name: Create tarball
+      id: package
+      shell: bash
+      run: |
+        PKG_suffix=".tar.gz" ; case ${{ matrix.job.target }} in *-pc-windows-*) PKG_suffix=".zip" ;; esac;
+        PKG_BASENAME=${{ needs.crate_metadata.outputs.name }}-v${{ needs.crate_metadata.outputs.version }}-${{ matrix.job.target }}
+        PKG_NAME=${PKG_BASENAME}${PKG_suffix}
+        echo "PKG_NAME=${PKG_NAME}" >> $GITHUB_OUTPUT
+
+        PKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/package"
+        ARCHIVE_DIR="${PKG_STAGING}/${PKG_BASENAME}/"
+        mkdir -p "${ARCHIVE_DIR}"
+        mkdir -p "${ARCHIVE_DIR}/autocomplete"
+
+        # Binary
+        cp "${{ steps.bin.outputs.BIN_PATH }}" "$ARCHIVE_DIR"
+
+        # README, LICENSE and CHANGELOG files
+        cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
+
+        # Man page
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
+
+        # Autocompletion files
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.bash "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.bash"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.fish"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/_bat.ps1 "$ARCHIVE_DIR/autocomplete/_${{ needs.crate_metadata.outputs.name }}.ps1"
+        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.zsh"
+
+        # base compressed package
+        pushd "${PKG_STAGING}/" >/dev/null
+        case ${{ matrix.job.target }} in
+          *-pc-windows-*) 7z -y a "${PKG_NAME}" "${PKG_BASENAME}"/* | tail -2 ;;
+          *) tar czf "${PKG_NAME}" "${PKG_BASENAME}"/* ;;
+        esac;
+        popd >/dev/null
+
+        # Let subsequent steps know where to find the compressed package
+        echo "PKG_PATH=${PKG_STAGING}/${PKG_NAME}" >> $GITHUB_OUTPUT
+
+    - name: Create Debian package
+      id: debian-package
+      shell: bash
+      if: startsWith(matrix.job.os, 'ubuntu')
+      run: |
+        COPYRIGHT_YEARS="2018 - "$(date "+%Y")
+        DPKG_STAGING="${{ env.CICD_INTERMEDIATES_DIR }}/debian-package"
+        DPKG_DIR="${DPKG_STAGING}/dpkg"
+        mkdir -p "${DPKG_DIR}"
+
+        DPKG_BASENAME=${{ needs.crate_metadata.outputs.name }}
+        DPKG_CONFLICTS=${{ needs.crate_metadata.outputs.name }}-musl
+        case ${{ matrix.job.target }} in *-musl*) DPKG_BASENAME=${{ needs.crate_metadata.outputs.name }}-musl ; DPKG_CONFLICTS=${{ needs.crate_metadata.outputs.name }} ;; esac;
+        DPKG_VERSION=${{ needs.crate_metadata.outputs.version }}
+        DPKG_ARCH="${{ matrix.job.dpkg_arch }}"
+        DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb"
+        echo "DPKG_NAME=${DPKG_NAME}" >> $GITHUB_OUTPUT
+
+        # Binary
+        install -Dm755 "${{ steps.bin.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.bin.outputs.BIN_NAME }}"
+
+        # Man page
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ needs.crate_metadata.outputs.name }}.1"
+        gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ needs.crate_metadata.outputs.name }}.1"
+
+        # Autocompletion files
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.bash "${DPKG_DIR}/usr/share/bash-completion/completions/${{ needs.crate_metadata.outputs.name }}"
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ needs.crate_metadata.outputs.name }}.fish"
+        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ needs.crate_metadata.outputs.name }}"
+
+        # README and LICENSE
+        install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/README.md"
+        install -Dm644 "LICENSE-MIT" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/LICENSE-MIT"
+        install -Dm644 "LICENSE-APACHE" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/LICENSE-APACHE"
+        install -Dm644 "CHANGELOG.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/changelog"
+        gzip -n --best "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/changelog"
+
+        cat > "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/copyright" <<EOF
+        Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+        Upstream-Name: ${{ needs.crate_metadata.outputs.name }}
+        Source: ${{ needs.crate_metadata.outputs.homepage }}
+
+        Files: *
+        Copyright: ${{ needs.crate_metadata.outputs.maintainer }}
+        Copyright: $COPYRIGHT_YEARS ${{ needs.crate_metadata.outputs.maintainer }}
+        License: Apache-2.0 or MIT
+
+        License: Apache-2.0
+          On Debian systems, the complete text of the Apache-2.0 can be found in the
+          file /usr/share/common-licenses/Apache-2.0.
+
+        License: MIT
+          Permission is hereby granted, free of charge, to any
+          person obtaining a copy of this software and associated
+          documentation files (the "Software"), to deal in the
+          Software without restriction, including without
+          limitation the rights to use, copy, modify, merge,
+          publish, distribute, sublicense, and/or sell copies of
+          the Software, and to permit persons to whom the Software
+          is furnished to do so, subject to the following
+          conditions:
+          .
+          The above copyright notice and this permission notice
+          shall be included in all copies or substantial portions
+          of the Software.
+          .
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+          ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+          TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+          PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+          SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+          CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+          OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+          IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+          DEALINGS IN THE SOFTWARE.
+        EOF
+          chmod 644 "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/copyright"
+
+          # control file
+          mkdir -p "${DPKG_DIR}/DEBIAN"
+          cat > "${DPKG_DIR}/DEBIAN/control" <<EOF
+        Package: ${DPKG_BASENAME}
+        Version: ${DPKG_VERSION}
+        Section: utils
+        Priority: optional
+        Maintainer: ${{ needs.crate_metadata.outputs.maintainer }}
+        Homepage: ${{ needs.crate_metadata.outputs.homepage }}
+        Architecture: ${DPKG_ARCH}
+        Provides: ${{ needs.crate_metadata.outputs.name }}
+        Conflicts: ${DPKG_CONFLICTS}
+        Description: cat(1) clone with wings.
+          A cat(1) clone with syntax highlighting and Git integration.
+        EOF
+
+        DPKG_PATH="${DPKG_STAGING}/${DPKG_NAME}"
+        echo "DPKG_PATH=${DPKG_PATH}" >> $GITHUB_OUTPUT
+
+        # build dpkg
+        fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
+
+    - name: "Artifact upload: tarball"
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ steps.package.outputs.PKG_NAME }}
+        path: ${{ steps.package.outputs.PKG_PATH }}
+
+    - name: "Artifact upload: Debian package"
+      uses: actions/upload-artifact@master
+      if: steps.debian-package.outputs.DPKG_NAME
+      with:
+        name: ${{ steps.debian-package.outputs.DPKG_NAME }}
+        path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+
+    - name: Check for release
+      id: is-release
+      shell: bash
+      run: |
+        unset IS_RELEASE ; if [[ $GITHUB_REF =~ ^refs/tags/v[0-9].* ]]; then IS_RELEASE='true' ; fi
+        echo "IS_RELEASE=${IS_RELEASE}" >> $GITHUB_OUTPUT
+
+    - name: Publish archives and packages
+      uses: softprops/action-gh-release@v2
+      if: steps.is-release.outputs.IS_RELEASE
+      with:
+        files: |
+          ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_PATH }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  winget:
+    name: Publish to Winget
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@19e706d4c9121098010096f9c495a70a7518b30f
+        with:
+          identifier: sharkdp.bat
+          installers-regex: '-pc-windows-msvc\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}

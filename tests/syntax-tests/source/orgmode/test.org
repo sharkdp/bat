@@ -1,0 +1,38 @@
+* This is header
+** sub header
+*** sub sub header
+**** sub sub sub header
+
+* Table representation
+| Name    | Age |
+|---------+-----|
+| Milli   |  23 |
+| Vanilli |  22 |
+
+* Spreadsheets
+| n | n + 2 | n ^ 2 |
+|---+-------+-------|
+| 1 |     3 |     1 |
+| 2 |     4 |     4 |
+| 3 |     5 |     9 |
+#+TBLFM: $2=$1+2::$3=$1*$1
+
+* Source Code
+
+#+BEGIN_SRC rust
+  # recursive fibonacci
+  fn fib(n: u32) -> u32 {
+    match n {
+      0 | 1 => 1,
+      _ => fib(n - 1) + fib(n - 2),
+    }
+  }
+#+END_SRC
+
+* ToDo and Checkboxes Example
+** DONE Write source example
+** TODO Generate highlighted example [1/3]
+   - [X] run update script
+   - [-] get code review
+   - [ ] merge into master
+

@@ -1,0 +1,47 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Cabal
+file_extensions:
+  - cabal
+scope: source.cabal
+contexts:
+  main:
+    - match: ^(\s*)(exposed-modules):$
+      captures:
+        2: constant.other.cabal
+      push:
+        - meta_scope: exposed.modules.cabal
+        - match: ^(?!\1\s)
+          pop: true
+        - include: module_name
+    - match: ^(\s*)(build-depends):$
+      captures:
+        2: constant.other.cabal
+      push:
+        - meta_scope: exposed.modules.cabal
+        - match: ^(?!\1\s)
+          pop: true
+        - match: "([<>=]+)|([&|]+)"
+          scope: keyword.operator.haskell
+        - match: ((\d+|\*)\.)*(\d+|\*)
+          scope: constant.numeric.haskell
+        - match: '([\w\-]+)'
+          scope: support.function.haskell
+    - match: '^\s*([a-zA-Z_-]+)(:)\s+'
+      scope: entity.cabal
+      captures:
+        1: constant.other.cabal
+        2: punctuation.entity.cabal
+    - match: '^(?i)(executable|library|test-suite|benchmark|flag|source-repository|custom-setup)\s+([^\s,]+)\s*$'
+      scope: entity.cabal
+      captures:
+        1: keyword.entity.cabal
+        2: string.cabal
+    - match: ^(?i)library\s*$
+      scope: keyword.entity.cabal
+    - match: "--.*$"
+      scope: comment.cabal
+  module_name:
+    - match: '([A-Z][A-Za-z_''0-9]*)(\.[A-Z][A-Za-z_''0-9]*)*'
+      scope: storage.module.haskell

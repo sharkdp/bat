@@ -1,0 +1,12 @@
+# force LF EOLs for test fixtures
+examples/** text=auto eol=lf
+snapshots/** text=auto eol=lf
+syntax-tests/source/** text=auto eol=lf
+syntax-tests/highlighted/** text=auto eol=lf
+
+# Linguist overrides
+benchmarks/** linguist-vendored
+examples/** linguist-vendored
+snapshots/** linguist-vendored
+syntax-tests/highlighted/** linguist-vendored
+syntax-tests/source/** linguist-vendored

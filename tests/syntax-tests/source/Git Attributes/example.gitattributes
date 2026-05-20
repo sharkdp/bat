@@ -1,0 +1,16 @@
+#
+# Comment
+
+[attr]binary -diff -merge -text
+
+*          text=auto
+*.c        diff=c
+*.cc       text diff=cpp
+*.o        binary
+*.bat      text eol=crlf
+*.lock     text -diff
+*.*ignore  text
+*.patch    -text
+
+.gitattributes linguist-language=gitattributes
+.gitkeep       export-ignore

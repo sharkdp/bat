@@ -1,0 +1,42 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/syntax.html
+name: debsources
+file_extensions:
+  - sources.list
+scope: text.apt-source-list
+contexts:
+  main:
+    - include: comments
+    - match: ^[\w-]+
+      scope: constant.language.apt-source-list
+    - match: \w+://\S+
+      scope: markup.underline.link.apt-source-list
+      push: distribution
+    - match: \bmain\b
+      scope: support.class.apt-source-list
+    - match: \buniverse\b
+      scope: support.constant.apt-source-list
+    - match: \brestricted\b
+      scope: storage.modifier.apt-source-list
+    - match: \bmultiverse\b
+      scope: keyword.other.apt-source-list
+    - match: '[\w-]+'
+      scope: constant.other.apt-source-list
+
+  comments:
+    - match: '#'
+      scope: punctuation.definition.comment.apt-source-list
+      push: line_comment
+
+  line_comment:
+    - meta_scope: comment.line.apt-source-list
+    - match: $
+      pop: true
+
+  distribution:
+    - match: \S+
+      scope: support.type.apt-source-list
+      pop: 1
+    - match: $
+      pop: 1

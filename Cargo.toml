@@ -1,0 +1,133 @@
+[package]
+authors = ["David Peter <mail@david-peter.de>"]
+categories = ["command-line-utilities"]
+description = "A cat(1) clone with wings."
+homepage = "https://github.com/sharkdp/bat"
+license = "MIT OR Apache-2.0"
+name = "bat"
+repository = "https://github.com/sharkdp/bat"
+version = "0.26.1"
+exclude = ["assets/syntaxes/*", "assets/themes/*"]
+build = "build/main.rs"
+edition = '2021'
+# You are free to bump MSRV as soon as a reason for bumping emerges.
+rust-version = "1.88"
+
+[features]
+default = ["application", "git"]
+# Feature required for bat the application. Should be disabled when depending on
+# bat as a library.
+application = [
+    "bugreport",
+    "build-assets",
+    "minimal-application",
+]
+# Mainly for developers that want to iterate quickly
+# Be aware that the included features might change in the future
+minimal-application = [
+    "clap",
+    "etcetera",
+    "paging",
+    "regex-onig",
+    "wild",
+]
+git = ["git2"] # Support indicating git modifications
+vendored-libgit2 = ["git2/vendored-libgit2"]
+paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
+lessopen = ["execute"] # Support $LESSOPEN preprocessor
+build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
+
+# You need to use one of these if you depend on bat as a library:
+regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
+regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
+
+[dependencies]
+nu-ansi-term = "0.50.3"
+ansi_colours = "^1.2"
+bincode = "1.0"
+console = "0.16.2"
+flate2 = "1.1"
+once_cell = "1.20"
+thiserror = "2.0"
+wild = { version = "2.2", optional = true }
+content_inspector = "0.2.4"
+shell-words = { version = "1.1.1", optional = true }
+minus = { version = "5.6", optional = true, features = [
+  "dynamic_output",
+  "search",
+] }
+unicode-width = "0.2.2"
+globset = "0.4"
+serde = "1.0"
+serde_derive = "1.0"
+serde_yaml = "0.9.28"
+semver = "1.0"
+path_abs = { version = "0.5", default-features = false }
+clircle = { version = "0.6.1", default-features = false }
+bugreport = { version = "0.6.0", optional = true }
+etcetera = { version = "0.11.0", optional = true }
+grep-cli = { version = "0.1.12", optional = true }
+regex = { version = "1.12.3", optional = true }
+walkdir = { version = "2.5", optional = true }
+bytesize = { version = "2.3.1" }
+encoding_rs = "0.8.35"
+execute = { version = "0.2.15", optional = true }
+terminal-colorsaurus = "1.0"
+unicode-segmentation = "1.13.2"
+itertools = "0.14.0"
+
+[dependencies.git2]
+version = "0.20"
+optional = true
+default-features = false
+
+[dependencies.syntect]
+version = "5.3.0"
+default-features = false
+features = ["parsing"]
+
+[dependencies.clap]
+version = "4.6.1"
+optional = true
+features = ["wrap_help", "cargo"]
+
+[target.'cfg(target_os = "macos")'.dependencies]
+plist = "1.7.0"
+
+[dev-dependencies]
+assert_cmd = "2.0.16"
+expect-test = "1.5.0"
+serial_test = { version = "2.0.0", default-features = false }
+predicates = "3.1.3"
+wait-timeout = "0.2.1"
+tempfile = "3.27.0"
+serde = { version = "1.0", features = ["derive"] }
+
+[target.'cfg(unix)'.dev-dependencies]
+nix = { version = "0.31", default-features = false, features = ["term"] }
+
+[build-dependencies]
+anyhow = "1.0.97"
+indexmap = { version = "2.13.0", features = ["serde"] }
+itertools = "0.14.0"
+once_cell = "1.20"
+prettyplease = "0.2.37"
+proc-macro2 = "1.0.106"
+quote = "1.0.45"
+regex = "1.12.3"
+serde = "1.0"
+serde_derive = "1.0"
+serde_with = { version = "3.17.0", default-features = false, features = ["macros"] }
+syn = { version = "2.0.104", features = ["full"] }
+toml = { version = "1.1.1", features = ["preserve_order"] }
+walkdir = "2.5"
+
+[build-dependencies.clap]
+version = "4.6.1"
+optional = true
+features = ["wrap_help", "cargo"]
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1

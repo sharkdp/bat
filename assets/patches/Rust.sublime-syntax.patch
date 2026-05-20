@@ -1,0 +1,13 @@
+diff --git syntaxes/01_Packages/Rust/Rust.sublime-syntax syntaxes/01_Packages/Rust/Rust.sublime-syntax
+index 3c354486..24727a4e 100644
+--- syntaxes/01_Packages/Rust/Rust.sublime-syntax
++++ syntaxes/01_Packages/Rust/Rust.sublime-syntax
+@@ -907,6 +907,8 @@ contexts:
+     - include: type-any-identifier
+     - match: ':'
+       scope: punctuation.separator.rust
++    - match: (?=;)
++      pop: true
+ 
+   fn-body:
+     - meta_scope: meta.function.rust

@@ -1,0 +1,243 @@
+BAT(1)                      General Commands Manual                     BAT(1)
+
+NAME
+       bat - a cat(1) clone with syntax highlighting and Git integration.
+
+USAGE
+       bat [OPTIONS] [FILE]...
+
+       bat cache [CACHE-OPTIONS] [--build|--clear]
+
+DESCRIPTION
+       bat  prints  the syntax-highlighted content of a collection of FILEs to
+       the terminal. If no FILE is specified, or when FILE is  '-',  it  reads
+       from standard input.
+
+       bat  supports  a  large number of programming and markup languages.  It
+       also communicates with git(1) to show modifications with respect to the
+       git  index.  bat automatically pipes its output through a pager (by de‐
+       fault: less).
+
+       Whenever the output of bat goes to  a  non-interactive  terminal,  i.e.
+       when  the output is piped into another process or into a file, bat will
+       act as a drop-in replacement for cat(1) and fall back to  printing  the
+       plain file contents.
+
+OPTIONS
+       General  remarks: Command-line options like '-l'/'--language' that take
+       values  can  be  specified  as  either  '--language   value',   '--lan‐
+       guage=value', '-l value' or '-lvalue'.
+
+       -A, --show-all
+
+              Show  non-printable  characters  like space, tab or newline. Use
+              '--tabs' to control the width of the tab-placeholders.
+
+       -p, --plain
+
+              Only show plain style, no decorations.  This  is  an  alias  for
+              '--style=plain'.  When  '-p' is used twice ('-pp'), it also dis‐
+              ables    automatic    paging    (alias    for     '--style=plain
+              --pager=never').
+
+       -l, --language <language>
+
+              Explicitly  set  the  language for syntax highlighting. The lan‐
+              guage can be specified as a name (like 'C++' or 'LaTeX') or pos‐
+              sible   file   extension   (like  'cpp',  'hpp'  or  'md').  Use
+              '--list-languages' to show all supported language names and file
+              extensions.
+
+       -H, --highlight-line <N:M>...
+
+              Highlight  the specified line ranges with a different background
+              color For example:
+
+              --highlight-line 40
+                     highlights line 40
+
+              --highlight-line 30:40
+                     highlights lines 30 to 40
+
+              --highlight-line :40
+                     highlights lines 1 to 40
+
+              --highlight-line 40:
+                     highlights lines 40 to the end of the file
+
+       --tabs <T>
+
+              Set the tab width to T spaces. Use a width of  0  to  pass  tabs
+              through directly
+
+       --wrap <mode>
+
+              Specify  the  text-wrapping mode (*auto*, never, character). The
+              '--terminal-width' option can be used in addition to control the
+              output width.
+
+       --terminal-width <width>
+
+              Explicitly  set the width of the terminal instead of determining
+              it automatically. If prefixed with '+' or '-', the value will be
+              treated  as  an  offset  to the actual terminal width. See also:
+              '--wrap'.
+
+       -n, --number
+
+              Only show line numbers, no other decorations. This is  an  alias
+              for '--style=numbers'
+
+       --color <when>
+
+              Specify  when to use colored output. The automatic mode only en‐
+              ables colors if an interactive terminal  is  detected.  Possible
+              values: *auto*, never, always.
+
+       --italic-text <when>
+
+              Specify  when  to use ANSI sequences for italic text in the out‐
+              put. Possible values: always, *never*.
+
+       --decorations <when>
+
+              Specify when to use the decorations that have been specified via
+              '--style'. The automatic mode only enables decorations if an in‐
+              teractive terminal is detected. Possible values: *auto*,  never,
+              always.
+
+       -f, --force-colorization
+
+              Alias  for '--decorations=always --color=always'. This is useful
+              if the output of bat is piped to another program, but  you  want
+              to keep the colorization/decorations.
+
+       --paging <when>
+
+              Specify when to use the pager. To disable the pager, use '--pag‐
+              ing=never' or its alias, -P. To disable the  pager  permanently,
+              set  BAT_PAGER  to  an  empty  string. To control which pager is
+              used, see the '--pager' option. Possible values: *auto*,  never,
+              always.
+
+       --pager <command>
+
+              Determine  which  pager  is  used. This option will override the
+              PAGER and BAT_PAGER environment variables. The default pager  is
+              'less'.  To  control  when the pager is used, see the '--paging'
+              option. Example: '--pager "less -RF"'.
+
+       -m, --map-syntax <glob-pattern:syntax-name>...
+
+              Map a glob pattern to an existing syntax name. The glob  pattern
+              is  matched  on  the full path and the filename. For example, to
+              highlight  *.build  files  with  the  Python  syntax,   use   -m
+              '*.build:Python'.  To highlight files named '.myignore' with the
+              Git Ignore syntax, use -m '.myignore:Git Ignore'.
+
+       --theme <theme>
+
+              Set the theme for syntax highlighting.  Use  '--list-themes'  to
+              see  all  available  themes.   To  set  a default theme, add the
+              '--theme="..."' option to the configuration file or  export  the
+              BAT_THEME environment variable (e.g.: export BAT_THEME="...").
+
+       --list-themes
+
+              Display a list of supported themes for syntax highlighting.
+
+       --style <style-components>
+
+              Configure  which elements (line numbers, file headers, grid bor‐
+              ders, Git modifications, ..) to display in addition to the  file
+              contents.  The  argument is a comma-separated list of components
+              to display (e.g. 'numbers,changes,grid') or a pre-defined  style
+              ('full').  To set a default style, add the '--style=".."' option
+              to the configuration file or export  the  BAT_STYLE  environment
+              variable (e.g.: export BAT_STYLE=".."). Possible values: *auto*,
+              full, plain, changes, header, grid, numbers, snip.
+
+       -r, --line-range <N:M>...
+
+              Only print the specified range of lines for each file. For exam‐
+              ple:
+
+              --line-range 30:40
+                     prints lines 30 to 40
+
+              --line-range :40
+                     prints lines 1 to 40
+
+              --line-range 40:
+                     prints lines 40 to the end of the file
+
+       -L, --list-languages
+
+              Display a list of supported languages for syntax highlighting.
+
+       -u, --unbuffered
+
+              This option exists for POSIX-compliance reasons ('u' is for 'un‐
+              buffered'). The output is always unbuffered  -  this  option  is
+              simply ignored.
+
+       -h, --help
+
+              Print this help message.
+
+       -V, --version
+
+              Show version information.
+
+POSITIONAL ARGUMENTS
+       <FILE>...
+
+              Files  to print and concatenate. Use a dash ('-') or no argument
+              at all to read from standard input.
+
+SUBCOMMANDS
+       cache - Modify the syntax-definition and theme cache.
+
+FILES
+       bat can also be customized with a configuration file. The  location  of
+       the file is dependent on your operating system. To get the default path
+       for your system, call:
+
+       bat --config-file
+
+       Alternatively, you can use the BAT_CONFIG_PATH environment variable  to
+       point bat to a non-default location of the configuration file.
+
+ADDING CUSTOM LANGUAGES
+       bat  supports  Sublime  Text .sublime-syntax language files, and can be
+       customized to add additional languages to your local  installation.  To
+       do  this,  add  the  .sublime-snytax language files to `$(bat --config-
+       dir)/syntaxes` and run `bat cache --build`.
+
+       Example:
+
+            mkdir -p "$(bat --config-dir)/syntaxes"
+            cd "$(bat --config-dir)/syntaxes"
+
+            # Put new '.sublime-syntax' language definition files
+            # in this folder (or its subdirectories), for example:
+            git clone https://github.com/tellnobody1/sublime-purescript-syntax
+
+            # And then build the cache.
+            bat cache --build
+
+       Once the cache is built, the new  language  will  be  visible  in  `bat
+       --list-languages`.
+       If  you  ever  want  to  remove the custom languages, you can clear the
+       cache with `bat cache --clear`.
+
+ADDING CUSTOM THEMES
+       Similarly to custom  languages,  bat  supports  Sublime  Text  .tmTheme
+       themes.   These  can  be installed to `$(bat --config-dir)/themes`, and
+       are added to the cache with `bat cache --build`.
+
+MORE INFORMATION
+       For more information and up-to-date documentation, visit the bat repo:
+       https://github.com/sharkdp/bat
+
+                                                                        BAT(1)

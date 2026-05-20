@@ -1,0 +1,425 @@
+#!/usr/bin/env dash
+
+esc() {
+    case $1 in
+        # vt100 (IL is vt102) (DECTCEM is vt520)
+        CUD)     printf '%s[%sB'    "$esc_c" "$2"      ;; # cursor down
+        CUP)     printf '%s[%s;%sH' "$esc_c" "$2" "$3" ;; # cursor home
+        CUU)     printf '%s[%sA'    "$esc_c" "$2"      ;; # cursor up
+        DECAWM)  printf '%s[?7%s'   "$esc_c" "$2"      ;; # line wrap
+        DECRC)   printf '%s8'       "$esc_c"           ;; # cursor restore
+        DECSC)   printf '%s7'       "$esc_c"           ;; # cursor save
+        DECSTBM) printf '%s[%s;%sr' "$esc_c" "$2" "$3" ;; # scroll region
+        DECTCEM) printf '%s[?25%s'  "$esc_c" "$2"      ;; # cursor visible
+        ED[0-2]) printf '%s[%sJ'    "$esc_c" "${1#ED}" ;; # clear screen
+        EL[0-2]) printf '%s[%sK'    "$esc_c" "${1#EL}" ;; # clear line
+        IL)      printf '%s[%sL'    "$esc_c" "$2"      ;; # insert line
+        SGR)     printf '%s[%s;%sm' "$esc_c" "$2" "$3" ;; # colors
+
+        # xterm (since 1988, supported widely)
+        screen_alt) printf '%s[?1049%s' "$esc_c" "$2" ;; # alternate buffer
+    esac
+}
+
+term_setup() {
+    stty=$(stty -g)
+    stty -icanon -echo
+    esc screen_alt h
+    esc DECAWM l
+    esc DECTCEM l
+    esc ED2
+    esc DECSTBM 1 "$((LINES - 2))"
+}
+
+term_reset() {
+    esc DECAWM h     >&2
+    esc DECTCEM h    >&2
+    esc ED2          >&2
+    esc DECSTBM      >&2
+    esc screen_alt l >&2
+    stty "$stty"
+
+    # needed for cd-on-exit
+    printf '%s\n' "$PWD" >&1
+}
+
+term_resize() {
+    # false-positive, behavior intentional, globbing is disabled.
+    # shellcheck disable=2046
+    {
+        set -f
+        set +f -- $(stty size)
+    }
+
+    LINES=$1 COLUMNS=$2
+
+    # space for status_line
+    bottom=$((LINES - 2))
+}
+
+term_scroll_down() {
+    case $((y - $#)) in
+        [0-9]*) return
+    esac
+
+    y=$((y + 1))
+    y2=$((y2 + 1 < bottom ? y2 + 1 : bottom))
+
+    line_print "$((y - 1))" "$@"
+    printf '\n'
+    line_print "$y" "$@"
+    status_line "$#"
+}
+
+term_scroll_up() {
+    case $y in
+        -*|0|1) return
+    esac
+
+    y=$((y - 1))
+
+    line_print "$((y + 1))" "$@"
+
+    case $y2 in
+        1) esc IL ;;
+        *) esc CUU; y2=$((y2 > 1 ? y2 - 1 : 1))
+    esac
+
+    line_print "$y" "$@"
+    status_line "$#"
+}
+
+cmd_run() {
+    stty "$stty"
+    esc DECTCEM h
+    esc DECSTBM
+    esc ED2
+    "$@" ||:
+    esc DECSTBM 1 "$((LINES - 2))"
+    esc DECTCEM l
+    stty -icanon -echo
+    hist=2
+}
+
+file_escape() {
+    tmp=$1 safe=
+
+    # loop over string char by char
+    while c=${tmp%"${tmp#?}"}; do
+        case $c in
+            '')          return ;;
+            [[:cntrl:]]) safe=$safe\? ;;
+            *)           safe=$safe$c ;;
+        esac
+
+        tmp=${tmp#?}
+    done
+}
+
+hist_search() {
+    hist=0 j=1
+
+    for file do
+        case ${PWD%%/}/$file in
+            "$old_pwd") y=$j y2=$((j > bottom ? mid : j)) cur=$file
+        esac
+
+        j=$((j + 1))
+    done
+}
+
+list_print() {
+    esc ED2
+    esc CUP
+
+    i=1
+    end=$((bottom + 1))
+    mid=$((bottom / 4 < 5 ? 1 : bottom / 4))
+
+    case $# in
+        1) [ -e "$1" ] || set -- empty
+    esac
+
+    case $hist in
+        2) # redraw after cmd run
+            shift "$((y > y2 ? y - y2 : 0))"
+        ;;
+
+        1) # redraw after go-to-parent
+            hist_search "$@"
+            shift "$((y >= bottom ? y - mid : 0))"
+        ;;
+
+        *) # everything else
+            shift "$((y >= bottom ? y - bottom : 0))"
+        ;;
+    esac
+
+    for file do
+        case $i in
+            "$y2") esc SGR 0 7
+        esac
+
+        case $((i - end)) in
+            -*)
+                line_format "$file"
+                esc CUD
+            ;;
+        esac
+
+        i=$((i + 1))
+    done
+
+    esc CUP "$((y > y2 ? y2 : y))"
+}
+
+redraw() {
+    list_print "$@"
+    status_line "$#"
+}
+
+status_line() {
+    esc DECSC
+    esc CUP "$LINES"
+
+    case $USER in
+        root) esc SGR 31 7 ;;
+           *) esc SGR 34 7 ;;
+    esac
+
+    printf '%*s\r%s ' "$COLUMNS" "" "($y/$1)"
+
+    case $ltype in
+        '') printf %s "$PWD" ;;
+         *) printf %s "$ltype"
+    esac
+
+    esc SGR 0 0
+    esc DECRC
+}
+
+prompt() {
+    esc DECSC
+    esc CUP "$LINES"
+    printf %s "$1"
+    esc DECTCEM h
+    esc EL0
+
+    case $2 in
+        r)
+            stty icanon echo
+            read -r ans ||:
+            stty -icanon -echo
+        ;;
+    esac
+
+    esc DECRC
+    esc DECTCEM l
+    status_line "($y/$#) $PWD"
+}
+
+line_print() {
+    offset=$1
+
+    case $offset in
+        "$y") esc SGR 0 7
+    esac
+
+    shift "$offset"
+
+    case $offset in
+        "$y") cur=$1
+    esac
+
+    line_format "$1"
+}
+
+line_format() {
+    file_escape "$1"
+    [ -d "$1" ] && esc SGR 1 31
+    printf %s "$safe"
+    [ -d "$1" ] && printf /
+    esc SGR 0 0
+    esc EL0
+    printf '\r'
+}
+
+main() {
+    set -e
+
+    case $1 in
+        -h|--help)
+            printf 'shfm -[hv] <starting dir>\n'
+            exit 0
+        ;;
+
+        -v|--version)
+            printf 'shfm 0.4.2\n'
+            exit 0
+        ;;
+
+        *)
+            cd -- "${1:-"$PWD"}"
+        ;;
+    esac
+
+    esc_c=$(printf '\033')
+    bs_char=$(printf '\177')
+
+    set -- *
+    cur=$1
+
+    term_resize
+    term_setup
+
+    trap 'term_reset'  EXIT INT
+    trap 'term_resize; term_setup; y=1 y2=1; redraw "$@"' WINCH
+
+    y=1 y2=1
+    redraw "$@"
+
+    while key=$(dd ibs=1 count=1 2>/dev/null); do
+        case $key${esc:=0} in
+            k?|A2)
+                term_scroll_up "$@"
+            ;;
+
+            j?|B2)
+                term_scroll_down "$@"
+            ;;
+
+            l?|C2|"$esc") # ARROW RIGHT
+                if [ -d "$cur" ] && cd -- "$cur" >/dev/null 2>&1; then
+                    set -- *
+                    y=1 y2=1 cur=$1 ltype=
+                    redraw "$@"
+
+                elif [ -e "$cur" ]; then
+                    cmd_run "${SHFM_OPENER:="${EDITOR:=vi}"}" "$cur"
+                    redraw "$@"
+                fi
+            ;;
+
+            h?|D2|"$bs_char"?) # ARROW LEFT
+                old_pwd=$PWD
+
+                case $ltype in
+                    '') cd .. || continue ;;
+                     *) ltype= ;;
+                esac
+
+                set -- *
+                y=1 y2=1 cur=$1 hist=1
+                redraw "$@"
+            ;;
+
+            g?)
+                case $y in
+                    1) continue
+                esac
+
+                y=1 y2=1 cur=$1
+                redraw "$@"
+            ;;
+
+            G?)
+                y=$#
+                y2=$(($# < bottom ? $# : bottom))
+                redraw "$@"
+            ;;
+
+            .?)
+                case ${hidden:=1} in
+                    1) hidden=0; set -- .* ;;
+                    0) hidden=1; set -- *
+                esac
+
+                y=1 y2=1 cur=$1
+                redraw "$@"
+            ;;
+
+            :?)
+                prompt "cd: " r
+
+                # false positive, behavior intentional
+                # shellcheck disable=2088
+                case $ans in
+                    '~')   ans=$HOME ;;
+                    '~/'*) ans=$HOME/${ans#"~/"}
+                esac
+
+                cd -- "${ans:="$0"}" >/dev/null 2>&1|| continue
+                set -- *
+                y=1 y2=1 cur=$1
+                redraw "$@"
+            ;;
+
+            /?)
+                prompt / r
+
+                # word splitting and globbing intentional
+                # shellcheck disable=2086
+                set -- $ans*
+
+                case $1$# in
+                    "$ans*1") set -- 'no results'
+                esac
+
+                y=1 y2=1 cur=$1 ltype="search $PWD/$ans*"
+                redraw "$@"
+                status_line "$#"
+            ;;
+
+            -?)
+                cd -- "$OLDPWD" >/dev/null 2>&1|| continue
+                set -- *
+                y=1 y2=1 cur=$1
+                redraw "$@"
+            ;;
+
+            \~?)
+                cd || continue
+                set -- *
+                y=1 y2=1 cur=$1
+                redraw "$@"
+            ;;
+
+            \!?)
+                export SHFM_LEVEL
+                SHFM_LEVEL=$((SHFM_LEVEL + 1))
+                cmd_run "${SHELL:=/bin/sh}"
+                redraw "$@"
+            ;;
+
+            \??)
+                set -- 'j - down' \
+                       'k - up' \
+                       'l - open file or directory' \
+                       'h - go up level' \
+                       'g - go to top' \
+                       'G - go to bottom' \
+                       'q - quit' \
+                       ': - cd to <input>' \
+                       '/ - search current directory <input>*' \
+                       '- - go to last directory' \
+                       '~ - go home' \
+                       '! - spawn shell' \
+                       '. - toggle hidden files' \
+                       '? - show keybinds'
+
+                y=1 y2=1 cur=$1 ltype=keybinds
+                redraw "$@"
+                status_line "$#"
+            ;;
+
+            q?) exit 0 ;;
+
+            # handle keys which emit escape sequences
+            "$esc_c"*) esc=1 ;;
+                 '[1') esc=2 ;;
+                    *) esc=0 ;;
+        esac
+    done
+}
+
+main "$@" >/dev/tty

@@ -1,0 +1,6 @@
+# See https://github.com/Morganamilo/paru/blob/master/man/paru.conf.5
+[mappings]
+"INI" = [
+    "${PARU_CONF}",
+    "paru.conf",
+]

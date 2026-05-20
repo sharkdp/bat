@@ -1,0 +1,30 @@
+{% extends 'base.jinja2' %}
+<h1>{% block title %}{% endblock %}</h1>
+{% for entry in entries %}
+  <span>Entry {{ loop.index }}</span>
+  {% if entry.show %}
+    <p>{{ entry.value }}</p>
+  {% else if false %}
+    <p>No value</p>
+  {% endif %}
+{% endfor %}
+{% set some_value = 123 %}
+  <div>{{ some_value | custom_filter }}, {{ some_value | abs }}</div>
+{% endset %}
+{{ some_dict['val'].val }}
+{# comment #}
+{#
+  longer comment
+  {{ value }}
+#}
+{% raw %}
+  {{ do not transform }}
+{% endraw %}
+{% macro some_macro(value) -%}
+  <p style="color: red;">{{ value }}</p>
+{%- endmacro %}
+{% if another_val is defined %}
+  <h3>{{ another_val }}</h3>
+{% else %}
+  <h3>Unknown</h3>
+{% endif %}

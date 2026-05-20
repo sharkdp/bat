@@ -1,0 +1,206 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Manpage
+file_extensions:
+  - man
+scope: source.man
+
+variables:
+  section_heading: '^(?!#)\S.*$'
+  command_line_option: '(--?[A-Za-z0-9][_A-Za-z0-9-]*)'
+  ansi_escape_sequence: '\e\[[\?=]?(?:\d+;?)*[A-Za-z]'
+
+contexts:
+  prototype:
+    # ignore syntax test lines
+    - match: '^#'
+      push:
+        - meta_scope: comment.syntax-test.man
+        - match: $\n?
+          pop: true
+  main:
+    - match: ^
+      push: first_line
+
+  first_line:
+    - match: '([A-Z0-9_\-]+)(\()([^)]+)(\))\s*'
+      captures:
+        1: meta.preprocessor.man
+        2: keyword.operator.man
+        3: string.quoted.other.man
+        4: keyword.operator.man
+      push:
+        - match: (?:[\w'-]+|\s(?!\s))
+          scope: markup.heading.title.man
+        - match: \s\s
+          pop: true
+        - match: '(?=\S|$)'
+          pop: true
+
+    - match: '$'
+      set: body
+
+  body:
+    # English, ..., ..., ..., Russian, ...
+
+    - match: '^(?:SYNOPSIS|SYNTAX|SINTASSI|SKŁADNIA|СИНТАКСИС|書式)'
+      scope: markup.heading.synopsis.man
+      embed: synopsis
+      escape: '(?={{section_heading}})'
+
+    - match: '^(?:USAGE)'
+      scope: markup.heading.synopsis.man
+      embed: synopsis
+      escape: '(?={{section_heading}})'
+
+    - match: '^(?:COMMANDS)\b'
+      scope: markup.heading.commands.man
+      embed: commands-start
+      escape: '(?={{section_heading}})'
+
+    - match: '^(?:ENVIRONMENT\s+VARIABLES)'
+      scope: markup.heading.env.man
+      embed: environment-variables
+      escape: '(?={{section_heading}})'
+
+    - match: '{{section_heading}}'
+      scope: markup.heading.other.man
+      embed: options # some man pages put command line options under the description heading
+      escape: '(?={{section_heading}})'
+
+  function-call:
+    - match: '(?<!\e\[)(?:\b|\s)(?:{{ansi_escape_sequence}})?([A-Za-z0-9_\-]+\.)?([A-Za-z0-9_\-]+)(?:{{ansi_escape_sequence}})?(\()([^)]*)(\))'
+      captures:
+        1: entity.name.function.man
+        2: entity.name.function.man
+        3: keyword.operator.man
+        4: constant.numeric.man
+        5: keyword.operator.man
+
+  env-var:
+    - match: '(\$)(?!\d)(\w+)\b'
+      captures:
+        1: punctuation.definition.variable.man
+        2: constant.other.man
+
+  options:
+    # command-line options like --option=value, --some-flag, or -x
+    - match: '^[ ]{7}(-)(?=\s)'
+      captures:
+        1: entity.name.command-line-option.man
+    - match: '^[ ]{7}(?=-|\+)'
+      push: expect-command-line-option
+    - match: '(?:[^a-zA-Z0-9_-]|^|\s){{command_line_option}}'
+      captures:
+        1: entity.name.command-line-option
+      push:
+        - match: '='
+          scope: keyword.operator.man
+          set:
+            - match: '[^],.() ]+'
+              scope: variable.parameter.man
+              pop: true
+            - match: $
+              pop: true
+        - match: ''
+          pop: true
+    - include: function-call
+    - include: c-code
+    - include: env-var
+
+  expect-command-line-option:
+    - match: '[A-Za-z0-9-\.\?:#\$\+]+'
+      scope: entity.name.command-line-option.man
+    - match: '(\[)(=)'
+      captures:
+        1: punctuation.section.brackets.begin.man
+        2: keyword.operator.man
+      push: [command-line-option-or-pipe, expect-parameter]
+    - match: '\['
+      push:
+        - meta_scope: entity.name.command-line-option.man
+        - match: '\]'
+          pop: true
+    - match: '='
+      scope: keyword.operator.man
+      push: expect-parameter
+    - match: (?=.*\.)
+      pop: true
+    - match: '\s'
+      push: expect-parameter
+    - match: '(,)\s*'
+      captures:
+        1: punctuation.separator.man
+    - match: $|(?=\])
+      pop: true
+
+  expect-parameter:
+    - match: '[A-Za-z0-9-_]+'
+      scope: variable.parameter.man
+    - match: (?=\s+\|)
+      pop: true
+    - match: \|
+      scope: keyword.operator.logical.man
+    - match: '\['
+      scope: punctuation.section.brackets.begin.man
+      push:
+        - match: '\]'
+          scope: punctuation.section.brackets.end.man
+          pop: true
+        - include: expect-parameter
+    - match: '<'
+      scope: punctuation.definition.generic.begin.man
+    - match: '>'
+      scope: punctuation.definition.generic.end.man
+    - match: '$|(?=[],]|{{command_line_option}})'
+      pop: true
+
+  c-code:
+    - match: '^(?=\s+(?:#include\b|#define\b|/\*|struct\s+(\w+\s*)?\{))'
+      embed: scope:source.c
+      #embed_scope: source.c.embedded.man
+      #escape: ^(?!#|\1|\s*(?:$|/\*|#include\b|#define\b))
+      escape: ^(?=\s*(?:\(.*\.\)\s*$|[A-Z](?![A-Z])))
+
+  synopsis:
+    - include: c-code
+    - match: \[
+      scope: punctuation.section.brackets.begin.man
+      push: command-line-option-or-pipe
+    - include: options
+
+  command-line-option-or-pipe:
+    - match: (\|)\s*
+      captures:
+        1: keyword.operator.logical.man
+    #- match: (?={{command_line_option}})
+    - match: \w+-\w+
+    - match: (?=-)
+      push:
+        - match: (?=\s*\|)
+          pop: true
+        - include: expect-command-line-option
+    - match: \]
+      scope: punctuation.section.brackets.end.man
+      pop: true
+    - match: \[
+      scope: punctuation.section.brackets.begin.man
+      push: command-line-option-or-pipe
+
+  commands-start:
+    - match: (?=^[ ]{7}.*(?:[ ]<|[|]))
+      push: commands
+
+  commands:
+    - match: '^[ ]{7}([a-z_\-]+)(?=[ ]|$)'
+      captures:
+        1: entity.name.command.man
+      push: expect-parameter
+    - match: '^[ ]{7}(?=[\[<]|\w+[|\]])'
+      push: expect-parameter
+
+  environment-variables:
+    - match: '^[ ]{7}([A-Z_]+)\b'
+      captures:
+        1: support.constant.environment-variable.man

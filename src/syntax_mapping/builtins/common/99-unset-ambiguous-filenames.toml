@@ -1,0 +1,7 @@
+[mappings]
+"MappingTarget::MapToUnknown" = [
+    # "NAnt Build File" should only match *.build files, not files named "build"
+    "build",
+    # "bin/rails" scripts in a Ruby project misidentified as HTML (Rails) #1008
+    "rails",
+]

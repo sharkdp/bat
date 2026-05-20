@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: BatTestCustomAssets
+file_extensions:
+  - battestcustomassets
+scope: source.battestcustomassets
+
+# This syntax is used to test if custom assets work with bat.
+# The way it works is that this syntax is only allowed to be included with
+# custom assets. That way it is easy to test if custom assets are used (and works)
+# or not.
+#
+# This syntax is based on CpuInfo.sublime-syntax.
+
+contexts:
+  main:
+    - match: '^([^:]+)\w*:\w*(.*)$'
+      captures:
+        1: keyword.other.battestcustomassets-key
+        2: string.other.battestcustomassets-value

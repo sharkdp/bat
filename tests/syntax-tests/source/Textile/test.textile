@@ -1,0 +1,40 @@
+###. Single line comment
+
+###..
+Multi line comment.
+
+This line is also part of comment.
+
+Continues till next block element
+
+p. This is not a comment, but I am a paragraph.
+
+<!-- HTML comments can also be used -->
+
+
+h1. This is an <h1>
+
+h2. This is an <h2>
+
+h3. This is an <h3>
+
+h4. This is an <h4>
+
+h5. This is an <h5>
+
+h6. This is an <h6>
+
+--
+
+* Item
+** Sub-Item
+* Another item
+** Another sub-item
+** Yet another sub-item
+*** Three levels deep
+
+p{color:red}. This line will be red.
+
+%span% are enclosed in percent symbols.
+
+div. This is a new div element

@@ -1,0 +1,5 @@
+[section]
+key=value
+# This file is just for testing that the INI syntax is registered to handle
+# the .inf file extension, it is not testing the syntax highlighting capabilities
+# of the INI syntax itself

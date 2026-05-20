@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: MemInfo
+file_extensions:
+  - meminfo
+scope: source.meminfo
+
+contexts:
+  main:
+    - match: '^([^:]+)\w*:\w*(.*)$'
+      captures:
+        1: keyword.other.meminfo-key
+        2: string.other.meminfo-value

@@ -1,0 +1,172 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: ARM Assembly
+file_extensions:
+  - s
+  - S
+scope: source.asm.arm
+contexts:
+  main:
+    - match: "@.*$"
+      scope: comment.line
+    - match: //.*$
+      scope: comment.line
+    - match: ;.*$
+      scope: comment.line
+    - match: ^\s*\#\s*if\s+0\b
+      push:
+        - meta_scope: comment.preprocessor
+        - match: ^\s*\#\s*endif\b
+          pop: true
+    - match: /\*
+      push:
+        - meta_scope: comment.block
+        - match: \*/
+          pop: true
+    - match: |-
+        (?x)
+        ^\s*\#\s*(define)\s+             # define
+        ((?<id>[a-zA-Z_][a-zA-Z0-9_]*))  # macro name
+        (?:                              # and optionally:
+            (\()                         # an open parenthesis
+                (
+                    \s* \g<id> \s*       # first argument
+                    ((,) \s* \g<id> \s*)*  # additional arguments
+                    (?:\.\.\.)?          # varargs ellipsis?
+                )
+            (\))                         # a close parenthesis
+        )?
+      captures:
+        1: keyword.control.import.define.c
+        2: entity.name.function.preprocessor.c
+        4: punctuation.definition.parameters.c
+        5: variable.parameter.preprocessor.c
+        7: punctuation.separator.parameters.c
+        8: punctuation.definition.parameters.c
+      push:
+        - meta_scope: meta.preprocessor.macro.c
+        - match: (?=(?://|/\*))|$
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c
+        - include: $top_level_main
+    - match: ^\s*#\s*(error|warning)\b
+      captures:
+        1: keyword.control.import.error.c
+      push:
+        - meta_scope: meta.preprocessor.diagnostic.c
+        - match: $
+          captures:
+            1: keyword.control.import.error.c
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c
+    - match: ^\s*#\s*(include|import)\b\s+
+      captures:
+        1: keyword.control.import.include.c
+      push:
+        - meta_scope: meta.preprocessor.c.include
+        - match: (?=(?://|/\*))|$
+          captures:
+            1: keyword.control.import.include.c
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.begin.c
+          push:
+            - meta_scope: string.quoted.double.include.c
+            - match: '"'
+              captures:
+                0: punctuation.definition.string.end.c
+              pop: true
+        - match: <
+          captures:
+            0: punctuation.definition.string.begin.c
+          push:
+            - meta_scope: string.quoted.other.lt-gt.include.c
+            - match: ">"
+              captures:
+                0: punctuation.definition.string.end.c
+              pop: true
+    - match: '((?i)([xw][0-9]|[xw]1[0-9]||[xw]2[0-9]|[wx]30|wzr|xzr|wsp|fpsr|fpcr|[rcp]1[0-5]|[rcp][0-9]|a[1-4]|v[1-8]|sl|sb|fp|ip|sp|lr|(c|s)psr(_c)?|pc|[sd]3[0-1]|[sd][12][0-9]|[sd][0-9]|fpsid|fpscr|fpexc|q3[0-1]|q2[0-9]|q1[0-9]|q[0-9]|APSR_nzcv|sy)!?(?-i))?\b'
+      scope: storage.other.register
+    - match: \.(?i)(globl|global|macro|endm|purgem|if|elseif|else|endif|section|text|arm|align|balign|irp|rept|endr|req|unreq|error|short|func|endfunc|hidden|type|fpu|arch|code|altmacro|object_arch|word|int|string)(?-i)\b
+      scope: keyword.control.directive
+    - match: armv(2a?|3m?|4t?|5t?e?6(j|t2|zk?|-m)?|7v?e?(-(a|r|m))?|8-a(\+crc)?)
+      scope: keyword.control.arch.arm
+    - match: ^\s*#\s*(define|defined|elif|else|if|ifdef|ifndef|line|pragma|undef|endif)\b
+      captures:
+        1: keyword.control.import.c
+      push:
+        - meta_scope: meta.preprocessor.c
+        - match: (?=(?://|/\*))|$
+          captures:
+            1: keyword.control.import.c
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c
+    - match: |-
+        (?x)\b((?i)
+        (
+          (bf(c|i)|(u|s)bfx|(u|s)xta?(h|b)?) |
+          (v(add|cvt|sub|mov|trn|cmp|div|qdmulh|mrs|mul|ld1|qadd|qshrun|st[1234]|addw|mull|mlal|rshrn|swp|qmovun)|qmovun)(\.([isup]?8|[isupf]?16|[isuf]?32|[isu]?64))* |
+          (and|m(rs|sr)|eor|sub|rsb|add|adc|sbc|rsc|tst|teq|cmp|cmn|orr|mov|bic|mvn |
+            (neg) |
+            (lsr|lsl|ror|asr) # shift ops either pseudo ops or actual shifts
+          )s? |
+          (mul|mla|mull|smlabb) |
+          (mov(w|t)) |
+          rev(8|16)? |
+          (pld|adr|adrl|vswp)
+        )
+        (ne|eq|cs|hs|cc|lo|mi|pl|vs|vc|hi|ls|lt|le|gt|ge|al)?(?-i))?\b
+      scope: support.function.mnemonic.arithmetic
+    - match: |-
+        (?x)\b((?i)(
+          swi|svc|wfi|
+          dmb | clrex | dsb | isb |
+          v(ldr|str|push|pop) |
+          (push|pop) |
+          (st|ld)(
+              p |
+            r(ex|s?(h|b)|d)? |
+            m(
+              (f|e)(d|a) |
+              (d|i)(b|a)
+            )?
+          ) |
+          b(l|x|lx|lr|r)? |
+          (i|e)?ret|
+          b\.(eq|ne|hs|cs|lo|cc|mi|pl|vs|vc|hi|ls|ge|lt|gt|le|al|nv)+ |
+          (c|t)?bn?z|
+        )+(ne|eq|cs|hs|cc|lo|mi|pl|vs|vc|hi|ls|lt|le|gt|ge|al)?(?-i))\b
+      scope: support.function.mnemonic.memory
+    - match: '\b((?i)(def(b|w|s)|equ|(include|get)(\s+([a-zA-Z_]+[0-9a-zA-Z_]*|[0-9]+[a-zA-Z_]+[0-9a-zA-Z_]*?)\.s)?)?(?-i))\b'
+      scope: meta.preprocessor.c.include
+    - match: \b((?i)(align)(?-i))?\b
+      scope: storage.type.c.memaccess
+    - match: \s+\".+\"
+      scope: string
+    - match: \b((?i)nop(ne|eq|cs|hs|cc|lo|mi|pl|vs|vc|hi|ls|lt|le|gt|ge|al)?(?-i))?\b
+      scope: comment.nop
+    - match: '\s\['
+      push:
+        - meta_scope: storage.type.c.memaccess
+        - match: '\]'
+          pop: true
+        - match: (?>\\\s*\n)
+          scope: punctuation.separator.continuation.c
+        - include: $top_level_main
+    - match: (\b|\s+)\=\b
+      scope: keyword.control.evaluation
+    - match: '(\b|\s+)(\#)?-?(0x|&)[0-9a-fA-F_]+\b'
+      scope: constant.numeric.hex
+    - match: '(\b|\s+)\#-?[0-9a-zA-Z_]+\b'
+      scope: constant.numeric.literal
+    - match: '(\b|\s+)[0-9]+\b'
+      scope: constant.numeric.dec
+    - match: '\b([a-zA-Z_]+[0-9a-zA-Z_]*|[0-9]+[a-zA-Z_]+[0-9a-zA-Z_]*)\b'
+      scope: meta.function.source.arm.label

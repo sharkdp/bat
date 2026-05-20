@@ -1,0 +1,27 @@
+───────┬────────────────────────────────────────────────────────────────────────
+       │ File: sample.rs
+───────┼────────────────────────────────────────────────────────────────────────
+   1 + │ /// A rectangle. First line is changed to prevent a regression of #1869
+   2   │ struct Rectangle {
+   3   │     width: u32,
+   4   │     height: u32,
+   5   │ }
+   6   │ 
+   7 _ │ fn main() {
+   8   │     let rect1 = Rectangle { width: 30, height: 50 };
+   9   │ 
+  10   │     println!(
+  11 ~ │         "The perimeter of the rectangle is {} pixels.",
+  12 ~ │         perimeter(&rect1)
+  13   │     );
+  14 + │     println!(r#"This line contains invalid utf8:  "�����"#;
+  15   │ }
+  16   │ 
+  17   │ fn area(rectangle: &Rectangle) -> u32 {
+  18   │     rectangle.width * rectangle.height
+  19   │ }
+  20 + │ 
+  21 + │ fn perimeter(rectangle: &Rectangle) -> u32 {
+  22 + │     (rectangle.width + rectangle.height) * 2
+  23 + │ }
+───────┴────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,329 @@
+use std::fmt::Write;
+
+use crate::{
+    nonprintable_notation::NonprintableNotation,
+    vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
+};
+
+/// Expand tabs like an ANSI-enabled expand(1).
+pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
+    let mut buffer = String::with_capacity(line.len() * 2);
+
+    for seq in EscapeSequenceOffsetsIterator::new(line) {
+        match seq {
+            EscapeSequenceOffsets::Text { .. } => {
+                let mut text = &line[seq.index_of_start()..seq.index_past_end()];
+                while let Some(index) = text.find('\t') {
+                    // Add previous text.
+                    if index > 0 {
+                        *cursor += index;
+                        buffer.push_str(&text[0..index]);
+                    }
+
+                    // Add tab.
+                    let spaces = width - (*cursor % width);
+                    *cursor += spaces;
+                    buffer.push_str(&" ".repeat(spaces));
+
+                    // Next.
+                    text = &text[index + 1..text.len()];
+                }
+
+                *cursor += text.len();
+                buffer.push_str(text);
+            }
+            _ => {
+                // Copy the ANSI escape sequence.
+                buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()])
+            }
+        }
+    }
+
+    buffer
+}
+
+fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
+    let str_from_utf8 = |seq| std::str::from_utf8(seq).ok();
+
+    let decoded = input
+        .get(0..1)
+        .and_then(str_from_utf8)
+        .map(|c| (c, 1))
+        .or_else(|| input.get(0..2).and_then(str_from_utf8).map(|c| (c, 2)))
+        .or_else(|| input.get(0..3).and_then(str_from_utf8).map(|c| (c, 3)))
+        .or_else(|| input.get(0..4).and_then(str_from_utf8).map(|c| (c, 4)));
+
+    decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
+}
+
+pub fn replace_nonprintable(
+    input: &[u8],
+    tab_width: usize,
+    nonprintable_notation: NonprintableNotation,
+) -> String {
+    let mut output = String::new();
+
+    let tab_width = if tab_width == 0 { 4 } else { tab_width };
+
+    let mut idx = 0;
+    let mut line_idx = 0;
+    let len = input.len();
+    while idx < len {
+        if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
+            idx += skip_ahead;
+            line_idx += 1;
+
+            match chr {
+                // space
+                ' ' => output.push('·'),
+                // tab
+                '\t' => {
+                    let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                    line_idx = 0;
+                    if tab_stop == 1 {
+                        output.push('↹');
+                    } else {
+                        output.push('├');
+                        output.push_str(&"─".repeat(tab_stop - 2));
+                        output.push('┤');
+                    }
+                }
+                // line feed
+                '\x0A' => {
+                    output.push_str(match nonprintable_notation {
+                        NonprintableNotation::Caret => "^J\x0A",
+                        NonprintableNotation::Unicode => "␊\x0A",
+                    });
+                    line_idx = 0;
+                }
+                // ASCII control characters
+                '\x00'..='\x1F' => {
+                    let c = u32::from(chr);
+
+                    match nonprintable_notation {
+                        NonprintableNotation::Caret => {
+                            let caret_character = char::from_u32(0x40 + c).unwrap();
+                            write!(output, "^{caret_character}").ok();
+                        }
+
+                        NonprintableNotation::Unicode => {
+                            let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
+                            output.push(replacement_symbol)
+                        }
+                    }
+                }
+                // delete
+                '\x7F' => match nonprintable_notation {
+                    NonprintableNotation::Caret => output.push_str("^?"),
+                    NonprintableNotation::Unicode => output.push('\u{2421}'),
+                },
+                // printable ASCII
+                c if c.is_ascii_alphanumeric()
+                    || c.is_ascii_punctuation()
+                    || c.is_ascii_graphic() =>
+                {
+                    output.push(c)
+                }
+                // everything else
+                c => output.push_str(&c.escape_unicode().collect::<String>()),
+            }
+        } else {
+            write!(output, "\\x{:02X}", input[idx]).ok();
+            idx += 1;
+        }
+    }
+
+    output
+}
+
+/// Strips ANSI escape sequences from the input.
+pub fn strip_ansi(line: &str) -> String {
+    let mut buffer = String::with_capacity(line.len());
+
+    for seq in EscapeSequenceOffsetsIterator::new(line) {
+        if let EscapeSequenceOffsets::Text { .. } = seq {
+            buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()]);
+        }
+    }
+
+    buffer
+}
+
+/// Escape C0, DEL, and C1 control characters so a string from an untrusted
+/// filename or path can be safely written to the terminal.
+pub fn sanitize_for_terminal(input: &str) -> String {
+    if !input
+        .chars()
+        .any(|c| matches!(c, '\x00'..='\x08' | '\x0A'..='\x1F' | '\x7F'..='\u{9F}'))
+    {
+        return input.to_owned();
+    }
+
+    let mut out = String::with_capacity(input.len() + 8);
+    for c in input.chars() {
+        match c {
+            '\t' => out.push('\t'),
+            '\x00'..='\x1F' => {
+                out.push('^');
+                out.push(char::from_u32(0x40 + c as u32).unwrap_or('?'));
+            }
+            '\x7F' => out.push_str("^?"),
+            '\u{80}'..='\u{9F}' => {
+                use std::fmt::Write as _;
+                let _ = write!(out, "\\u{{{:x}}}", c as u32);
+            }
+            other => out.push(other),
+        }
+    }
+    out
+}
+
+/// Strips overstrike sequences (backspace formatting) from input.
+///
+/// Overstrike formatting is used by man pages and some help output:
+/// - Bold: `X\x08X` (character, backspace, same character)
+/// - Underline: `_\x08X` (underscore, backspace, character)
+///
+/// This function removes these sequences, keeping only the visible character.
+/// `first_backspace` is the position of the first backspace in the line.
+pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
+    let mut output = String::with_capacity(line.len());
+    output.push_str(&line[..first_backspace]);
+    output.pop();
+
+    let mut remaining = &line[first_backspace + 1..];
+
+    loop {
+        if let Some(pos) = remaining.find('\x08') {
+            output.push_str(&remaining[..pos]);
+            output.pop();
+            remaining = &remaining[pos + 1..];
+        } else {
+            output.push_str(remaining);
+            break;
+        }
+    }
+
+    output
+}
+
+#[derive(Debug, PartialEq, Clone, Copy, Default)]
+pub enum StripAnsiMode {
+    #[default]
+    Never,
+    Always,
+    Auto,
+}
+
+#[test]
+fn test_try_parse_utf8_char() {
+    assert_eq!(try_parse_utf8_char(&[0x20]), Some((' ', 1)));
+    assert_eq!(try_parse_utf8_char(&[0x20, 0x20]), Some((' ', 1)));
+    assert_eq!(try_parse_utf8_char(&[0x20, 0xef]), Some((' ', 1)));
+
+    assert_eq!(try_parse_utf8_char(&[0x00]), Some(('\x00', 1)));
+    assert_eq!(try_parse_utf8_char(&[0x1b]), Some(('\x1b', 1)));
+
+    assert_eq!(try_parse_utf8_char(&[0xc3, 0xa4]), Some(('ä', 2)));
+    assert_eq!(try_parse_utf8_char(&[0xc3, 0xa4, 0xef]), Some(('ä', 2)));
+    assert_eq!(try_parse_utf8_char(&[0xc3, 0xa4, 0x20]), Some(('ä', 2)));
+
+    assert_eq!(try_parse_utf8_char(&[0xe2, 0x82, 0xac]), Some(('€', 3)));
+    assert_eq!(
+        try_parse_utf8_char(&[0xe2, 0x82, 0xac, 0xef]),
+        Some(('€', 3))
+    );
+    assert_eq!(
+        try_parse_utf8_char(&[0xe2, 0x82, 0xac, 0x20]),
+        Some(('€', 3))
+    );
+
+    assert_eq!(try_parse_utf8_char(&[0xe2, 0x88, 0xb0]), Some(('∰', 3)));
+
+    assert_eq!(
+        try_parse_utf8_char(&[0xf0, 0x9f, 0x8c, 0x82]),
+        Some(('🌂', 4))
+    );
+    assert_eq!(
+        try_parse_utf8_char(&[0xf0, 0x9f, 0x8c, 0x82, 0xef]),
+        Some(('🌂', 4))
+    );
+    assert_eq!(
+        try_parse_utf8_char(&[0xf0, 0x9f, 0x8c, 0x82, 0x20]),
+        Some(('🌂', 4))
+    );
+
+    assert_eq!(try_parse_utf8_char(&[]), None);
+    assert_eq!(try_parse_utf8_char(&[0xef]), None);
+    assert_eq!(try_parse_utf8_char(&[0xef, 0x20]), None);
+    assert_eq!(try_parse_utf8_char(&[0xf0, 0xf0]), None);
+}
+
+#[test]
+fn test_strip_ansi() {
+    // The sequence detection is covered by the tests in the vscreen module.
+    assert_eq!(strip_ansi("no ansi"), "no ansi");
+    assert_eq!(strip_ansi("\x1B[33mone"), "one");
+    assert_eq!(
+        strip_ansi("\x1B]1\x07multiple\x1B[J sequences"),
+        "multiple sequences"
+    );
+}
+
+#[test]
+fn test_strip_overstrike() {
+    // Bold: X\x08X (same char repeated)
+    assert_eq!(strip_overstrike("H\x08Hello", 1), "Hello");
+
+    // Underline: _\x08X (underscore before char)
+    assert_eq!(strip_overstrike("_\x08Hello", 1), "Hello");
+
+    // Multiple overstrike sequences
+    assert_eq!(strip_overstrike("B\x08Bo\x08ol\x08ld\x08d", 1), "Bold");
+
+    // Backspace at start of line (nothing to pop)
+    assert_eq!(strip_overstrike("\x08Hello", 0), "Hello");
+
+    // Multiple consecutive backspaces
+    assert_eq!(strip_overstrike("ABC\x08\x08\x08XYZ", 3), "XYZ");
+
+    // Unicode with overstrike
+    assert_eq!(strip_overstrike("ä\x08äöü", 2), "äöü");
+}
+
+#[test]
+fn test_sanitize_for_terminal_passthrough() {
+    assert_eq!(sanitize_for_terminal(""), "");
+    assert_eq!(sanitize_for_terminal("hello.txt"), "hello.txt");
+    assert_eq!(sanitize_for_terminal("résumé.pdf"), "résumé.pdf");
+    assert_eq!(sanitize_for_terminal("日本語.md"), "日本語.md");
+    assert_eq!(
+        sanitize_for_terminal("path/with spaces/file.log"),
+        "path/with spaces/file.log"
+    );
+    assert_eq!(sanitize_for_terminal("a\tb"), "a\tb");
+}
+
+#[test]
+fn test_sanitize_for_terminal_c0_controls() {
+    assert_eq!(
+        sanitize_for_terminal("\x1b[31mINJECTED\x1b[0m.txt"),
+        "^[[31mINJECTED^[[0m.txt"
+    );
+    assert_eq!(sanitize_for_terminal("bad\x07rest"), "bad^Grest");
+    assert_eq!(sanitize_for_terminal("\x00\x08\n\r\x7F"), "^@^H^J^M^?");
+    assert_eq!(sanitize_for_terminal("\u{9b}31m"), "\\u{9b}31m");
+    assert_eq!(
+        sanitize_for_terminal("\u{9d}0;pwned\x07"),
+        "\\u{9d}0;pwned^G"
+    );
+}
+
+#[test]
+fn test_sanitize_for_terminal_idempotent_on_sanitized() {
+    let dirty = "\x1b]0;pwned\x07file.txt";
+    let clean = sanitize_for_terminal(dirty);
+    assert_eq!(sanitize_for_terminal(&clean), clean);
+    assert!(!clean.contains('\x1b'));
+    assert!(!clean.contains('\x07'));
+}

@@ -1,0 +1,13 @@
+diff --git syntaxes/02_Extra/MediaWiki/MediawikiNG.sublime-syntax syntaxes/02_Extra/MediaWiki/MediawikiNG.sublime-syntax
+index f542c9e..8eaf020 100644
+--- syntaxes/02_Extra/MediaWiki/MediawikiNG.sublime-syntax
++++ syntaxes/02_Extra/MediaWiki/MediawikiNG.sublime-syntax
+@@ -1,7 +1,7 @@
+ %YAML 1.2
+ ---
+ # http://www.sublimetext.com/docs/3/syntax.html
+-name: Mediawiki NG
++name: MediaWiki
+ file_extensions: [mediawiki, wikipedia, wiki]
+ scope: text.html.mediawiki
+ 
