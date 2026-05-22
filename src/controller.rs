@@ -13,6 +13,7 @@ use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
+use crate::BinaryBehavior;
 use std::collections::VecDeque;
 use std::io::{self, BufRead, Write};
 use std::mem;
@@ -223,7 +224,7 @@ impl Controller<'_> {
             printer.print_header(writer, input, add_header_padding)?;
         }
 
-        if !input.reader.first_line.is_empty() {
+        if !input.reader.first_line.is_empty() && self.should_print_content(input) {
             let line_ranges = match self.config.visible_lines {
                 VisibleLines::Ranges(ref line_ranges) => line_ranges.clone(),
                 #[cfg(feature = "git")]
@@ -247,6 +248,16 @@ impl Controller<'_> {
         printer.print_footer(writer, input)?;
 
         Ok(())
+    }
+
+    fn should_print_content(&self, input: &OpenedInput) -> bool {
+        self.config.loop_through
+            || self.config.show_nonprintable
+            || matches!(self.config.binary, BinaryBehavior::AsText)
+            || !input
+                .reader
+                .content_type
+                .is_some_and(|content_type| content_type.is_binary())
     }
 
     fn print_file_ranges(
@@ -338,5 +349,105 @@ impl Controller<'_> {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::assets::HighlightingAssets;
+    use crate::input::{InputDescription, InputMetadata, OpenedInputKind};
+
+    struct RecordingPrinter {
+        lines: usize,
+    }
+
+    impl Printer for RecordingPrinter {
+        fn print_header(
+            &mut self,
+            _handle: &mut OutputHandle,
+            _input: &OpenedInput,
+            _add_header_padding: bool,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        fn print_footer(&mut self, _handle: &mut OutputHandle, _input: &OpenedInput) -> Result<()> {
+            Ok(())
+        }
+
+        fn print_snip(&mut self, _handle: &mut OutputHandle) -> Result<()> {
+            Ok(())
+        }
+
+        fn print_line(
+            &mut self,
+            _out_of_range: bool,
+            _handle: &mut OutputHandle,
+            _line_number: usize,
+            _line_buffer: &[u8],
+            _max_buffered_line_number: MaxBufferedLineNumber,
+        ) -> Result<()> {
+            self.lines += 1;
+            Ok(())
+        }
+    }
+
+    fn binary_input() -> OpenedInput<'static> {
+        OpenedInput {
+            kind: OpenedInputKind::CustomReader,
+            metadata: InputMetadata::default(),
+            reader: InputReader::new(&b"binary\0prefix"[..]),
+            description: InputDescription::new("binary.bin"),
+        }
+    }
+
+    #[test]
+    fn interactive_binary_input_does_not_print_content() {
+        let config = Config::default();
+        let assets = HighlightingAssets::from_binary();
+        let controller = Controller::new(&config, &assets);
+        let mut printer = RecordingPrinter { lines: 0 };
+        let mut output = String::new();
+        let mut input = binary_input();
+
+        controller
+            .print_file(
+                &mut printer,
+                &mut OutputHandle::FmtWrite(&mut output),
+                &mut input,
+                false,
+                #[cfg(feature = "git")]
+                &None,
+            )
+            .unwrap();
+
+        assert_eq!(0, printer.lines);
+    }
+
+    #[test]
+    fn loop_through_binary_input_still_prints_content() {
+        let config = Config {
+            loop_through: true,
+            ..Default::default()
+        };
+        let assets = HighlightingAssets::from_binary();
+        let controller = Controller::new(&config, &assets);
+        let mut printer = RecordingPrinter { lines: 0 };
+        let mut output = String::new();
+        let mut input = binary_input();
+
+        controller
+            .print_file(
+                &mut printer,
+                &mut OutputHandle::FmtWrite(&mut output),
+                &mut input,
+                false,
+                #[cfg(feature = "git")]
+                &None,
+            )
+            .unwrap();
+
+        assert_eq!(1, printer.lines);
     }
 }
