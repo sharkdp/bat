@@ -5,7 +5,7 @@
 
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
-- Added Dockerfile and GitHub Actions workflow to build and publish Docker images to GHCR (@foxfromworld). Closes #3633
+- Added Dockerfile and GitHub Actions workflow to build and publish Docker images to GHCR, see #3764 (@foxfromworld)
 
 ## Features
 
