@@ -1,2 +1,2 @@
 [mappings]
-"SSH Config" = ["**/.ssh/config"]
+"SSH Config" = ["**/.ssh/**/config"]

@@ -23,6 +23,7 @@
 
 ## Bugfixes
 - Detect mintty/MSYS2 terminals on Windows where `is_terminal()` incorrectly returns false, restoring colored output for `bat --help` and normal file display. Closes #3034, see #3736 (@Metbcy)
+- Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
 - Fix inverted `$LESSCLOSE` warning so bat warns on nonzero exit, not on success. See #3654 (@cuiweixie)
@@ -44,6 +45,7 @@
 - Fixed bug caused by using `--plain` and `--terminal-width=N` flags simultaneously, see #3529 (@H4k1l)
 - Fixed syntax tests path, see #3610 (@foxfromworld)
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
+- Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
@@ -62,6 +64,8 @@
 - Map several Google Cloud CLI config files to their appropriate syntax #3635 (@victor-gp)
 - Map all ignore dotfiles to Git Ignore syntax #3636 (@victor-gp)
 - Improved Kotlin syntax, see #3699 (@guille)
+- Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
+- Add Ghostty syntax mapping, see #3759 (@injust)
 
 ## Themes
 
