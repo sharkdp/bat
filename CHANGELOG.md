@@ -3,6 +3,7 @@
 
 ## Other
 
+- Note that Debian 12+ installs the executable as `bat` instead of `batcat`, see #3750 (@leno23)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
