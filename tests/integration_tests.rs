@@ -1099,6 +1099,28 @@ fn terminal_width_arg_overrides_env() {
 }
 
 #[test]
+fn wrap_character_disabled_when_output_piped() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("long.txt");
+    std::fs::write(
+        &tmp_path,
+        "0123456789abcdef0123456789abcdef0123456789abcdef\n",
+    )
+    .expect("can write temporary file");
+
+    bat()
+        .arg(&tmp_path)
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=plain")
+        .arg("--wrap=character")
+        .assert()
+        .success()
+        .stdout("0123456789abcdef0123456789abcdef0123456789abcdef\n")
+        .stderr("");
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }

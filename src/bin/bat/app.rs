@@ -407,12 +407,25 @@ impl App {
                 if self.matches.get_flag("chop-long-lines") {
                     WrappingMode::NoWrapping(true)
                 } else {
+                    let wrap_to_terminal = self.interactive_output || maybe_term_width.is_some();
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
-                        Some("character") => WrappingMode::Character,
-                        Some("word") => WrappingMode::Word,
+                        Some("character") => {
+                            if wrap_to_terminal {
+                                WrappingMode::Character
+                            } else {
+                                WrappingMode::NoWrapping(false)
+                            }
+                        }
+                        Some("word") => {
+                            if wrap_to_terminal {
+                                WrappingMode::Word
+                            } else {
+                                WrappingMode::NoWrapping(false)
+                            }
+                        }
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if self.interactive_output || maybe_term_width.is_some() {
+                            if wrap_to_terminal {
                                 if style_components.plain() && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
                                 } else {
