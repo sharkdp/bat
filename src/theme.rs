@@ -216,11 +216,16 @@ fn theme_impl(options: ThemeOptions, detector: &dyn ColorSchemeDetector) -> Them
 }
 
 fn choose_theme_opt(color_scheme: Option<ColorScheme>, options: ThemeOptions) -> ThemeResult {
+    let theme = match color_scheme {
+        Some(scheme) => choose_theme(options.clone(), scheme),
+        None => choose_theme(options.clone(), ColorScheme::Dark)
+            .or_else(|| choose_theme(options, ColorScheme::Light)),
+    }
+    .unwrap_or(ThemeName::Default);
+
     ThemeResult {
         color_scheme,
-        theme: color_scheme
-            .and_then(|c| choose_theme(options, c))
-            .unwrap_or(ThemeName::Default),
+        theme,
     }
 }
 
@@ -267,10 +272,29 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
 
     fn detect(&self) -> Option<ColorScheme> {
         use terminal_colorsaurus::{theme_mode, QueryOptions, ThemeMode};
-        match theme_mode(QueryOptions::default()).ok()? {
-            ThemeMode::Dark => Some(ColorScheme::Dark),
-            ThemeMode::Light => Some(ColorScheme::Light),
+        if let Ok(mode) = theme_mode(QueryOptions::default()) {
+            return match mode {
+                ThemeMode::Dark => Some(ColorScheme::Dark),
+                ThemeMode::Light => Some(ColorScheme::Light),
+            };
         }
+        color_scheme_from_colorfgbg()
+    }
+}
+
+/// Infer the terminal color scheme from the `COLORFGBG` environment variable.
+///
+/// This is a common fallback when querying the terminal directly fails, for example
+/// when running inside tmux.
+fn color_scheme_from_colorfgbg() -> Option<ColorScheme> {
+    let colorfgbg = std::env::var_os("COLORFGBG")?;
+    let colorfgbg = colorfgbg.to_string_lossy();
+    let background = colorfgbg.split(';').nth(1)?;
+    let background = background.parse::<u8>().ok()?;
+    match background {
+        7 | 15 => Some(ColorScheme::Dark),
+        0..=6 | 8..=14 => Some(ColorScheme::Light),
+        _ => None,
     }
 }
 
@@ -457,17 +481,14 @@ mod tests {
         use super::*;
 
         #[test]
-        fn chooses_default_theme_if_unknown() {
+        fn chooses_configured_dark_theme_if_detection_fails() {
             let options = ThemeOptions {
                 theme_dark: Some(ThemeName::Named("Dark".to_string())),
                 theme_light: Some(ThemeName::Named("Light".to_string())),
                 ..Default::default()
             };
             let detector = ConstantDetector(None);
-            assert_eq!(
-                default_theme(ColorScheme::default()),
-                theme_impl(options, &detector).to_string()
-            );
+            assert_eq!("Dark", theme_impl(options, &detector).to_string());
         }
 
         #[test]
@@ -489,6 +510,27 @@ mod tests {
                 ..Default::default()
             };
             let detector = ConstantDetector(Some(ColorScheme::Light));
+            assert_eq!("Light", theme_impl(options, &detector).to_string());
+        }
+
+        #[test]
+        fn chooses_dark_theme_when_detection_fails() {
+            let options = ThemeOptions {
+                theme_dark: Some(ThemeName::Named("Dark".to_string())),
+                theme_light: Some(ThemeName::Named("Light".to_string())),
+                ..Default::default()
+            };
+            let detector = ConstantDetector(None);
+            assert_eq!("Dark", theme_impl(options, &detector).to_string());
+        }
+
+        #[test]
+        fn chooses_light_theme_when_detection_fails_and_only_light_is_configured() {
+            let options = ThemeOptions {
+                theme_light: Some(ThemeName::Named("Light".to_string())),
+                ..Default::default()
+            };
+            let detector = ConstantDetector(None);
             assert_eq!("Light", theme_impl(options, &detector).to_string());
         }
     }
