@@ -1,0 +1,69 @@
+diff --git syntaxes/01_Packages/C++/C.sublime-syntax syntaxes/01_Packages/C++/C.sublime-syntax
+index add0e888..6084c544 100644
+--- syntaxes/01_Packages/C++/C.sublime-syntax
++++ syntaxes/01_Packages/C++/C.sublime-syntax
+@@ -10,8 +10,11 @@ scope: source.c
+ 
+ variables:
+   # number exponents
+-  dec_exponent: '(?:[eE][-+]??\d+)'
+-  hex_exponent: '(?:[pP][-+]??\d+)'
++  dec_exponent: '(?:[eE][-+]??\d+(?:''\d+)*)'
++  hex_exponent: '(?:[pP][-+]??\d+(?:''\d+)*)'
++
++  # C23 digit separators (e.g. 100'000, 0xDEAD'BEEF)
++  dec_digits: \d+(?:'\d+)*
+ 
+   # number suffixes
+   dec_suffix: '[a-zA-Z_][[:alnum:]_]*'
+@@ -183,12 +186,12 @@ contexts:
+     # decimal floats
+     - match: |-
+         (?x:
+-          \b\d+
++          \b{{dec_digits}}
+           (?:
+-            (?: (\.) (?: \d+ {{dec_exponent}}? | {{dec_exponent}} | (?=[^.])) | {{dec_exponent}} )
++            (?: (\.) (?: {{dec_digits}} {{dec_exponent}}? | {{dec_exponent}} | (?=[^.])) | {{dec_exponent}} )
+             (?: ([fFlL])\b | ({{dec_suffix}})? ) | ([fF])\b
+           )
+-          | (\.) \d+ {{dec_exponent}}? (?: ([fFlL])\b | ({{dec_suffix}})? )
++          | (\.) {{dec_digits}} {{dec_exponent}}? (?: ([fFlL])\b | ({{dec_suffix}})? )
+         )
+       scope: constant.numeric.float.decimal.c
+       captures:
+@@ -209,6 +212,8 @@ contexts:
+           pop: true
+         - match: \.
+           scope: punctuation.separator.decimal.c
++        - match: "'(?=[[:xdigit:]])"
++          scope: punctuation.separator.digit.c
+         - match: \H
+           scope: invalid.illegal.numeric.digit.c
+ 
+@@ -220,6 +225,10 @@ contexts:
+       push:
+         - meta_include_prototype: false
+         - meta_scope: constant.numeric.integer.hexadecimal.c
++        - match: "'(?=[[:xdigit:]])"
++          scope: punctuation.separator.digit.c
++        - match: "'"
++          scope: invalid.illegal.numeric.digit.c
+         - include: hexadecimal-suffix
+     # octal integer
+     - match: \b0(?=\d)
+@@ -227,11 +236,13 @@ contexts:
+       push:
+         - meta_include_prototype: false
+         - meta_scope: constant.numeric.integer.octal.c
++        - match: "'(?=[0-7])"
++          scope: punctuation.separator.digit.c
+         - match: '[89]'
+           scope: invalid.illegal.numeric.digit.c
+         - include: decimal-suffix
+     # decimal integer
+-    - match: \b\d+
++    - match: \b{{dec_digits}}
+       push:
+         - meta_include_prototype: false
+         - meta_scope: constant.numeric.integer.decimal.c
