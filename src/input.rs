@@ -363,13 +363,12 @@ fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
 
     // ANSI escape sequences (CSI/OSC) start with ESC (0x1b). Old-format OpenPGP headers
     // can also encode tag 6 + length-type 3 as 0x1b, so disambiguate via the introducer.
-    if first == 0x1b {
-        if bytes
+    if first == 0x1b
+        && bytes
             .get(1)
             .is_some_and(|&b| matches!(b, b'[' | b']' | b'P' | b'_'))
-        {
-            return false;
-        }
+    {
+        return false;
     }
 
     // Old-format packet headers use low tag bytes; avoid matching plain text (e.g. "PK…").
@@ -378,7 +377,14 @@ fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
     }
 
     let tag = (first >> 2) & 0x0f;
-    (1..=18).contains(&tag)
+    if !(1..=18).contains(&tag) {
+        return false;
+    }
+
+    // Length/type octets following the header are rarely printable ASCII in real packets.
+    bytes
+        .get(1)
+        .is_some_and(|&second| !(0x20..=0x7e).contains(&second))
 }
 
 fn has_zip_signature(bytes: &[u8]) -> bool {
@@ -455,6 +461,18 @@ fn non_zip_pk_prefix_is_not_treated_as_binary() {
     assert_eq!(
         Some(ContentType::UTF_8),
         inspect_content_type(b"PK\x03\x03hello")
+    );
+}
+
+#[test]
+fn text_like_lines_are_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\t1\t2\t3\n")
+    );
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"  // comment\n")
     );
 }
 
