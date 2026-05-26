@@ -361,6 +361,17 @@ fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
         return (1..=39).contains(&tag);
     }
 
+    // ANSI escape sequences (CSI/OSC) start with ESC (0x1b). Old-format OpenPGP headers
+    // can also encode tag 6 + length-type 3 as 0x1b, so disambiguate via the introducer.
+    if first == 0x1b {
+        if bytes
+            .get(1)
+            .is_some_and(|&b| matches!(b, b'[' | b']' | b'P' | b'_'))
+        {
+            return false;
+        }
+    }
+
     // Old-format packet headers use low tag bytes; avoid matching plain text (e.g. "PK…").
     if first > 0x40 {
         return false;
@@ -444,6 +455,18 @@ fn non_zip_pk_prefix_is_not_treated_as_binary() {
     assert_eq!(
         Some(ContentType::UTF_8),
         inspect_content_type(b"PK\x03\x03hello")
+    );
+}
+
+#[test]
+fn ansi_escape_sequences_are_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\x1b]8;;http://example.com/\x1b\\")
+    );
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\x1b[33mColor\n")
     );
 }
 
