@@ -1,0 +1,13 @@
+diff --git syntaxes/01_Packages/Haskell/Haskell.sublime-syntax syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
+index e45d6734..dcfa0734 100644
+--- syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
++++ syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
+@@ -62,7 +62,7 @@ contexts:
+         - meta_scope: meta.import.haskell
+         - match: ($|;)
+           pop: true
+-        - match: (qualified|as|hiding)
++        - match: \b(qualified|as|hiding)\b
+           scope: keyword.other.haskell
+         - include: module_name
+         - include: module_exports
