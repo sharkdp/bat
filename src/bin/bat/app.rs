@@ -620,6 +620,12 @@ impl App {
                     .map(|v| StyleComponentList::from_str(v))
                     .collect::<Result<Vec<StyleComponentList>>>()?;
 
+                if lists.iter().any(|list| list.contains_auto()) {
+                    bat_warning!(
+                        "The style component 'auto' is deprecated; use '--decorations=auto' (the default) to control when decorations are shown."
+                    );
+                }
+
                 StyleComponentList::to_components(lists, self.interactive_output, true)
             }
 
