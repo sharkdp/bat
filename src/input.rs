@@ -344,7 +344,10 @@ fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
         b"-----BEGIN OPENPGP ",
     ];
 
-    if ARMOR_PREFIXES.iter().any(|prefix| bytes.starts_with(prefix)) {
+    if ARMOR_PREFIXES
+        .iter()
+        .any(|prefix| bytes.starts_with(prefix))
+    {
         return true;
     }
 
@@ -455,8 +458,8 @@ fn openpgp_armored_message_is_treated_as_binary() {
 fn openpgp_binary_packet_is_treated_as_binary() {
     // Typical start of a symmetrically encrypted OpenPGP message (new packet format).
     let content = [
-        0x8c, 0x0d, 0x03, 0x07, 0x03, 0x0c, 0x24, 0x23, 0x02, 0x01, 0xfe, 0x00, 0x85, 0x01,
-        0x0c, 0x80, b'\n',
+        0x8c, 0x0d, 0x03, 0x07, 0x03, 0x0c, 0x24, 0x23, 0x02, 0x01, 0xfe, 0x00, 0x85, 0x01, 0x0c,
+        0x80, b'\n',
     ];
     let reader = InputReader::new(&content[..]);
     assert_eq!(Some(ContentType::BINARY), reader.content_type);
