@@ -351,6 +351,11 @@ fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
         return true;
     }
 
+    // Valid UTF-8 text (e.g. CJK) can have lead bytes with bit 7 set; do not treat as binary packets.
+    if std::str::from_utf8(bytes).is_ok() {
+        return false;
+    }
+
     let Some(&first) = bytes.first() else {
         return false;
     };
@@ -461,6 +466,14 @@ fn non_zip_pk_prefix_is_not_treated_as_binary() {
     assert_eq!(
         Some(ContentType::UTF_8),
         inspect_content_type(b"PK\x03\x03hello")
+    );
+}
+
+#[test]
+fn utf8_text_is_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type("ビタミンA\n".as_bytes())
     );
 }
 
