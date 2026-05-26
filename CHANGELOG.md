@@ -2,6 +2,7 @@
 
 
 ## Other
+- Clarify custom theme file format requirements, see #3751 (@leno23)
 
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
