@@ -151,7 +151,13 @@ impl OutputType {
 
                 // Ensures that 'less' quits together with 'bat'
                 // The BusyBox version of less does not support -K
-                if less_version != Some(LessVersion::BusyBox) {
+                //
+                // Do not combine -K (--quit-on-intr) with -F (--quit-if-one-screen): this
+                // caused less to exit abnormally when scrolling past EOF in some versions,
+                // leaking terminal escape sequences to the shell (see #3458).
+                if less_version != Some(LessVersion::BusyBox)
+                    && single_screen_action != SingleScreenAction::Quit
+                {
                     p.arg("-K"); // Short version of '--quit-on-intr'
                 }
 
