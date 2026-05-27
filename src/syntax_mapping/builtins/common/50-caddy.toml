@@ -1,0 +1,5 @@
+[mappings]
+"nginx" = [
+    "Caddyfile",
+    "**/Caddyfile",
+]

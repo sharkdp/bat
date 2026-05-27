@@ -293,6 +293,20 @@ mod tests {
     }
 
     #[test]
+    fn builtin_mappings_caddyfile_maps_to_nginx() {
+        let map = SyntaxMapping::new();
+
+        assert_eq!(
+            map.get_syntax_for("/etc/caddy/Caddyfile"),
+            Some(MappingTarget::MapTo("nginx"))
+        );
+        assert_eq!(
+            map.get_syntax_for("Caddyfile"),
+            Some(MappingTarget::MapTo("nginx"))
+        );
+    }
+
+    #[test]
     fn builtin_mappings_build_is_case_sensitive() {
         let map = SyntaxMapping::new();
 
