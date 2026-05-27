@@ -61,10 +61,11 @@ pub fn as_terminal_escaped(
 
     let syntect_background = highlight_style.background;
 
-    let mut style = if !colored {
-        let mut color = Style::default();
-        color.background = line_highlight_background.and_then(|c| to_ansi_color(c, true_color));
-        color
+    let style = if !colored {
+        Style {
+            background: line_highlight_background.and_then(|c| to_ansi_color(c, true_color)),
+            ..Style::default()
+        }
     } else {
         let mut color = Style {
             foreground: to_ansi_color(highlight_style.foreground, true_color),
@@ -101,33 +102,63 @@ mod tests {
 
     #[test]
     fn as_terminal_escaped_applies_scope_background() {
-        let default_background = Color { r: 0x01, g: 0, b: 0, a: 0 };
-        let scope_background = Color { r: 0x03, g: 0, b: 0, a: 0 };
+        let default_background = Color {
+            r: 0x01,
+            g: 0,
+            b: 0,
+            a: 0,
+        };
+        let scope_background = Color {
+            r: 0x03,
+            g: 0,
+            b: 0,
+            a: 0,
+        };
         let style = HighlightStyle {
-            foreground: Color { r: 0x02, g: 0, b: 0, a: 0 },
+            foreground: Color {
+                r: 0x02,
+                g: 0,
+                b: 0,
+                a: 0,
+            },
             background: scope_background,
             font_style: FontStyle::ITALIC,
         };
 
-        let output = as_terminal_escaped(style, "comment", true, true, true, None, default_background);
+        let output =
+            as_terminal_escaped(style, "comment", true, true, true, None, default_background);
 
         assert!(
             output.contains(";43") || output.contains("48;5;3"),
             "expected background color escape in output: {output:?}"
         );
-        assert!(output.starts_with("\x1b[3"), "expected styled text in output: {output:?}");
+        assert!(
+            output.starts_with("\x1b[3"),
+            "expected styled text in output: {output:?}"
+        );
     }
 
     #[test]
     fn as_terminal_escaped_skips_default_theme_background() {
-        let default_background = Color { r: 0x01, g: 0, b: 0, a: 0 };
+        let default_background = Color {
+            r: 0x01,
+            g: 0,
+            b: 0,
+            a: 0,
+        };
         let style = HighlightStyle {
-            foreground: Color { r: 0x02, g: 0, b: 0, a: 0 },
+            foreground: Color {
+                r: 0x02,
+                g: 0,
+                b: 0,
+                a: 0,
+            },
             background: default_background,
             font_style: FontStyle::empty(),
         };
 
-        let output = as_terminal_escaped(style, "plain", true, true, false, None, default_background);
+        let output =
+            as_terminal_escaped(style, "plain", true, true, false, None, default_background);
 
         assert!(
             !output.contains("\x1b[41m"),
