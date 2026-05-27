@@ -20,6 +20,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
+- Syntax highlighting for ZBR in #3769 (@itszubariel)
 
 ## Bugfixes
 - Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
