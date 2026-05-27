@@ -101,11 +101,13 @@ bat f - g  # output 'f', then stdin, then 'g'.
 #### `fzf`
 
 You can use `bat` as a previewer for [`fzf`](https://github.com/junegunn/fzf). To do this,
-use `bat`'s `--color=always` option to force colorized output. You can also use `--line-range`
-option to restrict the load times for long files:
+use `bat`'s `--color=always` option to force colorized output. Because `fzf` reads the preview
+via a pipe, also pass `--theme=auto:system` (or an explicit `--theme`) so light/dark themes
+match your system preference. You can also use the `--line-range` option to restrict the load
+times for long files:
 
 ```bash
-fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
+fzf --preview "bat --color=always --theme=auto:system --style=numbers --line-range=:500 {}"
 ```
 
 For more information, see [`fzf`'s `README`](https://github.com/junegunn/fzf#preview-window).
