@@ -47,36 +47,91 @@ pub fn to_ansi_color(color: highlighting::Color, true_color: bool) -> Option<nu_
 }
 
 pub fn as_terminal_escaped(
-    style: highlighting::Style,
+    highlight_style: highlighting::Style,
     text: &str,
     true_color: bool,
     colored: bool,
     italics: bool,
-    background_color: Option<highlighting::Color>,
+    line_highlight_background: Option<highlighting::Color>,
+    theme_default_background: highlighting::Color,
 ) -> String {
     if text.is_empty() {
         return text.to_string();
     }
 
+    let syntect_background = highlight_style.background;
+
     let mut style = if !colored {
-        Style::default()
+        let mut color = Style::default();
+        color.background = line_highlight_background.and_then(|c| to_ansi_color(c, true_color));
+        color
     } else {
         let mut color = Style {
-            foreground: to_ansi_color(style.foreground, true_color),
+            foreground: to_ansi_color(highlight_style.foreground, true_color),
             ..Style::default()
         };
-        if style.font_style.contains(FontStyle::BOLD) {
+        if highlight_style.font_style.contains(FontStyle::BOLD) {
             color = color.bold();
         }
-        if style.font_style.contains(FontStyle::UNDERLINE) {
+        if highlight_style.font_style.contains(FontStyle::UNDERLINE) {
             color = color.underline();
         }
-        if italics && style.font_style.contains(FontStyle::ITALIC) {
+        if italics && highlight_style.font_style.contains(FontStyle::ITALIC) {
             color = color.italic();
         }
+        color.background = line_highlight_background
+            .and_then(|c| to_ansi_color(c, true_color))
+            .or_else(|| {
+                if syntect_background != theme_default_background {
+                    to_ansi_color(syntect_background, true_color)
+                } else {
+                    None
+                }
+            });
         color
     };
 
-    style.background = background_color.and_then(|c| to_ansi_color(c, true_color));
     style.paint(text).to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syntect::highlighting::{Color, FontStyle, Style as HighlightStyle};
+
+    #[test]
+    fn as_terminal_escaped_applies_scope_background() {
+        let default_background = Color { r: 0x01, g: 0, b: 0, a: 0 };
+        let scope_background = Color { r: 0x03, g: 0, b: 0, a: 0 };
+        let style = HighlightStyle {
+            foreground: Color { r: 0x02, g: 0, b: 0, a: 0 },
+            background: scope_background,
+            font_style: FontStyle::ITALIC,
+        };
+
+        let output = as_terminal_escaped(style, "comment", true, true, true, None, default_background);
+
+        assert!(
+            output.contains(";43") || output.contains("48;5;3"),
+            "expected background color escape in output: {output:?}"
+        );
+        assert!(output.starts_with("\x1b[3"), "expected styled text in output: {output:?}");
+    }
+
+    #[test]
+    fn as_terminal_escaped_skips_default_theme_background() {
+        let default_background = Color { r: 0x01, g: 0, b: 0, a: 0 };
+        let style = HighlightStyle {
+            foreground: Color { r: 0x02, g: 0, b: 0, a: 0 },
+            background: default_background,
+            font_style: FontStyle::empty(),
+        };
+
+        let output = as_terminal_escaped(style, "plain", true, true, false, None, default_background);
+
+        assert!(
+            !output.contains("\x1b[41m"),
+            "default theme background should not be emitted"
+        );
+    }
 }

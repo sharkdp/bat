@@ -208,6 +208,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    theme_default_background: Color,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
     strip_overstrike: bool,
@@ -223,6 +224,7 @@ impl<'a> InteractivePrinter<'a> {
         let theme = assets.get_theme(&config.theme);
 
         let background_color_highlight = theme.settings.line_highlight;
+        let theme_default_background = theme.settings.background.unwrap_or(Color::WHITE);
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)
@@ -330,6 +332,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            theme_default_background,
             consecutive_empty_lines: 0,
             strip_ansi,
             strip_overstrike,
@@ -746,7 +749,8 @@ impl Printer for InteractivePrinter<'_> {
                                     true_color,
                                     colored_output,
                                     italics,
-                                    background_color
+                                    background_color,
+                                    self.theme_default_background,
                                 ),
                                 self.ansi_style.to_reset_sequence(),
                             )?;
@@ -870,7 +874,8 @@ impl Printer for InteractivePrinter<'_> {
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
-                                            background_color
+                                            background_color,
+                                            self.theme_default_background,
                                         ),
                                         self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
@@ -908,7 +913,8 @@ impl Printer for InteractivePrinter<'_> {
                                     self.config.true_color,
                                     self.config.colored_output,
                                     self.config.use_italic_text,
-                                    background_color
+                                    background_color,
+                                    self.theme_default_background,
                                 )
                             )?;
                         }
