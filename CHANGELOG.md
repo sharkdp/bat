@@ -8,7 +8,7 @@
 
 ## Features
 
-- Map `Caddyfile` to nginx syntax highlighting as an approximation of the Caddyfile format, see #3644 (@leno23)
+- Map `Caddyfile` to nginx syntax highlighting as an approximation of the Caddyfile format. Closes #3644, see #3775 (@leno23)
 - Map justfile, Justfile, .justfile, and *.justfile to Makefile syntax highlighting, see #3623 (@zachvalenta)
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)
 - Added support for `hidden_file_extensions` from `.sublime-syntax` files, see #3613 (@Matei02355)
