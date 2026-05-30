@@ -222,11 +222,16 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("wrap")
                 .overrides_with("wrap")
                 .value_name("mode")
-                .value_parser(["auto", "never", "character", "word"])
+                .value_parser(["auto", "never", "character", "word", "unpaged"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character, word).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character, word). \
+                .help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).\n\n\
+                           * auto: wrap if interactive, do not wrap if piped\n\
+                           * never: disable wrapping\n\
+                           * character: wrap at character boundaries\n\
+                           * word: wrap at word boundaries\n\
+                           * unpaged: wrap if paging, do not wrap if unpaged\n\n\
                            The '--terminal-width' option can be used in addition to \
                            control the output width."),
         )

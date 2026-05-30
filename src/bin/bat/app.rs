@@ -411,6 +411,13 @@ impl App {
                         Some("character") => WrappingMode::Character,
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
+                        Some("unpaged") => {
+                            if paging_mode == PagingMode::Never {
+                                WrappingMode::NoWrapping(false)
+                            } else {
+                                WrappingMode::Character
+                            }
+                        }
                         Some("auto") | None => {
                             if self.interactive_output || maybe_term_width.is_some() {
                                 if style_components.plain() && maybe_term_width.is_none() {
