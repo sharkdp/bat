@@ -820,4 +820,27 @@ contexts:
             "Ruby"
         );
     }
+
+    #[test]
+    fn syntax_detection_fallback() {
+        let test = SyntaxDetectionTest::new();
+
+        // No language specified, unknown extension, no first-line match -> fallback
+        let input = Input::from_reader(Box::new(std::io::BufReader::new(&b"content"[..])))
+            .with_name(Some("test.unknown"));
+        let mut opened_input = input.open(&b"content"[..], None).unwrap();
+        assert_eq!(
+            test.get_syntax_name(None, Some("C"), &mut opened_input, &test.syntax_mapping),
+            "C"
+        );
+
+        // No language specified, .txt extension (Plain Text), no first-line match -> should use fallback
+        let input = Input::from_reader(Box::new(std::io::BufReader::new(&b"content"[..])))
+            .with_name(Some("test.txt"));
+        let mut opened_input = input.open(&b"content"[..], None).unwrap();
+        assert_eq!(
+            test.get_syntax_name(None, Some("C"), &mut opened_input, &test.syntax_mapping),
+            "C"
+        );
+    }
 }
