@@ -223,17 +223,12 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .overrides_with("wrap")
                 .value_name("mode")
                 .value_parser(["auto", "never", "character", "word", "unpaged"])
-            .default_value("auto")
-            .hide_default_value(true)
-            .help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).\n\n\
-                           * auto: wrap if interactive, do not wrap if piped\n\
-                           * never: disable wrapping\n\
-                           * character: wrap at character boundaries\n\
-                           * word: wrap at word boundaries\n\
-                           * unpaged: wrap if paging, do not wrap if unpaged\n\n\
+                .default_value("auto")
+                .hide_default_value(true)
+                .help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged). \
                            The '--terminal-width' option can be used in addition to \
-                           control the output width."),
+                           control the output width. 'unpaged' disables wrapping when not paging."),
         )
         .arg(
             Arg::new("chop-long-lines")

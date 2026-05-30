@@ -403,23 +403,17 @@ impl App {
                 Some("no-printing") => BinaryBehavior::NoPrinting,
                 _ => unreachable!("other values for --binary are not allowed"),
             },
+<<<<<<< HEAD
             wrapping_mode: {
                 if self.matches.get_flag("chop-long-lines") {
                     WrappingMode::NoWrapping(true)
                 } else {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
+                        Some("never") => WrappingMode::NoWrapping(false),
                         Some("character") => WrappingMode::Character,
-                        Some("word") => WrappingMode::Word,
-                        Some("never") => WrappingMode::NoWrapping(true),
                         Some("unpaged") => {
-                            if paging_mode == PagingMode::Never {
-                                WrappingMode::NoWrapping(false)
-                            } else if self.interactive_output || maybe_term_width.is_some() {
-                                if style_components.plain() && maybe_term_width.is_none() {
-                                    WrappingMode::NoWrapping(false)
-                                } else {
-                                    WrappingMode::Character
-                                }
+                            if paging_mode != PagingMode::Never {
+                                WrappingMode::Character
                             } else {
                                 WrappingMode::NoWrapping(false)
                             }
@@ -432,6 +426,8 @@ impl App {
                                     WrappingMode::Character
                                 }
                             } else {
+                                // We don't have the tty width when piping to another program.
+                                // There's no point in wrapping when this is the case.
                                 WrappingMode::NoWrapping(false)
                             }
                         }

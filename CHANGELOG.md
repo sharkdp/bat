@@ -13,6 +13,7 @@
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)
 - Added support for `hidden_file_extensions` from `.sublime-syntax` files, see #3613 (@Matei02355)
 - Add word wrapping mode via `--wrap=word`, see #3597 (@veeceey)
+- Add 'unpaged' option to --wrap to dynamically disable wrapping when not paging, see #3777 (@Jualhosting)
 - Support configuring `--terminal-width` via `BAT_WIDTH`, see #3679 (@officialasishkumar)
 - Implement `--unbuffered` mode for streaming input, allowing partial lines to display immediately (e.g. `tail -f | bat -u`). Closes #3555, see #3583 (@mainnebula)
 - Added an initial `flake.nix` for a ready made development environment; see #3578 (@vorburger)
