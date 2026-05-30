@@ -414,8 +414,14 @@ impl App {
                         Some("unpaged") => {
                             if paging_mode == PagingMode::Never {
                                 WrappingMode::NoWrapping(false)
+                            } else if self.interactive_output || maybe_term_width.is_some() {
+                                if style_components.plain() && maybe_term_width.is_none() {
+                                    WrappingMode::NoWrapping(false)
+                                } else {
+                                    WrappingMode::Character
+                                }
                             } else {
-                                WrappingMode::Character
+                                WrappingMode::NoWrapping(false)
                             }
                         }
                         Some("auto") | None => {
@@ -426,8 +432,6 @@ impl App {
                                     WrappingMode::Character
                                 }
                             } else {
-                                // We don't have the tty width when piping to another program.
-                                // There's no point in wrapping when this is the case.
                                 WrappingMode::NoWrapping(false)
                             }
                         }

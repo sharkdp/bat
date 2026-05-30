@@ -223,7 +223,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .overrides_with("wrap")
                 .value_name("mode")
                 .value_parser(["auto", "never", "character", "word", "unpaged"])
-                .default_value("auto")
                 .hide_default_value(true)
                 .help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).")
                 .long_help("Specify the text-wrapping mode (*auto*, never, character, word, unpaged).\n\n\
