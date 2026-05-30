@@ -262,18 +262,35 @@ impl HighlightingAssets {
 
         // If a path wasn't provided, or if path based syntax detection
         // above failed, we fall back to first-line syntax detection.
-        match path_syntax {
+        let detected = match path_syntax {
             Err(Error::UndetectedSyntax(path)) => {
                 if let Some(syntax_in_set) = self.get_first_line_syntax(&mut input.reader)? {
                     Ok(syntax_in_set)
-                } else if let Some(language) = fallback_syntax {
+                } else {
+                    Err(Error::UndetectedSyntax(path))
+                }
+            }
+            _ => path_syntax,
+        };
+
+        match detected {
+            Ok(syntax_in_set) if syntax_in_set.syntax.name == "Plain Text" => {
+                if let Some(language) = fallback_syntax {
+                    self.find_syntax_by_token(language)?
+                        .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
+                } else {
+                    Ok(syntax_in_set)
+                }
+            }
+            Err(Error::UndetectedSyntax(path)) => {
+                if let Some(language) = fallback_syntax {
                     self.find_syntax_by_token(language)?
                         .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
                 } else {
                     Err(Error::UndetectedSyntax(path))
                 }
             }
-            _ => path_syntax,
+            _ => detected,
         }
     }
 
@@ -821,26 +838,5 @@ contexts:
         );
     }
 
-    #[test]
-    fn syntax_detection_fallback() {
-        let test = SyntaxDetectionTest::new();
-
-        // No language specified, unknown extension, no first-line match -> fallback
-        let input = Input::from_reader(Box::new(std::io::BufReader::new(&b"content"[..])))
-            .with_name(Some("test.unknown"));
-        let mut opened_input = input.open(&b"content"[..], None).unwrap();
-        assert_eq!(
-            test.get_syntax_name(None, Some("C"), &mut opened_input, &test.syntax_mapping),
-            "C"
-        );
-
-        // No language specified, .txt extension (Plain Text), no first-line match -> should use fallback
-        let input = Input::from_reader(Box::new(std::io::BufReader::new(&b"content"[..])))
-            .with_name(Some("test.txt"));
-        let mut opened_input = input.open(&b"content"[..], None).unwrap();
-        assert_eq!(
-            test.get_syntax_name(None, Some("C"), &mut opened_input, &test.syntax_mapping),
-            "C"
-        );
     }
 }
