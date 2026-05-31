@@ -403,7 +403,6 @@ impl App {
                 Some("no-printing") => BinaryBehavior::NoPrinting,
                 _ => unreachable!("other values for --binary are not allowed"),
             },
-<<<<<<< HEAD
             wrapping_mode: {
                 if self.matches.get_flag("chop-long-lines") {
                     WrappingMode::NoWrapping(true)
@@ -411,6 +410,7 @@ impl App {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("never") => WrappingMode::NoWrapping(false),
                         Some("character") => WrappingMode::Character,
+                        Some("word") => WrappingMode::Word,
                         Some("unpaged") => {
                             if paging_mode != PagingMode::Never {
                                 WrappingMode::Character
