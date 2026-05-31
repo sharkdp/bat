@@ -187,7 +187,10 @@ mod tests {
         // changes are detected
         assert_eq!(get_git_diff(&file).expect("one change").len(), 2);
         // write invalid repositoryformatversion
-        git(repo.path(), &["config", "core.repositoryformatversion", "one"]);
+        git(
+            repo.path(),
+            &["config", "core.repositoryformatversion", "one"],
+        );
         // changes are no longer detected
         assert_eq!(get_git_diff(&file), None);
     }
