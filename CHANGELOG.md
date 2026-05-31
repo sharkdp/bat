@@ -8,7 +8,7 @@
 
 ## Features
 
-- Add --fallback-syntax/--fallback-language to apply syntax highlighting only when auto-detection fails, see #1341 (@Jualhosting). Closes #3778
+- Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Jualhosting). Closes #3778
 - Map justfile, Justfile, .justfile, and *.justfile to Makefile syntax highlighting, see #3623 (@zachvalenta)
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)
 - Added support for `hidden_file_extensions` from `.sublime-syntax` files, see #3613 (@Matei02355)
@@ -18,7 +18,6 @@
 - Added an initial `flake.nix` for a ready made development environment; see #3578 (@vorburger)
 - Add `--quiet-empty` (`-E`) flag to suppress output when input is empty. Closes #1936, see #3563 (@NORMAL-EX)
 - Improve native man pages and command help syntax highlighting by stripping overstriking, see #3517 (@akirk)
-- Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
