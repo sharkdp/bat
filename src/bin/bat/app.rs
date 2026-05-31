@@ -289,12 +289,12 @@ impl App {
 
         let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
             Some("always") => {
-                // --list-themes must not be paged: each theme would appear in a separate
-                // pager session, making theme names invisible. Ignore paging=always here.
-                if self.matches.get_flag("list-themes") {
-                    PagingMode::Never
-                // Disable paging if the second -p (or -pp) is specified after --paging=always
-                } else if extra_plain && plain_last_index > paging_last_index {
+                // Disable paging when --list-themes is active (each theme would otherwise
+                // open a separate pager session, hiding theme names), or when the user
+                // has overridden paging=always with a later -pp flag.
+                if self.matches.get_flag("list-themes")
+                    || (extra_plain && plain_last_index > paging_last_index)
+                {
                     PagingMode::Never
                 } else {
                     PagingMode::Always
