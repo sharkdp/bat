@@ -3,6 +3,7 @@
 
 ## Other
 
+- Fix reversed `batcat`/`bat` substitution note in the Chinese README MANPAGER section, see #3780 (@xfocus3). Closes #3730
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
