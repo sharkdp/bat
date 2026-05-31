@@ -178,4 +178,17 @@ mod tests {
         assert_eq!(changes.get(&1), Some(&LineChange::RemovedAbove));
         assert_eq!(changes.get(&2), Some(&LineChange::Added));
     }
+
+    #[test]
+    fn faulty_git_version_does_not_panic() {
+        let repo = setup_repo();
+        let file = create_and_track_file(&repo, "file.txt");
+        std::fs::write(&file, "line 1\nline 2 modified\n").expect("can write file");
+        // changes are detected
+        assert_eq!(get_git_diff(&file).expect("one change").len(), 2);
+        // write invalid repositoryformatversion
+        git(repo.path(), &["config", "core.repositoryformatversion", "one"]);
+        // changes are no longer detected
+        assert_eq!(get_git_diff(&file), None);
+    }
 }
