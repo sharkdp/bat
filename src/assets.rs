@@ -263,11 +263,11 @@ impl HighlightingAssets {
         // If a path wasn't provided, or if path based syntax detection
         // above failed, we fall back to first-line syntax detection.
         let detected = match path_syntax {
-            Err(Error::UndetectedSyntax(path)) => {
+            Err(Error::UndetectedSyntax(ref path)) => {
                 if let Some(syntax_in_set) = self.get_first_line_syntax(&mut input.reader)? {
                     Ok(syntax_in_set)
                 } else {
-                    Err(Error::UndetectedSyntax(path))
+                    Err(Error::UndetectedSyntax(path.clone()))
                 }
             }
             _ => path_syntax,
@@ -282,12 +282,12 @@ impl HighlightingAssets {
                     Ok(syntax_in_set)
                 }
             }
-            Err(Error::UndetectedSyntax(path)) => {
+            Err(Error::UndetectedSyntax(_)) => {
                 if let Some(language) = fallback_syntax {
                     self.find_syntax_by_token(language)?
                         .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
                 } else {
-                    Err(Error::UndetectedSyntax(path))
+                    detected
                 }
             }
             _ => detected,
