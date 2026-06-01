@@ -139,7 +139,7 @@ impl App {
         use_pager: bool,
         use_color: bool,
         pager: Option<&str>,
-        theme_options: ThemeOptions,
+        _theme_options: ThemeOptions,
         use_custom_assets: bool,
     ) -> Result<()> {
         use crate::assets::assets_from_cache_or_binary;
@@ -149,7 +149,6 @@ impl App {
             controller::Controller,
             input::Input,
             style::{StyleComponent, StyleComponents},
-            theme::theme,
             PagingMode,
         };
 
@@ -174,7 +173,9 @@ impl App {
             colored_output: use_color,
             true_color: use_color,
             language: if use_color { Some("help") } else { None },
-            theme: theme(theme_options).to_string(),
+            // Help is rendered with plain styling; use the built-in theme to avoid
+            // warnings when BAT_THEME names a user theme that is not loaded yet.
+            theme: "ansi".to_string(),
             ..Default::default()
         };
 

@@ -1565,8 +1565,7 @@ fn help_uses_valid_config() {
     std::fs::write(&tmp_config_path, "--theme=NonExistentThemeName123")
         .expect("can write config file");
 
-    // --help should read the config file and try to use the theme
-    // (we'll see a warning about unknown theme. This is the easiest way to prove the theme is read from config.)
+    // --help uses plain styling and should not warn about themes from config.
     bat_with_config()
         .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
         .arg("--help")
@@ -1575,7 +1574,7 @@ fn help_uses_valid_config() {
         .stdout(predicate::str::contains(
             "A cat(1) clone with syntax highlighting",
         ))
-        .stderr(predicate::str::contains("Unknown theme"));
+        .stderr(predicate::str::contains("Unknown theme").not());
 }
 
 #[test]
