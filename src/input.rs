@@ -326,11 +326,70 @@ fn inspect_content_type(first_line: &[u8]) -> Option<ContentType> {
     }
 
     let content_type = content_inspector::inspect(first_line);
-    if content_type == ContentType::UTF_8 && has_zip_signature(first_line) {
+    if content_type == ContentType::UTF_8
+        && (has_zip_signature(first_line) || looks_like_openpgp_message(first_line))
+    {
         Some(ContentType::BINARY)
     } else {
         Some(content_type)
     }
+}
+
+/// OpenPGP messages (e.g. GPG symmetric encryption) often contain no NUL bytes in the
+/// first line, so `content_inspector` may classify them as UTF-8 text.
+fn looks_like_openpgp_message(bytes: &[u8]) -> bool {
+    const ARMOR_PREFIXES: &[&[u8]] = &[
+        b"-----BEGIN PGP MESSAGE-----",
+        b"-----BEGIN PGP ",
+        b"-----BEGIN OPENPGP ",
+    ];
+
+    if ARMOR_PREFIXES
+        .iter()
+        .any(|prefix| bytes.starts_with(prefix))
+    {
+        return true;
+    }
+
+    // Valid UTF-8 text (e.g. CJK) can have lead bytes with bit 7 set; do not treat as binary packets.
+    if std::str::from_utf8(bytes).is_ok() {
+        return false;
+    }
+
+    let Some(&first) = bytes.first() else {
+        return false;
+    };
+
+    // RFC 4880 §4.2: new packet format (bit 7 set) or old format (bit 7 clear).
+    if first & 0x80 != 0 {
+        let tag = first & 0x3f;
+        return (1..=39).contains(&tag);
+    }
+
+    // ANSI escape sequences (CSI/OSC) start with ESC (0x1b). Old-format OpenPGP headers
+    // can also encode tag 6 + length-type 3 as 0x1b, so disambiguate via the introducer.
+    if first == 0x1b
+        && bytes
+            .get(1)
+            .is_some_and(|&b| matches!(b, b'[' | b']' | b'P' | b'_'))
+    {
+        return false;
+    }
+
+    // Old-format packet headers use low tag bytes; avoid matching plain text (e.g. "PK…").
+    if first > 0x40 {
+        return false;
+    }
+
+    let tag = (first >> 2) & 0x0f;
+    if !(1..=18).contains(&tag) {
+        return false;
+    }
+
+    // Length/type octets following the header are rarely printable ASCII in real packets.
+    bytes
+        .get(1)
+        .is_some_and(|&second| !(0x20..=0x7e).contains(&second))
 }
 
 fn has_zip_signature(bytes: &[u8]) -> bool {
@@ -408,6 +467,64 @@ fn non_zip_pk_prefix_is_not_treated_as_binary() {
         Some(ContentType::UTF_8),
         inspect_content_type(b"PK\x03\x03hello")
     );
+}
+
+#[test]
+fn utf8_text_is_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type("ビタミンA\n".as_bytes())
+    );
+}
+
+#[test]
+fn text_like_lines_are_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\t1\t2\t3\n")
+    );
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"  // comment\n")
+    );
+}
+
+#[test]
+fn ansi_escape_sequences_are_not_treated_as_openpgp() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\x1b]8;;http://example.com/\x1b\\")
+    );
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"\x1b[33mColor\n")
+    );
+}
+
+#[test]
+fn openpgp_armored_message_is_treated_as_binary() {
+    let content = b"-----BEGIN PGP MESSAGE-----\n";
+    let reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::BINARY), reader.content_type);
+}
+
+#[test]
+fn openpgp_binary_packet_is_treated_as_binary() {
+    // Typical start of a symmetrically encrypted OpenPGP message (new packet format).
+    let content = [
+        0x8c, 0x0d, 0x03, 0x07, 0x03, 0x0c, 0x24, 0x23, 0x02, 0x01, 0xfe, 0x00, 0x85, 0x01, 0x0c,
+        0x80, b'\n',
+    ];
+    let reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::BINARY), reader.content_type);
+}
+
+#[test]
+fn openpgp_old_packet_format_is_treated_as_binary() {
+    // Tag 9 (encrypted data), old packet format, 2-octet length type.
+    let content = [0x26, 0x00, 0x01, b'\n'];
+    let reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::BINARY), reader.content_type);
 }
 
 #[test]
