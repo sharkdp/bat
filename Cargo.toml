@@ -52,7 +52,7 @@ thiserror = "2.0"
 wild = { version = "2.2", optional = true }
 content_inspector = "0.2.4"
 shell-words = { version = "1.1.1", optional = true }
-minus = { version = "5.6", optional = true, features = [
+minus = { version = "5.7", optional = true, features = [
   "dynamic_output",
   "search",
 ] }
