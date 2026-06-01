@@ -59,6 +59,13 @@ impl App {
 
         let interactive_output = std::io::stdout().is_terminal();
 
+        // On mintty/MSYS2 terminals, is_terminal() returns false because
+        // mintty uses POSIX PTYs that Windows isatty() does not recognize.
+        // We detect this environment to allow --color=auto to still produce
+        // colored output, but we do NOT override interactive_output itself
+        // so that piping (bat file | grep foo) still works correctly. See #3034.
+        let is_mintty = Self::is_mintty_terminal();
+
         // Check if the -n / --number option was passed on the command line
         // (before merging with config file and environment variables).
         // This is needed to honor the -n flag when piping output, similar to `cat -n`.
@@ -107,7 +114,7 @@ impl App {
             let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
                 Some("always") => true,
                 Some("never") => false,
-                _ => interactive_output, // auto: use color if interactive
+                _ => interactive_output || is_mintty,
             };
 
             let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
@@ -185,6 +192,22 @@ impl App {
             .ok();
 
         Ok(())
+    }
+
+    /// Detect mintty/MSYS2 terminals where `is_terminal()` returns false
+    /// even though stdout is connected to a real terminal. Mintty uses POSIX
+    /// PTYs that Windows `isatty()` does not recognize. See #3034.
+    #[cfg(windows)]
+    fn is_mintty_terminal() -> bool {
+        std::env::var_os("TERM_PROGRAM")
+            .map(|v| v == "mintty")
+            .unwrap_or(false)
+            || std::env::var_os("MSYSTEM").is_some()
+    }
+
+    #[cfg(not(windows))]
+    fn is_mintty_terminal() -> bool {
+        false
     }
 
     /// Build argument list with env vars and CLI args (without config file)
