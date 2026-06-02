@@ -9,6 +9,8 @@ use content_inspector::{self, ContentType};
 
 use crate::error::*;
 
+const BINARY_DETECTION_PREFIX_LEN: usize = 8 * 1024;
+
 /// A description of an Input source.
 /// This tells bat how to refer to the input.
 #[derive(Clone)]
@@ -263,8 +265,7 @@ impl<'a> InputReader<'a> {
     }
 
     pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {
-        let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line)?;
+        let mut first_line = read_initial_line(&mut reader)?;
 
         let content_type = inspect_content_type(&first_line);
 
@@ -317,6 +318,50 @@ impl<'a> InputReader<'a> {
             self.inner.consume(len);
         }
         Ok(true)
+    }
+}
+
+fn read_initial_line<R: BufRead>(reader: &mut R) -> io::Result<Vec<u8>> {
+    let mut first_line = Vec::new();
+
+    loop {
+        let available = reader.fill_buf()?;
+        if available.is_empty() {
+            return Ok(first_line);
+        }
+
+        if let Some(pos) = available.iter().position(|&b| b == b'\n') {
+            first_line.extend_from_slice(&available[..=pos]);
+            reader.consume(pos + 1);
+            return Ok(first_line);
+        }
+
+        let remaining = BINARY_DETECTION_PREFIX_LEN.saturating_sub(first_line.len());
+        if remaining == 0 {
+            if inspect_content_type(&first_line)
+                .is_some_and(|content_type| content_type.is_binary())
+            {
+                return Ok(first_line);
+            }
+
+            reader.read_until(b'\n', &mut first_line)?;
+            return Ok(first_line);
+        }
+
+        let len = available.len().min(remaining);
+        first_line.extend_from_slice(&available[..len]);
+        reader.consume(len);
+
+        if first_line.len() == BINARY_DETECTION_PREFIX_LEN {
+            if inspect_content_type(&first_line)
+                .is_some_and(|content_type| content_type.is_binary())
+            {
+                return Ok(first_line);
+            }
+
+            reader.read_until(b'\n', &mut first_line)?;
+            return Ok(first_line);
+        }
     }
 }
 
@@ -400,6 +445,33 @@ fn zip_magic_headers_are_treated_as_binary() {
         let reader = InputReader::new(&content[..]);
         assert_eq!(Some(ContentType::BINARY), reader.content_type);
     }
+}
+
+#[test]
+fn binary_input_without_newline_stops_after_prefix() {
+    let mut content = b"archive.ovf\0".to_vec();
+    content.resize(BINARY_DETECTION_PREFIX_LEN * 4, 0);
+
+    let mut reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::BINARY), reader.content_type);
+    assert_eq!(BINARY_DETECTION_PREFIX_LEN, reader.first_line.len());
+
+    let mut buffer = Vec::new();
+    assert!(reader.read_line(&mut buffer).unwrap());
+    assert_eq!(BINARY_DETECTION_PREFIX_LEN, buffer.len());
+
+    buffer.clear();
+    assert!(reader.read_line(&mut buffer).unwrap());
+    assert_eq!(content.len() - BINARY_DETECTION_PREFIX_LEN, buffer.len());
+}
+
+#[test]
+fn non_binary_input_without_newline_keeps_full_first_line() {
+    let content = vec![b'a'; BINARY_DETECTION_PREFIX_LEN * 2];
+
+    let reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::UTF_8), reader.content_type);
+    assert_eq!(content, reader.first_line);
 }
 
 #[test]
