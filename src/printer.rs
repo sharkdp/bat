@@ -30,7 +30,8 @@ use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
 use crate::preprocessor::{
-    expand_tabs, replace_nonprintable, sanitize_for_terminal, strip_ansi, strip_overstrike,
+    expand_tabs, replace_nonprintable, sanitize_for_terminal, strip_ansi_with_overlay,
+    strip_overstrike,
 };
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -203,6 +204,11 @@ pub(crate) struct InteractivePrinter<'a> {
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
     ansi_style: AnsiStyle,
+    /// When strip_ansi is active, this stores a mapping from byte offsets
+    /// in the stripped text to the AnsiStyle active at each offset in the
+    /// original text. This allows ANSI formatting (bold, underline, etc.)
+    /// from the original input to be re-applied on top of syntect styling.
+    ansi_style_overlay: Vec<(usize, AnsiStyle)>,
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
@@ -210,6 +216,10 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    /// Whether to re-apply ANSI formatting from the overlay when strip_ansi
+    /// is active. Only true for StripAnsiMode::Auto; StripAnsiMode::Always
+    /// means the user wants all ANSI removed.
+    reapply_ansi_overlay: bool,
     strip_overstrike: bool,
 }
 
@@ -326,12 +336,16 @@ impl<'a> InteractivePrinter<'a> {
             decorations,
             content_type: input.reader.content_type,
             ansi_style: AnsiStyle::new(),
+            ansi_style_overlay: Vec::new(),
             #[cfg(feature = "git")]
             line_changes,
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            reapply_ansi_overlay: strip_ansi
+                && config.strip_ansi == StripAnsiMode::Auto
+                && config.colored_output,
             strip_overstrike,
         })
     }
@@ -427,6 +441,24 @@ impl<'a> InteractivePrinter<'a> {
             content_graphemes = remaining.to_vec();
         }
         self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
+    }
+
+    /// Look up the AnsiStyle from the overlay at the given byte offset.
+    /// The overlay maps byte positions in the stripped text to styles.
+    /// Uses binary search to find the last entry whose offset <= `pos`.
+    fn overlay_style_at(&self, pos: usize) -> AnsiStyle {
+        if self.ansi_style_overlay.is_empty() {
+            return AnsiStyle::new();
+        }
+        // Binary search for the rightmost entry with offset <= pos.
+        let idx = match self
+            .ansi_style_overlay
+            .binary_search_by_key(&pos, |(offset, _)| *offset)
+        {
+            Ok(idx) => idx,
+            Err(idx) => idx.saturating_sub(1),
+        };
+        self.ansi_style_overlay[idx].1.clone()
     }
 
     fn highlight_regions_for_line<'b>(
@@ -663,9 +695,16 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
-            // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
+            // If ANSI escape sequences are supposed to be stripped, do it before
+            // syntax highlighting. Also compute an overlay that maps byte
+            // positions in the stripped text to the AnsiStyle active at each
+            // position in the original text, so formatting can be re-applied.
             if self.strip_ansi {
-                line = strip_ansi(&line).into()
+                let (stripped, overlay) = strip_ansi_with_overlay(&line);
+                self.ansi_style_overlay = overlay;
+                line = stripped.into();
+            } else {
+                self.ansi_style_overlay.clear();
             }
 
             line
@@ -729,6 +768,25 @@ impl Printer for InteractivePrinter<'_> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
+                // Determine the ANSI style to apply for this region:
+                // - When overlay re-application is active (StripAnsiMode::Auto with colors),
+                //   look up the style from the overlay at this region's position.
+                // - When strip_ansi is active but no overlay (StripAnsiMode::Always),
+                //   use an empty style (ANSI was explicitly stripped).
+                // - When strip_ansi is not active, use self.ansi_style directly
+                //   (not a clone) so that escape sequences within a region update
+                //   the live state for subsequent text chunks.
+                let get_region_style = |slf: &InteractivePrinter| -> AnsiStyle {
+                    if slf.reapply_ansi_overlay {
+                        let region_offset = region.as_ptr() as usize - line.as_ptr() as usize;
+                        slf.overlay_style_at(region_offset)
+                    } else if slf.strip_ansi {
+                        AnsiStyle::default()
+                    } else {
+                        slf.ansi_style.clone()
+                    }
+                };
+
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -737,18 +795,29 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
+                            // Re-evaluate the region style based on self.ansi_style's
+                            // current state, so escape sequences within this region
+                            // are reflected in subsequent text chunks.
+                            let region_style = if self.reapply_ansi_overlay || self.strip_ansi {
+                                // Overlay/stripped mode: use the pre-computed style.
+                                get_region_style(self)
+                            } else {
+                                // Passthrough mode: use the live mutable state.
+                                self.ansi_style.clone()
+                            };
+
                             write!(
                                 handle,
                                 "{}{}",
                                 as_terminal_escaped(
                                     style,
-                                    &format!("{}{text_trimmed}", self.ansi_style),
+                                    &format!("{}{text_trimmed}", region_style),
                                     true_color,
                                     colored_output,
                                     italics,
                                     background_color
                                 ),
-                                self.ansi_style.to_reset_sequence(),
+                                region_style.to_reset_sequence(),
                             )?;
 
                             // Pad the rest of the line.
@@ -784,6 +853,25 @@ impl Printer for InteractivePrinter<'_> {
             }
         } else {
             for &(style, region) in &regions {
+                // Determine the ANSI style to apply for this region:
+                // - When overlay re-application is active (StripAnsiMode::Auto with colors),
+                //   look up the style from the overlay at this region's position.
+                // - When strip_ansi is active but no overlay (StripAnsiMode::Always),
+                //   use an empty style (ANSI was explicitly stripped).
+                // - When strip_ansi is not active, use self.ansi_style directly
+                //   (not a clone) so that escape sequences within a region update
+                //   the live state for subsequent text chunks.
+                let get_region_style = |slf: &InteractivePrinter| -> AnsiStyle {
+                    if slf.reapply_ansi_overlay {
+                        let region_offset = region.as_ptr() as usize - line.as_ptr() as usize;
+                        slf.overlay_style_at(region_offset)
+                    } else if slf.strip_ansi {
+                        AnsiStyle::default()
+                    } else {
+                        slf.ansi_style.clone()
+                    }
+                };
+
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -791,6 +879,17 @@ impl Printer for InteractivePrinter<'_> {
                         EscapeSequence::Text(text) => {
                             let text = self
                                 .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
+
+                            // Re-evaluate the region style based on self.ansi_style's
+                            // current state, so escape sequences within this region
+                            // are reflected in subsequent text chunks.
+                            let region_style = if self.reapply_ansi_overlay || self.strip_ansi {
+                                // Overlay/stripped mode: use the pre-computed style.
+                                get_region_style(self)
+                            } else {
+                                // Passthrough mode: use the live mutable state.
+                                self.ansi_style.clone()
+                            };
 
                             let mut max_width = cursor_max - cursor;
 
@@ -862,17 +961,13 @@ impl Printer for InteractivePrinter<'_> {
                                         "{}{}\n{}",
                                         as_terminal_escaped(
                                             style,
-                                            &format!(
-                                                "{}{}",
-                                                self.ansi_style,
-                                                &line_buf[..emit_end]
-                                            ),
+                                            &format!("{}{}", region_style, &line_buf[..emit_end]),
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
                                             background_color
                                         ),
-                                        self.ansi_style.to_reset_sequence(),
+                                        region_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
                                     )?;
 
@@ -904,7 +999,7 @@ impl Printer for InteractivePrinter<'_> {
                                 "{}",
                                 as_terminal_escaped(
                                     style,
-                                    &format!("{}{line_buf}", self.ansi_style),
+                                    &format!("{}{line_buf}", region_style),
                                     self.config.true_color,
                                     self.config.colored_output,
                                     self.config.use_italic_text,
