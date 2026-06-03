@@ -20,6 +20,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
+- Re-apply semantic ANSI formatting (bold, underline, hyperlinks) after syntax highlighting when using `--strip-ansi=auto`, enabling correct man page rendering with both syntax colors and man formatting. Closes #3724, see #3792 (@Anntoin)
 
 ## Bugfixes
 - Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
@@ -61,6 +62,7 @@
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
 - Add syntax highlighting support for COBOL, see #3584 (@adukhan99)
 - Fixed manpage syntax so that ANSI escape codes don't get incorrectly highlighted and thus broken, see #3586 (@BlueElectivire)
+- Update Manpage syntax prototype context to consume ANSI CSI and OSC8 escape sequences, preventing garbled output when using bat as MANPAGER. See #3792 (@Anntoin)
 - Map several Google Cloud CLI config files to their appropriate syntax #3635 (@victor-gp)
 - Map all ignore dotfiles to Git Ignore syntax #3636 (@victor-gp)
 - Improved Kotlin syntax, see #3699 (@guille)
