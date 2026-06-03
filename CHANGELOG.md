@@ -3,6 +3,7 @@
 
 ## Other
 
+- Add a README feature overview table near the top of the project documentation, see #3791 (@ded-furby)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
