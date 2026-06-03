@@ -5,6 +5,7 @@ use std::{
 };
 
 // Wrapper to avoid unnecessary branching when input doesn't have ANSI escape sequences.
+#[derive(Clone, Default)]
 pub struct AnsiStyle {
     attributes: Option<Attributes>,
 }
@@ -41,6 +42,7 @@ impl Display for AnsiStyle {
     }
 }
 
+#[derive(Clone)]
 struct Attributes {
     has_sgr_sequences: bool,
 
