@@ -476,8 +476,11 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_default_value(true)
                 .help("Strip colors from the input (auto, always, *never*)")
                 .long_help("Specify when to strip ANSI escape sequences from the input. \
-                The automatic mode will remove escape sequences unless the syntax highlighting \
-                language is plain text. Possible values: auto, always, *never*.")
+                In 'auto' mode, ANSI escape sequences are stripped before syntax highlighting, \
+                but semantic formatting (bold, underline, hyperlinks) is re-applied on the output \
+                so that both syntax highlighting and input formatting are preserved. \
+                This is the recommended mode for use as MANPAGER. \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
