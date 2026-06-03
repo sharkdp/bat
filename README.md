@@ -19,6 +19,13 @@
   [<a href="doc/README-ru.md">Русский</a>]
 </p>
 
+| Feature | What it adds |
+| --- | --- |
+| [Syntax highlighting](#syntax-highlighting) | Colors source code and markup for many languages. |
+| [Git integration](#git-integration) | Shows modifications relative to the Git index in the gutter. |
+| [Show non-printable characters](#show-non-printable-characters) | Makes tabs, trailing spaces, and other hidden characters visible. |
+| [Automatic paging](#automatic-paging) | Sends long output through a pager while still acting like `cat` in pipes and redirects. |
+
 ### Syntax highlighting
 
 `bat` supports syntax highlighting for a large number of programming and markup
