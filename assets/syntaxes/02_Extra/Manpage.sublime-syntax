@@ -10,6 +10,7 @@ variables:
   section_heading: '^(?!#)\S.*$'
   command_line_option: '(--?[A-Za-z0-9][_A-Za-z0-9-]*)'
   ansi_escape_sequence: '\e\[[\?=]?(?:\d+;?)*[A-Za-z]'
+  osc_escape_sequence: '\e\](?:[^\e\\]|\e[^\\])*\e\\'
 
 contexts:
   prototype:
@@ -19,6 +20,12 @@ contexts:
         - meta_scope: comment.syntax-test.man
         - match: $\n?
           pop: true
+    # consume ANSI escape sequences so they don't break across highlight regions
+    - match: '{{ansi_escape_sequence}}'
+      scope: constant.other.inline-data.man
+    # consume OSC sequences (e.g. OSC8 hyperlinks) similarly
+    - match: '{{osc_escape_sequence}}'
+      scope: constant.other.inline-data.man
   main:
     - match: ^
       push: first_line
