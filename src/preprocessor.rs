@@ -171,9 +171,9 @@ pub fn strip_ansi_with_overlay(line: &str) -> (String, Vec<(usize, AnsiStyle)>) 
                 let offset = stripped.len();
 
                 // Only record a style change if it differs from the last recorded one.
-                let is_style_change = style_changes.last().map_or(true, |(_, prev)| {
-                    format!("{prev}") != format!("{current_style}")
-                });
+                let is_style_change = style_changes
+                    .last()
+                    .map_or(true, |(_, prev)| *prev != current_style);
 
                 if is_style_change {
                     style_changes.push((offset, current_style.clone()));
@@ -406,6 +406,7 @@ fn test_sanitize_for_terminal_idempotent_on_sanitized() {
 
 /// Helper: extract the AnsiStyle at a given byte offset
 /// within the stripped text, using the same binary-search logic as the printer.
+#[cfg(test)]
 fn overlay_style_at(offset: usize, overlay: &[(usize, AnsiStyle)]) -> AnsiStyle {
     match overlay.binary_search_by_key(&offset, |(pos, _)| *pos) {
         Ok(idx) => overlay[idx].1.clone(),

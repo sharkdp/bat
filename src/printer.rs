@@ -461,6 +461,26 @@ impl<'a> InteractivePrinter<'a> {
         self.ansi_style_overlay[idx].1.clone()
     }
 
+    /// Determine the ANSI style to apply for a syntect-highlighted region.
+    ///
+    /// - In overlay mode (`--strip-ansi=auto` with colors): looks up the
+    ///   pre-computed overlay style at the region's byte offset.
+    /// - In stripped mode (`--strip-ansi=always`): returns an empty style
+    ///   (ANSI was explicitly stripped).
+    /// - In passthrough mode (no stripping): returns the live `ansi_style`
+    ///   state so that escape sequences within a region update subsequent
+    ///   text chunks.
+    fn region_ansi_style(&self, region: &str, line: &str) -> AnsiStyle {
+        if self.reapply_ansi_overlay {
+            let region_offset = region.as_ptr() as usize - line.as_ptr() as usize;
+            self.overlay_style_at(region_offset)
+        } else if self.strip_ansi {
+            AnsiStyle::default()
+        } else {
+            self.ansi_style.clone()
+        }
+    }
+
     fn highlight_regions_for_line<'b>(
         &mut self,
         line: &'b str,
@@ -768,25 +788,6 @@ impl Printer for InteractivePrinter<'_> {
             let italics = self.config.use_italic_text;
 
             for &(style, region) in &regions {
-                // Determine the ANSI style to apply for this region:
-                // - When overlay re-application is active (StripAnsiMode::Auto with colors),
-                //   look up the style from the overlay at this region's position.
-                // - When strip_ansi is active but no overlay (StripAnsiMode::Always),
-                //   use an empty style (ANSI was explicitly stripped).
-                // - When strip_ansi is not active, use self.ansi_style directly
-                //   (not a clone) so that escape sequences within a region update
-                //   the live state for subsequent text chunks.
-                let get_region_style = |slf: &InteractivePrinter| -> AnsiStyle {
-                    if slf.reapply_ansi_overlay {
-                        let region_offset = region.as_ptr() as usize - line.as_ptr() as usize;
-                        slf.overlay_style_at(region_offset)
-                    } else if slf.strip_ansi {
-                        AnsiStyle::default()
-                    } else {
-                        slf.ansi_style.clone()
-                    }
-                };
-
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -795,16 +796,11 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
-                            // Re-evaluate the region style based on self.ansi_style's
-                            // current state, so escape sequences within this region
-                            // are reflected in subsequent text chunks.
-                            let region_style = if self.reapply_ansi_overlay || self.strip_ansi {
-                                // Overlay/stripped mode: use the pre-computed style.
-                                get_region_style(self)
-                            } else {
-                                // Passthrough mode: use the live mutable state.
-                                self.ansi_style.clone()
-                            };
+                            // Determine the ANSI style for this region.
+                            // In passthrough mode, use live mutable state so escape
+                            // sequences within the region are reflected in subsequent
+                            // text chunks; otherwise use the pre-computed style.
+                            let region_style = self.region_ansi_style(region, &*line);
 
                             write!(
                                 handle,
@@ -853,25 +849,6 @@ impl Printer for InteractivePrinter<'_> {
             }
         } else {
             for &(style, region) in &regions {
-                // Determine the ANSI style to apply for this region:
-                // - When overlay re-application is active (StripAnsiMode::Auto with colors),
-                //   look up the style from the overlay at this region's position.
-                // - When strip_ansi is active but no overlay (StripAnsiMode::Always),
-                //   use an empty style (ANSI was explicitly stripped).
-                // - When strip_ansi is not active, use self.ansi_style directly
-                //   (not a clone) so that escape sequences within a region update
-                //   the live state for subsequent text chunks.
-                let get_region_style = |slf: &InteractivePrinter| -> AnsiStyle {
-                    if slf.reapply_ansi_overlay {
-                        let region_offset = region.as_ptr() as usize - line.as_ptr() as usize;
-                        slf.overlay_style_at(region_offset)
-                    } else if slf.strip_ansi {
-                        AnsiStyle::default()
-                    } else {
-                        slf.ansi_style.clone()
-                    }
-                };
-
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -880,16 +857,11 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self
                                 .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
 
-                            // Re-evaluate the region style based on self.ansi_style's
-                            // current state, so escape sequences within this region
-                            // are reflected in subsequent text chunks.
-                            let region_style = if self.reapply_ansi_overlay || self.strip_ansi {
-                                // Overlay/stripped mode: use the pre-computed style.
-                                get_region_style(self)
-                            } else {
-                                // Passthrough mode: use the live mutable state.
-                                self.ansi_style.clone()
-                            };
+                            // Determine the ANSI style for this region.
+                            // In passthrough mode, use live mutable state so escape
+                            // sequences within the region are reflected in subsequent
+                            // text chunks; otherwise use the pre-computed style.
+                            let region_style = self.region_ansi_style(region, &*line);
 
                             let mut max_width = cursor_max - cursor;
 
