@@ -800,7 +800,7 @@ impl Printer for InteractivePrinter<'_> {
                             // In passthrough mode, use live mutable state so escape
                             // sequences within the region are reflected in subsequent
                             // text chunks; otherwise use the pre-computed style.
-                            let region_style = self.region_ansi_style(region, &*line);
+                            let region_style = self.region_ansi_style(region, &line);
 
                             write!(
                                 handle,
@@ -861,7 +861,7 @@ impl Printer for InteractivePrinter<'_> {
                             // In passthrough mode, use live mutable state so escape
                             // sequences within the region are reflected in subsequent
                             // text chunks; otherwise use the pre-computed style.
-                            let region_style = self.region_ansi_style(region, &*line);
+                            let region_style = self.region_ansi_style(region, &line);
 
                             let mut max_width = cursor_max - cursor;
 

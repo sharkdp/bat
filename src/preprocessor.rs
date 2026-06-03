@@ -173,7 +173,7 @@ pub fn strip_ansi_with_overlay(line: &str) -> (String, Vec<(usize, AnsiStyle)>) 
                 // Only record a style change if it differs from the last recorded one.
                 let is_style_change = style_changes
                     .last()
-                    .map_or(true, |(_, prev)| *prev != current_style);
+                    .is_none_or(|(_, prev)| *prev != current_style);
 
                 if is_style_change {
                     style_changes.push((offset, current_style.clone()));
