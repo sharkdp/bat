@@ -2,7 +2,10 @@ use std::fmt::Write;
 
 use crate::{
     nonprintable_notation::NonprintableNotation,
-    vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
+    vscreen::{
+        AnsiStyle, EscapeSequence, EscapeSequenceIterator, EscapeSequenceOffsets,
+        EscapeSequenceOffsetsIterator,
+    },
 };
 
 /// Expand tabs like an ANSI-enabled expand(1).
@@ -137,6 +140,7 @@ pub fn replace_nonprintable(
 }
 
 /// Strips ANSI escape sequences from the input.
+#[allow(dead_code)]
 pub fn strip_ansi(line: &str) -> String {
     let mut buffer = String::with_capacity(line.len());
 
@@ -147,6 +151,43 @@ pub fn strip_ansi(line: &str) -> String {
     }
 
     buffer
+}
+
+/// Strip ANSI escape sequences from a line, returning both the stripped text
+/// and a style overlay that maps byte positions in the stripped text to the
+/// `AnsiStyle` that was active at each position in the original text.
+///
+/// This allows syntax highlighting (syntect) to operate on clean text, while
+/// preserving the original ANSI formatting (bold, underline, color, etc.) for
+/// re-application during rendering.
+pub fn strip_ansi_with_overlay(line: &str) -> (String, Vec<(usize, AnsiStyle)>) {
+    let mut stripped = String::with_capacity(line.len());
+    let mut style_changes: Vec<(usize, AnsiStyle)> = Vec::new();
+    let mut current_style = AnsiStyle::new();
+
+    for chunk in EscapeSequenceIterator::new(line) {
+        match chunk {
+            EscapeSequence::Text(text) => {
+                let offset = stripped.len();
+
+                // Only record a style change if it differs from the last recorded one.
+                let is_style_change = style_changes.last().map_or(true, |(_, prev)| {
+                    format!("{prev}") != format!("{current_style}")
+                });
+
+                if is_style_change {
+                    style_changes.push((offset, current_style.clone()));
+                }
+
+                stripped.push_str(text);
+            }
+            _ => {
+                current_style.update(chunk);
+            }
+        }
+    }
+
+    (stripped, style_changes)
 }
 
 /// Escape C0, DEL, and C1 control characters so a string from an untrusted
@@ -227,6 +268,14 @@ fn pop_visible_char(output: &mut String) {
     }
 }
 
+/// Controls when ANSI escape sequences are stripped from input before rendering.
+///
+/// - `Never` (default): ANSI escape sequences pass through to the terminal unchanged.
+/// - `Always`: All ANSI escape sequences are stripped and discarded.
+/// - `Auto`: ANSI escape sequences are stripped before syntax highlighting, but
+///   semantic formatting (bold, underline, OSC8 hyperlinks) is re-applied on the
+///   output. This preserves both syntax highlighting and the input's formatting.
+///   Recommended for use as MANPAGER (e.g. `MANPAGER="bat -pl man --strip-ansi=auto"`).
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub enum StripAnsiMode {
     #[default]
@@ -351,4 +400,355 @@ fn test_sanitize_for_terminal_idempotent_on_sanitized() {
     assert_eq!(sanitize_for_terminal(&clean), clean);
     assert!(!clean.contains('\x1b'));
     assert!(!clean.contains('\x07'));
+}
+
+// ── strip_ansi_with_overlay tests ──────────────────────────────────────────
+
+/// Helper: extract the AnsiStyle at a given byte offset
+/// within the stripped text, using the same binary-search logic as the printer.
+fn overlay_style_at(offset: usize, overlay: &[(usize, AnsiStyle)]) -> AnsiStyle {
+    match overlay.binary_search_by_key(&offset, |(pos, _)| *pos) {
+        Ok(idx) => overlay[idx].1.clone(),
+        Err(idx) => {
+            if idx == 0 {
+                AnsiStyle::new()
+            } else {
+                overlay[idx - 1].1.clone()
+            }
+        }
+    }
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_no_ansi() {
+    let (stripped, overlay) = strip_ansi_with_overlay("plain text");
+    assert_eq!(stripped, "plain text");
+    // Default style at offset 0 produces empty display (no ANSI codes)
+    assert_eq!(
+        format!("{}", overlay_style_at(0, &overlay)),
+        "",
+        "default style should produce no ANSI output"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_bold_on_off() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[1mNAME\x1B[22m more");
+    assert_eq!(stripped, "NAME more");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[1m"),
+        "bold should be active at offset 0"
+    );
+
+    // After "NAME " at offset 5, bold should be off due to \x1B[22m
+    let style_after = overlay_style_at(5, &overlay);
+    assert!(
+        !format!("{style_after}").contains("\x1B[1m"),
+        "bold should be off after \\x1B[22m"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_underline_on_off() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[4marg\x1B[24m rest");
+    assert_eq!(stripped, "arg rest");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[4m"),
+        "underline should be active"
+    );
+
+    let style_after = overlay_style_at(3, &overlay);
+    assert!(
+        !format!("{style_after}").contains("\x1B[4m"),
+        "underline should be off after \\x1B[24m"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_bold_and_underline_combined() {
+    let input = "\x1B[1mNAME\x1B[22m\x1B[4muname\x1B[24m";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "NAMEuname");
+
+    let style_name = overlay_style_at(0, &overlay);
+    let name_fmt = format!("{style_name}");
+    assert!(name_fmt.contains("\x1B[1m"), "bold active for NAME");
+    assert!(!name_fmt.contains("\x1B[4m"), "underline off for NAME");
+
+    let style_arg = overlay_style_at(4, &overlay);
+    let arg_fmt = format!("{style_arg}");
+    assert!(!arg_fmt.contains("\x1B[1m"), "bold off for uname");
+    assert!(arg_fmt.contains("\x1B[4m"), "underline active for uname");
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_dim() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[2mdim text\x1B[22m");
+    assert_eq!(stripped, "dim text");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[2m"),
+        "dim should be active"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_italic() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[3mitalic\x1B[23m rest");
+    assert_eq!(stripped, "italic rest");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[3m"),
+        "italic should be active"
+    );
+
+    let style_after = overlay_style_at(6, &overlay);
+    assert!(
+        !format!("{style_after}").contains("\x1B[3m"),
+        "italic should be off after \\x1B[23m"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_foreground_color() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[33mColor\x1B[39m");
+    assert_eq!(stripped, "Color");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[33m"),
+        "foreground color should be active"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_256_color() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[38;5;182mHeading\x1B[39m");
+    assert_eq!(stripped, "Heading");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("38;5;182"),
+        "foreground should contain 256-color code 182"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_truecolor() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[38;2;255;100;0mOrange\x1B[39m");
+    assert_eq!(stripped, "Orange");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("38;2;255;100;0"),
+        "foreground should contain truecolor code"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_background_color() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[41mBG\x1B[49m");
+    assert_eq!(stripped, "BG");
+
+    let style = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style}").contains("\x1B[41m"),
+        "background color should be active"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_sgr_reset() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[1;33mBoldYellow\x1B[0mplain");
+    assert_eq!(stripped, "BoldYellowplain");
+
+    let style_bold = overlay_style_at(0, &overlay);
+    let bold_fmt = format!("{style_bold}");
+    assert!(bold_fmt.contains("\x1B[1m"), "bold active before reset");
+    assert!(
+        bold_fmt.contains("\x1B[33m"),
+        "foreground active before reset"
+    );
+
+    let style_plain = overlay_style_at(10, &overlay);
+    let plain_fmt = format!("{style_plain}");
+    assert!(!plain_fmt.contains("\x1B[1m"), "bold off after reset");
+    assert!(
+        !plain_fmt.contains("\x1B[33m"),
+        "foreground off after reset"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_osc8_hyperlink() {
+    let input = "\x1B]8;;man:sshd(8)\x1B\\sshd\x1B]8;;\x1B\\";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "sshd");
+
+    let style = overlay_style_at(0, &overlay);
+    let fmt = format!("{style}");
+    assert!(
+        fmt.contains("\x1B]8;;"),
+        "hyperlink should be active for linked text"
+    );
+    assert!(
+        fmt.contains("man:sshd(8)"),
+        "hyperlink URI should be preserved"
+    );
+    // Reset sequence should close the hyperlink
+    assert_eq!(
+        style.to_reset_sequence(),
+        "\x1B]8;;\x1B\\",
+        "reset should close hyperlink"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_osc8_hyperlink_open_close() {
+    let input = "before\x1B]8;;https://example.com\x1B\\linked\x1B]8;;\x1B\\after";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "beforelinkedafter");
+
+    // "before" at offset 0: no hyperlink
+    let style_before = overlay_style_at(0, &overlay);
+    assert!(
+        !format!("{style_before}").contains("\x1B]8;;"),
+        "no hyperlink before opening"
+    );
+
+    // "linked" at offset 6: hyperlink open (has a URI)
+    let style_linked = overlay_style_at(6, &overlay);
+    let linked_fmt = format!("{style_linked}");
+    assert!(
+        linked_fmt.contains("\x1B]8;;"),
+        "hyperlink present for linked text"
+    );
+    assert!(
+        linked_fmt.contains("https://example.com"),
+        "hyperlink URI in linked text"
+    );
+
+    // "after" at offset 12: hyperlink closed
+    // NOTE: The current AnsiStyle implementation stores close sequences as
+    // "\x1B]8;;\x1B\\" in the hyperlink field instead of clearing it.
+    // This is a pre-existing limitation — the close sequence is present
+    // but it's a no-op close rather than an open with a URI.
+    let style_after = overlay_style_at(12, &overlay);
+    let after_fmt = format!("{style_after}");
+    assert!(
+        !after_fmt.contains("https://example.com"),
+        "hyperlink URI should be gone after close"
+    );
+    // The close hyperlink still produces output (a close escape sequence).
+    // In an ideal fix, to_reset_sequence() would be empty for closed links.
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_man_page_heading() {
+    let input = "\x1B[1mNAME\x1B[22m     uname - print system information";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "NAME     uname - print system information");
+
+    let style_name = overlay_style_at(0, &overlay);
+    assert!(
+        format!("{style_name}").contains("\x1B[1m"),
+        "bold active for heading"
+    );
+
+    let style_body = overlay_style_at(4, &overlay);
+    assert!(
+        !format!("{style_body}").contains("\x1B[1m"),
+        "bold off for body text"
+    );
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_mixed_ansi_and_text() {
+    let input = "plain\x1B[1mbold\x1B[22m\x1B[4muline\x1B[24mend";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "plainboldulineend");
+
+    let s0 = format!("{}", overlay_style_at(0, &overlay));
+    assert!(!s0.contains("\x1B[1m") && !s0.contains("\x1B[4m"));
+
+    let s5 = format!("{}", overlay_style_at(5, &overlay));
+    assert!(s5.contains("\x1B[1m") && !s5.contains("\x1B[4m"));
+
+    let s9 = format!("{}", overlay_style_at(9, &overlay));
+    assert!(!s9.contains("\x1B[1m") && s9.contains("\x1B[4m"));
+
+    let s14 = format!("{}", overlay_style_at(14, &overlay));
+    assert!(!s14.contains("\x1B[1m") && !s14.contains("\x1B[4m"));
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_bold_reset_vs_specific() {
+    // \x1B[22m resets BOTH bold and dim; \x1B[1m should not restore dim
+    let input = "\x1B[1;2mbold+dim\x1B[22m\x1B[1monly-bold";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "bold+dimonly-bold");
+
+    let s0 = format!("{}", overlay_style_at(0, &overlay));
+    assert!(s0.contains("\x1B[1m"), "bold should be active");
+    assert!(s0.contains("\x1B[2m"), "dim should be active");
+
+    let s9 = format!("{}", overlay_style_at(9, &overlay));
+    assert!(s9.contains("\x1B[1m"), "bold active after re-enable");
+    assert!(!s9.contains("\x1B[2m"), "dim off after 22m reset");
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_adjacent_style_changes() {
+    // Style changes with no text between them should produce a single overlay
+    // entry for the final style state
+    let input = "\x1B[1m\x1B[33mcolored\x1B[0m";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "colored");
+
+    let style = overlay_style_at(0, &overlay);
+    let fmt = format!("{style}");
+    assert!(fmt.contains("\x1B[1m"), "bold active");
+    assert!(fmt.contains("\x1B[33m"), "foreground active");
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_empty_input() {
+    let (stripped, overlay) = strip_ansi_with_overlay("");
+    assert_eq!(stripped, "");
+    assert!(overlay.is_empty());
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_only_escapes() {
+    let (stripped, overlay) = strip_ansi_with_overlay("\x1B[1m\x1B[33m\x1B[0m");
+    assert_eq!(stripped, "");
+    assert!(overlay.is_empty(), "no text means no overlay entries");
+}
+
+#[test]
+fn test_strip_ansi_with_overlay_bold_with_osc8_combined() {
+    // Bold heading containing a cross-reference hyperlink
+    let input = "\x1B[1mSEE ALSO\x1B[22m  \x1B]8;;man:sshd(8)\x1B\\sshd(8)\x1B]8;;\x1B\\";
+    let (stripped, overlay) = strip_ansi_with_overlay(input);
+    assert_eq!(stripped, "SEE ALSO  sshd(8)");
+
+    let style_heading = overlay_style_at(0, &overlay);
+    let heading_fmt = format!("{style_heading}");
+    assert!(heading_fmt.contains("\x1B[1m"), "bold active for heading");
+    assert!(!heading_fmt.contains("\x1B]8;;"), "no hyperlink in heading");
+
+    let style_link = overlay_style_at(10, &overlay);
+    let link_fmt = format!("{style_link}");
+    assert!(!link_fmt.contains("\x1B[1m"), "no bold in link text");
+    assert!(
+        link_fmt.contains("\x1B]8;;"),
+        "hyperlink active for link text"
+    );
+    assert!(link_fmt.contains("man:sshd(8)"), "hyperlink URI present");
 }
