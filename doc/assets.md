@@ -97,7 +97,7 @@ The following files have been manually modified after converting from a `.tmLang
    as it is not kept in a standalone repository. The file is generated from
    https://github.com/open-policy-agent/opa/blob/master/misc/syntax/textmate/Rego.tmLanguage
 * `SML.sublime_syntax` has been added manually from
-   https://github.com/seanjames777/SML-Language-Definitiona as it is not
+   https://github.com/seanjames777/SML-Language-Definition as it is not
    kept in a standalone repository. The file generated is from
    https://github.com/seanjames777/SML-Language-Definition/blob/master/sml.tmLanguage
 * `Cabal.sublime_syntax` has been added manually from
