@@ -306,6 +306,19 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn snip_at_terminal_width_one_does_not_panic() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--style=snip")
+        .arg("--color=always")
+        .arg("--terminal-width=1")
+        .arg("--line-range=1:2")
+        .arg("--line-range=4:4")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
