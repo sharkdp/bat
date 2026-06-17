@@ -603,11 +603,23 @@ impl Printer for InteractivePrinter<'_> {
         let title = "8<";
         let title_count = title.chars().count();
 
-        let snip_left = "─ ".repeat((self.config.term_width - panel_count - (title_count / 2)) / 4);
+        let snip_left = "─ ".repeat(
+            self.config
+                .term_width
+                .saturating_sub(panel_count)
+                .saturating_sub(title_count / 2)
+                / 4,
+        );
         let snip_left_count = snip_left.chars().count(); // Can't use .len() with Unicode.
 
-        let snip_right =
-            " ─".repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
+        let snip_right = " ─".repeat(
+            self.config
+                .term_width
+                .saturating_sub(panel_count)
+                .saturating_sub(snip_left_count)
+                .saturating_sub(title_count)
+                / 2,
+        );
 
         writeln!(
             handle,
