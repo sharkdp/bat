@@ -3,6 +3,7 @@
 
 ## Other
 
+- Document using `--theme=auto:system` in the `fzf` preview example so light/dark themes work when output is piped. Closes #3433, see #3773 (@leno23)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
