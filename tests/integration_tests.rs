@@ -496,7 +496,10 @@ fn piped_output_with_auto_style() {
         .write_stdin("hello\nworld\n")
         .assert()
         .success()
-        .stdout("hello\nworld\n"); // Should be plain when piped
+        .stdout("hello\nworld\n") // Should be plain when piped
+        .stderr(predicate::str::contains(
+            "The style component 'auto' is deprecated",
+        ));
 }
 
 #[test]

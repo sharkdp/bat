@@ -177,6 +177,13 @@ impl StyleComponentList {
         self.0.iter().any(|(a, _)| *a == ComponentAction::Override)
     }
 
+    /// Returns `true` if the list explicitly includes the deprecated `auto` style component.
+    pub fn contains_auto(&self) -> bool {
+        self.0
+            .iter()
+            .any(|(_, component)| *component == StyleComponent::Auto)
+    }
+
     /// Combines multiple [StyleComponentList]s into a single [StyleComponents] set.
     ///
     /// ## Precedence
