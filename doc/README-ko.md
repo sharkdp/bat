@@ -50,8 +50,7 @@
 
 ### 파일 연결(concatenation)
 
-페이저(pager)를 사용하더라도 `bat`은 파일들을 연결(concatenate)할 수 있습니다
-:wink:.
+페이저(pager)를 사용하더라도 `bat`은 파일들을 연결(concatenate)할 수 있습니다 :wink:.
 `bat`이 비대화형(non-interactive) 터미널(예를 들어, 다른 프로세스나 파일에
 연결(pipe)한 경우)을 감지하면, `bat`은 `--pager` 옵션의 값과 상관없이 `cat`과
 동일하게 파일 내용을 그대로 출력합니다.
