@@ -13,7 +13,8 @@
   <a href="#customization">Customization</a> •
   <a href="#project-goals-and-alternatives">Project goals, alternatives</a><br>
   [English]
-  [<a href="doc/README-zh.md">中文</a>]
+  [<a href="doc/README-zh.md">简体中文</a>]
+  [<a href="doc/README-zh-tw.md">繁體中文</a>]
   [<a href="doc/README-ja.md">日本語</a>]
   [<a href="doc/README-ko.md">한국어</a>]
   [<a href="doc/README-ru.md">Русский</a>]
