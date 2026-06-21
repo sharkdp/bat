@@ -219,7 +219,13 @@ impl App {
         if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
             let args = wild::args_os().collect::<Vec<_>>();
-            return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
+
+            match clap_app::build_app(interactive_output).try_get_matches_from(args) {
+                Ok(matches) => return Ok(matches),
+                Err(err) => {
+                    err.exit();
+                }
+            }
         }
 
         if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
