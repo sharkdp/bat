@@ -50,6 +50,11 @@ pub struct App {
     /// (not from config file or environment variables).
     /// This is used to honor the flag when piping output, similar to `cat -n`.
     number_from_cli: bool,
+    /// True if --wrap=character was passed on the command line
+    /// (not from config file or environment variables).
+    /// When piping output (non-interactive), --wrap=character is ignored unless
+    /// it was explicitly provided on the command line.
+    wrap_character_from_cli: bool,
 }
 
 impl App {
@@ -89,6 +94,18 @@ impl App {
             }
             false
         });
+
+        // Check if --wrap=character was passed on the command line
+        // (before merging with config file and environment variables).
+        // This is needed to honor --wrap=character when piping output, while
+        // ignoring it when it comes only from the config file or BAT_OPTS.
+        let cli_args_vec: Vec<_> = wild::args_os().collect();
+        let wrap_character_from_cli = cli_args_vec
+            .iter()
+            .any(|arg| arg.to_string_lossy() == "--wrap=character")
+            || cli_args_vec.windows(2).any(|pair| {
+                pair[0].to_string_lossy() == "--wrap" && pair[1].to_string_lossy() == "character"
+            });
 
         let matches = Self::matches(interactive_output)?;
 
@@ -130,6 +147,7 @@ impl App {
             matches,
             interactive_output,
             number_from_cli,
+            wrap_character_from_cli,
         })
     }
 
@@ -408,7 +426,15 @@ impl App {
                     WrappingMode::NoWrapping(true)
                 } else {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
-                        Some("character") => WrappingMode::Character,
+                        Some("character") => {
+                            if !self.interactive_output && !self.wrap_character_from_cli {
+                                // When piping output (non-interactive), ignore --wrap=character
+                                // unless it was explicitly provided on the command line.
+                                WrappingMode::NoWrapping(false)
+                            } else {
+                                WrappingMode::Character
+                            }
+                        }
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
