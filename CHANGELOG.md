@@ -67,6 +67,7 @@
 - Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
 - Add Ghostty syntax mapping, see #3759 (@injust)
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
+- Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 
 ## Themes
 
