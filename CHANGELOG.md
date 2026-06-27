@@ -69,6 +69,7 @@
 - Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
 - Add Ghostty syntax mapping, see #3759 (@injust)
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
+- Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
 
 ## Themes
 
