@@ -46,6 +46,7 @@
 - Fixed syntax tests path, see #3610 (@foxfromworld)
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
 - Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
+- Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
@@ -53,6 +54,7 @@
 - Allow home and end keys to be used with builtin pager, see #3651 (@keith-hall)
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
 - Statically link the CRT for MSVC builds via Cargo config to avoid runtime DLL dependencies. Closes #3634, see #3692 (@barry3406)
+- Replace `libgit2` with a pure Rust implementation of git called `gitoxide`, see PR #3703 (@blinxen)
 
 ## Syntaxes
 
@@ -68,6 +70,7 @@
 - Add Ghostty syntax mapping, see #3759 (@injust)
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
+- Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
 
 ## Themes
 
