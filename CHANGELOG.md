@@ -69,6 +69,7 @@
 - Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
 - Add Ghostty syntax mapping, see #3759 (@injust)
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
+- Add syntax highlighting support for Earthfiles #3806 (@rdunne2020)
 
 ## Themes
 
