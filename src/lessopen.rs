@@ -14,6 +14,53 @@ use crate::{
     input::{Input, InputKind, InputReader, OpenedInput, OpenedInputKind},
 };
 
+/// Wrap `s` in POSIX single quotes. An embedded `'` is encoded as `'\''`
+/// (close, escaped quote, reopen) since `'...'` has no escape character.
+fn shell_quote(s: &str) -> String {
+    if !s.contains('\'') {
+        let mut quoted = String::with_capacity(s.len() + 2);
+        quoted.push('\'');
+        quoted.push_str(s);
+        quoted.push('\'');
+        return quoted;
+    }
+    let mut quoted = String::with_capacity(s.len() + 2);
+    quoted.push('\'');
+    for c in s.chars() {
+        if c == '\'' {
+            quoted.push_str("'\\''");
+        } else {
+            quoted.push(c);
+        }
+    }
+    quoted.push('\'');
+    quoted
+}
+
+/// Substitute the first `%s` in a $LESSOPEN/$LESSCLOSE template with a quoted value.
+fn shell_substitute(template: &str, replacement: &str) -> String {
+    template.replacen("%s", &shell_quote(replacement), 1)
+}
+
+/// Substitute the first two `%s` occurrences positionally in one pass; chaining
+/// `shell_substitute` twice would mis-target if `first` itself contains `%s`.
+fn shell_substitute_two(template: &str, first: &str, second: &str) -> String {
+    let mut out = String::with_capacity(template.len() + first.len() + second.len() + 4);
+    let mut remaining = template;
+    let mut to_substitute = [Some(first), Some(second)];
+    for slot in &mut to_substitute {
+        if let Some(idx) = remaining.find("%s") {
+            out.push_str(&remaining[..idx]);
+            out.push_str(&shell_quote(slot.take().unwrap()));
+            remaining = &remaining[idx + 2..];
+        } else {
+            break;
+        }
+    }
+    out.push_str(remaining);
+    out
+}
+
 /// Preprocess files and/or stdin using $LESSOPEN and $LESSCLOSE
 pub(crate) struct LessOpenPreprocessor {
     lessopen: String,
@@ -87,7 +134,7 @@ impl LessOpenPreprocessor {
                     None => return input.open(stdin, stdout_identifier),
                 };
 
-                let mut lessopen_command = shell(self.lessopen.replacen("%s", path_str, 1));
+                let mut lessopen_command = shell(shell_substitute(&self.lessopen, path_str));
                 lessopen_command.stdout(Stdio::piped());
 
                 let lessopen_output = match lessopen_command.execute_output() {
@@ -122,7 +169,7 @@ impl LessOpenPreprocessor {
                     let mut stdin_buffer = Vec::new();
                     stdin.read_to_end(&mut stdin_buffer)?;
 
-                    let mut lessopen_command = shell(self.lessopen.replacen("%s", "-", 1));
+                    let mut lessopen_command = shell(shell_substitute(&self.lessopen, "-"));
                     lessopen_command.stdout(Stdio::piped());
 
                     let lessopen_output = match lessopen_command.execute_input_output(&stdin_buffer)
@@ -181,7 +228,7 @@ impl LessOpenPreprocessor {
                         lessclose: self
                             .lessclose
                             .as_ref()
-                            .map(|s| s.replacen("%s", &path_str, 1).replacen("%s", &stdout, 1)),
+                            .map(|s| shell_substitute_two(s, &path_str, &stdout)),
                     }
                 } else {
                     Preprocessed {
@@ -189,7 +236,7 @@ impl LessOpenPreprocessor {
                         lessclose: self
                             .lessclose
                             .as_ref()
-                            .map(|s| s.replacen("%s", &path_str, 1).replacen("%s", "-", 1)),
+                            .map(|s| shell_substitute_two(s, &path_str, "-")),
                     }
                 },
             ))?,
@@ -383,5 +430,66 @@ mod tests {
         reset_env_vars();
 
         Ok(())
+    }
+
+    #[test]
+    fn shell_quote_plain_filename() {
+        assert_eq!(super::shell_quote("file.txt"), "'file.txt'");
+        assert_eq!(super::shell_quote("with space.txt"), "'with space.txt'");
+        assert_eq!(super::shell_quote(""), "''");
+        assert_eq!(super::shell_quote("-"), "'-'");
+    }
+
+    #[test]
+    fn shell_quote_metacharacters_neutralised() {
+        assert_eq!(super::shell_quote("; rm -rf ~ ;"), "'; rm -rf ~ ;'");
+        assert_eq!(super::shell_quote("$(payload)"), "'$(payload)'");
+        assert_eq!(super::shell_quote("`payload`"), "'`payload`'");
+        assert_eq!(super::shell_quote("a|b&c;d"), "'a|b&c;d'");
+        assert_eq!(super::shell_quote("..>/dev/null"), "'..>/dev/null'");
+        assert_eq!(super::shell_quote("\n\t"), "'\n\t'");
+    }
+
+    #[test]
+    fn shell_quote_embedded_single_quote() {
+        assert_eq!(super::shell_quote("it's"), "'it'\\''s'");
+        assert_eq!(super::shell_quote("'"), "''\\'''");
+        assert_eq!(super::shell_quote("a'b'c"), "'a'\\''b'\\''c'");
+    }
+
+    #[test]
+    fn shell_substitute_only_replaces_first_percent_s() {
+        assert_eq!(super::shell_substitute("echo %s", "x"), "echo 'x'");
+        assert_eq!(super::shell_substitute("echo %s %s", "x"), "echo 'x' %s");
+    }
+
+    #[test]
+    fn shell_substitute_protects_against_filename_injection() {
+        let template = "|preproc %s";
+        let attacker_filename = "; rm -rf ~ ;";
+        let result = super::shell_substitute(template, attacker_filename);
+        assert_eq!(result, "|preproc '; rm -rf ~ ;'");
+    }
+
+    #[test]
+    fn shell_substitute_two_replaces_first_two_placeholders() {
+        assert_eq!(
+            super::shell_substitute_two("echo %s and %s done", "a", "b"),
+            "echo 'a' and 'b' done"
+        );
+        // A third %s is left alone.
+        assert_eq!(
+            super::shell_substitute_two("echo %s %s %s", "a", "b"),
+            "echo 'a' 'b' %s"
+        );
+    }
+
+    #[test]
+    fn shell_substitute_two_handles_percent_s_in_first_argument() {
+        // The chained-substitute approach would replace the injected `%s` here.
+        assert_eq!(
+            super::shell_substitute_two("a %s b %s c", "%s", "second"),
+            "a '%s' b 'second' c"
+        );
     }
 }

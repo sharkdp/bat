@@ -15,11 +15,11 @@ function __bat_complete_files -a token
 end
 
 function __bat_complete_one_language -a comp
-    command $bat --list-languages | string split -f1 : | string match -e "$comp"
+    command $bat --no-paging --list-languages | string split -f1 : | string match -e "$comp"
 end
 
 function __bat_complete_list_languages
-    for spec in (command $bat --list-languages)
+    for spec in (command $bat --no-paging --list-languages)
         set -l name (string split -f1 : $spec)
         for ext in (string split -f2 : $spec | string split ,)
             test -n "$ext"; or continue
@@ -234,11 +234,11 @@ complete -c $bat -l tabs -x -a "$tabs_opts" -d "Set tab width" -n __bat_no_excl_
 
 complete -c $bat -l terminal-width -x -d "Set terminal <width>, +<offset>, or -<offset>" -n __bat_no_excl_args
 
-complete -c $bat -l theme -x -a "$special_themes(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme" -n __bat_no_excl_args
+complete -c $bat -l theme -x -a "$special_themes(command $bat --no-paging --list-themes | command cat)" -d "Set the syntax highlighting theme" -n __bat_no_excl_args
 
-complete -c $bat -l theme-dark -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for dark backgrounds" -n __bat_no_excl_args
+complete -c $bat -l theme-dark -x -a "(command $bat --no-paging --list-themes | command cat)" -d "Set the syntax highlighting theme for dark backgrounds" -n __bat_no_excl_args
 
-complete -c $bat -l theme-light -x -a "(command $bat --list-themes | command cat)" -d "Set the syntax highlighting theme for light backgrounds" -n __bat_no_excl_args
+complete -c $bat -l theme-light -x -a "(command $bat --no-paging --list-themes | command cat)" -d "Set the syntax highlighting theme for light backgrounds" -n __bat_no_excl_args
 
 complete -c $bat -s u -l unbuffered -d "Enable unbuffered input reading for streaming use cases" -n __bat_no_excl_args
 
