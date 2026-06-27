@@ -609,6 +609,10 @@ impl App {
 
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
+        let decorations = matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str())
+            .unwrap_or("auto");
         let mut styled_components = match self.forced_style_components() {
             Some(forced_components) => forced_components,
 
@@ -620,16 +624,27 @@ impl App {
                     .map(|v| StyleComponentList::from_str(v))
                     .collect::<Result<Vec<StyleComponentList>>>()?;
 
-                StyleComponentList::to_components(lists, self.interactive_output, true)
+                let mut components =
+                    StyleComponentList::to_components(lists, self.interactive_output, true);
+                if !self.interactive_output && decorations == "auto" {
+                    components.clear();
+                }
+                components
             }
 
-            // Use the default.
-            None => StyleComponents(HashSet::from_iter(
-                StyleComponent::Default
+            // Use the automatic default behavior: default style for terminals,
+            // plain output for non-interactive destinations.
+            None => {
+                let default_style = match decorations {
+                    "always" => StyleComponent::Default,
+                    _ => StyleComponent::Auto,
+                };
+                let components = default_style
                     .components(self.interactive_output)
                     .iter()
-                    .cloned(),
-            )),
+                    .cloned();
+                StyleComponents(HashSet::from_iter(components))
+            }
         };
 
         // If `grid` is set, remove `rule` as it is a subset of `grid`, and print a warning.
