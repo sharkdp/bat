@@ -1,5 +1,6 @@
-use nu_ansi_term::Color::{self, Fixed, Rgb};
-use nu_ansi_term::{self, Style};
+use nu_ansi_term::Color;
+use nu_ansi_term::Color::{Fixed, Rgb};
+use nu_ansi_term::Style;
 
 use syntect::highlighting::{self, FontStyle};
 
