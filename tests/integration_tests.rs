@@ -2824,6 +2824,21 @@ fn strip_overstrike_for_manpage_syntax() {
 }
 
 #[test]
+fn strip_overstrike_for_manpage_syntax_keeps_ansi_escapes_intact() {
+    // Some man page renderers can emit SGR resets between the first overstruck
+    // character and the backspace. The reset should be preserved, not truncated.
+    bat()
+        .arg("--force-colorization")
+        .arg("--language=man")
+        .write_stdin("NAME\n       v\x1b[22m\x08v normal\n")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[22v").not())
+        .stdout(predicate::str::contains("\x1b[22m"))
+        .stderr("");
+}
+
+#[test]
 fn no_strip_overstrike_for_other_syntax() {
     // Overstrike is NOT stripped for other syntaxes (e.g., Rust)
     bat()
