@@ -363,11 +363,11 @@ impl HighlightingAssets {
         reader: &mut InputReader,
     ) -> Result<Option<SyntaxReferenceInSet<'_>>> {
         let syntax_set = self.get_syntax_set()?;
-        Ok(String::from_utf8(reader.first_line.clone())
+        Ok(std::str::from_utf8(&reader.first_line)
             .ok()
             .and_then(|l| {
                 // Strip UTF-8 BOM if present
-                let line = l.strip_prefix('\u{feff}').unwrap_or(&l);
+                let line = l.strip_prefix('\u{feff}').unwrap_or(l);
                 syntax_set.find_syntax_by_first_line(line)
             })
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
