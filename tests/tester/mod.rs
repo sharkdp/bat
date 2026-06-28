@@ -1,14 +1,16 @@
+use gix::actor::SignatureRef;
+use gix::bstr::BString;
+use gix::bstr::ByteSlice;
+use gix::date::time::Format;
+use gix::date::Time;
+use gix::objs::tree;
 use std::env;
 use std::fs::{self, File};
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 use tempfile::TempDir;
-
-use git2::build::CheckoutBuilder;
-use git2::Repository;
-use git2::Signature;
 
 pub struct BatTester {
     /// Temporary working directory
@@ -59,35 +61,42 @@ impl Default for BatTester {
     }
 }
 
-fn create_sample_directory() -> Result<TempDir, git2::Error> {
+fn create_sample_directory() -> Result<TempDir, Box<dyn std::error::Error>> {
     // Create temp directory and initialize repository
     let temp_dir = TempDir::new().expect("Temp directory");
-    let repo = Repository::init(&temp_dir)?;
+    let repo = gix::init(&temp_dir)?;
+    let mut tree = gix::objs::Tree::empty();
 
-    // Copy over `sample.rs`
-    let sample_path = temp_dir.path().join("sample.rs");
-    println!("{sample_path:?}");
-    fs::copy("tests/snapshots/sample.rs", &sample_path).expect("successful copy");
+    // Create sample.rs from snapshot file
+    let blob_id = repo.write_blob_stream(File::open("tests/snapshots/sample.rs")?)?;
+    let entry = tree::Entry {
+        mode: tree::EntryMode::from(tree::EntryKind::Blob),
+        oid: blob_id.object()?.id,
+        filename: BString::from("sample.rs"),
+    };
+    tree.entries.push(entry);
+    let tree_id = repo.write_object(tree)?;
 
-    // Commit
-    let mut index = repo.index()?;
-    index.add_path(Path::new("sample.rs"))?;
-
-    let oid = index.write_tree()?;
-    let signature = Signature::now("bat test runner", "bat@test.runner")?;
-    let tree = repo.find_tree(oid)?;
-    let _ = repo.commit(
-        Some("HEAD"), //  point HEAD to our new commit
-        &signature,   // author
-        &signature,   // committer
+    let author = SignatureRef {
+        name: "test".as_bytes().as_bstr(),
+        email: "test@test.test".as_bytes().as_bstr(),
+        time: &Time::now_local_or_utc().format_or_unix(Format::Raw),
+    };
+    let commit_id = repo.commit_as(
+        author,
+        author,
+        "HEAD",
         "initial commit",
-        &tree,
-        &[],
-    );
-    let mut opts = CheckoutBuilder::new();
-    repo.checkout_head(Some(opts.force()))?;
+        tree_id,
+        gix::commit::NO_PARENT_IDS,
+    )?;
+    assert_eq!(commit_id, repo.head_id()?);
 
-    fs::copy("tests/snapshots/sample.modified.rs", &sample_path).expect("successful copy");
+    fs::copy(
+        "tests/snapshots/sample.modified.rs",
+        temp_dir.path().join("sample.rs"),
+    )
+    .expect("successful copy");
 
     Ok(temp_dir)
 }

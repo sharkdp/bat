@@ -152,7 +152,14 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
         let comma_separator = ", ";
         let separator = " ";
         // Line-wrapping for the possible file extension overflow.
-        let desired_width = config.term_width - longest - separator.len();
+        // Clamp instead of subtracting: a tiny `--terminal-width` (smaller than the
+        // longest language name) would otherwise underflow `usize` and wrap to a huge
+        // value, silently disabling wrapping (and panicking in debug/overflow-checked
+        // builds). Mirrors the `saturating_sub` fix applied to `print_snip` in #3804.
+        let desired_width = config
+            .term_width
+            .saturating_sub(longest)
+            .saturating_sub(separator.len());
 
         let style = if config.colored_output {
             Green.normal()

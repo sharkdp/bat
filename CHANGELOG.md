@@ -22,6 +22,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `capacity overflow` panic when printing a snip separator at `--terminal-width=1` with multiple line ranges. Closes #3803, see #3804 (@leeewee)
 - Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)
 - Fix `--list-themes` unconditionally probing the terminal via OSC 10/11 even when `--theme` was set to an explicit value, see #3700 (regression introduced in bc42149a). (@optimistiCli)
@@ -45,6 +46,7 @@
 - Fixed syntax tests path, see #3610 (@foxfromworld)
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
 - Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
+- Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
@@ -52,6 +54,7 @@
 - Allow home and end keys to be used with builtin pager, see #3651 (@keith-hall)
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
 - Statically link the CRT for MSVC builds via Cargo config to avoid runtime DLL dependencies. Closes #3634, see #3692 (@barry3406)
+- Replace `libgit2` with a pure Rust implementation of git called `gitoxide`, see PR #3703 (@blinxen)
 
 ## Syntaxes
 
@@ -65,6 +68,9 @@
 - Improved Kotlin syntax, see #3699 (@guille)
 - Include subdirectories in SSH Config syntax mapping, see #3758 (@injust)
 - Add Ghostty syntax mapping, see #3759 (@injust)
+- Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
+- Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
+- Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
 
 ## Themes
 
