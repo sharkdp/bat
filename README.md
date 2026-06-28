@@ -265,7 +265,7 @@ sudo apt install bat
 ```
 
 **Important**: On some older Ubuntu/Debian releases, the executable is installed as `batcat` instead of `bat` (due to [a name
-clash with another package](https://github.com/sharkdp/bat/issues/982)). On newer releases, the executable is available as `bat`. If `bat --version` does not work after installation, try `batcat --version` instead. You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
+clash with another package](https://github.com/sharkdp/bat/issues/982)). Debian 12 and Ubuntu 23.04 and newer install the binary as `bat`; on older releases it may still be `batcat`. If `bat --version` does not work after installation, try `batcat --version` instead. You can set up a `bat -> batcat` symlink or alias to prevent any issues that may come up because of this and to be consistent with other distributions:
 ``` bash
 mkdir -p ~/.local/bin
 ln -s /usr/bin/batcat ~/.local/bin/bat

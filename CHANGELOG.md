@@ -3,6 +3,7 @@
 
 ## Other
 
+- Clarify Debian and Ubuntu `batcat` fallback wording in README, see #3794 (@ded-furby)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
