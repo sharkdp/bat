@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for considering to contribute to `bat`!
+Thank you for considering contributing to `bat`!
 
 
 
