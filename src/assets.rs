@@ -1,8 +1,7 @@
+use std::cell::OnceCell;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::Path;
-
-use once_cell::unsync::OnceCell;
 
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
@@ -90,8 +89,14 @@ impl HighlightingAssets {
 
     /// Return the collection of syntect syntax definitions.
     pub fn get_syntax_set(&self) -> Result<&SyntaxSet> {
-        self.syntax_set_cell
-            .get_or_try_init(|| self.serialized_syntax_set.deserialize())
+        // IMPRV: OnceCell::get_mut_or_init is preferable once stabalized
+        match self.syntax_set_cell.get() {
+            Some(set) => Ok(set),
+            None => {
+                let syntax_set = self.serialized_syntax_set.deserialize()?;
+                Ok(self.syntax_set_cell.get_or_init(|| syntax_set))
+            }
+        }
     }
 
     /// Use [Self::get_syntaxes] instead

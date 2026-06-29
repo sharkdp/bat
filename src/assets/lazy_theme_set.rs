@@ -5,8 +5,6 @@ use std::convert::TryFrom;
 
 use serde_derive::{Deserialize, Serialize};
 
-use once_cell::unsync::OnceCell;
-
 use syntect::highlighting::{Theme, ThemeSet};
 
 /// Same structure as a [`syntect::highlighting::ThemeSet`] but with themes
@@ -31,10 +29,11 @@ impl LazyThemeSet {
     /// Lazily load the given theme
     pub fn get(&self, name: &str) -> Option<&Theme> {
         self.themes.get(name).and_then(|lazy_theme| {
-            lazy_theme
-                .deserialized
-                .get_or_try_init(|| lazy_theme.deserialize())
-                .ok()
+            // IMPRV: OnceCell::get_mut_or_init is preferable once stabalized
+            lazy_theme.deserialized.get().or_else(|| {
+                let deserialized = lazy_theme.deserialize().ok()?;
+                Some(lazy_theme.deserialized.get_or_init(|| deserialized))
+            })
         })
     }
 

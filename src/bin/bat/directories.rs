@@ -1,8 +1,8 @@
 use std::env;
 use std::path::{Path, PathBuf};
+use std::sync::LazyLock;
 
 use etcetera::BaseStrategy;
-use once_cell::sync::Lazy;
 
 /// Wrapper for 'etcetera' that checks BAT_CACHE_PATH and BAT_CONFIG_DIR and falls back to the
 /// Windows known folder locations on Windows & the XDG Base Directory Specification everywhere else.
@@ -47,5 +47,5 @@ impl BatProjectDirs {
     }
 }
 
-pub static PROJECT_DIRS: Lazy<BatProjectDirs> =
-    Lazy::new(|| BatProjectDirs::new().expect("Could not get home directory"));
+pub static PROJECT_DIRS: LazyLock<BatProjectDirs> =
+    LazyLock::new(|| BatProjectDirs::new().expect("Could not get home directory"));
