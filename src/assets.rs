@@ -347,15 +347,15 @@ impl HighlightingAssets {
         file_name: &OsStr,
         ignored_suffixes: &IgnoredSuffixes,
     ) -> Result<Option<SyntaxReferenceInSet<'_>>> {
-        let mut syntax = self.find_syntax_by_extension(Path::new(file_name).extension())?;
-        if syntax.is_none() {
-            syntax =
-                ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
-                    // Note: recursion
-                    self.get_syntax_for_file_extension(stripped_file_name, ignored_suffixes)
-                })?;
+        let stripped =
+            ignored_suffixes.try_with_stripped_suffix(file_name, |stripped_file_name| {
+                self.get_syntax_for_file_extension(stripped_file_name, ignored_suffixes)
+                    .map(Some)
+            })?;
+        match stripped {
+            Some(syntax) => Ok(syntax),
+            None => self.find_syntax_by_extension(Path::new(file_name).extension()),
         }
-        Ok(syntax)
     }
 
     fn get_first_line_syntax(
@@ -683,6 +683,48 @@ mod tests {
         assert_eq!(
             test.syntax_for_file_with_content("some-other.txt", "#!/bin/bash"),
             "Bourne Again Shell (bash)"
+        );
+    }
+
+    #[test]
+    fn syntax_detection_ignored_suffix_falls_back_to_first_line() {
+        let mut test = SyntaxDetectionTest::new();
+
+        // By default a `.txt` file uses Plain Text, even with a shebang: the
+        // `.txt` extension wins and first-line detection is not reached.
+        assert_eq!(
+            test.syntax_for_file_with_content("test.txt", "#!/usr/bin/env bash"),
+            "Plain Text"
+        );
+
+        // Once `.txt` is an ignored suffix it is stripped before detection. The
+        // stripped name (`test`) has no extension, so detection falls back to the
+        // first line -- even though `.txt` is itself a registered extension that
+        // would otherwise match as Plain Text. See #2745.
+        test.syntax_mapping.insert_ignored_suffix(".txt");
+        assert_eq!(
+            test.syntax_for_file_with_content("test.txt", "#!/usr/bin/env bash"),
+            "Bourne Again Shell (bash)"
+        );
+        assert_eq!(
+            test.syntax_for_file_with_content("test.txt", "<?php"),
+            "PHP"
+        );
+
+        // A `.txt` file without a recognizable first line keeps no syntax (the
+        // caller renders it as plain text); we must not resurrect the shadowed
+        // `.txt` -> Plain Text match here.
+        assert_eq!(
+            test.syntax_for_file_with_content("notes.txt", "just some prose"),
+            "!no syntax!"
+        );
+
+        // Stripping that exposes a real extension still works: `.dev` is ignored,
+        // and the remaining `.json` extension is detected as usual.
+        test.syntax_mapping.insert_ignored_suffix(".dev");
+        assert_eq!(
+            test.syntax_for_file_with_content("config.json.dev", ""),
+            "JSON"
         );
     }
 
