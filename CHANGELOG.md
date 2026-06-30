@@ -22,6 +22,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `--ignored-suffix` not falling back to first-line/shebang detection when the ignored suffix is also a registered extension (e.g. `--ignored-suffix .txt` on a shebang script), see #2745 and #3816 (@adnrivera)
 - Fix `capacity overflow` panic when printing a snip separator at `--terminal-width=1` with multiple line ranges. Closes #3803, see #3804 (@leeewee)
 - Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
 - Quote filenames before substituting them into `$LESSOPEN` / `$LESSCLOSE` templates, preventing shell injection when a filename contains shell metacharacters, see #3726 (@curious-rabbit)

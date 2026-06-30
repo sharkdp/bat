@@ -4248,3 +4248,37 @@ fn tcl_shebang_detection_expect() {
         .assert()
         .success();
 }
+
+#[test]
+fn ignored_suffix_enables_first_line_detection() {
+    // A shebang shell script saved with a `.txt` extension is Plain Text by
+    // default (the extension wins). With `--ignored-suffix .txt` the suffix is
+    // stripped before detection, so it falls back to the first line and is
+    // highlighted exactly as if its language were forced to bash. See #2745.
+    let fixture = "regression_tests/issue_2745.txt";
+    let common = ["--color=always", "--decorations=never", "--style=plain"];
+
+    let stdout = |args: &[&str]| -> Vec<u8> {
+        let assert = bat()
+            .args(common)
+            .args(args)
+            .arg(fixture)
+            .assert()
+            .success();
+        assert.get_output().stdout.clone()
+    };
+
+    let forced_bash = stdout(&["--language", "bash"]);
+    let with_ignored_suffix = stdout(&["--ignored-suffix", ".txt"]);
+    let default = stdout(&[]);
+
+    // The fixture really is being highlighted (forcing bash is not a no-op).
+    assert!(
+        forced_bash.windows(2).any(|w| w == b"\x1b["),
+        "forced-bash output should contain ANSI color codes"
+    );
+    // With the ignored suffix, detection matches forced bash highlighting...
+    assert_eq!(with_ignored_suffix, forced_bash);
+    // ...while the default (extension wins) stays plain and differs.
+    assert_ne!(default, forced_bash);
+}
