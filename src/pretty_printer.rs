@@ -192,6 +192,18 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to sanitize untrusted input for safe display (default: never)
+    ///
+    /// Implies [`strip_ansi`](Self::strip_ansi) at the same value, and also
+    /// replaces terminal-active and bidi / zero-width bytes with U+FFFD.
+    pub fn sanitize(&mut self, mode: StripAnsiMode) -> &mut Self {
+        self.config.sanitize = mode;
+        if mode != StripAnsiMode::Never {
+            self.config.strip_ansi = mode;
+        }
+        self
+    }
+
     /// Text wrapping mode (default: do not wrap)
     pub fn wrapping_mode(&mut self, mode: WrappingMode) -> &mut Self {
         self.config.wrapping_mode = mode;

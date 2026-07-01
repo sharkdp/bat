@@ -481,6 +481,24 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("sanitize")
+                .long("sanitize")
+                .overrides_with("sanitize")
+                .value_name("when")
+                .value_parser(["auto", "always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Sanitize untrusted input for safe display (auto, always, *never*)")
+                .long_help("Specify when to sanitize input bytes for safe terminal display. \
+                Implies --strip-ansi to the same value, and additionally substitutes \
+                terminal-active control bytes (cursor moves, charset switches, beep, etc.) \
+                and Unicode bidi / zero-width formatting characters with the Unicode \
+                replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful \
+                for displaying untrusted file content (e.g. file-manager preview panes). \
+                Possible values: auto, always, *never*.")
+                .hide_short_help(true)
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .action(ArgAction::Append)
