@@ -38,6 +38,15 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+fn parse_strip_ansi_value(raw: Option<&str>, flag_name: &str) -> StripAnsiMode {
+    match raw {
+        Some("never") | None => StripAnsiMode::Never,
+        Some("always") => StripAnsiMode::Always,
+        Some("auto") => StripAnsiMode::Auto,
+        _ => unreachable!("other values for {flag_name} are not allowed"),
+    }
+}
+
 enum HelpType {
     Short,
     Long,
@@ -458,16 +467,32 @@ impl App {
                         4
                     },
                 ),
-            strip_ansi: match self
-                .matches
-                .get_one::<String>("strip-ansi")
-                .map(|s| s.as_str())
-            {
-                Some("never") => StripAnsiMode::Never,
-                Some("always") => StripAnsiMode::Always,
-                Some("auto") => StripAnsiMode::Auto,
-                _ => unreachable!("other values for --strip-ansi are not allowed"),
+            strip_ansi: {
+                let sanitize = parse_strip_ansi_value(
+                    self.matches
+                        .get_one::<String>("sanitize")
+                        .map(|s| s.as_str()),
+                    "--sanitize",
+                );
+                let strip_ansi = parse_strip_ansi_value(
+                    self.matches
+                        .get_one::<String>("strip-ansi")
+                        .map(|s| s.as_str()),
+                    "--strip-ansi",
+                );
+                // --sanitize implies --strip-ansi to the same value.
+                if sanitize != StripAnsiMode::Never {
+                    sanitize
+                } else {
+                    strip_ansi
+                }
             },
+            sanitize: parse_strip_ansi_value(
+                self.matches
+                    .get_one::<String>("sanitize")
+                    .map(|s| s.as_str()),
+                "--sanitize",
+            ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             theme: theme(self.theme_options()).to_string(),

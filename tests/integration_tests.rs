@@ -3844,6 +3844,158 @@ fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
     assert!(output.contains("\x1B[33mYellow"))
 }
 
+#[test]
+fn sanitize_implies_strip_ansi() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("\x1B[33mYellow\x1B[m")
+        .assert()
+        .success()
+        .stdout("Yellow");
+}
+
+#[test]
+fn sanitize_strips_osc_clipboard_hijack() {
+    // OSC 52 sets the system clipboard. A file containing this would silently
+    // overwrite the user's clipboard if displayed unfiltered.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("safe\x1B]52;c;cm0=\x07payload")
+        .assert()
+        .success()
+        .stdout("safepayload");
+}
+
+#[test]
+fn sanitize_strips_osc_8_hyperlink_spoof() {
+    // OSC 8 hyperlinks let displayed text point to an arbitrary URL.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("\x1B]8;;https://evil.example\x07click here\x1B]8;;\x07")
+        .assert()
+        .success()
+        .stdout("click here");
+}
+
+#[test]
+fn sanitize_strips_window_title_injection() {
+    // OSC 0/1/2 set the terminal window title.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("hello\x1B]0;evil-title\x07world")
+        .assert()
+        .success()
+        .stdout("helloworld");
+}
+
+#[test]
+fn sanitize_strips_8bit_csi() {
+    // 8-bit CSI introducer (U+009B) is the single-codepoint equivalent of ESC [.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("a\u{9B}31mRED\u{9B}0mb")
+        .assert()
+        .success()
+        .stdout("aREDb");
+}
+
+#[test]
+fn sanitize_substitutes_bare_cr() {
+    // Bare CR (not part of CRLF) is the line-overwrite forgery vector.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("safe\rEVIL")
+        .assert()
+        .success()
+        .stdout("safe\u{FFFD}EVIL");
+}
+
+#[test]
+fn sanitize_preserves_crlf() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("line1\r\nline2\r\n")
+        .assert()
+        .success()
+        .stdout("line1\r\nline2\r\n");
+}
+
+#[test]
+fn sanitize_substitutes_bidi_controls() {
+    // Trojan-Source attack (CVE-2021-42574): U+202E (RLO) reorders display.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("admin\u{202E}check")
+        .assert()
+        .success()
+        .stdout("admin\u{FFFD}check");
+}
+
+#[test]
+fn sanitize_substitutes_zero_width() {
+    // Zero-width chars allow invisible content / identifier confusion.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("ad\u{200B}min")
+        .assert()
+        .success()
+        .stdout("ad\u{FFFD}min");
+}
+
+#[test]
+fn sanitize_preserves_form_feed_in_source() {
+    // FF (U+000C) is used as a section separator in C source and Emacs Lisp.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("section1\x0Csection2")
+        .assert()
+        .success()
+        .stdout("section1\x0Csection2");
+}
+
+#[test]
+fn sanitize_preserves_unicode_text() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("snowman ☃ CJK 漢字 emoji 🦀")
+        .assert()
+        .success()
+        .stdout("snowman ☃ CJK 漢字 emoji 🦀");
+}
+
 // Tests that style components can be removed with `-component`.
 #[test]
 fn style_components_can_be_removed() {

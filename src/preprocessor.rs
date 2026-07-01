@@ -139,14 +139,102 @@ pub fn replace_nonprintable(
 /// Strips ANSI escape sequences from the input.
 pub fn strip_ansi(line: &str) -> String {
     let mut buffer = String::with_capacity(line.len());
-
     for seq in EscapeSequenceOffsetsIterator::new(line) {
         if let EscapeSequenceOffsets::Text { .. } = seq {
             buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()]);
         }
     }
-
     buffer
+}
+
+/// Strips ANSI escape sequences and substitutes terminal-active control bytes
+/// and visual-spoofing Unicode codepoints (bidi, zero-width) with U+FFFD.
+pub fn sanitize(line: &str) -> String {
+    let stripped = strip_ansi(line);
+    let mut buffer = String::with_capacity(stripped.len());
+    let bytes = stripped.as_bytes();
+    let mut start = 0;
+    let mut i = 0;
+    // Skip directly to the next trigger byte instead of testing each one.
+    while let Some(off) = bytes[i..].iter().position(|&b| is_sanitize_trigger(b)) {
+        i += off;
+        let len = sanitize_at(bytes, i, &stripped, &mut buffer, &mut start);
+        i += len;
+    }
+    buffer.push_str(&stripped[start..]);
+    buffer
+}
+
+#[inline]
+fn is_sanitize_trigger(b: u8) -> bool {
+    // C0 controls minus \t \n \f; DEL; UTF-8 leads with dangerous codepoints.
+    matches!(b, 0x00..=0x08 | 0x0B | 0x0D..=0x1F | 0x7F | 0xC2 | 0xE2 | 0xEF)
+}
+
+/// Substitutes the byte/sequence at `bytes[i]` (or passes it through on
+/// false-alarm trigger), flushing the prefix from `start`. Returns bytes consumed.
+fn sanitize_at(
+    bytes: &[u8],
+    i: usize,
+    full: &str,
+    buffer: &mut String,
+    start: &mut usize,
+) -> usize {
+    buffer.push_str(&full[*start..i]);
+    let consumed = match bytes[i] {
+        b'\r' if bytes.get(i + 1) == Some(&b'\n') => {
+            buffer.push_str("\r\n");
+            2
+        }
+        // 0xC2 leads U+0080..U+00FF; filter the C1 range.
+        0xC2 if matches!(bytes.get(i + 1), Some(0x80..=0x9F)) => {
+            buffer.push('\u{FFFD}');
+            2
+        }
+        0xE2 if is_dangerous_e2(bytes, i) => {
+            buffer.push('\u{FFFD}');
+            3
+        }
+        // 0xEF 0xBB 0xBF = U+FEFF (BOM / zero-width no-break space).
+        0xEF if bytes.get(i + 1) == Some(&0xBB) && bytes.get(i + 2) == Some(&0xBF) => {
+            buffer.push('\u{FFFD}');
+            3
+        }
+        // False-alarm trigger: pass the full UTF-8 sequence through.
+        lead @ (0xC2 | 0xE2 | 0xEF) => {
+            let n = utf8_len_from_lead(lead);
+            buffer.push_str(&full[i..i + n]);
+            n
+        }
+        _ => {
+            buffer.push('\u{FFFD}');
+            1
+        }
+    };
+    *start = i + consumed;
+    consumed
+}
+
+#[inline]
+fn is_dangerous_e2(bytes: &[u8], i: usize) -> bool {
+    // U+200B..D (zero-width), U+202A..E (bidi controls), U+2066..9 (isolates).
+    matches!(
+        (bytes.get(i + 1), bytes.get(i + 2)),
+        (Some(0x80), Some(0x8B..=0x8D | 0xAA..=0xAE)) | (Some(0x81), Some(0xA6..=0xA9))
+    )
+}
+
+#[inline]
+fn utf8_len_from_lead(lead: u8) -> usize {
+    if lead < 0x80 {
+        1
+    } else if lead < 0xE0 {
+        2
+    } else if lead < 0xF0 {
+        3
+    } else {
+        4
+    }
 }
 
 /// Escape C0, DEL, and C1 control characters so a string from an untrusted
@@ -268,6 +356,85 @@ fn test_strip_ansi() {
         strip_ansi("\x1B]1\x07multiple\x1B[J sequences"),
         "multiple sequences"
     );
+}
+
+#[test]
+fn test_strip_ansi_8bit_c1_introducers() {
+    assert_eq!(strip_ansi("a\u{9B}31mRED\u{9B}0mb"), "aREDb");
+    assert_eq!(strip_ansi("a\x1bP1;0|payload\x1b\\b"), "ab");
+    assert_eq!(strip_ansi("a\u{90}body\u{9C}b"), "ab");
+}
+
+#[test]
+fn test_strip_ansi_single_char_esc() {
+    // strip_ansi must consume both bytes of single-byte ESC sequences (RIS, DECSC, keypad, VT52).
+    assert_eq!(strip_ansi("a\x1bcb"), "ab");
+    assert_eq!(strip_ansi("a\x1b7b\x1b8c"), "abc");
+    assert_eq!(strip_ansi("a\x1b=b\x1b>c"), "abc");
+    assert_eq!(strip_ansi("a\x1bZb"), "ab");
+}
+
+#[test]
+fn test_strip_ansi_preserves_control_bytes() {
+    // strip_ansi removes only ANSI escape sequences; control bytes pass through.
+    assert_eq!(strip_ansi("safe\rEVIL"), "safe\rEVIL");
+    assert_eq!(strip_ansi("a\x08b\x07c\x0E\x0Fd"), "a\x08b\x07c\x0E\x0Fd");
+}
+
+#[test]
+fn test_sanitize_substitutes_dangerous_bytes() {
+    let r = '\u{FFFD}';
+    assert_eq!(sanitize("safe\rEVIL"), format!("safe{r}EVIL"));
+    assert_eq!(sanitize("a\x08b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\x07b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\x0Bb"), format!("a{r}b"));
+    assert_eq!(sanitize("a\x0Eb\x0Fc"), format!("a{r}b{r}c"));
+    assert_eq!(sanitize("a\u{8D}b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\u{85}b"), format!("a{r}b"));
+    assert_eq!(sanitize("trailing\r"), format!("trailing{r}"));
+    assert_eq!(sanitize("a\x7Fb"), format!("a{r}b"));
+}
+
+#[test]
+fn test_sanitize_substitutes_bidi_and_zero_width() {
+    let r = '\u{FFFD}';
+    // Trojan-Source bidi formatting: U+202A..U+202E
+    assert_eq!(sanitize("a\u{202A}b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\u{202E}b"), format!("a{r}b"));
+    // Bidi isolates: U+2066..U+2069
+    assert_eq!(sanitize("a\u{2066}b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\u{2069}b"), format!("a{r}b"));
+    // Zero-width: U+200B..U+200D
+    assert_eq!(sanitize("a\u{200B}b"), format!("a{r}b"));
+    assert_eq!(sanitize("a\u{200D}b"), format!("a{r}b"));
+    // BOM in middle of file: U+FEFF
+    assert_eq!(sanitize("a\u{FEFF}b"), format!("a{r}b"));
+}
+
+#[test]
+fn test_sanitize_preserves_legitimate_bytes() {
+    assert_eq!(sanitize("crlf\r\nline\r\n"), "crlf\r\nline\r\n");
+    assert_eq!(sanitize("a\tb\nc"), "a\tb\nc");
+    assert_eq!(sanitize("plain ascii"), "plain ascii");
+    assert_eq!(sanitize("üñíçödé"), "üñíçödé");
+    // FF (U+000C) passes through; section separator in C source / Emacs Lisp.
+    assert_eq!(sanitize("section1\x0Csection2"), "section1\x0Csection2");
+    // Common Unicode that shares a UTF-8 lead byte with dangerous codepoints
+    // must pass through unchanged.
+    assert_eq!(sanitize("snowman ☃ moon ☾"), "snowman ☃ moon ☾");
+    assert_eq!(sanitize("emoji 🎉 ☃"), "emoji 🎉 ☃");
+    assert_eq!(sanitize("0xC2 lead: ÿ ñ ç"), "0xC2 lead: ÿ ñ ç");
+    assert_eq!(sanitize("CJK 漢字 emoji 🦀"), "CJK 漢字 emoji 🦀");
+}
+
+#[test]
+fn test_sanitize_strips_ansi() {
+    let r = '\u{FFFD}';
+    // sanitize is a strict superset of strip_ansi.
+    assert_eq!(sanitize("a\x1B[31mb\x1B[0mc"), "abc");
+    assert_eq!(sanitize("a\u{9B}31mb\u{9B}0mc"), "abc");
+    // ANSI then dangerous byte: ANSI gone, byte substituted.
+    assert_eq!(sanitize("\x1B[31mhello\rEVIL"), format!("hello{r}EVIL"));
 }
 
 #[test]

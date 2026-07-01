@@ -111,6 +111,9 @@ pub struct Config<'a> {
     // Whether or not to strip ANSI escape codes from the input
     pub strip_ansi: StripAnsiMode,
 
+    // Substitute terminal-active and spoofing-relevant bytes; implies strip_ansi.
+    pub sanitize: StripAnsiMode,
+
     /// Whether or not to produce no output when input is empty
     pub quiet_empty: bool,
 
