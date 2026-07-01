@@ -155,11 +155,9 @@ pub fn sanitize(line: &str) -> String {
     let bytes = stripped.as_bytes();
     let mut start = 0;
     let mut i = 0;
-    while i < bytes.len() {
-        if !is_sanitize_trigger(bytes[i]) {
-            i += 1;
-            continue;
-        }
+    // Skip directly to the next trigger byte instead of testing each one.
+    while let Some(off) = bytes[i..].iter().position(|&b| is_sanitize_trigger(b)) {
+        i += off;
         let len = sanitize_at(bytes, i, &stripped, &mut buffer, &mut start);
         i += len;
     }
