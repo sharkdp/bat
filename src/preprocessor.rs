@@ -277,14 +277,14 @@ pub fn sanitize_for_terminal(input: &str) -> String {
 pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
     let mut output = String::with_capacity(line.len());
     output.push_str(&line[..first_backspace]);
-    output.pop();
+    pop_visible_char(&mut output);
 
     let mut remaining = &line[first_backspace + 1..];
 
     loop {
         if let Some(pos) = remaining.find('\x08') {
             output.push_str(&remaining[..pos]);
-            output.pop();
+            pop_visible_char(&mut output);
             remaining = &remaining[pos + 1..];
         } else {
             output.push_str(remaining);
@@ -293,6 +293,26 @@ pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
     }
 
     output
+}
+
+fn pop_visible_char(output: &mut String) {
+    let mut char_to_remove = None;
+
+    for seq in EscapeSequenceOffsetsIterator::new(output) {
+        if let EscapeSequenceOffsets::Text { .. } = seq {
+            let start = seq.index_of_start();
+            let text = &output[start..seq.index_past_end()];
+
+            if let Some((relative_start, chr)) = text.char_indices().next_back() {
+                let char_start = start + relative_start;
+                char_to_remove = Some((char_start, char_start + chr.len_utf8()));
+            }
+        }
+    }
+
+    if let Some((start, end)) = char_to_remove {
+        output.replace_range(start..end, "");
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
@@ -456,6 +476,11 @@ fn test_strip_overstrike() {
 
     // Unicode with overstrike
     assert_eq!(strip_overstrike("ä\x08äöü", 2), "äöü");
+}
+
+#[test]
+fn test_strip_overstrike_preserves_ansi_before_backspace() {
+    assert_eq!(strip_overstrike("v\x1b[22m\x08v", 6), "\x1b[22mv");
 }
 
 #[test]
