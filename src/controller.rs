@@ -19,6 +19,23 @@ use std::mem;
 
 use clircle::{Clircle, Identifier};
 
+#[cfg(feature = "git")]
+fn diff_context_line_ranges(line_changes: &Option<LineChanges>, context: usize) -> LineRanges {
+    let mut line_ranges: Vec<LineRange> = vec![];
+
+    if let Some(line_changes) = line_changes {
+        for &line in line_changes.keys() {
+            let line = line as usize;
+            line_ranges.push(LineRange::new(
+                line.saturating_sub(context),
+                line.saturating_add(context),
+            ));
+        }
+    }
+
+    LineRanges::from(line_ranges)
+}
+
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
@@ -228,17 +245,7 @@ impl Controller<'_> {
                 VisibleLines::Ranges(ref line_ranges) => line_ranges.clone(),
                 #[cfg(feature = "git")]
                 VisibleLines::DiffContext(context) => {
-                    let mut line_ranges: Vec<LineRange> = vec![];
-
-                    if let Some(line_changes) = line_changes {
-                        for &line in line_changes.keys() {
-                            let line = line as usize;
-                            line_ranges
-                                .push(LineRange::new(line.saturating_sub(context), line + context));
-                        }
-                    }
-
-                    LineRanges::from(line_ranges)
+                    diff_context_line_ranges(line_changes, context)
                 }
             };
 
@@ -338,5 +345,29 @@ impl Controller<'_> {
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(all(test, feature = "git"))]
+mod tests {
+    use super::diff_context_line_ranges;
+    use crate::diff::{LineChange, LineChanges};
+    use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
+
+    #[test]
+    fn diff_context_line_ranges_saturate_at_bounds() {
+        let mut line_changes = LineChanges::new();
+        line_changes.insert(u32::MAX, LineChange::Modified);
+
+        let ranges = diff_context_line_ranges(&Some(line_changes), usize::MAX);
+
+        assert_eq!(
+            RangeCheckResult::InRange,
+            ranges.check(0, MaxBufferedLineNumber::Final(usize::MAX))
+        );
+        assert_eq!(
+            RangeCheckResult::InRange,
+            ranges.check(usize::MAX, MaxBufferedLineNumber::Final(usize::MAX))
+        );
     }
 }
