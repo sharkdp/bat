@@ -162,6 +162,9 @@ contexts:
         - meta_scope: meta.function-declaration.swift
         - match: '(?<=\})'
           pop: true
+        - match: '$'
+          comment: bodiless (e.g. protocol requirement) function declarations never see a closing brace, so pop at end-of-line instead of getting stuck
+          pop: true
         - include: generic-parameter-clause
         - include: parameter-clause
         - include: function-result
@@ -174,6 +177,9 @@ contexts:
       push:
         - meta_scope: meta.function-result.swift
         - match: '\s*(?=\{)'
+          pop: true
+        - match: '$'
+          comment: bodiless (e.g. protocol requirement) function declarations never see a closing brace, so pop at end-of-line instead of getting stuck
           pop: true
         - include: type
   generic-parameter-clause:
