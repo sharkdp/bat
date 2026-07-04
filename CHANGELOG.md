@@ -3,6 +3,7 @@
 
 ## Other
 
+- Sync translated MANPAGER examples with the English README, see #3830 (@JSap0914)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
