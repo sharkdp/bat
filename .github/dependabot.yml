@@ -6,6 +6,8 @@ updates:
     interval: monthly
     time: "04:00"
     timezone: Europe/Berlin
+  cooldown:
+    default-days: 7
   ignore:
   - dependency-name: git2
     versions:
@@ -16,9 +18,13 @@ updates:
     interval: monthly
     time: "04:00"
     timezone: Europe/Berlin
+  cooldown:
+    default-days: 7
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
     interval: monthly
     time: "04:00"
     timezone: Europe/Berlin
+  cooldown:
+    default-days: 7
