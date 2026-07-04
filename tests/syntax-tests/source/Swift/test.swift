@@ -266,3 +266,19 @@ class ViewController: UIViewController {
 
 
 
+
+// Regression test for #3826: protocol method declarations (bodiless funcs)
+// must all keep highlighting, not just the first one.
+protocol ViewControllerFactory: AnyObject {
+    @MainActor func viewController_1(
+        viewModel: ViewModel1,
+        onClose: @escaping () -> Void
+    ) -> UIViewController
+
+    @MainActor func viewController_2(
+        viewModel: ViewModel2,
+        onClose: @escaping () -> Void
+    ) -> UIViewController
+
+    func viewController_3() -> UIViewController
+}
