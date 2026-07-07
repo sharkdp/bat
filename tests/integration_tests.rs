@@ -4226,6 +4226,23 @@ fn word_wrap_short_line_no_wrap() {
         .stdout("Single Line\n");
 }
 
+#[test]
+fn word_wrap_boundary_space_not_leaked() {
+    // When a word ends exactly at the terminal width, the following space is
+    // what triggers the wrap. That separating space must be consumed by the
+    // line break and must not be rendered as a leading space on the next line.
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=5")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("abcde fg\n")
+        .assert()
+        .success()
+        .stdout("abcde\nfg\n");
+}
+
 #[cfg(unix)]
 #[cfg(feature = "git")]
 fn setup_diff_test_repo() -> tempfile::TempDir {
