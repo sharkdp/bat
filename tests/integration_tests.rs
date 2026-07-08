@@ -3155,6 +3155,84 @@ fn s_flag_respected_with_paging_always() {
     });
 }
 
+#[cfg(unix)]
+#[test]
+fn wrap_auto_does_not_hard_wrap_when_pager_is_always_active() {
+    // Reproduces #1081: with `--paging=always`, bat's output always goes
+    // through a pager (e.g. `less`), which already provides its own
+    // line-wrapping controls. `--wrap=auto` should defer to the pager instead
+    // of hard-wrapping the content itself; previously it wrapped anyway,
+    // producing unreadable, doubly-wrapped output inside the pager.
+    //
+    // A real pty is required: this only diverges from the non-interactive
+    // fallback (which already skips wrapping) when bat's own stdout is
+    // detected as a terminal, which is the common case this bug affected.
+    let content = "a".repeat(300);
+    let dir = tempdir().expect("Couldn't create tempdir");
+    let file_path = dir.path().join("long_line.txt");
+    unix::File::create(&file_path)
+        .and_then(|mut f| unix::Write::write_all(&mut f, format!("{content}\n").as_bytes()))
+        .expect("Couldn't write test file");
+
+    let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
+    let mut master = File::from(master);
+    let stdout_file = File::from(slave);
+
+    let mut child = bat_raw_command()
+        .arg(&file_path)
+        .arg("--pager=cat")
+        .arg("--paging=always")
+        .arg("--wrap=auto")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .stdout(Stdio::from(stdout_file))
+        .spawn()
+        .expect("Failed to start.");
+
+    child
+        .wait_timeout(CHILD_WAIT_TIMEOUT)
+        .expect("Error polling exit status, this should never happen.")
+        .expect("bat (and its pager) should have exited within the timeout.");
+
+    let mut buf = [0u8; 8192];
+    let mut output = String::new();
+    if let Ok(n) = io::Read::read(&mut master, &mut buf) {
+        output.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+
+    assert!(
+        output.contains(&content),
+        "expected the {}-char line to appear unwrapped (contiguous) in the pager output, got:\n{:?}",
+        content.len(),
+        output
+    );
+}
+
+#[test]
+#[serial]
+fn wrap_auto_still_wraps_with_explicit_terminal_width_and_paging_always() {
+    // Regression guard for the #1081 fix above: an explicit `--terminal-width`
+    // is an intentional user override and must still force wrapping even when
+    // `--paging=always` is set, unlike the "auto" default which now defers to
+    // the pager. This one doesn't need a real pty since explicit
+    // `--terminal-width` bypasses the interactive-terminal detection.
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=auto")
+            .arg("--terminal-width=40")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg("--style=numbers")
+            .write_stdin("a".repeat(300) + "\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("a".repeat(300)).not());
+    });
+}
+
 #[test]
 fn theme_arg_overrides_env() {
     bat()

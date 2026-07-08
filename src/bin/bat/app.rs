@@ -421,7 +421,17 @@ impl App {
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if self.interactive_output || maybe_term_width.is_some() {
+                            if maybe_term_width.is_none() && paging_mode == PagingMode::Always {
+                                // `--paging=always` unconditionally sends the output through a
+                                // pager (e.g. `less`), which already has its own line-wrapping
+                                // controls (`-S`/soft wrap). Hard-wrapping here as well produces
+                                // unreadable, doubly-wrapped output inside the pager. Only
+                                // `Always` is special-cased (not `QuitIfOneScreen`) because
+                                // whether `QuitIfOneScreen` actually invokes a pager depends on
+                                // the rendered content length, which isn't known yet at this
+                                // point. See #1081.
+                                WrappingMode::NoWrapping(false)
+                            } else if self.interactive_output || maybe_term_width.is_some() {
                                 if style_components.plain() && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
                                 } else {
