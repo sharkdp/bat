@@ -626,6 +626,21 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn list_themes_ignores_paging_from_bat_opts() {
+    // Regression test for issue #1618
+    // --list-themes should never page, even when BAT_OPTS specifies --paging=always
+    bat()
+        .env("BAT_OPTS", "--paging=always --pager=less")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        // All themes should be in the output, not just the first one
+        .stdout(predicate::str::contains("DarkNeon"))
+        .stdout(predicate::str::contains("1337"))
+        .stdout(predicate::str::contains("Dracula"));
+}
+
+#[test]
 fn list_languages() {
     bat()
         .arg("--list-languages")
