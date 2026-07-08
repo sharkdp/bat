@@ -429,7 +429,7 @@ fn run() -> Result<bool> {
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
                 let plain_config = Config {
                     style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
+                    paging_mode: config.paging_mode,
                     ..Default::default()
                 };
                 run_controller(inputs, &plain_config, cache_dir)

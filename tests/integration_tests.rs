@@ -635,6 +635,21 @@ fn list_languages() {
 }
 
 #[test]
+fn list_languages_respects_paging_never() {
+    bat()
+        .env("PAGER", "echo pager-output")
+        .arg("--list-languages")
+        .arg("--paging=never")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("Rust")
+                .and(predicate::str::contains("pager-output").not())
+                .normalize(),
+        );
+}
+
+#[test]
 #[cfg_attr(
     any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
     ignore
