@@ -3177,6 +3177,13 @@ fn wrap_auto_does_not_hard_wrap_when_pager_is_always_active() {
     let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
     let mut master = File::from(master);
     let stdout_file = File::from(slave);
+    // macOS discards data still queued on the pty master once the last slave-side
+    // fd closes, which happens as soon as the child (and its pager) exit. Holding
+    // our own clone of the slave open across the wait+read keeps that queue alive;
+    // see https://developer.apple.com/forums/thread/663632.
+    let slave_keepalive = stdout_file
+        .try_clone()
+        .expect("Couldn't clone slave pty fd.");
 
     let mut child = bat_raw_command()
         .arg(&file_path)
@@ -3190,16 +3197,19 @@ fn wrap_auto_does_not_hard_wrap_when_pager_is_always_active() {
         .spawn()
         .expect("Failed to start.");
 
-    child
+    let exit_status = child
         .wait_timeout(CHILD_WAIT_TIMEOUT)
         .expect("Error polling exit status, this should never happen.")
         .expect("bat (and its pager) should have exited within the timeout.");
+    assert!(
+        exit_status.success(),
+        "bat (and its pager) should have exited successfully, got: {exit_status:?}"
+    );
 
     let mut buf = [0u8; 8192];
-    let mut output = String::new();
-    if let Ok(n) = io::Read::read(&mut master, &mut buf) {
-        output.push_str(&String::from_utf8_lossy(&buf[..n]));
-    }
+    let n = io::Read::read(&mut master, &mut buf).expect("Couldn't read from pty master.");
+    let output = String::from_utf8_lossy(&buf[..n]).into_owned();
+    drop(slave_keepalive);
 
     assert!(
         output.contains(&content),
