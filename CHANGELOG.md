@@ -23,6 +23,8 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)
+- Fix builtin pager (minus) not responding to search (`/`, `?`, `n`, `N`) and navigation (`PgUp`, `PgDown`, arrows, `g`, `G`) keys. `HashedEventRegister` was overriding all default `minus` bindings instead of extending them. Add `generate_default_bindings()` before custom bindings. See #3831, #3798 and #3837 (@Amilliox)
 - `--strip-ansi`: also strip 8-bit C1 introducers (U+0090, U+0098, U+009B, U+009D, U+009E, U+009F) and DCS/SOS/PM/APC sequence bodies, which previously passed through. See #3729 (@curious-rabbit)
 - Fix `--ignored-suffix` not falling back to first-line/shebang detection when the ignored suffix is also a registered extension (e.g. `--ignored-suffix .txt` on a shebang script), see #2745 and #3816 (@adnrivera)
 - Fix `capacity overflow` panic when printing a snip separator at `--terminal-width=1` with multiple line ranges. Closes #3803, see #3804 (@leeewee)

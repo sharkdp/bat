@@ -414,10 +414,12 @@ fn run() -> Result<bool> {
                 )?;
                 Ok(true)
             } else {
-                let inputs = vec![Input::ordinary_file("cache")];
-                let config = app.config(&inputs)?;
-
-                run_controller(inputs, &config, cache_dir)
+                // No arguments provided to cache subcommand - show help
+                let mut cmd = clap_app::build_app(true);
+                if let Some(cache_cmd) = cmd.find_subcommand_mut("cache") {
+                    print!("{}", cache_cmd.render_help());
+                }
+                Ok(true)
             }
         }
         _ => {
