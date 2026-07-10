@@ -25,6 +25,7 @@ impl BuiltinPager {
         let pager = minus::Pager::new();
 
         let mut input_register = minus::input::HashedEventRegister::default();
+        minus::input::generate_default_bindings(&mut input_register);
         input_register.add_key_events(&["home"], |_, _| {
             minus::input::InputEvent::UpdateUpperMark(0)
         });
