@@ -135,6 +135,17 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
         })
 }
 
+/// Returns `true` when the effective pager is `less` and it has been told to
+/// chop (truncate) long lines, either through the pager command's own arguments
+/// (from `--pager`, `BAT_PAGER`, or `PAGER`) or through the `LESS` environment
+/// variable. The application uses this to skip `bat`'s own line wrapping so
+/// that `less -S` can actually chop overflow instead of receiving already-wrapped
+/// output.
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+pub fn pager_will_chop_long_lines(config_pager: Option<&str>) -> bool {
+    crate::pager::pager_will_chop_long_lines(config_pager)
+}
+
 #[test]
 fn default_config_should_include_all_lines() {
     use crate::line_range::MaxBufferedLineNumber;

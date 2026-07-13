@@ -421,7 +421,20 @@ impl App {
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if self.interactive_output || maybe_term_width.is_some() {
+                            // If we're going to hand output to `less` and the
+                            // user has already told `less` to chop long lines
+                            // (via `--pager`, `BAT_PAGER`, `PAGER`, or the
+                            // `LESS` env var), skip our own wrapping so that
+                            // less has something to chop. Otherwise `-S` looks
+                            // like it does nothing because bat has already
+                            // broken every long line at the terminal edge.
+                            let pager_chops = paging_mode != PagingMode::Never
+                                && bat::config::pager_will_chop_long_lines(
+                                    self.matches.get_one::<String>("pager").map(|s| s.as_str()),
+                                );
+                            if pager_chops {
+                                WrappingMode::NoWrapping(true)
+                            } else if self.interactive_output || maybe_term_width.is_some() {
                                 if style_components.plain() && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
                                 } else {
