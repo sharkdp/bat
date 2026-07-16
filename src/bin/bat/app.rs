@@ -441,7 +441,10 @@ impl App {
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") => !env_no_color() && self.interactive_output,
+                    Some("auto") => {
+                        !env_no_color()
+                            && (self.interactive_output || paging_mode != PagingMode::Never)
+                    }
                     _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,
@@ -690,5 +693,24 @@ impl App {
             theme_dark,
             theme_light,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::App;
+
+    #[test]
+    fn auto_color_is_enabled_when_paging_is_forced_without_a_terminal() {
+        let matches = crate::clap_app::build_app(false)
+            .try_get_matches_from(["bat", "--paging=always", "test.txt"])
+            .unwrap();
+        let app = App {
+            matches,
+            interactive_output: false,
+            number_from_cli: false,
+        };
+
+        assert!(app.config(&[]).unwrap().colored_output);
     }
 }
