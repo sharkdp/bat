@@ -24,6 +24,12 @@ pub enum Error {
     UnknownSyntax(String),
     #[error("Unknown style '{0}'")]
     UnknownStyle(String),
+    #[error("Invalid color override '{0}', expected 'target=color'")]
+    InvalidColorOverride(String),
+    #[error("Unknown color override target '{0}'")]
+    UnknownColorOverrideTarget(String),
+    #[error("Invalid color '{0}'")]
+    InvalidColorValue(String),
     #[error("Use of bat as a pager is disallowed in order to avoid infinite recursion problems")]
     InvalidPagerValueBat,
     #[error("{0}")]

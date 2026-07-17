@@ -13,15 +13,19 @@ use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
+use std::borrow::Cow;
+use std::cell::OnceCell;
 use std::collections::VecDeque;
 use std::io::{self, BufRead, Write};
 use std::mem;
 
 use clircle::{Clircle, Identifier};
+use syntect::highlighting::Theme;
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
+    theme: OnceCell<Cow<'a, Theme>>,
     #[cfg(feature = "lessopen")]
     preprocessor: Option<LessOpenPreprocessor>,
 }
@@ -31,9 +35,20 @@ impl Controller<'_> {
         Controller {
             config,
             assets,
+            theme: OnceCell::new(),
             #[cfg(feature = "lessopen")]
             preprocessor: LessOpenPreprocessor::new().ok(),
         }
+    }
+
+    /// The configured theme with the color overrides applied. It is only
+    /// looked up when something is actually highlighted.
+    fn theme(&self) -> &Theme {
+        self.theme.get_or_init(|| {
+            self.config
+                .color_overrides
+                .apply(self.assets.get_theme(&self.config.theme))
+        })
     }
 
     pub fn run(
@@ -189,12 +204,13 @@ impl Controller<'_> {
             None
         };
 
-        let mut printer: Box<dyn Printer> = if self.config.loop_through {
+        let mut printer: Box<dyn Printer + '_> = if self.config.loop_through {
             Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(
                 self.config,
                 self.assets,
+                self.theme(),
                 &mut opened_input,
                 #[cfg(feature = "git")]
                 &line_changes,

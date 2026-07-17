@@ -19,6 +19,8 @@ Options:
           Set the language for syntax highlighting.
       --fallback-syntax <fallback-syntax>
           Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
+      --colors <target=color>
+          Override individual colors of the theme ('gutter-foreground=#f5f5f5').
   -H, --highlight-line <N:M>
           Highlight lines N through M.
       --file-name <name>

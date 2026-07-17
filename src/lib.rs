@@ -27,6 +27,7 @@ pub mod assets;
 pub mod assets_metadata {
     pub use super::assets::assets_metadata::*;
 }
+pub mod color_overrides;
 pub mod config;
 pub mod controller;
 mod decorations;
@@ -53,6 +54,7 @@ pub mod theme;
 mod vscreen;
 pub(crate) mod wrapping;
 
+pub use color_overrides::ColorOverrides;
 pub use nonprintable_notation::{BinaryBehavior, NonprintableNotation};
 pub use preprocessor::sanitize_for_terminal;
 pub use preprocessor::StripAnsiMode;

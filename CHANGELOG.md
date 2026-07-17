@@ -8,6 +8,7 @@
 
 ## Features
 
+- Add `--colors` to override individual colors of the selected theme, e.g. `--colors 'gutter-foreground=#f5f5f5'`, see #3846 (@Peacanduck). Closes #339
 - Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It implies `--strip-ansi` at the same value and additionally substitutes terminal-active control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
 - Map justfile, Justfile, .justfile, and *.justfile to Makefile syntax highlighting, see #3623 (@zachvalenta)
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)

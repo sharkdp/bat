@@ -5,6 +5,7 @@ use console::Term;
 
 use crate::{
     assets::HighlightingAssets,
+    color_overrides::ColorOverrides,
     config::{Config, VisibleLines},
     controller::Controller,
     error::Result,
@@ -260,6 +261,12 @@ impl<'a> PrettyPrinter<'a> {
     /// and the terminal's background color.
     pub fn theme(&mut self, theme: impl AsRef<str>) -> &mut Self {
         self.config.theme = theme.as_ref().to_owned();
+        self
+    }
+
+    /// Override individual colors of the highlighting theme.
+    pub fn color_overrides(&mut self, color_overrides: ColorOverrides) -> &mut Self {
+        self.config.color_overrides = color_overrides;
         self
     }
 

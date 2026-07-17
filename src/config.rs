@@ -1,3 +1,4 @@
+use crate::color_overrides::ColorOverrides;
 use crate::line_range::{HighlightedLineRanges, LineRanges};
 use crate::nonprintable_notation::{BinaryBehavior, NonprintableNotation};
 #[cfg(feature = "paging")]
@@ -81,6 +82,9 @@ pub struct Config<'a> {
 
     /// The syntax highlighting theme
     pub theme: String,
+
+    /// Colors which override the ones provided by the theme
+    pub color_overrides: ColorOverrides,
 
     /// File extension/name mappings
     pub syntax_mapping: SyntaxMapping<'a>,

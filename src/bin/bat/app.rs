@@ -12,6 +12,7 @@ use crate::{
 use bat::style::StyleComponentList;
 use bat::theme::{theme, ThemeName, ThemeOptions, ThemePreference};
 use bat::BinaryBehavior;
+use bat::ColorOverrides;
 use bat::StripAnsiMode;
 use clap::ArgMatches;
 
@@ -496,6 +497,7 @@ impl App {
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             theme: theme(self.theme_options()).to_string(),
+            color_overrides: self.color_overrides()?,
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -672,6 +674,17 @@ impl App {
 
     pub(crate) fn theme_options(&self) -> ThemeOptions {
         Self::theme_options_from_matches(&self.matches)
+    }
+
+    fn color_overrides(&self) -> Result<ColorOverrides> {
+        let mut color_overrides = ColorOverrides::default();
+        if let Some(specs) = self.matches.get_many::<String>("colors") {
+            for spec in specs {
+                color_overrides.add(spec)?;
+            }
+        }
+
+        Ok(color_overrides)
     }
 
     fn theme_options_from_matches(matches: &ArgMatches) -> ThemeOptions {

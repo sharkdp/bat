@@ -44,6 +44,20 @@ Options:
           
           [aliases: --fallback-language]
 
+      --colors <target=color>
+          Override individual colors of the selected theme, so that a theme does not have to be
+          copied just to change a single color. Several overrides can be given as a comma-separated
+          list, and the option can be used more than once. Colors are written in CSS hex notation
+          ('#f00' or '#ff0000').
+          
+          The targets 'foreground', 'gutter-foreground' and 'line-highlight' change the color of the
+          text, of the line numbers and grid, and of the background of lines highlighted with
+          --highlight-line.
+          
+          A target of the form 'scope:<scope>' changes the color of a syntax scope and of the scopes
+          nested below it. For example, --colors 'scope:string=#98c379' colors strings and nested
+          scopes like 'string.regexp'.
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40

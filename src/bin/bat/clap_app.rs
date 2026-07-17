@@ -132,6 +132,26 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("colors")
+                .long("colors")
+                .action(ArgAction::Append)
+                .value_name("target=color")
+                .help("Override individual colors of the theme ('gutter-foreground=#f5f5f5').")
+                .long_help(
+                    "Override individual colors of the selected theme, so that a theme does not \
+                     have to be copied just to change a single color. Several overrides can be \
+                     given as a comma-separated list, and the option can be used more than once. \
+                     Colors are written in CSS hex notation ('#f00' or '#ff0000').\n\n\
+                     The targets 'foreground', 'gutter-foreground' and 'line-highlight' change the \
+                     color of the text, of the line numbers and grid, and of the background of \
+                     lines highlighted with --highlight-line.\n\n\
+                     A target of the form 'scope:<scope>' changes the color of a syntax scope and \
+                     of the scopes nested below it. For example, \
+                     --colors 'scope:string=#98c379' colors strings and nested scopes like \
+                     'string.regexp'.",
+                ),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')

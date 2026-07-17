@@ -4434,3 +4434,290 @@ fn ignored_suffix_enables_first_line_detection() {
     // ...while the default (extension wins) stays plain and differs.
     assert_ne!(default, forced_bash);
 }
+
+#[test]
+fn color_override_changes_the_line_number_color() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0m   1"));
+}
+
+#[test]
+fn color_override_changes_the_highlighted_line_color() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--highlight-line=1")
+        .arg("--colors=line-highlight=#00ff00")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[48;2;0;255;0"))
+        .stderr("");
+}
+
+#[test]
+fn color_override_changes_the_default_text_color() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--colors=foreground=#0000ff")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout("\x1B[38;2;0;0;255mLorem Ipsum\x1B[0m")
+        .stderr("");
+}
+
+#[test]
+fn color_override_changes_a_syntax_scope() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--language=rust")
+        .arg("--colors=scope:comment=#808080")
+        .write_stdin("// note")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;128;128;128m note"));
+}
+
+#[test]
+fn color_override_of_a_scope_applies_to_nested_scopes() {
+    // The theme colors 'string.regexp' with a rule of its own, which is more
+    // specific than the overridden 'string' scope.
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--language=js")
+        .arg("--colors=scope:string=#ff0000")
+        .write_stdin("const r = /ab/;\nconst s = \"hi\";\n")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0mab"))
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0mhi"))
+        .stdout(predicate::str::contains("38;2;86;182;194").not())
+        .stdout(predicate::str::contains("38;2;152;195;121").not());
+}
+
+#[test]
+fn color_override_of_a_scope_keeps_sibling_scopes_unchanged() {
+    // The theme colors 'comment' and 'punctuation.definition.comment' with a
+    // single rule, but only the former is overridden here.
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--language=rust")
+        .arg("--colors=scope:comment=#808080")
+        .write_stdin("// note")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;92;99;112m//"));
+}
+
+#[test]
+fn color_override_applies_to_the_selected_theme() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=GitHub")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0m   1"));
+}
+
+#[test]
+fn color_override_accepts_several_targets_in_one_argument() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000,foreground=#0000ff")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0m   1"))
+        .stdout(predicate::str::contains("\x1B[38;2;0;0;255mLorem Ipsum"));
+}
+
+#[test]
+fn color_override_can_be_given_more_than_once() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .arg("--colors=foreground=#0000ff")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0m   1"))
+        .stdout(predicate::str::contains("\x1B[38;2;0;0;255mLorem Ipsum"));
+}
+
+#[test]
+fn color_override_uses_the_last_value_of_a_target() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .arg("--colors=gutter-foreground=#00ff00")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;0;255;0m   1"))
+        .stdout(predicate::str::contains("38;2;255;0;0").not());
+}
+
+#[test]
+fn color_override_accepts_the_short_hex_notation() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#f00")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;2;255;0;0m   1"));
+}
+
+#[test]
+fn color_override_uses_the_ansi_palette_without_true_color_support() {
+    bat()
+        .env_remove("COLORTERM")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=always")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[38;5;196m   1"));
+}
+
+#[test]
+fn color_override_is_ignored_without_colored_output() {
+    bat()
+        .env("COLORTERM", "truecolor")
+        .arg("--theme=TwoDark")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .arg("--wrap=never")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--colors=foreground=#0000ff")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success()
+        .stdout("Lorem Ipsum")
+        .stderr("");
+}
+
+#[test]
+fn color_override_rejects_invalid_specifications() {
+    // A valid specification is accepted, so that the rejections below cannot be
+    // satisfied by refusing every specification.
+    bat()
+        .arg("--paging=never")
+        .arg("--colors=gutter-foreground=#ff0000")
+        .write_stdin("Lorem Ipsum")
+        .assert()
+        .success();
+
+    for spec in [
+        // Unknown targets.
+        "gutter-forground=#ff0000",
+        "=#ff0000",
+        "scope:=#ff0000",
+        // Invalid colors.
+        "gutter-foreground=nope",
+        "gutter-foreground=#ff00",
+        "gutter-foreground=#gggggg",
+        "gutter-foreground=",
+        // Malformed specifications.
+        "gutter-foreground",
+        "#ff0000",
+    ] {
+        bat()
+            .arg("--paging=never")
+            .arg(format!("--colors={spec}"))
+            .write_stdin("Lorem Ipsum")
+            .assert()
+            .failure();
+    }
+}
