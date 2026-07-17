@@ -450,6 +450,7 @@ impl App {
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
+                || paging_mode != PagingMode::Never
                 || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
                 || self
                     .matches
@@ -711,6 +712,8 @@ mod tests {
             number_from_cli: false,
         };
 
-        assert!(app.config(&[]).unwrap().colored_output);
+        let config = app.config(&[]).unwrap();
+        assert!(config.colored_output);
+        assert!(!config.loop_through);
     }
 }
