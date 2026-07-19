@@ -1970,6 +1970,29 @@ fn can_print_file_named_cache_with_additional_argument() {
 }
 
 #[test]
+fn cache_directory_does_not_hide_cache_subcommand() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let cache_dir = tmp_dir.path().join("cache");
+    std::fs::create_dir(&cache_dir).expect("can create cache directory");
+    let theme_cache = cache_dir.join("themes.bin");
+    std::fs::write(&theme_cache, []).expect("can create theme cache");
+
+    bat_with_config()
+        .current_dir(tmp_dir.path())
+        .arg("cache")
+        .arg("--clear")
+        .arg("--target")
+        .arg(&cache_dir)
+        .assert()
+        .success()
+        .stdout(predicate::str::contains(
+            "Clearing theme set cache ... okay",
+        ));
+
+    assert!(!theme_cache.exists());
+}
+
+#[test]
 fn can_print_file_starting_with_cache() {
     bat_with_config()
         .arg("cache.c")

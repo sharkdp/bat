@@ -721,7 +721,7 @@ pub fn build_app(interactive_output: bool) -> Command {
 
     // Check if the current directory contains a file name cache. Otherwise,
     // enable the 'bat cache' subcommand.
-    if Path::new("cache").exists() {
+    if Path::new("cache").is_file() {
         app
     } else {
         app.subcommand(
