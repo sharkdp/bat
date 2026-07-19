@@ -3,6 +3,7 @@
 
 ## Other
 
+- Add Traditional Chinese README translation, see #3702 (@doggy8088)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 

@@ -13,7 +13,8 @@
   <a href="#カスタマイズ">カスタマイズ</a> •
   <a href="#プロジェクトの目標と既存の類似したOSS">プロジェクトの目標と既存の類似したOSS</a><br>
   [<a href="../README.md">English</a>]
-  [<a href="README-zh.md">中文</a>]
+  [<a href="README-zh.md">简体中文</a>]
+  [<a href="README-zh-tw.md">繁體中文</a>]
   [日本語]
   [<a href="README-ko.md">한국어</a>]
   [<a href="README-ru.md">Русский</a>]
