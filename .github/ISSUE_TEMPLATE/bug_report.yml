@@ -1,0 +1,71 @@
+name: Bug Report
+description: Report a bug.
+title: ""
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug!
+
+        Before submitting, please search the existing issues. If installing a `.deb`
+        package fails because it tries to overwrite `/usr/.crates2.json`, see #938.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I have searched the existing issues and did not find a duplicate.
+          required: true
+        - label: "My report is not the `.crates2.json` installation issue described in #938."
+          required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How can the bug be reproduced?
+      description: Include the smallest set of commands, arguments, and input needed to reproduce the problem.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: input
+    id: installation
+    attributes:
+      label: How did you install `bat`?
+      description: For example, apt, Homebrew, a GitHub release, or a source build.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: What version of `bat` are you using, and on which operating system?
+      description: |
+        Run the full command that demonstrates the bug with `--diagnostic` appended,
+        then paste its Markdown output below. Redact any personal information first.
+
+        For `bat` 0.17.1 or older, provide the output of `bat --version` and your
+        operating system version instead.
+      placeholder: Paste the diagnostic output here.
+    validations:
+      required: true
