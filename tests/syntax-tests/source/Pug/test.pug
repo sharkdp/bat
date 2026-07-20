@@ -1,0 +1,335 @@
+doctype html
+- var em_sometext = "<em>some text</em>"
+-var var2 = 'no spaces after -'
+_test  =  [{abc: "lalal"}]
+name = function() {}
+
+html
+  head
+    script#idscript.script(type="text/javascript",   qwerqwer)(test="123", lol=(1+      1),  other).
+      var la = lala;
+
+      function script(arg1, arg2) {
+        console.log("string", arg1, arg2);
+      }
+
+      script(la, "string1")
+
+      console.log(script(la, "string3"));
+
+      var lala = 0;
+
+      var obj = {abc: 123};
+
+    script(type="module").
+      const body = document.querySelector('body')
+
+    style(type="text/css").
+      .test-cls {
+        float: left;
+        color: #000;
+      }
+
+      div.saf {
+        background-color: red;
+      }
+
+    link(rel="stylesheet", href="asdiofjs.css")
+
+  body
+    mixin lala(abc, lala)
+      div.lala-output(style="background-color: #ccc") lala output
+        ul
+          li.abc= null + abc
+          li.lala= lala
+
+    div mixin long call
+      mixin lala((123+{asdf:(1+1)}), "mixin long call")strong after lontg mixinty use
+
+    .test + mixin use
+      +lala(123, "mixin + call 1")
+
+    mixin another()
+      - console.log(attributes)
+      input&attributes({cde: 3434})(ccc=343)&attributes(attributes).cls&attributes([1,2,'no'])
+
+    .test mixin attributes new syntax
+      +another(abc=123, bcd='lol')
+
+    mixin mix2()
+      div: p.mix2
+        block
+
+    +mix2(): p paragraph in mix2
+
+    mixin mix2() mix2tag lol
+
+    mixin mix3()
+      div: p.mix3
+
+    +mix3().mix2class It's time
+
+    .98349 class name omly numbers
+    ._[invalid character in class name should result in it and text following be considered text
+
+    //  some html comment
+      p.
+        this is some text inside the p tag
+        since it is only a html comment, pug will render it normally
+
+    a(href=`http://twitter.com/${twitter}`) @#{twitter}
+
+    div
+      p: iv:asd-_FD tag name weird &amp;characters
+      p
+        asdf:    ab:[this should be text
+
+      tstr = 'strong'
+      #{tstr} iterpolated tag name
+
+    pre
+      em this is inside 'em' tag <br/>
+
+      [this is rendered as standalone text
+      ##this too
+      "this too"
+
+    div(style="background-color: #eef") some examples of dot text blocks bellow:
+
+      #{'di' + 'v'}: em.
+        some text block inside tag with interpolated name and subtag
+
+      .lol: strong(prop="()(())").
+        another block of text, this time the tag has parenthesis inside
+        a tag property value that is a string
+
+      #test(abc="asdfsdf").
+        another case of text block
+
+      div.class.another: p.red(style="").asdfsd(lol=123)#ohno.
+        another case of text block with interpolated text: #{10*100}
+
+      div: [this will be text
+        p.
+          and this will be a text block
+          inside a p tag
+
+      .
+        A standalone dot also creates a text block
+
+    #{'d' + 'i' + 'v'}}.
+      em this should be italic because it is not a text block, and start the line with '}.'
+
+    p a tag with text ending in dot.
+      strong &nbsp;and child tags to show that the dot text block detection is
+        em &nbsp;working
+
+    div: div: thisisavar = 'THIS_IS_A_VARIABLE'
+      = 'thisisavar is a variable declaration as demonstrated here: ' + thisisavar
+
+    sub2: tag2: -console.log('unbuffered js inside subtag?')
+
+    p#-tagid.-sdfa tag ids and classes with valid characters
+
+    p this tag has <em>embedded html #{console}</em>
+
+    textblock.
+      <div style="color: red;">
+        <p>this is embedded html in dot text block with a interpolated value: #{'te'+'st'+1}</p>
+      </div>
+
+    <div style="color: green;">
+    <p>this is directly embedded html with a interpolated value: #{'te'+'st'+2}</p>
+    </div>
+
+    emb
+      div regular tag and text
+        | <div style="color: blue;">
+        |   <p>this is embedded html in pipe text with a interpolated value: #{'te'+'st'+2}</p>
+        | </div>
+
+    p: em(sdf-+a\||.asd=123,   type="te\x98t\u8876",lol,
+      lol2
+      lol3, abc = _test, fdg=console.log(123, (1 + (1 + 2)), undefined || true && "sdf#{1+1}asdf")
+      asdf, bcd=[123, [_test, {asdf: console.log(123)}]], afd={a: 1+1, 'b': {c: (null)}}
+      style="background-color: #ccc;") this is a tag with all sorts of crazy properties properly highlighted
+
+    p(qwer,|asdf, zxcv, poiu)= console + NaN
+
+    p: em(sdf-+a\||.asd=123 + undefined | 64   type="te\x98t\u8876" lol
+      lol2
+      lol3 abc = _test fuuuuu fdg=console.log(123, (1 + (1 + 2)), undefined || true && "sdf#{1+1}asdf")
+      asdf bcd=[123, [_test, {asdf: console.log(123)}]] faaaaaa afd={a: 1+1, 'b': {c: (null)}} lol4=sdf+sdf lastattr
+      style="background-color: #ccc;") new attributes without commas
+
+    p(qwer |asdf zxcv lol=123 * 0 || Math + "sdf") attributes no commas
+
+    p(aprop).lol.lil#theid(style="background-color: black; color: white;").lul(anotherprop='TEST')
+      | tag with any combination/order of id/classes/attributes
+
+    include page
+
+    block testblock1
+      div.lala-block this is in testblock1
+      yield
+
+    div.lala-block-test
+      block prepend testblock1
+        div.lala-prepend line1
+        | line2
+
+      append testblock1
+        div.lala-append line1
+        | line2
+        yield
+
+    div a list generated in a loop as subtag code:
+      ul: - for i in [1,2,3,null]
+        li= i
+
+    div a list generated in another loop as subtag code:
+      ul: for i in [1,2,3,null]
+        li= i
+
+    div(style="color: red;"): append testblock1
+
+    div(style="color: green;"): include page
+
+    div(style="color: blue;"): mixin lala
+
+
+    if true
+      p conditional text
+    else
+      p and this won't show
+
+    friends = 10
+    case friends
+      when 0
+        p you have no friends
+      when (1+(1+1)): p you have a friend
+      default: p you have #{friends} friends
+
+    h1 title
+
+    p= console.log("logging before text") || 'after console.log'
+
+    #div
+      label
+        | Username1:
+        input(type="text")
+
+      label Username2:
+        input(type="text")
+
+    p unescaped and escaped variable:
+      div!= em_sometext
+      div= em_sometext
+      #test(abc="lala", lele=9, lili=em_sometext) the variable used as property value
+      .class interpolated escaped and unescaped variable: #{em_sometext + "&"} and !{em_sometext}} \#{this will show}
+
+    p some text  // not some comment
+
+    a(href="lala", something=em_sometext,) some link
+
+    div:  span:   em= 'extra spaces between tags and js output'
+
+    div(style="background-color: #ccf;"): p:.a subtag without spaces will work only if id or class is used directly.
+      p: em and this will be a part of it
+
+    p='output without spaces separating tag: ' + em_sometext
+
+    //-
+      this is an unbuffered comment
+      it will never show on the html
+
+      and here to test skipping a line with less spaces than the indent level
+
+    div.class.another#someid: a(href=em_sometext, test="la\"sdafla", style="display: block; width: 100px; height: 10px"): p.red(style="") some lalalalal
+
+    p
+      multi.line tag with pipe lines,
+      | like this first #{em_sometext + "aosidjfsd" + 0 + undefined} ending here.
+      | <br/> more pure text breaking the line with embedded html
+
+    p Test inline mixin #[+lala(123, 'lala inside inline')] end
+    p Here is some #[strong: em text] and look at #[a(href='http://google.com') this link!]
+    p Here is some #[.strong: em text] and look at #[a(href='http://google.com') this link!]
+    p Other inline #[strong= 'test']
+    p Test #[|text line]
+    p Test buffered #[= console.log('inline tag code') + 'inline code']
+    p Test unbuffered #[- console.log('inline tag code') + 'inline code']
+    p #[- abcf = [[123, [[],[]], []],'abc']] #[= abcf]
+    p Crazy #[em: strong #[span #[='inline']]: test]
+    p We can also #[strong combine #[em multiple #[img(src='http://pug-lang.com/style/logo.png')]]]
+    p Another #[strong.lil#okf(acs=[1,2]) test [[with brackets]] [in#[='side']]]
+    #[strong start] line with #[i]\#[j] inline
+    #[#[#[#[#[i a] b] c] d]e]
+    #[asdf.lol(fff)#[asdf]]
+
+    p.
+      block with #[i inline] tag.
+
+    | pipe text with #[i inline] tag.
+
+    !{'tag' + 234} text line starting with interpolated
+    [!{sdfasdf}
+    ##{sadf} lol2
+    "#[asdf]"
+
+    - var left_wrapper = 'p'
+    - var left_classes = 'one two'
+    - var left = 'the content'
+      p this is not a code block
+
+    -
+      var peeps = ["Mathias",
+        "David", "Github"];
+
+      var msg = peeps.map(function(name) {
+        return "Hi " + name
+      }).join(", ");
+
+    <#[span test inline in brackets]>
+
+    div
+      <#{left_wrapper}.lol#dsfsdf class="group-left !{left_classes}">
+      != left
+      </!{left_wrapper}>
+
+    #vue-style
+      .foo(foo="foo" v-bind:bar="bar")
+      .foo(foo="foo" :bar="bar")
+      .foo(:foo="foo" bar="bar")
+
+      .foo(foo="foo" :[bar]="bar")
+      .foo(foo="foo" ?123 :undefined, :[bar]="bar")
+      .foo(foo="foo" ? 123 : undefined, :[bar]="bar")
+      .foo(:[foo]="foo" bar="bar")
+
+      .foo(foo="foo" v-on:bar="bar")
+      .foo(foo="foo" @bar="bar")
+      .foo(@foo="foo" bar="bar")
+
+      .foo(foo="foo" @[bar]="bar")
+      .foo(@[foo]="foo" bar="bar")
+
+    each markup, type in demoMarkup
+      if type === 'js'
+        .grid__cell(class=type)
+          each js, jsType in markup
+            if (jsType === 'es5')
+              details.o-demo__details.o-demo__es5
+                summary ES5 Syntax
+                .o-demo__markup
+                  pre
+                    code(class=type)= js
+            else
+              .o-demo__markup.o-demo__segment.js(class=jsType)
+                pre
+                  code(class=type)= js
+      else if (type === 'html' && spec.showHTML || type !== 'html')
+        - markup = type === 'html' ? html : markup;
+        .grid__cell.o-demo__markup.o-demo__segment(class=type)
+          pre
+            code(class=type)= markup
