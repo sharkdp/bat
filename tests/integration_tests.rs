@@ -1267,7 +1267,7 @@ fn env_var_pager_value_bat() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout(predicate::eq("hello world\n").normalize());
+        .stdout(predicate::str::contains("hello world"));
 }
 
 #[test]
@@ -1305,7 +1305,7 @@ fn pager_most_from_pager_env_var() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::str::contains("hello world"));
     });
 }
 
@@ -1351,7 +1351,7 @@ fn pager_most_with_arg() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::str::contains("hello world"));
     });
 }
 
@@ -1366,7 +1366,7 @@ fn pager_more() {
             .arg("test.txt")
             .assert()
             .success()
-            .stdout(predicate::eq("hello world\n").normalize());
+            .stdout(predicate::str::contains("hello world"));
     });
 }
 
@@ -1527,7 +1527,10 @@ fn basic_set_terminal_title() {
         .arg("test.txt")
         .assert()
         .success()
-        .stdout("\u{1b}]0;bat: test.txt\x07hello world\n")
+        .stdout(
+            predicate::str::starts_with("\u{1b}]0;bat: test.txt\x07")
+                .and(predicate::str::contains("hello world")),
+        )
         .stderr("");
 }
 

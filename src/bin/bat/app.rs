@@ -330,6 +330,9 @@ impl App {
             }
             _ => unreachable!("other values for --paging are not allowed"),
         };
+        let pager = self.matches.get_one::<String>("pager").map(|s| s.as_str());
+        let pager_is_available =
+            paging_mode != PagingMode::Never && bat::config::pager_is_available(pager);
 
         let mut syntax_mapping = SyntaxMapping::new();
         // start building glob matchers for builtin mappings immediately
@@ -441,12 +444,15 @@ impl App {
                 || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
                     Some("always") => true,
                     Some("never") => false,
-                    Some("auto") => !env_no_color() && self.interactive_output,
+                    Some("auto") => {
+                        !env_no_color() && (self.interactive_output || pager_is_available)
+                    }
                     _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
+                || pager_is_available
                 || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
                 || self
                     .matches
@@ -518,7 +524,7 @@ impl App {
             },
             style_components,
             syntax_mapping,
-            pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
+            pager,
             use_italic_text: self
                 .matches
                 .get_one::<String>("italic-text")
@@ -689,6 +695,36 @@ impl App {
             theme,
             theme_dark,
             theme_light,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::App;
+    use serial_test::serial;
+
+    #[test]
+    #[serial]
+    fn auto_color_is_enabled_when_paging_is_forced_without_a_terminal() {
+        let no_color = std::env::var_os("NO_COLOR");
+        std::env::remove_var("NO_COLOR");
+
+        let matches = crate::clap_app::build_app(false)
+            .try_get_matches_from(["bat", "--paging=always", "--pager=builtin", "test.txt"])
+            .unwrap();
+        let app = App {
+            matches,
+            interactive_output: false,
+            number_from_cli: false,
+        };
+
+        let config = app.config(&[]).unwrap();
+        assert!(config.colored_output);
+        assert!(!config.loop_through);
+
+        if let Some(no_color) = no_color {
+            std::env::set_var("NO_COLOR", no_color);
         }
     }
 }
