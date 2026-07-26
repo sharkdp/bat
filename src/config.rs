@@ -135,6 +135,53 @@ pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
         })
 }
 
+/// Return whether the configured pager can be launched.
+///
+/// This is used by the command-line application when deciding whether pager-specific
+/// formatting should be enabled. [`crate::output::OutputType`] still performs the actual
+/// launch and handles any failure that happens after this check.
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+pub fn pager_is_available(config_pager: Option<&str>) -> bool {
+    fn binary_is_available(binary: &str) -> bool {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            use std::path::Path;
+
+            let is_executable = |path: &Path| {
+                path.metadata().is_ok_and(|metadata| {
+                    metadata.is_file() && metadata.permissions().mode() & 0o111 != 0
+                })
+            };
+            let path = Path::new(binary);
+            if path.components().count() > 1 {
+                return is_executable(path);
+            }
+
+            std::env::var_os("PATH").is_some_and(|paths| {
+                std::env::split_paths(&paths).any(|directory| is_executable(&directory.join(path)))
+            })
+        }
+
+        #[cfg(windows)]
+        {
+            grep_cli::resolve_binary(binary).is_ok_and(|path| path.is_file())
+        }
+
+        #[cfg(not(any(unix, windows)))]
+        false
+    }
+
+    crate::pager::get_pager(config_pager)
+        .ok()
+        .flatten()
+        .is_some_and(|pager| match pager.kind {
+            crate::pager::PagerKind::Builtin => true,
+            crate::pager::PagerKind::Bat => false,
+            _ => binary_is_available(&pager.bin),
+        })
+}
+
 #[test]
 fn default_config_should_include_all_lines() {
     use crate::line_range::MaxBufferedLineNumber;
@@ -235,4 +282,22 @@ fn get_pager_executable_invalid_command() {
 fn get_pager_executable_empty_config() {
     let result = get_pager_executable(Some(""));
     assert_eq!(result, None);
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn builtin_pager_is_available() {
+    assert!(pager_is_available(Some("builtin")));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn empty_pager_is_not_available() {
+    assert!(!pager_is_available(Some("")));
+}
+
+#[cfg(all(feature = "minimal-application", feature = "paging"))]
+#[test]
+fn missing_pager_is_not_available() {
+    assert!(!pager_is_available(Some("nonexistent-pager-xyz-missing")));
 }
