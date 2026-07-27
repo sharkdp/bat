@@ -458,7 +458,9 @@ fn line_range_offset_from_end_too_large_fails_cleanly() {
         .arg(format!("--line-range={too_large}"))
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Line range offset from end is too large"));
+        .stderr(predicate::str::contains(
+            "Line range offset from end is too large",
+        ));
 }
 
 #[test]
