@@ -263,6 +263,9 @@ impl Controller<'_> {
             .largest_offset_from_end()
             .checked_add(1)
             .ok_or("Line range offset from end is too large")?;
+        if buffer_size == usize::MAX {
+            return Err("Line range offset from end is too large".into());
+        }
         // Buffers multiple line data and line number
         let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
 
