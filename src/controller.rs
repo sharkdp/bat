@@ -259,7 +259,13 @@ impl Controller<'_> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
         // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
-        let buffer_size: usize = line_ranges.largest_offset_from_end() + 1;
+        let buffer_size: usize = line_ranges
+            .largest_offset_from_end()
+            .checked_add(1)
+            .ok_or("Line range offset from end is too large")?;
+        if buffer_size == usize::MAX {
+            return Err("Line range offset from end is too large".into());
+        }
         // Buffers multiple line data and line number
         let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
 

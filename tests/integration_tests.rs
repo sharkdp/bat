@@ -450,6 +450,20 @@ fn line_range_context_very_large() {
 }
 
 #[test]
+fn line_range_offset_from_end_too_large_fails_cleanly() {
+    let too_large = format!(":-{}", usize::MAX - 1);
+
+    bat()
+        .arg("multiline.txt")
+        .arg(format!("--line-range={too_large}"))
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "Line range offset from end is too large",
+        ));
+}
+
+#[test]
 fn piped_output_with_implicit_auto_style() {
     bat()
         .write_stdin("hello\nworld\n")
