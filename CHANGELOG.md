@@ -25,6 +25,7 @@
 
 ## Bugfixes
 - `--strip-ansi`: also strip 8-bit C1 introducers (U+0090, U+0098, U+009B, U+009D, U+009E, U+009F) and DCS/SOS/PM/APC sequence bodies, which previously passed through. See #3729 (@curious-rabbit)
+- Fix `--list-languages` ignoring `--paging=never`. Closes #3825, see #3835 (@ychampion)
 - Fix `--ignored-suffix` not falling back to first-line/shebang detection when the ignored suffix is also a registered extension (e.g. `--ignored-suffix .txt` on a shebang script), see #2745 and #3816 (@adnrivera)
 - Fix `capacity overflow` panic when printing a snip separator at `--terminal-width=1` with multiple line ranges. Closes #3803, see #3804 (@leeewee)
 - Pass `--no-paging` to `bat` invocations inside the bash / zsh / fish / PowerShell shell completion scripts so that shell-level pager wiring (e.g. `LESSOPEN='|-bat -f -pp %s'`) cannot inject ANSI escape sequences into the completion candidates. Closes #3760 (@mvanhorn)
