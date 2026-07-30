@@ -168,7 +168,7 @@ pub fn sanitize(line: &str) -> String {
 #[inline]
 fn is_sanitize_trigger(b: u8) -> bool {
     // C0 controls minus \t \n \f; DEL; UTF-8 leads with dangerous codepoints.
-    matches!(b, 0x00..=0x08 | 0x0B | 0x0D..=0x1F | 0x7F | 0xC2 | 0xE2 | 0xEF)
+    matches!(b, 0x00..=0x08 | 0x0B | 0x0D..=0x1F | 0x7F | 0xC2 | 0xD8 | 0xE2 | 0xEF)
 }
 
 /// Substitutes the byte/sequence at `bytes[i]` (or passes it through on
@@ -200,8 +200,14 @@ fn sanitize_at(
             buffer.push('\u{FFFD}');
             3
         }
+        // 0xD8 0x9C = U+061C (Arabic letter mark, a bidi control). The rest of
+        // the 0xD8 block is ordinary Arabic text.
+        0xD8 if bytes.get(i + 1) == Some(&0x9C) => {
+            buffer.push('\u{FFFD}');
+            2
+        }
         // False-alarm trigger: pass the full UTF-8 sequence through.
-        lead @ (0xC2 | 0xE2 | 0xEF) => {
+        lead @ (0xC2 | 0xD8 | 0xE2 | 0xEF) => {
             let n = utf8_len_from_lead(lead);
             buffer.push_str(&full[i..i + n]);
             n
@@ -217,10 +223,11 @@ fn sanitize_at(
 
 #[inline]
 fn is_dangerous_e2(bytes: &[u8], i: usize) -> bool {
-    // U+200B..D (zero-width), U+202A..E (bidi controls), U+2066..9 (isolates).
+    // U+200B..D (zero-width), U+200E..F (LRM/RLM), U+202A..E (bidi embedding
+    // and override), U+2066..9 (bidi isolates).
     matches!(
         (bytes.get(i + 1), bytes.get(i + 2)),
-        (Some(0x80), Some(0x8B..=0x8D | 0xAA..=0xAE)) | (Some(0x81), Some(0xA6..=0xA9))
+        (Some(0x80), Some(0x8B..=0x8F | 0xAA..=0xAE)) | (Some(0x81), Some(0xA6..=0xA9))
     )
 }
 
@@ -409,6 +416,34 @@ fn test_sanitize_substitutes_bidi_and_zero_width() {
     assert_eq!(sanitize("a\u{200D}b"), format!("a{r}b"));
     // BOM in middle of file: U+FEFF
     assert_eq!(sanitize("a\u{FEFF}b"), format!("a{r}b"));
+}
+
+#[test]
+fn test_sanitize_substitutes_every_bidi_control() {
+    // Unicode Bidi_Control is exactly these 12 codepoints. Covering only some
+    // of them leaves a reordering attack available through the rest.
+    let r = '\u{FFFD}';
+    for c in [
+        '\u{061C}', '\u{200E}', '\u{200F}', '\u{202A}', '\u{202B}', '\u{202C}', '\u{202D}',
+        '\u{202E}', '\u{2066}', '\u{2067}', '\u{2068}', '\u{2069}',
+    ] {
+        assert_eq!(
+            sanitize(&format!("a{c}b")),
+            format!("a{r}b"),
+            "U+{:04X} was not substituted",
+            c as u32
+        );
+    }
+}
+
+#[test]
+fn test_sanitize_preserves_arabic_sharing_the_alm_lead_byte() {
+    // U+061C is reached via lead byte 0xD8, which also leads ordinary Arabic.
+    assert_eq!(
+        sanitize("\u{0600}\u{061F}\u{06FF}"),
+        "\u{0600}\u{061F}\u{06FF}"
+    );
+    assert_eq!(sanitize("مرحبا بالعالم"), "مرحبا بالعالم");
 }
 
 #[test]
