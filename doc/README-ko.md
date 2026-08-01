@@ -189,12 +189,10 @@ bat main.cpp | xclip
 있습니다.
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="bat -plman"
 man 2 select
 ```
-(Debian이나 Ubuntu를 사용한다면 `bat`을 `batcat`으로 치환하세요.)
-
-포팻 문제가 발생한다면, `MANROFFOPT="-c"`을 써야 할 수 있습니다.
+(일부 오래된 Debian 또는 Ubuntu 배포판에서는 실행 파일 이름이 `bat`이 아닌 `batcat`입니다.)
 
 이 기능을 포함한 새로운 명령어를 선호한다면,
 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)을 쓸
@@ -202,9 +200,6 @@ man 2 select
 
 참고로 [Manpage 문법](../assets/syntaxes/Manpage.sublime-syntax)은 본 저장소에서
 개발 중에 있으며, 아직 더 손봐야 합니다.
-
-또한, 이는 Mandoc의 `man` 구현에서
-[작동하지 않습니다](https://github.com/sharkdp/bat/issues/1145).
 
 #### `prettier` / `shfmt` / `rustfmt`
 
