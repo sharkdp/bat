@@ -200,7 +200,7 @@ man 2 select
 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)을 쓸
 수도 있습니다. 
 
-참고로 [Manpage 문법](../assets/syntaxes/Manpage.sublime-syntax)은 본 저장소에서
+참고로 [Manpage 문법](../assets/syntaxes/02_Extra/Manpage.sublime-syntax)은 본 저장소에서
 개발 중에 있으며, 아직 더 손봐야 합니다.
 
 또한, 이는 Mandoc의 `man` 구현에서
