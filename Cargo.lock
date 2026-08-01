@@ -1856,9 +1856,9 @@ dependencies = [
 
 [[package]]
 name = "minus"
-version = "5.7.1"
+version = "5.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2657ec5f6a6edc55a85c8db0c572436b612eb036af00e7eee47e0a622095ed96"
+checksum = "1db1df1b8dd701aa57b41283b50b751b3ebc8fe1406955ec90c53b46b475fa56"
 dependencies = [
  "crossbeam-channel",
  "crossterm",
