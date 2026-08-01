@@ -221,7 +221,7 @@ version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
- "generic-array 0.14.7",
+ "generic-array",
 ]
 
 [[package]]
@@ -466,7 +466,7 @@ version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a"
 dependencies = [
- "generic-array 0.14.7",
+ "generic-array",
  "typenum",
 ]
 
@@ -680,29 +680,28 @@ dependencies = [
 
 [[package]]
 name = "execute"
-version = "0.2.15"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0be3cc61fe54b4cae4463cdbda0401978ffe19d4dcc7a5201a312cddf64726dd"
+checksum = "a8bc8fa7331f8c9f97fb52c60c4e1d07fd424db18130cb252b1da7c6bbcfc2c9"
 dependencies = [
  "execute-command-macro",
  "execute-command-tokens",
- "generic-array 1.4.1",
 ]
 
 [[package]]
 name = "execute-command-macro"
-version = "0.1.11"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3e748391d89b43c52decaed8645b4a83a09d14f5ee868071c6813389e9e7036"
+checksum = "889365b82d31077b07ed81c1b37f49eed80266f57c99bc3706e8d8d4783388ac"
 dependencies = [
  "execute-command-macro-impl",
 ]
 
 [[package]]
 name = "execute-command-macro-impl"
-version = "0.1.12"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57dd896da3fbb77138059b015c013459d96063c66bcdd3b9094ff2e9d3f19a47"
+checksum = "581bbece7790a10aa1c40586be3be5b6f466f0a608386885a81924df372fd530"
 dependencies = [
  "execute-command-tokens",
  "quote",
@@ -711,9 +710,9 @@ dependencies = [
 
 [[package]]
 name = "execute-command-tokens"
-version = "0.1.9"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "729eda2ea2f6c5ef85150c85a9b2ce0a8e01f040e59cdb32521eaa6c840c9d51"
+checksum = "9ef469ea74199a1c75f76f5176e18e4a8864caa6b7ca528c97a5f5fe67c94902"
 
 [[package]]
 name = "expect-test"
@@ -813,16 +812,6 @@ checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
 dependencies = [
  "typenum",
  "version_check",
-]
-
-[[package]]
-name = "generic-array"
-version = "1.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dab9e9188e97a93276e1fe7b56401b851e2b45a46d045ca658100c1303ada649"
-dependencies = [
- "rustversion",
- "typenum",
 ]
 
 [[package]]
