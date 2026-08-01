@@ -1,4 +1,4 @@
-A cat(1) clone with wings.
+Bat is a command that reads file and writes elegantly to standard output. Aka a cat clone with wings.
 
 Usage: bat [OPTIONS] [FILE]...
        bat <COMMAND>
