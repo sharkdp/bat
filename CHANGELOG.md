@@ -3,6 +3,7 @@
 
 ## Other
 
+- Group Cargo minor and patch Dependabot version updates to reduce lockfile conflicts, see #3863 (@TyceHerrman)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
