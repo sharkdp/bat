@@ -228,6 +228,19 @@ impl App {
         if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
             let args = wild::args_os().collect::<Vec<_>>();
+
+            // Handle --help / -h explicitly for the cache subcommand to ensure
+            // exit code 0. Clap's ArgAction::Help can conflict with the
+            // parent's disable_help_flag(true), causing a non-zero exit.
+            if args.iter().any(|a| a == "-h" || a == "--help") {
+                if let Some(cache_cmd) =
+                    clap_app::build_app(interactive_output).find_subcommand("cache")
+                {
+                    println!("{}", cache_cmd.render_help());
+                    std::process::exit(0);
+                }
+            }
+
             return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
         }
 
