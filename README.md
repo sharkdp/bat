@@ -198,6 +198,8 @@ The [`prettybat`](https://github.com/eth-p/bat-extras/blob/master/doc/prettybat.
 
 You can use `bat` to colorize help text: `$ cp --help | bat -plhelp`
 
+> **Note:** The `help` language syntax is provided as a git submodule. If you build `bat` from source, initialize submodules with `git submodule update --init --recursive` to include it. Pre-built binaries from the [releases page](https://github.com/sharkdp/bat/releases) include it by default.
+
 You can also use a wrapper around this:
 
 ```bash
