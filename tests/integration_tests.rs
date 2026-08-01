@@ -214,6 +214,69 @@ fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
 }
 
 #[test]
+fn number_nonblank_style() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_from_cli_in_loop_through_mode() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_takes_precedence_over_number() {
+    // -bn should behave like -b
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bn")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+
+    // -nb should also behave like -b
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-nb")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_ignored_when_followed_by_plain() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+}
+
+#[test]
+fn piped_output_with_number_nonblank_flag() {
+    bat()
+        .arg("-b")
+        .write_stdin("hello\n\nworld\n")
+        .assert()
+        .success()
+        .stdout("   1 hello\n     \n   2 world\n");
+}
+
+#[test]
 fn line_range_2_3() {
     bat()
         .arg("multiline.txt")
