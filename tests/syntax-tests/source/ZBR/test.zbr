@@ -1,0 +1,19 @@
+#trigger !rank
+#name Rank Command
+#type prefix
+#description Rank command that read's user's xp and sends an embed.
+
+// Read the user's XP and level from persistent variables
+ZsetUserVar{xp;1000}
+ZsetUserVar{level;10}
+Zvar{xp;ZgetUserVar{xp}}
+Zvar{level;ZgetUserVar{level}}
+
+// Build and send an embed
+Ztitle{Zusername{}'s Rank}
+Zdescription{Here's your current progress.}
+Zcolor{#5865F2}
+ZaddField{Level;Zvar{level};true}
+ZaddField{XP;Zvar{xp};true}
+Zfooter{ZserverName{}}
+Ztimestamp{}
