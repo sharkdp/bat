@@ -26,6 +26,7 @@
 ## Bugfixes
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
 - Fix `--sanitize` passing through the bidi control characters U+200E, U+200F and U+061C, see #3862 (@lenamonj)
+- Prevent `--line-range=:-N` from panicking when `N` is a very large offset. Closes #3845, see #3848 (@xenoninja)
 - `--strip-ansi`: also strip 8-bit C1 introducers (U+0090, U+0098, U+009B, U+009D, U+009E, U+009F) and DCS/SOS/PM/APC sequence bodies, which previously passed through. See #3729 (@curious-rabbit)
 - Fix `--ignored-suffix` not falling back to first-line/shebang detection when the ignored suffix is also a registered extension (e.g. `--ignored-suffix .txt` on a shebang script), see #2745 and #3816 (@adnrivera)
 - Fix `capacity overflow` panic when printing a snip separator at `--terminal-width=1` with multiple line ranges. Closes #3803, see #3804 (@leeewee)
