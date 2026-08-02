@@ -38,19 +38,20 @@ contexts:
       scope: markup.underline.link.scheme.log
       push: url-host
   log_level_lines:
-    - match: (?=.*{{error}})
+    # Prevent retrying each lookahead at every position.
+    - match: \G(?=.*{{error}})
       push:
         - error_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{warning}})
+    - match: \G(?=.*{{warning}})
       push:
         - warning_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{info}})
+    - match: \G(?=.*{{info}})
       push:
         - info_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{debug}})
+    - match: \G(?=.*{{debug}})
       push:
         - debug_line_meta
         - main_pop_at_eol
