@@ -2164,6 +2164,26 @@ fn header_binary() {
         .stderr("");
 }
 
+// Regression test for https://github.com/sharkdp/bat/issues/3554
+#[test]
+fn header_binary_with_null_after_first_line() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("encrypted.gpg");
+    std::fs::write(&tmp_path, b"packet-header\npayload\0bytes\n")
+        .expect("can write temporary file");
+
+    bat()
+        .arg(&tmp_path)
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("--line-range=0:0")
+        .arg("--file-name=encrypted.gpg")
+        .assert()
+        .success()
+        .stdout("File: encrypted.gpg   <BINARY>\n")
+        .stderr("");
+}
+
 #[test]
 fn header_zip_file_is_binary() {
     let tmp_dir = tempdir().expect("can create temporary directory");
