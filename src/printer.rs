@@ -919,6 +919,16 @@ impl Printer for InteractivePrinter<'_> {
                                         current_width = cw;
                                     }
                                     last_ws_idx = None;
+
+                                    // If the wrap was triggered by the separating
+                                    // whitespace itself (i.e. the previous word ended
+                                    // exactly at the terminal width), that whitespace is
+                                    // consumed by the line break and must not be rendered
+                                    // as a leading space on the continuation line.
+                                    if word_wrap && c.is_whitespace() {
+                                        current_width = 0;
+                                        continue;
+                                    }
                                 }
 
                                 line_buf.push(c);
