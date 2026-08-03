@@ -2,6 +2,7 @@ use std::convert::TryInto;
 use std::path::Path;
 
 use syntect::highlighting::ThemeSet;
+use syntect::parsing::syntax_definition::{ContextReference, Pattern};
 use syntect::parsing::{SyntaxSet, SyntaxSetBuilder};
 
 use crate::assets::*;
@@ -76,7 +77,9 @@ fn build_syntax_set_builder(
 
     let syntax_dir = source_dir.join("syntaxes");
     if syntax_dir.exists() {
+        let custom_syntax_start = syntax_set_builder.syntaxes().len();
         syntax_set_builder.add_from_folder(syntax_dir, true)?;
+        reject_self_referential_scope_includes(&syntax_set_builder, custom_syntax_start)?;
     } else {
         println!(
             "No syntaxes were found in '{}', using the default set.",
@@ -85,6 +88,36 @@ fn build_syntax_set_builder(
     }
 
     Ok(syntax_set_builder)
+}
+
+fn reject_self_referential_scope_includes(
+    syntax_set_builder: &SyntaxSetBuilder,
+    custom_syntax_start: usize,
+) -> Result<()> {
+    let syntaxes = syntax_set_builder.syntaxes();
+
+    for (syntax_index, syntax) in syntaxes.iter().enumerate().skip(custom_syntax_start) {
+        for context in syntax.contexts.values() {
+            for pattern in &context.patterns {
+                let Pattern::Include(ContextReference::ByScope { scope, .. }) = pattern else {
+                    continue;
+                };
+                if syntaxes
+                    .iter()
+                    .rposition(|candidate| candidate.scope == *scope)
+                    == Some(syntax_index)
+                {
+                    return Err(format!(
+                        "Syntax '{}' contains a recursive 'include: scope:' reference",
+                        syntax.name
+                    )
+                    .into());
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
@@ -167,4 +200,94 @@ fn asset_to_cache<T: serde::Serialize>(
         .map_err(|_| format!("Could not save {description} to {}", path.to_string_lossy()))?;
     println!("okay");
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use tempfile::TempDir;
+
+    use super::*;
+
+    #[test]
+    fn rejects_self_referential_scope_include() {
+        let source_dir = TempDir::new().expect("temporary source directory can be created");
+        let target_dir = TempDir::new().expect("temporary target directory can be created");
+        let syntax_dir = source_dir.path().join("syntaxes");
+
+        std::fs::create_dir(&syntax_dir).expect("syntax directory can be created");
+        std::fs::write(
+            syntax_dir.join("loop.sublime-syntax"),
+            r#"%YAML 1.2
+---
+name: Loopy Python
+file_extensions: [loopy]
+scope: source.python
+contexts:
+  main:
+    - include: scope:source.python
+"#,
+        )
+        .expect("recursive syntax definition can be written");
+
+        let error = build(
+            source_dir.path(),
+            false,
+            false,
+            target_dir.path(),
+            env!("CARGO_PKG_VERSION"),
+        )
+        .expect_err("self-referential scope include must be rejected");
+
+        assert_eq!(
+            error.to_string(),
+            "Syntax 'Loopy Python' contains a recursive 'include: scope:' reference"
+        );
+        assert!(!target_dir.path().join("syntaxes.bin").exists());
+    }
+
+    #[test]
+    fn accepts_include_from_another_scope() {
+        let source_dir = TempDir::new().expect("temporary source directory can be created");
+        let target_dir = TempDir::new().expect("temporary target directory can be created");
+        let syntax_dir = source_dir.path().join("syntaxes");
+
+        std::fs::create_dir(&syntax_dir).expect("syntax directory can be created");
+        std::fs::write(
+            syntax_dir.join("Base.sublime-syntax"),
+            r#"%YAML 1.2
+---
+name: Base
+file_extensions: [base]
+scope: source.base
+contexts:
+  main:
+    - match: .
+"#,
+        )
+        .expect("base syntax definition can be written");
+        std::fs::write(
+            syntax_dir.join("Wrapper.sublime-syntax"),
+            r#"%YAML 1.2
+---
+name: Wrapper
+file_extensions: [wrapper]
+scope: source.wrapper
+contexts:
+  main:
+    - include: scope:source.base
+"#,
+        )
+        .expect("wrapper syntax definition can be written");
+
+        build(
+            source_dir.path(),
+            false,
+            false,
+            target_dir.path(),
+            env!("CARGO_PKG_VERSION"),
+        )
+        .expect("include from another scope can be cached");
+
+        assert!(target_dir.path().join("syntaxes.bin").exists());
+    }
 }
