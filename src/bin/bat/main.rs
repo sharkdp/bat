@@ -207,6 +207,9 @@ pub fn list_themes(
 ) -> Result<()> {
     let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
     let mut config = cfg.clone();
+    // Meta-command: never page theme listings. Config/BAT_OPTS often set
+    // --paging=always, which made --list-themes unusable (see #1618).
+    config.paging_mode = PagingMode::Never;
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
