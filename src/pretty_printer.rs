@@ -192,6 +192,15 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to sanitize untrusted input for safe display (default: never)
+    ///
+    /// Strips ANSI escape sequences and additionally substitutes terminal-active
+    /// control bytes and bidi / zero-width codepoints with U+FFFD.
+    pub fn sanitize(&mut self, mode: StripAnsiMode) -> &mut Self {
+        self.config.sanitize = mode;
+        self
+    }
+
     /// Text wrapping mode (default: do not wrap)
     pub fn wrapping_mode(&mut self, mode: WrappingMode) -> &mut Self {
         self.config.wrapping_mode = mode;

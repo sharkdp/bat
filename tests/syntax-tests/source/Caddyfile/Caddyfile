@@ -1,0 +1,25 @@
+(logging) {
+    log {
+        output file /var/log/caddy.log
+    }
+}
+
+# a comment
+localhost:8080, example.com {
+    root * /var/www/site
+    file_server
+    reverse_proxy /.well-known/matrix/* localhost:8008 {
+        header_up Host {upstream_hostport}
+    }
+    import logging
+}
+
+www.example.com {
+    redir https://example.com{uri} permanent
+    import logging
+}
+
+status.example.com {
+    reverse_proxy localhost:3002
+    import logging
+}

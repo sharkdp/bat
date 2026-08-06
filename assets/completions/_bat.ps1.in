@@ -100,6 +100,11 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
         }
+        '*;--sanitize' {
+            $ArrayWhen |
+            ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
+            break
+        }
         '*;--strip-ansi' {
             $ArrayWhen |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
@@ -158,6 +163,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--ignored-suffix'        , 'ignored-suffix'        , [CompletionResultType]::ParameterName, 'Ignore extension. For example: ''bat --ignored-suffix ".dev" my_file.json.dev'' will use JSON syntax, and ignore ''.dev''')
             [CompletionResult]::new('--squeeze-blank'         , 'squeeze-blank'         , [CompletionResultType]::ParameterName, 'Squeeze consecutive empty lines into a single empty line.')
             [CompletionResult]::new('--squeeze-limit'         , 'squeeze-limit'         , [CompletionResultType]::ParameterName, 'Set the maximum number of consecutive empty lines to be printed.')
+            [CompletionResult]::new('--sanitize'              , 'sanitize'              , [CompletionResultType]::ParameterName, 'Specify when to sanitize untrusted input for safe display. Implies --strip-ansi and also replaces terminal-active and bidi / zero-width bytes. (auto, always, *never*).')
             [CompletionResult]::new('--strip-ansi'            , 'strip-ansi'            , [CompletionResultType]::ParameterName, 'Specify when to strip ANSI escape sequences from the input. The automatic mode will remove escape sequences unless the syntax highlighting language is plain text. (auto, always, *never*).')
         #   [CompletionResult]::new('-p'                      , 'p'                     , [CompletionResultType]::ParameterName, 'Show plain style (alias for ''--style=plain'').')
             [CompletionResult]::new('--plain'                 , 'plain'                 , [CompletionResultType]::ParameterName, 'Show plain style (alias for ''--style=plain'').')

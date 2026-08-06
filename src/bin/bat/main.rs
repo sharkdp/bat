@@ -152,7 +152,14 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
         let comma_separator = ", ";
         let separator = " ";
         // Line-wrapping for the possible file extension overflow.
-        let desired_width = config.term_width - longest - separator.len();
+        // Clamp instead of subtracting: a tiny `--terminal-width` (smaller than the
+        // longest language name) would otherwise underflow `usize` and wrap to a huge
+        // value, silently disabling wrapping (and panicking in debug/overflow-checked
+        // builds). Mirrors the `saturating_sub` fix applied to `print_snip` in #3804.
+        let desired_width = config
+            .term_width
+            .saturating_sub(longest)
+            .saturating_sub(separator.len());
 
         let style = if config.colored_output {
             Green.normal()
@@ -420,11 +427,9 @@ fn run() -> Result<bool> {
             if app.matches.get_flag("list-languages") {
                 let languages: String = get_languages(&config, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
-                let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..Default::default()
-                };
+                let mut plain_config = config.clone();
+                plain_config.style_components =
+                    StyleComponents::new(StyleComponent::Plain.components(false));
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
                 list_themes(&config, config_dir, cache_dir, app.theme_options())?;

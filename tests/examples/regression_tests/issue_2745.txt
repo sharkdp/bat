@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+NAME="${0##*/}"
+for i in {1..3}; do
+    echo "hello $NAME $i"
+done

@@ -30,7 +30,8 @@ use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
 use crate::preprocessor::{
-    expand_tabs, replace_nonprintable, sanitize_for_terminal, strip_ansi, strip_overstrike,
+    expand_tabs, replace_nonprintable, sanitize, sanitize_for_terminal, strip_ansi,
+    strip_overstrike,
 };
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -210,6 +211,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    sanitize: bool,
     strip_overstrike: bool,
 }
 
@@ -273,7 +275,9 @@ impl<'a> InteractivePrinter<'a> {
 
         let needs_to_match_syntax = (!is_printing_binary
             || matches!(config.binary, BinaryBehavior::AsText))
-            && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
+            && (config.colored_output
+                || config.strip_ansi == StripAnsiMode::Auto
+                || config.sanitize == StripAnsiMode::Auto);
 
         let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
@@ -319,6 +323,14 @@ impl<'a> InteractivePrinter<'a> {
             _ => false,
         };
 
+        let sanitize = match config.sanitize {
+            _ if config.show_nonprintable => false,
+            StripAnsiMode::Always => true,
+            StripAnsiMode::Auto if is_plain_text => false,
+            StripAnsiMode::Auto => true,
+            _ => false,
+        };
+
         Ok(InteractivePrinter {
             panel_width,
             colors,
@@ -332,6 +344,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            sanitize,
             strip_overstrike,
         })
     }
@@ -675,8 +688,10 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
-            // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
-            if self.strip_ansi {
+            // Sanitize is the strict superset; otherwise strip-ansi alone.
+            if self.sanitize {
+                line = sanitize(&line).into()
+            } else if self.strip_ansi {
                 line = strip_ansi(&line).into()
             }
 

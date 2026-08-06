@@ -281,3 +281,6 @@
 [submodule "assets/syntaxes/02_Extra/Kotlin"]
 	path = assets/syntaxes/02_Extra/Kotlin
 	url = https://github.com/guille/sublime-kotlin
+[submodule "assets/syntaxes/02_Extra/Caddy"]
+	path = assets/syntaxes/02_Extra/Caddy
+	url = https://github.com/caddyserver/sublimetext.git
