@@ -1,5 +1,8 @@
 name: CICD
 
+permissions:
+  contents: read
+
 env:
   CICD_INTERMEDIATES_DIR: "_cicd-intermediates"
   MSRV_FEATURES: --no-default-features --features minimal-application,bugreport,build-assets
@@ -183,6 +186,9 @@ jobs:
           - { target: x86_64-unknown-linux-musl   , os: ubuntu-latest , dpkg_arch: musl-linux-amd64, use-cross: true }
     env:
       BUILD_CMD: cargo
+    permissions:
+      # Publish the release archives and packages on tag builds.
+      contents: write
     steps:
     - name: Checkout source code
       uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
