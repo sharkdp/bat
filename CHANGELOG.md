@@ -24,6 +24,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Respect `--decorations=auto` for non-interactive output when `--color=always` forces syntax highlighting, including when `--style` is specified. Closes #3710, see #3719 (@MackDing)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
 - Fix `--sanitize` passing through the bidi control characters U+200E, U+200F and U+061C, see #3862 (@lenamonj)
 - `--strip-ansi`: also strip 8-bit C1 introducers (U+0090, U+0098, U+009B, U+009D, U+009E, U+009F) and DCS/SOS/PM/APC sequence bodies, which previously passed through. See #3729 (@curious-rabbit)
