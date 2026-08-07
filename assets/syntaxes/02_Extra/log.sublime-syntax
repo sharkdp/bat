@@ -38,19 +38,23 @@ contexts:
       scope: markup.underline.link.scheme.log
       push: url-host
   log_level_lines:
-    - match: (?=.*{{error}})
+    # \G anchors to the current parser position (start of line) so these
+    # lookaheads are only attempted once per line instead of at every character
+    # position, preventing catastrophic O(n²) backtracking on long lines that
+    # contain no log-level keyword (e.g. bash xtrace output).
+    - match: (?=\G.*{{error}})
       push:
         - error_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{warning}})
+    - match: (?=\G.*{{warning}})
       push:
         - warning_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{info}})
+    - match: (?=\G.*{{info}})
       push:
         - info_line_meta
         - main_pop_at_eol
-    - match: (?=.*{{debug}})
+    - match: (?=\G.*{{debug}})
       push:
         - debug_line_meta
         - main_pop_at_eol
@@ -94,7 +98,7 @@ contexts:
     - match: \b(?={{hours_minutes_seconds}})
       push: time
   time:
-    - match: (?:{{hours_minutes_seconds}})(?:(\.)\d{3})?\b
+    - match: (?:{{hours_minutes_seconds}})(?:(\.}\d{3})?\b
       scope: meta.time.log meta.number.integer.decimal.log constant.numeric.value.log
       captures:
         1: punctuation.separator.decimal.log
@@ -129,7 +133,7 @@ contexts:
         2: constant.numeric.value.log
         3: constant.numeric.value.log punctuation.separator.decimal.log
         4: constant.numeric.value.log
-    - match: \b\d+(\.)\d+\b
+    - match: \b\d+(\.}\d+\b
       scope: meta.number.float.log constant.numeric.value.log
       captures:
         1: punctuation.separator.decimal.log
@@ -161,7 +165,7 @@ contexts:
     # After a valid domain, zero or more non-space non-< characters may follow
     - match: (?=[?!.,:*_~]*[\s<]) # Trailing punctuation (specifically, ?, !, ., ,, :, *, _, and ~) will not be considered part of the autolink, though they may be included in the interior of the link
       pop: true
-    - match: \( # When an autolink ends in ), we scan the entire autolink for the total number of parentheses. If there is a greater number of closing parentheses than opening ones, we don’t consider the last character part of the autolink, in order to facilitate including an autolink inside a parenthesis
+    - match: \( # When an autolink ends in ), we scan the entire autolink for the total number of parentheses. If there is a greater number of closing parentheses than opening ones, we don't consider the last character part of the autolink, in order to facilitate including an autolink inside a parenthesis
       push:
         - meta_scope: markup.underline.link.path.log
         - match: (?=[?!.,:*_~]*[\s<])
