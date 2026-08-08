@@ -413,6 +413,8 @@ You can install `bat` via [scoop](https://scoop.sh/):
 scoop install bat
 ```
 
+After WinGet, Chocolatey, or Scoop, open a **new** terminal so `PATH` picks up the `bat` shim.
+
 #### From prebuilt binaries:
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
