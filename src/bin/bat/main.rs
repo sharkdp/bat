@@ -17,7 +17,6 @@ use std::path::Path;
 use std::process;
 
 use bat::output::{OutputHandle, OutputType};
-use bat::theme::DetectColorScheme;
 use nu_ansi_term::Color::Green;
 use nu_ansi_term::Style;
 
@@ -39,7 +38,7 @@ use bat::{
     error::*,
     input::Input,
     style::{StyleComponent, StyleComponents},
-    theme::{color_scheme, default_theme, ColorScheme},
+    theme::{default_theme, theme, ColorScheme, ThemeOptions},
     MappingTarget, PagingMode,
 };
 
@@ -153,7 +152,14 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
         let comma_separator = ", ";
         let separator = " ";
         // Line-wrapping for the possible file extension overflow.
-        let desired_width = config.term_width - longest - separator.len();
+        // Clamp instead of subtracting: a tiny `--terminal-width` (smaller than the
+        // longest language name) would otherwise underflow `usize` and wrap to a huge
+        // value, silently disabling wrapping (and panicking in debug/overflow-checked
+        // builds). Mirrors the `saturating_sub` fix applied to `print_snip` in #3804.
+        let desired_width = config
+            .term_width
+            .saturating_sub(longest)
+            .saturating_sub(separator.len());
 
         let style = if config.colored_output {
             Green.normal()
@@ -197,7 +203,7 @@ pub fn list_themes(
     cfg: &Config,
     config_dir: &Path,
     cache_dir: &Path,
-    detect_color_scheme: DetectColorScheme,
+    theme_options: ThemeOptions,
 ) -> Result<()> {
     let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
     let mut config = cfg.clone();
@@ -206,7 +212,7 @@ pub fn list_themes(
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
 
-    let default_theme_name = default_theme(color_scheme(detect_color_scheme).unwrap_or_default());
+    let default_theme_name = theme(theme_options).to_string();
     let mut buf = String::new();
     let mut handle = OutputHandle::FmtWrite(&mut buf);
 
@@ -259,7 +265,9 @@ pub fn list_themes(
 fn set_terminal_title_to(new_terminal_title: String) {
     let osc_command_for_setting_terminal_title = "\x1b]0;";
     let osc_end_command = "\x07";
-    print!("{osc_command_for_setting_terminal_title}{new_terminal_title}{osc_end_command}");
+    // Prevent BEL/ESC/C1 bytes in the title from terminating or nesting the OSC.
+    let safe_title = bat::sanitize_for_terminal(&new_terminal_title);
+    print!("{osc_command_for_setting_terminal_title}{safe_title}{osc_end_command}");
     io::stdout().flush().unwrap();
 }
 
@@ -285,7 +293,28 @@ fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Resu
 
 #[cfg(feature = "bugreport")]
 fn invoke_bugreport(app: &App, cache_dir: &Path) {
-    use bugreport::{bugreport, collector::*, format::Markdown};
+    use bugreport::{bugreport, collector::*, format::Markdown, report::ReportEntry};
+
+    struct ColorSchemeCollector;
+
+    impl Collector for ColorSchemeCollector {
+        fn description(&self) -> &str {
+            "Detected terminal color scheme"
+        }
+
+        fn collect(
+            &mut self,
+            _: &bugreport::CrateInfo,
+        ) -> std::result::Result<ReportEntry, CollectionError> {
+            let color_scheme = bat::theme::color_scheme(bat::theme::DetectColorScheme::Always);
+            let text = match color_scheme {
+                Some(bat::theme::ColorScheme::Dark) => "dark",
+                Some(bat::theme::ColorScheme::Light) => "light",
+                None => "not detected",
+            };
+            Ok(ReportEntry::Text(text.to_string()))
+        }
+    }
     let pager = bat::config::get_pager_executable(
         app.matches.get_one::<String>("pager").map(|s| s.as_str()),
     )
@@ -307,6 +336,9 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             "BAT_STYLE",
             "BAT_TABS",
             "BAT_THEME",
+            "BAT_WIDTH",
+            bat::theme::env::BAT_THEME_DARK,
+            bat::theme::env::BAT_THEME_LIGHT,
             "COLORTERM",
             "LANG",
             "LC_ALL",
@@ -326,6 +358,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
             custom_assets_metadata,
         ))
         .info(DirectoryEntries::new("Custom assets", cache_dir))
+        .info(ColorSchemeCollector)
         .info(CompileTimeInformation::default());
 
     #[cfg(feature = "paging")]
@@ -394,14 +427,12 @@ fn run() -> Result<bool> {
             if app.matches.get_flag("list-languages") {
                 let languages: String = get_languages(&config, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
-                let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..Default::default()
-                };
+                let mut plain_config = config.clone();
+                plain_config.style_components =
+                    StyleComponents::new(StyleComponent::Plain.components(false));
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-                list_themes(&config, config_dir, cache_dir, DetectColorScheme::default())?;
+                list_themes(&config, config_dir, cache_dir, app.theme_options())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());

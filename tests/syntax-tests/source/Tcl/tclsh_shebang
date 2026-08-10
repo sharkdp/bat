@@ -1,0 +1,7 @@
+#!/usr/bin/env tclsh
+# Tcl script detected via tclsh shebang
+puts "Hello from tclsh"
+set x 42
+if {$x > 0} {
+    puts "positive"
+}

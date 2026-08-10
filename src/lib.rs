@@ -54,6 +54,7 @@ mod vscreen;
 pub(crate) mod wrapping;
 
 pub use nonprintable_notation::{BinaryBehavior, NonprintableNotation};
+pub use preprocessor::sanitize_for_terminal;
 pub use preprocessor::StripAnsiMode;
 pub use pretty_printer::{Input, PrettyPrinter, Syntax};
 pub use syntax_mapping::{MappingTarget, SyntaxMapping};

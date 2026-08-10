@@ -207,7 +207,7 @@ impl<'a> Input<'a> {
                     kind: OpenedInputKind::StdIn,
                     description,
                     metadata: self.metadata,
-                    reader: InputReader::new(stdin),
+                    reader: InputReader::try_new(stdin)?,
                 })
             }
 
@@ -216,34 +216,34 @@ impl<'a> Input<'a> {
                 description,
                 metadata: self.metadata,
                 reader: {
-                    let mut file = File::open(&path)
-                        .map_err(|e| format!("'{}': {e}", path.to_string_lossy()))?;
+                    let path_display =
+                        crate::preprocessor::sanitize_for_terminal(&path.to_string_lossy());
+                    let mut file =
+                        File::open(&path).map_err(|e| format!("'{path_display}': {e}"))?;
                     if file.metadata()?.is_dir() {
-                        return Err(format!("'{}' is a directory.", path.to_string_lossy()).into());
+                        return Err(format!("'{path_display}' is a directory.").into());
                     }
 
                     if let Some(stdout) = stdout_identifier {
-                        let input_identifier = Identifier::try_from(file).map_err(|e| {
-                            format!("{}: Error identifying file: {e}", path.to_string_lossy())
-                        })?;
+                        let input_identifier = Identifier::try_from(file)
+                            .map_err(|e| format!("{path_display}: Error identifying file: {e}"))?;
                         if stdout.surely_conflicts_with(&input_identifier) {
                             return Err(format!(
-                                "IO circle detected. The input from '{}' is also an output. Aborting to avoid infinite loop.",
-                                path.to_string_lossy()
+                                "IO circle detected. The input from '{path_display}' is also an output. Aborting to avoid infinite loop.",
                             )
                             .into());
                         }
                         file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
-                    InputReader::new(BufReader::new(file))
+                    InputReader::try_new(BufReader::new(file))?
                 },
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
-                reader: InputReader::new(BufReader::new(reader)),
+                reader: InputReader::try_new(BufReader::new(reader))?,
             }),
         }
     }
@@ -257,28 +257,29 @@ pub(crate) struct InputReader<'a> {
 }
 
 impl<'a> InputReader<'a> {
-    pub(crate) fn new<R: BufRead + 'a>(mut reader: R) -> InputReader<'a> {
-        let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line).ok();
+    #[cfg(test)]
+    pub(crate) fn new<R: BufRead + 'a>(reader: R) -> InputReader<'a> {
+        Self::try_new(reader).expect("reading the first line failed")
+    }
 
-        let content_type = if first_line.is_empty() {
-            None
-        } else {
-            Some(content_inspector::inspect(&first_line[..]))
-        };
+    pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {
+        let mut first_line = vec![];
+        reader.read_until(b'\n', &mut first_line)?;
+
+        let content_type = inspect_content_type(&first_line);
 
         if content_type == Some(ContentType::UTF_16LE) {
-            read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A).ok();
+            read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
         } else if content_type == Some(ContentType::UTF_16BE) {
-            read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00).ok();
+            read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
         }
 
-        InputReader {
+        Ok(InputReader {
             inner: Box::new(reader),
             first_line,
             content_type,
             unbuffered: false,
-        }
+        })
     }
 
     pub(crate) fn read_line(&mut self, buf: &mut Vec<u8>) -> io::Result<bool> {
@@ -317,6 +318,25 @@ impl<'a> InputReader<'a> {
         }
         Ok(true)
     }
+}
+
+fn inspect_content_type(first_line: &[u8]) -> Option<ContentType> {
+    if first_line.is_empty() {
+        return None;
+    }
+
+    let content_type = content_inspector::inspect(first_line);
+    if content_type == ContentType::UTF_8 && has_zip_signature(first_line) {
+        Some(ContentType::BINARY)
+    } else {
+        Some(content_type)
+    }
+}
+
+fn has_zip_signature(bytes: &[u8]) -> bool {
+    [b"PK\x03\x04", b"PK\x05\x06", b"PK\x07\x08"]
+        .into_iter()
+        .any(|signature| bytes.starts_with(signature))
 }
 
 fn read_utf16_line<R: BufRead>(
@@ -372,6 +392,43 @@ fn basic() {
     assert!(res.is_ok());
     assert!(!res.unwrap());
     assert!(buffer.is_empty());
+}
+
+#[test]
+fn zip_magic_headers_are_treated_as_binary() {
+    for content in [b"PK\x03\x04hello", b"PK\x05\x06hello", b"PK\x07\x08hello"] {
+        let reader = InputReader::new(&content[..]);
+        assert_eq!(Some(ContentType::BINARY), reader.content_type);
+    }
+}
+
+#[test]
+fn non_zip_pk_prefix_is_not_treated_as_binary() {
+    assert_eq!(
+        Some(ContentType::UTF_8),
+        inspect_content_type(b"PK\x03\x03hello")
+    );
+}
+
+#[test]
+fn input_open_returns_initial_read_errors() {
+    struct FailingRead;
+
+    impl Read for FailingRead {
+        fn read(&mut self, _buf: &mut [u8]) -> io::Result<usize> {
+            Err(io::Error::other("initial read failed"))
+        }
+    }
+
+    let input = Input::from_reader(Box::new(FailingRead));
+    let result = input.open(io::empty(), None);
+
+    assert!(result.is_err());
+    assert!(result
+        .err()
+        .unwrap()
+        .to_string()
+        .contains("initial read failed"));
 }
 
 #[test]

@@ -161,12 +161,12 @@ jobs:
       fail-fast: false
       matrix:
         job:
-          - { target: aarch64-unknown-linux-musl  , os: ubuntu-latest , dpkg_arch: arm64,            use-cross: true }
+          - { target: aarch64-unknown-linux-musl  , os: ubuntu-latest , dpkg_arch: musl-linux-arm64, use-cross: true }
           - { target: aarch64-unknown-linux-gnu   , os: ubuntu-latest , dpkg_arch: arm64,            use-cross: true }
           - { target: arm-unknown-linux-gnueabihf , os: ubuntu-latest , dpkg_arch: armhf,            use-cross: true }
           - { target: arm-unknown-linux-musleabihf, os: ubuntu-latest , dpkg_arch: musl-linux-armhf, use-cross: true }
           - { target: i686-pc-windows-msvc        , os: windows-2025  ,                                              }
-          - { target: i686-unknown-linux-gnu      , os: ubuntu-latest , dpkg_arch: i686,             use-cross: true }
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-latest , dpkg_arch: i386,             use-cross: true }
           - { target: i686-unknown-linux-musl     , os: ubuntu-latest , dpkg_arch: musl-linux-i686,  use-cross: true }
           - { target: x86_64-apple-darwin         , os: macos-15-intel,                                              }
           - { target: aarch64-apple-darwin        , os: macos-latest  ,                                              }
@@ -195,9 +195,7 @@ jobs:
 
     - name: Install cross
       if: matrix.job.use-cross
-      uses: taiki-e/install-action@v2
-      with:
-        tool: cross
+      run: cargo install cross --git https://github.com/cross-rs/cross --rev 588b3c99db52b5a9c5906fab96cfadcf1bde7863
 
     - name: Overwrite build command env variable
       if: matrix.job.use-cross
@@ -335,7 +333,7 @@ jobs:
 
         DPKG_BASENAME=${{ needs.crate_metadata.outputs.name }}
         DPKG_CONFLICTS=${{ needs.crate_metadata.outputs.name }}-musl
-        case ${{ matrix.job.target }} in *-musl) DPKG_BASENAME=${{ needs.crate_metadata.outputs.name }}-musl ; DPKG_CONFLICTS=${{ needs.crate_metadata.outputs.name }} ;; esac;
+        case ${{ matrix.job.target }} in *-musl*) DPKG_BASENAME=${{ needs.crate_metadata.outputs.name }}-musl ; DPKG_CONFLICTS=${{ needs.crate_metadata.outputs.name }} ;; esac;
         DPKG_VERSION=${{ needs.crate_metadata.outputs.version }}
         DPKG_ARCH="${{ matrix.job.dpkg_arch }}"
         DPKG_NAME="${DPKG_BASENAME}_${DPKG_VERSION}_${DPKG_ARCH}.deb"

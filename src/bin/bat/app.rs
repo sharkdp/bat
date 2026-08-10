@@ -38,6 +38,15 @@ pub fn env_no_color() -> bool {
     env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty())
 }
 
+fn parse_strip_ansi_value(raw: Option<&str>, flag_name: &str) -> StripAnsiMode {
+    match raw {
+        Some("never") | None => StripAnsiMode::Never,
+        Some("always") => StripAnsiMode::Always,
+        Some("auto") => StripAnsiMode::Auto,
+        _ => unreachable!("other values for {flag_name} are not allowed"),
+    }
+}
+
 enum HelpType {
     Short,
     Long,
@@ -458,16 +467,32 @@ impl App {
                         4
                     },
                 ),
-            strip_ansi: match self
-                .matches
-                .get_one::<String>("strip-ansi")
-                .map(|s| s.as_str())
-            {
-                Some("never") => StripAnsiMode::Never,
-                Some("always") => StripAnsiMode::Always,
-                Some("auto") => StripAnsiMode::Auto,
-                _ => unreachable!("other values for --strip-ansi are not allowed"),
+            strip_ansi: {
+                let sanitize = parse_strip_ansi_value(
+                    self.matches
+                        .get_one::<String>("sanitize")
+                        .map(|s| s.as_str()),
+                    "--sanitize",
+                );
+                let strip_ansi = parse_strip_ansi_value(
+                    self.matches
+                        .get_one::<String>("strip-ansi")
+                        .map(|s| s.as_str()),
+                    "--strip-ansi",
+                );
+                // --sanitize implies --strip-ansi to the same value.
+                if sanitize != StripAnsiMode::Never {
+                    sanitize
+                } else {
+                    strip_ansi
+                }
             },
+            sanitize: parse_strip_ansi_value(
+                self.matches
+                    .get_one::<String>("sanitize")
+                    .map(|s| s.as_str()),
+                "--sanitize",
+            ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             theme: theme(self.theme_options()).to_string(),
@@ -590,7 +615,17 @@ impl App {
 
         // Plain if `--plain` is specified at least once.
         if self.matches.get_count("plain") > 0 {
-            return Some(StyleComponents(HashSet::from([StyleComponent::Plain])));
+            let mut components = HashSet::from([StyleComponent::Plain]);
+            // When --diff is active, preserve change markers and snip separators
+            // so that diff output remains visually useful.
+            if self.matches.try_contains_id("diff").unwrap_or_default()
+                && self.matches.get_flag("diff")
+            {
+                #[cfg(feature = "git")]
+                components.insert(StyleComponent::Changes);
+                components.insert(StyleComponent::Snip);
+            }
+            return Some(StyleComponents(components));
         }
 
         // Default behavior.
@@ -635,7 +670,7 @@ impl App {
         Ok(styled_components)
     }
 
-    fn theme_options(&self) -> ThemeOptions {
+    pub(crate) fn theme_options(&self) -> ThemeOptions {
         Self::theme_options_from_matches(&self.matches)
     }
 

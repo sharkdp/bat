@@ -1,0 +1,2 @@
+#!/usr/bin/wish
+button .b -text "Click"

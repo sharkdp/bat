@@ -1,2 +1,2 @@
 [mappings]
-"XML" = ["*.csproj", "*.vbproj", "*.props", "*.targets"]
+"XML" = ["*.csproj", "*.vbproj", "*.props", "*.targets", "*.slnx"]

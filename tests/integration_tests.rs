@@ -306,6 +306,19 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn snip_at_terminal_width_one_does_not_panic() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--style=snip")
+        .arg("--color=always")
+        .arg("--terminal-width=1")
+        .arg("--line-range=1:2")
+        .arg("--line-range=4:4")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
@@ -613,12 +626,18 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+#[serial]
 fn list_languages() {
-    bat()
-        .arg("--list-languages")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Rust").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--list-languages")
+            .arg("--paging=never")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Rust").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
 }
 
 #[test]
@@ -1048,6 +1067,57 @@ fn tabs_4_arg_overrides_env_noconfig() {
 }
 
 #[test]
+fn terminal_width_env_var_is_respected() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("long.txt");
+    std::fs::write(
+        &tmp_path,
+        "0123456789abcdef0123456789abcdef0123456789abcdef\n",
+    )
+    .expect("can write temporary file");
+
+    bat()
+        .env("BAT_WIDTH", "20")
+        .arg(&tmp_path)
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--wrap=character")
+        .assert()
+        .success()
+        .stdout("   1 0123456789abcde\n     f0123456789abcd\n     ef0123456789abc\n     def\n")
+        .stderr("");
+}
+
+#[test]
+fn terminal_width_arg_overrides_env() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("long.txt");
+    std::fs::write(
+        &tmp_path,
+        "0123456789abcdef0123456789abcdef0123456789abcdef\n",
+    )
+    .expect("can write temporary file");
+
+    bat()
+        .env("BAT_WIDTH", "20")
+        .arg(&tmp_path)
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--wrap=character")
+        .arg("--terminal-width=10")
+        .assert()
+        .success()
+        .stdout(
+            "   1 01234\n     56789\n     abcde\n     f0123\n     45678\n     9abcd\n     ef012\n     34567\n     89abc\n     def\n",
+        )
+        .stderr("");
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }
@@ -1474,6 +1544,7 @@ fn diagnostic_sanity_check() {
         .assert()
         .success()
         .stdout(predicate::str::contains("BAT_PAGER="))
+        .stdout(predicate::str::contains("BAT_WIDTH="))
         .stderr("");
 }
 
@@ -2090,6 +2161,24 @@ fn header_binary() {
         .assert()
         .success()
         .stdout("File: foo   <BINARY>\n")
+        .stderr("");
+}
+
+#[test]
+fn header_zip_file_is_binary() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("test.zip");
+    std::fs::write(&tmp_path, b"PK\x03\x04hello").expect("can write temporary file");
+
+    bat()
+        .arg(&tmp_path)
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("--file-name=test.zip")
+        .assert()
+        .success()
+        .stdout("File: test.zip   <BINARY>\n")
         .stderr("");
 }
 
@@ -2818,6 +2907,25 @@ fn binary_as_text() {
         .assert()
         .stdout("\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\x7F")
         .stderr("");
+}
+
+#[test]
+fn binary_as_text_control_char_width() {
+    // Control characters are displayed as caret notation (e.g. ^@) by the
+    // terminal, occupying 2 columns each. With 20 NUL bytes (40 columns) +
+    // "END" (3 columns) = 43 columns, wrapping at terminal width 40 must
+    // produce 2 lines, not 1. See #3631.
+    bat()
+        .arg("--binary=as-text")
+        .arg("--wrap=character")
+        .arg("--terminal-width=40")
+        .arg("--decorations=always")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("regression_tests/issue_3631.txt")
+        .assert()
+        .success()
+        .stdout(predicate::function(|s: &str| s.lines().count() == 2));
 }
 
 #[test]
@@ -3881,6 +3989,158 @@ fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
     assert!(output.contains("\x1B[33mYellow"))
 }
 
+#[test]
+fn sanitize_implies_strip_ansi() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("\x1B[33mYellow\x1B[m")
+        .assert()
+        .success()
+        .stdout("Yellow");
+}
+
+#[test]
+fn sanitize_strips_osc_clipboard_hijack() {
+    // OSC 52 sets the system clipboard. A file containing this would silently
+    // overwrite the user's clipboard if displayed unfiltered.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("safe\x1B]52;c;cm0=\x07payload")
+        .assert()
+        .success()
+        .stdout("safepayload");
+}
+
+#[test]
+fn sanitize_strips_osc_8_hyperlink_spoof() {
+    // OSC 8 hyperlinks let displayed text point to an arbitrary URL.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("\x1B]8;;https://evil.example\x07click here\x1B]8;;\x07")
+        .assert()
+        .success()
+        .stdout("click here");
+}
+
+#[test]
+fn sanitize_strips_window_title_injection() {
+    // OSC 0/1/2 set the terminal window title.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("hello\x1B]0;evil-title\x07world")
+        .assert()
+        .success()
+        .stdout("helloworld");
+}
+
+#[test]
+fn sanitize_strips_8bit_csi() {
+    // 8-bit CSI introducer (U+009B) is the single-codepoint equivalent of ESC [.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("a\u{9B}31mRED\u{9B}0mb")
+        .assert()
+        .success()
+        .stdout("aREDb");
+}
+
+#[test]
+fn sanitize_substitutes_bare_cr() {
+    // Bare CR (not part of CRLF) is the line-overwrite forgery vector.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("safe\rEVIL")
+        .assert()
+        .success()
+        .stdout("safe\u{FFFD}EVIL");
+}
+
+#[test]
+fn sanitize_preserves_crlf() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("line1\r\nline2\r\n")
+        .assert()
+        .success()
+        .stdout("line1\r\nline2\r\n");
+}
+
+#[test]
+fn sanitize_substitutes_bidi_controls() {
+    // Trojan-Source attack (CVE-2021-42574): U+202E (RLO) reorders display.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("admin\u{202E}check")
+        .assert()
+        .success()
+        .stdout("admin\u{FFFD}check");
+}
+
+#[test]
+fn sanitize_substitutes_zero_width() {
+    // Zero-width chars allow invisible content / identifier confusion.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("ad\u{200B}min")
+        .assert()
+        .success()
+        .stdout("ad\u{FFFD}min");
+}
+
+#[test]
+fn sanitize_preserves_form_feed_in_source() {
+    // FF (U+000C) is used as a section separator in C source and Emacs Lisp.
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("section1\x0Csection2")
+        .assert()
+        .success()
+        .stdout("section1\x0Csection2");
+}
+
+#[test]
+fn sanitize_preserves_unicode_text() {
+    bat()
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--sanitize=always")
+        .write_stdin("snowman ☃ CJK 漢字 emoji 🦀")
+        .assert()
+        .success()
+        .stdout("snowman ☃ CJK 漢字 emoji 🦀");
+}
+
 // Tests that style components can be removed with `-component`.
 #[test]
 fn style_components_can_be_removed() {
@@ -4103,4 +4363,219 @@ fn word_wrap_short_line_no_wrap() {
         .assert()
         .success()
         .stdout("Single Line\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+fn setup_diff_test_repo() -> tempfile::TempDir {
+    use std::process::Command;
+
+    let dir = tempfile::tempdir().expect("can create temporary directory");
+    let repo = dir.path();
+
+    // Initialize a git repo and commit a file
+    Command::new("git")
+        .args(["init"])
+        .current_dir(repo)
+        .output()
+        .expect("git init");
+
+    Command::new("git")
+        .args(["config", "user.email", "test@test.com"])
+        .current_dir(repo)
+        .output()
+        .expect("git config email");
+
+    Command::new("git")
+        .args(["config", "user.name", "Test"])
+        .current_dir(repo)
+        .output()
+        .expect("git config name");
+
+    std::fs::write(repo.join("test.txt"), "line 1\nline 2\nline 3\n").expect("can write test file");
+
+    Command::new("git")
+        .args(["add", "test.txt"])
+        .current_dir(repo)
+        .output()
+        .expect("git add");
+
+    Command::new("git")
+        .args(["commit", "-m", "initial"])
+        .current_dir(repo)
+        .output()
+        .expect("git commit");
+
+    // Modify the file so --diff has something to show
+    std::fs::write(
+        repo.join("test.txt"),
+        "line 1\nline 2 modified\nline 3\nline 4 added\n",
+    )
+    .expect("can write modified test file");
+
+    dir
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_plain_preserves_change_markers() {
+    let repo = setup_diff_test_repo();
+
+    // With --diff --plain, output should contain the change marker column
+    // but not other decorations like line numbers or grid
+    let output = bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let stdout = std::str::from_utf8(&output).expect("valid utf-8");
+
+    // The output should contain the modified and added lines
+    assert!(
+        stdout.contains("line 2 modified"),
+        "diff plain output should contain modified line, got: {stdout}"
+    );
+    assert!(
+        stdout.contains("line 4 added"),
+        "diff plain output should contain added line, got: {stdout}"
+    );
+
+    // Should NOT contain line numbers (a decoration that --plain disables)
+    assert!(
+        !stdout.contains("   1"),
+        "diff plain output should not contain line numbers, got: {stdout}"
+    );
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_plain_does_not_show_grid_or_header() {
+    let repo = setup_diff_test_repo();
+
+    let output = bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--terminal-width=80")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let stdout = std::str::from_utf8(&output).expect("valid utf-8");
+
+    // Grid lines use box-drawing characters
+    assert!(
+        !stdout.contains('─'),
+        "diff plain output should not contain grid lines, got: {stdout}"
+    );
+    assert!(
+        !stdout.contains('│'),
+        "diff plain output should not contain grid separators, got: {stdout}"
+    );
+
+    // Header shows "File: <filename>"
+    assert!(
+        !stdout.contains("File:"),
+        "diff plain output should not contain file header, got: {stdout}"
+    );
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn plain_without_diff_still_works() {
+    let repo = setup_diff_test_repo();
+
+    // --plain without --diff should output file content with no decorations at all
+    bat()
+        .current_dir(repo.path())
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
+}
+
+#[test]
+fn tcl_shebang_detection_tclsh() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_tclsh")
+        .assert()
+        .success();
+}
+
+#[test]
+fn tcl_shebang_detection_wish() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_wish")
+        .assert()
+        .success();
+}
+
+#[test]
+fn tcl_shebang_detection_expect() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("regression_tests/issue_3647_expect")
+        .assert()
+        .success();
+}
+
+#[test]
+fn ignored_suffix_enables_first_line_detection() {
+    // A shebang shell script saved with a `.txt` extension is Plain Text by
+    // default (the extension wins). With `--ignored-suffix .txt` the suffix is
+    // stripped before detection, so it falls back to the first line and is
+    // highlighted exactly as if its language were forced to bash. See #2745.
+    let fixture = "regression_tests/issue_2745.txt";
+    let common = ["--color=always", "--decorations=never", "--style=plain"];
+
+    let stdout = |args: &[&str]| -> Vec<u8> {
+        let assert = bat()
+            .args(common)
+            .args(args)
+            .arg(fixture)
+            .assert()
+            .success();
+        assert.get_output().stdout.clone()
+    };
+
+    let forced_bash = stdout(&["--language", "bash"]);
+    let with_ignored_suffix = stdout(&["--ignored-suffix", ".txt"]);
+    let default = stdout(&[]);
+
+    // The fixture really is being highlighted (forcing bash is not a no-op).
+    assert!(
+        forced_bash.windows(2).any(|w| w == b"\x1b["),
+        "forced-bash output should contain ANSI color codes"
+    );
+    // With the ignored suffix, detection matches forced bash highlighting...
+    assert_eq!(with_ignored_suffix, forced_bash);
+    // ...while the default (extension wins) stays plain and differs.
+    assert_ne!(default, forced_bash);
 }

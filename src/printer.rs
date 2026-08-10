@@ -29,13 +29,26 @@ use crate::error::*;
 use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
-use crate::preprocessor::{expand_tabs, replace_nonprintable, strip_ansi, strip_overstrike};
+use crate::preprocessor::{
+    expand_tabs, replace_nonprintable, sanitize, sanitize_for_terminal, strip_ansi,
+    strip_overstrike,
+};
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
 use crate::vscreen::{AnsiStyle, EscapeSequence, EscapeSequenceIterator};
 use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
 use crate::StripAnsiMode;
+
+// Return the displayed width of a character.
+//
+// Control characters (0x00..=0x1F and 0x7F) are rendered by the terminal
+// in caret notation (e.g. ^@, ^A, ..., ^?), which occupies two columns.
+// UnicodeWidthChar::width() returns None for these, so we map them to 2
+// here instead of the previous default of 0.
+fn char_width(c: char) -> usize {
+    c.width().unwrap_or(if c.is_control() { 2 } else { 0 })
+}
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
     raw_sequence: "\x1B[4m",
@@ -198,6 +211,7 @@ pub(crate) struct InteractivePrinter<'a> {
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
+    sanitize: bool,
     strip_overstrike: bool,
 }
 
@@ -261,7 +275,9 @@ impl<'a> InteractivePrinter<'a> {
 
         let needs_to_match_syntax = (!is_printing_binary
             || matches!(config.binary, BinaryBehavior::AsText))
-            && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
+            && (config.colored_output
+                || config.strip_ansi == StripAnsiMode::Auto
+                || config.sanitize == StripAnsiMode::Auto);
 
         let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
@@ -307,6 +323,14 @@ impl<'a> InteractivePrinter<'a> {
             _ => false,
         };
 
+        let sanitize = match config.sanitize {
+            _ if config.show_nonprintable => false,
+            StripAnsiMode::Always => true,
+            StripAnsiMode::Auto if is_plain_text => false,
+            StripAnsiMode::Auto => true,
+            _ => false,
+        };
+
         Ok(InteractivePrinter {
             panel_width,
             colors,
@@ -320,6 +344,7 @@ impl<'a> InteractivePrinter<'a> {
             background_color_highlight,
             consecutive_empty_lines: 0,
             strip_ansi,
+            sanitize,
             strip_overstrike,
         })
     }
@@ -479,7 +504,7 @@ impl Printer for InteractivePrinter<'_> {
                      (but will be present if the output of 'bat' is piped). You can use 'bat -A' \
                      to show the binary file contents.",
                     Yellow.paint("[bat warning]"),
-                    input.description.summary(),
+                    sanitize_for_terminal(&input.description.summary()),
                 )?;
             } else if self.config.style_components.grid() {
                 self.print_horizontal_line(handle, '┬')?;
@@ -533,9 +558,11 @@ impl Printer for InteractivePrinter<'_> {
                         "{}{}{mode}",
                         description
                             .kind()
-                            .map(|kind| format!("{kind}: "))
+                            .map(|kind| format!("{}: ", sanitize_for_terminal(kind)))
                             .unwrap_or_else(|| "".into()),
-                        self.colors.header_value.paint(description.title()),
+                        self.colors
+                            .header_value
+                            .paint(sanitize_for_terminal(description.title())),
                     );
                     self.print_header_multiline_component(handle, &header_filename)
                 }
@@ -589,11 +616,23 @@ impl Printer for InteractivePrinter<'_> {
         let title = "8<";
         let title_count = title.chars().count();
 
-        let snip_left = "─ ".repeat((self.config.term_width - panel_count - (title_count / 2)) / 4);
+        let snip_left = "─ ".repeat(
+            self.config
+                .term_width
+                .saturating_sub(panel_count)
+                .saturating_sub(title_count / 2)
+                / 4,
+        );
         let snip_left_count = snip_left.chars().count(); // Can't use .len() with Unicode.
 
-        let snip_right =
-            " ─".repeat((self.config.term_width - panel_count - snip_left_count - title_count) / 2);
+        let snip_right = " ─".repeat(
+            self.config
+                .term_width
+                .saturating_sub(panel_count)
+                .saturating_sub(snip_left_count)
+                .saturating_sub(title_count)
+                / 2,
+        );
 
         writeln!(
             handle,
@@ -649,8 +688,10 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
-            // If ANSI escape sequences are supposed to be stripped, do it before syntax highlighting.
-            if self.strip_ansi {
+            // Sanitize is the strict superset; otherwise strip-ansi alone.
+            if self.sanitize {
+                line = sanitize(&line).into()
+            } else if self.strip_ansi {
                 line = strip_ansi(&line).into()
             }
 
@@ -793,7 +834,7 @@ impl Printer for InteractivePrinter<'_> {
 
                             for c in text.chars() {
                                 // calculate the displayed width for next character
-                                let cw = c.width().unwrap_or(0);
+                                let cw = char_width(c);
                                 current_width += cw;
 
                                 // Track whitespace positions for word wrapping.
@@ -868,10 +909,8 @@ impl Printer for InteractivePrinter<'_> {
                                     if let Some(rs) = rest_start {
                                         // Word wrap: carry remainder to next line.
                                         let remainder = line_buf[rs..].to_string();
-                                        let rem_width: usize = remainder
-                                            .chars()
-                                            .map(|ch| ch.width().unwrap_or(0))
-                                            .sum();
+                                        let rem_width: usize =
+                                            remainder.chars().map(char_width).sum();
                                         line_buf.clear();
                                         line_buf.push_str(&remainder);
                                         current_width = rem_width + cw;

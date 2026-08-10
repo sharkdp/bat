@@ -240,6 +240,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("terminal-width")
                 .long("terminal-width")
+                .overrides_with("terminal-width")
                 .value_name("width")
                 .hide_short_help(true)
                 .allow_hyphen_values(true)
@@ -255,10 +256,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                             })
                             .map_err(|e| e.to_string())
                     })
-                .help(
+                .help("Explicitly set the width of the terminal instead of determining it automatically.")
+                .long_help(
                     "Explicitly set the width of the terminal instead of determining it \
                      automatically. If prefixed with '+' or '-', the value will be treated \
-                     as an offset to the actual terminal width. See also: '--wrap'.",
+                     as an offset to the actual terminal width. This can also be configured \
+                     via the BAT_WIDTH environment variable (e.g. export BAT_WIDTH=\"100\"). \
+                     See also: '--wrap'.",
                 ),
         )
         .arg(
@@ -474,6 +478,24 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help("Specify when to strip ANSI escape sequences from the input. \
                 The automatic mode will remove escape sequences unless the syntax highlighting \
                 language is plain text. Possible values: auto, always, *never*.")
+                .hide_short_help(true)
+        )
+        .arg(
+            Arg::new("sanitize")
+                .long("sanitize")
+                .overrides_with("sanitize")
+                .value_name("when")
+                .value_parser(["auto", "always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Sanitize untrusted input for safe display (auto, always, *never*)")
+                .long_help("Specify when to sanitize input bytes for safe terminal display. \
+                Implies --strip-ansi to the same value, and additionally substitutes \
+                terminal-active control bytes (cursor moves, charset switches, beep, etc.) \
+                and Unicode bidi / zero-width formatting characters with the Unicode \
+                replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful \
+                for displaying untrusted file content (e.g. file-manager preview panes). \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(

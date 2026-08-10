@@ -77,7 +77,8 @@ Options:
       --terminal-width <width>
           Explicitly set the width of the terminal instead of determining it automatically. If
           prefixed with '+' or '-', the value will be treated as an offset to the actual terminal
-          width. See also: '--wrap'.
+          width. This can also be configured via the BAT_WIDTH environment variable (e.g. export
+          BAT_WIDTH="100"). See also: '--wrap'.
 
   -n, --number
           Only show line numbers, no other decorations. This is an alias for '--style=numbers'
@@ -161,6 +162,14 @@ Options:
       --strip-ansi <when>
           Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
           escape sequences unless the syntax highlighting language is plain text. Possible values:
+          auto, always, *never*.
+
+      --sanitize <when>
+          Specify when to sanitize input bytes for safe terminal display. Implies --strip-ansi to
+          the same value, and additionally substitutes terminal-active control bytes (cursor moves,
+          charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the
+          Unicode replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful for
+          displaying untrusted file content (e.g. file-manager preview panes). Possible values:
           auto, always, *never*.
 
       --style <components>

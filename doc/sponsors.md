@@ -10,5 +10,3 @@ No issue will have a different priority based on sponsorship status of the
 reporter.
 
 Contributions from anybody are most welcomed, please see our [`CONTRIBUTING.md`](../CONTRIBUTING.md) guide.
-
-If you want to see our biggest sponsors, check the top of [`README.md`](../README.md#sponsors).

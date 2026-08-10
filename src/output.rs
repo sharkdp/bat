@@ -23,6 +23,18 @@ pub struct BuiltinPager {
 impl BuiltinPager {
     fn new() -> Self {
         let pager = minus::Pager::new();
+
+        let mut input_register = minus::input::HashedEventRegister::default();
+        input_register.add_key_events(&["home"], |_, _| {
+            minus::input::InputEvent::UpdateUpperMark(0)
+        });
+        input_register.add_key_events(&["end"], |_, _| {
+            minus::input::InputEvent::UpdateUpperMark(usize::MAX)
+        });
+        pager
+            .set_input_classifier(Box::new(input_register))
+            .expect("failed to set input classifier on newly created pager");
+
         let handle = {
             let pager = pager.clone();
             Some(spawn(move || {
