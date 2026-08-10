@@ -55,6 +55,24 @@ contexts:
       push:
         - debug_line_meta
         - main_pop_at_eol
+  # For syntaxes that embed Log after consuming a prefix. Call this context once.
+  log_level_lines_at_current_position:
+    - match: (?=.*{{error}})
+      set:
+        - error_line_meta
+        - main_pop_at_eol
+    - match: (?=.*{{warning}})
+      set:
+        - warning_line_meta
+        - main_pop_at_eol
+    - match: (?=.*{{info}})
+      set:
+        - info_line_meta
+        - main_pop_at_eol
+    - match: (?=.*{{debug}})
+      set:
+        - debug_line_meta
+        - main_pop_at_eol
   log_levels:
     - match: '{{error}}'
       scope: markup.error.log
