@@ -958,7 +958,7 @@ impl Printer for InteractivePrinter<'_> {
                 write!(
                     handle,
                     "{}",
-                    ansi_style.paint(" ".repeat(cursor_max - cursor))
+                    ansi_style.paint(" ".repeat(cursor_max.saturating_sub(cursor)))
                 )?;
             }
             writeln!(handle)?;
