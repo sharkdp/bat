@@ -446,6 +446,24 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_char_wrap_at_terminal_width_one_with_highlight_does_not_panic() {
+    // Regression test: a character wider than the terminal (e.g. a
+    // double-width emoji) combined with character wrapping and a painted
+    // background (via --highlight-line) used to make the cursor advance
+    // past `cursor_max`, causing `cursor_max - cursor` to underflow and
+    // `str::repeat` to abort with "capacity overflow".
+    bat()
+        .arg("--highlight-line=1")
+        .arg("--terminal-width=1")
+        .arg("--wrap=character")
+        .arg("--color=always")
+        .arg("--paging=never")
+        .write_stdin("\u{1F4E6}\u{1F4E6}\n")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
