@@ -39,19 +39,19 @@ contexts:
       push: url-host
   log_level_lines:
     # Prevent retrying each lookahead at every position.
-    - match: \G(?=.*{{error}})
+    - match: ^(?=.*{{error}})
       push:
         - error_line_meta
         - main_pop_at_eol
-    - match: \G(?=.*{{warning}})
+    - match: ^(?=.*{{warning}})
       push:
         - warning_line_meta
         - main_pop_at_eol
-    - match: \G(?=.*{{info}})
+    - match: ^(?=.*{{info}})
       push:
         - info_line_meta
         - main_pop_at_eol
-    - match: \G(?=.*{{debug}})
+    - match: ^(?=.*{{debug}})
       push:
         - debug_line_meta
         - main_pop_at_eol
