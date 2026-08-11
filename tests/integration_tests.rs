@@ -689,12 +689,18 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+#[serial]
 fn list_languages() {
-    bat()
-        .arg("--list-languages")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Rust").normalize());
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--list-languages")
+            .arg("--paging=never")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Rust").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
 }
 
 #[test]
@@ -2614,6 +2620,145 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn stdin_detects_bash_from_first_line() {
+    let content = "#!/bin/bash\necho hi\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=bash")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn stdin_detects_diff_from_first_line() {
+    let content = "diff --git a/x b/y\n--- a/x\n+++ b/y\n@@ -1 +1 @@\n-old\n+new\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=diff")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn empty_stdin_does_not_detect_syntax() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin("")
+        .assert()
+        .success()
+        .stdout("")
+        .stderr("");
+}
+
+#[test]
+fn binary_stdin_does_not_detect_syntax_from_invalid_utf8_first_line() {
+    let content = b"#!/bin/bash\xff\necho hi\n";
+
+    let detected_output = bat()
+        .arg("--binary=as-text")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content.as_slice())
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let plain_text_output = bat()
+        .arg("--binary=as-text")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=txt")
+        .write_stdin(content.as_slice())
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&plain_text_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn explicit_language_overrides_stdin_first_line_detection() {
+    let content = "diff --git a/x b/y\n--- a/x\n+++ b/y\n@@ -1 +1 @@\n-old\n+new\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("-")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_ne!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
 }
 
 #[test]
