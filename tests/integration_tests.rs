@@ -2171,6 +2171,20 @@ fn header_basic() {
 }
 
 #[test]
+fn header_escapes_unicode_format_controls() {
+    bat()
+        .arg("test.txt")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("-r=0:0")
+        .arg("--file-name=before\u{202E}\u{200B}after.txt")
+        .assert()
+        .success()
+        .stdout("File: before\\u{202e}\\u{200b}after.txt\n")
+        .stderr("");
+}
+
+#[test]
 fn header_full_basic() {
     bat()
         .arg("test.txt")
