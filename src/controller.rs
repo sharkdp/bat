@@ -276,10 +276,21 @@ impl Controller<'_> {
             }
             if !reached_eof {
                 if reader.read_line(&mut current_line_buffer)? {
-                    // Fill the buffer
-                    buffered_lines
-                        .push_back((mem::take(&mut current_line_buffer), current_line_number));
-                    current_line_number += 1;
+                    // Fill the buffer. In number-nonblank mode, don't advance the
+                    // line counter for empty lines (content-free lines that contain
+                    // only the line terminator).
+                    if self.config.number_nonblank
+                        && current_line_buffer
+                            .iter()
+                            .all(|&b| b == b'\r' || b == b'\n')
+                    {
+                        buffered_lines
+                            .push_back((mem::take(&mut current_line_buffer), current_line_number));
+                    } else {
+                        buffered_lines
+                            .push_back((mem::take(&mut current_line_buffer), current_line_number));
+                        current_line_number += 1;
+                    }
                 } else {
                     // No more data to read
                     reached_eof = true;
