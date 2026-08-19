@@ -441,7 +441,9 @@ impl App {
                         Some("unicode") => NonprintableNotation::Unicode,
                         Some("caret") => NonprintableNotation::Caret,
                         Some("gnu") => NonprintableNotation::Gnu,
-                        _ => unreachable!("other values for --nonprintable-notation are not allowed")
+                        _ => {
+                            unreachable!("other values for --nonprintable-notation are not allowed")
+                        }
                     }
                 }
             },

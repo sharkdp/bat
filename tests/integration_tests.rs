@@ -3056,12 +3056,24 @@ fn show_all_gnu_high_bytes() {
 
 #[test]
 fn v_e_t_conflict_with_language() {
-    bat().arg("-v").arg("--language=rust").arg("test.txt")
-        .assert().failure();
-    bat().arg("-e").arg("--language=rust").arg("test.txt")
-        .assert().failure();
-    bat().arg("-t").arg("--language=rust").arg("test.txt")
-        .assert().failure();
+    bat()
+        .arg("-v")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
+    bat()
+        .arg("-e")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
+    bat()
+        .arg("-t")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
 }
 
 #[test]

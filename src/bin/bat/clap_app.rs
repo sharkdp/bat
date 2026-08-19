@@ -100,7 +100,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('v')
                 .action(ArgAction::SetTrue)
                 .conflicts_with("language")
-                .help("Equivalent to -A --nonprintable-notation=gnu, compatible with cat -v. ")
+                .help("Equivalent to -A --nonprintable-notation=gnu, compatible with cat -v. "),
         )
         .arg(
             Arg::new("show-nonprinting-with-ends")
