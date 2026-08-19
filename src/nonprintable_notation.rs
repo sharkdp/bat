@@ -9,6 +9,9 @@ pub enum NonprintableNotation {
     /// Use unicode notation (␇, ␊, ␀, ..)
     #[default]
     Unicode,
+
+    /// Use GNU cat compatible notation (^G, ^@, M-A, ..)
+    Gnu,
 }
 
 /// How to treat binary content

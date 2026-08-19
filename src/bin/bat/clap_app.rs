@@ -66,7 +66,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("nonprintable-notation")
                 .action(ArgAction::Set)
                 .default_value("unicode")
-                .value_parser(["unicode", "caret"])
+                .value_parser(["unicode", "caret", "gnu"])
                 .value_name("notation")
                 .hide_default_value(true)
                 .help("Set notation for non-printable characters.")
@@ -74,8 +74,47 @@ pub fn build_app(interactive_output: bool) -> Command {
                     "Set notation for non-printable characters.\n\n\
                     Possible values:\n  \
                     * unicode (␇, ␊, ␀, ..)\n  \
-                    * caret   (^G, ^J, ^@, ..)",
+                    * caret   (^G, ^J, ^@, ..)\n  \
+                    * gnu     (^G,     ^@, M-A, ..)",
                 ),
+        )
+        .arg(
+            Arg::new("show-ends")
+                .long("show-ends")
+                .action(ArgAction::SetTrue)
+                .conflicts_with("language")
+                .help("Display $ at the end of each line when -A is on."),
+        )
+        .arg(
+            Arg::new("show-tabs")
+                .long("show-tabs")
+                .short('T')
+                .alias("show-tab")
+                .action(ArgAction::SetTrue)
+                .conflicts_with("language")
+                .help("Display tabs as ^I when -A is on."),
+        )
+        .arg(
+            Arg::new("show-nonprinting")
+                .long("show-nonprinting")
+                .short('v')
+                .action(ArgAction::SetTrue)
+                .conflicts_with("language")
+                .help("Equivalent to -A --nonprintable-notation=gnu, compatible with cat -v. ")
+        )
+        .arg(
+            Arg::new("show-nonprinting-with-ends")
+                .short('e')
+                .action(ArgAction::SetTrue)
+                .conflicts_with("language")
+                .help("Equivalent to -v --show-ends."),
+        )
+        .arg(
+            Arg::new("show-nonprinting-with-tabs")
+                .short('t')
+                .action(ArgAction::SetTrue)
+                .conflicts_with("language")
+                .help("Equivalent to -vT."),
         )
         .arg(
             Arg::new("binary")

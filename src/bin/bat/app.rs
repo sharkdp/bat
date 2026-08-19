@@ -408,6 +408,9 @@ impl App {
                 }
             });
 
+        let show_nonprinting_gnu = self.matches.get_flag("show-nonprinting")
+            || self.matches.get_flag("show-nonprinting-with-ends")
+            || self.matches.get_flag("show-nonprinting-with-tabs");
         Ok(Config {
             true_color: is_truecolor_terminal(),
             language: self
@@ -425,16 +428,28 @@ impl App {
                 .matches
                 .get_one::<String>("fallback-syntax")
                 .map(|s| s.as_str()),
-            show_nonprintable: self.matches.get_flag("show-all"),
-            nonprintable_notation: match self
-                .matches
-                .get_one::<String>("nonprintable-notation")
-                .map(|s| s.as_str())
-            {
-                Some("unicode") => NonprintableNotation::Unicode,
-                Some("caret") => NonprintableNotation::Caret,
-                _ => unreachable!("other values for --nonprintable-notation are not allowed"),
+            show_nonprintable: self.matches.get_flag("show-all") || show_nonprinting_gnu,
+            nonprintable_notation: {
+                if show_nonprinting_gnu {
+                    NonprintableNotation::Gnu
+                } else {
+                    match self
+                        .matches
+                        .get_one::<String>("nonprintable-notation")
+                        .map(|s| s.as_str())
+                    {
+                        Some("unicode") => NonprintableNotation::Unicode,
+                        Some("caret") => NonprintableNotation::Caret,
+                        Some("gnu") => NonprintableNotation::Gnu,
+                        _ => unreachable!("other values for --nonprintable-notation are not allowed")
+                    }
+                }
             },
+            show_nonprinting_gnu: show_nonprinting_gnu,
+            show_ends: self.matches.get_flag("show-ends")
+                || self.matches.get_flag("show-nonprinting-with-ends"),
+            show_tabs: self.matches.get_flag("show-tabs")
+                || self.matches.get_flag("show-nonprinting-with-tabs"),
             binary: match self.matches.get_one::<String>("binary").map(|s| s.as_str()) {
                 Some("as-text") => BinaryBehavior::AsText,
                 Some("no-printing") => BinaryBehavior::NoPrinting,

@@ -56,10 +56,20 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     decoded.map(|(seq, n)| (seq.chars().next().unwrap(), n))
 }
 
+fn to_gnu_caret(raw: u8) -> String {
+    String::from(match raw {
+        0..=31 => format!("^{}", (0x40 + raw) as char),
+        127 => String::from("^?"),
+        _ => (raw as char).to_string(),
+    })
+}
+
 pub fn replace_nonprintable(
     input: &[u8],
     tab_width: usize,
     nonprintable_notation: NonprintableNotation,
+    show_ends: bool,
+    show_tabs: bool,
 ) -> String {
     let mut output = String::new();
 
@@ -75,25 +85,52 @@ pub fn replace_nonprintable(
 
             match chr {
                 // space
-                ' ' => output.push('·'),
+                ' ' => {
+                    if nonprintable_notation == NonprintableNotation::Gnu {
+                        output.push(' ');
+                    } else {
+                        output.push('·');
+                    }
+                }
                 // tab
                 '\t' => {
-                    let tab_stop = tab_width - ((line_idx - 1) % tab_width);
-                    line_idx = 0;
-                    if tab_stop == 1 {
-                        output.push('↹');
+                    if show_tabs {
+                        output.push_str(match nonprintable_notation {
+                            NonprintableNotation::Caret => "^I",
+                            NonprintableNotation::Unicode => "\u{2409}",
+                            NonprintableNotation::Gnu => "^I",
+                        });
                     } else {
-                        output.push('├');
-                        output.push_str(&"─".repeat(tab_stop - 2));
-                        output.push('┤');
+                        if nonprintable_notation != NonprintableNotation::Gnu {
+                            let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                            line_idx = 0;
+                            if tab_stop == 1 {
+                                output.push('↹');
+                            } else {
+                                output.push('├');
+                                output.push_str(&"─".repeat(tab_stop - 2));
+                                output.push('┤');
+                            }
+                        } else {
+                            output.push('\t');
+                        }
                     }
                 }
                 // line feed
                 '\x0A' => {
-                    output.push_str(match nonprintable_notation {
-                        NonprintableNotation::Caret => "^J\x0A",
-                        NonprintableNotation::Unicode => "␊\x0A",
-                    });
+                    if show_ends {
+                        output.push_str(match nonprintable_notation {
+                            NonprintableNotation::Caret => "^J$\x0A",
+                            NonprintableNotation::Unicode => "␊$\x0A",
+                            NonprintableNotation::Gnu => "$\x0A",
+                        });
+                    } else {
+                        output.push_str(match nonprintable_notation {
+                            NonprintableNotation::Caret => "^J\x0A",
+                            NonprintableNotation::Unicode => "␊\x0A",
+                            NonprintableNotation::Gnu => "\x0A",
+                        });
+                    }
                     line_idx = 0;
                 }
                 // ASCII control characters
@@ -110,12 +147,18 @@ pub fn replace_nonprintable(
                             let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
                             output.push(replacement_symbol)
                         }
+
+                        NonprintableNotation::Gnu => {
+                            let caret_character = char::from_u32(0x40 + c).unwrap();
+                            write!(output, "^{caret_character}").ok();
+                        }
                     }
                 }
                 // delete
                 '\x7F' => match nonprintable_notation {
                     NonprintableNotation::Caret => output.push_str("^?"),
                     NonprintableNotation::Unicode => output.push('\u{2421}'),
+                    NonprintableNotation::Gnu => output.push_str("^?"),
                 },
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
@@ -125,10 +168,35 @@ pub fn replace_nonprintable(
                     output.push(c)
                 }
                 // everything else
-                c => output.push_str(&c.escape_unicode().collect::<String>()),
+                c => match nonprintable_notation {
+                    NonprintableNotation::Caret => {
+                        output.push_str(&c.escape_unicode().collect::<String>())
+                    }
+                    NonprintableNotation::Unicode => {
+                        output.push_str(&c.escape_unicode().collect::<String>())
+                    }
+                    NonprintableNotation::Gnu => {
+                        let mut buf = [0; 4];
+                        let encoded = c.encode_utf8(&mut buf);
+                        output.push_str(
+                            &encoded
+                                .as_bytes()
+                                .into_iter()
+                                .map(|&raw| format!("M-{}", to_gnu_caret(raw - 0x80)))
+                                .collect::<String>(),
+                        );
+                    }
+                },
             }
         } else {
-            write!(output, "\\x{:02X}", input[idx]).ok();
+            match nonprintable_notation {
+                NonprintableNotation::Caret => write!(output, "\\x{:02X}", input[idx]),
+                NonprintableNotation::Unicode => write!(output, "\\x{:02X}", input[idx]),
+                NonprintableNotation::Gnu => {
+                    write!(output, "M-{}", to_gnu_caret(input[idx] - 0x80))
+                }
+            }
+            .ok();
             idx += 1;
         }
     }
