@@ -11,6 +11,16 @@ Options:
           Show non-printable characters (space, tab, newline, ..).
       --nonprintable-notation <notation>
           Set notation for non-printable characters.
+      --show-ends
+          Display $ at the end of each line when -A is on.
+  -T, --show-tabs
+          Display tabs as ^I when -A is on.
+  -v, --show-nonprinting
+          Equivalent to -A --nonprintable-notation=gnu, compatible with cat -v.
+  -e
+          Equivalent to -v --show-ends.
+  -t
+          Equivalent to -vT.
       --binary <behavior>
           How to treat binary content. (default: no-printing)
   -p, --plain...
