@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix panic (`capacity overflow`) when wrapping a character wider than the terminal (a double-width CJK character or emoji) while a background is painted on the line, e.g. `--terminal-width 1 --wrap character --highlight-line 1`. The background-fill width is now clamped instead of underflowing. Closes #3844 (@nagendramohan)
 - Avoid repeated scans of long lines in Log syntax highlighting, see #3876 (@Matei02355)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
 - Fix `--sanitize` passing through the bidi control characters U+200E, U+200F and U+061C, see #3862 (@lenamonj)

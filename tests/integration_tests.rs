@@ -382,6 +382,21 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_char_wrap_with_background_at_terminal_width_one_does_not_panic() {
+    // Regression test for #3844: wrapping a character wider than the terminal (a double-width
+    // CJK char / emoji) while a background is painted on the line underflowed the background-fill
+    // width (`cursor_max - cursor`) and aborted with "capacity overflow".
+    bat()
+        .arg("regression_tests/issue_3844.txt")
+        .arg("--highlight-line=1")
+        .arg("--terminal-width=1")
+        .arg("--wrap=character")
+        .arg("--color=always")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
