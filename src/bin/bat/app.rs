@@ -447,7 +447,7 @@ impl App {
                     }
                 }
             },
-            show_nonprinting_gnu: show_nonprinting_gnu,
+            show_nonprinting_gnu,
             show_ends: self.matches.get_flag("show-ends")
                 || self.matches.get_flag("show-nonprinting-with-ends"),
             show_tabs: self.matches.get_flag("show-tabs")

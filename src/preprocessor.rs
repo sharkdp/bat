@@ -57,11 +57,11 @@ fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
 }
 
 fn to_gnu_caret(raw: u8) -> String {
-    String::from(match raw {
+    match raw {
         0..=31 => format!("^{}", (0x40 + raw) as char),
         127 => String::from("^?"),
         _ => (raw as char).to_string(),
-    })
+    }
 }
 
 pub fn replace_nonprintable(
@@ -181,7 +181,7 @@ pub fn replace_nonprintable(
                         output.push_str(
                             &encoded
                                 .as_bytes()
-                                .into_iter()
+                                .iter()
                                 .map(|&raw| format!("M-{}", to_gnu_caret(raw - 0x80)))
                                 .collect::<String>(),
                         );
