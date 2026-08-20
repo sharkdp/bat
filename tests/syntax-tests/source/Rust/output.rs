@@ -159,3 +159,7 @@ impl Drop for OutputType {
         }
     }
 }
+
+async fn foo() {
+    async_foo().await.await.await;
+}
