@@ -6,6 +6,14 @@ updates:
     interval: monthly
     time: "04:00"
     timezone: Europe/Berlin
+  groups:
+    cargo-minor-patch:
+      applies-to: version-updates
+      patterns:
+      - "*"
+      update-types:
+      - minor
+      - patch
   ignore:
   - dependency-name: git2
     versions:
