@@ -214,6 +214,43 @@ fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
 }
 
 #[test]
+fn repeated_combined_flags_use_last_number_or_plain_flag() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-npn")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+
+    bat()
+        .arg("multiline.txt")
+        .arg("-pnp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\n",
+        );
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-pbp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bpb")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
 fn number_nonblank_style() {
     bat()
         .arg("empty_lines.txt")

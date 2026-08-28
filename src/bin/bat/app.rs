@@ -85,12 +85,12 @@ impl App {
                 return true;
             }
             // Handle combined short flags
-            // Only count -n if it's the LAST flag in the combined form (so -p doesn't override it)
-            // or if -p is not present in the combined form
+            // Only count -n if its last occurrence comes after the last -p,
+            // or if -p is not present in the combined form.
             if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
                 let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let n_pos = chars.iter().position(|&c| c == 'n');
-                let p_pos = chars.iter().position(|&c| c == 'p');
+                let n_pos = chars.iter().rposition(|&c| c == 'n');
+                let p_pos = chars.iter().rposition(|&c| c == 'p');
                 // -n is in the combined flag and either:
                 // - -p is not present, OR
                 // - -n comes after -p (so -n takes effect)
@@ -112,11 +112,11 @@ impl App {
             if arg_str == "-b" || arg_str == "--number-nonblank" {
                 return true;
             }
-            // Handle combined short flags
+            // Handle combined short flags by comparing the last -b and -p occurrences.
             if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
                 let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let b_pos = chars.iter().position(|&c| c == 'b');
-                let p_pos = chars.iter().position(|&c| c == 'p');
+                let b_pos = chars.iter().rposition(|&c| c == 'b');
+                let p_pos = chars.iter().rposition(|&c| c == 'p');
                 if let Some(b) = b_pos {
                     if p_pos.is_none() || b > p_pos.unwrap() {
                         return true;
