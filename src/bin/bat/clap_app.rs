@@ -97,6 +97,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
+                .overrides_with("number-nonblank")
                 .short('p')
                 .long("plain")
                 .action(ArgAction::Count)
@@ -275,6 +276,23 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help(
                     "Only show line numbers, no other decorations. This is an alias for \
                      '--style=numbers'",
+                ),
+        )
+        .arg(
+            Arg::new("number-nonblank")
+                .long("number-nonblank")
+                .overrides_with("number-nonblank")
+                .short('b')
+                .action(ArgAction::SetTrue)
+                .help("Show line numbers for non-blank lines only (alias for '--style=numbers').")
+                .long_help(
+                    "Only show line numbers for non-blank lines, no other decorations. This is an \
+                     alias for '--style=numbers'. Non-blank lines are lines that contain any \
+                     character before the line ending, including spaces and tabs. When used \
+                     together with --number (-n), --number-nonblank (-b) takes precedence.\n\n\
+                     Example:\n  \
+                     printf 'alpha\\n\\nbeta\\n' | bat -b\n  \
+                     numbers 'alpha' and 'beta', but skips the empty line.",
                 ),
         )
         .arg(

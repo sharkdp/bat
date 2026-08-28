@@ -214,6 +214,69 @@ fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
 }
 
 #[test]
+fn number_nonblank_style() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_from_cli_in_loop_through_mode() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_takes_precedence_over_number() {
+    // -bn should behave like -b
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bn")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+
+    // -nb should also behave like -b
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-nb")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn number_nonblank_ignored_when_followed_by_plain() {
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+}
+
+#[test]
+fn piped_output_with_number_nonblank_flag() {
+    bat()
+        .arg("-b")
+        .write_stdin("hello\n\nworld\n")
+        .assert()
+        .success()
+        .stdout("   1 hello\n     \n   2 world\n");
+}
+
+#[test]
 fn line_range_2_3() {
     bat()
         .arg("multiline.txt")
@@ -2569,6 +2632,145 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn stdin_detects_bash_from_first_line() {
+    let content = "#!/bin/bash\necho hi\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=bash")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn stdin_detects_diff_from_first_line() {
+    let content = "diff --git a/x b/y\n--- a/x\n+++ b/y\n@@ -1 +1 @@\n-old\n+new\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=diff")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn empty_stdin_does_not_detect_syntax() {
+    bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin("")
+        .assert()
+        .success()
+        .stdout("")
+        .stderr("");
+}
+
+#[test]
+fn binary_stdin_does_not_detect_syntax_from_invalid_utf8_first_line() {
+    let content = b"#!/bin/bash\xff\necho hi\n";
+
+    let detected_output = bat()
+        .arg("--binary=as-text")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content.as_slice())
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let plain_text_output = bat()
+        .arg("--binary=as-text")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=txt")
+        .write_stdin(content.as_slice())
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_eq!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&plain_text_output).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn explicit_language_overrides_stdin_first_line_detection() {
+    let content = "diff --git a/x b/y\n--- a/x\n+++ b/y\n@@ -1 +1 @@\n-old\n+new\n";
+
+    let detected_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    let explicit_output = bat()
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=json")
+        .arg("-")
+        .write_stdin(content)
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+
+    assert_ne!(
+        from_utf8(&detected_output).expect("output is valid utf-8"),
+        from_utf8(&explicit_output).expect("output is valid utf-8")
+    );
 }
 
 #[test]
