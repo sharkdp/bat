@@ -119,6 +119,10 @@ pub struct Config<'a> {
 
     /// Whether or not to use unbuffered input reading for streaming use cases
     pub unbuffered: bool,
+
+    /// Only number non-blank lines (like `cat -b`). Has no effect if `style_components` doesn't
+    /// include `LineNumbers`.
+    pub number_nonblank: bool,
 }
 
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
