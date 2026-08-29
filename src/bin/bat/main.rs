@@ -427,11 +427,9 @@ fn run() -> Result<bool> {
             if app.matches.get_flag("list-languages") {
                 let languages: String = get_languages(&config, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
-                let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..Default::default()
-                };
+                let mut plain_config = config.clone();
+                plain_config.style_components =
+                    StyleComponents::new(StyleComponent::Plain.components(false));
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
                 list_themes(&config, config_dir, cache_dir, app.theme_options())?;
