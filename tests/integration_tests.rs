@@ -2963,6 +2963,120 @@ fn show_all_with_unicode() {
 }
 
 #[test]
+fn show_all_with_gnu() {
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=gnu")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H\t\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+}
+
+#[test]
+fn show_all_with_gnu_tabs_ends() {
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=gnu")
+        .arg("--show-tabs")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H^I\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=gnu")
+        .arg("-T")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H^I\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=gnu")
+        .arg("--show-ends")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H\t$\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("--show-all")
+        .arg("--nonprintable-notation=gnu")
+        .arg("--show-tabs")
+        .arg("--show-ends")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H^I$\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+}
+
+#[test]
+fn show_all_gnu_cat_compatibility() {
+    bat()
+        .arg("--show-nonprinting")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H\t\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("-v")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H\t\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("-t")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H^I\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("-e")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H\t$\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+    bat()
+        .arg("-te")
+        .arg("control_characters.txt")
+        .assert()
+        .stdout("^@^A^B^C^D^E^F^G^H^I$\n^K^L^M^N^O^P^Q^R^S^T^U^V^W^X^Y^Z^[^\\^]^^^_^?")
+        .stderr("");
+}
+
+#[test]
+fn show_all_gnu_high_bytes() {
+    bat()
+        .arg("-v")
+        .arg("high-bytes.txt")
+        .assert()
+        .stdout("M-^@M-^AM-^BM-^CM-^IM-^_ M- M-!M-0M-1M-^? M-dM-8M--M-fM-^VM-^G")
+        .stderr("");
+}
+
+#[test]
+fn v_e_t_conflict_with_language() {
+    bat()
+        .arg("-v")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
+    bat()
+        .arg("-e")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
+    bat()
+        .arg("-t")
+        .arg("--language=rust")
+        .arg("test.txt")
+        .assert()
+        .failure();
+}
+
+#[test]
 fn binary_as_text() {
     bat()
         .arg("--binary=as-text")
