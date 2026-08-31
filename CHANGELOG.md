@@ -6,6 +6,7 @@
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
+- Rewrite broken relative links in translated README files so they resolve correctly when rendered from the localized README, see #3888 (@MsfPablo). Fixes #3839
 
 ## Features
 
