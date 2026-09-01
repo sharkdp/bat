@@ -307,6 +307,18 @@ fn line_range_up_to_2_from_back_single_line_is_empty() {
 }
 
 #[test]
+fn line_range_offset_from_end_does_not_preallocate_offset() {
+    for offset in [usize::MAX - 1, usize::MAX] {
+        bat()
+            .arg("multiline.txt")
+            .arg(format!("--line-range=:-{offset}"))
+            .assert()
+            .success()
+            .stdout("");
+    }
+}
+
+#[test]
 fn line_range_from_back_last_two() {
     bat()
         .arg("multiline.txt")
