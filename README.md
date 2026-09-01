@@ -186,6 +186,20 @@ man 2 select
 ```
 (on some older Debian or Ubuntu releases, the executable is named `batcat` instead of `bat`)
 
+Note that while that works on most platforms, a more portable version is to put
+this in a shell script, make that executable, and put the name of the script in
+MANPAGER:
+
+```sh
+#!/usr/bin/env sh
+
+if [ -n "$1" ]; then
+    cat "$1"|col -bx|bat -l man -p
+else
+    col -bx|bat -l man -p
+fi
+```
+
 If you prefer to have this bundled in a new command, you can also use [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
 Note that the [Manpage syntax](assets/syntaxes/02_Extra/Manpage.sublime-syntax) is developed in this repository and still needs some work.
