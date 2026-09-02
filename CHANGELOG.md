@@ -3,6 +3,7 @@
 
 ## Other
 
+- Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
