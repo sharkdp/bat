@@ -432,7 +432,11 @@ fn run() -> Result<bool> {
                     StyleComponents::new(StyleComponent::Plain.components(false));
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
-                list_themes(&config, config_dir, cache_dir, app.theme_options())?;
+                // make a mutable copy of the config to override the paging behavior
+                let mut list_config = config.clone();
+                list_config.paging_mode = bat::PagingMode::Never;
+
+                list_themes(&list_config, config_dir, cache_dir, app.theme_options())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
                 println!("{}", config_file().to_string_lossy());
