@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Avoid a spurious Cargo manifest error during installation from Git, see #3899 (@rootsec1)
 - Show Unicode bidi and zero-width format controls as visible escapes in file headers, errors, and terminal titles, see #3889 (@NgoQuocViet2001)
 - Avoid repeated scans of long lines in Log syntax highlighting, see #3876 (@Matei02355)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
