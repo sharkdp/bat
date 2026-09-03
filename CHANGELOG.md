@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Use the last occurrence of numbering and plain flags in combined short arguments, see #3897 (@cuishuang)
 - Avoid a spurious Cargo manifest error during installation from Git, see #3899 (@rootsec1)
 - Avoid repeated scans of long lines in Log syntax highlighting, see #3876 (@Matei02355)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
