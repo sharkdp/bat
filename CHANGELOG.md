@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Avoid a `capacity overflow` panic when character-wrapping a double-width glyph at `--terminal-width=1` with a painted background. Closes #3844, see #3907 (@pentaoa)
 - Avoid a spurious Cargo manifest error during installation from Git, see #3899 (@rootsec1)
 - Avoid repeated scans of long lines in Log syntax highlighting, see #3876 (@Matei02355)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)
