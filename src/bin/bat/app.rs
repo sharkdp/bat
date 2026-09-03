@@ -59,6 +59,10 @@ pub struct App {
     /// (not from config file or environment variables).
     /// This is used to honor the flag when piping output, similar to `cat -n`.
     number_from_cli: bool,
+    /// True if -b / --number-nonblank was passed on the command line
+    /// (not from config file or environment variables).
+    /// This is used to honor the flag when piping output, similar to `cat -b`.
+    number_nonblank_from_cli: bool,
 }
 
 impl App {
@@ -81,17 +85,40 @@ impl App {
                 return true;
             }
             // Handle combined short flags
-            // Only count -n if it's the LAST flag in the combined form (so -p doesn't override it)
-            // or if -p is not present in the combined form
+            // Only count -n if its last occurrence comes after the last -p,
+            // or if -p is not present in the combined form.
             if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
                 let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let n_pos = chars.iter().position(|&c| c == 'n');
-                let p_pos = chars.iter().position(|&c| c == 'p');
+                let n_pos = chars.iter().rposition(|&c| c == 'n');
+                let p_pos = chars.iter().rposition(|&c| c == 'p');
                 // -n is in the combined flag and either:
                 // - -p is not present, OR
                 // - -n comes after -p (so -n takes effect)
                 if let Some(n) = n_pos {
                     if p_pos.is_none() || n > p_pos.unwrap() {
+                        return true;
+                    }
+                }
+            }
+            false
+        });
+
+        // Check if the -b / --number-nonblank option was passed on the command line
+        // (before merging with config file and environment variables).
+        // This is needed to honor the -b flag when piping output, similar to `cat -b`.
+        // The same combined-flag logic applies as for -n above.
+        let number_nonblank_from_cli = wild::args_os().any(|arg| {
+            let arg_str = arg.to_string_lossy();
+            if arg_str == "-b" || arg_str == "--number-nonblank" {
+                return true;
+            }
+            // Handle combined short flags by comparing the last -b and -p occurrences.
+            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
+                let chars: Vec<char> = arg_str.chars().skip(1).collect();
+                let b_pos = chars.iter().rposition(|&c| c == 'b');
+                let p_pos = chars.iter().rposition(|&c| c == 'p');
+                if let Some(b) = b_pos {
+                    if p_pos.is_none() || b > p_pos.unwrap() {
                         return true;
                     }
                 }
@@ -139,6 +166,7 @@ impl App {
             matches,
             interactive_output,
             number_from_cli,
+            number_nonblank_from_cli,
         })
     }
 
@@ -454,7 +482,8 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.number_from_cli),
+                || self.number_from_cli
+                || self.number_nonblank_from_cli),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -495,6 +524,8 @@ impl App {
             ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
+            number_nonblank: self.matches.get_flag("number-nonblank")
+                || self.number_nonblank_from_cli,
             theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
@@ -608,6 +639,13 @@ impl App {
 
         // Only line numbers if `--number`.
         if self.matches.get_flag("number") {
+            return Some(StyleComponents(HashSet::from([
+                StyleComponent::LineNumbers,
+            ])));
+        }
+
+        // Only line numbers for non-blank lines if `--number-nonblank`.
+        if self.matches.get_flag("number-nonblank") || self.number_nonblank_from_cli {
             return Some(StyleComponents(HashSet::from([
                 StyleComponent::LineNumbers,
             ])));

@@ -738,10 +738,17 @@ impl Printer for InteractivePrinter<'_> {
 
         // Line decorations.
         if self.panel_width > 0 {
+            let display_line_number =
+                if self.config.number_nonblank && line.trim_end_matches(['\r', '\n']).is_empty() {
+                    0
+                } else {
+                    line_number
+                };
+
             let decorations = self
                 .decorations
                 .iter()
-                .map(|d| d.generate(line_number, false, self));
+                .map(|d| d.generate(display_line_number, false, self));
 
             for deco in decorations {
                 write!(handle, "{} ", deco.text)?;
