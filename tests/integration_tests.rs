@@ -382,6 +382,18 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_character_at_terminal_width_one_does_not_panic() {
+    bat()
+        .arg("--highlight-line=1")
+        .arg("--terminal-width=1")
+        .arg("--wrap=character")
+        .arg("--color=always")
+        .write_stdin("📦\n")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
