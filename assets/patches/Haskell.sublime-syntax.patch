@@ -1,0 +1,13 @@
+diff --git syntaxes/01_Packages/Haskell/Haskell.sublime-syntax syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
+index e45d6734..264e528a 100644
+--- syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
++++ syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
+@@ -199,7 +199,7 @@ contexts:
+           scope: punctuation.definition.comment.end.haskell
+           pop: true
+   comments:
+-    - match: '--'
++    - match: '--+(?=$|[^|!%$?~+:\-.=</>\\])'
+       scope: punctuation.definition.comment.haskell
+       push:
+         - meta_scope: comment.line.double-dash.haskell
