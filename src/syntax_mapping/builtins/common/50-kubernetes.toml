@@ -1,0 +1,4 @@
+# kubectl's config file has no extension. The format is YAML.
+# https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/
+[mappings]
+"YAML" = ["**/.kube/config"]
