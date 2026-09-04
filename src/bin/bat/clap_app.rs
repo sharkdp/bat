@@ -52,6 +52,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("show-all")
                 .alias("show-nonprintable")
                 .short('A')
+                .overrides_with("show-all")
                 .action(ArgAction::SetTrue)
                 .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
@@ -171,6 +172,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                     Arg::new("diff")
                         .long("diff")
                         .short('d')
+                        .overrides_with("diff")
                         .action(ArgAction::SetTrue)
                         .conflicts_with("line-range")
                         .help("Only show lines that have been added/removed/modified.")
@@ -235,6 +237,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("chop-long-lines")
                 .long("chop-long-lines")
                 .short('S')
+                .overrides_with("chop-long-lines")
                 .action(ArgAction::SetTrue)
                 .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
         )
@@ -473,6 +476,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("squeeze-blank")
                 .long("squeeze-blank")
                 .short('s')
+                .overrides_with("squeeze-blank")
                 .action(ArgAction::SetTrue)
                 .help("Squeeze consecutive empty lines.")
                 .long_help("Squeeze consecutive empty lines into a single empty line.")
@@ -598,6 +602,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("unbuffered")
                 .short('u')
                 .long("unbuffered")
+                .overrides_with("unbuffered")
                 .action(ArgAction::SetTrue)
                 .help("Enable unbuffered input reading for streaming use cases.")
                 .long_help(
@@ -619,6 +624,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("no-custom-assets")
                 .long("no-custom-assets")
+                .overrides_with("no-custom-assets")
                 .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Do not load custom assets"),
@@ -699,6 +705,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("quiet-empty")
                 .long("quiet-empty")
                 .short('E')
+                .overrides_with("quiet-empty")
                 .action(ArgAction::SetTrue)
                 .help("Produce no output when the input is empty.")
                 .long_help(
@@ -717,6 +724,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("set-terminal-title")
                 .long("set-terminal-title")
+                .overrides_with("set-terminal-title")
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Sets terminal title to filenames when using a pager."),

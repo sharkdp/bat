@@ -647,6 +647,30 @@ fn piped_output_with_default_style_flag() {
 }
 
 #[test]
+fn repeated_boolean_flag_is_accepted() {
+    // A flag in the config file is prepended to the command line, so a user
+    // who has `--show-all` in their config and also types `-A` ends up passing
+    // it twice. That must not be an error.
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--show-all")
+        .arg("--show-all")
+        .assert()
+        .success();
+}
+
+#[test]
+fn boolean_flag_in_config_and_on_command_line() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-show-all.conf")
+        .arg("empty_lines.txt")
+        .arg("--show-all")
+        .arg("--paging=never")
+        .assert()
+        .success();
+}
+
+#[test]
 fn squeeze_blank() {
     bat()
         .arg("empty_lines.txt")
