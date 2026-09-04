@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Use parsed CLI arguments to detect number flags, see #3908 (@cuishuang)
 - Detect binary content beyond the first line, preventing encrypted files with early line breaks from being treated as text. Closes #3554, see #3877 (@Matei02355)
 - Use the last occurrence of numbering and plain flags in combined short arguments, see #3897 (@cuishuang)
 - Avoid a spurious Cargo manifest error during installation from Git, see #3899 (@rootsec1)
