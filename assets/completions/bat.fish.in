@@ -2,8 +2,12 @@
 # Copy or symlink to $XDG_CONFIG_HOME/fish/completions/{{PROJECT_EXECUTABLE}}.fish
 # ($XDG_CONFIG_HOME is usually set to ~/.config)
 
-# `bat` is `batcat` on Debian and Ubuntu
-set bat {{PROJECT_EXECUTABLE}}
+# `bat` is `batcat` on Debian and Ubuntu.
+# This has to be global. fish loads completions lazily, so if the first
+# completion happens inside a function -- a custom <TAB> binding, for instance
+# -- an unscoped `set` is local to that function and the helpers below see
+# nothing.
+set -g bat {{PROJECT_EXECUTABLE}}
 
 # Helper functions:
 
