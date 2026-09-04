@@ -752,6 +752,25 @@ fn list_themes_to_piped_output() {
     );
 }
 
+/// Regression for #1618: BAT_OPTS=--paging=always must not break --list-themes.
+#[test]
+#[serial]
+fn list_themes_ignores_paging_always_from_bat_opts() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("BAT_OPTS", "--paging=always --theme=TwoDark")
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--list-themes")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("DarkNeon").normalize())
+            .stdout(predicate::str::contains("TwoDark").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
+}
+
 #[test]
 #[serial]
 fn list_languages() {
