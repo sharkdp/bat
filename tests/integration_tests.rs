@@ -25,7 +25,7 @@ mod unix {
 use unix::*;
 
 mod utils;
-use utils::command::{bat, bat_with_config};
+use utils::command::{bat, bat_raw_command_with_config, bat_with_config};
 
 #[cfg(unix)]
 use utils::command::bat_raw_command;
@@ -740,6 +740,21 @@ fn list_themes_without_colors() {
         .stdout(predicate::str::contains("DarkNeon").normalize())
         .stdout(predicate::str::contains(default_theme_chunk).normalize())
         .stdout(predicate::str::contains(default_light_theme_chunk).normalize());
+}
+
+#[test]
+fn list_themes_ignores_bat_opts_paging() {
+    let mut cmd = bat_raw_command_with_config();
+    cmd.env(
+        "BAT_OPTS",
+        "--paging=always --pager='echo pager-output' --theme=TwoDark",
+    );
+
+    cmd.arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize())
+        .stdout(predicate::str::contains("pager-output").not());
 }
 
 #[test]
