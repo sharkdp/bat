@@ -25,6 +25,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `--language` and `--map-syntax` completions in fish when a custom `<TAB>` binding makes the first completion happen inside a function. Closes #3909, see #3910 (@logarithmone1128)
 - Use parsed CLI arguments to detect number flags, see #3908 (@cuishuang)
 - Detect binary content beyond the first line, preventing encrypted files with early line breaks from being treated as text. Closes #3554, see #3877 (@Matei02355)
 - Use the last occurrence of numbering and plain flags in combined short arguments, see #3897 (@cuishuang)
