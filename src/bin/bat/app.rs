@@ -72,59 +72,12 @@ impl App {
 
         let interactive_output = std::io::stdout().is_terminal();
 
-        // Check if the -n / --number option was passed on the command line
-        // (before merging with config file and environment variables).
-        // This is needed to honor the -n flag when piping output, similar to `cat -n`.
-        // We need to handle both standalone (-n, --number) and combined short flags (-pn, -An, etc.)
-        // Note: We only check if -n appears and is not overridden by -p in the same combined flag.
-        // For combined flags like -np, -p comes after -n and overrides it, so we don't count it.
-        // For combined flags like -pn, -n comes after -p and takes effect.
-        let number_from_cli = wild::args_os().any(|arg| {
-            let arg_str = arg.to_string_lossy();
-            if arg_str == "-n" || arg_str == "--number" {
-                return true;
-            }
-            // Handle combined short flags
-            // Only count -n if its last occurrence comes after the last -p,
-            // or if -p is not present in the combined form.
-            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
-                let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let n_pos = chars.iter().rposition(|&c| c == 'n');
-                let p_pos = chars.iter().rposition(|&c| c == 'p');
-                // -n is in the combined flag and either:
-                // - -p is not present, OR
-                // - -n comes after -p (so -n takes effect)
-                if let Some(n) = n_pos {
-                    if p_pos.is_none() || n > p_pos.unwrap() {
-                        return true;
-                    }
-                }
-            }
-            false
-        });
-
-        // Check if the -b / --number-nonblank option was passed on the command line
-        // (before merging with config file and environment variables).
-        // This is needed to honor the -b flag when piping output, similar to `cat -b`.
-        // The same combined-flag logic applies as for -n above.
-        let number_nonblank_from_cli = wild::args_os().any(|arg| {
-            let arg_str = arg.to_string_lossy();
-            if arg_str == "-b" || arg_str == "--number-nonblank" {
-                return true;
-            }
-            // Handle combined short flags by comparing the last -b and -p occurrences.
-            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
-                let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let b_pos = chars.iter().rposition(|&c| c == 'b');
-                let p_pos = chars.iter().rposition(|&c| c == 'p');
-                if let Some(b) = b_pos {
-                    if p_pos.is_none() || b > p_pos.unwrap() {
-                        return true;
-                    }
-                }
-            }
-            false
-        });
+        // Parse the original command line separately from config and environment arguments.
+        // Using clap here keeps CLI-only detection consistent with the final parser, including
+        // option terminators, combined short flags, and options that take values.
+        let cli_matches = Self::cli_matches(interactive_output);
+        let number_from_cli = cli_matches.get_flag("number");
+        let number_nonblank_from_cli = cli_matches.get_flag("number-nonblank");
 
         let matches = Self::matches(interactive_output)?;
 
@@ -236,6 +189,10 @@ impl App {
         cli_args.for_each(|a| args.push(a));
 
         args
+    }
+
+    fn cli_matches(interactive_output: bool) -> ArgMatches {
+        clap_app::build_app(interactive_output).get_matches_from(wild::args_os())
     }
 
     fn matches(interactive_output: bool) -> Result<ArgMatches> {

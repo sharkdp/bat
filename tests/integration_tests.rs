@@ -251,6 +251,33 @@ fn repeated_combined_flags_use_last_number_or_plain_flag() {
 }
 
 #[test]
+fn option_terminator_keeps_filename_from_number_flags() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("-b"), "hello\nworld\n").expect("can write temporary file");
+
+    bat()
+        .current_dir(tmp_dir.path())
+        .args(["--", "-b"])
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn attached_short_option_values_are_not_treated_as_flags() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("input.txt"), "hello\nworld\n")
+        .expect("can write temporary file");
+
+    bat()
+        .current_dir(tmp_dir.path())
+        .args(["-lbn", "input.txt"])
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
 fn number_nonblank_style() {
     bat()
         .arg("empty_lines.txt")
