@@ -70,6 +70,7 @@
 
 ## Syntaxes
 
+- Highlight Rust `async` and `await` as keywords. Closes #1534, see #3892 (@JMak-Security)
 - Add shebang-based detection for Tcl (`tclsh`, `wish`) and Expect (`expect`) scripts, see #3647 (@mvanhorn)
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
