@@ -26,6 +26,10 @@
 
 ## Bugfixes
 - Avoid a `capacity overflow` panic when character-wrapping a double-width glyph at `--terminal-width=1` with a painted background. Closes #3844, see #3907 (@pentaoa)
+- Allow boolean flags to be given more than once, so that a flag set in the config file can also be passed on the command line without erroring, see #3912 (@logarithmone1128)
+- Use parsed CLI arguments to detect number flags, see #3908 (@cuishuang)
+- Detect binary content beyond the first line, preventing encrypted files with early line breaks from being treated as text. Closes #3554, see #3877 (@Matei02355)
+- Use the last occurrence of numbering and plain flags in combined short arguments, see #3897 (@cuishuang)
 - Avoid a spurious Cargo manifest error during installation from Git, see #3899 (@rootsec1)
 - Avoid repeated scans of long lines in Log syntax highlighting, see #3876 (@Matei02355)
 - Fix `--list-languages` respecting `--paging=never`, see #3828 (@cyphercodes)

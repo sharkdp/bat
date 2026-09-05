@@ -9,6 +9,8 @@ use content_inspector::{self, ContentType};
 
 use crate::error::*;
 
+const CONTENT_INSPECTION_LIMIT: usize = 1024;
+
 /// A description of an Input source.
 /// This tells bat how to refer to the input.
 #[derive(Clone)]
@@ -263,10 +265,29 @@ impl<'a> InputReader<'a> {
     }
 
     pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {
-        let mut first_line = vec![];
-        reader.read_until(b'\n', &mut first_line)?;
+        // content_inspector scans at most 1024 bytes. Capture the already-buffered
+        // prefix before splitting out the first line so an early newline in binary
+        // data does not shorten the inspected content. This does not consume input
+        // or perform an additional read beyond the one read_until needs anyway.
+        let mut inspection_prefix = {
+            let buffered = reader.fill_buf()?;
+            buffered[..buffered.len().min(CONTENT_INSPECTION_LIMIT)].to_vec()
+        };
 
-        let content_type = inspect_content_type(&first_line);
+        let mut first_line = vec![];
+        if !inspection_prefix.is_empty() {
+            reader.read_until(b'\n', &mut first_line)?;
+        }
+
+        // A custom BufRead implementation may expose less than 1024 bytes at a
+        // time. Keep the old behavior for long first lines in that case.
+        let first_line_prefix_len = first_line.len().min(CONTENT_INSPECTION_LIMIT);
+        if first_line_prefix_len > inspection_prefix.len() {
+            inspection_prefix.clear();
+            inspection_prefix.extend_from_slice(&first_line[..first_line_prefix_len]);
+        }
+
+        let content_type = inspect_content_type(&inspection_prefix);
 
         if content_type == Some(ContentType::UTF_16LE) {
             read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
@@ -408,6 +429,53 @@ fn non_zip_pk_prefix_is_not_treated_as_binary() {
         Some(ContentType::UTF_8),
         inspect_content_type(b"PK\x03\x03hello")
     );
+}
+
+#[test]
+fn binary_detection_scans_beyond_first_line_and_preserves_input() {
+    let mut content = vec![b'a'; CONTENT_INSPECTION_LIMIT + 1];
+    content[1] = b'\n';
+    content[CONTENT_INSPECTION_LIMIT - 1] = 0;
+
+    let mut reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::BINARY), reader.content_type);
+
+    let mut replayed = Vec::new();
+    while reader.read_line(&mut replayed).unwrap() {}
+    assert_eq!(content, replayed);
+
+    drop(reader);
+
+    content[CONTENT_INSPECTION_LIMIT - 1] = b'a';
+    content[CONTENT_INSPECTION_LIMIT] = 0;
+
+    let reader = InputReader::new(&content[..]);
+    assert_eq!(Some(ContentType::UTF_8), reader.content_type);
+}
+
+#[test]
+fn input_detection_does_not_read_twice() {
+    struct OneRead(Option<&'static [u8]>);
+
+    impl Read for OneRead {
+        fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+            match self.0.take() {
+                None => Err(io::Error::new(
+                    io::ErrorKind::WouldBlock,
+                    "no more data is available yet",
+                )),
+                Some(content) => {
+                    buf[..content.len()].copy_from_slice(content);
+                    Ok(content.len())
+                }
+            }
+        }
+    }
+
+    for (content, expected) in [(&b"text\n"[..], Some(ContentType::UTF_8)), (&b""[..], None)] {
+        let input = InputReader::try_new(BufReader::new(OneRead(Some(content)))).unwrap();
+        assert_eq!(expected, input.content_type);
+    }
 }
 
 #[test]
