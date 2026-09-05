@@ -1,0 +1,177 @@
+diff --git syntaxes/01_Packages/C++/C.sublime-syntax syntaxes/01_Packages/C++/C.sublime-syntax
+index add0e888..e93ec677 100644
+--- syntaxes/01_Packages/C++/C.sublime-syntax
++++ syntaxes/01_Packages/C++/C.sublime-syntax
+@@ -9,14 +9,23 @@ first_line_match: "-[*]-( Mode:)? C -[*]-"
+ scope: source.c
+ 
+ variables:
++  # number digits
++  bin_digit: '[01'']'
++  oct_digit: '[0-7'']'
++  dec_digit: '[\d'']'
++  hex_digit: '[\h'']'
++
+   # number exponents
+-  dec_exponent: '(?:[eE][-+]??\d+)'
+-  hex_exponent: '(?:[pP][-+]??\d+)'
++  dec_exponent: '(?:[eE][-+]?{{dec_digit}}*)'
++  hex_exponent: '(?:[pP][-+]?{{dec_digit}}*)'
+ 
+   # number suffixes
++  bin_suffix: '[2-9a-zA-Z_][[:alnum:]_]*'
++  oct_suffix: '[8-9g-zG-Z_][[:alnum:]_]*'
+   dec_suffix: '[a-zA-Z_][[:alnum:]_]*'
+   hex_suffix: '[g-zG-Z_][[:alnum:]_]*'
+-  integer_suffix: '[lL]{1,2}[uU]?|[uU][lL]{0,2}'
++  double_suffix: 'df|DF|dd|DD|dl|DL|[fFlL]'
++  integer_suffix: 'u?wb|[lL]{1,2}[uU]?|[uU][lL]{0,2}'
+ 
+   identifier: \b[[:alpha:]_][[:alnum:]_]*\b # upper and lowercase
+   macro_identifier: \b[[:upper:]_][[:upper:][:digit:]_]{2,}\b # only uppercase, at least 3 chars
+@@ -182,76 +191,86 @@ contexts:
+ 
+     # decimal floats
+     - match: |-
+-        (?x:
+-          \b\d+
++        (?x)
++        (
++          \b{{dec_digit}}+
+           (?:
+-            (?: (\.) (?: \d+ {{dec_exponent}}? | {{dec_exponent}} | (?=[^.])) | {{dec_exponent}} )
+-            (?: ([fFlL])\b | ({{dec_suffix}})? ) | ([fF])\b
++          # 1., 1.f, 1.L, 1.1, 1.1e1, 1.1e-1, 1.1f, 1.1e1f, 1.1e-1f, 1.1L, 1.1e1L, 1.1e-1L
++            (\.) (?: {{dec_digit}}+ | (?!\.) ) {{dec_exponent}}?
++          # 1.e1, 1.e-1, 1.e1f, 1.e-1f, 1.e1L, 1.e-1L
++          | {{dec_exponent}}
+           )
+-          | (\.) \d+ {{dec_exponent}}? (?: ([fFlL])\b | ({{dec_suffix}})? )
++        # .1, .1e1, .1e-1, .1f, .1e1f, .1e-1f, .1L, .1e1L, .1e-1L
++        |  (\.) {{dec_digit}}+ {{dec_exponent}}?
+         )
+-      scope: constant.numeric.float.decimal.c
++        (?: ({{double_suffix}}) | ({{dec_suffix}}) )?
++      scope: meta.number.float.decimal.c
+       captures:
+-        1: punctuation.separator.decimal.c
+-        2: storage.type.numeric.c
+-        3: invalid.illegal.numeric.suffix.c
+-        4: storage.type.numeric.c
+-        5: punctuation.separator.decimal.c
+-        6: storage.type.numeric.c
+-        7: invalid.illegal.numeric.suffix.c
++        1: constant.numeric.value.c
++        2: punctuation.separator.decimal.c
++        3: punctuation.separator.decimal.c
++        4: constant.numeric.suffix.c
++        5: invalid.illegal.numeric.suffix.c
++
+     # hexadecimal float (C99)
+-    - match: \b0[xX](?=[[:alnum:].]+?[pP])
+-      scope: punctuation.definition.numeric.base.c
+-      push:
+-        - meta_include_prototype: false
+-        - meta_scope: constant.numeric.float.hexadecimal.c
+-        - match: '{{hex_exponent}}\b'
+-          pop: true
+-        - match: \.
+-          scope: punctuation.separator.decimal.c
+-        - match: \H
+-          scope: invalid.illegal.numeric.digit.c
++    - match: |-
++        (?x)
++        \b(0[xX])
++        (
++          (?:
++            # 0xfp1, 0xf.p1, 0xfp1f, 0xf.p1f
++            {{hex_digit}}+ (\.)?
++            # 0x.fp1, 0xf.fp1, 0x.fp1f, 0xf.fp1f
++            | {{hex_digit}}* (\.) {{hex_digit}}+
++          )
++          {{hex_exponent}}
++        )
++        (?: ({{double_suffix}}) | ({{dec_suffix}}) )?
++      scope: meta.number.float.hexadecimal.c
++      captures:
++        1: constant.numeric.base.c
++        2: constant.numeric.value.c
++        3: punctuation.separator.decimal.c
++        4: punctuation.separator.decimal.c
++        5: constant.numeric.suffix.c
++        6: invalid.illegal.numeric.suffix.c
+ 
+     # https://en.cppreference.com/w/c/language/integer_constant
+ 
++    # binary integer (C23)
++    - match: \b(0[bB])({{bin_digit}}*)(?:({{integer_suffix}})|({{bin_suffix}}))?
++      scope: meta.number.integer.binary.c
++      captures:
++        1: constant.numeric.base.c
++        2: constant.numeric.value.c
++        3: constant.numeric.suffix.c
++        4: invalid.illegal.numeric.suffix.c
++
+     # hexadecimal integer
+-    - match: \b0[xX]
+-      scope: punctuation.definition.numeric.base.c
+-      push:
+-        - meta_include_prototype: false
+-        - meta_scope: constant.numeric.integer.hexadecimal.c
+-        - include: hexadecimal-suffix
+-    # octal integer
+-    - match: \b0(?=\d)
+-      scope: punctuation.definition.numeric.base.c
+-      push:
+-        - meta_include_prototype: false
+-        - meta_scope: constant.numeric.integer.octal.c
+-        - match: '[89]'
+-          scope: invalid.illegal.numeric.digit.c
+-        - include: decimal-suffix
+-    # decimal integer
+-    - match: \b\d+
+-      push:
+-        - meta_include_prototype: false
+-        - meta_scope: constant.numeric.integer.decimal.c
+-        - include: decimal-suffix
++    - match: \b(0[xX])({{hex_digit}}*)(?:({{integer_suffix}})|({{hex_suffix}}))?
++      scope: meta.number.integer.hexadecimal.c
++      captures:
++        1: constant.numeric.base.c
++        2: constant.numeric.value.c
++        3: constant.numeric.suffix.c
++        4: invalid.illegal.numeric.suffix.c
+ 
+-  decimal-suffix:
+-    - match: (?:{{integer_suffix}})?\b
+-      scope: storage.type.numeric.c
+-      pop: true
+-    - match: '{{dec_suffix}}'
+-      scope: invalid.illegal.numeric.suffix.c
+-      pop: true
++    # octal integer
++    - match: \b(0)({{oct_digit}}+)(?:({{integer_suffix}})|({{oct_suffix}}))?
++      scope: meta.number.integer.octal.c
++      captures:
++        1: constant.numeric.base.c
++        2: constant.numeric.value.c
++        3: constant.numeric.suffix.c
++        4: invalid.illegal.numeric.suffix.c
+ 
+-  hexadecimal-suffix:
+-    - match: (?:{{integer_suffix}})?\b
+-      scope: storage.type.numeric.c
+-      pop: true
+-    - match: '{{hex_suffix}}'
+-      scope: invalid.illegal.numeric.suffix.c
+-      pop: true
++    # decimal integer
++    - match: \b({{dec_digit}}+)(?:({{integer_suffix}})|({{dec_suffix}}))?
++      scope: meta.number.integer.decimal.c
++      captures:
++        1: constant.numeric.value.c
++        2: constant.numeric.suffix.c
++        3: invalid.illegal.numeric.suffix.c
+ 
+   operators:
+     - match: (?:\+\+|--)
