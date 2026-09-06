@@ -16,7 +16,7 @@ use content_inspector::ContentType;
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
 use unicode_segmentation::UnicodeSegmentation;
-use unicode_width::UnicodeWidthChar;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
@@ -414,32 +414,39 @@ impl<'a> InteractivePrinter<'a> {
         }
     }
 
-    fn print_header_component_with_indent(
-        &mut self,
-        handle: &mut OutputHandle,
-        content: &str,
-    ) -> Result<()> {
-        self.print_header_component_indent(handle)?;
-        writeln!(handle, "{content}")
-    }
-
     fn print_header_multiline_component(
         &mut self,
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
-        let content_width = self.config.term_width - self.get_header_component_indent_length();
-        if content.chars().count() <= content_width {
-            return self.print_header_component_with_indent(handle, content);
-        }
+        let content_width = self
+            .config
+            .term_width
+            .saturating_sub(self.get_header_component_indent_length())
+            .max(1);
+        let mut column = 0;
+        let mut style = AnsiStyle::new();
+        self.print_header_component_indent(handle)?;
 
-        let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
-        while content_graphemes.len() > content_width {
-            let (content_line, remaining) = content_graphemes.split_at(content_width);
-            self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
-            content_graphemes = remaining.to_vec();
+        for chunk in EscapeSequenceIterator::new(content) {
+            if let EscapeSequence::Text(text) = chunk {
+                for grapheme in text.graphemes(true) {
+                    let width = UnicodeWidthStr::width(grapheme);
+                    if column > 0 && column + width > content_width {
+                        writeln!(handle, "{}", style.to_reset_sequence())?;
+                        self.print_header_component_indent(handle)?;
+                        write!(handle, "{style}")?;
+                        column = 0;
+                    }
+                    write!(handle, "{grapheme}")?;
+                    column += width;
+                }
+            } else {
+                write!(handle, "{}", chunk.raw())?;
+                style.update(chunk);
+            }
         }
-        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
+        writeln!(handle)
     }
 
     fn highlight_regions_for_line<'b>(

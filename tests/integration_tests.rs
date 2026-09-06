@@ -2434,6 +2434,67 @@ fn header_narrow_terminal_with_multibyte_chars() {
 }
 
 #[test]
+fn header_wrapping_uses_display_width_and_preserves_escape_sequences() {
+    for (label, width, expected) in [
+        ("abcdefghijk", 12, "File: abcdef\nghijk\nx\n"),
+        ("界界界界", 11, "File: 界界\n界界\nx\n"),
+        (
+            "e\u{301}e\u{301}e\u{301}",
+            8,
+            "File: e\u{301}e\u{301}\ne\u{301}\nx\n",
+        ),
+    ] {
+        for color in ["never", "always"] {
+            let result = bat()
+                .args(["--style=header", "--decorations=always", "--paging=never"])
+                .arg(format!("--color={color}"))
+                .arg(format!("--terminal-width={width}"))
+                .args(["--file-name", label])
+                .write_stdin("x\n")
+                .assert()
+                .success();
+            let output = String::from_utf8_lossy(&result.get_output().stdout);
+            assert_eq!(
+                console::strip_ansi_codes(&output),
+                expected,
+                "{color}: {label}"
+            );
+            if color == "always" {
+                assert!(output.contains('\u{1b}'));
+            }
+        }
+    }
+}
+
+#[test]
+fn header_wrapping_preserves_colored_sidebar_alignment() {
+    let output = |color: &str| {
+        bat()
+            .args([
+                "--style=header,numbers,grid",
+                "--decorations=always",
+                "--paging=never",
+            ])
+            .arg(format!("--color={color}"))
+            .args(["--terminal-width=20", "--file-name", "a-long-file-name.txt"])
+            .write_stdin("x\n")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+    let plain = String::from_utf8(output("never")).unwrap();
+    let colored = String::from_utf8(output("always")).unwrap();
+    assert_eq!(console::strip_ansi_codes(&colored), plain);
+    assert!(colored
+        .lines()
+        .skip(1)
+        .take(2)
+        .all(|line| line.contains('\u{1b}')));
+}
+
+#[test]
 #[cfg(feature = "git")] // Expected output assumes git is enabled
 fn header_default() {
     bat()
