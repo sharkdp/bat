@@ -1,0 +1,11 @@
+--- syntaxes/01_Packages/Scala/Scala.sublime-syntax
++++ syntaxes/01_Packages/Scala/Scala.sublime-syntax
+@@ -343,7 +343,7 @@
+       captures:
+         1: storage.type.class.scala
+         2: storage.type.class.scala
+-        3: entity.name.class.scala
++        4: entity.name.class.scala
+       push: class-type-parameter-list
+     - match: '\b(type)\s+({{id}})'
+       captures:
