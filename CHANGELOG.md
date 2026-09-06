@@ -9,7 +9,7 @@
 
 ## Features
 
-- Add `--line-number-width` to configure the minimum line-number width without pre-counting input lines (@pederbe).
+- Add `--line-number-width` to configure the minimum line-number width without pre-counting input lines, see #3914 (@pederbe).
 
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
 - Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It implies `--strip-ansi` at the same value and additionally substitutes terminal-active control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
