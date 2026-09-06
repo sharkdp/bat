@@ -1,0 +1,13 @@
+--- syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
++++ syntaxes/01_Packages/Haskell/Haskell.sublime-syntax
+@@ -222,9 +222,7 @@
+         - match: ","
+           scope: punctuation.separator.comma.haskell
+         - include: infix_op
+-        - match: \(.*?\)
+-          comment: So named because I don't know what to call this.
+-          scope: meta.other.unknown.haskell
++        - include: module_exports
+         - include: comments
+   module_name:
+     - match: "[A-Z][A-Za-z._']*"
