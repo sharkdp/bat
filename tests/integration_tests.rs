@@ -792,6 +792,34 @@ fn list_languages() {
 }
 
 #[test]
+fn list_languages_includes_syntaxes_without_file_extensions() {
+    bat()
+        .args(["--list-languages", "--paging=never"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("LaTeX Log:\n"));
+
+    bat()
+        .args(["--list-languages", "--paging=never", "--decorations=always"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("LaTeX Log"));
+}
+
+#[test]
+fn list_languages_includes_mappings_for_syntaxes_without_file_extensions() {
+    bat()
+        .args([
+            "--list-languages",
+            "--paging=never",
+            "--map-syntax=*.latex-log:LaTeX Log",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("LaTeX Log:*.latex-log\n"));
+}
+
+#[test]
 #[cfg_attr(
     any(not(feature = "git"), feature = "lessopen", target_os = "windows"),
     ignore

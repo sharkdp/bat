@@ -104,7 +104,7 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
     let mut languages = assets
         .get_syntaxes()?
         .iter()
-        .filter(|syntax| !syntax.hidden && !syntax.file_extensions.is_empty())
+        .filter(|syntax| !syntax.hidden)
         .cloned()
         .collect::<Vec<_>>();
 
