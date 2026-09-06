@@ -1,8 +1,6 @@
-diff --git syntaxes/01_Packages/Markdown/Markdown.sublime-syntax syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-index 19dc685d..3a45ea05 100644
 --- syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 +++ syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-@@ -24,7 +24,6 @@ variables:
+@@ -24,7 +24,6 @@
              )
              [ \t]*$                          # followed by any number of tabs or spaces, followed by the end of the line
          )
@@ -10,7 +8,7 @@ index 19dc685d..3a45ea05 100644
      block_quote: (?:[ ]{,3}>(?:.|$))         # between 0 and 3 spaces, followed by a greater than sign, followed by any character or the end of the line
      atx_heading: (?:[#]{1,6}\s*)             # between 1 and 6 hashes, followed by any amount of whitespace
      indented_code_block: (?:[ ]{4}|\t)       # 4 spaces or a tab
-@@ -277,69 +276,40 @@ contexts:
+@@ -277,69 +276,40 @@
          8: markup.underline.link.markdown
        push: [link-ref-def, after-link-title, link-title]
      - match: '^(?=\S)(?![=-]{3,}\s*$)'
@@ -112,7 +110,7 @@ index 19dc685d..3a45ea05 100644
    link-ref-def:
      - meta_scope: meta.link.reference.def.markdown
      - match: ''
-@@ -430,8 +400,6 @@ contexts:
+@@ -430,8 +400,6 @@
        push:
          - meta_scope: markup.bold.markdown
          - meta_content_scope: markup.italic.markdown
@@ -121,7 +119,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
              (?x)
                  [ \t]*\*{4,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -446,8 +414,6 @@ contexts:
+@@ -446,8 +414,6 @@
            scope: punctuation.definition.bold.end.markdown
            set:
              - meta_content_scope: markup.italic.markdown
@@ -130,7 +128,7 @@ index 19dc685d..3a45ea05 100644
              - match: |-
                  (?x)
                      [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -463,8 +429,6 @@ contexts:
+@@ -463,8 +429,6 @@
            scope: punctuation.definition.italic.end.markdown
            set:
              - meta_content_scope: markup.bold.markdown
@@ -139,7 +137,7 @@ index 19dc685d..3a45ea05 100644
              - match: |-
                  (?x)
                      [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -727,8 +691,6 @@ contexts:
+@@ -727,8 +691,6 @@
        scope: punctuation.definition.italic.begin.markdown
        push:
          - meta_scope: markup.italic.markdown
@@ -148,7 +146,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
                (?x)
                    [ \t]*\*{4,}   # if there are more than 3 its not applicable to be bold or italic
-@@ -745,8 +707,6 @@ contexts:
+@@ -745,8 +707,6 @@
        scope: punctuation.definition.italic.begin.markdown
        push:
          - meta_scope: markup.italic.markdown
@@ -157,7 +155,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
                (?x)
                    [ \t]*_{4,}   # if there are more than 3 its not applicable to be bold or italic
-@@ -773,8 +733,6 @@ contexts:
+@@ -773,8 +733,6 @@
          - include: bold-italic-trailing
    bold-italic-trailing:
      - include: scope:text.html.basic
@@ -166,14 +164,32 @@ index 19dc685d..3a45ea05 100644
      - match: ^\s*$\n?
        scope: invalid.illegal.non-terminated.bold-italic.markdown
        pop: true
-@@ -1073,6 +1031,36 @@ contexts:
-       escape: '{{code_fence_escape}}'
-       escape_captures:
-         0: meta.code-fence.definition.end.python.markdown-gfm
+@@ -1032,6 +990,21 @@
+     - match: |-
+          (?x)
+           {{fenced_code_block_start}}
++          ((?i:makefile|make|mk))
++          {{fenced_code_block_trailing_infostring_characters}}
++      captures:
++        0: meta.code-fence.definition.begin.makefile.markdown-gfm
++        2: punctuation.definition.raw.code-fence.begin.markdown
++        5: constant.other.language-name.markdown
++      embed: scope:source.makefile
++      embed_scope: markup.raw.code-fence.makefile.markdown-gfm
++      escape: '{{code_fence_escape}}'
++      escape_captures:
++        0: meta.code-fence.definition.end.makefile.markdown-gfm
 +        1: punctuation.definition.raw.code-fence.end.markdown
 +    - match: |-
 +         (?x)
 +          {{fenced_code_block_start}}
+           ((?i:xml))
+           {{fenced_code_block_trailing_infostring_characters}}
+       captures:
+@@ -1077,6 +1050,36 @@
+     - match: |-
+          (?x)
+           {{fenced_code_block_start}}
 +          ((?i:puppet))
 +          {{fenced_code_block_trailing_infostring_characters}}
 +      captures:
@@ -200,10 +216,14 @@ index 19dc685d..3a45ea05 100644
 +      escape: '{{code_fence_escape}}'
 +      escape_captures:
 +        0: meta.code-fence.definition.end.typescript.markdown-gfm
-         1: punctuation.definition.raw.code-fence.end.markdown
-     - match: |-
-          (?x)
-@@ -1152,7 +1155,7 @@ contexts:
++        1: punctuation.definition.raw.code-fence.end.markdown
++    - match: |-
++         (?x)
++          {{fenced_code_block_start}}
+           ((?i:graphviz))
+           {{fenced_code_block_trailing_infostring_characters}}
+       captures:
+@@ -1152,7 +1155,7 @@
      - match: |-
           (?x)
            {{fenced_code_block_start}}
