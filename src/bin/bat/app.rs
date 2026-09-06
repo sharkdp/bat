@@ -93,11 +93,12 @@ impl App {
                 _ => !matches.get_flag("no-paging"),
             };
 
-            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
-                Some("always") => true,
-                Some("never") => false,
-                _ => interactive_output, // auto: use color if interactive
-            };
+            let use_color = matches.get_flag("force-colorization")
+                || match matches.get_one::<String>("color").map(|s| s.as_str()) {
+                    Some("always") => true,
+                    Some("never") => false,
+                    _ => interactive_output, // auto: use color if interactive
+                };
 
             let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
             let theme_options = Self::theme_options_from_matches(&matches);
