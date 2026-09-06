@@ -406,8 +406,12 @@ impl App {
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
+                            let has_sidebar = style_components.numbers();
+                            #[cfg(feature = "git")]
+                            let has_sidebar = has_sidebar || style_components.changes();
+
                             if self.interactive_output || maybe_term_width.is_some() {
-                                if style_components.plain() && maybe_term_width.is_none() {
+                                if !has_sidebar && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
                                 } else {
                                     WrappingMode::Character
@@ -685,5 +689,74 @@ impl App {
             theme_dark,
             theme_light,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn wrapping_mode(args: &[&str], interactive_output: bool) -> WrappingMode {
+        let app = App {
+            matches: clap_app::build_app(interactive_output).get_matches_from(
+                ["bat", "--paging=never"]
+                    .into_iter()
+                    .chain(args.iter().copied()),
+            ),
+            interactive_output,
+            number_from_cli: false,
+            number_nonblank_from_cli: false,
+        };
+        let wrapping_mode = app.config(&[]).unwrap().wrapping_mode;
+        wrapping_mode
+    }
+
+    #[test]
+    fn automatic_wrapping_leaves_non_sidebar_styles_to_the_terminal() {
+        for style in ["plain", "header", "grid", "rule,snip", "header,grid,snip"] {
+            assert_eq!(
+                wrapping_mode(&[&format!("--style={style}")], true),
+                WrappingMode::NoWrapping(false),
+                "{style}"
+            );
+        }
+        assert_eq!(
+            wrapping_mode(&["--style=numbers"], true),
+            WrappingMode::Character
+        );
+        #[cfg(feature = "git")]
+        assert_eq!(
+            wrapping_mode(&["--style=changes"], true),
+            WrappingMode::Character
+        );
+    }
+
+    #[test]
+    fn automatic_wrapping_preserves_explicit_width_and_wrap_requests() {
+        for interactive_output in [false, true] {
+            assert_eq!(
+                wrapping_mode(
+                    &["--style=header", "--terminal-width=20"],
+                    interactive_output
+                ),
+                WrappingMode::Character
+            );
+            assert_eq!(
+                wrapping_mode(&["--style=header", "--wrap=character"], interactive_output),
+                WrappingMode::Character
+            );
+            assert_eq!(
+                wrapping_mode(&["--style=header", "--wrap=word"], interactive_output),
+                WrappingMode::Word
+            );
+            assert_eq!(
+                wrapping_mode(&["--style=numbers", "--wrap=never"], interactive_output),
+                WrappingMode::NoWrapping(true)
+            );
+        }
+        assert_eq!(
+            wrapping_mode(&["--style=numbers"], false),
+            WrappingMode::NoWrapping(false)
+        );
     }
 }
