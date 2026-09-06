@@ -22,17 +22,15 @@ pub(crate) trait Decoration {
 pub(crate) struct LineNumberDecoration {
     color: Style,
     cached_wrap: DecorationText,
-    cached_wrap_invalid_at: usize,
 }
 
 impl LineNumberDecoration {
-    pub(crate) fn new(colors: &Colors) -> Self {
+    pub(crate) fn new(colors: &Colors, width: usize) -> Self {
         LineNumberDecoration {
             color: colors.line_number,
-            cached_wrap_invalid_at: 10000,
             cached_wrap: DecorationText {
-                text: colors.line_number.paint(" ".repeat(4)).to_string(),
-                width: 4,
+                text: colors.line_number.paint(" ".repeat(width)).to_string(),
+                width,
             },
         }
     }
@@ -54,8 +52,8 @@ impl Decoration for LineNumberDecoration {
         }
 
         if continuation {
-            if line_number >= self.cached_wrap_invalid_at {
-                let new_width = self.cached_wrap.width + 1;
+            let new_width = line_number.ilog10() as usize + 1;
+            if new_width > self.width() {
                 return DecorationText {
                     text: self.color.paint(" ".repeat(new_width)).to_string(),
                     width: new_width,
@@ -64,7 +62,7 @@ impl Decoration for LineNumberDecoration {
 
             self.cached_wrap.clone()
         } else {
-            let plain: String = format!("{line_number:4}");
+            let plain = format!("{line_number:width$}", width = self.width());
             DecorationText {
                 width: plain.len(),
                 text: self.color.paint(plain).to_string(),
@@ -73,7 +71,7 @@ impl Decoration for LineNumberDecoration {
     }
 
     fn width(&self) -> usize {
-        4
+        self.cached_wrap.width
     }
 }
 

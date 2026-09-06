@@ -83,6 +83,12 @@ Options:
   -n, --number
           Only show line numbers, no other decorations. This is an alias for '--style=numbers'
 
+      --line-number-width <N>
+          Set the minimum line-number width to N columns (1 to 255; default: 4). For example, use
+          '--line-number-width=6' to keep the columns aligned through line 999999. Larger line
+          numbers expand the column. This does not enable line numbers or count input lines in
+          advance.
+
   -b, --number-nonblank
           Only show line numbers for non-blank lines, no other decorations. This is an alias for
           '--style=numbers'. Non-blank lines are lines that contain any character before the line

@@ -289,6 +289,165 @@ fn number_nonblank_style() {
 }
 
 #[test]
+fn line_number_width_across_ten_thousand() {
+    let input = "hello\n".repeat(10000);
+    let dir = tempdir().unwrap();
+    let file = dir.path().join("input.txt");
+    std::fs::write(&file, &input).unwrap();
+    for (width, expected) in [
+        (None, "9999 hello\n10000 hello\n"),
+        (Some("4"), "9999 hello\n10000 hello\n"),
+        (Some("6"), "  9999 hello\n 10000 hello\n"),
+    ] {
+        for from_file in [false, true] {
+            let mut cmd = bat();
+            cmd.args(["-n", "--line-range=9999:10000"]);
+            if let Some(width) = width {
+                cmd.args(["--line-number-width", width]);
+            }
+            if from_file {
+                cmd.arg(&file);
+            } else {
+                cmd.write_stdin(input.clone());
+            }
+            cmd.assert().success().stdout(expected);
+        }
+    }
+}
+
+#[cfg(feature = "git")]
+#[test]
+fn line_number_width_with_git_changes() {
+    let dir = tempdir().unwrap();
+    let file = dir.path().join("input.txt");
+    std::fs::write(&file, "before\n").unwrap();
+    for args in [
+        vec!["init"],
+        vec!["-c", "core.autocrlf=false", "add", "input.txt"],
+    ] {
+        let output = std::process::Command::new("git")
+            .current_dir(dir.path())
+            .args(args)
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{output:?}");
+    }
+    std::fs::write(&file, "after\n").unwrap();
+    bat()
+        .current_dir(dir.path())
+        .args([
+            "--style=numbers,changes,grid",
+            "--decorations=always",
+            "--color=never",
+            "--line-number-width=6",
+            "--terminal-width=16",
+        ])
+        .arg(&file)
+        .assert()
+        .success()
+        .stdout("─────────┬──────\n     1 ~ │ after\n─────────┴──────\n");
+}
+
+#[test]
+fn line_number_width_wrapping_and_grid() {
+    for mode in ["character", "word"] {
+        bat()
+            .args([
+                "--style=numbers,grid",
+                "--decorations=always",
+                "--color=never",
+                "--line-number-width=6",
+                "--terminal-width=14",
+                "--wrap",
+                mode,
+            ])
+            .write_stdin("abcdefghij\n")
+            .assert()
+            .success()
+            .stdout("───────┬──────\n     1 │ abcde\n       │ fghij\n───────┴──────\n");
+    }
+}
+
+#[test]
+fn line_number_width_continuation_beyond_minimum() {
+    bat()
+        .args([
+            "-n",
+            "--line-number-width=1",
+            "--terminal-width=10",
+            "--wrap=character",
+            "--line-range=100:100",
+        ])
+        .write_stdin(format!("{}abcdefghij\n", "x\n".repeat(99)))
+        .assert()
+        .success()
+        .stdout("100 abcdef\n    ghij\n");
+}
+
+#[test]
+fn line_number_width_blank_lines() {
+    bat()
+        .args(["-b", "--line-number-width=6"])
+        .write_stdin("hello\n\nworld\n")
+        .assert()
+        .success()
+        .stdout("     1 hello\n       \n     2 world\n");
+}
+
+#[test]
+fn line_number_width_narrow_terminal() {
+    bat()
+        .args([
+            "-n",
+            "--line-number-width=6",
+            "--terminal-width=10",
+            "--wrap=character",
+        ])
+        .write_stdin("hello world\n")
+        .assert()
+        .success()
+        .stdout("hello worl\nd\n");
+}
+
+#[test]
+fn line_number_width_config_and_override() {
+    let dir = tempdir().unwrap();
+    let config = dir.path().join("config");
+    std::fs::write(&config, "--line-number-width=6\n").unwrap();
+    for (args, expected) in [
+        (vec!["-n"], "     1 hello\n"),
+        (vec!["-n", "--line-number-width=2"], " 1 hello\n"),
+        (vec!["--plain"], "hello\n"),
+    ] {
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", &config)
+            .args(args)
+            .write_stdin("hello\n")
+            .assert()
+            .success()
+            .stdout(expected);
+    }
+}
+
+#[test]
+fn line_number_width_limits() {
+    for width in ["0", "-1", "256", "18446744073709551615", "abc"] {
+        bat()
+            .arg(format!("--line-number-width={width}"))
+            .write_stdin("hello\n")
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("--line-number-width"));
+    }
+    bat()
+        .args(["-n", "--line-number-width=255", "--terminal-width=300"])
+        .write_stdin("hello\n")
+        .assert()
+        .success()
+        .stdout(format!("{}1 hello\n", " ".repeat(254)));
+}
+
+#[test]
 fn number_nonblank_from_cli_in_loop_through_mode() {
     bat()
         .arg("empty_lines.txt")
