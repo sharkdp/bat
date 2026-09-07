@@ -1,0 +1,6 @@
+{
+  "name": "example",
+  "count": 42,
+  "enabled": true,
+  "items": [null, 1.5, "value"]
+}

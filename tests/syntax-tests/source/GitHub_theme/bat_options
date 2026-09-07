@@ -1,0 +1,5 @@
+--theme=GitHub
+--style=numbers,grid
+--decorations=always
+--terminal-width=80
+--highlight-line=4
