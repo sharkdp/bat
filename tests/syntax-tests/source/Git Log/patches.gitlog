@@ -1,0 +1,31 @@
+commit abcdef123456789 (HEAD -> main)
+Author: Example <example@example.com>
+Date:   Mon Jan 1 00:00:00 2024 +0000
+
+    Update a source file
+
+    diff --git in an indented message is not a patch header
+
+diff --git a/example.txt b/example.txt
+index 1111111..2222222 100644
+--- a/example.txt
++++ b/example.txt
+@@ -1,2 +1,2 @@
+ context
+-removed
++added
+
+commit 123456789abcdef
+Author: Example <example@example.com>
+
+    A second commit after a patch
+
+diff --git a/image.png b/image.png
+new file mode 100644
+index 0000000..3333333
+Binary files /dev/null and b/image.png differ
+
+commit 456789abcdef123
+Author: Example <example@example.com>
+
+    A commit without a patch

@@ -1,0 +1,15 @@
+commit abcdef123456789 (HEAD -> main, tag: v1.0, origin/main)
+Author: Example <example@example.com>
+Date:   Mon Jan 1 00:00:00 2024 +0000
+
+    A decorated commit
+
+commit 1234567 (HEAD -> refs/heads/main, tag: refs/tags/v1.0, refs/remotes/upstream/main)
+Author: Example <example@example.com>
+
+    Full ref names
+
+commit 0123456789abcdef
+Author: Example <example@example.com>
+
+    An undecorated commit

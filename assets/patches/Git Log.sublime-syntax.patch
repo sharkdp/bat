@@ -1,0 +1,48 @@
+--- syntaxes/01_Packages/Git Formats/Git Log.sublime-syntax	1970-01-01 00:00:00 +0000
++++ syntaxes/01_Packages/Git Formats/Git Log.sublime-syntax	1970-01-01 00:00:00 +0000
+@@ -11,17 +11,43 @@
+     - include: Git Common.sublime-syntax#comments-line
+
+   main:
++    - match: '^(?=diff --(?:git|cc|combined) )'
++      embed: scope:source.diff
++      escape: '(?=^commit\s+\h{7,})'
+     # 1st header line
+     # commit d9d9fb804f5d61c13ba2f8746af33a9f3c609075
+-    - match: (?:(commit)\s+(\h{7,}))?\s*\n
++    - match: ^(commit)\s+(\h{7,})(?=\s|$)
+       scope: meta.header.git.commit markup.raw.block.git.log
+       captures:
+         1: keyword.other.commit.git.log
+         2: constant.other.hash.git.log
+       embed: commit-header
+-      escape: (?=^commit\s)
++      escape: (?=^(?:commit|diff)\s)
+
+   commit-header:
++    - match: \(
++      scope: punctuation.section.parens.begin.git.log
++      push:
++        - meta_scope: meta.header.git.commit meta.annotation.git.log
++        - match: \)
++          scope: punctuation.section.parens.end.git.log
++          pop: true
++        - match: \bHEAD\b
++          scope: variable.language.head.git.log
++        - match: '->'
++          scope: keyword.operator.arrow.git.log
++        - match: '(tag:)[ \t]+([^,)\s]+)'
++          captures:
++            1: keyword.other.tag.git.log
++            2: entity.name.tag.git.log
++        - match: '(?:refs/remotes/|origin/)[^,)\s]+'
++          scope: constant.other.reference.git.log
++        - match: ','
++          scope: punctuation.separator.comma.git.log
++        - match: '[^,)\s]+'
++          scope: entity.name.branch.git.log
++        - match: $\n?
++          pop: true
+     # All header attributes are mappings of `key: value` format.
+     # For simplicity we do not want to distinguish the entries.
+     # Author: first lastname <mail@domain.com>
