@@ -1,0 +1,3 @@
+# EPUB package metadata is XML, including files without an XML declaration.
+[mappings]
+"XML" = ["*.opf"]

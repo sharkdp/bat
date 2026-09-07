@@ -527,6 +527,19 @@ mod tests {
     }
 
     #[test]
+    fn detect_epub_package_and_ikiwiki_markdown_extensions() {
+        let test = SyntaxDetectionTest::new();
+        for (filename, expected) in [
+            ("book.opf", "XML"),
+            ("BOOK.OPF", "XML"),
+            ("page.mdwn", "Markdown"),
+            ("PAGE.MDWN", "Markdown"),
+        ] {
+            assert_eq!(test.syntax_for_file(filename), expected, "{filename}");
+        }
+    }
+
+    #[test]
     fn syntax_detection_basic() {
         let test = SyntaxDetectionTest::new();
 
