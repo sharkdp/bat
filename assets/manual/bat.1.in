@@ -323,6 +323,12 @@ is dependent on your operating system. To get the default path for your system, 
 Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
 location of the configuration file.
 
+On all platforms, including Windows, absolute \fBXDG_CONFIG_HOME\fR and
+\fBXDG_CACHE_HOME\fR values select the configuration and cache base directories,
+with a \fBbat\fR subdirectory appended. \fBBAT_CONFIG_DIR\fR and
+\fBBAT_CACHE_PATH\fR take precedence. Empty and relative XDG values are ignored;
+Windows otherwise uses its native application data directories.
+.PP
 To generate a default configuration file, call:
 
 \fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR

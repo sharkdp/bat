@@ -760,6 +760,13 @@ export BAT_CONFIG_PATH="/path/to/bat/bat.conf"
 export BAT_CONFIG_DIR="/path/to/bat"
 ```
 
+On every platform, including Windows, absolute `XDG_CONFIG_HOME` and `XDG_CACHE_HOME`
+values select `<XDG_CONFIG_HOME>/bat` and `<XDG_CACHE_HOME>/bat`. The bat-specific
+`BAT_CONFIG_DIR` and `BAT_CACHE_PATH` overrides take precedence. Empty or relative
+XDG paths are ignored. Without these overrides, Windows uses its native application
+data folders. For MSYS2 or Git Bash, use a Windows path such as `C:/msys64/home/me/.config`
+for `XDG_CONFIG_HOME`.
+
 A default configuration file can be created with the `--generate-config-file` option.
 ```bash
 bat --generate-config-file
