@@ -91,7 +91,17 @@ where
     for mapping in mappings {
         if let (matcher, MappingTarget::MapTo(s)) = mapping {
             let globs = map.entry(*s).or_insert_with(Vec::new);
-            globs.push(matcher.glob().glob().into());
+            let pattern = matcher.glob().glob();
+            let displayed = pattern
+                .strip_prefix("*.")
+                .filter(|extension| {
+                    !extension.is_empty()
+                        && extension
+                            .chars()
+                            .all(|c| c.is_alphanumeric() || matches!(c, '.' | '-' | '_' | '+'))
+                })
+                .unwrap_or(pattern);
+            globs.push(displayed.into());
         }
     }
     map
@@ -133,8 +143,11 @@ pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
 
     for lang in &mut languages {
         if let Some(additional_paths) = configured_languages.get(lang.name.as_str()) {
-            lang.file_extensions
-                .extend(additional_paths.iter().cloned());
+            for path in additional_paths {
+                if !lang.file_extensions.contains(path) {
+                    lang.file_extensions.push(path.clone());
+                }
+            }
         }
     }
 
