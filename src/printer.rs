@@ -30,8 +30,8 @@ use crate::input::OpenedInput;
 use crate::line_range::{MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::OutputHandle;
 use crate::preprocessor::{
-    expand_tabs, replace_nonprintable, sanitize, sanitize_for_terminal, strip_ansi,
-    strip_overstrike,
+    expand_tabs, replace_nonprintable, replace_nonprintable_with_ranges, sanitize,
+    sanitize_for_terminal, strip_ansi, strip_overstrike,
 };
 use crate::style::StyleComponent;
 use crate::terminal::{as_terminal_escaped, to_ansi_color};
@@ -213,6 +213,7 @@ pub(crate) struct InteractivePrinter<'a> {
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
+    plain_style: syntect::highlighting::Style,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -332,6 +333,7 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         Ok(InteractivePrinter {
+            plain_style: syntect::highlighting::Highlighter::new(theme).get_default(),
             panel_width,
             colors,
             config,
@@ -653,13 +655,15 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
+        let mut replacement_ranges = Vec::new();
         let line = if self.config.show_nonprintable {
-            replace_nonprintable(
+            let (text, ranges) = replace_nonprintable_with_ranges(
                 line_buffer,
                 self.config.tab_width,
                 self.config.nonprintable_notation,
-            )
-            .into()
+            );
+            replacement_ranges = ranges;
+            text.into()
         } else {
             let mut line = match self.content_type {
                 Some(ContentType::BINARY) | None
@@ -698,7 +702,20 @@ impl Printer for InteractivePrinter<'_> {
             line
         };
 
-        let regions = self.highlight_regions_for_line(&line)?;
+        let mut regions = self.highlight_regions_for_line(&line)?;
+        if self.config.show_nonprintable
+            && self
+                .config
+                .language
+                .is_some_and(|language| language.eq_ignore_ascii_case("show-nonprintable"))
+        {
+            regions = mask_nonprintable_highlighting(
+                &line,
+                regions,
+                &replacement_ranges,
+                self.plain_style,
+            );
+        }
         if out_of_range {
             return Ok(());
         }
@@ -1022,4 +1039,36 @@ impl Colors {
             line_number: gutter_style,
         }
     }
+}
+
+/// Keep highlighting only on placeholders inserted by the nonprintable preprocessor.
+/// Literal escape spellings in the source retain the theme's normal text style.
+fn mask_nonprintable_highlighting<'a>(
+    line: &'a str,
+    regions: Vec<(syntect::highlighting::Style, &'a str)>,
+    replacements: &[std::ops::Range<usize>],
+    plain: syntect::highlighting::Style,
+) -> Vec<(syntect::highlighting::Style, &'a str)> {
+    let mut result = Vec::new();
+    let mut replacements = replacements.iter().peekable();
+    let mut offset = 0;
+    for (style, region) in regions {
+        let end = offset + region.len();
+        while offset < end {
+            while replacements.peek().is_some_and(|range| range.end <= offset) {
+                replacements.next();
+            }
+            let (boundary, is_replacement) = match replacements.peek() {
+                Some(range) if range.start <= offset => (end.min(range.end), true),
+                Some(range) => (end.min(range.start), false),
+                None => (end, false),
+            };
+            result.push((
+                if is_replacement { style } else { plain },
+                &line[offset..boundary],
+            ));
+            offset = boundary;
+        }
+    }
+    result
 }

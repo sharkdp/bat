@@ -61,6 +61,31 @@ pub fn replace_nonprintable(
     tab_width: usize,
     nonprintable_notation: NonprintableNotation,
 ) -> String {
+    replace_nonprintable_impl(input, tab_width, nonprintable_notation, |_| {})
+}
+
+pub(crate) fn replace_nonprintable_with_ranges(
+    input: &[u8],
+    tab_width: usize,
+    notation: NonprintableNotation,
+) -> (String, Vec<std::ops::Range<usize>>) {
+    let mut ranges: Vec<std::ops::Range<usize>> = Vec::new();
+    let text = replace_nonprintable_impl(input, tab_width, notation, |range| {
+        if let Some(last) = ranges.last_mut().filter(|last| last.end == range.start) {
+            last.end = range.end;
+        } else {
+            ranges.push(range);
+        }
+    });
+    (text, ranges)
+}
+
+fn replace_nonprintable_impl(
+    input: &[u8],
+    tab_width: usize,
+    nonprintable_notation: NonprintableNotation,
+    mut replacement: impl FnMut(std::ops::Range<usize>),
+) -> String {
     let mut output = String::new();
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
@@ -69,6 +94,8 @@ pub fn replace_nonprintable(
     let mut line_idx = 0;
     let len = input.len();
     while idx < len {
+        let start = output.len();
+        let mut replaced = true;
         if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
             idx += skip_ahead;
             line_idx += 1;
@@ -122,6 +149,7 @@ pub fn replace_nonprintable(
                     || c.is_ascii_punctuation()
                     || c.is_ascii_graphic() =>
                 {
+                    replaced = false;
                     output.push(c)
                 }
                 // everything else
@@ -130,6 +158,9 @@ pub fn replace_nonprintable(
         } else {
             write!(output, "\\x{:02X}", input[idx]).ok();
             idx += 1;
+        }
+        if replaced {
+            replacement(start..output.len());
         }
     }
 
@@ -528,4 +559,27 @@ fn test_sanitize_for_terminal_idempotent_on_sanitized() {
     assert_eq!(sanitize_for_terminal(&clean), clean);
     assert!(!clean.contains('\x1b'));
     assert!(!clean.contains('\x07'));
+}
+
+#[test]
+fn nonprintable_ranges_distinguish_literal_escape_spellings() {
+    let (text, ranges) =
+        replace_nonprintable_with_ranges(b"\x86_64 != \\x86_64", 4, NonprintableNotation::Unicode);
+    assert_eq!(text, "\\x86_64\u{b7}!=\u{b7}\\x86_64");
+    let placeholders: Vec<_> = ranges.iter().map(|range| &text[range.clone()]).collect();
+    assert_eq!(placeholders, vec!["\\x86", "\u{b7}", "\u{b7}"]);
+}
+
+#[test]
+fn nonprintable_ranges_track_unicode_tabs_and_caret_controls() {
+    for notation in [NonprintableNotation::Unicode, NonprintableNotation::Caret] {
+        let input = "a\t界\0z\n".as_bytes();
+        let (text, ranges) = replace_nonprintable_with_ranges(input, 4, notation);
+        assert_eq!(text, replace_nonprintable(input, 4, notation));
+        assert!(ranges
+            .iter()
+            .all(|range| text.is_char_boundary(range.start) && text.is_char_boundary(range.end)));
+        assert_eq!(&text[..ranges[0].start], "a");
+        assert_eq!(&text[ranges[0].end..ranges[1].start], "z");
+    }
 }
