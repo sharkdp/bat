@@ -91,6 +91,7 @@ impl InputKind<'_> {
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
+    pub(crate) raw_stream: bool,
 }
 
 pub struct Input<'a> {
@@ -195,6 +196,7 @@ impl<'a> Input<'a> {
         stdout_identifier: Option<&Identifier>,
     ) -> Result<OpenedInput<'a>> {
         let description = self.description().clone();
+        let raw_stream = self.metadata.raw_stream;
         match self.kind {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
@@ -209,7 +211,7 @@ impl<'a> Input<'a> {
                     kind: OpenedInputKind::StdIn,
                     description,
                     metadata: self.metadata,
-                    reader: InputReader::try_new(stdin)?,
+                    reader: InputReader::with_raw_stream(stdin, raw_stream)?,
                 })
             }
 
@@ -238,14 +240,14 @@ impl<'a> Input<'a> {
                         file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
-                    InputReader::try_new(BufReader::new(file))?
+                    InputReader::with_raw_stream(BufReader::new(file), raw_stream)?
                 },
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
-                reader: InputReader::try_new(BufReader::new(reader))?,
+                reader: InputReader::with_raw_stream(BufReader::new(reader), raw_stream)?,
             }),
         }
     }
@@ -262,6 +264,37 @@ impl<'a> InputReader<'a> {
     #[cfg(test)]
     pub(crate) fn new<R: BufRead + 'a>(reader: R) -> InputReader<'a> {
         Self::try_new(reader).expect("reading the first line failed")
+    }
+
+    pub(crate) fn with_raw_stream<R: BufRead + 'a>(reader: R, raw: bool) -> io::Result<Self> {
+        if raw {
+            Ok(Self {
+                inner: Box::new(reader),
+                first_line: Vec::new(),
+                content_type: None,
+                unbuffered: false,
+            })
+        } else {
+            Self::try_new(reader)
+        }
+    }
+
+    pub(crate) fn copy_to(&mut self, writer: &mut dyn io::Write) -> io::Result<()> {
+        writer.write_all(&self.first_line)?;
+        self.first_line.clear();
+        let mut buffer = [0; 16 * 1024];
+        loop {
+            let count = match self.inner.read(&mut buffer) {
+                Ok(0) => return writer.flush(),
+                Ok(count) => count,
+                Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+                Err(error) => return Err(error),
+            };
+            writer.write_all(&buffer[..count])?;
+            // Stdout is line-buffered even when piped. Flush each available
+            // chunk so a short write without a newline is visible immediately.
+            writer.flush()?;
+        }
     }
 
     pub(crate) fn try_new<R: BufRead + 'a>(mut reader: R) -> io::Result<InputReader<'a>> {

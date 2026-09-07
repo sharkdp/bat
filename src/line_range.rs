@@ -448,6 +448,15 @@ impl LineRanges {
         }
     }
 
+    pub(crate) fn includes_all_lines(&self) -> bool {
+        self.ranges.iter().any(|range| {
+            matches!(range.lower, RangeBound::Absolute(0 | 1))
+                && matches!(range.upper, RangeBound::Absolute(usize::MAX))
+                && range.is_inside(1, MaxBufferedLineNumber::Tentative(2))
+                && range.is_inside(2, MaxBufferedLineNumber::Tentative(2))
+        })
+    }
+
     pub(crate) fn largest_offset_from_end(&self) -> usize {
         self.largest_offset_from_end
     }

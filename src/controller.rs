@@ -146,6 +146,19 @@ impl Controller<'_> {
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
     ) -> Result<()> {
+        // Plain byte-for-byte output does not need line or syntax buffering.
+        // In particular, a device or FIFO need not produce a newline to make progress.
+        let raw_stream = self.config.loop_through
+            && matches!(
+                self.config.binary,
+                crate::BinaryBehavior::NoPrinting | crate::BinaryBehavior::AsText
+            )
+            && !self.config.show_nonprintable
+            && self.config.squeeze_lines.is_none()
+            && matches!(&self.config.visible_lines, VisibleLines::Ranges(ranges) if ranges.includes_all_lines())
+            && matches!(writer, OutputHandle::IoWrite(_));
+        let mut input = input;
+        input.metadata.raw_stream = raw_stream;
         let mut opened_input = {
             #[cfg(feature = "lessopen")]
             match self.preprocessor {
@@ -158,6 +171,12 @@ impl Controller<'_> {
             #[cfg(not(feature = "lessopen"))]
             input.open(stdin, stdout_identifier)?
         };
+        if raw_stream {
+            if let OutputHandle::IoWrite(writer) = writer {
+                opened_input.reader.copy_to(*writer)?;
+                return Ok(());
+            }
+        }
         opened_input.reader.unbuffered = self.config.unbuffered;
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
