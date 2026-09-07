@@ -210,6 +210,7 @@ pub(crate) struct InteractivePrinter<'a> {
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
+    rendered_line: String,
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
@@ -343,6 +344,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
+            rendered_line: String::new(),
             strip_ansi,
             sanitize,
             strip_overstrike,
@@ -646,6 +648,42 @@ impl Printer for InteractivePrinter<'_> {
     }
 
     fn print_line(
+        &mut self,
+        out_of_range: bool,
+        handle: &mut OutputHandle,
+        line_number: usize,
+        line_buffer: &[u8],
+        max_buffered_line_number: MaxBufferedLineNumber,
+    ) -> Result<()> {
+        // Submit each rendered source line together. In particular, a pager pipe
+        // must not receive a separate write for every ANSI segment or sidebar cell.
+        // Unbuffered input still calls this once per available input fragment.
+        let mut rendered = std::mem::take(&mut self.rendered_line);
+        rendered.clear();
+        let result = self.render_line(
+            out_of_range,
+            &mut OutputHandle::FmtWrite(&mut rendered),
+            line_number,
+            line_buffer,
+            max_buffered_line_number,
+        );
+        let written = if rendered.is_empty() {
+            Ok(())
+        } else {
+            handle.write_fmt(format_args!("{rendered}"))
+        };
+        // Keep the common buffer but release oversized allocations after a long
+        // line, instead of retaining them until the entire file has been printed.
+        if rendered.capacity() <= 64 * 1024 {
+            self.rendered_line = rendered;
+        }
+        written?;
+        result
+    }
+}
+
+impl InteractivePrinter<'_> {
+    fn render_line(
         &mut self,
         out_of_range: bool,
         handle: &mut OutputHandle,
