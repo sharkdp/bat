@@ -212,6 +212,10 @@ pub fn list_themes(
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
 
+    // Force paging off for --list-themes so BAT_OPTS --paging=always
+    // doesn't paginate one theme at a time and hide theme names.
+    config.paging_mode = PagingMode::Never;
+
     let default_theme_name = theme(theme_options).to_string();
     let mut buf = String::new();
     let mut handle = OutputHandle::FmtWrite(&mut buf);

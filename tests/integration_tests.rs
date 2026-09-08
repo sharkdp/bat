@@ -777,6 +777,23 @@ fn list_themes_to_piped_output() {
 }
 
 #[test]
+fn list_themes_with_paging_always_from_bat_opts() {
+    // Regression test: BAT_OPTS --paging=always should not paginate
+    // --list-themes output one theme at a time. All themes must appear
+    // in a single non-paged output.
+    bat()
+        .env("BAT_OPTS", "--paging=always")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("DarkNeon").normalize())
+        .stdout(predicate::str::contains("Monokai Extended").normalize())
+        .stdout(predicate::str::contains("Solarized (light)").normalize());
+}
+
+#[test]
 #[serial]
 fn list_languages() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
