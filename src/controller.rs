@@ -190,6 +190,14 @@ impl Controller<'_> {
         };
 
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
+            if self.config.language.is_some() {
+                self.assets.get_syntax(
+                    self.config.language,
+                    self.config.fallback_syntax,
+                    &mut opened_input,
+                    &self.config.syntax_mapping,
+                )?;
+            }
             Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(
