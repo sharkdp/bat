@@ -3,6 +3,7 @@
 
 ## Other
 
+- Fix `--list-themes` respecting `--paging=never` when `BAT_OPTS` contains `--paging=always`, see #3936 (@yunaremaia)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
