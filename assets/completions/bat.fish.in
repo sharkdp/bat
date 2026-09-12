@@ -3,7 +3,10 @@
 # ($XDG_CONFIG_HOME is usually set to ~/.config)
 
 # `bat` is `batcat` on Debian and Ubuntu
-set bat {{PROJECT_EXECUTABLE}}
+# Exported (-x) so it's still visible when completions are evaluated in a
+# child process, e.g. via `commandline --function complete` from plugins
+# like fish-autopair (see #3909).
+set -gx bat {{PROJECT_EXECUTABLE}}
 
 # Helper functions:
 
