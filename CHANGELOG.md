@@ -3,7 +3,7 @@
 
 ## Other
 
-- Note in the man page that custom themes must be `.tmTheme` files and that `.sublime-color-scheme` files are not supported, syncing it with the README. Closes #1948 (@Jorge-Polanco-Roque)
+- Note in the man page that custom themes must be `.tmTheme` files and that `.sublime-color-scheme` files are not supported, syncing it with the README. Closes #1948, see #4011 (@Jorge-Polanco-Roque)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
