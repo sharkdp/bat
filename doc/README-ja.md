@@ -172,7 +172,7 @@ man 2 select
 
 これを新しいコマンドにバンドルしたい場合は [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md) も使用できます。
 
-[Manpage syntax](assets/syntaxes/Manpage.sublime-syntax) はこのリポジトリで開発されており、まだ作業が必要であることに注意してください。
+[Manpage syntax](../assets/syntaxes/02_Extra/Manpage.sublime-syntax) はこのリポジトリで開発されており、まだ作業が必要であることに注意してください。
 
 #### `prettier` / `shfmt` / `rustfmt`
 
