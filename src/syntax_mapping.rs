@@ -2,13 +2,12 @@ use std::{
     path::Path,
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, LazyLock,
     },
     thread,
 };
 
 use globset::{Candidate, GlobBuilder, GlobMatcher};
-use once_cell::sync::Lazy;
 
 use crate::error::Result;
 use builtin::BUILTIN_MAPPINGS;
@@ -93,7 +92,7 @@ impl<'a> SyntaxMapping<'a> {
                 if halt.load(Ordering::Relaxed) {
                     break;
                 }
-                Lazy::force(matcher);
+                LazyLock::force(matcher);
             }
         });
         // Note that this thread is not joined upon completion because there's
