@@ -163,12 +163,10 @@ bat main.cpp | xclip
 `man` の色付けページャーとして使用できます:
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="bat -plman"
 man 2 select
 ```
-
-フォーマットの問題が発生した場合は
-`MANROFFOPT="-c"` を設定する必要もあります。
+(一部の古い Debian または Ubuntu のリリースでは、実行ファイル名は `bat` ではなく `batcat` です)
 
 これを新しいコマンドにバンドルしたい場合は [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md) も使用できます。
 

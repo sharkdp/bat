@@ -173,18 +173,13 @@ bat main.cpp | xclip
 `bat` 可以通过设置 `MANPAGER` 环境变量，用作 `man` 的彩色分页器：
 
 ```bash
-export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08/, \"\", \$0); print }'\'' | bat -p -lman'"
+export MANPAGER="bat -plman"
 man 2 select
 ```
 
-（如果你使用 Debian 或 Ubuntu，请将 `batcat` 替换为 `bat`）
+（在某些较旧的 Debian 或 Ubuntu 发行版中，可执行文件名为 `batcat` 而非 `bat`）
 
 如果你希望将其打包为一个新的命令，也可以使用 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)。
-
-> [!WARNING]
-> 在使用 Mandoc 的 `man` 实现时，这[无法](https://github.com/sharkdp/bat/issues/1145)直接工作。
->
-> 请使用 `batman`，或将此 Shell 脚本包装为 [Shebang 可执行文件](https://en.wikipedia.org/wiki/Shebang_(Unix))，并将 `MANPAGER` 指向该文件。
 
 注意，[Manpage 语法](assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
 
