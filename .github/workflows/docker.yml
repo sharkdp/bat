@@ -1,0 +1,40 @@
+name: Build and Push Docker Image
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "Building bat version: $VERSION"
+
+          docker build \
+            --build-arg BAT_VERSION=$VERSION \
+            -t ghcr.io/sharkdp/bat:$VERSION .
+
+      - name: Push Docker image
+        run: |
+          VERSION=${{ github.ref_name }}
+          docker push ghcr.io/sharkdp/bat:$VERSION
+
+      - name: Push latest tag
+        if: github.event_name == 'release'
+        run: |
+          VERSION=${{ github.ref_name }}
+          docker tag ghcr.io/sharkdp/bat:$VERSION ghcr.io/sharkdp/bat:latest
+          docker push ghcr.io/sharkdp/bat:latest
