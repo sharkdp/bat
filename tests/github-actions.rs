@@ -1,7 +1,7 @@
 #[test]
 fn all_jobs_not_missing_any_jobs() {
-    let yaml: serde_yaml::Value =
-        serde_yaml::from_reader(std::fs::File::open(".github/workflows/CICD.yml").unwrap())
+    let yaml: serde_yaml_ng::Value =
+        serde_yaml_ng::from_reader(std::fs::File::open(".github/workflows/CICD.yml").unwrap())
             .unwrap();
     let jobs = yaml.get("jobs").unwrap();
 
