@@ -1,5 +1,7 @@
 use std::fmt::Write;
 
+use unicode_width::UnicodeWidthStr;
+
 use crate::{
     nonprintable_notation::NonprintableNotation,
     vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
@@ -14,9 +16,11 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
             EscapeSequenceOffsets::Text { .. } => {
                 let mut text = &line[seq.index_of_start()..seq.index_past_end()];
                 while let Some(index) = text.find('\t') {
-                    // Add previous text.
+                    // Add previous text. `index` is a byte offset, but `cursor`
+                    // counts terminal columns, so the width of the text has to
+                    // be measured rather than taken from its length.
                     if index > 0 {
-                        *cursor += index;
+                        *cursor += UnicodeWidthStr::width(&text[0..index]);
                         buffer.push_str(&text[0..index]);
                     }
 
@@ -29,7 +33,7 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
                     text = &text[index + 1..text.len()];
                 }
 
-                *cursor += text.len();
+                *cursor += UnicodeWidthStr::width(text);
                 buffer.push_str(text);
             }
             _ => {
@@ -528,4 +532,43 @@ fn test_sanitize_for_terminal_idempotent_on_sanitized() {
     assert_eq!(sanitize_for_terminal(&clean), clean);
     assert!(!clean.contains('\x1b'));
     assert!(!clean.contains('\x07'));
+}
+
+#[test]
+fn test_expand_tabs_counts_columns_not_bytes() {
+    // 'é' is two bytes in UTF-8 but occupies one column, '€' is three bytes
+    // and occupies one column, and the crab is four bytes and occupies two.
+    for (text, columns) in [("é", 1), ("€", 1), ("🦀", 2)] {
+        let mut cursor = 0;
+        assert_eq!(expand_tabs(text, 4, &mut cursor), text);
+        assert_eq!(cursor, columns, "{text:?} is {columns} column(s)");
+    }
+}
+
+#[test]
+fn test_expand_tabs_tab_stop_after_multibyte_text() {
+    // One column of text, so the tab has to reach the stop at column 4.
+    let mut cursor = 0;
+    assert_eq!(expand_tabs("é\t", 4, &mut cursor), "é   ");
+    assert_eq!(cursor, 4);
+
+    // Two columns of text, which is the midpoint of the stop at column 4.
+    let mut cursor = 0;
+    assert_eq!(expand_tabs("🦀\t", 4, &mut cursor), "🦀  ");
+    assert_eq!(cursor, 4);
+
+    // The tab-stop arithmetic itself is already right for ASCII, so the cases
+    // above cannot be satisfied by changing the width of the stop.
+    let mut cursor = 0;
+    assert_eq!(expand_tabs("ab\t", 4, &mut cursor), "ab  ");
+    assert_eq!(cursor, 4);
+}
+
+#[test]
+fn test_expand_tabs_multibyte_text_after_a_tab() {
+    // The text before the first tab is counted, and so is the remainder after
+    // it, so the second tab stop is off by the byte width of the middle text.
+    let mut cursor = 0;
+    assert_eq!(expand_tabs("a\t🦀\t", 4, &mut cursor), "a   🦀  ");
+    assert_eq!(cursor, 8);
 }
