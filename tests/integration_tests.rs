@@ -3373,6 +3373,25 @@ fn ansi_sgr_joins_attributes_when_wrapped() {
             .stderr("");
 }
 
+// Ensure that strikethrough (SGR 9) is tracked like the other attributes, so it is
+// re-emitted (and therefore preserved) across a wrap boundary instead of being dropped.
+#[test]
+fn ansi_sgr_strike_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[9mStrike.......Struck+color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[9m\x1B[33m\x1B[9mStrike.......\n\x1B[33m\x1B[9mStruck+color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
 #[test]
 fn ignored_suffix_arg() {
     bat()
