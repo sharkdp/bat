@@ -441,13 +441,7 @@ impl App {
             colored_output: self.matches.get_flag("force-colorization") && {
                 force_color_last_index > plain_last_index || !extra_extra_plain
             } || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
-                Some("always") => {
-                    if color_last_index > plain_last_index || !extra_extra_plain {
-                        true
-                    } else {
-                        false
-                    }
-                }
+                Some("always") => color_last_index > plain_last_index || !extra_extra_plain,
                 Some("never") => false,
                 Some("auto") => !env_no_color() && self.interactive_output && !extra_extra_plain,
                 _ => unreachable!("other values for --color are not allowed"),
