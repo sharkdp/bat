@@ -274,7 +274,7 @@ impl App {
         let plain_second_index = self
             .matches
             .indices_of("plain")
-            .and_then(|mut iter| iter.nth(1))
+            .and_then(|mut iter| iter.nth(0))
             .unwrap_or_default();
         let plain_last_index = self
             .matches
