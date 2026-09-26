@@ -270,6 +270,12 @@ impl App {
         let style_components = self.style_components()?;
 
         let extra_plain = self.matches.get_count("plain") > 1;
+        let extra_extra_plain = self.matches.get_count("plain") > 2;
+        let plain_second_index = self
+            .matches
+            .indices_of("plain")
+            .and_then(|mut iter| iter.nth(1))
+            .unwrap_or_default();
         let plain_last_index = self
             .matches
             .indices_of("plain")
@@ -280,11 +286,21 @@ impl App {
             .indices_of("paging")
             .and_then(Iterator::max)
             .unwrap_or_default();
+        let color_last_index = self
+            .matches
+            .indices_of("color")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
+        let force_color_last_index = self
+            .matches
+            .indices_of("force-colorization")
+            .and_then(Iterator::max)
+            .unwrap_or_default();
 
         let paging_mode = match self.matches.get_one::<String>("paging").map(|s| s.as_str()) {
             Some("always") => {
                 // Disable paging if the second -p (or -pp) is specified after --paging=always
-                if extra_plain && plain_last_index > paging_last_index {
+                if extra_plain && plain_second_index > paging_last_index {
                     PagingMode::Never
                 } else {
                     PagingMode::Always
@@ -422,13 +438,20 @@ impl App {
                     }
                 }
             },
-            colored_output: self.matches.get_flag("force-colorization")
-                || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
-                    Some("always") => true,
-                    Some("never") => false,
-                    Some("auto") => !env_no_color() && self.interactive_output,
-                    _ => unreachable!("other values for --color are not allowed"),
-                },
+            colored_output: self.matches.get_flag("force-colorization") && {
+                force_color_last_index > plain_last_index || !extra_extra_plain
+            } || match self.matches.get_one::<String>("color").map(|s| s.as_str()) {
+                Some("always") => {
+                    if color_last_index > plain_last_index || !extra_extra_plain {
+                        true
+                    } else {
+                        false
+                    }
+                }
+                Some("never") => false,
+                Some("auto") => !env_no_color() && self.interactive_output && !extra_extra_plain,
+                _ => unreachable!("other values for --color are not allowed"),
+            },
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
