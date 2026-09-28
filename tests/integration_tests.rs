@@ -214,6 +214,70 @@ fn numbers_honored_from_cli_when_preceeded_by_plain_in_loop_through_mode() {
 }
 
 #[test]
+fn repeated_combined_flags_use_last_number_or_plain_flag() {
+    bat()
+        .arg("multiline.txt")
+        .arg("-npn")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n   2 line 2\n   3 line 3\n   4 line 4\n   5 line 5\n   6 line 6\n   7 line 7\n   8 line 8\n   9 line 9\n  10 line 10\n");
+
+    bat()
+        .arg("multiline.txt")
+        .arg("-pnp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\n",
+        );
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-pbp")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("line 1\n\n\n\nline 5\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nline 20\nline 21\n\n\nline 24\n\nline 26\n\n\n\nline 30\n");
+
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-bpb")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout("   1 line 1\n     \n     \n     \n   2 line 5\n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n     \n   6 line 26\n     \n     \n     \n   7 line 30\n");
+}
+
+#[test]
+fn option_terminator_keeps_filename_from_number_flags() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("-b"), "hello\nworld\n").expect("can write temporary file");
+
+    bat()
+        .current_dir(tmp_dir.path())
+        .args(["--", "-b"])
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn attached_short_option_values_are_not_treated_as_flags() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("input.txt"), "hello\nworld\n")
+        .expect("can write temporary file");
+
+    bat()
+        .current_dir(tmp_dir.path())
+        .args(["-lbn", "input.txt"])
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
 fn number_nonblank_style() {
     bat()
         .arg("empty_lines.txt")
@@ -580,6 +644,30 @@ fn piped_output_with_default_style_flag() {
 ─────┴──────────────────────────────────────────────────────────────────────────
 ",
         );
+}
+
+#[test]
+fn repeated_boolean_flag_is_accepted() {
+    // A flag in the config file is prepended to the command line, so a user
+    // who has `--show-all` in their config and also types `-A` ends up passing
+    // it twice. That must not be an error.
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--show-all")
+        .arg("--show-all")
+        .assert()
+        .success();
+}
+
+#[test]
+fn boolean_flag_in_config_and_on_command_line() {
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", "bat-show-all.conf")
+        .arg("empty_lines.txt")
+        .arg("--show-all")
+        .arg("--paging=never")
+        .assert()
+        .success();
 }
 
 #[test]
@@ -2227,6 +2315,26 @@ fn header_binary() {
         .stderr("");
 }
 
+// Regression test for https://github.com/sharkdp/bat/issues/3554
+#[test]
+fn header_binary_with_null_after_first_line() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_path = tmp_dir.path().join("encrypted.gpg");
+    std::fs::write(&tmp_path, b"packet-header\npayload\0bytes\n")
+        .expect("can write temporary file");
+
+    bat()
+        .arg(&tmp_path)
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("--line-range=0:0")
+        .arg("--file-name=encrypted.gpg")
+        .assert()
+        .success()
+        .stdout("File: encrypted.gpg   <BINARY>\n")
+        .stderr("");
+}
+
 #[test]
 fn header_zip_file_is_binary() {
     let tmp_dir = tempdir().expect("can create temporary directory");
@@ -3243,6 +3351,25 @@ fn ansi_sgr_joins_attributes_when_wrapped() {
             .assert()
             .success()
             .stdout("\x1B[33m\x1B[33mColor. \x1B[1m\x1B[33m\x1B[1mBold.........\n\x1B[33m\x1B[1mAlso bold and color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
+// Ensure that strikethrough (SGR 9) is tracked like the other attributes, so it is
+// re-emitted (and therefore preserved) across a wrap boundary instead of being dropped.
+#[test]
+fn ansi_sgr_strike_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[9mStrike.......Struck+color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[9m\x1B[33m\x1B[9mStrike.......\n\x1B[33m\x1B[9mStruck+color.\n")
             // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
             .stderr("");
 }
