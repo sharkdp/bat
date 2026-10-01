@@ -483,6 +483,12 @@ impl App {
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")
                 || self.number_nonblank_from_cli,
+            function_context: self
+                .matches
+                .get_many::<std::num::NonZeroUsize>("function-context")
+                .map(|vs| vs.map(|n| n.get()).collect())
+                .unwrap_or_default(),
+            fold: self.matches.get_flag("fold"),
             theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
@@ -512,14 +518,24 @@ impl App {
                 .get_one::<String>("italic-text")
                 .map(|s| s.as_str())
                 == Some("always"),
-            highlighted_lines: self
-                .matches
-                .get_many::<String>("highlight-line")
-                .map(|ws| ws.map(|s| LineRange::from(s.as_str())).collect())
-                .transpose()?
-                .map(LineRanges::from)
-                .map(HighlightedLineRanges)
-                .unwrap_or_default(),
+            highlighted_lines: {
+                let mut ranges = self
+                    .matches
+                    .get_many::<String>("highlight-line")
+                    .map(|vs| {
+                        vs.map(|s| LineRange::from(s.as_str()))
+                            .collect::<Result<Vec<_>>>()
+                    })
+                    .transpose()?
+                    .unwrap_or_default();
+                if let Some(lines) = self
+                    .matches
+                    .get_many::<std::num::NonZeroUsize>("function-context")
+                {
+                    ranges.extend(lines.map(|line| LineRange::new(line.get(), line.get())));
+                }
+                HighlightedLineRanges(LineRanges::from(ranges))
+            },
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
