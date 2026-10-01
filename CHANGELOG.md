@@ -7,6 +7,10 @@
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
+## Other
+
+- Use Rust's native executable lookup for pagers and remove the obsolete `grep-cli` workaround; retain Windows `.com` pager support as a fallback, see #3986 (@Matei02355)
+
 ## Features
 
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
