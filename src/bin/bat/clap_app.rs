@@ -534,7 +534,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip, sidebar-right).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -554,7 +554,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
                      * default: enables recommended style components (default).\n  \
-                     * full: enables all available components.\n  \
+                     * full: enables all decorations.\n  \
                      * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
@@ -565,7 +565,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
                      * numbers: show line numbers in the side bar.\n  \
-                     * snip: draw separation lines between distinct line ranges.",
+                     * snip: draw separation lines between distinct line ranges.\n  \
+                     * sidebar-right: place the selected sidebar decorations on the right.",
                 ),
         )
         .arg(

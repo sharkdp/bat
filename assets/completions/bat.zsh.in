@@ -56,7 +56,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --strip-ansi='[specify when to strip ANSI escape sequences]:when:(auto never always)'
         --sanitize='[specify when to sanitize untrusted input for safe display]:when:(auto never always)'
         --style='[comma-separated list of style elements to display]: : _values "style [default]"
-            default auto full plain changes header header-filename header-filesize grid rule numbers snip'
+            default auto full plain changes header header-filename header-filesize grid rule numbers snip sidebar-right'
         \*{-r+,--line-range=}'[only print the specified line range]:start\:end'
         '(* -)'{-L,--list-languages}'[display all supported languages]'
         '(-u --unbuffered)'--unbuffered'[enable unbuffered input reading for streaming use cases]'

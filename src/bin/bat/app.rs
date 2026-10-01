@@ -630,7 +630,21 @@ impl App {
     fn style_components(&self) -> Result<StyleComponents> {
         let matches = &self.matches;
         let mut styled_components = match self.forced_style_components() {
-            Some(forced_components) => forced_components,
+            Some(mut forced_components) => {
+                // Number/plain shortcuts choose decorations; sidebar-right only
+                // changes their placement and does not enable another decoration.
+                if let Some(styles) = matches.get_many::<String>("style") {
+                    let lists = styles
+                        .map(|style| StyleComponentList::from_str(style))
+                        .collect::<Result<Vec<_>>>()?;
+                    if StyleComponentList::to_components(lists, self.interactive_output, false)
+                        .sidebar_right()
+                    {
+                        forced_components.insert(StyleComponent::SidebarRight);
+                    }
+                }
+                forced_components
+            }
 
             // Parse the `--style` arguments and merge them.
             None if matches.contains_id("style") => {
