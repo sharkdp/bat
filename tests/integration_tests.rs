@@ -4049,6 +4049,39 @@ fn strip_ansi_always_strips_ansi() {
 }
 
 #[test]
+fn sanitize_always_applies_when_output_is_piped() {
+    // No --decorations=always, so this goes through SimplePrinter. U+202E is the
+    // Trojan Source override.
+    bat()
+        .arg("--sanitize=always")
+        .write_stdin("a\u{202E}b")
+        .assert()
+        .success()
+        .stdout("a\u{FFFD}b");
+}
+
+#[test]
+fn sanitize_always_strips_ansi_when_output_is_piped() {
+    // --sanitize implies --strip-ansi at the same value.
+    bat()
+        .arg("--sanitize=always")
+        .write_stdin("a\x1B[31mb\x07c")
+        .assert()
+        .success()
+        .stdout("ab\u{FFFD}c");
+}
+
+#[test]
+fn sanitize_never_leaves_piped_output_untouched() {
+    bat()
+        .arg("--sanitize=never")
+        .write_stdin("a\u{202E}b")
+        .assert()
+        .success()
+        .stdout("a\u{202E}b");
+}
+
+#[test]
 fn strip_ansi_never_does_not_strip_ansi() {
     let output = String::from_utf8(
         bat()

@@ -164,6 +164,11 @@ impl Printer for SimplePrinter<'_> {
                     self.config.nonprintable_notation,
                 );
                 write!(handle, "{line}")?;
+            } else if self.config.sanitize == StripAnsiMode::Always {
+                // Piped output still ends up on a terminal often enough (a file, a pager)
+                // that an explicit --sanitize=always has to apply here too.
+                let line = sanitize(&String::from_utf8_lossy(line_buffer));
+                write!(handle, "{line}")?;
             } else {
                 match handle {
                     OutputHandle::IoWrite(handle) => handle.write_all(line_buffer)?,
