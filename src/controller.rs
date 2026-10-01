@@ -258,10 +258,17 @@ impl Controller<'_> {
     ) -> Result<()> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
-        // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
-        let buffer_size: usize = line_ranges.largest_offset_from_end() + 1;
-        // Buffers multiple line data and line number
-        let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
+        // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF.
+        // saturating_add prevents overflow when the offset is near usize::MAX.
+        let offset = line_ranges.largest_offset_from_end();
+        let buffer_size: usize = offset.saturating_add(1);
+        // Buffers multiple line data and line number.
+        // try_reserve reports a clear error instead of aborting with capacity overflow
+        // when the --line-range offset is huge (e.g. :-18446744073709551614).
+        let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::new();
+        buffered_lines.try_reserve(buffer_size).map_err(|_| {
+            format!("--line-range offset from end ({offset}) is too large to buffer")
+        })?;
 
         let mut reached_eof: bool = false;
         let mut first_range: bool = true;
