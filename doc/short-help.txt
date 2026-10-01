@@ -45,6 +45,8 @@ Options:
           Specify when to use the pager, or use `-P` to disable (*auto*, never, always).
   -m, --map-syntax <glob:syntax>
           Use the specified syntax for files matching the glob pattern ('*.cpp:C++').
+      --grayscale
+          Convert generated colors to grayscale.
       --theme <theme>
           Set the color theme for syntax highlighting.
       --theme-light <theme>
