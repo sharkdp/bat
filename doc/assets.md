@@ -103,3 +103,11 @@ The following files have been manually modified after converting from a `.tmLang
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
 * `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.
+
+### Python execution traces
+
+The `Python Trace` utility syntax highlights output from `python -m trace --trace`
+with optional `--timing`. It recognizes call headers and source locations, embeds
+the existing Python syntax, and resets parsing between executed lines. Ordinary
+program output remains plain. Select it with `--language="Python Trace"`, use the
+`.pytrace` extension, or let a leading trace header identify piped input.

@@ -1,0 +1,49 @@
+%YAML 1.2
+---
+# Output from python -m trace --trace, optionally with --timing.
+name: Python Trace
+file_extensions:
+  - pytrace
+first_line_match: '^(?: --- modulename: .*?, funcname: |(?:\d+\.\d+\s+)?(?:[^\r\n]+\.pyw?|<[^>]+>)\(\d+\): )'
+scope: text.python-trace
+
+contexts:
+  main:
+    - match: '^ (---) (modulename)(:) (.*?)(,) (funcname)(:) (.*)$'
+      scope: comment.line.python-trace
+      captures:
+        1: punctuation.definition.comment.python-trace
+        2: keyword.other.python-trace
+        3: punctuation.separator.python-trace
+        4: entity.name.namespace.python
+        5: punctuation.separator.python-trace
+        6: keyword.other.python-trace
+        7: punctuation.separator.python-trace
+        8: entity.name.function.python
+    - match: '^(?:(\d+\.\d+)\s+)?([^\r\n]+?)(\()(\d+)(\))(:) '
+      captures:
+        1: constant.numeric.float.python-trace
+        2: string.unquoted.filename.python-trace
+        3: punctuation.section.group.begin.python-trace
+        4: constant.numeric.integer.python-trace
+        5: punctuation.section.group.end.python-trace
+        6: punctuation.separator.python-trace
+      push:
+        - meta_content_scope: source.python.embedded
+        # Python's declaration rules normally require the start of a line.
+        # Consume declarations after the trace prefix before delegating the rest.
+        - match: '(?:(async)\s+)?(def)\s+([^\W\d]\w*)'
+          captures:
+            1: storage.modifier.async.python
+            2: storage.type.function.python keyword.declaration.function.python
+            3: entity.name.function.python
+        - match: '(class)\s+([^\W\d]\w*)'
+          captures:
+            1: storage.type.class.python keyword.declaration.class.python
+            2: entity.name.class.python
+        - include: scope:source.python
+      with_prototype:
+        # Traced lines may repeat, skip, or jump between functions and files.
+        # Reset nested strings/groups at every line, leaving program output plain.
+        - match: '$'
+          pop: true
