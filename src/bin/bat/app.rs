@@ -267,7 +267,7 @@ impl App {
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
-        let style_components = self.style_components()?;
+        let style_components = self.style_components(inputs)?;
 
         let extra_plain = self.matches.get_count("plain") > 1;
         let plain_last_index = self
@@ -627,16 +627,25 @@ impl App {
         None
     }
 
-    fn style_components(&self) -> Result<StyleComponents> {
+    fn style_components(&self, inputs: &[Input]) -> Result<StyleComponents> {
         let matches = &self.matches;
+        let context = if inputs.len() > 1 {
+            "style-multiple-files"
+        } else if inputs.first().is_some_and(Input::is_stdin) {
+            "style-stdin"
+        } else {
+            "style-single-file"
+        };
         let mut styled_components = match self.forced_style_components() {
             Some(forced_components) => forced_components,
 
             // Parse the `--style` arguments and merge them.
-            None if matches.contains_id("style") => {
+            None if matches.contains_id("style") || matches.contains_id(context) => {
                 let lists = matches
                     .get_many::<String>("style")
-                    .expect("styles present")
+                    .into_iter()
+                    .flatten()
+                    .chain(matches.get_many::<String>(context).into_iter().flatten())
                     .map(|v| StyleComponentList::from_str(v))
                     .collect::<Result<Vec<StyleComponentList>>>()?;
 

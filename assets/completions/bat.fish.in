@@ -229,6 +229,9 @@ complete -c $bat -o pp -d "Disable decorations and paging" -n __bat_no_excl_args
 
 complete -c $bat -s P -d "Disable paging" -n __bat_no_excl_args
 
+complete -c $bat -l style-single-file -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
+complete -c $bat -l style-stdin -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
+complete -c $bat -l style-multiple-files -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
 complete -c $bat -l style -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
 
 complete -c $bat -l tabs -x -a "$tabs_opts" -d "Set tab width" -n __bat_no_excl_args
