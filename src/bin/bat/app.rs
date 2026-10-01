@@ -267,7 +267,18 @@ impl App {
     }
 
     pub fn config(&self, inputs: &[Input]) -> Result<Config<'_>> {
-        let style_components = self.style_components()?;
+        #[allow(unused_mut)]
+        let mut style_components = self.style_components()?;
+        #[cfg(feature = "git")]
+        if self.matches.get_flag("blame")
+            && self
+                .matches
+                .get_one::<String>("decorations")
+                .map(String::as_str)
+                != Some("never")
+        {
+            style_components.insert(StyleComponent::Blame);
+        }
 
         let extra_plain = self.matches.get_count("plain") > 1;
         let plain_last_index = self
@@ -440,7 +451,8 @@ impl App {
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
                 || self.number_from_cli
-                || self.number_nonblank_from_cli),
+                || self.number_nonblank_from_cli
+                || (cfg!(feature = "git") && self.matches.get_flag("blame"))),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -507,6 +519,11 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
+            #[cfg(feature = "git")]
+            blame_format: self
+                .matches
+                .get_one::<String>("blame-format")
+                .map(String::as_str),
             use_italic_text: self
                 .matches
                 .get_one::<String>("italic-text")

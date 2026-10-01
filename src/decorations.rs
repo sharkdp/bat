@@ -164,3 +164,88 @@ impl Decoration for GridBorderDecoration {
         self.cached.width
     }
 }
+
+#[cfg(feature = "git")]
+pub(crate) struct BlameDecoration {
+    labels: Vec<String>,
+    lines: Vec<usize>,
+    color: Style,
+    width: usize,
+}
+
+#[cfg(feature = "git")]
+impl BlameDecoration {
+    pub(crate) fn new(blame: crate::blame::BlameLines, colors: &Colors, max_width: usize) -> Self {
+        use unicode_segmentation::UnicodeSegmentation;
+        use unicode_width::UnicodeWidthStr;
+        let width = blame
+            .labels
+            .iter()
+            .map(|label| label.width())
+            .max()
+            .unwrap_or(0)
+            .min(max_width);
+        let labels = blame
+            .labels
+            .into_iter()
+            .map(|label| {
+                let mut value = String::new();
+                let mut used = 0;
+                let limit = if label.width() > width {
+                    width.saturating_sub(1)
+                } else {
+                    width
+                };
+                for grapheme in label.graphemes(true) {
+                    if used + grapheme.width() > limit {
+                        break;
+                    }
+                    used += grapheme.width();
+                    value.push_str(grapheme);
+                }
+                if label.width() > width && width > 0 {
+                    value.push('…');
+                    used += 1;
+                }
+                value.push_str(&" ".repeat(width - used));
+                value
+            })
+            .collect();
+        Self {
+            labels,
+            lines: blame.lines,
+            color: colors.line_number,
+            width,
+        }
+    }
+}
+
+#[cfg(feature = "git")]
+impl Decoration for BlameDecoration {
+    fn generate(
+        &self,
+        _line_number: usize,
+        continuation: bool,
+        printer: &InteractivePrinter,
+    ) -> DecorationText {
+        let label = if continuation {
+            None
+        } else {
+            printer
+                .source_line
+                .checked_sub(1)
+                .and_then(|line| self.lines.get(line))
+                .and_then(|&index| self.labels.get(index))
+        };
+        DecorationText {
+            width: self.width,
+            text: self
+                .color
+                .paint(label.cloned().unwrap_or_else(|| " ".repeat(self.width)))
+                .to_string(),
+        }
+    }
+    fn width(&self) -> usize {
+        self.width
+    }
+}
