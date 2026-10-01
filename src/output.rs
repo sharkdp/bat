@@ -78,11 +78,22 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager: Option<&str>,
     ) -> Result<Self> {
+        Self::from_mode_with_reserve(paging_mode, wrapping_mode, pager, 0)
+    }
+
+    /// Select output while reserving rows from automatic less paging.
+    #[cfg(feature = "paging")]
+    pub fn from_mode_with_reserve(
+        paging_mode: PagingMode,
+        wrapping_mode: WrappingMode,
+        pager: Option<&str>,
+        reserve: u16,
+    ) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match paging_mode {
-            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager)?,
+            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager, 0)?,
             QuitIfOneScreen => {
-                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager)?
+                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager, reserve)?
             }
             _ => OutputType::stdout(),
         })
@@ -94,6 +105,7 @@ impl OutputType {
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
+        reserve: u16,
     ) -> Result<Self> {
         use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
@@ -108,6 +120,10 @@ impl OutputType {
 
         if pager.kind == PagerKind::Bat {
             return Err(Error::InvalidPagerValueBat);
+        }
+
+        if reserve > 0 && pager.kind != PagerKind::Less {
+            return Err("--paging-reserve requires less 632 or newer".into());
         }
 
         if pager.kind == PagerKind::Builtin {
@@ -129,6 +145,28 @@ impl OutputType {
         let args = pager.args;
 
         if pager.kind == PagerKind::Less {
+            let less_version =
+                if reserve > 0 || args.is_empty() || pager.source == PagerSource::EnvVarPager {
+                    retrieve_less_version(&pager.bin)
+                } else {
+                    None
+                };
+            if reserve > 0 {
+                if !matches!(less_version, Some(LessVersion::Less(version)) if version >= 632) {
+                    return Err("--paging-reserve requires less 632 or newer".into());
+                }
+                let height = console::Term::stdout().size().0;
+                // A negative LESS_LINES follows normal terminal resizing. If
+                // the reservation already fills this terminal, retain one row
+                // rather than let less fall back to its default screen height.
+                let rows = if reserve < height {
+                    format!("-{reserve}")
+                } else {
+                    "1".to_owned()
+                };
+                p.env("LESS_LINES", rows);
+            }
+
             // less needs to be called with the '-R' option in order to properly interpret the
             // ANSI color sequences printed by bat. If someone has set PAGER="less -F", we
             // therefore need to overwrite the arguments and add '-R'.
@@ -146,8 +184,6 @@ impl OutputType {
                 if wrapping_mode == WrappingMode::NoWrapping(true) {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
-
-                let less_version = retrieve_less_version(&pager.bin);
 
                 // Ensures that 'less' quits together with 'bat'
                 // The BusyBox version of less does not support -K
@@ -177,6 +213,11 @@ impl OutputType {
                 }
             } else {
                 p.args(args);
+            }
+            if reserve > 0 {
+                // An explicit automatic reservation also applies to custom
+                // less arguments, which may not already contain -F.
+                p.arg("-F");
             }
             p.env("LESSCHARSET", "UTF-8");
 
