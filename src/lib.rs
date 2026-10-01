@@ -27,6 +27,7 @@ pub mod assets;
 pub mod assets_metadata {
     pub use super::assets::assets_metadata::*;
 }
+mod comment_annotations;
 pub mod config;
 pub mod controller;
 mod decorations;

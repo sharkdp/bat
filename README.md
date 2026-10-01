@@ -499,6 +499,24 @@ Although these themes are more restricted, they have three advantages over truec
 - Adapt to terminal theme changes. Even for already printed output.
 - Visually harmonize better with other terminal software.
 
+### TODO comments
+
+Use `bat --highlight-todos file.rs` to emphasize TODO and FIXME annotations in
+comments. Matching is case-insensitive and includes the plural forms TODOS and
+FIXMES. The marker and the rest of its comment on that line become bold amber;
+light themes use a darker amber, and palette-based themes use terminal yellow.
+
+This uses each language's comment definitions, including comments in embedded
+languages. It leaves matching words in strings and ordinary code unchanged, and
+it does not extend a TODO highlight to following lines in a block comment.
+Syntax highlighting and colored output must be enabled. Standard plain text has
+no comment definitions, and lines longer than bat's syntax-highlighting limit
+retain the usual unhighlighted behavior.
+
+The option is disabled by default. Add `--highlight-todos` to the configuration
+file to enable it permanently, or use `PrettyPrinter::highlight_todos` in the
+library.
+
 ### Output style
 
 You can use the `--style` option to control the appearance of `bat`'s output.

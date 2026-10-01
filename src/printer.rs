@@ -5,7 +5,7 @@ use nu_ansi_term::Style;
 
 use bytesize::ByteSize;
 
-use syntect::easy::HighlightLines;
+use crate::comment_annotations::LineHighlighter;
 use syntect::highlighting::Color;
 use syntect::highlighting::FontStyle;
 use syntect::highlighting::Theme;
@@ -185,14 +185,18 @@ impl Printer for SimplePrinter<'_> {
 }
 
 struct HighlighterFromSet<'a> {
-    highlighter: HighlightLines<'a>,
+    highlighter: LineHighlighter<'a>,
     syntax_set: &'a SyntaxSet,
 }
 
 impl<'a> HighlighterFromSet<'a> {
-    fn new(syntax_in_set: SyntaxReferenceInSet<'a>, theme: &'a Theme) -> Self {
+    fn new(
+        syntax_in_set: SyntaxReferenceInSet<'a>,
+        theme: &'a Theme,
+        highlight_todos: bool,
+    ) -> Self {
         Self {
-            highlighter: HighlightLines::new(syntax_in_set.syntax, theme),
+            highlighter: LineHighlighter::new(syntax_in_set.syntax, theme, highlight_todos),
             syntax_set: syntax_in_set.syntax_set,
         }
     }
@@ -294,7 +298,11 @@ impl<'a> InteractivePrinter<'a> {
                     syntax_in_set.syntax.name == PLAIN_TEXT_SYNTAX,
                     syntax_in_set.syntax.name == MANPAGE_SYNTAX
                         || syntax_in_set.syntax.name == COMMAND_HELP_SYNTAX,
-                    Some(HighlighterFromSet::new(syntax_in_set, theme)),
+                    Some(HighlighterFromSet::new(
+                        syntax_in_set,
+                        theme,
+                        config.highlight_todos,
+                    )),
                 ),
 
                 Err(Error::UndetectedSyntax(_)) => (
@@ -303,7 +311,7 @@ impl<'a> InteractivePrinter<'a> {
                     Some(
                         assets
                             .find_syntax_by_name(PLAIN_TEXT_SYNTAX)?
-                            .map(|s| HighlighterFromSet::new(s, theme))
+                            .map(|s| HighlighterFromSet::new(s, theme, config.highlight_todos))
                             .expect("A plain text syntax is available"),
                     ),
                 ),
