@@ -13,12 +13,16 @@ Options:
           Show non-printable characters like space, tab or newline. This option can also be used to
           print binary files. Use '--tabs' to control the width of the tab-placeholders.
 
-      --nonprintable-notation <notation>
-          Set notation for non-printable characters.
+  -c, --nonprintable-notation <notation>
+          Set notation for non-printable characters with --show-all. Tab markers occupy the
+          configured tab width.
           
           Possible values:
             * unicode (␇, ␊, ␀, ..)
             * caret   (^G, ^J, ^@, ..)
+            * symbols (⇥, ⏎, ⌫, ⎋, ..; Unicode for other controls)
+            * period  (periods for spaces, controls and invalid bytes)
+            * binary  (symbols for tabs, line endings and escapes; periods for other controls)
 
       --binary <behavior>
           How to treat binary content. (default: no-printing)

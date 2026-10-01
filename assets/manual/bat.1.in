@@ -26,7 +26,7 @@ either '--language value', '--language=value', '-l value' or '-lvalue'.
 Show non\-printable characters like space, tab or newline. Use '\-\-tabs' to
 control the width of the tab\-placeholders.
 .HP
-\fB\-\-nonprintable\-notation\fR <notation>
+\fB\-c\fR, \fB\-\-nonprintable\-notation\fR <notation>
 .IP
 Specify how to display non-printable characters when using \-\-show\-all.
 
@@ -36,6 +36,15 @@ Possible values:
 Use character sequences like ^G, ^J, ^@, .. to identify non-printable characters
 .IP "unicode"
 Use special Unicode code points to identify non-printable characters
+.IP "symbols"
+Use pictographic symbols for common controls: tab ⇥, line feed ⏎, carriage return ←,
+backspace ⌫, vertical tab ⤓, form feed ↡, escape ⎋, and delete ⌦.
+Other controls use Unicode control pictures.
+.IP "period"
+Use periods for spaces, ASCII controls, and invalid UTF-8 bytes.
+.IP "binary"
+Use symbols for tabs, line endings, and escapes; periods for other ASCII controls
+and invalid UTF-8 bytes. Spaces use the usual middle-dot marker.
 .RE
 .HP
 \fB\-\-binary\fR <behavior>

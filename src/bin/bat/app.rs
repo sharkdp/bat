@@ -390,6 +390,9 @@ impl App {
             {
                 Some("unicode") => NonprintableNotation::Unicode,
                 Some("caret") => NonprintableNotation::Caret,
+                Some("symbols") => NonprintableNotation::Symbols,
+                Some("period") => NonprintableNotation::Period,
+                Some("binary") => NonprintableNotation::Binary,
                 _ => unreachable!("other values for --nonprintable-notation are not allowed"),
             },
             binary: match self.matches.get_one::<String>("binary").map(|s| s.as_str()) {
