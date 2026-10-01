@@ -371,6 +371,48 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("literal-file-names")
+                .long("literal-file-names")
+                .action(ArgAction::SetTrue)
+                .help("Treat file:line arguments as literal paths")
+                .long_help("Treat every input argument as a literal path. By default, if a UTF-8 \
+                    path does not exist and ends in a colon followed by a positive line number, \
+                    open the existing file before the colon and center that line in the pager. \
+                    Existing paths and Windows alternate data streams always take precedence. \
+                    A file:line position requires exactly one input; --scroll-to or \
+                    --center-highlight overrides its position. Paging settings still apply.")
+                .hide_short_help(true),
+        )
+        .arg(
+            Arg::new("scroll-to")
+                .long("scroll-to")
+                .value_name("LINE")
+                .value_parser(clap::value_parser!(usize))
+                .conflicts_with("center-highlight")
+                .help("Open the pager at LINE, retaining earlier lines")
+                .long_help("Open the pager at the positive line number LINE in a single input, \
+                    retaining earlier lines for scrolling back. Account for headers, ranges and \
+                    wrapping. If LINE is omitted by a range or squeezing, use the next printed \
+                    line; if beyond the input, open at the end. Buffer output up to that point, \
+                    spilling to a temporary file after 64 KiB. Supports standard less; custom \
+                    pager wrappers receive BAT_SCROLL_LINE and BAT_SCROLL_POSITION. Does not \
+                    enable paging when it is disabled. See the manual for details.")
+                .hide_short_help(true),
+        )
+        .arg(
+            Arg::new("center-highlight")
+                .long("center-highlight")
+                .action(ArgAction::SetTrue)
+                .requires("highlight-line")
+                .help("Center the first visible highlighted line in the pager")
+                .long_help("Center the first visible highlighted line when opening the pager. \
+                    Requires one input and --highlight-line. Retain all selected lines so earlier \
+                    output remains accessible. Supports standard less and custom pager wrappers, \
+                    with the same buffering and paging rules as --scroll-to. If no highlighted \
+                    line is printed, open at the beginning.")
+                .hide_short_help(true),
+        )
+        .arg(
             Arg::new("no-paging")
                 .short('P')
                 .long("no-paging")
