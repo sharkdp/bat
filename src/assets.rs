@@ -7,6 +7,7 @@ use once_cell::unsync::OnceCell;
 use syntect::highlighting::Theme;
 use syntect::parsing::{SyntaxReference, SyntaxSet};
 
+#[cfg(not(target_os = "wasi"))]
 use path_abs::PathAbs;
 
 use crate::error::*;
@@ -229,12 +230,16 @@ impl HighlightingAssets {
         }
 
         let path = input.path();
+        #[cfg(not(target_os = "wasi"))]
         let absolute_path = path.and_then(|p| {
             PathAbs::new(p)
                 .ok()
                 .map(|abs| abs.as_path().to_path_buf())
                 .or_else(|| Some(p.to_owned()))
         });
+
+        #[cfg(target_os = "wasi")]
+        let absolute_path = path.map(|p| std::path::absolute(p).unwrap_or_else(|_| p.to_owned()));
 
         let path_syntax = if let Some(ref path) = absolute_path {
             self.get_syntax_for_path(path, mapping).or_else(|e| {

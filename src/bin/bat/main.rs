@@ -361,7 +361,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
         .info(ColorSchemeCollector)
         .info(CompileTimeInformation::default());
 
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
         report = report.info(CommandOutput::new(
             "Less version",
