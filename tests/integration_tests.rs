@@ -361,6 +361,25 @@ fn line_range_up_to_2_from_back() {
 }
 
 #[test]
+fn line_range_huge_offset_from_back_does_not_panic() {
+    // usize::MAX (and MAX - 1) rather than a hardcoded 64-bit literal, so the
+    // offset is always a valid usize to parse into, on 32-bit targets too,
+    // and still huge enough to trigger the original VecDeque capacity overflow.
+    bat()
+        .arg("multiline.txt")
+        .arg(format!("--line-range=:-{}", usize::MAX - 1))
+        .assert()
+        .success()
+        .stdout("");
+    bat()
+        .arg("multiline.txt")
+        .arg(format!("--line-range=:-{}", usize::MAX))
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn line_range_up_to_2_from_back_single_line_is_empty() {
     bat()
         .arg("single-line.txt")
