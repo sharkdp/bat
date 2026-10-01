@@ -44,6 +44,9 @@ pub struct Config<'a> {
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
+    /// Underline literal paths which exist relative to each input file.
+    pub show_paths: bool,
+
     /// The configured notation for non-printable characters
     pub nonprintable_notation: NonprintableNotation,
 

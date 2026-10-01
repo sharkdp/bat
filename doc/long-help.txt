@@ -44,6 +44,14 @@ Options:
           
           [aliases: --fallback-language]
 
+      --show-paths
+          Underline recognizable literal file paths that exist. Relative paths are checked from the
+          input file's directory, or the working directory for stdin. Recognizes slash-separated
+          paths, native Windows paths, ~/ paths, and quoted filenames containing a dot. URLs and
+          shell variables are ignored; escapes are not decoded. Existing syntax colors are
+          preserved, including escape and error colors. Checks are cached per input. Disabled by
+          default and requires colored output.
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40

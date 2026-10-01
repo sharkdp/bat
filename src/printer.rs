@@ -210,6 +210,7 @@ pub(crate) struct InteractivePrinter<'a> {
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
+    path_annotations: Option<crate::path_annotations::PathAnnotations>,
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
@@ -343,6 +344,17 @@ impl<'a> InteractivePrinter<'a> {
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
+            path_annotations: if config.show_paths && config.colored_output {
+                let base = match &input.kind {
+                    crate::input::OpenedInputKind::OrdinaryFile(path) => {
+                        crate::path_annotations::base_for_file(path)
+                    }
+                    _ => std::path::PathBuf::from("."),
+                };
+                Some(crate::path_annotations::PathAnnotations::new(base))
+            } else {
+                None
+            },
             strip_ansi,
             sanitize,
             strip_overstrike,
@@ -714,6 +726,12 @@ impl Printer for InteractivePrinter<'_> {
                 self.consecutive_empty_lines = 0;
             }
         }
+
+        let regions = if let Some(annotations) = &mut self.path_annotations {
+            annotations.highlight(&line, regions)
+        } else {
+            regions
+        };
 
         let mut cursor: usize = 0;
         let mut cursor_max: usize = self.config.term_width;
