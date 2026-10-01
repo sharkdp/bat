@@ -8,13 +8,14 @@ mod completions;
 mod config;
 mod directories;
 mod input;
+mod process;
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 use std::io;
 use std::io::{BufReader, Write};
 use std::path::Path;
-use std::process;
+use std::process as std_process;
 
 use bat::output::{OutputHandle, OutputType};
 use nu_ansi_term::Color::Green;
@@ -463,13 +464,13 @@ fn main() {
         Err(error) => {
             let stderr = std::io::stderr();
             default_error_handler(&error, &mut stderr.lock());
-            process::exit(1);
+            std_process::exit(1);
         }
         Ok(false) => {
-            process::exit(1);
+            std_process::exit(1);
         }
         Ok(true) => {
-            process::exit(0);
+            std_process::exit(0);
         }
     }
 }

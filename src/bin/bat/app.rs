@@ -538,6 +538,26 @@ impl App {
     }
 
     pub fn inputs(&self) -> Result<Vec<Input<'_>>> {
+        let command = self
+            .matches
+            .get_one::<crate::process::ProcessCommand>("process");
+        let new_stdin_input = |name| {
+            let input = new_stdin_input(name);
+            if let Some(command) = command {
+                input.with_reader(Box::new(command.reader(None)))
+            } else {
+                input
+            }
+        };
+        let new_file_input = |file, name| {
+            let input = new_file_input(file, name);
+            if let Some(command) = command {
+                input.with_reader(Box::new(command.reader(Some(file))))
+            } else {
+                input
+            }
+        };
+
         let filenames: Option<Vec<&Path>> = self
             .matches
             .get_many::<PathBuf>("file-name")
