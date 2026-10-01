@@ -361,6 +361,22 @@ fn line_range_up_to_2_from_back() {
 }
 
 #[test]
+fn line_range_huge_offset_from_back_does_not_panic() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-18446744073709551614")
+        .assert()
+        .success()
+        .stdout("");
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-18446744073709551615")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn line_range_up_to_2_from_back_single_line_is_empty() {
     bat()
         .arg("single-line.txt")
