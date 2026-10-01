@@ -1,0 +1,20 @@
+/* Variables, grid, modern colors and selectors. */
+:root {
+  --accent: rebeccapurple;
+  accent-color: var(--accent);
+  color-scheme: light dark;
+}
+@layer utilities {
+  .grid:has(> :is(img, video)) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20ch, 1fr));
+    gap: clamp(1rem, 2vw, 3rem);
+    color: oklch(65% 0.2 260);
+    background: color-mix(in srgb, red 20%, blue);
+    container-type: inline-size;
+    &:focus-visible { outline: 2px solid currentColor; }
+  }
+}
+@container (width > 40rem) {
+  .card { aspect-ratio: 16 / 9; }
+}
