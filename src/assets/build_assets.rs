@@ -16,13 +16,35 @@ pub fn build(
     target_dir: &Path,
     current_version: &str,
 ) -> Result<()> {
-    let theme_set = build_theme_set(source_dir, include_integrated_assets)?;
+    build_from_dirs(
+        &[source_dir],
+        include_integrated_assets,
+        include_acknowledgements,
+        target_dir,
+        current_version,
+    )
+}
 
-    let syntax_set_builder = build_syntax_set_builder(source_dir, include_integrated_assets)?;
+/// Build a shared cache from ordered source directories. Later sources override earlier
+/// themes and take precedence when resolving syntax names, extensions and scopes.
+/// Each source contains `syntaxes` and/or `themes`, just like the single-source builder.
+pub fn build_from_dirs(
+    source_dirs: &[&Path],
+    include_integrated_assets: bool,
+    include_acknowledgements: bool,
+    target_dir: &Path,
+    current_version: &str,
+) -> Result<()> {
+    if source_dirs.is_empty() {
+        return Err("At least one asset source directory is required".into());
+    }
+    let theme_set = build_theme_set(source_dirs, include_integrated_assets)?;
+
+    let syntax_set_builder = build_syntax_set_builder(source_dirs, include_integrated_assets)?;
 
     let syntax_set = syntax_set_builder.build();
 
-    let acknowledgements = build_acknowledgements(source_dir, include_acknowledgements)?;
+    let acknowledgements = build_acknowledgements(source_dirs, include_acknowledgements)?;
 
     print_unlinked_contexts(&syntax_set);
 
@@ -35,34 +57,35 @@ pub fn build(
     )
 }
 
-fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result<LazyThemeSet> {
+fn build_theme_set(source_dirs: &[&Path], include_integrated_assets: bool) -> Result<LazyThemeSet> {
     let mut theme_set = if include_integrated_assets {
         crate::assets::get_integrated_themeset().try_into()?
     } else {
         ThemeSet::new()
     };
 
-    let theme_dir = source_dir.join("themes");
-    if theme_dir.exists() {
-        let res = theme_set.add_from_folder(&theme_dir);
-        if let Err(err) = res {
+    for source_dir in source_dirs {
+        let theme_dir = source_dir.join("themes");
+        if theme_dir.exists() {
+            let res = theme_set.add_from_folder(&theme_dir);
+            if let Err(err) = res {
+                println!(
+                    "Failed to load one or more themes from '{}' (reason: '{err}')",
+                    theme_dir.to_string_lossy(),
+                );
+            }
+        } else {
             println!(
-                "Failed to load one or more themes from '{}' (reason: '{err}')",
-                theme_dir.to_string_lossy(),
+                "No themes were found in '{}', using the default set",
+                theme_dir.to_string_lossy()
             );
         }
-    } else {
-        println!(
-            "No themes were found in '{}', using the default set",
-            theme_dir.to_string_lossy()
-        );
     }
-
     theme_set.try_into()
 }
 
 fn build_syntax_set_builder(
-    source_dir: &Path,
+    source_dirs: &[&Path],
     include_integrated_assets: bool,
 ) -> Result<SyntaxSetBuilder> {
     let mut syntax_set_builder = if !include_integrated_assets {
@@ -74,16 +97,17 @@ fn build_syntax_set_builder(
             .into_builder()
     };
 
-    let syntax_dir = source_dir.join("syntaxes");
-    if syntax_dir.exists() {
-        syntax_set_builder.add_from_folder(syntax_dir, true)?;
-    } else {
-        println!(
-            "No syntaxes were found in '{}', using the default set.",
-            syntax_dir.to_string_lossy()
-        );
+    for source_dir in source_dirs {
+        let syntax_dir = source_dir.join("syntaxes");
+        if syntax_dir.exists() {
+            syntax_set_builder.add_from_folder(syntax_dir, true)?;
+        } else {
+            println!(
+                "No syntaxes were found in '{}', using the default set.",
+                syntax_dir.to_string_lossy()
+            );
+        }
     }
-
     Ok(syntax_set_builder)
 }
 

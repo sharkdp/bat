@@ -13,12 +13,27 @@ pub fn clear_assets(cache_dir: &Path) {
     clear_asset(cache_dir.join("themes.bin"), "theme set cache");
     clear_asset(cache_dir.join("syntaxes.bin"), "syntax set cache");
     clear_asset(cache_dir.join("metadata.yaml"), "metadata file");
+    if cache_dir.join("automatic.yaml").exists() {
+        clear_asset(cache_dir.join("automatic.yaml"), "automatic asset recipe");
+    }
+    if let Err(error) = fs::remove_dir_all(cache_dir.join("automatic")) {
+        if error.kind() != io::ErrorKind::NotFound {
+            eprintln!("Could not clear automatic asset generations: {error}");
+        }
+    }
 }
 
 pub fn assets_from_cache_or_binary(
     use_custom_assets: bool,
     cache_dir: &Path,
 ) -> Result<HighlightingAssets> {
+    if !use_custom_assets {
+        return Ok(HighlightingAssets::from_binary());
+    }
+    #[cfg(feature = "build-assets")]
+    if let Some(assets) = crate::automatic_assets::load(cache_dir)? {
+        return Ok(assets);
+    }
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
             return Err(format!(

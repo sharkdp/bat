@@ -71,6 +71,7 @@ _bat() {
 			--source
 			--target
 			--blank
+			--automatic
 			--help
 		" -- "$cur"))
 		return 0

@@ -364,8 +364,24 @@ git clone https://github.com/tellnobody1/sublime-purescript-syntax
 .RE
 
 Once the cache is built, the new language will be visible in `\fB{{PROJECT_EXECUTABLE}} --list-languages\fR`.
+
+Use `\fB{{PROJECT_EXECUTABLE}} cache --build --automatic\fR` to opt into automatic updates.
+This records the source directory and build options and checks source contents on each invocation.
+When the sources or the version of {{PROJECT_EXECUTABLE}} change, the assets are rebuilt locally in a separate cache generation.
+Source files and symlink targets must remain accessible. Keep the source directory limited to asset files to avoid unnecessary reads.
+A failed rebuild reports an error and preserves existing caches.
+Run `\fB{{PROJECT_EXECUTABLE}} cache --build\fR` without `\fB--automatic\fR` to return to manual updates.
+The `\fB--no-custom-assets\fR` option bypasses custom assets for one invocation.
+The `\fBcache --clear\fR` command also removes automatic cache generations.
 .br
 If you ever want to remove the custom languages, you can clear the cache with `\fB{{PROJECT_EXECUTABLE}} cache --clear\fR`.
+
+.PP
+Repeat \fBcache --source\fR to combine ordered system and user asset directories.
+Later sources take precedence for theme names and syntax lookup.
+For example, \fBcache --build --automatic --source /usr/share/bat --source ~/.config/bat\fR
+tracks package assets alongside user assets, rebuilding only in the user's cache.
+Use the source paths selected by your distribution and configuration; shared sources are not discovered automatically.
 
 .SH "ADDING CUSTOM THEMES"
 Similarly to custom languages, {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.tmTheme\fR themes.

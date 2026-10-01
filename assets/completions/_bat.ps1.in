@@ -126,6 +126,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         #   [CompletionResult]::new('-c'                      , 'c'                     , [CompletionResultType]::ParameterName, 'Remove the cached syntax definitions and themes.')
             [CompletionResult]::new('--clear'                 , 'clear'                 , [CompletionResultType]::ParameterName, 'Remove the cached syntax definitions and themes.')
             [CompletionResult]::new('--blank'                 , 'blank'                 , [CompletionResultType]::ParameterName, 'Create completely new syntax and theme sets (instead of appending to the default sets).')
+            [CompletionResult]::new('--automatic', 'automatic', [CompletionResultType]::ParameterName, 'Automatically rebuild custom assets when sources or bat change.')
         #   [CompletionResult]::new('-h'                      , 'h'                     , [CompletionResultType]::ParameterName, 'Prints help information')
             [CompletionResult]::new('--help'                  , 'help'                  , [CompletionResultType]::ParameterName, 'Prints help information')
         #   [CompletionResult]::new('-V'                      , 'V'                     , [CompletionResultType]::ParameterName, 'Prints version information')

@@ -257,7 +257,7 @@ complete -c $bat -l clear -f -d "Reset definitions to defaults" -n __bat_cache_n
 
 complete -c $bat -l blank -f -d "Create new data instead of appending" -n "__bat_cache_subcommand; and not __fish_seen_argument -l clear"
 
-complete -c $bat -l source -x -a "(__fish_complete_directories)" -d "Load syntaxes and themes from DIR" -n "__bat_cache_subcommand; and not __fish_seen_argument -l clear"
+complete -c $bat -l source -x -a "(__fish_complete_directories)" -d "Load assets from DIR; repeat for ordered sources" -n "__bat_cache_subcommand; and not __fish_seen_argument -l clear"
 
 complete -c $bat -l target -x -a "(__fish_complete_directories)" -d "Store cache in DIR" -n __bat_cache_subcommand
 
@@ -266,5 +266,8 @@ complete -c $bat -l acknowledgements -d "Build acknowledgements.bin" -n __bat_ca
 complete -c $bat -s h -d "Print a concise overview of $bat-cache help" -n __bat_cache_no_excl
 
 complete -c $bat -l help -f -d "Print all $bat-cache help" -n __bat_cache_no_excl
+
+
+complete -c $bat -l automatic -f -d "Automatically rebuild custom assets" -n "__bat_cache_subcommand; and not __fish_seen_argument -l clear"
 
 # vim:ft=fish

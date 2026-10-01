@@ -29,6 +29,9 @@ use crate::{
 use crate::config::system_config_file;
 
 use assets::{assets_from_cache_or_binary, clear_assets};
+
+#[cfg(feature = "build-assets")]
+mod automatic_assets;
 use directories::PROJECT_DIRS;
 use globset::GlobMatcher;
 
@@ -46,18 +49,41 @@ const THEME_PREVIEW_DATA: &[u8] = include_bytes!("../../../assets/theme_preview.
 
 #[cfg(feature = "build-assets")]
 fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path) -> Result<()> {
-    let source_dir = matches
-        .get_one::<String>("source")
-        .map(Path::new)
-        .unwrap_or_else(|| config_dir);
+    let source_dirs: Vec<&Path> = match matches.get_many::<String>("source") {
+        Some(sources) => {
+            let sources: Vec<_> = sources.map(Path::new).collect();
+            for source in &sources {
+                if !source.is_dir() {
+                    return Err(
+                        format!("Asset source '{}' is not a directory", source.display()).into(),
+                    );
+                }
+            }
+            sources
+        }
+        None => vec![config_dir],
+    };
 
-    bat::assets::build(
-        source_dir,
+    let automatic = matches.get_flag("automatic");
+    let recipe = if automatic {
+        Some(automatic_assets::Recipe::new(
+            &source_dirs,
+            cache_dir,
+            !matches.get_flag("blank"),
+            matches.get_flag("acknowledgements"),
+        )?)
+    } else {
+        None
+    };
+
+    bat::assets::build_from_dirs(
+        &source_dirs,
         !matches.get_flag("blank"),
         matches.get_flag("acknowledgements"),
         cache_dir,
         clap::crate_version!(),
-    )
+    )?;
+    automatic_assets::save_recipe(recipe.as_ref(), cache_dir)
 }
 
 fn run_cache_subcommand(

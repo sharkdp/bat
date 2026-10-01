@@ -12,11 +12,11 @@ struct PathAndStem {
     relative_path: String,
 }
 
-/// Looks for LICENSE and NOTICE files in `source_dir`, does some rudimentary
+/// Looks for LICENSE and NOTICE files in `source_dirs`, does some rudimentary
 /// analysis, and compiles them together in a single string that is meant to be
 /// used in the output to `--acknowledgements`
 pub fn build_acknowledgements(
-    source_dir: &Path,
+    source_dirs: &[&Path],
     include_acknowledgements: bool,
 ) -> Result<Option<String>> {
     if !include_acknowledgements {
@@ -25,22 +25,23 @@ pub fn build_acknowledgements(
 
     let mut acknowledgements = format!("{}\n\n", include_str!("../../../NOTICE"));
 
-    // Sort entries so the order is stable over time
-    let entries = walkdir::WalkDir::new(source_dir).sort_by(|a, b| a.path().cmp(b.path()));
-    for path_and_stem in entries
-        .into_iter()
-        .flatten()
-        .flat_map(|entry| to_path_and_stem(source_dir, entry))
-    {
-        if let Some(license_text) = handle_file(&path_and_stem)? {
-            append_to_acknowledgements(
-                &mut acknowledgements,
-                &path_and_stem.relative_path,
-                &license_text,
-            )
+    for source_dir in source_dirs {
+        // Sort entries so the order is stable over time
+        let entries = walkdir::WalkDir::new(source_dir).sort_by(|a, b| a.path().cmp(b.path()));
+        for path_and_stem in entries
+            .into_iter()
+            .flatten()
+            .flat_map(|entry| to_path_and_stem(source_dir, entry))
+        {
+            if let Some(license_text) = handle_file(&path_and_stem)? {
+                append_to_acknowledgements(
+                    &mut acknowledgements,
+                    &path_and_stem.relative_path,
+                    &license_text,
+                )
+            }
         }
     }
-
     Ok(Some(acknowledgements))
 }
 
