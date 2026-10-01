@@ -3,7 +3,12 @@
 # ($XDG_CONFIG_HOME is usually set to ~/.config)
 
 # `bat` is `batcat` on Debian and Ubuntu
-set bat {{PROJECT_EXECUTABLE}}
+# This has to be a global: fish sources completion files in the scope of the
+# caller, so an unscoped `set` here would be local to whatever function
+# happened to trigger the first completion (e.g. a custom <TAB> binding that
+# calls `commandline --function complete`). The helpers below run later, in a
+# different scope, and would then see an empty `$bat`.
+set -g bat {{PROJECT_EXECUTABLE}}
 
 # Helper functions:
 
