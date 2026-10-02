@@ -61,6 +61,74 @@ fn stdin() {
 }
 
 #[test]
+fn piped_output_rejects_unknown_language() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_rejects_unknown_language_with_empty_input() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_with_language_preserves_input() {
+    let input = "fn main() {\r\n\tprintln!(\"hello\");\r\n}\n";
+    for language in ["Rust", "rust", "rs"] {
+        bat()
+            .args(["--language", language])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(input)
+            .stderr("");
+    }
+}
+
+#[test]
+#[cfg(feature = "build-assets")]
+fn piped_output_without_language_does_not_load_syntaxes() {
+    let cache_dir = tempdir().expect("can create temporary directory");
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("cache_source"))
+        .args(["cache", "--build", "--source", ".", "--target"])
+        .arg(cache_dir.path())
+        .assert()
+        .success();
+    std::fs::write(cache_dir.path().join("syntaxes.bin"), [])
+        .expect("can overwrite temporary syntax cache");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .write_stdin("foo\r\nbar\n")
+        .assert()
+        .success()
+        .stdout("foo\r\nbar\n")
+        .stderr("");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .args(["--color=always", "--language=Rust"])
+        .write_stdin("fn main() {}\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "Could not parse cached syntax set",
+        ));
+}
+
+#[test]
 fn concatenate() {
     bat()
         .arg("test.txt")
@@ -271,7 +339,8 @@ fn attached_short_option_values_are_not_treated_as_flags() {
 
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        // Use a valid syntax token containing both 'b' and 'n'.
+        .args(["-lcrontab", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
