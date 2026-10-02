@@ -69,6 +69,7 @@
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
 - Statically link the CRT for MSVC builds via Cargo config to avoid runtime DLL dependencies. Closes #3634, see #3692 (@barry3406)
 - Replace `libgit2` with a pure Rust implementation of git called `gitoxide`, see PR #3703 (@blinxen)
+- Added `.editorconfig`, see #4003 (@bberberov)
 
 ## Syntaxes
 
@@ -85,6 +86,9 @@
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 - Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
+- Added syntax mappings for KDE, `npm`, and `zypper`, see #4003 (@bberberov)
+- Added more subdirectories to the SSH(D) config syntax mapping, see #4003 (@bberberov)
+- Added `.profile` and completions to Bash syntax mapping, see #4003 (@bberberov)
 
 ## Themes
 

@@ -1,0 +1,7 @@
+[mappings]
+"INI" = [
+    "${HOME}/.zypper.conf",
+    "/etc/zypp/*.conf",
+    "/etc/zypp/*.d/*.conf",
+    "/etc/zypp/repos.d/*.repo",
+]
