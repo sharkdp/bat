@@ -1996,6 +1996,75 @@ fn cache_build() {
 }
 
 #[test]
+fn cache_auto_build_on_first_run() {
+    // Custom themes/syntaxes are picked up automatically on first run (see #4017):
+    // if the config directory contains sources but no cache exists yet, bat
+    // builds the cache instead of silently using the integrated assets.
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+        .expect("can create syntaxes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c.sublime-syntax"),
+    )
+    .expect("can copy example syntax");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache"))
+        .stdout(predicate::str::contains("example"));
+
+    assert!(cache_dir.path().join("themes.bin").exists());
+    assert!(cache_dir.path().join("syntaxes.bin").exists());
+    assert!(cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
+fn cache_no_auto_build_with_no_custom_assets() {
+    // `--no-custom-assets` opts out of the automatic cache build (see #4017).
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache").not())
+        .stdout(predicate::str::contains("example").not());
+
+    assert!(!cache_dir.path().join("themes.bin").exists());
+    assert!(!cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
     // BOM removed. This behavior is wanted in interactive mode as

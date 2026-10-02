@@ -169,7 +169,8 @@ impl App {
         };
 
         let cache_dir = PROJECT_DIRS.cache_dir();
-        let assets = assets_from_cache_or_binary(use_custom_assets, cache_dir)?;
+        let config_dir = PROJECT_DIRS.config_dir();
+        let assets = assets_from_cache_or_binary(use_custom_assets, config_dir, cache_dir)?;
         Controller::new(&help_config, &assets)
             .run(inputs, None)
             .ok();
