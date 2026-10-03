@@ -64,6 +64,27 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Create a printer using an existing asset cache, such as one built by
+    /// `bat cache --build`. The directory is explicit: this does not read user
+    /// configuration or environment variables.
+    ///
+    /// Invalid or missing caches return an error during construction.
+    pub fn from_cache(cache_path: impl AsRef<Path>) -> Result<Self> {
+        Self::with_assets(HighlightingAssets::from_cache(cache_path.as_ref())?)
+    }
+
+    /// Create a printer with custom syntax and theme assets.
+    ///
+    /// Syntaxes are loaded immediately so malformed caches return an error
+    /// before this printer is used or its syntaxes are enumerated.
+    pub fn with_assets(assets: HighlightingAssets) -> Result<Self> {
+        assets.get_syntaxes()?;
+        Ok(Self {
+            assets,
+            ..Self::new()
+        })
+    }
+
     /// Add an input which should be pretty-printed
     pub fn input(&mut self, input: Input<'a>) -> &mut Self {
         self.inputs.push(input);
@@ -274,8 +295,8 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     pub fn syntaxes(&self) -> impl Iterator<Item = Syntax> + '_ {
-        // We always use assets from the binary, which are guaranteed to always
-        // be valid, so get_syntaxes() can never fail here
+        // Embedded assets are valid; custom assets were loaded and validated
+        // by with_assets(), so get_syntaxes() cannot fail here.
         self.assets
             .get_syntaxes()
             .unwrap()
