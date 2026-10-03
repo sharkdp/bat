@@ -10,6 +10,7 @@ pub enum StyleComponent {
     #[cfg(feature = "git")]
     Changes,
     Grid,
+    GridVertical,
     Rule,
     Header,
     HeaderFilename,
@@ -34,6 +35,7 @@ impl StyleComponent {
             #[cfg(feature = "git")]
             StyleComponent::Changes => &[StyleComponent::Changes],
             StyleComponent::Grid => &[StyleComponent::Grid],
+            StyleComponent::GridVertical => &[StyleComponent::GridVertical],
             StyleComponent::Rule => &[StyleComponent::Rule],
             StyleComponent::Header => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
@@ -71,6 +73,7 @@ impl FromStr for StyleComponent {
             #[cfg(feature = "git")]
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
+            "grid-vertical" => Ok(StyleComponent::GridVertical),
             "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
             "header-filename" => Ok(StyleComponent::HeaderFilename),
@@ -104,6 +107,11 @@ impl StyleComponents {
 
     pub fn rule(&self) -> bool {
         self.0.contains(&StyleComponent::Rule)
+    }
+
+    /// Whether the sidebar has a vertical separator, with or without horizontal borders.
+    pub fn grid_vertical(&self) -> bool {
+        self.grid() || self.0.contains(&StyleComponent::GridVertical)
     }
 
     pub fn header(&self) -> bool {

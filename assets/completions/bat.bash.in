@@ -177,6 +177,7 @@ _bat() {
 			header-filename
 			header-filesize
 			grid
+			grid-vertical
 			rule
 			numbers
 			snip

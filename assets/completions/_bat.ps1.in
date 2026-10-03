@@ -5,7 +5,7 @@ using namespace System.Management.Automation.Language
 Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
-    $ArrayStyle      = @('default', 'auto', 'full', 'plain', 'changes', 'header', 'header-filename', 'header-filesize', 'grid', 'rule', 'numbers', 'snip')
+    $ArrayStyle      = @('default', 'auto', 'full', 'plain', 'changes', 'header', 'header-filename', 'header-filesize', 'grid', 'grid-vertical', 'rule', 'numbers', 'snip')
     $ArrayCompletion = @('bash', 'fish', 'zsh', 'ps1')
     $ArrayWhen       = @('auto', 'never', 'always')
     $ArrayYesNo      = @('never', 'always')
