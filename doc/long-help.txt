@@ -235,6 +235,13 @@ Options:
           automatically disabled in unbuffered mode, and syntax highlighting may be imperfect on
           partial lines.
 
+      --local-config
+          Read .batconfig files from the current directory and its ancestors, from the filesystem
+          root downwards. Local settings override the user configuration; environment variables and
+          command-line options take precedence. This flag must be supplied on the command line and
+          is ignored with --no-config. Enable it only in directories you trust: configuration can
+          specify a pager or preprocessor command.
+
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
 

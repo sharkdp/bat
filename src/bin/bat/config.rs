@@ -130,6 +130,33 @@ fn same_file(a: &Path, b: &Path) -> bool {
     }
 }
 
+/// Read project configuration from ancestors of the current directory, with
+/// nearer directories taking precedence. Call only after an explicit CLI opt-in.
+pub fn get_args_from_local_config() -> bat::error::Result<Vec<OsString>> {
+    let directory = env::current_dir()?;
+    let mut args = Vec::new();
+    for ancestor in directory.ancestors().collect::<Vec<_>>().into_iter().rev() {
+        let path = ancestor.join(".batconfig");
+        match fs::read_to_string(&path) {
+            Ok(content) => args.extend(get_args_from_str(&content).map_err(|error| {
+                format!(
+                    "Could not parse local configuration '{}': {error}",
+                    path.display()
+                )
+            })?),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => {
+                return Err(format!(
+                    "Could not read local configuration '{}': {error}",
+                    path.display()
+                )
+                .into());
+            }
+        }
+    }
+    Ok(args)
+}
+
 pub fn get_args_from_env_opts_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
     env::var("BAT_OPTS").ok().map(|s| get_args_from_str(&s))
 }
