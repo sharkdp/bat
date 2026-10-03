@@ -93,6 +93,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         '*;--decorations' {
             $ArrayWhen |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
+            [CompletionResult]::new('compact', 'compact', [CompletionResultType]::ParameterValue, 'Compact headings with selected sidebars.')
             break
         }
         '*;--completion' {
@@ -144,7 +145,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--terminal-width'        , 'terminal-width'        , [CompletionResultType]::ParameterName, 'Explicitly set the width of the terminal instead of determining it automatically. If prefixed with ''+'' or ''-'', the value will be treated as an offset to the actual terminal width. See also: ''--wrap''.')
             [CompletionResult]::new('--color'                 , 'color'                 , [CompletionResultType]::ParameterName, 'When to use colors (*auto*, never, always).')
             [CompletionResult]::new('--italic-text'           , 'italic-text'           , [CompletionResultType]::ParameterName, 'Use italics in output (always, *never*)')
-            [CompletionResult]::new('--decorations'           , 'decorations'           , [CompletionResultType]::ParameterName, 'When to show the decorations (*auto*, never, always).')
+            [CompletionResult]::new('--decorations'           , 'decorations'           , [CompletionResultType]::ParameterName, 'When to show the decorations (*auto*, never, always, compact).')
             [CompletionResult]::new('--paging'                , 'paging'                , [CompletionResultType]::ParameterName, 'Specify when to use the pager, or use ''-P'' to disable (*auto*, never, always).')
             [CompletionResult]::new('--pager'                 , 'pager'                 , [CompletionResultType]::ParameterName, 'Determine which pager to use.')
         #   [CompletionResult]::new('-m'                      , 'm'                     , [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')

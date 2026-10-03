@@ -329,15 +329,16 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("decorations")
                 .overrides_with("decorations")
                 .value_name("when")
-                .value_parser(["auto", "never", "always"])
+                .value_parser(["auto", "never", "always", "compact"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("When to show the decorations (*auto*, never, always).")
+                .help("When to show the decorations (*auto*, never, always, compact).")
                 .long_help(
                     "Specify when to use the decorations that have been specified \
                     via '--style'. The automatic mode only enables decorations if \
                     an interactive terminal is detected. The always mode will show \
-                    decorations even when piping output. Possible values: *auto*, never, always.",
+                    decorations even when piping output. The compact mode always shows the selected decorations, uses single-line \
+                    file headings, and omits horizontal rules around files. Possible values: *auto*, never, always, compact.",
                 )
         )
         .arg(

@@ -433,11 +433,12 @@ impl App {
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
-                || self
-                    .matches
-                    .get_one::<String>("decorations")
-                    .map(|s| s.as_str())
-                    == Some("always")
+                || matches!(
+                    self.matches
+                        .get_one::<String>("decorations")
+                        .map(String::as_str),
+                    Some("always" | "compact")
+                )
                 || self.matches.get_flag("force-colorization")
                 || self.number_from_cli
                 || self.number_nonblank_from_cli),
@@ -505,6 +506,11 @@ impl App {
                 ),
             },
             style_components,
+            compact_headers: self
+                .matches
+                .get_one::<String>("decorations")
+                .map(String::as_str)
+                == Some("compact"),
             syntax_mapping,
             pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
             use_italic_text: self

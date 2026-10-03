@@ -69,6 +69,9 @@ pub struct Config<'a> {
     /// Style elements (grid, line numbers, ...)
     pub style_components: StyleComponents,
 
+    /// Use single-line file headings and omit horizontal header/footer rules.
+    pub compact_headers: bool,
+
     /// If and how text should be wrapped
     pub wrapping_mode: WrappingMode,
 
