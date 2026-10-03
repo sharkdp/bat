@@ -208,6 +208,9 @@ Options:
             * header: alias for 'header-filename'.
             * header-filename: show filenames before the content.
             * header-filesize: show file sizes before the content.
+            * header-path: show absolute source paths.
+            * header-modified: show modification times in UTC.
+            * header-permissions: show file permissions.
             * grid: vertical/horizontal lines to separate side bar
                     and the header from the content.
             * rule: horizontal lines to delimit files.
