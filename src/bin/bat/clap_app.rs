@@ -615,6 +615,18 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("no-system-config")
+                .long("no-system-config")
+                .action(ArgAction::SetTrue)
+                .overrides_with("no-system-config")
+                .help("Ignore the system-wide configuration file.")
+                .long_help(
+                    "Ignore the system-wide configuration file while still loading the user \
+                     configuration (including BAT_CONFIG_PATH) and environment options. \
+                     This option must be passed on the command line.",
+                ),
+        )
+        .arg(
             Arg::new("no-config")
                 .long("no-config")
                 .action(ArgAction::SetTrue)

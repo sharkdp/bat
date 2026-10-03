@@ -101,21 +101,31 @@ pub fn generate_config_file() -> bat::error::Result<()> {
     Ok(())
 }
 
-pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    let mut config = String::new();
-
+pub fn get_args_from_config_file(
+    skip_system: bool,
+) -> Result<Vec<OsString>, shell_words::ParseError> {
     let system_config = system_config_file();
     let user_config = config_file();
+    get_args_from_config_files(&system_config, &user_config, skip_system)
+}
 
-    if let Ok(c) = fs::read_to_string(&system_config) {
-        config.push_str(&c);
-        config.push('\n');
+fn get_args_from_config_files(
+    system_config: &Path,
+    user_config: &Path,
+    skip_system: bool,
+) -> Result<Vec<OsString>, shell_words::ParseError> {
+    let mut config = String::new();
+    if !skip_system {
+        if let Ok(c) = fs::read_to_string(system_config) {
+            config.push_str(&c);
+            config.push('\n');
+        }
     }
 
     // Skip the user config if it resolves to the same file as the system config,
     // which can happen when BAT_CONFIG_DIR is set to e.g. "/etc/bat". See #3589.
-    if !same_file(&system_config, &user_config) {
-        if let Ok(c) = fs::read_to_string(&user_config) {
+    if skip_system || !same_file(system_config, user_config) {
+        if let Ok(c) = fs::read_to_string(user_config) {
             config.push_str(&c);
         }
     }
@@ -265,4 +275,40 @@ fn same_file_via_symlink() {
     fs::write(&original, "").unwrap();
     std::os::unix::fs::symlink(&original, &link).unwrap();
     assert!(same_file(&original, &link));
+}
+
+#[test]
+fn skip_system_config_preserves_user_arguments() {
+    let dir = tempfile::tempdir().unwrap();
+    let system = dir.path().join("system");
+    let user = dir.path().join("user");
+    fs::write(&system, "--tabs=2\n--style=numbers").unwrap();
+    fs::write(&user, "--tabs=8").unwrap();
+    assert_eq!(
+        get_args_from_config_files(&system, &user, false).unwrap(),
+        vec!["--tabs=2", "--style=numbers", "--tabs=8"]
+    );
+    assert_eq!(
+        get_args_from_config_files(&system, &user, true).unwrap(),
+        vec!["--tabs=8"]
+    );
+    fs::write(&system, "\"unterminated").unwrap();
+    assert!(get_args_from_config_files(&system, &user, false).is_err());
+    assert_eq!(
+        get_args_from_config_files(&system, &user, true).unwrap(),
+        vec!["--tabs=8"]
+    );
+}
+
+#[test]
+fn explicitly_selected_user_config_is_loaded_once() {
+    let dir = tempfile::tempdir().unwrap();
+    let config = dir.path().join("config");
+    fs::write(&config, "--plain").unwrap();
+    for skip_system in [false, true] {
+        assert_eq!(
+            get_args_from_config_files(&config, &config, skip_system).unwrap(),
+            vec!["--plain"]
+        );
+    }
 }
