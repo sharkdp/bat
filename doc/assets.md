@@ -76,6 +76,29 @@ themes (`bat cache --clear`).
 
 * More than 10,000 downloads at [Package Control](https://packagecontrol.io)
 
+### Asset licenses and reuse
+
+Syntaxes and themes must have licenses compatible with bat's MIT/Apache-2.0
+licensing. They do not have to use those same licenses. For example, the
+bundled Sublime Text Packages use a separate permissive license, and the
+Prolog grammar uses MPL-2.0. GPL-licensed assets are rejected by the license
+check in `tests/scripts/license-checks.sh`.
+
+Keep each asset's license and copyright notices with its source. For manual
+imports or conversions, record the source revision and preserve the license
+for the converted file and any modifications. Add any required source notice
+alongside the license. The asset builder collects recognized `LICENSE` and
+`NOTICE` files into the acknowledgements; an unknown license must be reviewed
+and handled before rebuilding assets.
+
+To reuse bat's syntax or theme dumps in another project, inspect the licenses
+at the corresponding bat release's pinned asset revisions. Bat's own license
+does not replace those licenses. `bat --acknowledgements` displays the notices
+bundled with the compiled assets and is a useful starting point. It is not an
+exhaustive license inventory: the builder omits some licenses that do not
+require attribution, and custom caches may contain different assets. The
+source `LICENSE` and `NOTICE` files remain the record of each asset's terms.
+
 ### Manual modifications
 
 The following files have been manually modified after converting from a `.tmLanguage` file:
@@ -90,6 +113,13 @@ The following files have been manually modified after converting from a `.tmLang
 * `wgsl.sublime-syntax` => added `wgsl` file extension.
 
 ### Non-submodule additions
+
+* `Prolog` has been converted from `support/Prolog.YAML-tmLanguage` in
+  [alnkpa/sublimeprolog](https://github.com/alnkpa/sublimeprolog/tree/9e8e142e55557465511338d5b26ca585cb729310).
+  The MPL-2.0 license and source notice are retained beside the grammar. The
+  `.pl` extension remains assigned to Perl; use `--language=Prolog` or
+  `--map-syntax "*.pl:Prolog"` for Prolog files. Decimal numbers are matched
+  before integers.
 
 * `Assembly (x86_64)` has been manually added from https://github.com/13xforever/x86-assembly-textmate-bundle due to `git clone` recursion problems
 * `Nim.sublime-syntax` has been added manually from https://github.com/getzola/zola/blob/master/sublime_syntaxes/Nim.sublime-syntax as there was no suitable Git repository for it. The original syntax seems to originate from https://github.com/Varriount/NimLime

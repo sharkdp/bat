@@ -1,0 +1,12 @@
+Prolog syntax highlighting
+
+Converted from support/Prolog.YAML-tmLanguage in alnkpa/sublimeprolog at:
+https://github.com/alnkpa/sublimeprolog/tree/9e8e142e55557465511338d5b26ca585cb729310
+
+The converted grammar and its modifications are available under MPL-2.0 in
+assets/syntaxes/02_Extra/Prolog/Prolog.sublime-syntax in the corresponding bat
+release source, available from https://github.com/sharkdp/bat/releases.
+
+Changes: convert TextMate patterns to Sublime syntax contexts, use the name
+Prolog, retain the existing Perl extension association, and match decimal
+numbers before integers. The full Mozilla Public License 2.0 is in LICENSE.
