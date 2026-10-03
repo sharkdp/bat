@@ -70,6 +70,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(--no-lessopen)'--lessopen'[enable the $LESSOPEN preprocessor]'
         '(--lessopen)'--no-lessopen'[disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)]'
         '(* -)'--config-dir"[show bat's configuration directory]"
+        '(* -)'--show-config'[show merged configuration arguments]::field:'
         '(* -)'--config-file'[show path to the configuration file]'
         '(* -)'--generate-config-file'[generate a default configuration file]'
         '(* -)'--cache-dir"[show bat's cache directory]"

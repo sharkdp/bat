@@ -377,6 +377,13 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
 /// `Ok(false)` if any intermediate errors occurred (were printed).
 fn run() -> Result<bool> {
     let app = App::new()?;
+    if let Some(field) = app.matches.get_one::<String>("show-config") {
+        if app.matches.subcommand().is_some() {
+            return Err("--show-config cannot be combined with a subcommand".into());
+        }
+        write!(io::stdout(), "{}", app.show_config(field)?)?;
+        return Ok(true);
+    }
     let config_dir = PROJECT_DIRS.config_dir();
     let cache_dir = PROJECT_DIRS.cache_dir();
 
