@@ -84,6 +84,7 @@ function __bat_style_opts
         "header-filesize,filesize above content" \
         "grid,lines b/w sidebar/header/content" \
         "numbers,line numbers in sidebar" \
+        "sidebar,line numbers and Git changes" \
         "rule,separate files" \
         "snip,separate ranges"
 
