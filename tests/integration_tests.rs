@@ -52,6 +52,86 @@ fn basic() {
 }
 
 #[test]
+#[cfg(feature = "build-assets")]
+fn theme_background_is_opt_in_and_respects_line_highlighting() {
+    let cache = tempdir().unwrap();
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("theme-background"))
+        .args(["cache", "--build", "--source", ".", "--target"])
+        .arg(cache.path())
+        .assert()
+        .success();
+
+    for wrap in ["never", "character", "word"] {
+        for mode in [None, Some("never"), Some("always")] {
+            let mut command = bat();
+            command
+                .env("BAT_CACHE_PATH", cache.path())
+                .args([
+                    "--theme=background",
+                    "--language=Python",
+                    "--color=always",
+                    "--style=plain",
+                    "--paging=never",
+                    "--terminal-width=14",
+                ])
+                .arg(format!("--wrap={wrap}"))
+                .write_stdin("value = 1 # a long comment\n");
+            if let Some(mode) = mode {
+                command.arg(format!("--theme-background={mode}"));
+            }
+            let result = command.assert().success();
+            let output = String::from_utf8_lossy(&result.get_output().stdout);
+            assert_eq!(
+                output.contains("41;32m"),
+                mode == Some("always"),
+                "{output:?}"
+            );
+            assert_eq!(
+                output.contains("43;32m"),
+                mode == Some("always"),
+                "{output:?}"
+            );
+        }
+
+        bat()
+            .env("BAT_CACHE_PATH", cache.path())
+            .args([
+                "--theme=background",
+                "--language=Python",
+                "--color=always",
+                "--theme-background=always",
+                "--style=plain",
+                "--paging=never",
+                "--highlight-line=1",
+                "--terminal-width=14",
+            ])
+            .arg(format!("--wrap={wrap}"))
+            .write_stdin("value = 1 # a long comment\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("44;32m"))
+            .stdout(predicate::str::contains("43;32m").not());
+    }
+
+    bat()
+        .env("BAT_CACHE_PATH", cache.path())
+        .args([
+            "--theme=background",
+            "--language=Python",
+            "--theme-background=always",
+            "--color=never",
+            "--decorations=always",
+            "--style=plain",
+            "--paging=never",
+        ])
+        .write_stdin("value = 1 # comment\n")
+        .assert()
+        .success()
+        .stdout("value = 1 # comment\n");
+}
+
+#[test]
 fn stdin() {
     bat()
         .write_stdin("foo\nbar\n")

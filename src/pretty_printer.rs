@@ -213,6 +213,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Whether to honor theme background colors for highlighted text (default: off)
+    pub fn use_theme_background(&mut self, yes: bool) -> &mut Self {
+        self.config.use_theme_background = yes;
+        self
+    }
+
     /// If and how to use a pager (default: no paging)
     #[cfg(feature = "paging")]
     pub fn paging_mode(&mut self, mode: PagingMode) -> &mut Self {
