@@ -162,6 +162,8 @@ impl Printer for SimplePrinter<'_> {
                     line_buffer,
                     self.config.tab_width,
                     self.config.nonprintable_notation,
+                    self.config.show_ends,
+                    self.config.show_tabs,
                 );
                 write!(handle, "{line}")?;
             } else {
@@ -658,6 +660,8 @@ impl Printer for InteractivePrinter<'_> {
                 line_buffer,
                 self.config.tab_width,
                 self.config.nonprintable_notation,
+                self.config.show_ends,
+                self.config.show_tabs,
             )
             .into()
         } else {

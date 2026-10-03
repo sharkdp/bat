@@ -47,6 +47,15 @@ pub struct Config<'a> {
     /// The configured notation for non-printable characters
     pub nonprintable_notation: NonprintableNotation,
 
+    /// Whether or not to show a $ at end of each line
+    pub show_ends: bool,
+
+    /// Whether or not to show tabs as ^I when
+    pub show_tabs: bool,
+
+    /// Whether or not to use the style compatible with GNU's `cat -v`
+    pub show_nonprinting_gnu: bool,
+
     /// How to treat binary content
     pub binary: BinaryBehavior,
 
