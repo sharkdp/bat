@@ -207,6 +207,8 @@ pub fn list_themes(
 ) -> Result<()> {
     let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
     let mut config = cfg.clone();
+    // `--list-themes` should always print directly, even if config requests a pager.
+    config.paging_mode = PagingMode::Never;
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
