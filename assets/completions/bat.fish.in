@@ -268,3 +268,7 @@ complete -c $bat -s h -d "Print a concise overview of $bat-cache help" -n __bat_
 complete -c $bat -l help -f -d "Print all $bat-cache help" -n __bat_cache_no_excl
 
 # vim:ft=fish
+
+complete -c $bat -l osc8 -d "Link file headers and line numbers" -n __bat_no_excl_args
+complete -c $bat -l osc8-highlight -d "Link only highlighted line numbers" -n __bat_no_excl_args
+complete -c $bat -l hyperlink-format -x -d "Set the hyperlink URI template" -n __bat_no_excl_args

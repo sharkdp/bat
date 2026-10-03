@@ -87,7 +87,7 @@ _bat() {
 		__bat_escape_completions
 		return 0
 		;;
-	-H | --highlight-line | \
+	-H | --highlight-line | --hyperlink-format | \
 	--diff-context | \
 	--tabs | \
 	--terminal-width | \
@@ -203,6 +203,9 @@ _bat() {
 			--language
 			--highlight-line
 			--file-name
+			--osc8
+			--osc8-highlight
+			--hyperlink-format
 			--diff
 			--diff-context
 			--tabs
