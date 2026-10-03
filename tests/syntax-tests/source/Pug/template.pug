@@ -1,0 +1,31 @@
+doctype html
+html(lang="en")
+  head
+    title= title
+    style.
+      .active { color: #268bd2; }
+    script.
+      const message = "Hello";
+      console.log(message);
+  body
+    //- This comment is not rendered.
+      p Still inside the comment
+    // A rendered HTML comment
+    h1#heading.active Hello #{name}
+    p A link: #[a(href="/about") About us]
+    ul
+      each item, index in items
+        li(data-index=index class={active: item.selected})= item.name
+      else
+        li Nothing here
+    if loggedIn
+      p Welcome back!
+    else
+      p Please sign in.
+    mixin greeting(person)
+      p Hello #{person}
+    +greeting("Ada")
+    p.
+      Multiple lines of text,
+      including &amp; an entity.
+    != trustedHtml
