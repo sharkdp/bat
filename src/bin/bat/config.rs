@@ -17,16 +17,29 @@ pub fn system_config_file() -> PathBuf {
     let mut path = PathBuf::from(folder);
 
     path.push("bat");
-    path.push("config");
-
-    path
+    config_in_directory(&path)
 }
 
 pub fn config_file() -> PathBuf {
     env::var("BAT_CONFIG_PATH")
         .ok()
         .map(PathBuf::from)
-        .unwrap_or_else(|| PROJECT_DIRS.config_dir().join("config"))
+        .unwrap_or_else(|| config_in_directory(PROJECT_DIRS.config_dir()))
+}
+
+fn config_in_directory(directory: &Path) -> PathBuf {
+    let legacy = directory.join("config");
+    let toml = directory.join("config.toml");
+    if !legacy.exists() && toml.is_file() {
+        toml
+    } else {
+        legacy
+    }
+}
+
+fn is_toml(path: &Path) -> bool {
+    path.extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("toml"))
 }
 
 pub fn generate_config_file() -> bat::error::Result<()> {
@@ -86,6 +99,18 @@ pub fn generate_config_file() -> bat::error::Result<()> {
 #--map-syntax ".ignore:Git Ignore"
 "#;
 
+    let default_config = if is_toml(&config_file) {
+        "# Options use their long command-line names.\n\
+         # String and integer values are passed as option values.\n\
+         # Arrays repeat an option; true enables a flag and false omits it.\n\n\
+         # theme = \"TwoDark\"\n\
+         # italic-text = \"always\"\n\
+         # paging = \"never\"\n\
+         # map-syntax = [\"*.ino:C++\", \".ignore:Git Ignore\"]\n"
+    } else {
+        default_config
+    };
+
     fs::write(&config_file, default_config).map_err(|e| {
         format!(
             "Failed to create config file at '{}': {e}",
@@ -101,26 +126,86 @@ pub fn generate_config_file() -> bat::error::Result<()> {
     Ok(())
 }
 
-pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseError> {
-    let mut config = String::new();
-
+pub fn get_args_from_config_file() -> bat::error::Result<Vec<OsString>> {
     let system_config = system_config_file();
     let user_config = config_file();
 
-    if let Ok(c) = fs::read_to_string(&system_config) {
-        config.push_str(&c);
-        config.push('\n');
-    }
+    let mut args = read_config(&system_config)?;
 
     // Skip the user config if it resolves to the same file as the system config,
     // which can happen when BAT_CONFIG_DIR is set to e.g. "/etc/bat". See #3589.
     if !same_file(&system_config, &user_config) {
-        if let Ok(c) = fs::read_to_string(&user_config) {
-            config.push_str(&c);
+        args.extend(read_config(&user_config)?);
+    }
+    Ok(args)
+}
+
+fn read_config(path: &Path) -> bat::error::Result<Vec<OsString>> {
+    let Ok(content) = fs::read_to_string(path) else {
+        return Ok(Vec::new());
+    };
+    let result = if is_toml(path) {
+        get_args_from_toml(&content)
+    } else {
+        get_args_from_str(&content).map_err(|error| error.to_string())
+    };
+    result.map_err(|error| {
+        format!(
+            "Could not parse configuration file '{}': {error}",
+            path.display()
+        )
+        .into()
+    })
+}
+
+fn get_args_from_toml(content: &str) -> Result<Vec<OsString>, String> {
+    let table: toml::Table = toml::from_str(content).map_err(|error| format!("{error}"))?;
+    let command = crate::clap_app::build_app(false);
+    let mut args = Vec::new();
+    for (key, value) in table {
+        let option = command
+            .get_arguments()
+            .find(|arg| arg.get_long() == Some(key.as_str()))
+            .ok_or_else(|| format!("Unknown option '{key}'"))?;
+        match option.get_action() {
+            clap::ArgAction::SetTrue => match value {
+                toml::Value::Boolean(true) => args.push(format!("--{key}").into()),
+                toml::Value::Boolean(false) => {}
+                _ => return Err(format!("Option '{key}' requires a boolean")),
+            },
+            clap::ArgAction::Count => {
+                let count = match value {
+                    toml::Value::Boolean(enabled) => u8::from(enabled),
+                    toml::Value::Integer(count) => u8::try_from(count)
+                        .map_err(|_| format!("Option '{key}' requires a count from 0 to 255"))?,
+                    _ => return Err(format!("Option '{key}' requires a boolean or count")),
+                };
+                args.extend(std::iter::repeat_n(
+                    OsString::from(format!("--{key}")),
+                    count.into(),
+                ));
+            }
+            _ => {
+                let values = match value {
+                    toml::Value::Array(values) => values,
+                    value => vec![value],
+                };
+                for value in values {
+                    let value = match value {
+                        toml::Value::String(value) => value,
+                        toml::Value::Integer(value) => value.to_string(),
+                        _ => {
+                            return Err(format!(
+                            "Option '{key}' requires a string, integer, or array of these values"
+                        ))
+                        }
+                    };
+                    args.push(format!("--{key}={value}").into());
+                }
+            }
         }
     }
-
-    get_args_from_str(&config)
+    Ok(args)
 }
 
 fn same_file(a: &Path, b: &Path) -> bool {
@@ -130,8 +215,10 @@ fn same_file(a: &Path, b: &Path) -> bool {
     }
 }
 
-pub fn get_args_from_env_opts_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
-    env::var("BAT_OPTS").ok().map(|s| get_args_from_str(&s))
+pub fn get_args_from_env_opts_var() -> Option<bat::error::Result<Vec<OsString>>> {
+    env::var("BAT_OPTS").ok().map(|s| {
+        get_args_from_str(&s).map_err(|error| format!("Could not parse BAT_OPTS: {error}").into())
+    })
 }
 
 fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseError> {
