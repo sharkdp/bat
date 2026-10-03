@@ -119,6 +119,7 @@ set -l wrap_opts '
     never\t
     character\t
     word\t
+    truncate\t
 '
 
 # While --tabs theoretically takes any number, most people should be OK with these.
@@ -147,7 +148,7 @@ complete -c $bat -l binary -x -a "no-printing as-text" -d "How to treat binary c
 
 complete -c $bat -l cache-dir -f -d "Show bat's cache directory" -n __fish_is_first_arg
 
-complete -c $bat -s c -l chop-long-lines -d "Truncate all lines longer than screen width" -n __bat_no_excl_args
+complete -c $bat -s S -l chop-long-lines -d "Disable wrapping" -n __bat_no_excl_args
 
 complete -c $bat -l color -x -a "$color_opts" -d "When to use colored output" -n __bat_no_excl_args
 

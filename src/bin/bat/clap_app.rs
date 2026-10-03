@@ -225,13 +225,14 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("wrap")
                 .overrides_with("wrap")
                 .value_name("mode")
-                .value_parser(["auto", "never", "character", "word"])
+                .value_parser(["auto", "never", "character", "word", "truncate"])
                 .default_value("auto")
                 .hide_default_value(true)
-                .help("Specify the text-wrapping mode (*auto*, never, character, word).")
-                .long_help("Specify the text-wrapping mode (*auto*, never, character, word). \
+                .help("Specify the text-wrapping mode (*auto*, never, character, word, truncate).")
+                .long_help("Specify the text-wrapping mode (*auto*, never, character, word, truncate). \
                            The '--terminal-width' option can be used in addition to \
-                           control the output width."),
+                           control the output width. In truncate mode, long lines end with \
+                           an ellipsis. Tabs are expanded, using eight columns when '--tabs=0'."),
         )
         .arg(
             Arg::new("chop-long-lines")
@@ -239,7 +240,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('S')
                 .overrides_with("chop-long-lines")
                 .action(ArgAction::SetTrue)
-                .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
+                .help("Disable wrapping. Alias for '--wrap=never'.")
+                .long_help("Disable wrapping. Alias for '--wrap=never'. The pager may scroll long \
+                    lines horizontally. Use '--wrap=truncate' to truncate output instead."),
         )
         .arg(
             Arg::new("terminal-width")

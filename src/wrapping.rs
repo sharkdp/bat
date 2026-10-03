@@ -2,6 +2,8 @@
 pub enum WrappingMode {
     Character,
     Word,
+    /// Truncate long lines to the available width and append an ellipsis.
+    Truncate,
     // The bool specifies whether wrapping has been explicitly disabled by the user via --wrap=never
     NoWrapping(bool),
 }

@@ -52,6 +52,114 @@ fn basic() {
 }
 
 #[test]
+fn truncate_wrap_fits_lines_to_visible_width() {
+    for (input, width, expected) in [
+        ("abc\n", 4, "abc\n"),
+        ("abcd\n", 4, "abcd\n"),
+        ("abcdef\n", 4, "abc…\n"),
+        ("abcdef", 4, "abc…\n"),
+        ("abc\n\n", 1, "…\n\n"),
+        ("界界界\n", 5, "界界…\n"),
+        ("e\u{301}e\u{301}e\u{301}\n", 2, "e\u{301}…\n"),
+        ("👩‍💻abc\n", 3, "👩‍💻…\n"),
+        ("a\tb\n", 5, "a   …\n"),
+        ("abcdef\r\n", 4, "abc…\n"),
+    ] {
+        bat()
+            .args([
+                "--wrap=truncate",
+                "--style=plain",
+                "--color=never",
+                "--paging=never",
+            ])
+            .arg(format!("--terminal-width={width}"))
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(expected);
+    }
+}
+
+#[test]
+fn truncate_wrap_accounts_for_the_sidebar() {
+    bat()
+        .args([
+            "--wrap=truncate",
+            "--style=numbers,grid",
+            "--decorations=always",
+            "--color=never",
+            "--paging=never",
+            "--terminal-width=15",
+        ])
+        .write_stdin("abcdefghijklmnop\nshort\n")
+        .assert()
+        .success()
+        .stdout("─────┬─────────\n   1 │ abcdefg…\n   2 │ short\n─────┴─────────\n");
+}
+
+#[test]
+fn truncate_wrap_tracks_escape_sequences_in_omitted_text() {
+    let result = bat()
+        .args([
+            "--wrap=truncate",
+            "--style=plain",
+            "--language=txt",
+            "--color=never",
+            "--paging=never",
+            "--terminal-width=4",
+        ])
+        .write_stdin("abcdef\x1b[31m\nred\nabcdef\x1b[0m\nplain\n")
+        .assert()
+        .success();
+    let output = String::from_utf8_lossy(&result.get_output().stdout);
+    assert_eq!(
+        console::strip_ansi_codes(&output),
+        "abc…\nred\nabc…\npla…\n"
+    );
+    assert!(output.lines().nth(1).unwrap().contains("\x1b[31mred"));
+    assert!(!output.lines().nth(3).unwrap().contains("\x1b[31m"));
+}
+
+#[test]
+fn truncate_wrap_expands_tabs_across_ansi_regions() {
+    let result = bat()
+        .args([
+            "--wrap=truncate",
+            "--tabs=4",
+            "--style=plain",
+            "--language=txt",
+            "--color=never",
+            "--paging=never",
+            "--terminal-width=6",
+        ])
+        .write_stdin("ab\x1b[31m\tcd\x1b[0m\n")
+        .assert()
+        .success();
+    let output = String::from_utf8_lossy(&result.get_output().stdout);
+    assert_eq!(console::strip_ansi_codes(&output), "ab  cd\n");
+}
+
+#[test]
+fn truncate_wrap_highlights_tokens_and_the_ellipsis() {
+    let result = bat()
+        .args([
+            "--wrap=truncate",
+            "--style=plain",
+            "--language=Rust",
+            "--theme=ansi",
+            "--color=always",
+            "--paging=never",
+            "--terminal-width=12",
+        ])
+        .write_stdin("let value = 123456;\n")
+        .assert()
+        .success();
+    let output = String::from_utf8_lossy(&result.get_output().stdout);
+    assert_eq!(console::strip_ansi_codes(&output), "let value =…\n");
+    assert!(output.contains("\x1b[1m…\x1b[0m"));
+}
+
+#[test]
 fn stdin() {
     bat()
         .write_stdin("foo\nbar\n")
