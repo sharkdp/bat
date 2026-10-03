@@ -236,6 +236,22 @@ impl HighlightingAssets {
                 .or_else(|| Some(p.to_owned()))
         });
 
+        // An explicit syntax mapping wins over a modeline, just like --language.
+        // Otherwise a valid first-line editor hint takes precedence over file extensions.
+        let has_explicit_mapping = absolute_path.as_ref().is_some_and(|path| {
+            matches!(mapping.get_syntax_for(path), Some(MappingTarget::MapTo(_)))
+        });
+        if !has_explicit_mapping {
+            if let Ok(first_line) = std::str::from_utf8(&input.reader.first_line) {
+                let first_line = first_line.trim_start_matches('\u{feff}');
+                for (_, token) in crate::modeline::syntax_names(first_line) {
+                    if let Some(syntax) = self.find_syntax_by_token(token)? {
+                        return Ok(syntax);
+                    }
+                }
+            }
+        }
+
         let path_syntax = if let Some(ref path) = absolute_path {
             self.get_syntax_for_path(path, mapping).or_else(|e| {
                 // If syntax detection failed on the given path, retry with the
