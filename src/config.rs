@@ -69,6 +69,10 @@ pub struct Config<'a> {
     /// Style elements (grid, line numbers, ...)
     pub style_components: StyleComponents,
 
+    /// Per-syntax decorations, keyed by the full syntax name (case insensitive).
+    /// Later entries take precedence. Wrapping and tab settings remain global.
+    pub styles_for_syntax: Vec<(String, StyleComponents)>,
+
     /// If and how text should be wrapped
     pub wrapping_mode: WrappingMode,
 

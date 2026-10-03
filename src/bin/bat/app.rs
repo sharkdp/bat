@@ -504,6 +504,7 @@ impl App {
                         .unwrap_or_default(),
                 ),
             },
+            styles_for_syntax: self.styles_for_syntax(&style_components)?,
             style_components,
             syntax_mapping,
             pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
@@ -663,6 +664,45 @@ impl App {
         }
 
         Ok(styled_components)
+    }
+
+    fn styles_for_syntax(
+        &self,
+        general: &StyleComponents,
+    ) -> Result<Vec<(String, StyleComponents)>> {
+        let mut styles: Vec<(String, StyleComponents)> = Vec::new();
+        if let Some(values) = self.matches.get_many::<String>("style-for") {
+            let values: Vec<_> = values.collect();
+            for pair in values.as_chunks::<2>().0 {
+                let language = pair[0];
+                if language.is_empty() {
+                    return Err("The language for --style-for cannot be empty".into());
+                }
+                let list = StyleComponentList::from_str(pair[1])?;
+                let index = styles
+                    .iter()
+                    .position(|(name, _)| name.eq_ignore_ascii_case(language));
+                let components = if let Some(index) = index {
+                    &mut styles[index].1
+                } else {
+                    styles.push((language.clone(), general.clone()));
+                    &mut styles.last_mut().unwrap().1
+                };
+                list.apply_to(components, self.interactive_output);
+            }
+        }
+        for (_, components) in &mut styles {
+            if let Some(forced) = self.forced_style_components() {
+                *components = forced;
+            }
+            if components.grid() {
+                components.0.remove(&StyleComponent::Rule);
+            }
+            if self.matches.get_flag("unbuffered") {
+                components.0.remove(&StyleComponent::LineNumbers);
+            }
+        }
+        Ok(styles)
     }
 
     pub(crate) fn theme_options(&self) -> ThemeOptions {

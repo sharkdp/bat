@@ -55,6 +55,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --squeeze-limit='[set the maximum number of consecutive empty lines]:limit:'
         --strip-ansi='[specify when to strip ANSI escape sequences]:when:(auto never always)'
         --sanitize='[specify when to sanitize untrusted input for safe display]:when:(auto never always)'
+        \*--style-for'[select decorations for a syntax]:language:->languages:style: _values "style" default auto full plain changes header header-filename header-filesize grid rule numbers snip'
         --style='[comma-separated list of style elements to display]: : _values "style [default]"
             default auto full plain changes header header-filename header-filesize grid rule numbers snip'
         \*{-r+,--line-range=}'[only print the specified line range]:start\:end'

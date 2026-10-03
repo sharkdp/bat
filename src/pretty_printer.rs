@@ -64,6 +64,26 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Select decorations for a full syntax name, matched case-insensitively.
+    /// Wrapping and tab settings remain global. Later calls for the same syntax win.
+    pub fn style_for(
+        &mut self,
+        language: impl Into<String>,
+        components: &[StyleComponent],
+    ) -> &mut Self {
+        self.config.styles_for_syntax.push((
+            language.into(),
+            crate::style::StyleComponents(
+                components
+                    .iter()
+                    .flat_map(|component| component.components(true))
+                    .copied()
+                    .collect(),
+            ),
+        ));
+        self
+    }
+
     /// Add an input which should be pretty-printed
     pub fn input(&mut self, input: Input<'a>) -> &mut Self {
         self.inputs.push(input);
