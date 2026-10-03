@@ -147,7 +147,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
                      '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
-                     '--highlight-line 30:+10' highlights lines 30 to 40",
+                     '--highlight-line 30:+10' highlights lines 30 to 40\n  \
+                     '--highlight-line 30:40~2' highlights every second line from 30 to 40\n  \
+                     '--highlight-line 30~2' highlights every second line from 30 onward",
                 ),
         )
         .arg(
@@ -586,7 +588,10 @@ pub fn build_app(interactive_output: bool) -> Command {
                      '--line-range -10:' prints the last 10 lines\n  \
                      '--line-range 30:+10' prints lines 30 to 40\n  \
                      '--line-range 35::5' prints lines 30 to 40 (line 35 with 5 lines of context)\n  \
-                     '--line-range 30:40:2' prints lines 28 to 42 (range 30-40 with 2 lines of context)",
+                     '--line-range 30:40:2' prints lines 28 to 42 (range 30-40 with 2 lines of context)\n  \
+                     '--line-range 30:40~2' prints every second line from 30 to 40\n  \
+                     '--line-range 30~2' prints every second line from 30 onward. \
+                     Increments must be positive and start at the range's lower bound (at least line 1).",
                 ),
         )
         .arg(
