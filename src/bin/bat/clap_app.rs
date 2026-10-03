@@ -436,7 +436,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                      * auto: Picks a dark or light theme depending on the terminal's colors (default).\n          \
                      Use '--theme-light' and '--theme-dark' to customize the selected theme.\n    \
                      * auto:always: Detect the terminal's colors even when the output is redirected.\n    \
-                     * auto:system: Detect the color scheme from the system-wide preference (macOS only).\n  \
+                     * auto:system: Detect the color scheme from the system-wide preference (macOS or GNOME on Linux).\n  \
                      * dark: Use the dark theme specified by '--theme-dark'.\n  \
                      * light: Use the light theme specified by '--theme-light'.",
                 ),

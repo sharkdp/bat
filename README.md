@@ -708,41 +708,19 @@ sidebar. Calling `bat` with `--tabs=0` will override it and let tabs be consumed
 
 ### Dark mode
 
-If you make use of the dark mode feature in **macOS**, you might want to configure `bat` to use a different
-theme based on the OS theme. The following snippet uses the `default` theme when in the _dark mode_
-and the `GitHub` theme when in the _light mode_.
+On **macOS** and **GNOME on Linux**, `bat` can choose a theme based on the system's
+light or dark preference. The following example uses `default` in dark mode and
+`GitHub` in light mode:
 
 ```bash
 alias cat="bat --theme auto:system --theme-dark default --theme-light GitHub"
 ```
 
-The same dark mode feature is now available in **GNOME** and affects the `org.gnome.desktop.interface color-scheme` setting. The following code converts the above to use said setting.
-
-```bash
-# .bashrc
-sys_color_scheme_is_dark() {
-    condition=$(gsettings get org.gnome.desktop.interface color-scheme)
-    condition=$(echo "$condition" | tr -d "[:space:]'")
-    if [ $condition == "prefer-dark" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-bat_alias_wrapper() {
-    #get color scheme
-    sys_color_scheme_is_dark
-    if [[ $? -eq 0 ]]; then
-        # bat command with dark color scheme
-        bat --theme=default "$@"
-    else
-        # bat command with light color scheme
-        bat --theme=GitHub "$@"
-    fi
-}
-alias cat='bat_alias_wrapper'
-```
+On Linux, this queries `org.gnome.desktop.interface color-scheme` using
+`gsettings`. The values `prefer-dark` and `prefer-light` select the respective
+theme. If `gsettings` is unavailable, the query times out, or the setting is
+`default` (no preference), `bat` uses its default theme. Ordinary `--theme auto`
+continues to detect the terminal's colors.
 
 
 ## Configuration file
