@@ -82,6 +82,9 @@ pub struct Config<'a> {
     /// The syntax highlighting theme
     pub theme: String,
 
+    /// Overrides for global foreground, gutter, and highlighted-line colors.
+    pub theme_colors: crate::theme::ThemeColorOverrides,
+
     /// File extension/name mappings
     pub syntax_mapping: SyntaxMapping<'a>,
 

@@ -22,15 +22,24 @@ use clircle::{Clircle, Identifier};
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
+    custom_theme: Option<syntect::highlighting::Theme>,
     #[cfg(feature = "lessopen")]
     preprocessor: Option<LessOpenPreprocessor>,
 }
 
 impl Controller<'_> {
     pub fn new<'a>(config: &'a Config, assets: &'a HighlightingAssets) -> Controller<'a> {
+        let custom_theme = if config.theme_colors.is_empty() {
+            None
+        } else {
+            let mut theme = assets.get_theme(&config.theme).clone();
+            config.theme_colors.apply(&mut theme);
+            Some(theme)
+        };
         Controller {
             config,
             assets,
+            custom_theme,
             #[cfg(feature = "lessopen")]
             preprocessor: LessOpenPreprocessor::new().ok(),
         }
@@ -195,6 +204,7 @@ impl Controller<'_> {
             Box::new(InteractivePrinter::new(
                 self.config,
                 self.assets,
+                self.custom_theme.as_ref(),
                 &mut opened_input,
                 #[cfg(feature = "git")]
                 &line_changes,
