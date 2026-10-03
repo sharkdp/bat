@@ -115,6 +115,15 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Reset highlighting before lines matching the given regular expression.
+    pub fn syntax_delimiter(&mut self, pattern: &str) -> Result<&mut Self> {
+        self.config.syntax_delimiter = Some(
+            regex::Regex::new(pattern)
+                .map_err(|error| format!("Invalid syntax delimiter: {error}"))?,
+        );
+        Ok(self)
+    }
+
     /// The character width of the terminal (default: autodetect)
     pub fn term_width(&mut self, width: usize) -> &mut Self {
         self.term_width = Some(width);

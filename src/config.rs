@@ -41,6 +41,9 @@ pub struct Config<'a> {
     /// The fallback syntax used when auto-detection fails
     pub fallback_syntax: Option<&'a str>,
 
+    /// Reset syntax highlighting before lines matching this regular expression.
+    pub syntax_delimiter: Option<regex::Regex>,
+
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
