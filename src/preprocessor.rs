@@ -244,6 +244,14 @@ fn utf8_len_from_lead(lead: u8) -> usize {
     }
 }
 
+/// For text embedded in an escape sequence, where ESC or BEL would end it early.
+pub(crate) fn strip_control_chars(input: &str) -> String {
+    input
+        .chars()
+        .filter(|c| !matches!(c, '\x00'..='\x1F' | '\x7F'..='\u{9F}'))
+        .collect()
+}
+
 /// Escape C0, DEL, and C1 control characters so a string from an untrusted
 /// filename or path can be safely written to the terminal.
 pub fn sanitize_for_terminal(input: &str) -> String {
@@ -528,4 +536,16 @@ fn test_sanitize_for_terminal_idempotent_on_sanitized() {
     assert_eq!(sanitize_for_terminal(&clean), clean);
     assert!(!clean.contains('\x1b'));
     assert!(!clean.contains('\x07'));
+}
+
+#[test]
+fn test_strip_control_chars() {
+    assert_eq!(strip_control_chars("clean.txt"), "clean.txt");
+    assert_eq!(strip_control_chars("a\x07b\x1bc"), "abc");
+    assert_eq!(strip_control_chars("\x00\t\n\r\x7Fx"), "x");
+    assert_eq!(strip_control_chars("\u{9b}31m\u{9d}"), "31m");
+    assert_eq!(
+        strip_control_chars("dir/ünïcode—B가.rs"),
+        "dir/ünïcode—B가.rs"
+    );
 }
