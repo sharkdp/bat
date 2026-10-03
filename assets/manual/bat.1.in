@@ -48,6 +48,9 @@ Possible values:
 Do not print any binary content (default)
 .IP "as\-text"
 Treat binary content as normal text
+.IP "skip"
+Omit binary inputs entirely, including their headers and decorations. This also
+applies when output is redirected and takes precedence over '\-\-show-all'.
 .RE
 .HP
 \fB\-\-completion\fR <SHELL>

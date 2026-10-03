@@ -395,6 +395,7 @@ impl App {
             binary: match self.matches.get_one::<String>("binary").map(|s| s.as_str()) {
                 Some("as-text") => BinaryBehavior::AsText,
                 Some("no-printing") => BinaryBehavior::NoPrinting,
+                Some("skip") => BinaryBehavior::Skip,
                 _ => unreachable!("other values for --binary are not allowed"),
             },
             wrapping_mode: {
