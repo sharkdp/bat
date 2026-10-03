@@ -135,8 +135,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         default {
         #   [CompletionResult]::new('-l'                      , 'l'                     , [CompletionResultType]::ParameterName, 'Set the language for syntax highlighting.')
             [CompletionResult]::new('--language'              , 'language'              , [CompletionResultType]::ParameterName, 'Set the language for syntax highlighting.')
-        #   [CompletionResult]::new('-H'                      , 'H'                     , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
-            [CompletionResult]::new('--highlight-line'        , 'highlight-line'        , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
+        #   [CompletionResult]::new('-H'                      , 'H'                     , [CompletionResultType]::ParameterName, 'Highlight lines N:M or characters L.C:L.C.')
+            [CompletionResult]::new('--highlight-line'        , 'highlight-line'        , [CompletionResultType]::ParameterName, 'Highlight lines N:M or characters L.C:L.C.')
             [CompletionResult]::new('--file-name'             , 'file-name'             , [CompletionResultType]::ParameterName, 'Specify the name to display for a file.')
             [CompletionResult]::new('--diff-context'          , 'diff-context'          , [CompletionResultType]::ParameterName, 'diff-context')
             [CompletionResult]::new('--tabs'                  , 'tabs'                  , [CompletionResultType]::ParameterName, 'Set the tab width to T spaces.')

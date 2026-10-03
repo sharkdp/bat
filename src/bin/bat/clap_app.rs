@@ -138,16 +138,22 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("highlight-line")
                 .short('H')
                 .action(ArgAction::Append)
-                .value_name("N:M")
-                .help("Highlight lines N through M.")
+                .value_name("range")
+                .help("Highlight line or character ranges.")
                 .long_help(
-                    "Highlight the specified line ranges with a different background color \
+                    "Highlight line ranges, or character regions using LINE.COLUMN positions. \
+                     Positions start at 1; tabs count as one character and combining marks \
+                     stay with their character. ANSI escapes do not count. With --show-all, \
+                     columns refer to the resulting marker text. Character ranges color only \
+                     selected text and use underlining if the theme has no highlight color. \
                      For example:\n  \
                      '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
                      '--highlight-line :40' highlights lines 1 to 40\n  \
                      '--highlight-line 40:' highlights lines 40 to the end of the file\n  \
-                     '--highlight-line 30:+10' highlights lines 30 to 40",
+                     '--highlight-line 30:+10' highlights lines 30 to 40\n  \
+                     '--highlight-line 2.3:.7' highlights characters 3 to 7 of line 2\n  \
+                     '--highlight-line 2.3:4.5' highlights from line 2, character 3 through line 4, character 5",
                 ),
         )
         .arg(

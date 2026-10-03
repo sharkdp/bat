@@ -44,13 +44,20 @@ Options:
           
           [aliases: --fallback-language]
 
-  -H, --highlight-line <N:M>
-          Highlight the specified line ranges with a different background color For example:
+  -H, --highlight-line <range>
+          Highlight line ranges, or character regions using LINE.COLUMN positions. Positions start
+          at 1; tabs count as one character and combining marks stay with their character. ANSI
+          escapes do not count. With --show-all, columns refer to the resulting marker text.
+          Character ranges color only selected text and use underlining if the theme has no
+          highlight color. For example:
             '--highlight-line 40' highlights line 40
             '--highlight-line 30:40' highlights lines 30 to 40
             '--highlight-line :40' highlights lines 1 to 40
             '--highlight-line 40:' highlights lines 40 to the end of the file
             '--highlight-line 30:+10' highlights lines 30 to 40
+            '--highlight-line 2.3:.7' highlights characters 3 to 7 of line 2
+            '--highlight-line 2.3:4.5' highlights from line 2, character 3 through line 4, character
+            5
 
       --file-name <name>
           Specify the name to display for a file. Useful when piping data to bat from STDIN when bat

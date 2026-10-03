@@ -40,6 +40,47 @@ use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
 use crate::StripAnsiMode;
 
+/// Split only at selected character boundaries, retaining the syntax style.
+/// Empty selections leave the original regions and allocation unchanged.
+fn split_highlighted_regions(
+    regions: &mut Vec<(syntect::highlighting::Style, &str)>,
+    selected: &[std::ops::Range<usize>],
+    underline: bool,
+) -> Vec<bool> {
+    if selected.is_empty() {
+        return Vec::new();
+    }
+    let mut result = Vec::new();
+    let mut highlighted = Vec::new();
+    let mut offset = 0;
+    let mut selection = 0;
+    for &(style, region) in regions.iter() {
+        let region_end = offset + region.len();
+        let mut position = offset;
+        while position < region_end {
+            while selection < selected.len() && selected[selection].end <= position {
+                selection += 1;
+            }
+            let active = selected
+                .get(selection)
+                .is_some_and(|r| r.contains(&position));
+            let end = selected.get(selection).map_or(region_end, |range| {
+                region_end.min(if active { range.end } else { range.start })
+            });
+            let mut style = style;
+            if active && underline {
+                style.font_style.insert(FontStyle::UNDERLINE);
+            }
+            result.push((style, &region[position - offset..end - offset]));
+            highlighted.push(active);
+            position = end;
+        }
+        offset = region_end;
+    }
+    *regions = result;
+    highlighted
+}
+
 // Return the displayed width of a character.
 //
 // Control characters (0x00..=0x1F and 0x7F) are rendered by the terminal
@@ -698,7 +739,7 @@ impl Printer for InteractivePrinter<'_> {
             line
         };
 
-        let regions = self.highlight_regions_for_line(&line)?;
+        let mut regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
         }
@@ -736,6 +777,17 @@ impl Printer for InteractivePrinter<'_> {
             .background_color_highlight
             .filter(|_| highlight_this_line);
 
+        let character_ranges = crate::highlight_region::selected_byte_ranges(
+            &line,
+            line_number,
+            &self.config.highlighted_regions,
+        );
+        let highlighted_parts = split_highlighted_regions(
+            &mut regions,
+            &character_ranges,
+            self.config.colored_output && self.background_color_highlight.is_none(),
+        );
+
         // Line decorations.
         if self.panel_width > 0 {
             let display_line_number =
@@ -762,7 +814,12 @@ impl Printer for InteractivePrinter<'_> {
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;
 
-            for &(style, region) in &regions {
+            for (index, &(style, region)) in regions.iter().enumerate() {
+                let region_background = background_color.or_else(|| {
+                    (self.config.colored_output && highlighted_parts.get(index) == Some(&true))
+                        .then_some(self.background_color_highlight)
+                        .flatten()
+                });
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -780,7 +837,7 @@ impl Printer for InteractivePrinter<'_> {
                                     true_color,
                                     colored_output,
                                     italics,
-                                    background_color
+                                    region_background
                                 ),
                                 self.ansi_style.to_reset_sequence(),
                             )?;
@@ -817,7 +874,12 @@ impl Printer for InteractivePrinter<'_> {
                 writeln!(handle)?;
             }
         } else {
-            for &(style, region) in &regions {
+            for (index, &(style, region)) in regions.iter().enumerate() {
+                let region_background = background_color.or_else(|| {
+                    (self.config.colored_output && highlighted_parts.get(index) == Some(&true))
+                        .then_some(self.background_color_highlight)
+                        .flatten()
+                });
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
                     match chunk {
@@ -904,7 +966,7 @@ impl Printer for InteractivePrinter<'_> {
                                             self.config.true_color,
                                             self.config.colored_output,
                                             self.config.use_italic_text,
-                                            background_color
+                                            region_background
                                         ),
                                         self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
@@ -942,7 +1004,7 @@ impl Printer for InteractivePrinter<'_> {
                                     self.config.true_color,
                                     self.config.colored_output,
                                     self.config.use_italic_text,
-                                    background_color
+                                    region_background
                                 )
                             )?;
                         }
