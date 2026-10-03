@@ -397,6 +397,24 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("pager-arg")
+                .long("pager-arg")
+                .action(ArgAction::Append)
+                .value_name("arg")
+                .require_equals(true)
+                .allow_hyphen_values(true)
+                .hide_short_help(true)
+                .help("Append a literal argument to the selected external pager.")
+                .long_help(
+                    "Append a literal argument after the selected pager's existing arguments, \
+                     including the default options supplied to less. Repeat this option for \
+                     multiple arguments. Arguments are passed directly, without shell expansion. \
+                     For example, --pager-arg=+100 opens less at line 100 without replacing \
+                     BAT_PAGER or --pager. Use --pager-arg='-Pmy prompt' for an argument \
+                     containing spaces. The built-in pager does not accept additional arguments."
+                ),
+        )
+        .arg(
             Arg::new("map-syntax")
                 .short('m')
                 .long("map-syntax")
