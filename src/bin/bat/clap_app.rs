@@ -569,6 +569,24 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("max-bytes")
+                .long("max-bytes")
+                .alias("head")
+                .overrides_with("max-bytes")
+                .value_name("N")
+                .value_parser(clap::value_parser!(u64))
+                .hide_short_help(true)
+                .help("Read at most N bytes from each input.")
+                .long_help(
+                    "Read at most N bytes from each input, before line buffering. --head is an alias. Useful for \
+                     devices and streams that may not contain newlines. A zero limit reads no \
+                     content. This is a byte limit, so input may end within a multibyte character. \
+                     Binary detection and output formatting still apply; use --binary=as-text \
+                     to display binary bytes. When using LESSOPEN, the limit applies to the \
+                     preprocessor output; it does not bound the preprocessor's own reads."
+                ),
+        )
+        .arg(
             Arg::new("line-range")
                 .long("line-range")
                 .short('r')
