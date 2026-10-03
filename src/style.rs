@@ -9,6 +9,8 @@ pub enum StyleComponent {
     Auto,
     #[cfg(feature = "git")]
     Changes,
+    #[cfg(feature = "git")]
+    ChangesHighlight,
     Grid,
     Rule,
     Header,
@@ -33,6 +35,8 @@ impl StyleComponent {
             }
             #[cfg(feature = "git")]
             StyleComponent::Changes => &[StyleComponent::Changes],
+            #[cfg(feature = "git")]
+            StyleComponent::ChangesHighlight => &[StyleComponent::ChangesHighlight],
             StyleComponent::Grid => &[StyleComponent::Grid],
             StyleComponent::Rule => &[StyleComponent::Rule],
             StyleComponent::Header => &[StyleComponent::HeaderFilename],
@@ -43,6 +47,8 @@ impl StyleComponent {
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
+                #[cfg(feature = "git")]
+                StyleComponent::ChangesHighlight,
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
@@ -70,6 +76,8 @@ impl FromStr for StyleComponent {
             "auto" => Ok(StyleComponent::Auto),
             #[cfg(feature = "git")]
             "changes" => Ok(StyleComponent::Changes),
+            #[cfg(feature = "git")]
+            "changes-highlight" => Ok(StyleComponent::ChangesHighlight),
             "grid" => Ok(StyleComponent::Grid),
             "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
@@ -96,6 +104,11 @@ impl StyleComponents {
     #[cfg(feature = "git")]
     pub fn changes(&self) -> bool {
         self.0.contains(&StyleComponent::Changes)
+    }
+
+    #[cfg(feature = "git")]
+    pub fn changes_highlight(&self) -> bool {
+        self.0.contains(&StyleComponent::ChangesHighlight)
     }
 
     pub fn grid(&self) -> bool {

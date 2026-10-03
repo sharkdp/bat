@@ -242,8 +242,11 @@ replacing them.
 By default, the following components are enabled:
 changes, grid, header\-filename, numbers, snip
 .IP
-Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
-rule, numbers, snip.
+Possible values: *default*, full, auto, plain, changes, changes-highlight, header, header-filename, header-filesize, grid,
+rule, numbers, snip. The changes-highlight component uses the theme's line
+highlight for lines with Git change markers, including the surviving line adjacent
+to a deletion. It can be used independently of sidebar markers, is included in full
+style, and respects '\-\-color=never'. Requires Git support.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
