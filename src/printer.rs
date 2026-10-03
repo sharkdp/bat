@@ -726,7 +726,12 @@ impl Printer for InteractivePrinter<'_> {
             .highlighted_lines
             .0
             .check(line_number, max_buffered_line_number)
-            == RangeCheckResult::InRange;
+            == RangeCheckResult::InRange
+            || self
+                .config
+                .highlighted_patterns
+                .iter()
+                .any(|pattern| pattern.is_match(line.trim_end_matches(['\r', '\n'])));
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);

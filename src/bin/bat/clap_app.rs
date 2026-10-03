@@ -134,6 +134,20 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("highlight-pattern")
+                .long("highlight-pattern")
+                .action(ArgAction::Append)
+                .value_name("regex")
+                .value_parser(regex::Regex::new)
+                .help("Highlight lines matching a regular expression.")
+                .long_help(
+                    "Highlight lines matching a regular expression, using the same style as \
+                     '--highlight-line'. Matches exclude the line ending and are evaluated before \
+                     wrapping. Repeat the option to match any of several patterns; it can also be \
+                     combined with '--highlight-line'. Use '(?i)' for case-insensitive matching.",
+                ),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
