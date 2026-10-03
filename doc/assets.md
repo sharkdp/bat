@@ -103,3 +103,5 @@ The following files have been manually modified after converting from a `.tmLang
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
 * `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.
+
+* `HexViewer.sublime-syntax` is adapted from [facelessuser/HexViewer](https://github.com/facelessuser/HexViewer) to support xxd and canonical hexdumps, standard byte colors, and line-local error recovery. See its `NOTICE.md` for the pinned source and `LICENSE.md` for attribution.
