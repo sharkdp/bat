@@ -241,6 +241,12 @@ Options:
       --diagnostic
           Show diagnostic information for bug reports.
 
+      --warning <kind>
+          Enable optional input warnings: 'none' (default) or 'missing-trailing-newline'. A missing
+          final newline is reported below formatted output, or on standard error in plain redirected
+          output. Empty files and final lines excluded by '--line-range' do not produce this
+          warning.
+
   -E, --quiet-empty
           When this flag is set, bat will produce no output at all when the input is empty. This is
           useful when piping commands that may produce empty output, like 'git diff'.

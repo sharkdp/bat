@@ -480,6 +480,11 @@ impl App {
                 "--sanitize",
             ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
+            warn_missing_newline: self
+                .matches
+                .get_one::<String>("warning")
+                .map(String::as_str)
+                == Some("missing-trailing-newline"),
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")
                 || self.number_nonblank_from_cli,
