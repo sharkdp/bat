@@ -121,6 +121,13 @@ width. See also: '\-\-wrap'.
 .IP
 Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
 .HP
+\fB\-\-line\-number\-width\fR <N>
+.IP
+Set the minimum line-number width to N columns (1 to 255; default: 4).
+Use '\-\-line\-number\-width=6' to keep the columns aligned through line 999999.
+Larger line numbers expand the column. This does not enable line numbers or
+count input lines in advance.
+.HP
 \fB\-\-color\fR <when>
 .IP
 Specify when to use colored output. The automatic mode only enables colors if an

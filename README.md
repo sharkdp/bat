@@ -509,6 +509,12 @@ variable to make these changes permanent or use `bat`'s
 
 By default, `bat` enables `changes`, `grid`, `header-filename`, `numbers`, and `snip`.
 
+Line numbers reserve four columns by default. Use `--line-number-width=6` to
+keep the columns aligned through line 999999, or choose another minimum width
+from 1 to 255. Larger line numbers expand the column. This option does not enable
+line numbers or count input lines in advance, and can also be set in the
+[configuration file](#configuration-file).
+
 The available pre-defined styles are:
 
 | Style | Description |

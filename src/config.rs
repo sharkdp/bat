@@ -57,6 +57,9 @@ pub struct Config<'a> {
     /// Currently, a value of 0 will cause tabs to be passed through without expanding them.
     pub tab_width: usize,
 
+    /// Minimum line-number width. None uses four columns; zero is treated as one.
+    pub line_number_width: Option<u8>,
+
     /// Whether or not to simply loop through all input (`cat` mode)
     pub loop_through: bool,
 
