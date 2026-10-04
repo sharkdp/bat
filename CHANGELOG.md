@@ -85,6 +85,7 @@
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 - Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
+- Fix highlighting of standalone Solidity functions, see #4043 (@arcz)
 
 ## Themes
 
