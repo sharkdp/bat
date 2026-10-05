@@ -596,6 +596,15 @@ fn piped_output_with_implicit_auto_style() {
 }
 
 #[test]
+fn piped_output_with_line_range() {
+    bat()
+        .arg("--line-range=2:3")
+        .write_stdin("line 1\nline 2\nline 3\nline 4\n")
+        .assert()
+        .success()
+        .stdout("line 2\nline 3\n");
+}
+#[test]
 fn piped_output_with_line_number_flag() {
     bat()
         .arg("--number")
