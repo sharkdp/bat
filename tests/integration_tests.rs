@@ -465,8 +465,12 @@ fn line_range_huge_offset_up_to_end_from_back() {
     // Used to abort with "capacity overflow" (issues #4039 and #3845): the
     // offset was passed straight into VecDeque::with_capacity. The whole
     // input falls inside the excluded tail, so nothing is printed.
+    // usize::MAX is the largest offset that still parses on every target;
+    // the literal used before only parsed on 64-bit, so these tests failed
+    // on i686 with "number too large to fit in target type".
+    let huge = usize::MAX;
     bat()
-        .arg("--line-range=:-999999999999999999")
+        .arg(format!("--line-range=:-{huge}"))
         .write_stdin("line1\nline2\nline3\n")
         .assert()
         .success()
@@ -477,8 +481,9 @@ fn line_range_huge_offset_up_to_end_from_back() {
 fn line_range_huge_offset_from_back_to_end() {
     // Same class of bug through the "-N:" form: everything is within N lines
     // of the end, so the whole input is printed.
+    let huge = usize::MAX;
     bat()
-        .arg("--line-range=-999999999999999999:")
+        .arg(format!("--line-range=-{huge}:"))
         .write_stdin("line1\nline2\nline3\n")
         .assert()
         .success()
