@@ -23,7 +23,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
-- Map `*.mojo` and `*.🔥` to Python syntax, see #XXXX (@sano-suguru)
+- Map `*.mojo` and `*.🔥` to Python syntax, see #4044 (@sano-suguru)
 
 ## Bugfixes
 - Track strikethrough (SGR 9 / 29) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first highlighted token when displaying ANSI input with syntax highlighting, see #4015 (@mikehasa)
