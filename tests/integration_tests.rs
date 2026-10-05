@@ -461,6 +461,31 @@ fn line_range_from_back_last_two_single_line_no_sep() {
 }
 
 #[test]
+fn line_range_huge_offset_up_to_end_from_back() {
+    // Used to abort with "capacity overflow" (issues #4039 and #3845): the
+    // offset was passed straight into VecDeque::with_capacity. The whole
+    // input falls inside the excluded tail, so nothing is printed.
+    bat()
+        .arg("--line-range=:-999999999999999999")
+        .write_stdin("line1\nline2\nline3\n")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn line_range_huge_offset_from_back_to_end() {
+    // Same class of bug through the "-N:" form: everything is within N lines
+    // of the end, so the whole input is printed.
+    bat()
+        .arg("--line-range=-999999999999999999:")
+        .write_stdin("line1\nline2\nline3\n")
+        .assert()
+        .success()
+        .stdout("line1\nline2\nline3\n");
+}
+
+#[test]
 fn line_range_first_two() {
     bat()
         .arg("multiline.txt")
