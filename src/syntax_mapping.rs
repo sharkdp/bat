@@ -312,4 +312,18 @@ mod tests {
             Some(MappingTarget::MapToUnknown)
         );
     }
+
+    #[test]
+    fn builtin_mappings_mojo_maps_to_python() {
+        let map = SyntaxMapping::new();
+
+        assert_eq!(
+            map.get_syntax_for("/path/to/hello.mojo"),
+            Some(MappingTarget::MapTo("Python"))
+        );
+        assert_eq!(
+            map.get_syntax_for("/path/to/hello.🔥"),
+            Some(MappingTarget::MapTo("Python"))
+        );
+    }
 }
