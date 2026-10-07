@@ -636,6 +636,16 @@ fn line_range_context_very_large() {
 }
 
 #[test]
+fn line_range_huge_negative_does_not_panic() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-999999999999999999")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn piped_output_with_implicit_auto_style() {
     bat()
         .write_stdin("hello\nworld\n")
@@ -644,6 +654,15 @@ fn piped_output_with_implicit_auto_style() {
         .stdout("hello\nworld\n");
 }
 
+#[test]
+fn piped_output_with_line_range() {
+    bat()
+        .arg("--line-range=2:3")
+        .write_stdin("line 1\nline 2\nline 3\nline 4\n")
+        .assert()
+        .success()
+        .stdout("line 2\nline 3\n");
+}
 #[test]
 fn piped_output_with_line_number_flag() {
     bat()
