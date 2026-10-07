@@ -61,6 +61,7 @@
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
 - Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
 - Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
+- Fix panic with double-width characters when `--terminal-width` is 1 and a line background is painted, see #3875 (@koopatroopa787)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
