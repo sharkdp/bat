@@ -138,12 +138,18 @@ pub fn replace_nonprintable(
 
 /// Strips ANSI escape sequences from the input.
 pub fn strip_ansi(line: &str) -> String {
+    // Parse without the line ending so an unfinished sequence cannot remove it.
+    let body = line
+        .strip_suffix("\r\n")
+        .or_else(|| line.strip_suffix('\n'))
+        .unwrap_or(line);
     let mut buffer = String::with_capacity(line.len());
-    for seq in EscapeSequenceOffsetsIterator::new(line) {
+    for seq in EscapeSequenceOffsetsIterator::new(body) {
         if let EscapeSequenceOffsets::Text { .. } = seq {
-            buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()]);
+            buffer.push_str(&body[seq.index_of_start()..seq.index_past_end()]);
         }
     }
+    buffer.push_str(&line[body.len()..]);
     buffer
 }
 
