@@ -233,6 +233,21 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Show and highlight the enclosing brace-delimited definition for a source
+    /// line. Repeat for more lines. This reads the complete text input first.
+    pub fn function_context(&mut self, line: usize) -> &mut Self {
+        self.config.function_context.push(line);
+        self.highlighted_lines.push(LineRange::new(line, line));
+        self
+    }
+
+    /// Fold complete syntax-defined blocks, comments, and consecutive imports.
+    /// This reads the complete text input before rendering.
+    pub fn fold(&mut self, yes: bool) -> &mut Self {
+        self.config.fold = yes;
+        self
+    }
+
     /// Specify a line that should be highlighted (default: none).
     /// This can be called multiple times to highlight more than one
     /// line. See also: highlight_range.
