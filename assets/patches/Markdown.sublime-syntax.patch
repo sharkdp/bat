@@ -1,8 +1,6 @@
-diff --git syntaxes/01_Packages/Markdown/Markdown.sublime-syntax syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-index 19dc685d..3a45ea05 100644
 --- syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
 +++ syntaxes/01_Packages/Markdown/Markdown.sublime-syntax
-@@ -24,7 +24,6 @@ variables:
+@@ -24,7 +24,6 @@
              )
              [ \t]*$                          # followed by any number of tabs or spaces, followed by the end of the line
          )
@@ -10,7 +8,7 @@ index 19dc685d..3a45ea05 100644
      block_quote: (?:[ ]{,3}>(?:.|$))         # between 0 and 3 spaces, followed by a greater than sign, followed by any character or the end of the line
      atx_heading: (?:[#]{1,6}\s*)             # between 1 and 6 hashes, followed by any amount of whitespace
      indented_code_block: (?:[ ]{4}|\t)       # 4 spaces or a tab
-@@ -277,69 +276,40 @@ contexts:
+@@ -277,69 +276,40 @@
          8: markup.underline.link.markdown
        push: [link-ref-def, after-link-title, link-title]
      - match: '^(?=\S)(?![=-]{3,}\s*$)'
@@ -112,7 +110,160 @@ index 19dc685d..3a45ea05 100644
    link-ref-def:
      - meta_scope: meta.link.reference.def.markdown
      - match: ''
-@@ -430,8 +400,6 @@ contexts:
+@@ -365,59 +335,101 @@
+         detected when they shouldn't be.
+       captures:
+         1: punctuation.definition.blockquote.markdown
+-      push:
+-        - meta_scope: markup.quote.markdown
+-        - match: |-
+-            (?x)^
+-            (?=  \s*$
+-            |    {{thematic_break}}
+-            |    {{block_quote}}
+-            )
+-          pop: true
+-        - match: |-
+-            (?x)
+-            (?=  {{block_quote}}
+-            )
++      push: [block-quote-content, block-quote-alert]
++
++  block-quote-content:
++    - meta_scope: markup.quote.markdown
++    - match: |-
++        (?x)^
++        (?=  \s*$
++        |    {{thematic_break}}
++        |    {{block_quote}}
++        )
++      pop: true
++    - match: |-
++        (?x)
++        (?=  {{block_quote}}
++        )
++      push:
++        - match: ^
++          pop: true
++        - include: block-quote
++    - match: |-
++        (?x)
++        (?=  {{indented_code_block}}
++        |    {{atx_heading}}
++        |    {{thematic_break}}
++        |    {{list_item}}
++        )
++      push:
++        - include: indented-code-block
++        - include: atx-heading
++        - include: thematic-break
++        - match: ([ ]{,3})(\d+)(\.)(\s)
++          captures:
++            1: markup.list.numbered.markdown
++            2: markup.list.numbered.bullet.markdown
++            3: markup.list.numbered.bullet.markdown punctuation.definition.list_item.markdown
++            4: markup.list.numbered.markdown
+           push:
+-            - match: ^
+-              pop: true
+-            - include: block-quote
+-        - match: |-
+-            (?x)
+-            (?=  {{indented_code_block}}
+-            |    {{atx_heading}}
+-            |    {{thematic_break}}
+-            |    {{list_item}}
+-            )
++            - meta_content_scope: markup.list.numbered.markdown meta.paragraph.list.markdown
++            - include: list-content
++        - match: ([ ]{,3})([*+-])(\s)
++          captures:
++            1: markup.list.unnumbered.markdown
++            2: markup.list.unnumbered.bullet.markdown punctuation.definition.list_item.markdown
++            3: markup.list.unnumbered.markdown
+           push:
+-            - include: indented-code-block
+-            - include: atx-heading
+-            - include: thematic-break
+-            - match: ([ ]{,3})(\d+)(\.)(\s)
+-              captures:
+-                1: markup.list.numbered.markdown
+-                2: markup.list.numbered.bullet.markdown
+-                3: markup.list.numbered.bullet.markdown punctuation.definition.list_item.markdown
+-                4: markup.list.numbered.markdown
+-              push:
+-                - meta_content_scope: markup.list.numbered.markdown meta.paragraph.list.markdown
+-                - include: list-content
+-            - match: ([ ]{,3})([*+-])(\s)
+-              captures:
+-                1: markup.list.unnumbered.markdown
+-                2: markup.list.unnumbered.bullet.markdown punctuation.definition.list_item.markdown
+-                3: markup.list.unnumbered.markdown
+-              push:
+-                - meta_content_scope: markup.list.unnumbered.markdown meta.paragraph.list.markdown
+-                - include: list-content
+-            - match: ^
+-              pop: true
+-            - include: list-paragraph
+-        - match: ''
+-          push:
+-            - match: $|^
+-              pop: true
+-            - include: inline-bold-italic-linebreak
++            - meta_content_scope: markup.list.unnumbered.markdown meta.paragraph.list.markdown
++            - include: list-content
++        - match: ^
++          pop: true
++        - include: list-paragraph
++    - match: ''
++      push:
++        - match: $|^
++          pop: true
++        - include: inline-bold-italic-linebreak
++
++  block-quote-alert:
++    - match: '(?i)(\[!)(NOTE)(\])([+-])?(?=[ \t]|$)'
++      scope: markup.heading.alert.note.markdown
++      captures:
++        1: punctuation.definition.alert.begin.markdown
++        3: punctuation.definition.alert.end.markdown
++        4: punctuation.definition.alert.fold.markdown
++      pop: true
++    - match: '(?i)(\[!)(TIP)(\])([+-])?(?=[ \t]|$)'
++      scope: markup.heading.alert.tip.markdown
++      captures:
++        1: punctuation.definition.alert.begin.markdown
++        3: punctuation.definition.alert.end.markdown
++        4: punctuation.definition.alert.fold.markdown
++      pop: true
++    - match: '(?i)(\[!)(IMPORTANT)(\])([+-])?(?=[ \t]|$)'
++      scope: markup.heading.alert.important.markdown
++      captures:
++        1: punctuation.definition.alert.begin.markdown
++        3: punctuation.definition.alert.end.markdown
++        4: punctuation.definition.alert.fold.markdown
++      pop: true
++    - match: '(?i)(\[!)(WARNING)(\])([+-])?(?=[ \t]|$)'
++      scope: markup.heading.alert.warning.markdown
++      captures:
++        1: punctuation.definition.alert.begin.markdown
++        3: punctuation.definition.alert.end.markdown
++        4: punctuation.definition.alert.fold.markdown
++      pop: true
++    - match: '(?i)(\[!)(CAUTION)(\])([+-])?(?=[ \t]|$)'
++      scope: markup.heading.alert.caution.markdown
++      captures:
++        1: punctuation.definition.alert.begin.markdown
++        3: punctuation.definition.alert.end.markdown
++        4: punctuation.definition.alert.fold.markdown
++      pop: true
++    - match: ''
++      pop: true
++
+   indented-code-block:
+     - match: '{{indented_code_block}}.*$\n?'
+       scope: markup.raw.block.markdown
+@@ -430,8 +442,6 @@
        push:
          - meta_scope: markup.bold.markdown
          - meta_content_scope: markup.italic.markdown
@@ -121,7 +272,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
              (?x)
                  [ \t]*\*{4,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -446,8 +414,6 @@ contexts:
+@@ -446,8 +456,6 @@
            scope: punctuation.definition.bold.end.markdown
            set:
              - meta_content_scope: markup.italic.markdown
@@ -130,7 +281,7 @@ index 19dc685d..3a45ea05 100644
              - match: |-
                  (?x)
                      [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -463,8 +429,6 @@ contexts:
+@@ -463,8 +471,6 @@
            scope: punctuation.definition.italic.end.markdown
            set:
              - meta_content_scope: markup.bold.markdown
@@ -139,7 +290,7 @@ index 19dc685d..3a45ea05 100644
              - match: |-
                  (?x)
                      [ \t]*\*{3,}    # if there are more than 3 its not applicable to be bold or italic
-@@ -727,8 +691,6 @@ contexts:
+@@ -727,8 +733,6 @@
        scope: punctuation.definition.italic.begin.markdown
        push:
          - meta_scope: markup.italic.markdown
@@ -148,7 +299,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
                (?x)
                    [ \t]*\*{4,}   # if there are more than 3 its not applicable to be bold or italic
-@@ -745,8 +707,6 @@ contexts:
+@@ -745,8 +749,6 @@
        scope: punctuation.definition.italic.begin.markdown
        push:
          - meta_scope: markup.italic.markdown
@@ -157,7 +308,7 @@ index 19dc685d..3a45ea05 100644
          - match: |-
                (?x)
                    [ \t]*_{4,}   # if there are more than 3 its not applicable to be bold or italic
-@@ -773,8 +733,6 @@ contexts:
+@@ -773,8 +775,6 @@
          - include: bold-italic-trailing
    bold-italic-trailing:
      - include: scope:text.html.basic
@@ -166,14 +317,10 @@ index 19dc685d..3a45ea05 100644
      - match: ^\s*$\n?
        scope: invalid.illegal.non-terminated.bold-italic.markdown
        pop: true
-@@ -1073,6 +1031,36 @@ contexts:
-       escape: '{{code_fence_escape}}'
-       escape_captures:
-         0: meta.code-fence.definition.end.python.markdown-gfm
-+        1: punctuation.definition.raw.code-fence.end.markdown
-+    - match: |-
-+         (?x)
-+          {{fenced_code_block_start}}
+@@ -1077,6 +1077,36 @@
+     - match: |-
+          (?x)
+           {{fenced_code_block_start}}
 +          ((?i:puppet))
 +          {{fenced_code_block_trailing_infostring_characters}}
 +      captures:
@@ -200,10 +347,14 @@ index 19dc685d..3a45ea05 100644
 +      escape: '{{code_fence_escape}}'
 +      escape_captures:
 +        0: meta.code-fence.definition.end.typescript.markdown-gfm
-         1: punctuation.definition.raw.code-fence.end.markdown
-     - match: |-
-          (?x)
-@@ -1152,7 +1155,7 @@ contexts:
++        1: punctuation.definition.raw.code-fence.end.markdown
++    - match: |-
++         (?x)
++          {{fenced_code_block_start}}
+           ((?i:graphviz))
+           {{fenced_code_block_trailing_infostring_characters}}
+       captures:
+@@ -1152,7 +1182,7 @@
      - match: |-
           (?x)
            {{fenced_code_block_start}}
