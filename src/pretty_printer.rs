@@ -220,6 +220,14 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Reserve terminal rows from the automatic less pager viewport. Requires
+    /// less 632 or newer; has no effect on forced or disabled paging.
+    #[cfg(feature = "paging")]
+    pub fn paging_reserve(&mut self, rows: u16) -> &mut Self {
+        self.config.paging_reserve = rows;
+        self
+    }
+
     /// Specify the command to start the pager (default: use "less")
     #[cfg(feature = "paging")]
     pub fn pager(&mut self, cmd: &'a str) -> &mut Self {

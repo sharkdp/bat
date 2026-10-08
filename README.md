@@ -696,6 +696,21 @@ For `less` 530 or newer, it should work out of the box.
 The `-S`/`--chop-long-lines` option is added when `bat`'s `-S`/`--chop-long-lines` option is used. This tells `less`
 to truncate any lines larger than the terminal width.
 
+### Reserve rows for a shell prompt
+
+With less 632 or newer, use `bat --paging-reserve=4 file.txt` to reserve four
+terminal rows for a multiline shell prompt during automatic paging. Output that
+would fill those rows stays in the pager; shorter output still exits automatically.
+This reduces the less viewport as well as its one-screen threshold. Use a nonnegative
+number of rows; zero disables the reservation. `--paging=always` and
+`--paging=never` retain their existing behavior.
+
+The option sets `LESS_LINES` only for the child pager and overrides an inherited
+value. Ordinary reservations follow less's terminal resizing behavior. If the
+reservation already fills the current terminal, the viewport is fixed at one row.
+Unsupported pagers and older less versions report an error when automatic paging
+would use the reservation. This option can also be placed in the configuration file.
+
 ### Indentation
 
 `bat` expands tabs to 4 spaces by itself, not relying on the pager. To change this, simply add the
