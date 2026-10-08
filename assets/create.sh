@@ -3,6 +3,8 @@ set -euo pipefail
 
 ASSET_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO_DIR="$ASSET_DIR/.."
+CSS_PATH="$ASSET_DIR/syntaxes/01_Packages/CSS/CSS.sublime-syntax"
+CSS_BACKUP_DIR=""
 
 # Ensure submodules are initialized.
 update_submodules() {
@@ -55,6 +57,12 @@ bat cache --clear
 )
 
 reverse_patches() {
+    if [[ -n "$CSS_BACKUP_DIR" ]]; then
+        if [[ -f "$CSS_BACKUP_DIR/original" ]]; then
+            mv "$CSS_BACKUP_DIR/original" "$CSS_PATH"
+        fi
+        rmdir "$CSS_BACKUP_DIR"
+    fi
     (
         cd "$ASSET_DIR"
         for patch in patches/*.patch; do
@@ -65,5 +73,12 @@ reverse_patches() {
 
 # Make sure to always reverse patches, even if the `bat cache` command fails or aborts
 trap reverse_patches EXIT
+
+# Replace the pinned CSS grammar during the build. Keeping CSS3 outside the
+# syntax directory prevents duplicate extensions and ambiguous embedded scopes.
+# Its LICENSE is still included by the acknowledgement builder.
+CSS_BACKUP_DIR="$(mktemp -d "$ASSET_DIR/.css-original.XXXXXX")"
+mv "$CSS_PATH" "$CSS_BACKUP_DIR/original"
+sed 's/^name: CSS3$/name: CSS/' "$ASSET_DIR/CSS3/CSS3.sublime-syntax" > "$CSS_PATH"
 
 bat cache --build --blank --acknowledgements --source="$ASSET_DIR" --target="$ASSET_DIR"
