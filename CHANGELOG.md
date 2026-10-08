@@ -3,6 +3,8 @@
 
 ## Other
 
+- Replace the deprecated `serde_yaml` dependency with `serde_yaml_ng`, preserving cache metadata compatibility, see #3989 (@Matei02355)
+
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
