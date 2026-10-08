@@ -23,6 +23,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
+- Make -ppp disable syntax highlighting #4020 (@quixaq)
 
 ## Bugfixes
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
