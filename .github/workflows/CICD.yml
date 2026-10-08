@@ -21,6 +21,7 @@ jobs:
     needs:
       - crate_metadata
       - lint
+      - wasi
       - min_version
       - license_checks
       - test_with_new_syntaxes_and_themes
@@ -61,6 +62,24 @@ jobs:
     - uses: actions/checkout@v6
     - run: cargo fmt -- --check
     - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+  wasi:
+    name: WASI Preview 1 (${{ matrix.rust }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, '1.88.0']
+    steps:
+    - uses: actions/checkout@v6
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ matrix.rust }}
+        targets: wasm32-wasip1
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: cargo build --locked --no-default-features --features wasi-application --target wasm32-wasip1
+    - run: node tests/wasi/smoke.mjs target/wasm32-wasip1/debug/bat.wasm
 
   min_version:
     name: Minimum supported rust version

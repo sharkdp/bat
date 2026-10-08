@@ -1,6 +1,7 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
+#[cfg(not(target_os = "wasi"))]
 use etcetera::BaseStrategy;
 use once_cell::sync::Lazy;
 
@@ -12,6 +13,7 @@ pub struct BatProjectDirs {
 }
 
 impl BatProjectDirs {
+    #[cfg(not(target_os = "wasi"))]
     fn new() -> Option<BatProjectDirs> {
         let basedirs = etcetera::choose_base_strategy().ok()?;
 
@@ -35,6 +37,34 @@ impl BatProjectDirs {
         Some(BatProjectDirs {
             cache_dir,
             config_dir,
+        })
+    }
+
+    // WASI has no user database. Directory locations are guest paths supplied
+    // by the host; the runtime's preopens determine which can actually be read.
+    #[cfg(target_os = "wasi")]
+    fn new() -> Option<BatProjectDirs> {
+        let absolute_env = |name| {
+            env::var_os(name)
+                .map(PathBuf::from)
+                .filter(|p| p.is_absolute())
+        };
+        let home = absolute_env("HOME").unwrap_or_else(|| PathBuf::from("/"));
+        Some(BatProjectDirs {
+            cache_dir: env::var_os("BAT_CACHE_PATH")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| {
+                    absolute_env("XDG_CACHE_HOME")
+                        .unwrap_or_else(|| home.join(".cache"))
+                        .join("bat")
+                }),
+            config_dir: env::var_os("BAT_CONFIG_DIR")
+                .map(PathBuf::from)
+                .unwrap_or_else(|| {
+                    absolute_env("XDG_CONFIG_HOME")
+                        .unwrap_or_else(|| home.join(".config"))
+                        .join("bat")
+                }),
         })
     }
 
