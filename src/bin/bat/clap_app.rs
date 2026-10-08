@@ -169,6 +169,34 @@ pub fn build_app(interactive_output: bool) -> Command {
     {
         app = app
                 .arg(
+                    Arg::new("blame")
+                        .long("blame")
+                        .overrides_with("blame")
+                        .action(ArgAction::SetTrue)
+                        .help("Show Git attribution alongside source lines")
+                        .long_help("Show Git commit attribution before the line-number sidebar. \
+                            Uses the history of ordinary UTF-8 files and marks working-tree edits \
+                            as uncommitted. Files outside a repository and preprocessed or binary \
+                            or unbuffered inputs have no blame sidebar. This is opt-in and is not included in \
+                            the default or full styles. Also available as --style=blame. \
+                            See --blame-format to change the annotation."),
+                )
+                .arg(
+                    Arg::new("blame-format")
+                        .long("blame-format")
+                        .overrides_with("blame-format")
+                        .value_name("FORMAT")
+                        .help("Format the Git blame sidebar")
+                        .long_help("Format the Git blame sidebar (default: '%h %an'). Supported \
+                            fields: %h (8-digit commit), %H (full commit), %an/%ae (author name/email), \
+                            %as/%at (author date/Unix time), %cn/%ce (committer name/email), \
+                            %cs/%ct (committer date/Unix time), %s (subject), and %% (literal percent). \
+                            Dates use the commit's timezone. Fields unavailable for uncommitted lines \
+                            are empty. Control characters are escaped, and annotations are shortened \
+                            to at most 32 columns so source code remains readable.")
+                        .hide_short_help(true),
+                )
+                .arg(
                     Arg::new("diff")
                         .long("diff")
                         .short('d')
@@ -534,7 +562,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, blame, header, header-filename, header-filesize, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -554,10 +582,11 @@ pub fn build_app(interactive_output: bool) -> Command {
                         changes, grid, header-filename, numbers, snip\n\n\
                      Possible values:\n\n  \
                      * default: enables recommended style components (default).\n  \
-                     * full: enables all available components.\n  \
+                     * full: enables all components except opt-in Git blame.\n  \
                      * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
+                     * blame: show Git commit attribution (requires the git feature).\n  \
                      * header: alias for 'header-filename'.\n  \
                      * header-filename: show filenames before the content.\n  \
                      * header-filesize: show file sizes before the content.\n  \

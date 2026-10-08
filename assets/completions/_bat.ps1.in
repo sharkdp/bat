@@ -5,7 +5,7 @@ using namespace System.Management.Automation.Language
 Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -ScriptBlock {
     param($wordToComplete, $commandAst, $cursorPosition)
 
-    $ArrayStyle      = @('default', 'auto', 'full', 'plain', 'changes', 'header', 'header-filename', 'header-filesize', 'grid', 'rule', 'numbers', 'snip')
+    $ArrayStyle      = @('default', 'auto', 'full', 'plain', 'changes', 'blame', 'header', 'header-filename', 'header-filesize', 'grid', 'rule', 'numbers', 'snip')
     $ArrayCompletion = @('bash', 'fish', 'zsh', 'ps1')
     $ArrayWhen       = @('auto', 'never', 'always')
     $ArrayYesNo      = @('never', 'always')
@@ -58,6 +58,9 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         '*;--theme' {
             Get-MyThemes |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterName, $_)}
+            break
+        }
+        '*;--blame-format' {
             break
         }
         '*;--binary' {
@@ -138,6 +141,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         #   [CompletionResult]::new('-H'                      , 'H'                     , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
             [CompletionResult]::new('--highlight-line'        , 'highlight-line'        , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
             [CompletionResult]::new('--file-name'             , 'file-name'             , [CompletionResultType]::ParameterName, 'Specify the name to display for a file.')
+            [CompletionResult]::new('--blame', 'blame', [CompletionResultType]::ParameterName, 'Show Git commit attribution.')
+            [CompletionResult]::new('--blame-format', 'blame-format', [CompletionResultType]::ParameterName, 'Format the Git attribution sidebar.')
             [CompletionResult]::new('--diff-context'          , 'diff-context'          , [CompletionResultType]::ParameterName, 'diff-context')
             [CompletionResult]::new('--tabs'                  , 'tabs'                  , [CompletionResultType]::ParameterName, 'Set the tab width to T spaces.')
             [CompletionResult]::new('--wrap'                  , 'wrap'                  , [CompletionResultType]::ParameterName, 'Specify the text-wrapping mode (*auto*, never, character, word).')
