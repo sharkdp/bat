@@ -171,6 +171,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Emphasize TODO and FIXME markers inside syntax comments (default: false).
+    pub fn highlight_todos(&mut self, yes: bool) -> &mut Self {
+        self.config.highlight_todos = yes;
+        self
+    }
+
     /// Whether to print binary content or nonprintable characters (default: no)
     pub fn show_nonprintable(&mut self, yes: bool) -> &mut Self {
         self.config.show_nonprintable = yes;

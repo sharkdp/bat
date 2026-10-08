@@ -134,6 +134,19 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("highlight-todos")
+                .long("highlight-todos")
+                .overrides_with("highlight-todos")
+                .action(ArgAction::SetTrue)
+                .help("Emphasize TODO and FIXME comments")
+                .long_help("Emphasize TODO, TODOS, FIXME and FIXMES in comments, ignoring case. \
+                    Highlight from the marker to the end of that comment on the current line, \
+                    using bold amber text (terminal yellow with palette-based themes). Uses \
+                    syntax comment scopes, so matching text in strings and source code is unchanged. \
+                    Disabled by default; requires syntax highlighting and colored output.")
+                .hide_short_help(true),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
