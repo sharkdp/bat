@@ -454,6 +454,33 @@ bat --completion <shell>
 # see --help for supported shells
 ```
 
+### Open at a line
+
+```bash
+bat --scroll-to=80 source.rs
+bat --highlight-line=80 --center-highlight source.rs
+bat source.rs:80
+```
+
+These forms retain earlier lines so you can scroll back. `--scroll-to` places the
+line at the top; the other two forms center it. They account for headers, wrapping
+and selected line ranges. Use one input. Paging settings still apply: redirected
+output contains all selected lines and does not move another program's viewport.
+
+Standard `less` supports this directly. Custom pager wrappers receive
+`BAT_SCROLL_LINE` (the one-based line number in rendered output) and
+`BAT_SCROLL_POSITION` (`top`, `center`, or `end`). `BAT_SCROLL_LINE` is unset for
+`end`. The built-in pager, BusyBox `less`, `more` and `most` do not support these
+options. Prefix output is buffered until the target is reached, using a temporary
+file after 64 KiB; later output streams normally. A request beyond the input opens
+at the end, and an absent visible highlight opens at the beginning.
+
+The `file:line` shorthand applies only to a missing UTF-8 path whose suffix is a
+positive integer and whose prefix names an existing file. Existing colon names,
+symlinks and Windows alternate data streams take precedence. Use
+`--literal-file-names` to disable this shorthand. Explicit `--scroll-to` or
+`--center-highlight` overrides the shorthand's position.
+
 ## Customization
 
 ### Highlighting theme

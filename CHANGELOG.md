@@ -1,6 +1,10 @@
 # unreleased
 
 
+## Features
+
+- Open a single input at a line with `--scroll-to`, center its first visible highlight with `--center-highlight`, or use `file:line` while retaining earlier output, see #3990 (@Matei02355)
+
 ## Other
 
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)

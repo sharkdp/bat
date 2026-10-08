@@ -220,6 +220,26 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Open the pager at a positive line number in a single input.
+    /// Earlier output remains available. Supports standard less and pager wrappers.
+    #[cfg(feature = "paging")]
+    pub fn scroll_to(&mut self, line: usize) -> &mut Self {
+        self.config.scroll_to = Some(line);
+        self.config.scroll_to_center = false;
+        self.config.center_highlight = false;
+        self
+    }
+
+    /// Center the first visible highlighted line in the pager.
+    #[cfg(feature = "paging")]
+    pub fn center_highlight(&mut self, yes: bool) -> &mut Self {
+        self.config.center_highlight = yes;
+        if yes {
+            self.config.scroll_to = None;
+        }
+        self
+    }
+
     /// Specify the command to start the pager (default: use "less")
     #[cfg(feature = "paging")]
     pub fn pager(&mut self, cmd: &'a str) -> &mut Self {
