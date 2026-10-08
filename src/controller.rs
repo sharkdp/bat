@@ -12,6 +12,7 @@ use crate::line_range::{LineRanges, MaxBufferedLineNumber, RangeCheckResult};
 use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
+use crate::preprocessor::strip_control_chars;
 use crate::printer::{InteractivePrinter, Printer, SimplePrinter};
 use std::collections::VecDeque;
 use std::io::{self, BufRead, Write};
@@ -94,6 +95,14 @@ impl Controller<'_> {
             (None, None) => false,
         };
 
+        // File name per input, as an OSC 2 title, for pagers that show one.
+        let emit_pager_filename = self.config.style_components.pager_filename()
+            && output_handle.is_none()
+            && output_type_opt
+                .as_ref()
+                .is_some_and(|ot| ot.is_external_pager())
+            && self.config.colored_output;
+
         let stdout_identifier = if cfg!(windows) || attached_to_pager {
             None
         } else {
@@ -113,10 +122,24 @@ impl Controller<'_> {
             let identifier = stdout_identifier.as_ref();
             let is_first = index == 0;
             let result = if input.is_stdin() {
-                self.print_input(input, &mut writer, io::stdin().lock(), identifier, is_first)
+                self.print_input(
+                    input,
+                    &mut writer,
+                    io::stdin().lock(),
+                    identifier,
+                    is_first,
+                    emit_pager_filename,
+                )
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
-                self.print_input(input, &mut writer, io::empty(), identifier, is_first)
+                self.print_input(
+                    input,
+                    &mut writer,
+                    io::empty(),
+                    identifier,
+                    is_first,
+                    emit_pager_filename,
+                )
             };
             if let Err(error) = result {
                 match writer {
@@ -145,6 +168,7 @@ impl Controller<'_> {
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
+        emit_pager_filename: bool,
     ) -> Result<()> {
         let mut opened_input = {
             #[cfg(feature = "lessopen")]
@@ -206,6 +230,7 @@ impl Controller<'_> {
             writer,
             &mut opened_input,
             !is_first,
+            emit_pager_filename,
             #[cfg(feature = "git")]
             &line_changes,
         )
@@ -217,8 +242,17 @@ impl Controller<'_> {
         writer: &mut OutputHandle,
         input: &mut OpenedInput,
         add_header_padding: bool,
+        emit_pager_filename: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
     ) -> Result<()> {
+        if emit_pager_filename && input.has_name() {
+            write!(
+                writer,
+                "\x1b]2;{}\x1b\\",
+                strip_control_chars(input.description.title())
+            )?;
+        }
+
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input, add_header_padding)?;
         }

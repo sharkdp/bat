@@ -4828,3 +4828,129 @@ fn ignored_suffix_enables_first_line_detection() {
     // ...while the default (extension wins) stays plain and differs.
     assert_ne!(default, forced_bash);
 }
+
+#[cfg(unix)]
+mod pager_filename {
+    use super::*;
+
+    const OSC2: &str = "\x1b]2;";
+    const ST: &str = "\x1b\\";
+
+    fn marker(name: &str) -> String {
+        format!("{OSC2}{name}{ST}")
+    }
+
+    fn bat_paged() -> assert_cmd::Command {
+        let mut cmd = bat();
+        cmd.arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--color=always")
+            .arg("--decorations=always")
+            .arg("--style=header,pager-filename");
+        cmd
+    }
+
+    #[test]
+    fn no_marker_without_component() {
+        bat_paged()
+            .arg("--style=header")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(OSC2).not())
+            .stderr("");
+    }
+
+    #[test]
+    fn plus_component_adds_to_default_style() {
+        bat_paged()
+            .arg("--style=+pager-filename")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::starts_with(marker("test.txt")))
+            .stderr("");
+    }
+
+    #[test]
+    fn single_file_marker_precedes_header() {
+        bat_paged()
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(
+                predicate::str::starts_with(marker("test.txt"))
+                    .and(predicate::str::contains("File: ")),
+            )
+            .stderr("");
+    }
+
+    #[test]
+    fn one_marker_per_file_in_order() {
+        bat_paged()
+            .arg("test.txt")
+            .arg("single-line.txt")
+            .assert()
+            .success()
+            .stdout(predicate::function(|out: &str| {
+                let first = out.find(&marker("test.txt"));
+                let second = out.find(&marker("single-line.txt"));
+                out.matches(OSC2).count() == 2
+                    && matches!((first, second), (Some(a), Some(b)) if a < b)
+            }))
+            .stderr("");
+    }
+
+    #[test]
+    fn stdin_with_file_name_uses_that_name() {
+        bat_paged()
+            .arg("--file-name=foo")
+            .write_stdin("hello\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::starts_with(marker("foo")))
+            .stderr("");
+    }
+
+    #[test]
+    fn control_characters_dropped_from_name() {
+        bat_paged()
+            .arg("--file-name=a\x07b\x1bc\u{9b}d")
+            .write_stdin("hello\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::starts_with(marker("abcd")));
+    }
+
+    #[test]
+    fn bare_stdin_has_no_marker() {
+        bat_paged()
+            .write_stdin("hello\n")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(OSC2).not())
+            .stderr("");
+    }
+
+    #[test]
+    fn no_marker_without_color() {
+        bat_paged()
+            .arg("--color=never")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(OSC2).not())
+            .stderr("");
+    }
+
+    #[test]
+    fn no_marker_without_pager() {
+        bat_paged()
+            .arg("--paging=never")
+            .arg("test.txt")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains(OSC2).not())
+            .stderr("");
+    }
+}

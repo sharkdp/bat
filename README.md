@@ -514,7 +514,7 @@ The available pre-defined styles are:
 | Style | Description |
 |-------|-------------|
 | `default` | Enables the recommended style components listed above. |
-| `full` | Enables all available components. |
+| `full` | Enables all components except `rule` and `pager-filename`. |
 | `auto` | Same as `default`, unless the output is piped. |
 | `plain` | Disables all available components. |
 
@@ -530,6 +530,7 @@ The available individual components are:
 | `rule` | Horizontal lines to delimit files. |
 | `numbers` | Show line numbers in the side bar. |
 | `snip` | Draw separation lines between distinct line ranges. |
+| `pager-filename` | Write each file's name into the pager stream as an xterm "set title" sequence (OSC 2). The pager must support it; others ignore it or show it as text. Only with colored output. |
 
 >[!tip]
 > If you specify a default style in `bat`'s config file, you can change which components
