@@ -1,0 +1,32 @@
+COMMAND(1)                    Commands Manual                    COMMAND(1)
+
+NAME
+command - inspect an example command
+
+SYNOPSIS
+command [--verbose] [FILE]
+
+DESCRIPTION
+This paragraph starts at the left margin, as in fish manual pages.
+Its --verbose option should still be highlighted inside prose.
+Call command(1) for more information.
+
+OPTIONS
+--verbose
+Print additional information.
+
+ENVIRONMENT VARIABLES
+       EXAMPLE_PATH
+Use $EXAMPLE_PATH to select the input directory.
+
+SEE ALSO
+other-command(1)
+
+СМОТРИТЕ ТАКЖЕ
+       Пример обычного текста.
+
+書式
+       command [FILE]
+
+説明
+       command
