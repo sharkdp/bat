@@ -664,6 +664,16 @@ Instead of using environment variables, you can also use `bat`'s [configuration 
 
 ### Using `less` as a pager
 
+When displaying one file, `bat` includes its name in the `less` prompt, including
+the `-m`, `-M` and `=` views. This also works for input named with `--file-name`.
+The built-in pager shows the same name in its footer. For multiple inputs, the
+normal pager prompt is used because a single filename would be misleading.
+Control characters in names are displayed visibly.
+
+Custom `less -P` prompts still take precedence. If `LESS` might contain a custom
+prompt, `bat` leaves the prompts alone. This filename feature requires standard
+`less`; it is not enabled for BusyBox or other pagers.
+
 When using `less` as a pager, `bat` will automatically pass extra options along to `less`
 to improve the experience. Specifically, `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen`,
 `-K`/`--quit-on-intr` and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
