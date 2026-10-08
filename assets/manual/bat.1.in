@@ -242,6 +242,14 @@ replacing them.
 By default, the following components are enabled:
 changes, grid, header\-filename, numbers, snip
 .IP
+The style selects components, while '\-\-decorations' controls whether those
+components are displayed. The auto style selects no components when stdout is
+redirected, even with '\-\-decorations=always' or '\-f'. The default style is
+default, not auto. Use '\-\-style=numbers \-\-decorations=always' to pipe line
+numbers, or '\-\-style=full \-f' to pipe the full colored layout.
+A style such as auto,numbers selects the default layout on a terminal but only
+numbers when piped; decorations must still be enabled for those numbers.
+.IP
 Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP

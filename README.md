@@ -547,6 +547,27 @@ By default, `bat` only shows decorations (such as line numbers, file headers, gr
 
 There is also the `--force-colorization` option, which is an alias for `--decorations=always --color=always`. This is useful if you want to keep colorization and decorations when piping `bat`'s output to another program.
 
+`--style` chooses the components; `--decorations` controls whether the chosen
+components are displayed. These settings act separately. In particular,
+`--style=auto` selects no components when stdout is redirected, even with
+`--decorations=always` or `-f`. The default style is `default`, not `auto`.
+
+For predictable piped output, choose a style explicitly and enable decorations:
+
+```sh
+bat --style=numbers --decorations=always file.rs | other-command
+bat --style=full --force-colorization file.rs | other-command
+```
+
+If your configuration contains `--style=auto`, replace it with `--style=default`
+to keep the normal terminal layout and let `--decorations=auto` suppress it when
+piping. Then `--decorations=always` can enable that layout without changing its
+components. Other configured style components and numbering flags still apply.
+
+`auto` can also be combined with individual components. For example,
+`--style=auto,numbers` selects the default layout on a terminal but only line
+numbers when piped; the piped numbers still need `--decorations=always` (or `-f`).
+
 ### Adding new syntaxes / language definitions
 
 Should you find that a particular syntax is not available within `bat`, you can follow these
