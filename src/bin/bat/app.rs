@@ -101,7 +101,6 @@ impl App {
 
             let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
             let theme_options = Self::theme_options_from_matches(&matches);
-            let use_custom_assets = !matches.get_flag("no-custom-assets");
 
             Self::display_help(
                 interactive_output,
@@ -110,7 +109,7 @@ impl App {
                 use_color,
                 pager,
                 theme_options,
-                use_custom_assets,
+                &matches,
             )?;
             std::process::exit(0);
         }
@@ -130,7 +129,7 @@ impl App {
         use_color: bool,
         pager: Option<&str>,
         theme_options: ThemeOptions,
-        use_custom_assets: bool,
+        matches: &ArgMatches,
     ) -> Result<()> {
         use crate::assets::assets_from_cache_or_binary;
         use crate::directories::PROJECT_DIRS;
@@ -143,6 +142,8 @@ impl App {
             PagingMode,
         };
 
+        let use_custom_assets = !matches.get_flag("no-custom-assets");
+        let grayscale = matches.get_flag("grayscale");
         let mut cmd = clap_app::build_app(interactive_output);
         let help_text = match help_type {
             HelpType::Short => cmd.render_help().to_string(),
@@ -163,6 +164,7 @@ impl App {
             pager,
             colored_output: use_color,
             true_color: use_color,
+            grayscale,
             language: if use_color { Some("help") } else { None },
             theme: theme(theme_options).to_string(),
             ..Default::default()
@@ -367,6 +369,7 @@ impl App {
 
         Ok(Config {
             true_color: is_truecolor_terminal(),
+            grayscale: self.matches.get_flag("grayscale"),
             language: self
                 .matches
                 .get_one::<String>("language")

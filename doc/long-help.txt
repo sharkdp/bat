@@ -134,6 +134,11 @@ Options:
           Ignore extension. For example:
             'bat --ignored-suffix ".dev" my_file.json.dev' will use JSON syntax, and ignore '.dev'
 
+      --grayscale
+          Convert syntax and decoration colors to grayscale. Use a light theme on a light
+          background. Input ANSI sequences and terminal-default colors are preserved; use
+          '--strip-ansi=always' to remove input colors.
+
       --theme <theme>
           Set the theme for syntax highlighting. Use '--list-themes' to see all available themes. To
           set a default theme, add the '--theme="..."' option to the configuration file or export

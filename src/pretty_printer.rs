@@ -139,6 +139,13 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Convert generated colors to grayscale (default: false).
+    /// Input ANSI escape sequences and terminal-default colors are preserved.
+    pub fn grayscale(&mut self, yes: bool) -> &mut Self {
+        self.config.grayscale = yes;
+        self
+    }
+
     /// Whether to show a header with the file name
     pub fn header(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.header_filename = yes;
