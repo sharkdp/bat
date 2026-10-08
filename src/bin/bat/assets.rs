@@ -18,8 +18,13 @@ pub fn clear_assets(cache_dir: &Path) -> Result<()> {
 
 pub fn assets_from_cache_or_binary(
     use_custom_assets: bool,
+    config_dir: &Path,
     cache_dir: &Path,
 ) -> Result<HighlightingAssets> {
+    if use_custom_assets {
+        ensure_cache_built(config_dir, cache_dir);
+    }
+
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
             return Err(format!(
@@ -59,4 +64,45 @@ fn clear_asset(path: PathBuf, description: &str) -> Result<()> {
         Ok(_) => writeln!(io::stdout(), "okay")?,
     }
     Ok(())
+}
+
+/// Build the cache on first run when custom themes or syntaxes are present
+/// but no cache exists yet (see #4017). A failed build is not fatal: warn
+/// and fall back to the integrated assets.
+#[cfg(feature = "build-assets")]
+fn ensure_cache_built(config_dir: &Path, cache_dir: &Path) {
+    if cache_exists(cache_dir) || !custom_sources_exist(config_dir) {
+        return;
+    }
+
+    eprintln!("bat: custom themes or syntaxes found, building cache ...");
+    if let Err(err) = bat::assets::build(config_dir, true, false, cache_dir, crate_version!()) {
+        eprintln!("bat: automatic cache build failed ({err}), falling back to integrated assets.");
+    }
+}
+
+#[cfg(not(feature = "build-assets"))]
+fn ensure_cache_built(_config_dir: &Path, _cache_dir: &Path) {}
+
+#[cfg(feature = "build-assets")]
+fn cache_exists(cache_dir: &Path) -> bool {
+    cache_dir.join("themes.bin").is_file()
+        && cache_dir.join("syntaxes.bin").is_file()
+        && cache_dir.join("metadata.yaml").is_file()
+}
+
+#[cfg(feature = "build-assets")]
+fn custom_sources_exist(config_dir: &Path) -> bool {
+    dir_has_files(&config_dir.join("themes")) || dir_has_files(&config_dir.join("syntaxes"))
+}
+
+#[cfg(feature = "build-assets")]
+fn dir_has_files(dir: &Path) -> bool {
+    fs::read_dir(dir)
+        .map(|entries| {
+            entries
+                .filter_map(|entry| entry.ok())
+                .any(|entry| entry.path().is_file())
+        })
+        .unwrap_or(false)
 }
