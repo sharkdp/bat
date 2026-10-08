@@ -997,6 +997,32 @@ fn bat_error_to_stderr() {
 
 #[cfg(unix)]
 #[test]
+fn bat_error_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr("[bat error]: '/tmp' is a directory.\n");
+}
+
+#[test]
+fn bat_warning_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stderr(
+            "[bat warning]: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n",
+        );
+}
+
+#[cfg(unix)]
+#[test]
 fn no_args_doesnt_break() {
     // To simulate bat getting started from the shell, a process is created with stdin and stdout
     // as the slave end of a pseudo terminal. Although both point to the same "file", bat should
