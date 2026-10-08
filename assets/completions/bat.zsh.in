@@ -30,6 +30,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable automatic paging (alias for `--paging=never`)]'
         '(-l --language)'{-l+,--language=}'[set the language for syntax highlighting]:language:->languages'
         \*{-H+,--highlight-line=}'[highlight specified block of lines]:start\:end'
+        --show-paths'[underline existing literal file paths]'
         \*--file-name='[specify the name to display for a file]:name:_files'
         '(-d --diff)'--diff'[only show lines that have been added/removed/modified]'
         --diff-context='[specify lines of context around added/removed/modified lines when using `--diff`]:lines'

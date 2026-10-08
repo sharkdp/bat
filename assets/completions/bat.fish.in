@@ -176,6 +176,8 @@ complete -c $bat -s h -d "Print a concise overview" -n __fish_is_first_arg
 
 complete -c $bat -l help -f -d "Print all help information" -n __fish_is_first_arg
 
+complete -c $bat -l show-paths -d "Underline existing literal file paths" -n __bat_no_excl_args
+
 complete -c $bat -s H -l highlight-line -x -d "Highlight line(s) N[:M]" -n __bat_no_excl_args
 
 complete -c $bat -l ignored-suffix -x -d "Ignore extension" -n __bat_no_excl_args
