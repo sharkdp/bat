@@ -1,9 +1,10 @@
 <p align="center">
-  <img src="doc/logo-header.svg" alt="bat - a cat clone with wings"><br>
+  <img src="doc/logo-header.svg" alt="bat - a cat(1) clone with wings"><br>
   <a href="https://github.com/sharkdp/bat/actions?query=workflow%3ACICD"><img src="https://github.com/sharkdp/bat/workflows/CICD/badge.svg" alt="Build Status"></a>
   <img src="https://img.shields.io/crates/l/bat.svg" alt="license">
   <a href="https://crates.io/crates/bat"><img src="https://img.shields.io/crates/v/bat.svg?colorB=319e8c" alt="Version info"></a><br>
-  A <i>cat(1)</i> clone with syntax highlighting and Git integration.
+  A <i>cat(1)</i> clone with syntax highlighting and Git integration.<br>
+  <sub><code>cat(1)</code> is the standard Unix utility that copies file contents to standard output; <code>bat</code> is a drop-in replacement with wings (highlighting and Git).</sub>
 </p>
 
 <p align="center">
@@ -927,7 +928,7 @@ See [`SECURITY.md`](SECURITY.md).
 
 - Provide beautiful, advanced syntax highlighting
 - Integrate with Git to show file modifications
-- Be a drop-in replacement for (POSIX) `cat`
+- Be a drop-in replacement for (POSIX) `cat` — the Unix tool that copies file contents to standard output
 - Offer a user-friendly command-line interface
 
 There are a lot of alternatives, if you are looking for similar programs. See
