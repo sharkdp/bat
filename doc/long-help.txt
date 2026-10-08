@@ -201,7 +201,7 @@ Options:
           Possible values:
           
             * default: enables recommended style components (default).
-            * full: enables all available components.
+            * full: enables all decorations.
             * auto: same as 'default', unless the output is piped.
             * plain: disables all available components.
             * changes: show Git modification markers.
@@ -213,6 +213,7 @@ Options:
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.
+            * sidebar-right: place the selected sidebar decorations on the right.
 
   -r, --line-range <N:M>
           Only print the specified range of lines for each file. For example:
