@@ -185,8 +185,10 @@ Picks a dark or light theme depending on the terminal's colors.
 Use \fB-\-theme\-light\fR and \fB-\-theme\-dark\fR to customize the selected theme.
 .IP "auto:always"
 Variation of \fBauto\fR where where the terminal's colors are detected even when the output is redirected.
-.IP "auto:system (macOS only)"
+.IP "auto:system (macOS or GNOME on Linux)"
 Variation of \fBauto\fR where the color scheme is detected from the system-wide preference instead.
+On Linux, queries GNOME's color-scheme setting using gsettings.
+If the setting is unavailable or expresses no preference, uses the default theme.
 .IP "dark"
 Use the dark theme specified by \fB-\-theme-dark\fR.
 .IP "light"
