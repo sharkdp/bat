@@ -15,3 +15,5 @@
 /assets/metadata.yaml
 
 
+# Derived from the pinned C++ grammar during asset builds
+/assets/syntaxes/02_Extra/CUDA/CUDA.sublime-syntax
