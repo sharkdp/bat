@@ -1,0 +1,14 @@
+ --- modulename: example, funcname: <module>
+0.00 example.py(1): import time
+0.00 example.py(3): def add(x=0, y=0):
+ --- modulename: example, funcname: add
+0.00 example.py(4):     return x + y
+0.01 example.py(8): class Example(object):
+example.py(10): async def worker(value: int):
+example.py(11):     print(f"answer: {value + 42}")
+program output: 42
+folder with spaces/example.py(20):     message = """multiline starts
+ --- modulename: other, funcname: run
+other.py(7): result = 2 * 3
+<string>(1): print('inline source')
+12.34 example.py(99):     # traced comment
