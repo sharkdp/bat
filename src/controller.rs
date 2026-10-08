@@ -259,9 +259,16 @@ impl Controller<'_> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
         // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
-        let buffer_size: usize = line_ranges.largest_offset_from_end() + 1;
+        let buffer_size: usize = line_ranges.largest_offset_from_end().saturating_add(1);
+        // `buffer_size` can be derived from a user-supplied offset-from-end (e.g.
+        // `--line-range=:-1000000000000`) that is far larger than the file. It is
+        // only used below as a fill target and the deque grows on demand, so cap
+        // how much we pre-allocate up front; otherwise an enormous offset makes
+        // `VecDeque::with_capacity` panic with "capacity overflow" (#3845, #4039).
+        const MAX_PREALLOCATED_LINES: usize = 8 * 1024;
         // Buffers multiple line data and line number
-        let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
+        let mut buffered_lines: VecDeque<(Vec<u8>, usize)> =
+            VecDeque::with_capacity(buffer_size.min(MAX_PREALLOCATED_LINES));
 
         let mut reached_eof: bool = false;
         let mut first_range: bool = true;
