@@ -32,7 +32,7 @@ minimal-application = [
     "wild",
 ]
 git = ["gix"] # Support indicating git modifications
-paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
+paging = [ "shell-words", "minus"] # Support applying a pager on the output
 lessopen = ["execute"] # Support $LESSOPEN preprocessor
 build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
 
@@ -65,7 +65,6 @@ path_abs = { version = "0.5", default-features = false }
 clircle = { version = "0.6.1", default-features = false }
 bugreport = { version = "0.6.0", optional = true }
 etcetera = { version = "0.11.0", optional = true }
-grep-cli = { version = "0.1.12", optional = true }
 regex = { version = "1.12.3", optional = true }
 walkdir = { version = "2.5", optional = true }
 bytesize = { version = "2.3.1" }

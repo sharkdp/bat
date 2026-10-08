@@ -366,13 +366,9 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) -> Result<()> {
         .info(CompileTimeInformation::default());
 
     #[cfg(feature = "paging")]
-    if let Ok(resolved_path) = grep_cli::resolve_binary(pager) {
-        report = report.info(CommandOutput::new(
-            "Less version",
-            resolved_path,
-            &["--version"],
-        ))
-    };
+    {
+        report = report.info(CommandOutput::new("Less version", pager, &["--version"]));
+    }
 
     writeln!(io::stdout(), "{}", report.format::<Markdown>())?;
     Ok(())
