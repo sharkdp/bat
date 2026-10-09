@@ -1204,6 +1204,21 @@ fn tabs_8() {
 }
 
 #[test]
+fn tabs_4_unicode_columns() {
+    bat()
+        .arg("--tabs=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--paging=never")
+        .arg("--wrap=never")
+        .write_stdin("界\tz\ne\u{301}\tz\n")
+        .assert()
+        .success()
+        .stdout("界  z\ne\u{301}   z\n");
+}
+
+#[test]
 fn tabs_4_env_overrides_config() {
     bat_with_config()
         .env("BAT_CONFIG_PATH", "bat-tabs.conf")
