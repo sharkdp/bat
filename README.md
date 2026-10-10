@@ -906,6 +906,13 @@ features as a library, check out the [API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.
 
+`PrettyPrinter::new()` uses embedded syntaxes and themes. To use a custom cache
+built with `bat cache --build`, construct the printer with
+`PrettyPrinter::from_cache(cache_directory)?`. Callers managing their own
+`HighlightingAssets` can use `PrettyPrinter::with_assets(assets)?` instead. Both
+constructors validate cached syntaxes before returning; they do not read CLI
+configuration or select a cache directory from the environment.
+
 ## Contributing
 
 Take a look at the [`CONTRIBUTING.md`](CONTRIBUTING.md) guide.
