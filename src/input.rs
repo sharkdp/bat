@@ -97,6 +97,7 @@ pub struct Input<'a> {
     pub(crate) kind: InputKind<'a>,
     pub(crate) metadata: InputMetadata,
     pub(crate) description: InputDescription,
+    pub(crate) reader_override: Option<Box<dyn Read + 'a>>,
 }
 
 pub(crate) enum OpenedInputKind {
@@ -143,6 +144,7 @@ impl<'a> Input<'a> {
             description: kind.description(),
             metadata,
             kind,
+            reader_override: None,
         }
     }
 
@@ -152,6 +154,7 @@ impl<'a> Input<'a> {
             description: kind.description(),
             metadata: InputMetadata::default(),
             kind,
+            reader_override: None,
         }
     }
 
@@ -161,7 +164,23 @@ impl<'a> Input<'a> {
             description: kind.description(),
             metadata: InputMetadata::default(),
             kind,
+            reader_override: None,
         }
+    }
+
+    /// Replace the contents while retaining the input's name and source identity.
+    ///
+    /// The original source is not opened. Its size is cleared, and Git change
+    /// markers are disabled because replacement contents may have different lines.
+    pub fn with_reader(mut self, reader: Box<dyn Read + 'a>) -> Self {
+        self.reader_override = Some(reader);
+        self.metadata.size = None;
+        if self.metadata.user_provided_name.is_none() {
+            if let InputKind::OrdinaryFile(path) = &self.kind {
+                self.metadata.user_provided_name = Some(path.clone());
+            }
+        }
+        self
     }
 
     pub fn is_stdin(&self) -> bool {
@@ -195,6 +214,14 @@ impl<'a> Input<'a> {
         stdout_identifier: Option<&Identifier>,
     ) -> Result<OpenedInput<'a>> {
         let description = self.description().clone();
+        if let Some(reader) = self.reader_override {
+            return Ok(OpenedInput {
+                kind: OpenedInputKind::CustomReader,
+                metadata: self.metadata,
+                description,
+                reader: InputReader::try_new(BufReader::new(reader))?,
+            });
+        }
         match self.kind {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
