@@ -86,6 +86,7 @@
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 - Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
+- Map Lazarus / Free Pascal program files (`*.lpr`) to Pascal syntax, closes #2313, see #4052 (@ODriscollBoys)
 
 ## Themes
 
