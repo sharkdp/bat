@@ -29,7 +29,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --binary='[specify how to treat binary content]:behavior:(no-printing as-text)'
         \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable automatic paging (alias for `--paging=never`)]'
         '(-l --language)'{-l+,--language=}'[set the language for syntax highlighting]:language:->languages'
-        \*{-H+,--highlight-line=}'[highlight specified block of lines]:start\:end'
+        \*{-H+,--highlight-line=}'[highlight line or character ranges]:range'
         \*--file-name='[specify the name to display for a file]:name:_files'
         '(-d --diff)'--diff'[only show lines that have been added/removed/modified]'
         --diff-context='[specify lines of context around added/removed/modified lines when using `--diff`]:lines'

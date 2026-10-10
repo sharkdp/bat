@@ -745,6 +745,22 @@ alias cat='bat_alias_wrapper'
 ```
 
 
+### Highlight part of a line
+
+Use line-and-column positions with `--highlight-line` to select exact characters:
+
+```bash
+bat --highlight-line 2.3:.7 file   # characters 3–7 on line 2
+bat --highlight-line 2.3:4.5 file # line 2, character 3 through line 4, character 5
+```
+
+Both endpoints are included, and positions start at 1. Tabs count as one
+character; combining marks and emoji sequences stay together. ANSI escape
+sequences do not count. With `--show-all`, columns refer to the resulting marker
+text. Existing whole-line ranges can be mixed with character regions by repeating
+`--highlight-line`.
+
+
 ## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent

@@ -515,11 +515,23 @@ impl App {
             highlighted_lines: self
                 .matches
                 .get_many::<String>("highlight-line")
-                .map(|ws| ws.map(|s| LineRange::from(s.as_str())).collect())
+                .map(|ws| {
+                    ws.filter(|s| !s.contains('.'))
+                        .map(|s| LineRange::from(s.as_str()))
+                        .collect()
+                })
                 .transpose()?
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
+            highlighted_regions: self
+                .matches
+                .get_many::<String>("highlight-line")
+                .into_iter()
+                .flatten()
+                .filter(|s| s.contains('.'))
+                .map(|s| s.parse())
+                .collect::<Result<Vec<_>>>()?,
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),
