@@ -14,6 +14,7 @@ pub enum StyleComponent {
     Header,
     HeaderFilename,
     HeaderFilesize,
+    HighlightIndicator,
     LineNumbers,
     Snip,
     Full,
@@ -38,6 +39,7 @@ impl StyleComponent {
             StyleComponent::Header => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
+            StyleComponent::HighlightIndicator => &[StyleComponent::HighlightIndicator],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
@@ -46,6 +48,7 @@ impl StyleComponent {
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
+                StyleComponent::HighlightIndicator,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -75,6 +78,7 @@ impl FromStr for StyleComponent {
             "header" => Ok(StyleComponent::Header),
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
+            "highlight-indicator" => Ok(StyleComponent::HighlightIndicator),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
@@ -116,6 +120,10 @@ impl StyleComponents {
 
     pub fn header_filesize(&self) -> bool {
         self.0.contains(&StyleComponent::HeaderFilesize)
+    }
+
+    pub fn highlight_indicator(&self) -> bool {
+        self.0.contains(&StyleComponent::HighlightIndicator)
     }
 
     pub fn numbers(&self) -> bool {
