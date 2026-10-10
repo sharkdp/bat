@@ -97,7 +97,7 @@ set -l color_opts '
     never\t
     always\t
 '
-set -l decorations_opts $color_opts
+set -l decorations_opts $color_opts 'compact\tCompact\ file\ headings'
 set -l paging_opts $color_opts
 
 # Include some examples so we can indicate the default.

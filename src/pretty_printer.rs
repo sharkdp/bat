@@ -139,6 +139,13 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Use compact file headings without horizontal header/footer rules.
+    /// Selected line numbers, change markers, and the vertical grid remain visible.
+    pub fn compact_headers(&mut self, yes: bool) -> &mut Self {
+        self.config.compact_headers = yes;
+        self
+    }
+
     /// Whether to show a header with the file name
     pub fn header(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.header_filename = yes;

@@ -354,6 +354,9 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         style: Style,
     ) -> Result<()> {
+        if self.config.compact_headers {
+            return Ok(());
+        }
         writeln!(
             handle,
             "{}",
@@ -363,6 +366,9 @@ impl<'a> InteractivePrinter<'a> {
     }
 
     fn print_horizontal_line(&mut self, handle: &mut OutputHandle, grid_char: char) -> Result<()> {
+        if self.config.compact_headers {
+            return Ok(());
+        }
         if self.panel_width == 0 {
             self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
@@ -428,6 +434,9 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
+        if self.config.compact_headers {
+            return writeln!(handle, "{content}");
+        }
         let content_width = self.config.term_width - self.get_header_component_indent_length();
         if content.chars().count() <= content_width {
             return self.print_header_component_with_indent(handle, content);
@@ -545,7 +554,10 @@ impl Printer for InteractivePrinter<'_> {
             self.print_horizontal_line(handle, '┬')?;
         } else {
             // Only pad space between files, if we haven't already drawn a horizontal rule
-            if add_header_padding && !self.config.style_components.rule() {
+            if add_header_padding
+                && !self.config.style_components.rule()
+                && !self.config.compact_headers
+            {
                 writeln!(handle)?;
             }
         }
@@ -554,16 +566,25 @@ impl Printer for InteractivePrinter<'_> {
             .iter()
             .try_for_each(|component| match component {
                 StyleComponent::HeaderFilename => {
-                    let header_filename = format!(
-                        "{}{}{mode}",
-                        description
-                            .kind()
-                            .map(|kind| format!("{}: ", sanitize_for_terminal(kind)))
-                            .unwrap_or_else(|| "".into()),
-                        self.colors
-                            .header_value
-                            .paint(sanitize_for_terminal(description.title())),
-                    );
+                    let header_filename = if self.config.compact_headers {
+                        format!(
+                            "===> {}{mode} <===",
+                            self.colors
+                                .header_value
+                                .paint(sanitize_for_terminal(description.title()))
+                        )
+                    } else {
+                        format!(
+                            "{}{}{mode}",
+                            description
+                                .kind()
+                                .map(|kind| format!("{}: ", sanitize_for_terminal(kind)))
+                                .unwrap_or_else(|| "".into()),
+                            self.colors
+                                .header_value
+                                .paint(sanitize_for_terminal(description.title())),
+                        )
+                    };
                     self.print_header_multiline_component(handle, &header_filename)
                 }
                 StyleComponent::HeaderFilesize => {
