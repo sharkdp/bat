@@ -63,6 +63,7 @@ pub fn as_terminal_escaped(
     } else {
         let mut color = Style {
             foreground: to_ansi_color(style.foreground, true_color),
+            background: to_ansi_color(style.background, true_color),
             ..Style::default()
         };
         if style.font_style.contains(FontStyle::BOLD) {
@@ -77,6 +78,8 @@ pub fn as_terminal_escaped(
         color
     };
 
-    style.background = background_color.and_then(|c| to_ansi_color(c, true_color));
+    if let Some(background_color) = background_color {
+        style.background = to_ansi_color(background_color, true_color);
+    }
     style.paint(text).to_string()
 }

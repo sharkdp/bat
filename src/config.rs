@@ -91,6 +91,9 @@ pub struct Config<'a> {
     /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
 
+    /// Whether to honor theme background colors for highlighted text
+    pub use_theme_background: bool,
+
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
 

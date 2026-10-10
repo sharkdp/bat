@@ -9,6 +9,10 @@
 
 ## Features
 
+- Add a `trailing_whitespace` utility syntax to highlight trailing spaces and tabs with theme backgrounds. Closes #2249, see #3924 (@Matei02355)
+
+- Add opt-in theme background colors through `--theme-background`, see #3924 (@Matei02355)
+
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
 - Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It implies `--strip-ansi` at the same value and additionally substitutes terminal-active control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
 - Map justfile, Justfile, .justfile, and *.justfile to Makefile syntax highlighting, see #3623 (@zachvalenta)

@@ -144,7 +144,7 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
-	--italic-text)
+	--italic-text | --theme-background)
 		COMPREPLY=($(compgen -W "always never" -- "$cur"))
 		return 0
 		;;
@@ -212,6 +212,7 @@ _bat() {
 			--number
 			--color
 			--italic-text
+			--theme-background
 			--decorations
 			--force-colorization
 			--paging

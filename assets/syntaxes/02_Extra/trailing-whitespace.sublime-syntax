@@ -1,0 +1,10 @@
+%YAML 1.2
+---
+name: Trailing Whitespace
+file_extensions:
+  - trailing_whitespace
+scope: text.trailing-whitespace
+contexts:
+  main:
+    - match: '[ \t]+(?=\r?$)'
+      scope: invalid.illegal.trailing-whitespace

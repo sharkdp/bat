@@ -1,0 +1,8 @@
+  Leading indentation
+Internal spaces and	tabs
+Trailing spaces  
+Trailing tab	
+Mixed whitespace 	 
+	  
+Clean CRLF
+No final newline 	

@@ -39,6 +39,8 @@ Options:
           When to use colors (*auto*, never, always).
       --italic-text <when>
           Use italics in output (always, *never*)
+      --theme-background <when>
+          Apply theme background colors to text (always, *never*).
       --decorations <when>
           When to show the decorations (*auto*, never, always).
       --paging <when>

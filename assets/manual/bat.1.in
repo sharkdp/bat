@@ -131,6 +131,12 @@ interactive terminal is detected. Possible values: *auto*, never, always.
 Specify when to use ANSI sequences for italic text in the output. Possible values:
 always, *never*.
 .HP
+\fB\-\-theme\-background\fR <when>
+.IP
+Apply the theme's background colors to highlighted text, including individual syntax
+tokens. Highlighted lines take precedence. Requires colored output. Possible values:
+always, *never*.
+.HP
 \fB\-\-decorations\fR <when>
 .IP
 Specify when to use the decorations that have been specified via '\-\-style'. The

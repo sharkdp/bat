@@ -512,6 +512,11 @@ impl App {
                 .get_one::<String>("italic-text")
                 .map(|s| s.as_str())
                 == Some("always"),
+            use_theme_background: self
+                .matches
+                .get_one::<String>("theme-background")
+                .map(|s| s.as_str())
+                == Some("always"),
             highlighted_lines: self
                 .matches
                 .get_many::<String>("highlight-line")
