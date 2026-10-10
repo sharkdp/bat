@@ -534,7 +534,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, changes-highlight, header, header-filename, header-filesize, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -558,6 +558,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                      * auto: same as 'default', unless the output is piped.\n  \
                      * plain: disables all available components.\n  \
                      * changes: show Git modification markers.\n  \
+                     * changes-highlight: highlight lines with Git change markers.\n  \
                      * header: alias for 'header-filename'.\n  \
                      * header-filename: show filenames before the content.\n  \
                      * header-filesize: show file sizes before the content.\n  \

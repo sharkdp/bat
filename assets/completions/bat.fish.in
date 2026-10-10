@@ -79,6 +79,7 @@ function __bat_style_opts
         "full,all components" \
         "plain,no components" \
         "changes,Git change markers" \
+        "changes-highlight,highlight lines with Git changes" \
         "header,alias for header-filename" \
         "header-filename,filename above content" \
         "header-filesize,filesize above content" \
