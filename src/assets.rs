@@ -221,6 +221,7 @@ impl HighlightingAssets {
         mapping: &SyntaxMapping,
     ) -> Result<SyntaxReferenceInSet<'_>> {
         if let Some(language) = language {
+            let language = mapping.language_alias(language).unwrap_or(language);
             let syntax_set = self.get_syntax_set()?;
             return syntax_set
                 .find_syntax_by_token(language)
@@ -267,6 +268,7 @@ impl HighlightingAssets {
                 if let Some(syntax_in_set) = self.get_first_line_syntax(&mut input.reader)? {
                     Ok(syntax_in_set)
                 } else if let Some(language) = fallback_syntax {
+                    let language = mapping.language_alias(language).unwrap_or(language);
                     self.find_syntax_by_token(language)?
                         .ok_or_else(|| Error::UnknownSyntax(language.to_owned()))
                 } else {
