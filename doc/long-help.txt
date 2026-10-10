@@ -210,6 +210,7 @@ Options:
             * header-filesize: show file sizes before the content.
             * grid: vertical/horizontal lines to separate side bar
                     and the header from the content.
+            * grid-vertical: only the vertical line separating the side bar.
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.

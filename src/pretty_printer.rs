@@ -24,6 +24,7 @@ struct ActiveStyleComponents {
     #[cfg(feature = "git")]
     vcs_modification_markers: bool,
     grid: bool,
+    grid_vertical: bool,
     rule: bool,
     line_numbers: bool,
     snip: bool,
@@ -154,6 +155,12 @@ impl<'a> PrettyPrinter<'a> {
     /// Whether to paint a grid, separating line numbers, git changes and the code
     pub fn grid(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.grid = yes;
+        self
+    }
+
+    /// Whether to separate the sidebar from the contents without horizontal borders.
+    pub fn grid_vertical(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.grid_vertical = yes;
         self
     }
 
@@ -305,6 +312,11 @@ impl<'a> PrettyPrinter<'a> {
         self.config.style_components.clear();
         if self.active_style_components.grid {
             self.config.style_components.insert(StyleComponent::Grid);
+        }
+        if self.active_style_components.grid_vertical {
+            self.config
+                .style_components
+                .insert(StyleComponent::GridVertical);
         }
         if self.active_style_components.rule {
             self.config.style_components.insert(StyleComponent::Rule);
