@@ -995,6 +995,48 @@ fn bat_error_to_stderr() {
         .stderr(predicate::str::contains("[bat error]"));
 }
 
+/// Run `bat -h` with stdout connected to a pseudo terminal and return what it printed.
+#[cfg(unix)]
+fn help_output_on_terminal(no_color: bool) -> String {
+    let OpenptyResult { master, slave } = openpty(None, None).expect("Couldn't open pty.");
+    let mut master = File::from(master);
+
+    let mut cmd = bat_raw_command();
+    cmd.args(["-h", "--paging=never", "--theme=Monokai Extended"])
+        .stdout(Stdio::from(slave));
+    if no_color {
+        cmd.env("NO_COLOR", "1");
+    }
+    let mut child = cmd.spawn().expect("Failed to start.");
+    // Close our copy of the slave end, so that reading from the master end stops once bat exits.
+    drop(cmd);
+
+    // Reading from the master end fails (EIO) once the slave end is closed on some platforms,
+    // so ignore the error and only keep what was read before.
+    let mut output = Vec::new();
+    let _ = io::Read::read_to_end(&mut master, &mut output);
+
+    let exit_status = child
+        .wait_timeout(CHILD_WAIT_TIMEOUT)
+        .expect("Error polling exit status, this should never happen.")
+        .expect("Exit status not set, but the child should have exited already.");
+    assert!(exit_status.success());
+
+    String::from_utf8_lossy(&output).into_owned()
+}
+
+#[cfg(unix)]
+#[test]
+fn help_respects_no_color_on_terminal() {
+    let colored = help_output_on_terminal(false);
+    assert!(colored.contains("Usage:"));
+    assert!(colored.contains("\x1B["));
+
+    let uncolored = help_output_on_terminal(true);
+    assert!(uncolored.contains("Usage:"));
+    assert!(!uncolored.contains("\x1B["));
+}
+
 #[cfg(unix)]
 #[test]
 fn no_args_doesnt_break() {
