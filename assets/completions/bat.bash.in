@@ -152,6 +152,10 @@ _bat() {
 		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
 		;;
+	--set-theme-color)
+		COMPREPLY=($(compgen -W "foreground gutterForeground lineHighlight" -- "$cur"))
+		return 0
+		;;
 	--theme)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "auto${IFS}auto:always${IFS}auto:system${IFS}dark${IFS}light${IFS}$("$1" --no-paging --list-themes)" -- "$cur"))
@@ -220,6 +224,7 @@ _bat() {
 			--map-syntax
 			--ignored-suffix
 			--theme
+			--set-theme-color
 			--theme-dark
 			--theme-light
 			--list-themes
