@@ -245,6 +245,16 @@ changes, grid, header\-filename, numbers, snip
 Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP
+\fB\-\-style\-for\fR <language> <style\-components>
+.IP
+Select decorations for a full syntax name from '\-\-list\-languages', matched
+case\-insensitively. For example, '\-\-style\-for "Git Log" plain' removes
+decorations from Git logs. Repeat this option to configure more syntaxes.
+Lists containing only '+' or '\-' modifiers build on the general style;
+repeated entries for the same syntax are applied in order. Plain/number flags
+and '\-\-decorations=never' take precedence. Wrapping and tab settings remain
+global. This option can also be used in the configuration file.
+.HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
 Only print the specified range of lines for each file. For example:

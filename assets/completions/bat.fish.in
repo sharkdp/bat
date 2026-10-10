@@ -231,6 +231,9 @@ complete -c $bat -s P -d "Disable paging" -n __bat_no_excl_args
 
 complete -c $bat -l style -x -k -a "(__fish_complete_list , __bat_style_opts)" -d "Specify which non-content elements to display" -n __bat_no_excl_args
 
+complete -c $bat -l style-for -x -k -a "(__bat_complete_list_languages)" -d "Select decorations for a syntax (language, then style)" -n __bat_no_excl_args
+complete -c $bat -f -k -a "(__fish_complete_list , __bat_style_opts)" -n 'set -l args (commandline -opc); test (count $args) -ge 3; and test "$args[-2]" = --style-for'
+
 complete -c $bat -l tabs -x -a "$tabs_opts" -d "Set tab width" -n __bat_no_excl_args
 
 complete -c $bat -l terminal-width -x -d "Set terminal <width>, +<offset>, or -<offset>" -n __bat_no_excl_args
