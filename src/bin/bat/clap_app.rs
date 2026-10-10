@@ -615,6 +615,20 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("local-config")
+                .long("local-config")
+                .action(ArgAction::SetTrue)
+                .help("Read .batconfig files from the current directory and its ancestors")
+                .long_help(
+                    "Read .batconfig files from the current directory and its ancestors, \
+                     from the filesystem root downwards. Local settings override the user \
+                     configuration; environment variables and command-line options take \
+                     precedence. This flag must be supplied on the command line and is \
+                     ignored with --no-config. Enable it only in directories you trust: \
+                     configuration can specify a pager or preprocessor command.",
+                ),
+        )
+        .arg(
             Arg::new("no-config")
                 .long("no-config")
                 .action(ArgAction::SetTrue)

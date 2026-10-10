@@ -7,7 +7,10 @@ use std::thread::available_parallelism;
 
 use crate::{
     clap_app,
-    config::{get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars},
+    config::{
+        get_args_from_config_file, get_args_from_env_opts_var, get_args_from_env_vars,
+        get_args_from_local_config,
+    },
 };
 use bat::style::StyleComponentList;
 use bat::theme::{theme, ThemeName, ThemeOptions, ThemePreference};
@@ -79,7 +82,7 @@ impl App {
         let number_from_cli = cli_matches.get_flag("number");
         let number_nonblank_from_cli = cli_matches.get_flag("number-nonblank");
 
-        let matches = Self::matches(interactive_output)?;
+        let matches = Self::matches(interactive_output, cli_matches.get_flag("local-config"))?;
 
         if matches.get_flag("help") {
             let help_type = if wild::args_os().any(|arg| arg == "--help") {
@@ -195,7 +198,7 @@ impl App {
         clap_app::build_app(interactive_output).get_matches_from(wild::args_os())
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches> {
+    fn matches(interactive_output: bool, use_local_config: bool) -> Result<ArgMatches> {
         // Check if we should skip config file processing for special arguments
         // that don't require full application setup (version, diagnostic)
         let should_skip_config = wild::args_os().any(|arg| {
@@ -239,6 +242,15 @@ impl App {
         } else {
             config_args.map_err(|_| "Could not parse configuration file")?
         };
+
+        if use_local_config {
+            let local_args = get_args_from_local_config();
+            args.extend(if help_requested {
+                local_args.unwrap_or_default()
+            } else {
+                local_args?
+            });
+        }
 
         // Selected env vars supersede config vars
         args.extend(get_args_from_env_vars());

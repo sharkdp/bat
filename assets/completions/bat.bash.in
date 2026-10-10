@@ -243,6 +243,7 @@ _bat() {
 			--config-file
 			--generate-config-file
 			--no-config
+			--local-config
 			--no-custom-assets
 			--no-lessopen
 		" -- "$cur"))

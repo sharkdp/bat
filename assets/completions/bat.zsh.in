@@ -65,6 +65,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --diagnostic'[show diagnostic information for bug reports]'
         --quiet-empty'[do not produce any output when the input is empty]'
         -P'[disable paging]'
+        "--local-config[read project configuration from the current directory and ancestors]"
         "--no-config[don't use the configuration file]"
         "--no-custom-assets[don't load custom assets]"
         '(--no-lessopen)'--lessopen'[enable the $LESSOPEN preprocessor]'

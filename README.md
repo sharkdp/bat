@@ -769,6 +769,29 @@ There is also now a systemwide configuration file, which is located under `/etc/
 Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
 file is present, the content of the user configuration will simply be appended to it.
 
+### Project configuration
+
+Pass `--local-config` on the command line to read `.batconfig` files from the
+current directory and its ancestors. They use the same format as the user
+configuration, so a repository can carry settings such as:
+
+```text
+--map-syntax "*.custom:Rust"
+```
+
+Files are read from the filesystem root toward the current directory. Nearer
+settings override ancestor and user settings; environment variables such as
+`BAT_THEME` and explicit command-line options take precedence. `BAT_OPTS`, when
+set, replaces the system/user configuration before local files are applied.
+Paths and syntax mappings retain their normal interpretation relative to the
+current directory. Selecting input files elsewhere does not change which
+configuration files are read.
+
+Local configuration is disabled by default. The opt-in flag must be supplied on
+the command line, and `--no-config` disables local files too. Enable this only in
+directories you trust, because configuration can specify pager or preprocessor
+commands.
+
 ### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
