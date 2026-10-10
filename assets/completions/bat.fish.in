@@ -194,6 +194,7 @@ complete -c $bat -l list-themes -f -d "List syntax highlighting themes" -n __fis
 
 complete -c $bat -s m -l map-syntax -x -a "(__bat_complete_map_syntax)" -d "Map <glob pattern>:<language syntax>" -n __bat_no_excl_args
 
+complete -c $bat -l no-system-config -d "Ignore the system-wide configuration file"
 complete -c $bat -l no-config -d "Do not use the configuration file"
 
 complete -c $bat -l no-custom-assets -d "Do not load custom assets"

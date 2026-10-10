@@ -305,6 +305,14 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+
+.HP
+\fB\-\-no-system-config\fR
+.IP
+Ignore the system-wide configuration file. The user configuration, including
+BAT_CONFIG_PATH, and environment options still apply. Pass this option on the
+command line; putting it in a configuration file has no effect.
+
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

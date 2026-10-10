@@ -768,6 +768,7 @@ bat --generate-config-file
 There is also now a systemwide configuration file, which is located under `/etc/bat/config` on
 Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
 file is present, the content of the user configuration will simply be appended to it.
+Pass `--no-system-config` on the command line to load only the user configuration.
 
 ### Format
 
