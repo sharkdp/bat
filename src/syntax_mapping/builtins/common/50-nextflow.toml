@@ -1,0 +1,4 @@
+# Nextflow is a workflow language based on Groovy #2065
+# See https://www.nextflow.io/docs/latest/overview.html
+[mappings]
+"Groovy" = ["*.nf", "nextflow.config"]
