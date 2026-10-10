@@ -52,6 +52,19 @@ Options:
             '--highlight-line 40:' highlights lines 40 to the end of the file
             '--highlight-line 30:+10' highlights lines 30 to 40
 
+      --osc8
+          Link file headers and line numbers using OSC 8 hyperlinks.
+
+      --osc8-highlight
+          Link only highlighted line numbers using OSC 8 hyperlinks.
+
+      --hyperlink-format <URI>
+          Set the URI template for OSC 8 links. '{path}' is replaced by the percent-encoded absolute
+          path and '{line}' by the line number (1 for headers). The default, 'file://{path}', opens
+          the file. Use an editor-specific template such as 'vscode://file{path}:{line}' to open a
+          particular line. Unnamed stdin has no links. These options require a terminal or pager
+          that supports OSC 8.
+
       --file-name <name>
           Specify the name to display for a file. Useful when piping data to bat from STDIN when bat
           does not otherwise know the filename. Note that the provided file name is also used for

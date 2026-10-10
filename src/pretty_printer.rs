@@ -213,6 +213,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Configure OSC 8 hyperlinks, or disable them with `None`.
+    pub fn hyperlinks(&mut self, config: Option<crate::hyperlink::Hyperlink>) -> &mut Self {
+        self.config.hyperlink = config;
+        self
+    }
+
     /// If and how to use a pager (default: no paging)
     #[cfg(feature = "paging")]
     pub fn paging_mode(&mut self, mode: PagingMode) -> &mut Self {
