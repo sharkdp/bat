@@ -109,15 +109,18 @@ impl Controller<'_> {
         let mut no_errors: bool = true;
         let stderr = io::stderr();
 
-        for (index, input) in inputs.into_iter().enumerate() {
+        let mut is_first = true;
+        for input in inputs {
             let identifier = stdout_identifier.as_ref();
-            let is_first = index == 0;
             let result = if input.is_stdin() {
                 self.print_input(input, &mut writer, io::stdin().lock(), identifier, is_first)
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
                 self.print_input(input, &mut writer, io::empty(), identifier, is_first)
             };
+            if matches!(result, Ok(true)) {
+                is_first = false;
+            }
             if let Err(error) = result {
                 match writer {
                     // It doesn't make much sense to send errors straight to stderr if the user
@@ -145,7 +148,7 @@ impl Controller<'_> {
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let mut opened_input = {
             #[cfg(feature = "lessopen")]
             match self.preprocessor {
@@ -159,6 +162,14 @@ impl Controller<'_> {
             input.open(stdin, stdout_identifier)?
         };
         opened_input.reader.unbuffered = self.config.unbuffered;
+        if self.config.binary == crate::BinaryBehavior::Skip
+            && opened_input
+                .reader
+                .content_type
+                .is_some_and(|c| c.is_binary())
+        {
+            return Ok(false);
+        }
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())
@@ -174,14 +185,14 @@ impl Controller<'_> {
                             .map(|changes| changes.is_empty())
                             .unwrap_or(false)
                     {
-                        return Ok(());
+                        return Ok(false);
                     }
 
                     diff
                 }
                 _ if self.config.visible_lines.diff_mode() => {
                     // Skip non-file inputs in diff mode
-                    return Ok(());
+                    return Ok(false);
                 }
                 _ => None,
             }
@@ -208,7 +219,8 @@ impl Controller<'_> {
             !is_first,
             #[cfg(feature = "git")]
             &line_changes,
-        )
+        )?;
+        Ok(true)
     }
 
     fn print_file(

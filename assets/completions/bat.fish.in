@@ -143,7 +143,7 @@ set -l special_themes '
 
 complete -c $bat -l acknowledgements -d "Print acknowledgements" -n __fish_is_first_arg
 
-complete -c $bat -l binary -x -a "no-printing as-text" -d "How to treat binary content" -n __bat_no_excl_args
+complete -c $bat -l binary -x -a "no-printing as-text skip" -d "How to treat binary content" -n __bat_no_excl_args
 
 complete -c $bat -l cache-dir -f -d "Show bat's cache directory" -n __fish_is_first_arg
 

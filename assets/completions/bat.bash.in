@@ -121,7 +121,7 @@ _bat() {
 		return 0
 		;;
 	--binary)
-		COMPREPLY=($(compgen -W "no-printing as-text" -- "$cur"))
+		COMPREPLY=($(compgen -W "no-printing as-text skip" -- "$cur"))
 		return 0
 		;;
 	--nonprintable-notation)
