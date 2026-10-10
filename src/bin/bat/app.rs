@@ -537,6 +537,69 @@ impl App {
         })
     }
 
+    /// Display argument values after config files, environment, and CLI parsing.
+    /// Keep automatic modes and ordered repeatable values as configured.
+    pub fn show_config(&self, field: &str) -> Result<String> {
+        use clap::parser::ValueSource;
+        use std::fmt::Write as _;
+        let app = clap_app::build_app(self.interactive_output);
+        let excluded = [
+            "help",
+            "version",
+            "show-config",
+            "no-config",
+            "completion",
+            "diagnostic",
+            "list-languages",
+            "list-themes",
+            "config-file",
+            "generate-config-file",
+            "config-dir",
+            "cache-dir",
+            "acknowledgements",
+        ];
+        let mut fields = app
+            .get_arguments()
+            .filter_map(|arg| arg.get_long().map(|name| (name, arg.get_id().as_str())))
+            .filter(|(_, id)| !excluded.contains(id))
+            .collect::<Vec<_>>();
+        fields.sort_unstable();
+        let mut output = String::new();
+        if field != "*" {
+            let id = fields
+                .iter()
+                .find(|(name, _)| *name == field)
+                .map(|(_, id)| *id)
+                .ok_or_else(|| format!("unknown configuration field '{field}'"))?;
+            if let Some(values) = self.matches.get_raw(id) {
+                for value in values {
+                    writeln!(
+                        output,
+                        "{}",
+                        bat::sanitize_for_terminal(&value.to_string_lossy())
+                    )?;
+                }
+            }
+            return Ok(output);
+        }
+        for (name, id) in fields {
+            // Hide parser defaults when listing the user's configured values.
+            if self.matches.value_source(id) == Some(ValueSource::DefaultValue) {
+                continue;
+            }
+            if let Some(values) = self.matches.get_raw(id) {
+                for value in values {
+                    writeln!(
+                        output,
+                        "{name}: {}",
+                        bat::sanitize_for_terminal(&value.to_string_lossy())
+                    )?;
+                }
+            }
+        }
+        Ok(output)
+    }
+
     pub fn inputs(&self) -> Result<Vec<Input<'_>>> {
         let filenames: Option<Vec<&Path>> = self
             .matches

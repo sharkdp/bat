@@ -238,6 +238,14 @@ Options:
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
 
+      --show-config [<field>]
+          Show configured argument values after merging system/user config files, environment
+          variables, and command-line arguments. List configured fields in alphabetical order,
+          omitting parser defaults. With a field name (for example, --show-config theme), print its
+          values without a label, including its parser default if present. An unset field produces
+          no output. Repeatable values retain their order and automatic modes remain unresolved.
+          This does not read input files, load assets, probe terminal colors, or start a pager.
+
       --diagnostic
           Show diagnostic information for bug reports.
 
