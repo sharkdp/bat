@@ -102,14 +102,16 @@ Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 .HP
 \fB\-\-wrap\fR <mode>
 .IP
-Specify the text\-wrapping mode (*auto*, never, character, word). The '\-\-terminal\-width' option
+Specify the text\-wrapping mode (*auto*, never, character, word, truncate). The '\-\-terminal\-width' option
 can be used in addition to control the output width. In \fBword\fR mode, lines are broken at
 whitespace boundaries. If a single word exceeds the terminal width, it falls back to
-character wrapping.
+character wrapping. In \fBtruncate\fR mode, long lines are cut to the available width
+and end with an ellipsis. Tabs are expanded, using eight columns when '\-\-tabs=0'.
 .HP
 \fB\-S\fR, \fB\-\-chop\-long\-lines\fR
 .IP
-Truncate all lines longer than screen width. Alias for '\-\-wrap=never'.
+Disable wrapping. Alias for '\-\-wrap=never'. The pager may scroll long lines
+horizontally. Use '\-\-wrap=truncate' to truncate output instead.
 .HP
 \fB\-\-terminal\-width\fR <width>
 .IP

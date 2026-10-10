@@ -117,7 +117,7 @@ _bat() {
 		return 0
 		;;
 	--wrap)
-		COMPREPLY=($(compgen -W "auto never character word" -- "$cur"))
+		COMPREPLY=($(compgen -W "auto never character word truncate" -- "$cur"))
 		return 0
 		;;
 	--binary)

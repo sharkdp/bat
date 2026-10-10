@@ -68,11 +68,14 @@ Options:
           Set the tab width to T spaces. Use a width of 0 to pass tabs through directly
 
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character, word). The '--terminal-width'
-          option can be used in addition to control the output width.
+          Specify the text-wrapping mode (*auto*, never, character, word, truncate). The
+          '--terminal-width' option can be used in addition to control the output width. In truncate
+          mode, long lines end with an ellipsis. Tabs are expanded, using eight columns when
+          '--tabs=0'.
 
   -S, --chop-long-lines
-          Truncate all lines longer than screen width. Alias for '--wrap=never'.
+          Disable wrapping. Alias for '--wrap=never'. The pager may scroll long lines horizontally.
+          Use '--wrap=truncate' to truncate output instead.
 
       --terminal-width <width>
           Explicitly set the width of the terminal instead of determining it automatically. If

@@ -404,6 +404,7 @@ impl App {
                     match self.matches.get_one::<String>("wrap").map(|s| s.as_str()) {
                         Some("character") => WrappingMode::Character,
                         Some("word") => WrappingMode::Word,
+                        Some("truncate") => WrappingMode::Truncate,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
                             if self.interactive_output || maybe_term_width.is_some() {
@@ -440,7 +441,8 @@ impl App {
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
                 || self.number_from_cli
-                || self.number_nonblank_from_cli),
+                || self.number_nonblank_from_cli
+                || self.matches.get_one::<String>("wrap").map(|s| s.as_str()) == Some("truncate")),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")

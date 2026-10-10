@@ -28,9 +28,9 @@ Options:
       --tabs <T>
           Set the tab width to T spaces.
       --wrap <mode>
-          Specify the text-wrapping mode (*auto*, never, character, word).
+          Specify the text-wrapping mode (*auto*, never, character, word, truncate).
   -S, --chop-long-lines
-          Truncate all lines longer than screen width. Alias for '--wrap=never'.
+          Disable wrapping. Alias for '--wrap=never'.
   -n, --number
           Show line numbers (alias for '--style=numbers').
   -b, --number-nonblank

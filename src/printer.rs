@@ -16,7 +16,7 @@ use content_inspector::ContentType;
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
 use unicode_segmentation::UnicodeSegmentation;
-use unicode_width::UnicodeWidthChar;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
@@ -475,6 +475,108 @@ impl<'a> InteractivePrinter<'a> {
         *cursor += text.len();
         text.to_string()
     }
+
+    fn print_truncated_line(
+        &mut self,
+        handle: &mut OutputHandle,
+        regions: &[(syntect::highlighting::Style, &str)],
+        width: usize,
+        background_color: Option<Color>,
+    ) -> Result<()> {
+        let tab_width = if self.config.tab_width == 0 {
+            8
+        } else {
+            self.config.tab_width
+        };
+        let mut total_width = 0;
+        let mut expanded = Vec::with_capacity(regions.len());
+
+        // Measure the complete line before reserving a column for the marker.
+        // Keep ANSI sequences intact and expand tabs using visible columns.
+        for &(style, region) in regions {
+            let mut text = String::new();
+            for chunk in EscapeSequenceIterator::new(region) {
+                if let EscapeSequence::Text(raw) = chunk {
+                    for grapheme in raw.trim_end_matches(['\r', '\n']).graphemes(true) {
+                        if grapheme == "\t" {
+                            let spaces = tab_width - total_width % tab_width;
+                            text.push_str(&" ".repeat(spaces));
+                            total_width += spaces;
+                        } else {
+                            text.push_str(grapheme);
+                            total_width += UnicodeWidthStr::width(grapheme);
+                        }
+                    }
+                } else {
+                    text.push_str(chunk.raw());
+                }
+            }
+            expanded.push((style, text));
+        }
+
+        let truncated = total_width > width;
+        let available = width.saturating_sub(usize::from(truncated));
+        let mut column = 0;
+        let mut clipped = false;
+        for (style, region) in &expanded {
+            for chunk in EscapeSequenceIterator::new(region) {
+                if let EscapeSequence::Text(text) = chunk {
+                    if clipped {
+                        continue;
+                    }
+                    let mut end = 0;
+                    for grapheme in text.graphemes(true) {
+                        let grapheme_width = UnicodeWidthStr::width(grapheme);
+                        if column + grapheme_width > available {
+                            clipped = true;
+                            break;
+                        }
+                        column += grapheme_width;
+                        end += grapheme.len();
+                    }
+                    if end > 0 {
+                        write!(
+                            handle,
+                            "{}{}",
+                            as_terminal_escaped(
+                                *style,
+                                &format!("{}{}", self.ansi_style, &text[..end]),
+                                self.config.true_color,
+                                self.config.colored_output,
+                                self.config.use_italic_text,
+                                background_color,
+                            ),
+                            self.ansi_style.to_reset_sequence(),
+                        )?;
+                    }
+                } else {
+                    // Even omitted escape sequences can affect following lines.
+                    if !clipped && column < available {
+                        write!(handle, "{}", chunk.raw())?;
+                    }
+                    self.ansi_style.update(chunk);
+                }
+            }
+        }
+
+        write!(handle, "{}", self.ansi_style.to_reset_sequence())?;
+        let mut marker_style = Style::default();
+        if self.config.colored_output {
+            marker_style = marker_style.bold();
+        }
+        marker_style.background =
+            background_color.and_then(|color| to_ansi_color(color, self.config.true_color));
+        if truncated && width > 0 {
+            write!(
+                handle,
+                "{}",
+                marker_style.paint(format!("{}…", " ".repeat(available - column)))
+            )?;
+        } else if background_color.is_some() {
+            write!(handle, "{}", marker_style.paint(" ".repeat(width - column)))?;
+        }
+        writeln!(handle)
+    }
 }
 
 impl Printer for InteractivePrinter<'_> {
@@ -757,7 +859,9 @@ impl Printer for InteractivePrinter<'_> {
         }
 
         // Line contents.
-        if matches!(self.config.wrapping_mode, WrappingMode::NoWrapping(_)) {
+        if self.config.wrapping_mode == WrappingMode::Truncate {
+            self.print_truncated_line(handle, &regions, cursor_max, background_color)?;
+        } else if matches!(self.config.wrapping_mode, WrappingMode::NoWrapping(_)) {
             let true_color = self.config.true_color;
             let colored_output = self.config.colored_output;
             let italics = self.config.use_italic_text;
