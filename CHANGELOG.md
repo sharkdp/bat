@@ -8,6 +8,7 @@
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
 ## Features
+- Add `--fail-if-syntax-unsupported` for silent fallback in input preprocessor chains, see #3942 (@Matei02355)
 
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
 - Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It implies `--strip-ansi` at the same value and additionally substitutes terminal-active control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)

@@ -397,6 +397,22 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("fail-if-syntax-unsupported")
+                .long("fail-if-syntax-unsupported")
+                .action(ArgAction::SetTrue)
+                .overrides_with("fail-if-syntax-unsupported")
+                .hide_short_help(true)
+                .help("Silently reject inputs without a specific syntax.")
+                .long_help(
+                    "Skip inputs without a specific syntax, producing no output or diagnostic \
+                     for those inputs and exiting with a nonzero status. Plain Text and binary \
+                     inputs are unsupported; --binary=as-text permits binary input with a \
+                     recognized syntax. Explicit languages, mappings, first-line detection, and \
+                     --file-name still apply. A specific --fallback-syntax is accepted. Other \
+                     errors are reported normally. Disables paging for use in input preprocessor chains."
+                ),
+        )
+        .arg(
             Arg::new("map-syntax")
                 .short('m')
                 .long("map-syntax")
