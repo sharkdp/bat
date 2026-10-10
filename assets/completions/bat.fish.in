@@ -82,6 +82,9 @@ function __bat_style_opts
         "header,alias for header-filename" \
         "header-filename,filename above content" \
         "header-filesize,filesize above content" \
+        "header-path,absolute source path" \
+        "header-modified,modification time in UTC" \
+        "header-permissions,file permissions" \
         "grid,lines b/w sidebar/header/content" \
         "numbers,line numbers in sidebar" \
         "rule,separate files" \

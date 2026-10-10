@@ -3284,7 +3284,7 @@ fn grid_for_file_without_newline() {
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
-        .arg("--style=full")
+        .arg("--style=full,-header-path,-header-modified,-header-permissions")
         .arg("single-line.txt")
         .assert()
         .success()
@@ -4409,7 +4409,7 @@ fn style_components_can_be_removed() {
         .write_stdin("test")
         .assert()
         .success()
-        .stdout("     STDIN\n     Size: -\n   1 test\n")
+        .stdout("     STDIN\n     Size: -\n     Path: -\n     Modified: -\n     Permissions: -\n   1 test\n")
         .stderr("");
 }
 

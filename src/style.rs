@@ -14,6 +14,9 @@ pub enum StyleComponent {
     Header,
     HeaderFilename,
     HeaderFilesize,
+    HeaderPath,
+    HeaderModified,
+    HeaderPermissions,
     LineNumbers,
     Snip,
     Full,
@@ -38,6 +41,9 @@ impl StyleComponent {
             StyleComponent::Header => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
+            StyleComponent::HeaderPath => &[StyleComponent::HeaderPath],
+            StyleComponent::HeaderModified => &[StyleComponent::HeaderModified],
+            StyleComponent::HeaderPermissions => &[StyleComponent::HeaderPermissions],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
@@ -46,6 +52,9 @@ impl StyleComponent {
                 StyleComponent::Grid,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
+                StyleComponent::HeaderPath,
+                StyleComponent::HeaderModified,
+                StyleComponent::HeaderPermissions,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
             ],
@@ -75,6 +84,9 @@ impl FromStr for StyleComponent {
             "header" => Ok(StyleComponent::Header),
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
+            "header-path" => Ok(StyleComponent::HeaderPath),
+            "header-modified" => Ok(StyleComponent::HeaderModified),
+            "header-permissions" => Ok(StyleComponent::HeaderPermissions),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
@@ -107,7 +119,11 @@ impl StyleComponents {
     }
 
     pub fn header(&self) -> bool {
-        self.header_filename() || self.header_filesize()
+        self.header_filename()
+            || self.header_filesize()
+            || self.header_path()
+            || self.header_modified()
+            || self.header_permissions()
     }
 
     pub fn header_filename(&self) -> bool {
@@ -116,6 +132,18 @@ impl StyleComponents {
 
     pub fn header_filesize(&self) -> bool {
         self.0.contains(&StyleComponent::HeaderFilesize)
+    }
+
+    pub fn header_path(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderPath)
+    }
+
+    pub fn header_modified(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderModified)
+    }
+
+    pub fn header_permissions(&self) -> bool {
+        self.0.contains(&StyleComponent::HeaderPermissions)
     }
 
     pub fn numbers(&self) -> bool {

@@ -40,6 +40,51 @@ use crate::wrapping::WrappingMode;
 use crate::BinaryBehavior;
 use crate::StripAnsiMode;
 
+fn format_permissions(permissions: &std::fs::Permissions) -> String {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = permissions.mode();
+        let mut chars: Vec<char> = [
+            (0o400, 'r'),
+            (0o200, 'w'),
+            (0o100, 'x'),
+            (0o040, 'r'),
+            (0o020, 'w'),
+            (0o010, 'x'),
+            (0o004, 'r'),
+            (0o002, 'w'),
+            (0o001, 'x'),
+        ]
+        .into_iter()
+        .map(|(bit, ch)| if mode & bit != 0 { ch } else { '-' })
+        .collect();
+        for (bit, index, executable, non_executable) in [
+            (0o4000, 2, 's', 'S'),
+            (0o2000, 5, 's', 'S'),
+            (0o1000, 8, 't', 'T'),
+        ] {
+            if mode & bit != 0 {
+                chars[index] = if chars[index] == 'x' {
+                    executable
+                } else {
+                    non_executable
+                };
+            }
+        }
+        chars.into_iter().collect()
+    }
+    #[cfg(not(unix))]
+    {
+        if permissions.readonly() {
+            "read-only"
+        } else {
+            "read-write"
+        }
+        .to_owned()
+    }
+}
+
 // Return the displayed width of a character.
 //
 // Control characters (0x00..=0x1F and 0x7F) are rendered by the terminal
@@ -534,6 +579,18 @@ impl Printer for InteractivePrinter<'_> {
                 StyleComponent::HeaderFilesize,
                 self.config.style_components.header_filesize(),
             ),
+            (
+                StyleComponent::HeaderPath,
+                self.config.style_components.header_path(),
+            ),
+            (
+                StyleComponent::HeaderModified,
+                self.config.style_components.header_modified(),
+            ),
+            (
+                StyleComponent::HeaderPermissions,
+                self.config.style_components.header_permissions(),
+            ),
         ]
         .iter()
         .filter(|(_, is_enabled)| *is_enabled)
@@ -574,6 +631,49 @@ impl Printer for InteractivePrinter<'_> {
                     let header_filesize =
                         format!("Size: {}", self.colors.header_value.paint(bsize));
                     self.print_header_multiline_component(handle, &header_filesize)
+                }
+                StyleComponent::HeaderPath => {
+                    let path = match &input.kind {
+                        crate::input::OpenedInputKind::OrdinaryFile(path) => {
+                            path_abs::PathAbs::new(path)
+                                .ok()
+                                .map(|path| path.as_path().to_string_lossy().into_owned())
+                        }
+                        _ => None,
+                    }
+                    .unwrap_or_else(|| "-".into());
+                    self.print_header_multiline_component(
+                        handle,
+                        &format!(
+                            "Path: {}",
+                            self.colors.header_value.paint(sanitize_for_terminal(&path))
+                        ),
+                    )
+                }
+                StyleComponent::HeaderModified => {
+                    let modified = metadata
+                        .modified
+                        .and_then(|time| jiff::Timestamp::try_from(time).ok())
+                        .map(|time| time.strftime("%Y-%m-%d %H:%M:%S UTC").to_string())
+                        .unwrap_or_else(|| "-".into());
+                    self.print_header_multiline_component(
+                        handle,
+                        &format!("Modified: {}", self.colors.header_value.paint(modified)),
+                    )
+                }
+                StyleComponent::HeaderPermissions => {
+                    let permissions = metadata
+                        .permissions
+                        .as_ref()
+                        .map(format_permissions)
+                        .unwrap_or_else(|| "-".into());
+                    self.print_header_multiline_component(
+                        handle,
+                        &format!(
+                            "Permissions: {}",
+                            self.colors.header_value.paint(permissions)
+                        ),
+                    )
                 }
                 _ => Ok(()),
             })?;
@@ -1021,5 +1121,22 @@ impl Colors {
             git_modified: Yellow.normal(),
             line_number: gutter_style,
         }
+    }
+}
+
+#[test]
+#[cfg(unix)]
+fn permission_display_includes_special_mode_bits() {
+    use std::os::unix::fs::PermissionsExt;
+    for (mode, expected) in [
+        (0o000, "---------"),
+        (0o754, "rwxr-xr--"),
+        (0o4754, "rwsr-xr--"),
+        (0o7640, "rwSr-S--T"),
+    ] {
+        assert_eq!(
+            format_permissions(&std::fs::Permissions::from_mode(mode)),
+            expected
+        );
     }
 }
