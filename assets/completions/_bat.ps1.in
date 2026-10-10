@@ -65,7 +65,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
         }
-        '*;--style' {
+        {$_ -like '*;--style' -or $_ -like '*;--style-single-file' -or $_ -like '*;--style-stdin' -or $_ -like '*;--style-multiple-files'} {
             $ArrayStyle |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
@@ -152,6 +152,9 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--theme'                 , 'theme'                 , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting.')
             [CompletionResult]::new('--theme-dark'            , 'themedark'             , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for dark backgrounds.')
             [CompletionResult]::new('--theme-light'           , 'themelight'            , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for light backgrounds.')
+            [CompletionResult]::new('--style-single-file'                 , 'style-single-file'                 , [CompletionResultType]::ParameterName, 'Comma-separated list of style elements to display (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).')
+            [CompletionResult]::new('--style-stdin'                 , 'style-stdin'                 , [CompletionResultType]::ParameterName, 'Comma-separated list of style elements to display (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).')
+            [CompletionResult]::new('--style-multiple-files'                 , 'style-multiple-files'                 , [CompletionResultType]::ParameterName, 'Comma-separated list of style elements to display (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).')
             [CompletionResult]::new('--style'                 , 'style'                 , [CompletionResultType]::ParameterName, 'Comma-separated list of style elements to display (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).')
         #   [CompletionResult]::new('-r'                      , 'r'                     , [CompletionResultType]::ParameterName, 'Only print the lines from N to M.')
             [CompletionResult]::new('--line-range'            , 'line-range'            , [CompletionResultType]::ParameterName, 'Only print the lines from N to M.')
