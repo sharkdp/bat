@@ -1,0 +1,4 @@
+# Lazarus / Free Pascal program source files #2313
+# Note that `*.pp` is not mapped here, as it is already used by Puppet
+[mappings]
+"Pascal" = ["*.lpr"]
