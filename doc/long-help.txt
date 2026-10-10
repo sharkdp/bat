@@ -212,6 +212,7 @@ Options:
                     and the header from the content.
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
+            * sidebar: show line numbers and Git modification markers.
             * snip: draw separation lines between distinct line ranges.
 
   -r, --line-range <N:M>

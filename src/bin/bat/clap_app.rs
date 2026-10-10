@@ -534,7 +534,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, sidebar, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -565,6 +565,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \
                      * numbers: show line numbers in the side bar.\n  \
+                     * sidebar: show line numbers and Git modification markers.\n  \
                      * snip: draw separation lines between distinct line ranges.",
                 ),
         )
