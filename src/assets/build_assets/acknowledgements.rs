@@ -96,6 +96,9 @@ fn include_license_in_acknowledgments(license_text: &str) -> bool {
         "Apache License Version 2.0, January 2004 http://www.apache.org/licenses/",
         "Licensed under the Apache License, Version 2.0 (the \"License\");",
 
+        // MPL 2.0 (include its full terms and accompanying source notice).
+        "Mozilla Public License, version 2.0",
+
         // CC BY 4.0
         "Creative Commons Attribution 4.0 International Public License",
     ];
@@ -161,6 +164,16 @@ fn normalize_license_text(license_text: &str) -> String {
 mod tests {
     #[cfg(test)]
     use super::*;
+
+    #[test]
+    fn prolog_license_and_source_notice_are_included_in_full() {
+        let source = Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/syntaxes/02_Extra/Prolog");
+        let result = build_acknowledgements(&source, true).unwrap().unwrap();
+        for name in ["LICENSE", "NOTICE"] {
+            let contents = read_to_string(source.join(name)).unwrap();
+            assert!(result.contains(&contents));
+        }
+    }
 
     #[test]
     fn test_normalize_license_text() {
