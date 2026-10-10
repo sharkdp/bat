@@ -214,6 +214,14 @@ Options:
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.
 
+      --max-bytes <N>
+          Read at most N bytes from each input, before line buffering. --head is an alias. Useful
+          for devices and streams that may not contain newlines. A zero limit reads no content. This
+          is a byte limit, so input may end within a multibyte character. Binary detection and
+          output formatting still apply; use --binary=as-text to display binary bytes. When using
+          LESSOPEN, the limit applies to the preprocessor output; it does not bound the
+          preprocessor's own reads.
+
   -r, --line-range <N:M>
           Only print the specified range of lines for each file. For example:
             '--line-range 30:40' prints lines 30 to 40

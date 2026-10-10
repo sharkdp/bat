@@ -480,6 +480,7 @@ impl App {
                 "--sanitize",
             ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
+            max_bytes: self.matches.get_one::<u64>("max-bytes").copied(),
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")
                 || self.number_nonblank_from_cli,

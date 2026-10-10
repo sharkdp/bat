@@ -146,6 +146,10 @@ impl Controller<'_> {
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
     ) -> Result<()> {
+        let input = match self.config.max_bytes {
+            Some(limit) => input.with_max_bytes(limit),
+            None => input,
+        };
         let mut opened_input = {
             #[cfg(feature = "lessopen")]
             match self.preprocessor {
