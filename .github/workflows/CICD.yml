@@ -243,15 +243,17 @@ jobs:
         unset CARGO_TEST_OPTIONS ; case ${{ matrix.job.target }} in arm-* | aarch64-*) CARGO_TEST_OPTIONS="--lib --bin ${{ needs.crate_metadata.outputs.name }}" ;; esac;
         echo "CARGO_TEST_OPTIONS=${CARGO_TEST_OPTIONS}" >> $GITHUB_OUTPUT
 
-    - name: Run tests
+    - name: Run tests (Unix)
+      if: runner.os != 'Windows'
       shell: bash
+      run: $BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+
+    - name: Run tests (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
       run: |
-        if [[ ${{ matrix.job.os }} = windows-* ]]
-        then
-          powershell.exe -command "$BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}"
-        else
-          $BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
-        fi
+        & $env:BUILD_CMD test --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
+        exit $LASTEXITCODE
 
     - name: Run bat
       shell: bash
