@@ -19,6 +19,8 @@ Options:
           Set the language for syntax highlighting.
       --fallback-syntax <fallback-syntax>
           Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
+      --highlight-pattern <regex>
+          Highlight lines matching a regular expression.
   -H, --highlight-line <N:M>
           Highlight lines N through M.
       --file-name <name>

@@ -249,6 +249,16 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Highlight lines matching a regular expression, in addition to explicit ranges.
+    /// Repeat this method to match any of several patterns.
+    pub fn highlight_pattern(&mut self, pattern: &str) -> Result<&mut Self> {
+        self.config.highlighted_patterns.push(
+            regex::Regex::new(pattern)
+                .map_err(|error| format!("Invalid highlight pattern: {error}"))?,
+        );
+        Ok(self)
+    }
+
     /// Specify the maximum number of consecutive empty lines to print.
     pub fn squeeze_empty_lines(&mut self, maximum: Option<usize>) -> &mut Self {
         self.config.squeeze_lines = maximum;
