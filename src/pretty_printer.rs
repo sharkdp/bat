@@ -227,6 +227,14 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Append a literal argument to the selected external pager.
+    /// Can be called repeatedly. The built-in pager does not accept arguments.
+    #[cfg(feature = "paging")]
+    pub fn pager_arg(&mut self, arg: impl Into<String>) -> &mut Self {
+        self.config.pager_args.push(arg.into());
+        self
+    }
+
     /// Specify the lines that should be printed (default: all)
     pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
         self.config.visible_lines = VisibleLines::Ranges(ranges);
