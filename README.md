@@ -745,6 +745,22 @@ alias cat='bat_alias_wrapper'
 ```
 
 
+### Alternative control-character notation
+
+With `--show-all` (`-A`), choose a notation using `-c` or
+`--nonprintable-notation`. `unicode` and `caret` retain their existing behavior.
+`symbols` uses pictographic marks such as ⇥, ⏎, ⌫, and ⎋ for common controls.
+`period` renders spaces, ASCII controls, and invalid UTF-8 bytes as periods.
+`binary` keeps symbols for tabs, line endings, and escapes, using periods for
+other controls and invalid bytes. Newline markers retain the line break, and
+`--tabs` controls the tab stops.
+
+```bash
+bat -A -c symbols file
+bat -A -c binary file
+```
+
+
 ## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent

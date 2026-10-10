@@ -177,6 +177,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Select the notation used when non-printable characters are shown.
+    pub fn nonprintable_notation(&mut self, notation: crate::NonprintableNotation) -> &mut Self {
+        self.config.nonprintable_notation = notation;
+        self
+    }
+
     /// Whether to show "snip" markers between visible line ranges (default: no)
     pub fn snip(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.snip = yes;

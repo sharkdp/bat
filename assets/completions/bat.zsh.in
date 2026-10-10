@@ -25,7 +25,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
     local -a args
     args=(
         '(-A --show-all)'{-A,--show-all}'[show non-printable characters (space, tab, newline, ..)]'
-        --nonprintable-notation='[specify how to display non-printable characters when using --show-all]:notation:(caret unicode)'
+        '(-c --nonprintable-notation)'{-c+,--nonprintable-notation=}'[specify how to display non-printable characters when using --show-all]:notation:(caret unicode symbols period binary)'
         --binary='[specify how to treat binary content]:behavior:(no-printing as-text)'
         \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable automatic paging (alias for `--paging=never`)]'
         '(-l --language)'{-l+,--language=}'[set the language for syntax highlighting]:language:->languages'

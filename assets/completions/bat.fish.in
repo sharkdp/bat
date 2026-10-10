@@ -200,7 +200,7 @@ complete -c $bat -l no-custom-assets -d "Do not load custom assets"
 
 complete -c $bat -l no-lessopen -d "Disable the $LESSOPEN preprocessor if enabled (overrides --lessopen)"
 
-complete -c $bat -l nonprintable-notation -x -a "unicode caret" -d "Set notation for non-printable characters" -n __bat_no_excl_args
+complete -c $bat -s c -l nonprintable-notation -x -a "unicode caret symbols period binary" -d "Set notation for non-printable characters" -n __bat_no_excl_args
 
 complete -c $bat -s n -l number -d "Only show line numbers, no other decorations" -n __bat_no_excl_args
 

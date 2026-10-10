@@ -72,15 +72,28 @@ pub fn replace_nonprintable(
         if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
             idx += skip_ahead;
             line_idx += 1;
+            let output_start = output.len();
 
             match chr {
                 // space
-                ' ' => output.push('·'),
+                ' ' => output.push(if nonprintable_notation == NonprintableNotation::Period {
+                    '.'
+                } else {
+                    '·'
+                }),
                 // tab
                 '\t' => {
                     let tab_stop = tab_width - ((line_idx - 1) % tab_width);
                     line_idx = 0;
-                    if tab_stop == 1 {
+                    if nonprintable_notation == NonprintableNotation::Period {
+                        output.push_str(&".".repeat(tab_stop));
+                    } else if matches!(
+                        nonprintable_notation,
+                        NonprintableNotation::Symbols | NonprintableNotation::Binary
+                    ) {
+                        output.push('⇥');
+                        output.push_str(&" ".repeat(tab_stop - 1));
+                    } else if tab_stop == 1 {
                         output.push('↹');
                     } else {
                         output.push('├');
@@ -90,33 +103,14 @@ pub fn replace_nonprintable(
                 }
                 // line feed
                 '\x0A' => {
-                    output.push_str(match nonprintable_notation {
-                        NonprintableNotation::Caret => "^J\x0A",
-                        NonprintableNotation::Unicode => "␊\x0A",
-                    });
+                    push_control_symbol(&mut output, chr, nonprintable_notation);
+                    output.push('\n');
                     line_idx = 0;
                 }
                 // ASCII control characters
-                '\x00'..='\x1F' => {
-                    let c = u32::from(chr);
-
-                    match nonprintable_notation {
-                        NonprintableNotation::Caret => {
-                            let caret_character = char::from_u32(0x40 + c).unwrap();
-                            write!(output, "^{caret_character}").ok();
-                        }
-
-                        NonprintableNotation::Unicode => {
-                            let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
-                            output.push(replacement_symbol)
-                        }
-                    }
+                '\x00'..='\x1F' | '\x7F' => {
+                    push_control_symbol(&mut output, chr, nonprintable_notation);
                 }
-                // delete
-                '\x7F' => match nonprintable_notation {
-                    NonprintableNotation::Caret => output.push_str("^?"),
-                    NonprintableNotation::Unicode => output.push('\u{2421}'),
-                },
                 // printable ASCII
                 c if c.is_ascii_alphanumeric()
                     || c.is_ascii_punctuation()
@@ -127,13 +121,75 @@ pub fn replace_nonprintable(
                 // everything else
                 c => output.push_str(&c.escape_unicode().collect::<String>()),
             }
+            if matches!(
+                nonprintable_notation,
+                NonprintableNotation::Symbols
+                    | NonprintableNotation::Period
+                    | NonprintableNotation::Binary
+            ) && !matches!(chr, '\t' | '\n')
+            {
+                // Escape sequences such as \\u{e9} occupy more columns than the
+                // original character. Keep the new notation's tab stops aligned.
+                line_idx += unicode_width::UnicodeWidthStr::width(&output[output_start..])
+                    .saturating_sub(1);
+            }
         } else {
-            write!(output, "\\x{:02X}", input[idx]).ok();
+            if matches!(
+                nonprintable_notation,
+                NonprintableNotation::Period | NonprintableNotation::Binary
+            ) {
+                output.push('.');
+                line_idx += 1;
+            } else {
+                write!(output, "\\x{:02X}", input[idx]).ok();
+                if nonprintable_notation == NonprintableNotation::Symbols {
+                    line_idx += 4;
+                }
+            }
             idx += 1;
         }
     }
 
     output
+}
+
+fn push_control_symbol(output: &mut String, control: char, notation: NonprintableNotation) {
+    use NonprintableNotation::*;
+    match notation {
+        Caret => {
+            output.push('^');
+            output.push(if control == '\x7f' {
+                '?'
+            } else {
+                char::from_u32(0x40 + u32::from(control)).unwrap()
+            });
+        }
+        Period => output.push('.'),
+        Symbols | Binary => {
+            let symbol = match control {
+                '\n' => Some('⏎'),
+                '\r' => Some('←'),
+                '\x1b' => Some('⎋'),
+                '\x08' if notation == Symbols => Some('⌫'),
+                '\x0b' if notation == Symbols => Some('⤓'),
+                '\x0c' if notation == Symbols => Some('↡'),
+                '\x7f' if notation == Symbols => Some('⌦'),
+                _ => None,
+            };
+            if let Some(symbol) = symbol {
+                output.push(symbol);
+            } else if notation == Binary {
+                output.push('.');
+            } else {
+                push_control_symbol(output, control, Unicode);
+            }
+        }
+        Unicode => output.push(if control == '\x7f' {
+            '\u{2421}'
+        } else {
+            char::from_u32(0x2400 + u32::from(control)).unwrap()
+        }),
+    }
 }
 
 /// Strips ANSI escape sequences from the input.

@@ -65,17 +65,22 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("nonprintable-notation")
                 .long("nonprintable-notation")
+                .short('c')
                 .action(ArgAction::Set)
                 .default_value("unicode")
-                .value_parser(["unicode", "caret"])
+                .value_parser(["unicode", "caret", "symbols", "period", "binary"])
                 .value_name("notation")
                 .hide_default_value(true)
                 .help("Set notation for non-printable characters.")
                 .long_help(
-                    "Set notation for non-printable characters.\n\n\
+                    "Set notation for non-printable characters with --show-all. \
+                    Tab markers occupy the configured tab width.\n\n\
                     Possible values:\n  \
                     * unicode (␇, ␊, ␀, ..)\n  \
-                    * caret   (^G, ^J, ^@, ..)",
+                    * caret   (^G, ^J, ^@, ..)\n  \
+                    * symbols (⇥, ⏎, ⌫, ⎋, ..; Unicode for other controls)\n  \
+                    * period  (periods for spaces, controls and invalid bytes)\n  \
+                    * binary  (symbols for tabs, line endings and escapes; periods for other controls)",
                 ),
         )
         .arg(
