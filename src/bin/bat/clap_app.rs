@@ -702,6 +702,22 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Show diagnostic information for bug reports."),
         )
         .arg(
+            Arg::new("warning")
+                .long("warning")
+                .overrides_with("warning")
+                .value_name("kind")
+                .value_parser(["none", "missing-trailing-newline"])
+                .default_value("none")
+                .hide_default_value(true)
+                .help("Enable optional input warnings.")
+                .long_help(
+                    "Enable optional input warnings: 'none' (default) or 'missing-trailing-newline'. \
+                     A missing final newline is reported below formatted output, or on standard \
+                     error in plain redirected output. Empty files and final lines excluded by \
+                     '--line-range' do not produce this warning.",
+                ),
+        )
+        .arg(
             Arg::new("quiet-empty")
                 .long("quiet-empty")
                 .short('E')

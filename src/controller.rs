@@ -242,7 +242,24 @@ impl Controller<'_> {
                 }
             };
 
-            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+            let missing_newline =
+                self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+            if self.config.warn_missing_newline
+                && missing_newline
+                && input
+                    .reader
+                    .content_type
+                    .is_some_and(|content| content.is_text())
+            {
+                if self.config.loop_through {
+                    eprintln!(
+                        "[bat warning]: {}: No newline at end of file",
+                        crate::sanitize_for_terminal(&input.description.summary())
+                    );
+                } else {
+                    printer.print_missing_newline_warning(writer)?;
+                }
+            }
         }
         printer.print_footer(writer, input)?;
 
@@ -255,7 +272,7 @@ impl Controller<'_> {
         writer: &mut OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
         // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
@@ -264,6 +281,7 @@ impl Controller<'_> {
         let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
 
         let mut reached_eof: bool = false;
+        let mut missing_newline = false;
         let mut first_range: bool = true;
         let mut mid_range: bool = false;
 
@@ -305,6 +323,7 @@ impl Controller<'_> {
             let Some((line, line_nr)) = buffered_lines.pop_front() else {
                 break;
             };
+            missing_newline = false;
 
             // Determine if the last line number in the buffer is the last line of the file or
             // just a line somewhere in the file
@@ -328,6 +347,15 @@ impl Controller<'_> {
                 }
 
                 RangeCheckResult::InRange => {
+                    missing_newline = match reader.content_type {
+                        Some(content_inspector::ContentType::UTF_16LE) => {
+                            !line.ends_with(&[b'\n', 0])
+                        }
+                        Some(content_inspector::ContentType::UTF_16BE) => {
+                            !line.ends_with(&[0, b'\n'])
+                        }
+                        _ => !line.ends_with(b"\n"),
+                    };
                     if style_snip {
                         if first_range {
                             first_range = false;
@@ -348,6 +376,6 @@ impl Controller<'_> {
                 }
             }
         }
-        Ok(())
+        Ok(reached_eof && missing_newline)
     }
 }

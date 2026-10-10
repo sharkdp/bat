@@ -120,6 +120,10 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never character word" -- "$cur"))
 		return 0
 		;;
+	--warning)
+		COMPREPLY=($(compgen -W "none missing-trailing-newline" -- "$cur"))
+		return 0
+		;;
 	--binary)
 		COMPREPLY=($(compgen -W "no-printing as-text" -- "$cur"))
 		return 0
@@ -199,6 +203,7 @@ _bat() {
 			--show-all
 			--nonprintable-notation
 			--binary
+			--warning
 			--plain
 			--language
 			--highlight-line
