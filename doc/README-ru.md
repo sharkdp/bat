@@ -167,18 +167,14 @@ bat main.cpp | xclip
 `MANPAGER`:
 
 ```bash
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANPAGER="bat -plman"
 man 2 select
 ```
-(замените `bat` на `batcat`, если у вас Debian или Ubuntu)
-
-Возможно вам понадобится также установить `MANROFFOPT="-c"`, если у вас есть проблемы с форматированием.
+(в некоторых старых выпусках Debian или Ubuntu исполняемый файл называется `batcat` вместо `bat`)
 
 Если вы хотите сделать этой одной командой, вы можете использовать [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
 Обратите внимание, что [синтаксис manpage](assets/syntaxes/02_Extra/Manpage.sublime-syntax) разрабатывается в этом репозитории и все еще находится в разработке.
-
-Также заметьте, что это [не заработает](https://github.com/sharkdp/bat/issues/1145) с реализацией `man` через Mandocs.
 
 #### `prettier` / `shfmt` / `rustfmt`
 
