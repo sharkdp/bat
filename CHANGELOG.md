@@ -3,6 +3,7 @@
 
 ## Other
 
+- CI: add Plumber workflow security check, see #3882 (@Totara-thib)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
