@@ -4,3 +4,9 @@ bat is made available under the terms of either the MIT License or the Apache
 License 2.0, at your option.
 
 See the LICENSE-APACHE and LICENSE-MIT files for license details.
+
+Portions of this software are derived from oh-my-pi (https://github.com/can1357/oh-my-pi):
+Copyright (c) 2025 Mario Zechner
+Copyright (c) 2025-2026 Can Bölük
+Copyright (c) 2026 Stencil Labs, Inc.
+Licensed under the MIT License.

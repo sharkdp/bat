@@ -503,6 +503,15 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("mermaid")
+                .long("mermaid")
+                .overrides_with("mermaid")
+                .value_name("when")
+                .help("Specify when to render Mermaid diagrams (auto, never, always)")
+                .value_parser(["auto", "never", "always"])
+                .default_value("auto"),
+        )
+        .arg(
             Arg::new("sanitize")
                 .long("sanitize")
                 .overrides_with("sanitize")

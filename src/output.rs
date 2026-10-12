@@ -78,12 +78,30 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager: Option<&str>,
     ) -> Result<Self> {
+        Self::from_mode_with_options(paging_mode, wrapping_mode, pager, false)
+    }
+
+    #[cfg(feature = "paging")]
+    pub fn from_mode_with_options(
+        paging_mode: PagingMode,
+        wrapping_mode: WrappingMode,
+        pager: Option<&str>,
+        chop_long_lines: bool,
+    ) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match paging_mode {
-            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager)?,
-            QuitIfOneScreen => {
-                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager)?
-            }
+            Always => OutputType::try_pager(
+                SingleScreenAction::Nothing,
+                wrapping_mode,
+                pager,
+                chop_long_lines,
+            )?,
+            QuitIfOneScreen => OutputType::try_pager(
+                SingleScreenAction::Quit,
+                wrapping_mode,
+                pager,
+                chop_long_lines,
+            )?,
             _ => OutputType::stdout(),
         })
     }
@@ -94,6 +112,7 @@ impl OutputType {
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
+        chop_long_lines: bool,
     ) -> Result<Self> {
         use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
@@ -143,7 +162,7 @@ impl OutputType {
                     p.arg("-F"); // Short version of --quit-if-one-screen for compatibility
                 }
 
-                if wrapping_mode == WrappingMode::NoWrapping(true) {
+                if wrapping_mode == WrappingMode::NoWrapping(true) || chop_long_lines {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
