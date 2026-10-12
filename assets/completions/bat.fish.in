@@ -3,7 +3,7 @@
 # ($XDG_CONFIG_HOME is usually set to ~/.config)
 
 # `bat` is `batcat` on Debian and Ubuntu
-set bat {{PROJECT_EXECUTABLE}}
+set -gx bat {{PROJECT_EXECUTABLE}}
 
 # Helper functions:
 
