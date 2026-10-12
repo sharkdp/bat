@@ -1,0 +1,85 @@
+%YAML 1.2
+---
+name: ZBR
+file_extensions: [zbr]
+scope: source.zbr
+
+variables:
+  function_identifier: '[a-zA-Z_][a-zA-Z0-9_]*'
+
+contexts:
+  main:
+    - include: comments
+    - include: headers
+    - include: trigger_calls
+    - include: function_calls
+    - include: braces
+    - include: operators
+    - include: escapes
+    - include: separator
+    - include: text
+
+  comments:
+    - match: //
+      scope: punctuation.definition.comment.zbr
+      push:
+        - meta_scope: comment.line.double-slash.zbr
+        - match: $\n?
+          pop: true
+
+  headers:
+    - match: ^\s*(#)(name|trigger|description|type|scope|option)\b
+      captures:
+        1: punctuation.definition.variable.zbr
+        2: keyword.control.zbr
+
+  trigger_calls:
+    - match: (on{{function_identifier}})(\{)
+      captures:
+        1: entity.name.tag.zbr
+        2: punctuation.section.block.begin.zbr
+      push:
+        - meta_scope: meta.block.trigger.zbr
+        - match: \}
+          scope: punctuation.section.block.end.zbr
+          pop: true
+        - include: main
+
+  function_calls:
+    - match: (Z)({{function_identifier}})(\{)
+      captures:
+        1: keyword.other.zbr
+        2: entity.name.function.zbr
+        3: punctuation.section.block.begin.zbr
+      push:
+        - meta_scope: meta.block.function.zbr
+        - match: \}
+          scope: punctuation.section.block.end.zbr
+          pop: true
+        - include: main
+
+  braces:
+    - match: \{
+      scope: punctuation.section.block.begin.zbr
+      push:
+        - meta_scope: meta.block.zbr
+        - match: \}
+          scope: punctuation.section.block.end.zbr
+          pop: true
+        - include: main
+
+  operators:
+    - match: \b(==|!=|>=|<=|>|<|&&|\|\|)\b
+      scope: keyword.operator.zbr
+
+  escapes:
+    - match: \\[{};\\]
+      scope: constant.character.escape.zbr
+
+  separator:
+    - match: ;
+      scope: keyword.other.zbr
+
+  text:
+    - match: '[^\s;{}]+'
+      scope: string.unquoted.zbr
