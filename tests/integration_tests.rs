@@ -492,6 +492,16 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn line_range_huge_offset_from_end_does_not_panic() {
+    bat()
+        .arg("multiline.txt")
+        .arg(format!("--line-range=:-{}", usize::MAX - 1))
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
 fn snip_at_terminal_width_one_does_not_panic() {
     bat()
         .arg("multiline.txt")
