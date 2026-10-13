@@ -25,10 +25,8 @@ mod unix {
 use unix::*;
 
 mod utils;
-use utils::command::{bat, bat_with_config};
+use utils::command::{bat, bat_raw_command, bat_raw_command_with_config, bat_with_config};
 
-#[cfg(unix)]
-use utils::command::bat_raw_command;
 use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
@@ -58,6 +56,67 @@ fn stdin() {
         .assert()
         .success()
         .stdout("foo\nbar\n");
+}
+
+/// Runs `bat` with `args` while its stdout is a pipe whose read end has
+/// already been closed, so the very first write fails with `BrokenPipe`
+/// (EPIPE on Unix, `ERROR_NO_DATA` on Windows).
+fn assert_quiet_exit_when_stdout_is_closed(command: &mut std::process::Command, args: &[&str]) {
+    use std::process::Stdio;
+
+    let (pipe_reader, pipe_writer) = std::io::pipe().expect("could not create a pipe");
+    drop(pipe_reader);
+
+    let output = command
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(pipe_writer)
+        .stderr(Stdio::piped())
+        .spawn()
+        .and_then(|child| child.wait_with_output())
+        .expect("could not run bat");
+
+    assert!(
+        output.status.success(),
+        "bat {args:?} should exit quietly when stdout is closed, status: {}, stderr: {}",
+        output.status,
+        String::from_utf8_lossy(&output.stderr),
+    );
+    assert!(
+        output.stderr.is_empty(),
+        "bat {args:?} should not print to stderr when stdout is closed, stderr: {}",
+        String::from_utf8_lossy(&output.stderr),
+    );
+}
+
+#[test]
+fn auxiliary_output_does_not_panic_on_closed_stdout() {
+    // Auxiliary outputs used to be written via `println!`, which panics when
+    // the reader of a piped stdout is already gone (e.g. `bat --config-file |
+    // head -n 0`). The main output path has exited quietly on `BrokenPipe`
+    // since #232; auxiliary outputs should behave the same way.
+    assert_quiet_exit_when_stdout_is_closed(&mut bat_raw_command(), &["--config-file"]);
+    assert_quiet_exit_when_stdout_is_closed(&mut bat_raw_command(), &["--diagnostic"]);
+
+    // The `cache` subcommand is only enabled when the working directory does
+    // not contain a file named `cache` (see `cache_clear`), and it conflicts
+    // with top-level flags like `--no-config`. Run it from a temporary
+    // directory that doubles as `BAT_CACHE_PATH`, leaving the real cache alone.
+    let temp_dir = tempdir().expect("could not create a temporary directory");
+    let mut command = bat_raw_command_with_config();
+    command
+        .current_dir(temp_dir.path())
+        .env("BAT_CONFIG_PATH", temp_dir.path().join("config"))
+        .env("BAT_CACHE_PATH", temp_dir.path());
+    assert_quiet_exit_when_stdout_is_closed(&mut command, &["cache", "--clear"]);
+}
+
+#[cfg(feature = "application")]
+#[test]
+fn completion_does_not_panic_on_closed_stdout() {
+    for shell in ["bash", "fish", "ps1", "zsh"] {
+        assert_quiet_exit_when_stdout_is_closed(&mut bat_raw_command(), &["--completion", shell]);
+    }
 }
 
 #[test]
@@ -3465,6 +3524,25 @@ fn ansi_sgr_joins_attributes_when_wrapped() {
             .assert()
             .success()
             .stdout("\x1B[33m\x1B[33mColor. \x1B[1m\x1B[33m\x1B[1mBold.........\n\x1B[33m\x1B[1mAlso bold and color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
+// Ensure that strikethrough (SGR 9) is tracked like the other attributes, so it is
+// re-emitted (and therefore preserved) across a wrap boundary instead of being dropped.
+#[test]
+fn ansi_sgr_strike_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[9mStrike.......Struck+color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[9m\x1B[33m\x1B[9mStrike.......\n\x1B[33m\x1B[9mStruck+color.\n")
             // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
             .stderr("");
 }

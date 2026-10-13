@@ -173,8 +173,10 @@ impl Attributes {
                 2 => self.dim = "\x1B[2m".to_owned(),
                 3 => self.italic = "\x1B[3m".to_owned(),
                 4 => self.underline = "\x1B[4m".to_owned(),
+                9 => self.strike = "\x1B[9m".to_owned(),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
+                29 => self.strike.clear(),
                 22 => {
                     self.bold.clear();
                     self.dim.clear();
@@ -1112,10 +1114,10 @@ mod tests {
     fn test_sgr_attributes_do_not_leak_into_wrong_field() {
         let mut attrs = crate::vscreen::Attributes::new();
 
-        // Bold, Dim, Italic, Underline, Foreground, Background
+        // Bold, Dim, Italic, Underline, Strike, Foreground, Background
         attrs.update(EscapeSequence::CSI {
-            raw_sequence: "\x1B[1;2;3;4;31;41m",
-            parameters: "1;2;3;4;31;41",
+            raw_sequence: "\x1B[1;2;3;4;9;31;41m",
+            parameters: "1;2;3;4;9;31;41",
             intermediates: "",
             final_byte: "m",
         });
@@ -1124,6 +1126,7 @@ mod tests {
         assert_eq!(attrs.dim, "\x1B[2m");
         assert_eq!(attrs.italic, "\x1B[3m");
         assert_eq!(attrs.underline, "\x1B[4m");
+        assert_eq!(attrs.strike, "\x1B[9m");
         assert_eq!(attrs.foreground, "\x1B[31m");
         assert_eq!(attrs.background, "\x1B[41m");
 
@@ -1139,5 +1142,28 @@ mod tests {
         assert_eq!(attrs.bold, "\x1B[1m");
         assert_eq!(attrs.foreground, "\x1B[94m");
         assert_eq!(attrs.background, "\x1B[103m");
+    }
+
+    #[test]
+    fn test_sgr_strike_is_tracked_and_cleared() {
+        let mut attrs = crate::vscreen::Attributes::new();
+
+        // Strikethrough on (SGR 9) must be tracked so it can be re-emitted.
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[9m",
+            parameters: "9",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.strike, "\x1B[9m");
+
+        // Strikethrough off (SGR 29) must clear it, just like italic (23) and underline (24).
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[29m",
+            parameters: "29",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.strike, "");
     }
 }
