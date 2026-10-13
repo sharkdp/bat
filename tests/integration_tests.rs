@@ -53,6 +53,155 @@ fn markdown_tables_align_columns_only_when_requested() {
         .stdout("Before\n\n| Name   | Count |\n| :----- | ----: |\n| a      |     1 |\n| longer |   123 |\n\nAfter\n");
 }
 
+#[test]
+fn markdown_tables_use_existing_syntax_detection() {
+    let input = "| x | y |\n|---|---|\n| longer | z |\n";
+    let expected = "| x      | y   |\n| ------ | --- |\n| longer | z   |\n";
+    for args in [
+        vec!["--file-name", "README.md"],
+        vec![
+            "--map-syntax",
+            "*.table:Markdown",
+            "--file-name",
+            "sample.table",
+        ],
+        vec!["--fallback-syntax", "Markdown"],
+    ] {
+        bat()
+            .arg("--markdown-tables")
+            .args(args)
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(expected);
+    }
+    bat()
+        .args([
+            "--markdown-tables",
+            "-l",
+            "text",
+            "--file-name",
+            "README.md",
+        ])
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout(input);
+}
+
+#[test]
+fn markdown_tables_preserve_code_and_irregular_rows() {
+    let input = "```markdown\n| x | y |\n|---|---|\n| longer | z |\n```\n\n~~~\n| x | y |\n|---|---|\n~~~\n\n    | x | y |\n    |---|---|\n\n> | x | y |\n> |---|---|\n\n| x | y |\n|---|---|\n| too | many | cells |\n\n| x | y |\n| invalid | --- |\n";
+    markdown_tables()
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout(input);
+}
+
+#[test]
+fn markdown_tables_support_unicode_escapes_alignment_and_line_endings() {
+    markdown_tables()
+        .write_stdin("Left|Center|Right\r\n:---|:---:|---:\r\n界|e\u{301}|1\r\nx\\|y|abc|22")
+        .assert().success()
+        .stdout("| Left | Center | Right |\r\n| :--- | :----: | ----: |\r\n| 界   |   e\u{301}    |     1 |\r\n| x\\|y |  abc   |    22 |");
+}
+
+#[test]
+fn markdown_tables_preserve_source_line_ranges_and_numbers() {
+    markdown_tables()
+        .args([
+            "--line-range=3:3",
+            "--style=numbers",
+            "--decorations=always",
+            "--color=never",
+        ])
+        .write_stdin("| x | y |\n|---|---|\n| a | b |\n| longer | z |\n")
+        .assert()
+        .success()
+        .stdout(
+            predicate::str::contains("3 | a      | b   |")
+                .and(predicate::str::contains("longer").not()),
+        );
+}
+
+#[test]
+fn markdown_tables_leave_non_utf8_and_tabs_unchanged() {
+    for input in [
+        b"| x | y |\n|---|---|\n| \xff | z |\n".as_slice(),
+        b"| x | y |\n|---|---|\n| a\tb | z |\n".as_slice(),
+    ] {
+        markdown_tables()
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(input);
+    }
+}
+
+#[test]
+fn markdown_tables_leave_oversized_tables_unchanged() {
+    let mut input = String::from("| x | y |\n|---|---|\n");
+    input.push_str(&"| long cell | z |\n".repeat(70_000));
+    markdown_tables()
+        .write_stdin(input.clone())
+        .assert()
+        .success()
+        .stdout(input);
+    let wide = "x".repeat(2_000);
+    let input = format!(
+        "a|b\n---|---\n{}",
+        format!("{wide}|z\nx|{wide}\n").repeat(150)
+    );
+    markdown_tables()
+        .write_stdin(input.clone())
+        .assert()
+        .success()
+        .stdout(input);
+}
+
+#[test]
+fn markdown_tables_conflict_with_streaming_and_nonprintable_modes() {
+    for flag in ["--unbuffered", "--show-all"] {
+        bat()
+            .args(["--markdown-tables", flag])
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("cannot be used with"));
+    }
+}
+
+#[test]
+fn markdown_tables_handle_empty_input_and_header_only_tables() {
+    markdown_tables()
+        .write_stdin("")
+        .assert()
+        .success()
+        .stdout("");
+    bat()
+        .args(["--markdown-tables", "--markdown-tables", "-l", "markdown"])
+        .write_stdin("a|b\n---|---")
+        .assert()
+        .success()
+        .stdout("| a   | b   |\n| --- | --- |");
+    let invalid = "a|b\n::---|---\n";
+    markdown_tables()
+        .write_stdin(invalid)
+        .assert()
+        .success()
+        .stdout(invalid);
+}
+
+#[test]
+fn markdown_tables_keep_highlighting() {
+    markdown_tables()
+        .args(["--color=always", "--style=plain", "--paging=never"])
+        .write_stdin("a|b\n---|---\nx|longer\n")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1b[").and(predicate::str::contains("------")));
+}
+
 fn get_config() -> &'static str {
     if cfg!(windows) {
         "bat-windows.conf"
