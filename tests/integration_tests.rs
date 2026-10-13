@@ -31,6 +31,28 @@ use utils::mocked_pagers;
 
 const EXAMPLES_DIR: &str = "tests/examples";
 
+fn markdown_tables() -> assert_cmd::Command {
+    let mut command = bat();
+    command.args(["--markdown-tables", "-l", "markdown"]);
+    command
+}
+
+#[test]
+fn markdown_tables_align_columns_only_when_requested() {
+    let input = "Before\n\n| Name | Count |\n|:---|---:|\n| a | 1 |\n| longer | 123 |\n\nAfter\n";
+    bat()
+        .args(["-l", "markdown"])
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout(input);
+    markdown_tables()
+        .write_stdin(input)
+        .assert()
+        .success()
+        .stdout("Before\n\n| Name   | Count |\n| :----- | ----: |\n| a      |     1 |\n| longer |   123 |\n\nAfter\n");
+}
+
 fn get_config() -> &'static str {
     if cfg!(windows) {
         "bat-windows.conf"
