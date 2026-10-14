@@ -210,6 +210,13 @@ help() {
 
 Then you can do `$ help cp` or `$ help git commit`.
 
+If you are using Bash with the `bash-completion` package installed, you can also enable
+completion for the command passed to `help`:
+
+```bash
+complete -F _command help
+```
+
 When you are using `zsh`, you can also use global aliases to override `-h` and `--help` entirely:
 
 ```bash
