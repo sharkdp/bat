@@ -305,6 +305,24 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-W\fR, \fB\-\-function\-context\fR <N>
+.IP
+Show the enclosing brace-delimited function, method or type for source line N,
+and highlight that line when colors are enabled. Repeat for multiple lines.
+Use syntax scopes to identify names and block punctuation; comments and strings
+do not establish block boundaries. Lines without a recognized complete definition
+are shown individually. Namespace-contained globals do not select the whole file.
+.HP
+\fB\-\-fold\fR
+.IP
+Hide interior lines of complete brace-delimited blocks, multiline comments and
+consecutive import/include groups. Keep opening and closing block lines.
+Both structural options read each complete UTF-8 or BOM-marked UTF-16 input before
+rendering and conflict with --unbuffered, --line-range, --diff and each other.
+Indentation-only definitions are not indexed. Plain piped output contains retained
+source lines; the snip style shows omissions in decorated output.
+
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

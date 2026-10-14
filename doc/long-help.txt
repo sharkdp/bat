@@ -44,6 +44,17 @@ Options:
           
           [aliases: --fallback-language]
 
+  -W, --function-context <N>
+          Show and highlight the enclosing function, method or type for source line N. Uses syntax
+          scopes and brace-delimited definitions; lines without a recognized complete definition are
+          shown individually. Repeat for multiple lines. Reads each complete text input before
+          rendering.
+
+      --fold
+          Hide the interior lines of complete brace-delimited blocks, multiline comments and
+          consecutive imports. Keep block opening and closing lines. Reads each complete text input
+          before rendering; languages without matching syntax scopes remain unchanged.
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40

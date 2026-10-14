@@ -134,6 +134,28 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("function-context")
+                .long("function-context")
+                .short('W')
+                .action(ArgAction::Append)
+                .value_parser(value_parser!(std::num::NonZeroUsize))
+                .value_name("N")
+                .hide_short_help(true)
+                .conflicts_with_all(["line-range", "unbuffered", "fold"])
+                .help("Show and highlight the enclosing definition for line N.")
+                .long_help("Show and highlight the enclosing function, method or type for source line N. Uses syntax scopes and brace-delimited definitions; lines without a recognized complete definition are shown individually. Repeat for multiple lines. Reads each complete text input before rendering."),
+        )
+        .arg(
+            Arg::new("fold")
+                .long("fold")
+                .action(ArgAction::SetTrue)
+                .overrides_with("fold")
+                .hide_short_help(true)
+                .conflicts_with_all(["line-range", "unbuffered", "function-context"])
+                .help("Fold syntax-defined blocks, comments and import groups.")
+                .long_help("Hide the interior lines of complete brace-delimited blocks, multiline comments and consecutive imports. Keep block opening and closing lines. Reads each complete text input before rendering; languages without matching syntax scopes remain unchanged."),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')
@@ -174,7 +196,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                         .short('d')
                         .overrides_with("diff")
                         .action(ArgAction::SetTrue)
-                        .conflicts_with("line-range")
+                        .conflicts_with_all(["line-range", "function-context", "fold"])
                         .help("Only show lines that have been added/removed/modified.")
                         .long_help(
                             "Only show lines that have been added/removed/modified with respect \

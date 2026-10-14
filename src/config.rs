@@ -79,6 +79,12 @@ pub struct Config<'a> {
     /// Specifies which lines should be printed
     pub visible_lines: VisibleLines,
 
+    /// Show the enclosing brace-delimited definition for these source lines.
+    pub function_context: Vec<usize>,
+
+    /// Collapse the interiors of syntax-defined blocks, comments, and import groups.
+    pub fold: bool,
+
     /// The syntax highlighting theme
     pub theme: String,
 

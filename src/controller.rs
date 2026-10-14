@@ -158,6 +158,57 @@ impl Controller<'_> {
             #[cfg(not(feature = "lessopen"))]
             input.open(stdin, stdout_identifier)?
         };
+        if self.config.fold || !self.config.function_context.is_empty() {
+            if self.config.unbuffered {
+                return Err("Structural context requires a complete input and cannot be used with unbuffered mode".into());
+            }
+            let syntax = self.assets.get_syntax(
+                self.config.language,
+                self.config.fallback_syntax,
+                &mut opened_input,
+                &self.config.syntax_mapping,
+            )?;
+            let mut bytes = Vec::new();
+            let mut line = Vec::new();
+            while opened_input.reader.read_line(&mut line)? {
+                bytes.append(&mut line);
+            }
+            let (encoding, bom) =
+                encoding_rs::Encoding::for_bom(&bytes).unwrap_or((encoding_rs::UTF_8, 0));
+            let (text, _, errors) = encoding.decode(&bytes[bom..]);
+            if errors || text.contains('\0') {
+                return Err("Structural context requires UTF-8 or BOM-marked Unicode text".into());
+            }
+            let structure = crate::structural_context::Structure::parse(
+                &text,
+                syntax.syntax,
+                syntax.syntax_set,
+            )?;
+            let mut config = self.config.clone();
+            if !config.colored_output && !config.function_context.is_empty() {
+                config.highlighted_lines = Default::default();
+            }
+            config.visible_lines = VisibleLines::Ranges(if config.fold {
+                structure.folded()
+            } else {
+                structure.context(&config.function_context)
+            });
+            opened_input.reader = InputReader::try_new(std::io::Cursor::new(bytes))?;
+            return Controller::new(&config, self.assets).print_opened_input(
+                opened_input,
+                writer,
+                is_first,
+            );
+        }
+        self.print_opened_input(opened_input, writer, is_first)
+    }
+
+    fn print_opened_input(
+        &self,
+        mut opened_input: OpenedInput,
+        writer: &mut OutputHandle,
+        is_first: bool,
+    ) -> Result<()> {
         opened_input.reader.unbuffered = self.config.unbuffered;
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()

@@ -541,6 +541,28 @@ The available individual components are:
 > Or, if you want to override the styles completely, you use `--style=numbers` to
 > only show the line numbers.
 
+### Enclosing definitions and folded output
+
+Use `bat -W 123 file.cpp` (or `--function-context 123`) to show the complete
+enclosing function, method or type and highlight the selected source line.
+Repeat `-W` to select multiple definitions. This uses syntax-defined names and
+block punctuation, including C, C++, Java, Objective-C and Rust definitions.
+Braces inside comments and strings do not establish boundaries. Namespace-contained
+globals and lines without a recognized complete definition are shown individually.
+Indentation-only definitions, such as Python functions, currently use that fallback.
+
+Use `bat --fold file.java` to collapse the interiors of complete brace-delimited
+blocks, multiline comments and consecutive import/include groups. Opening and
+closing block lines remain visible; nested folds are combined. Styling can show
+omissions with `--style=numbers,snip --decorations=always`. As with `--line-range`,
+plain piped output contains just the retained source lines.
+
+Both options read each complete input before rendering and support UTF-8 and
+BOM-marked UTF-16. They cannot be combined with `--unbuffered`, `--line-range`,
+`--diff` or each other. Syntax grammars describe tokens, not a compiler AST;
+unsupported or incomplete constructs may fall back to individual lines for context
+or remain unfolded. File line numbers are retained in either mode.
+
 ### Decorations
 
 By default, `bat` only shows decorations (such as line numbers, file headers, grid borders, etc.) when outputting to an interactive terminal. You can control this behavior with the `--decorations` option. Use `--decorations=always` to show decorations even when piping output to another command, or `--decorations=never` to disable them entirely. Possible values are `auto` (default), `never`, and `always`.
