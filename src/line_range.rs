@@ -355,13 +355,13 @@ fn test_parse_context_fail() {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum RangeCheckResult {
-    // Within one of the given ranges
+    /// Within one of the given ranges
     InRange,
 
-    // Before the first range or within two ranges
+    /// Before the first range or within two ranges
     BeforeOrBetweenRanges,
 
-    // Line number is outside of all ranges and larger than the last range.
+    /// Line number is outside of all ranges and larger than the last range.
     AfterLastRange,
 }
 
