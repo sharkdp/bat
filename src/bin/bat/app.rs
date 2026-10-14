@@ -370,14 +370,7 @@ impl App {
             language: self
                 .matches
                 .get_one::<String>("language")
-                .map(|s| s.as_str())
-                .or_else(|| {
-                    if self.matches.get_flag("show-all") {
-                        Some("show-nonprintable")
-                    } else {
-                        None
-                    }
-                }),
+                .map(|s| s.as_str()),
             fallback_syntax: self
                 .matches
                 .get_one::<String>("fallback-syntax")
