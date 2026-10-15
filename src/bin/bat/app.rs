@@ -96,7 +96,8 @@ impl App {
             let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
                 Some("always") => true,
                 Some("never") => false,
-                _ => interactive_output, // auto: use color if interactive
+                // auto: use color if interactive, unless disabled via NO_COLOR
+                _ => !env_no_color() && interactive_output,
             };
 
             let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
