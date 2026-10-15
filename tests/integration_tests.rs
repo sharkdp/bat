@@ -635,6 +635,23 @@ fn line_range_context_very_large() {
         );
 }
 
+// Regression test for #3845 and #4039: a `--line-range` offset-from-end far
+// larger than the file must not pre-allocate a giant look-ahead buffer and panic
+// with "capacity overflow". The offset simply exceeds the file length, so bat
+// prints nothing. `usize::MAX / 2` also covers the gap left by only rejecting
+// the largest possible offsets.
+#[test]
+fn line_range_huge_offset_from_end_does_not_panic() {
+    for offset in [usize::MAX / 2, usize::MAX] {
+        bat()
+            .arg("multiline.txt")
+            .arg(format!("--line-range=:-{offset}"))
+            .assert()
+            .success()
+            .stdout("");
+    }
+}
+
 #[test]
 fn piped_output_with_implicit_auto_style() {
     bat()
