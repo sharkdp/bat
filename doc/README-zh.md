@@ -186,7 +186,7 @@ man 2 select
 >
 > 请使用 `batman`，或将此 Shell 脚本包装为 [Shebang 可执行文件](https://en.wikipedia.org/wiki/Shebang_(Unix))，并将 `MANPAGER` 指向该文件。
 
-注意，[Manpage 语法](assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
+注意，[Manpage 语法](../assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
 
 #### `prettier` / `shfmt` / `rustfmt`
 
@@ -448,7 +448,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
    bat cache --clear
    ```
 
-4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](doc/assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md)。
+4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md)。
 
 ### 添加主题
 
@@ -644,7 +644,7 @@ cargo install --path . --locked --force
 
 ## 贡献指南
 
-请查看 [`CONTRIBUTING.md`](CONTRIBUTING.md) 指南。
+请查看 [`CONTRIBUTING.md`](../CONTRIBUTING.md) 指南。
 
 ## 维护者
 
@@ -666,7 +666,7 @@ cargo install --path . --locked --force
 - 成为 (POSIX) `cat` 的替代品
 - 提供用户友好的命令行界面
 
-如果你在寻找类似的程序，有很多替代方案。请参阅[本文档](doc/alternatives.md)进行比较。
+如果你在寻找类似的程序，有很多替代方案。请参阅[本文档](alternatives.md)进行比较。
 
 ## 许可证
 
@@ -674,4 +674,4 @@ cargo install --path . --locked --force
 
 `bat` 可根据 MIT 许可证或 Apache 许可证 2.0 的条款使用，任选其一。
 
-有关许可证的详细信息，请参阅 [LICENSE-APACHE](LICENSE-APACHE) 和 [LICENSE-MIT](LICENSE-MIT) 文件。
+有关许可证的详细信息，请参阅 [LICENSE-APACHE](../LICENSE-APACHE) 和 [LICENSE-MIT](../LICENSE-MIT) 文件。
