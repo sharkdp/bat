@@ -3054,6 +3054,43 @@ fn show_all_mode() {
 }
 
 #[test]
+fn show_all_keeps_syntax_highlighting() {
+    // Regression test: --show-all used to force the "show-nonprintable"
+    // syntax, which discarded the file's own syntax highlighting (only the
+    // non-printable markers were colored), and it could not be combined with
+    // --language at all. The output must now be identical to the output with
+    // the language given explicitly.
+    let auto_detected = bat_raw_command()
+        .arg("--show-all")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("show_all.rs")
+        .output()
+        .expect("bat failed");
+
+    let explicit_language = bat_raw_command()
+        .arg("--show-all")
+        .arg("--color=always")
+        .arg("--style=plain")
+        .arg("--language=rust")
+        .arg("show_all.rs")
+        .output()
+        .expect("bat failed");
+
+    assert!(auto_detected.status.success());
+    assert!(explicit_language.status.success());
+    assert_eq!(auto_detected.stdout, explicit_language.stdout);
+
+    // The Rust keyword is highlighted with a syntax-specific color, which the
+    // "show-nonprintable" syntax never did (it used the default foreground).
+    let stdout = String::from_utf8(auto_detected.stdout).expect("invalid UTF-8");
+    assert!(
+        stdout.contains("\u{1b}[38;5;81mfn\u{1b}[0m"),
+        "expected a highlighted `fn` keyword in the output: {stdout:?}"
+    );
+}
+
+#[test]
 fn show_all_extends_tab_markers_to_next_tabstop() {
     bat()
         .arg("tabs.txt")

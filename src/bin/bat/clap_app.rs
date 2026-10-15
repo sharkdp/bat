@@ -54,7 +54,6 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .short('A')
                 .overrides_with("show-all")
                 .action(ArgAction::SetTrue)
-                .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
                 .long_help(
                     "Show non-printable characters like space, tab or newline. \
