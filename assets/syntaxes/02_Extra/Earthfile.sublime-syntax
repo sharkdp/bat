@@ -1,0 +1,103 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/syntax.html
+name: Earthfile
+file_extensions:
+  - Earthfile
+scope: source.earthfile
+contexts:
+  main:
+    - include: comment
+    - include: constant
+    - include: entity
+    - include: keyword
+    - include: string
+    - include: variable
+    - include: target
+  comment:
+    - match: ^(\s*)((#).*$\n?)
+      comment: comment.line
+      captures:
+        1: punctuation.whitespace.comment.leading.earthfile
+        2: comment.line.number-sign.earthfile
+        3: punctuation.definition.comment.earthfile
+    - match: (\s+)((#).*$\n?)
+      scope: comment.line.earthfile
+  constant:
+    - match: \\.
+      scope: constant.character.escape.earthfile
+    - match: \\$
+      scope: constant.character.escape.earthfile
+    - match: (?<=EXPOSE\s)(\d+)
+      scope: constant.numeric.earthfile
+  entity:
+    - match: '([a-zA-Z0-9._\-/:]*\+[a-zA-Z0-9.\-]+(/\S*)+)'
+      scope: entity.name.variable.target.earthfile
+    - match: '([a-zA-Z0-9._\-/:]*\+[a-zA-Z0-9.\-]+)'
+      scope: entity.name.type.target.earthfile
+  keyword:
+    - match: '((&&)|(>>)|(<<)|[|;>])'
+      scope: keyword.operator.shell.earthfile
+    - match: '([=])'
+      scope: keyword.operator.assignment.earthfile
+    - match: '(\B(-)+[a-zA-Z0-9\-]+)'
+      scope: keyword.operator.flag.earthfile
+    - include: special-method
+    - include: target
+  special-method:
+    - match: ^\s*\b(SAVE ARTIFACT)(\b.*?\b)(AS LOCAL)\b
+      captures:
+        1: keyword.other.special-method.earthfile
+        2: entity.name.variable.target.earthfile
+        3: keyword.other.special-method.earthfile
+    - match: (?<=(^FROM\s))(\S+)
+      captures:
+        1: keyword.other.special-method.earthfile
+        2: entity.name.type.base-image.earthfile
+    - match: ^\s*HEALTHCHECK\s+(NONE|CMD)\s
+      scope: keyword.other.special-method.earthfile
+    - match: ^\s*FROM DOCKERFILE\s
+      scope: keyword.other.special-method.earthfile
+    - match: ^\s*(FROM|COPY|SAVE ARTIFACT|SAVE IMAGE|RUN|LABEL|EXPOSE|VOLUME|USER|ENV|ARG|BUILD|WORKDIR|ENTRYPOINT|CMD|GIT CLONE|DOCKER LOAD|DOCKER PULL|HEALTHCHECK|WITH DOCKER|END|IF|ELSE|ELSE IF|DO|COMMAND|IMPORT|LOCALLY|FOR|VERSION|WAIT|TRY|FINALLY|CACHE|HOST|PIPELINE|TRIGGER|PROJECT|SET|LET|ADD|STOP SIGNAL|ONBUILD|SHELL)\s
+      scope: keyword.other.special-method.earthfile
+  string:
+    - match: '"'
+      captures:
+        1: punctuation.definition.string.begin.earthfile
+      push:
+        - meta_scope: string.quoted.double.earthfile
+        - match: '"'
+          captures:
+            1: punctuation.definition.string.end.earthfile
+          pop: true
+        - match: \\.
+          scope: constant.character.escaped.earthfile
+    - match: "'"
+      captures:
+        1: punctuation.definition.string.begin.earthfile
+      push:
+        - meta_scope: string.quoted.single.earthfile
+        - match: "'"
+          captures:
+            1: punctuation.definition.string.end.earthfile
+          pop: true
+        - match: \\.
+          scope: constant.character.escaped.earthfile
+  target:
+    - match: '^\s*(([a-zA-Z0-9.]|-)+):'
+      captures:
+        1: entity.name.function.target.earthfile
+  variable:
+    - match: '\$[a-zA-Z0-9_\-]+'
+      scope: variable.other.earthfile
+    - match: '(?<=\${)([a-zA-Z0-9.\-_]+)(?=})'
+      scope: variable.other.earthfile
+    - match: '\$\{'
+      captures:
+        1: punctuation.definition.variable.begin.earthfile
+      push:
+        - meta_scope: variable.other.earthfile
+        - match: '\}'
+          captures:
+            1: punctuation.definition.variable.end.earthfile
+          pop: true

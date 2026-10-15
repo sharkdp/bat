@@ -1,0 +1,139 @@
+VERSION --try 0.8
+
+ARG --global BASE_IMAGE=alpine:3.20
+ARG --global REGISTRY=example.com/demo
+ARG EARTHLY_VERSION
+ARG EARTHLY_BUILD_SHA
+
+IMPORT ./services/service-one AS svc
+IMPORT github.com/earthly/hello-world:main AS hello
+
+FROM $BASE_IMAGE
+WORKDIR /workspace
+ENV APP_ENV=test NODE_ENV=development
+LABEL org.opencontainers.image.title="earthfile-syntax-fixture" \
+      org.opencontainers.image.description="Comprehensive syntax highlighter fixture"
+
+CACHE /root/.cache
+COPY --if-exists README.md package.json go.mod ./
+COPY --dir src tests ./input/
+RUN echo "Earthly $EARTHLY_VERSION / $EARTHLY_BUILD_SHA"
+RUN --no-cache echo "uncached layer"
+RUN --mount=type=cache,target=/root/.cache,id=apk-cache \
+    apk add --no-cache bash curl git make gcc musl-dev
+RUN ["sh", "-c", "echo exec-form RUN"]
+
+# Reusable function.
+SETUP_TOOLS:
+    FUNCTION
+    ARG TOOL=busybox
+    RUN echo "installing $TOOL"
+    RUN test -n "$TOOL"
+END
+
+deps:
+    FROM $BASE_IMAGE
+    ARG --required MODE
+    ARG DYNAMIC_VERSION=$(date +%Y%m%d)
+    LET mutable="initial"
+    SET mutable="changed-$MODE"
+    DO +SETUP_TOOLS --TOOL=curl
+    RUN echo "mode=$MODE dynamic=$DYNAMIC_VERSION mutable=$mutable"
+    SAVE ARTIFACT /etc/os-release AS LOCAL ./out/os-release
+
+build:
+    FROM +deps --MODE=debug
+    COPY +deps/os-release ./copied-os-release
+    COPY (+deps --MODE=release)/os-release ./release-os-release
+    COPY ./services/*+mocks ./mocks/
+    BUILD +test --SUITE=unit
+    BUILD --platform linux/amd64 +deps --MODE=amd64
+    RUN mkdir -p dist && echo "binary" > dist/app
+    SAVE ARTIFACT dist/app AS LOCAL ./out/app
+    SAVE ARTIFACT --keep-own dist/* AS LOCAL ./out/dist/
+
+test:
+    FROM +deps --MODE=test
+    ARG SUITE=all
+    IF test "$SUITE" = "unit"
+        RUN echo "running unit tests"
+    ELSE IF test "$SUITE" = "integration"
+        RUN echo "running integration tests"
+    ELSE
+        RUN echo "running all tests"
+    END
+
+    FOR pkg IN api worker cli
+        RUN echo "testing $pkg"
+    END
+
+    FOR --sep="," item IN $(echo alpha,beta,gamma)
+        RUN echo "comma item: $item"
+    END
+
+    TRY
+        RUN echo "pretend tests run here" && mkdir -p coverage && echo ok > coverage/junit.xml
+    FINALLY
+        SAVE ARTIFACT coverage/junit.xml AS LOCAL ./out/junit.xml
+    END
+
+dockerfile-build:
+    FROM DOCKERFILE -f ./Dockerfile .
+    EXPOSE 8080/tcp 9090/udp
+    CMD ["./app", "--serve"]
+    ENTRYPOINT ["/bin/sh", "-c"]
+    SAVE IMAGE $REGISTRY/dockerfile-build:latest
+
+image:
+    FROM +build
+    USER 1000:1000
+    VOLUME ["/data", "/cache"]
+    EXPOSE 8080
+    HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD wget -qO- http://localhost:8080/health || exit 1
+    CMD ["./dist/app"]
+    ENTRYPOINT ["/workspace/dist/app"]
+    SAVE IMAGE $REGISTRY/app:latest $REGISTRY/app:$EARTHLY_TARGET_TAG
+    SAVE IMAGE --push $REGISTRY/app:push-me
+
+docker-tests:
+    FROM $BASE_IMAGE
+    WITH DOCKER --pull=hello-world:latest --load=+image
+        RUN docker images
+        RUN docker run --rm hello-world:latest
+    END
+
+ordered-release:
+    FROM $BASE_IMAGE
+    WAIT
+        BUILD +image
+        BUILD +dockerfile-build
+    END
+    RUN --push echo "deploy after pushed images exist"
+
+local-example:
+    LOCALLY
+    COPY +build/app ./local-app
+    RUN chmod +x ./local-app || true
+    SAVE ARTIFACT ./local-app AS LOCAL ./out/local-app
+
+git-example:
+    FROM $BASE_IMAGE
+    GIT CLONE https://github.com/earthly/earthly.git earthly-src
+    RUN ls earthly-src
+    SAVE ARTIFACT earthly-src/README.md AS LOCAL ./out/earthly-readme.md
+
+remote-target:
+    FROM github.com/EarthBuild/earthbuild+go
+    COPY (github.com/EarthBuild/earthbuild+deps/go.mod --encoder=base64) ./
+
+host-example:
+    FROM $BASE_IMAGE
+    HOST github.com
+    RUN echo "host command present for lexer coverage"
+
+all:
+    BUILD +deps --MODE=all
+    BUILD +build
+    BUILD +test --SUITE=integration
+    BUILD +docker-tests
+    BUILD +local-example
