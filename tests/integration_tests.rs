@@ -505,6 +505,19 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn terminal_width_1_wide_char_background_does_not_panic() {
+    bat()
+        .arg("wide-char.txt")
+        .arg("--highlight-line=1")
+        .arg("--terminal-width=1")
+        .arg("--wrap=character")
+        .arg("--color=always")
+        .arg("--theme=OneHalfDark")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
