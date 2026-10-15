@@ -9,6 +9,15 @@ pub enum NonprintableNotation {
     /// Use unicode notation (␇, ␊, ␀, ..)
     #[default]
     Unicode,
+
+    /// Use pictographic symbols for common controls (⇥, ⏎, ⌫, ⎋, ...).
+    Symbols,
+
+    /// Use periods for spaces, ASCII controls, and invalid UTF-8 bytes.
+    Period,
+
+    /// Use symbols for tabs, line endings, and escapes; periods for other controls.
+    Binary,
 }
 
 /// How to treat binary content

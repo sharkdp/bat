@@ -9,7 +9,7 @@ Arguments:
 Options:
   -A, --show-all
           Show non-printable characters (space, tab, newline, ..).
-      --nonprintable-notation <notation>
+  -c, --nonprintable-notation <notation>
           Set notation for non-printable characters.
       --binary <behavior>
           How to treat binary content. (default: no-printing)

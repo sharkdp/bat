@@ -29,3 +29,15 @@ contexts:
       scope: comment.block.show-nonprintable.backspace
     - match: "\\\\u\\{[a-z0-9]+\\}"
       scope: comment.block.show-nonprintable.backspace
+    - match: "⇥"
+      scope: constant.character.escape.show-nonprintable.tab
+    - match: "⏎"
+      scope: keyword.operator.show-nonprintable.line-feed
+    - match: "←"
+      scope: string.show-nonprintable.carriage-return
+    - match: "⎋"
+      scope: entity.other.attribute-name.show-nonprintable.escape
+    - match: "⌫"
+      scope: comment.block.show-nonprintable.backspace
+    - match: "[⤓↡⌦]"
+      scope: constant.character.escape.show-nonprintable.control
