@@ -901,6 +901,9 @@ bash assets/create.sh
 cargo install --path . --locked --force
 ```
 
+For an optional profile-guided release build and local performance comparisons,
+see the [PGO build guide](doc/pgo.md).
+
 If you want to build an application that uses `bat`'s pretty-printing
 features as a library, check out the [API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
