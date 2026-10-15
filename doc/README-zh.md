@@ -11,7 +11,7 @@
   <a href="#如何使用">使用方法</a> •
   <a href="#安装">安装</a> •
   <a href="#自定义">自定义</a> •
-  <a href="#project-goals-and-alternatives">项目目标和替代方案</a><br>
+  <a href="#项目目标和替代方案">项目目标和替代方案</a><br>
   [<a href="../README.md">English</a>]
   [中文]
   [<a href="README-ja.md">日本語</a>]
@@ -186,7 +186,7 @@ man 2 select
 >
 > 请使用 `batman`，或将此 Shell 脚本包装为 [Shebang 可执行文件](https://en.wikipedia.org/wiki/Shebang_(Unix))，并将 `MANPAGER` 指向该文件。
 
-注意，[Manpage 语法](assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
+注意，[Manpage 语法](../assets/syntaxes/02_Extra/Manpage.sublime-syntax)是在此仓库中开发的，仍需一些改进。
 
 #### `prettier` / `shfmt` / `rustfmt`
 
@@ -389,7 +389,7 @@ cargo install --locked bat
 
 ### 语法高亮主题
 
-使用 `bat --list-themes` 一份语法高亮主题的清单，然后用`--theme=TwoDark`来指定主题为`TwoDark`，也可以通过设置`BAT_THEME`环境变量来选定主题。把`export BAT_THEME="TwoDark"`添加到 shell 的启动脚本（shell startup file）来取得永久效果。或者使用`bat`的[配置文件](#c配置文件)
+使用 `bat --list-themes` 一份语法高亮主题的清单，然后用`--theme=TwoDark`来指定主题为`TwoDark`，也可以通过设置`BAT_THEME`环境变量来选定主题。把`export BAT_THEME="TwoDark"`添加到 shell 的启动脚本（shell startup file）来取得永久效果。或者使用`bat`的[配置文件](#配置文件)
 
 若想要查看所有主题在一个文件上的显示效果可以用一下命令（需要安装`fzf`）：
 
@@ -448,7 +448,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
    bat cache --clear
    ```
 
-4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](doc/assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md)。
+4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md)。
 
 ### 添加主题
 
@@ -644,7 +644,7 @@ cargo install --path . --locked --force
 
 ## 贡献指南
 
-请查看 [`CONTRIBUTING.md`](CONTRIBUTING.md) 指南。
+请查看 [`CONTRIBUTING.md`](../CONTRIBUTING.md) 指南。
 
 ## 维护者
 
@@ -666,7 +666,7 @@ cargo install --path . --locked --force
 - 成为 (POSIX) `cat` 的替代品
 - 提供用户友好的命令行界面
 
-如果你在寻找类似的程序，有很多替代方案。请参阅[本文档](doc/alternatives.md)进行比较。
+如果你在寻找类似的程序，有很多替代方案。请参阅[本文档](alternatives.md)进行比较。
 
 ## 许可证
 
@@ -674,4 +674,4 @@ cargo install --path . --locked --force
 
 `bat` 可根据 MIT 许可证或 Apache 许可证 2.0 的条款使用，任选其一。
 
-有关许可证的详细信息，请参阅 [LICENSE-APACHE](LICENSE-APACHE) 和 [LICENSE-MIT](LICENSE-MIT) 文件。
+有关许可证的详细信息，请参阅 [LICENSE-APACHE](../LICENSE-APACHE) 和 [LICENSE-MIT](../LICENSE-MIT) 文件。

@@ -200,7 +200,7 @@ man 2 select
 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)을 쓸
 수도 있습니다. 
 
-참고로 [Manpage 문법](../assets/syntaxes/Manpage.sublime-syntax)은 본 저장소에서
+참고로 [Manpage 문법](../assets/syntaxes/02_Extra/Manpage.sublime-syntax)은 본 저장소에서
 개발 중에 있으며, 아직 더 손봐야 합니다.
 
 또한, 이는 Mandoc의 `man` 구현에서
@@ -697,8 +697,8 @@ Windows용 `less` 바이너리는
 [Chocolatey](https://chocolatey.org/packages/Less)를 통해 다운로드 받을 수
 있습니다.
 이를 사용하려면 디렉터리 안의 바이너리를 `PATH`에 넣거나
-[환경 변수로 정의](#using-a-different-pager)하세요.
-[Chocolatey 패키지](#on-windows)는 `less`를 자동으로 설치합니다.
+[환경 변수로 정의](#다른-페이저-사용하기)하세요.
+[Chocolatey 패키지](#windows에서)는 `less`를 자동으로 설치합니다.
 
 ### 색상
 
