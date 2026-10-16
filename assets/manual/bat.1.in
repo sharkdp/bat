@@ -121,6 +121,12 @@ width. See also: '\-\-wrap'.
 .IP
 Only show line numbers, no other decorations. This is an alias for '\-\-style=numbers'
 .HP
+\fB\-b\fR, \fB\-\-number\-nonblank\fR
+.IP
+Only show line numbers for non\-blank lines, no other decorations. This is an alias
+for '\-\-style=numbers'. When used together with '\-\-number', '\-\-number\-nonblank'
+takes precedence.
+.HP
 \fB\-\-color\fR <when>
 .IP
 Specify when to use colored output. The automatic mode only enables colors if an
