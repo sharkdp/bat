@@ -318,6 +318,11 @@ jobs:
         esac;
         popd >/dev/null
 
+        # Keep the versioned archive and add a stable name for /releases/latest/download.
+        PKG_ALIAS="${{ needs.crate_metadata.outputs.name }}-${{ matrix.job.target }}${PKG_suffix}"
+        cp "${PKG_STAGING}/${PKG_NAME}" "${PKG_STAGING}/${PKG_ALIAS}"
+        echo "PKG_ALIAS_PATH=${PKG_STAGING}/${PKG_ALIAS}" >> $GITHUB_OUTPUT
+
         # Let subsequent steps know where to find the compressed package
         echo "PKG_PATH=${PKG_STAGING}/${PKG_NAME}" >> $GITHUB_OUTPUT
 
@@ -421,18 +426,26 @@ jobs:
         # build dpkg
         fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
 
+        DPKG_ALIAS_PATH="${DPKG_STAGING}/${DPKG_BASENAME}_${DPKG_ARCH}.deb"
+        cp "${DPKG_PATH}" "${DPKG_ALIAS_PATH}"
+        echo "DPKG_ALIAS_PATH=${DPKG_ALIAS_PATH}" >> $GITHUB_OUTPUT
+
     - name: "Artifact upload: tarball"
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.package.outputs.PKG_NAME }}
-        path: ${{ steps.package.outputs.PKG_PATH }}
+        path: |
+          ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.package.outputs.PKG_ALIAS_PATH }}
 
     - name: "Artifact upload: Debian package"
       uses: actions/upload-artifact@master
       if: steps.debian-package.outputs.DPKG_NAME
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
-        path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+        path: |
+          ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_ALIAS_PATH }}
 
     - name: Check for release
       id: is-release
@@ -447,7 +460,9 @@ jobs:
       with:
         files: |
           ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.package.outputs.PKG_ALIAS_PATH }}
           ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_ALIAS_PATH }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -460,5 +475,5 @@ jobs:
       - uses: vedantmgoyal9/winget-releaser@a8fff44b123f115ce4c21543edf8b677376fc7e0
         with:
           identifier: sharkdp.bat
-          installers-regex: '-pc-windows-msvc\.zip$'
+          installers-regex: '^bat-v.+-pc-windows-msvc\.zip$'
           token: ${{ secrets.WINGET_TOKEN }}

@@ -287,6 +287,19 @@ the most recent release of `bat`, download the latest `.deb` package from the
 sudo dpkg -i bat_0.18.3_amd64.deb  # adapt version number and architecture
 ```
 
+Releases also include versionless aliases for automated downloads. For example,
+the following always downloads the latest release's amd64 Debian package:
+
+```bash
+curl -fLO https://github.com/sharkdp/bat/releases/latest/download/bat_amd64.deb
+sudo dpkg -i bat_amd64.deb
+```
+
+Archive aliases use `bat-<target>.tar.gz` (or `.zip` on Windows), for example
+`bat-x86_64-unknown-linux-gnu.tar.gz`. They contain the same versioned directory
+as the original archive. Versioned release assets remain available for pinned
+downloads.
+
 ### On Alpine Linux
 
 You can install [the `bat` package](https://pkgs.alpinelinux.org/packages?name=bat)
