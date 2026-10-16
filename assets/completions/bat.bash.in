@@ -180,6 +180,7 @@ _bat() {
 			rule
 			numbers
 			snip
+			pager-filename
 		)
 		# shellcheck disable=SC2016
 		if declare -F _comp_delimited >/dev/null 2>&1; then

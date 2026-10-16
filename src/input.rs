@@ -113,6 +113,11 @@ pub(crate) struct OpenedInput<'a> {
 }
 
 impl OpenedInput<'_> {
+    pub(crate) fn has_name(&self) -> bool {
+        matches!(self.kind, OpenedInputKind::OrdinaryFile(_))
+            || self.metadata.user_provided_name.is_some()
+    }
+
     /// Get the path of the file:
     /// If this was set by the metadata, that will take priority.
     /// If it wasn't, it will use the real file path (if available).

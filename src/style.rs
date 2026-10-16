@@ -16,6 +16,7 @@ pub enum StyleComponent {
     HeaderFilesize,
     LineNumbers,
     Snip,
+    PagerFilename,
     Full,
     Default,
     Plain,
@@ -40,6 +41,7 @@ impl StyleComponent {
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
             StyleComponent::Snip => &[StyleComponent::Snip],
+            StyleComponent::PagerFilename => &[StyleComponent::PagerFilename],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
@@ -77,6 +79,7 @@ impl FromStr for StyleComponent {
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
             "snip" => Ok(StyleComponent::Snip),
+            "pager-filename" => Ok(StyleComponent::PagerFilename),
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
             "plain" => Ok(StyleComponent::Plain),
@@ -124,6 +127,10 @@ impl StyleComponents {
 
     pub fn snip(&self) -> bool {
         self.0.contains(&StyleComponent::Snip)
+    }
+
+    pub fn pager_filename(&self) -> bool {
+        self.0.contains(&StyleComponent::PagerFilename)
     }
 
     pub fn plain(&self) -> bool {
@@ -260,6 +267,22 @@ mod test {
         assert!(StyleComponentList::from_str("not-a-component").is_err());
         assert!(StyleComponentList::from_str("grid,not-a-component").is_err());
         assert!(StyleComponentList::from_str("numbers,-not-a-component").is_err());
+    }
+
+    #[test]
+    pub fn pager_filename_parses_and_is_opt_in() {
+        assert_eq!(
+            StyleComponent::from_str("pager-filename").expect("no error"),
+            PagerFilename
+        );
+        assert!(!Full.components(true).contains(&PagerFilename));
+        assert!(!Default.components(true).contains(&PagerFilename));
+        assert!(StyleComponentList::to_components(
+            vec![StyleComponentList::from_str("+pager-filename").expect("no error")],
+            true,
+            true
+        )
+        .pager_filename());
     }
 
     #[test]
