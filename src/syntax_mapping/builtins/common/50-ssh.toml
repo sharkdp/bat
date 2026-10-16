@@ -1,2 +1,8 @@
 [mappings]
-"SSH Config" = ["**/.ssh/**/config"]
+"SSH Config" = [
+    "{,/opt,/usr}/etc/ssh/ssh_config.d/*",
+    "**/.ssh/**/config",
+]
+"SSHD Config" = [
+    "{,/opt,/usr}/etc/ssh/sshd_config.d/*",
+]
