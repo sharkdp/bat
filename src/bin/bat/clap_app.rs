@@ -282,6 +282,20 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("line-number-width")
+                .long("line-number-width")
+                .overrides_with("line-number-width")
+                .value_name("N")
+                .value_parser(clap::value_parser!(u8).range(1..))
+                .help("Set the minimum line-number width (default: 4).")
+                .long_help(
+                    "Set the minimum line-number width to N columns (1 to 255; default: 4). \
+                     For example, use '--line-number-width=6' to keep the columns aligned through \
+                     line 999999. Larger line numbers expand the column. This does not enable \
+                     line numbers or count input lines in advance.",
+                ),
+        )
+        .arg(
             Arg::new("number-nonblank")
                 .long("number-nonblank")
                 .overrides_with("number-nonblank")

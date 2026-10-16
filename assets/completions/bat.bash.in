@@ -90,6 +90,7 @@ _bat() {
 	-H | --highlight-line | \
 	--diff-context | \
 	--tabs | \
+	--line-number-width | \
 	--terminal-width | \
 	-m | --map-syntax | \
 	--ignored-suffix | \
@@ -206,6 +207,7 @@ _bat() {
 			--diff
 			--diff-context
 			--tabs
+			--line-number-width
 			--wrap
 			--chop-long-lines
 			--terminal-width

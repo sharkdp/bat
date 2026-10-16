@@ -1,6 +1,25 @@
 use bat::PrettyPrinter;
 
 #[test]
+fn line_number_width() {
+    for (width, expected) in [
+        (None, "   1 hello\n"),
+        (Some(6), "     1 hello\n"),
+        (Some(0), "1 hello\n"),
+    ] {
+        let mut output = String::new();
+        PrettyPrinter::new()
+            .input_from_bytes(b"hello\n")
+            .colored_output(false)
+            .line_numbers(true)
+            .line_number_width(width)
+            .print_with_writer(Some(&mut output))
+            .unwrap();
+        assert_eq!(output, expected);
+    }
+}
+
+#[test]
 fn syntaxes() {
     let printer = PrettyPrinter::new();
     let syntaxes: Vec<String> = printer.syntaxes().map(|s| s.name).collect();

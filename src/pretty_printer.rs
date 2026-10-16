@@ -151,6 +151,13 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Minimum line-number width (default: four columns). Zero is treated as one.
+    /// This does not enable line numbers; use `line_numbers` for that.
+    pub fn line_number_width(&mut self, width: Option<u8>) -> &mut Self {
+        self.config.line_number_width = width;
+        self
+    }
+
     /// Whether to paint a grid, separating line numbers, git changes and the code
     pub fn grid(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.grid = yes;
