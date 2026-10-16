@@ -244,13 +244,27 @@ fn utf8_len_from_lead(lead: u8) -> usize {
     }
 }
 
-/// Escape C0, DEL, and C1 control characters so a string from an untrusted
-/// filename or path can be safely written to the terminal.
+#[inline]
+fn is_terminal_format_control(c: char) -> bool {
+    // Unicode Bidi_Control plus the zero-width formatting characters handled
+    // by `sanitize`.
+    matches!(
+        c,
+        '\u{061C}'
+            | '\u{200B}'..='\u{200F}'
+            | '\u{202A}'..='\u{202E}'
+            | '\u{2066}'..='\u{2069}'
+            | '\u{FEFF}'
+    )
+}
+
+/// Escape C0, DEL, C1, bidi, and zero-width format controls so a string from
+/// an untrusted filename or path can be safely written to the terminal.
 pub fn sanitize_for_terminal(input: &str) -> String {
-    if !input
-        .chars()
-        .any(|c| matches!(c, '\x00'..='\x08' | '\x0A'..='\x1F' | '\x7F'..='\u{9F}'))
-    {
+    if !input.chars().any(|c| {
+        matches!(c, '\x00'..='\x08' | '\x0A'..='\x1F' | '\x7F'..='\u{9F}')
+            || is_terminal_format_control(c)
+    }) {
         return input.to_owned();
     }
 
@@ -266,6 +280,10 @@ pub fn sanitize_for_terminal(input: &str) -> String {
             '\u{80}'..='\u{9F}' => {
                 use std::fmt::Write as _;
                 let _ = write!(out, "\\u{{{:x}}}", c as u32);
+            }
+            format_control if is_terminal_format_control(format_control) => {
+                use std::fmt::Write as _;
+                let _ = write!(out, "\\u{{{:x}}}", format_control as u32);
             }
             other => out.push(other),
         }
@@ -519,6 +537,34 @@ fn test_sanitize_for_terminal_c0_controls() {
         sanitize_for_terminal("\u{9d}0;pwned\x07"),
         "\\u{9d}0;pwned^G"
     );
+}
+
+#[test]
+fn test_sanitize_for_terminal_escapes_bidi_and_zero_width_controls() {
+    for (control, escaped) in [
+        ('\u{061C}', "\\u{61c}"),
+        ('\u{200B}', "\\u{200b}"),
+        ('\u{200C}', "\\u{200c}"),
+        ('\u{200D}', "\\u{200d}"),
+        ('\u{200E}', "\\u{200e}"),
+        ('\u{200F}', "\\u{200f}"),
+        ('\u{202A}', "\\u{202a}"),
+        ('\u{202B}', "\\u{202b}"),
+        ('\u{202C}', "\\u{202c}"),
+        ('\u{202D}', "\\u{202d}"),
+        ('\u{202E}', "\\u{202e}"),
+        ('\u{2066}', "\\u{2066}"),
+        ('\u{2067}', "\\u{2067}"),
+        ('\u{2068}', "\\u{2068}"),
+        ('\u{2069}', "\\u{2069}"),
+        ('\u{FEFF}', "\\u{feff}"),
+    ] {
+        let dirty = format!("before{control}after");
+        let clean = sanitize_for_terminal(&dirty);
+
+        assert_eq!(clean, format!("before{escaped}after"));
+        assert_eq!(sanitize_for_terminal(&clean), clean);
+    }
 }
 
 #[test]
