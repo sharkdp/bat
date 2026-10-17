@@ -499,6 +499,26 @@ Although these themes are more restricted, they have three advantages over truec
 - Adapt to terminal theme changes. Even for already printed output.
 - Visually harmonize better with other terminal software.
 
+### Existing file paths
+
+Use `bat --show-paths config.toml` to underline recognizable paths that exist on
+the local filesystem. Files and directories are checked relative to the input
+file's directory. Standard input and custom readers use the working directory;
+a display-only filename does not change that base.
+
+The option recognizes paths containing `/`, native Windows paths containing `\`,
+`~/` paths, and quoted filenames containing a dot, such as `"config.toml"`. Quoting
+also allows spaces in a path. It checks literal spellings without decoding string
+escapes or evaluating shell variables, and ignores URLs. Missing or inaccessible
+paths remain unchanged. Underlining preserves syntax colors and other font
+attributes, including colors that identify escapes or invalid syntax; it does not
+validate a configuration language's interpretation of a string.
+
+Checks are cached per input, with a bounded cache for long streams. This extra
+filesystem work only happens when the option and colored output are enabled.
+The option is disabled by default and is also available through
+`PrettyPrinter::show_paths`.
+
 ### Output style
 
 You can use the `--style` option to control the appearance of `bat`'s output.

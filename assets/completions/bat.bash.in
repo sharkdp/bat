@@ -201,6 +201,7 @@ _bat() {
 			--binary
 			--plain
 			--language
+			--show-paths
 			--highlight-line
 			--file-name
 			--diff

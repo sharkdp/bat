@@ -134,6 +134,20 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("show-paths")
+                .long("show-paths")
+                .overrides_with("show-paths")
+                .action(ArgAction::SetTrue)
+                .help("Underline existing file paths in the output")
+                .long_help("Underline recognizable literal file paths that exist. Relative paths \
+                    are checked from the input file's directory, or the working directory for stdin. \
+                    Recognizes slash-separated paths, native Windows paths, ~/ paths, and quoted \
+                    filenames containing a dot. URLs and shell variables are ignored; escapes are \
+                    not decoded. Existing syntax colors are preserved, including escape and error \
+                    colors. Checks are cached per input. Disabled by default and requires colored output.")
+                .hide_short_help(true),
+        )
+        .arg(
             Arg::new("highlight-line")
                 .long("highlight-line")
                 .short('H')

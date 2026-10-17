@@ -171,6 +171,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Underline existing literal file paths (default: false).
+    pub fn show_paths(&mut self, yes: bool) -> &mut Self {
+        self.config.show_paths = yes;
+        self
+    }
+
     /// Whether to print binary content or nonprintable characters (default: no)
     pub fn show_nonprintable(&mut self, yes: bool) -> &mut Self {
         self.config.show_nonprintable = yes;

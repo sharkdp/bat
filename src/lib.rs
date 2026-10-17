@@ -43,6 +43,7 @@ pub mod output;
 mod pager;
 #[cfg(feature = "paging")]
 pub(crate) mod paging;
+mod path_annotations;
 mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
