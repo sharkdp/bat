@@ -1,0 +1,94 @@
+diff --git syntaxes/01_Packages/Java/Java.sublime-syntax syntaxes/01_Packages/Java/Java.sublime-syntax
+--- syntaxes/01_Packages/Java/Java.sublime-syntax
++++ syntaxes/01_Packages/Java/Java.sublime-syntax
+@@ -10,6 +10,8 @@
+ variables:
+   primitives: (?:boolean|byte|char|short|int|float|long|double)
+   storage_modifiers: (?:public|private|protected|static|final|native|synchronized|strictfp|abstract|transient|default|volatile)
++
++  type_modifiers: (?:{{storage_modifiers}}|sealed|non-sealed)
+ 
+   id: (?:[\p{L}_$][\p{L}\p{N}_$]*)
+   classcase_id: (?:\p{Lu}[\p{L}\p{N}_$]*)
+@@ -145,7 +147,7 @@
+     - match: (?=\bimport\b)
+       pop: true
+     # For a case of a statement immediately before a class definition.
+-    - match: (?=\b(?:{{storage_modifiers}}|class|interface|enum)\b)
++    - match: (?=\b(?:{{type_modifiers}}|class|interface|enum|record(?=\s+{{id}}\s*[<(]))\b)
+       pop: true
+ 
+   package:
+@@ -330,7 +332,7 @@
+     - include: code
+ 
+   class:
+-    - match: (?=({{storage_modifiers}}\s+)*(?:class|(?:@)?interface|enum)\b)
++    - match: (?=({{type_modifiers}}\s+)*(?:class|(?:@)?interface|enum|record(?=\s+{{id}}\s*[<(]))\b)
+       push: [class-meta, class-type]
+ 
+   class-meta:
+@@ -338,6 +340,16 @@
+     - include: immediate_POP
+ 
+   class-type:
++    - match: \b(?:non-sealed|sealed)\b
++      scope: storage.modifier.java
++    - match: record\b
++      scope: storage.type.record.java
++      set:
++        - class-block
++        - class-extends
++        - record-parameters
++        - generic-type-declaration
++        - class-name
+     - include: storage-modifiers
+     - match: (?:class|(\@?)interface)\b
+       scope: storage.type.java
+@@ -357,14 +369,37 @@
+         - class-name
+     - include: any_POP
+ 
++  record-parameters:
++    - match: \(
++      scope: punctuation.section.parens.begin.java
++      set:
++        - meta_scope: meta.record.parameters.java meta.parens.java
++        - match: \)
++          scope: punctuation.section.parens.end.java
++          pop: true
++        - include: parameters
++        - match: \S
++          scope: invalid.illegal.missing-parameter-end
++          pop: true
++    - include: any_POP
++
+   class-name:
+     - meta_scope: meta.class.identifier.java
+-    - match: (?!extends|implements){{id}}\b
++    - match: (?!extends\b|implements\b|permits\b){{id}}\b
+       scope: entity.name.class.java
+       pop: true
+     - include: any_POP
+ 
+   class-extends:
++    - match: permits\b
++      scope: keyword.declaration.permits.java
++      push:
++        - - meta_scope: meta.class.permits.java
++          - match: \,
++            scope: punctuation.separator.comma.java
++            push: inherited-object-type-reference
++          - include: any_POP
++        - inherited-object-type-reference
+     - match: extends\b
+       scope: keyword.declaration.extends.java
+       push:
+@@ -465,6 +500,7 @@
+           pop: true
+         - include: code-block
+   code-block:
++    - include: class
+     - include: storage-modifiers
+     - include: var-type
+     - include: code
