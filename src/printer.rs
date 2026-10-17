@@ -367,7 +367,12 @@ impl<'a> InteractivePrinter<'a> {
             self.print_horizontal_line_term(handle, self.colors.grid)?;
         } else {
             let hline = "─".repeat(self.config.term_width - (self.panel_width + 1));
-            let hline = format!("{}{grid_char}{hline}", "─".repeat(self.panel_width));
+            let panel = "─".repeat(self.panel_width);
+            let hline = if self.right_sidebar() {
+                format!("{hline}{grid_char}{panel}")
+            } else {
+                format!("{panel}{grid_char}{hline}")
+            };
             writeln!(handle, "{}", self.colors.grid.paint(hline))?;
         }
 
@@ -384,7 +389,13 @@ impl<'a> InteractivePrinter<'a> {
             "{text_truncated}{}",
             " ".repeat(self.panel_width - 1 - text_truncated.len())
         );
-        if self.config.style_components.grid() {
+        if self.right_sidebar() {
+            if self.config.style_components.grid() {
+                format!(" │ {text_filled}")
+            } else {
+                format!(" {text_filled}")
+            }
+        } else if self.config.style_components.grid() {
             format!("{text_filled} │ ")
         } else {
             text_filled
@@ -419,8 +430,55 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
-        self.print_header_component_indent(handle)?;
-        writeln!(handle, "{content}")
+        if self.right_sidebar() {
+            let available = self.config.term_width - self.get_header_component_indent_length();
+            write!(
+                handle,
+                "{content}{}",
+                " ".repeat(available.saturating_sub(console::measure_text_width(content)))
+            )?;
+            if self.config.style_components.grid() {
+                write!(handle, "{}", self.colors.grid.paint(" │"))?;
+            }
+            writeln!(handle, "{}", " ".repeat(self.panel_width))
+        } else {
+            self.print_header_component_indent(handle)?;
+            writeln!(handle, "{content}")
+        }
+    }
+
+    fn right_sidebar(&self) -> bool {
+        self.panel_width > 0 && self.config.style_components.sidebar_right()
+    }
+
+    fn right_panel(&self, line_number: usize, continuation: bool) -> String {
+        let mut panel = String::new();
+        for decoration in self.decorations.iter().rev() {
+            panel.push(' ');
+            panel.push_str(&decoration.generate(line_number, continuation, self).text);
+        }
+        panel
+    }
+
+    fn print_right_panel(
+        &self,
+        handle: &mut OutputHandle,
+        panel: &str,
+        cursor: usize,
+        width: usize,
+        background: Option<Color>,
+    ) -> Result<()> {
+        let padding = " ".repeat(width.saturating_sub(cursor));
+        let style = Style {
+            background: background.and_then(|color| to_ansi_color(color, self.config.true_color)),
+            ..Default::default()
+        };
+        write!(
+            handle,
+            "{}{}{panel}",
+            self.ansi_style.to_reset_sequence(),
+            style.paint(padding)
+        )
     }
 
     fn print_header_multiline_component(
@@ -637,9 +695,17 @@ impl Printer for InteractivePrinter<'_> {
         writeln!(
             handle,
             "{}",
-            self.colors
-                .grid
-                .paint(format!("{panel}{snip_left}{title}{snip_right}"))
+            self.colors.grid.paint(if self.right_sidebar() {
+                let snip = format!("{snip_left}{title}{snip_right}");
+                let padding = self
+                    .config
+                    .term_width
+                    .saturating_sub(panel_count)
+                    .saturating_sub(console::measure_text_width(&snip));
+                format!("{snip}{}{panel}", " ".repeat(padding))
+            } else {
+                format!("{panel}{snip_left}{title}{snip_right}")
+            })
         )?;
 
         Ok(())
@@ -719,6 +785,9 @@ impl Printer for InteractivePrinter<'_> {
         let mut cursor_max: usize = self.config.term_width;
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
+        let right_sidebar = self.right_sidebar();
+        let mut right_panel = String::new();
+        let mut panel_written = false;
 
         // Line highlighting
         let highlight_this_line = self
@@ -751,8 +820,13 @@ impl Printer for InteractivePrinter<'_> {
                 .map(|d| d.generate(display_line_number, false, self));
 
             for deco in decorations {
-                write!(handle, "{} ", deco.text)?;
+                if !right_sidebar {
+                    write!(handle, "{} ", deco.text)?;
+                }
                 cursor_max -= deco.width + 1;
+            }
+            if right_sidebar {
+                right_panel = self.right_panel(display_line_number, false);
             }
         }
 
@@ -770,6 +844,9 @@ impl Printer for InteractivePrinter<'_> {
                         EscapeSequence::Text(text) => {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
+                            if right_sidebar {
+                                cursor += text_trimmed.chars().map(char_width).sum::<usize>();
+                            }
 
                             write!(
                                 handle,
@@ -787,7 +864,16 @@ impl Printer for InteractivePrinter<'_> {
 
                             // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
-                                if let Some(background_color) = background_color {
+                                if right_sidebar {
+                                    self.print_right_panel(
+                                        handle,
+                                        &right_panel,
+                                        cursor,
+                                        cursor_max,
+                                        background_color,
+                                    )?;
+                                    panel_written = true;
+                                } else if let Some(background_color) = background_color {
                                     let ansi_style = Style {
                                         background: to_ansi_color(background_color, true_color),
                                         ..Default::default()
@@ -813,6 +899,9 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
+            if right_sidebar && !panel_written {
+                self.print_right_panel(handle, &right_panel, cursor, cursor_max, background_color)?;
+            }
             if !self.config.style_components.plain() && line.bytes().next_back() != Some(b'\n') {
                 writeln!(handle)?;
             }
@@ -854,7 +943,9 @@ impl Printer for InteractivePrinter<'_> {
                                 if current_width > max_width {
                                     // Generate wrap padding if not already generated.
                                     if panel_wrap.is_none() {
-                                        panel_wrap = if self.panel_width > 0 {
+                                        panel_wrap = if right_sidebar {
+                                            Some(self.right_panel(line_number, true))
+                                        } else if self.panel_width > 0 {
                                             Some(format!(
                                                 "{} ",
                                                 self.decorations
@@ -893,7 +984,7 @@ impl Printer for InteractivePrinter<'_> {
                                     // It wraps.
                                     write!(
                                         handle,
-                                        "{}{}\n{}",
+                                        "{}{}",
                                         as_terminal_escaped(
                                             style,
                                             &format!(
@@ -906,9 +997,26 @@ impl Printer for InteractivePrinter<'_> {
                                             self.config.use_italic_text,
                                             background_color
                                         ),
-                                        self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
+                                        self.ansi_style.to_reset_sequence()
                                     )?;
+                                    if right_sidebar {
+                                        let emitted_width = cursor
+                                            + line_buf[..emit_end]
+                                                .chars()
+                                                .map(char_width)
+                                                .sum::<usize>();
+                                        self.print_right_panel(
+                                            handle,
+                                            &right_panel,
+                                            emitted_width,
+                                            cursor_max,
+                                            background_color,
+                                        )?;
+                                        right_panel = panel_wrap.clone().unwrap();
+                                        writeln!(handle)?;
+                                    } else {
+                                        write!(handle, "\n{}", panel_wrap.as_deref().unwrap())?;
+                                    }
 
                                     cursor = 0;
                                     max_width = cursor_max;
@@ -956,7 +1064,9 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
-            if let Some(background_color) = background_color {
+            if right_sidebar {
+                self.print_right_panel(handle, &right_panel, cursor, cursor_max, background_color)?;
+            } else if let Some(background_color) = background_color {
                 let ansi_style = Style {
                     background: to_ansi_color(background_color, self.config.true_color),
                     ..Default::default()

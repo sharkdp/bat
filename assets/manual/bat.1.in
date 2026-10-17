@@ -243,7 +243,12 @@ By default, the following components are enabled:
 changes, grid, header\-filename, numbers, snip
 .IP
 Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
-rule, numbers, snip.
+rule, numbers, snip, sidebar-right.
+.PP
+The sidebar-right modifier moves the selected line numbers, Git markers and grid
+to the right of the content. For example, '--style=default,sidebar-right' uses the
+default decorations on the right. It does not enable decorations by itself.
+With wrapping disabled, overlong content places its sidebar after the complete line.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
