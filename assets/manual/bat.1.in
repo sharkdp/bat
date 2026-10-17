@@ -82,7 +82,19 @@ highlights lines 1 to 40
 highlights lines 40 to the end of the file
 .IP "\-\-highlight\-line 30:+10"
 highlights lines 30 to 40
+.IP "\-\-highlight\-line 2.3:.7"
+highlights characters 3 through 7 of line 2
+.IP "\-\-highlight\-line 2.3:4.5"
+highlights from line 2, character 3 through line 4, character 5
 .RE
+Character regions use inclusive LINE.COLUMN positions. A single position selects
+one character; an omitted end selects through the end of the file. A column
+without a line number refers to the starting line. Positions start at 1 and must
+be in ascending order. Columns count Unicode grapheme clusters before tab
+expansion; tabs count as one character, and ANSI escape sequences do not count.
+With --show-all, positions refer to the resulting marker text. Character ranges
+highlight only selected text, without padding to the terminal edge. If the theme
+has no line-highlight color, selected text is underlined instead.
 .HP
 \fB\-\-file\-name\fR <name>...
 .IP

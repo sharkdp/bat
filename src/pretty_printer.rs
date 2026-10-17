@@ -249,6 +249,15 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Highlight an inclusive range of line and character positions.
+    pub fn highlight_region(
+        &mut self,
+        region: crate::highlight_region::HighlightRegion,
+    ) -> &mut Self {
+        self.config.highlighted_regions.push(region);
+        self
+    }
+
     /// Specify the maximum number of consecutive empty lines to print.
     pub fn squeeze_empty_lines(&mut self, maximum: Option<usize>) -> &mut Self {
         self.config.squeeze_lines = maximum;
