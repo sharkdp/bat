@@ -454,6 +454,32 @@ bat --completion <shell>
 # see --help for supported shells
 ```
 
+### WASI Preview 1
+
+Build a portable command-line module with the Rust-only regex backend:
+
+```bash
+rustup target add wasm32-wasip1
+cargo build --release --locked --target wasm32-wasip1 --no-default-features --features wasi-application
+```
+
+The result is `target/wasm32-wasip1/release/bat.wasm`. Run it with a WASI Preview 1
+host that supplies standard input/output and exposes the files you want to read.
+For example, the Node.js launcher below exposes only the current directory as `/`:
+
+```bash
+node examples/wasi.mjs target/wasm32-wasip1/release/bat.wasm --color=always /README.md
+```
+
+The module supports files, stdin, syntax highlighting, themes, line ranges and
+wrapping. Native pagers, Git integration, external preprocessors and asset rebuilding
+are excluded from this feature set; explicit `--paging=always` reports an error.
+Use `--terminal-width` when the host cannot supply a terminal size. `HOME`, XDG and
+`BAT_CONFIG_DIR`/`BAT_CACHE_PATH` refer to paths inside the host's exposed filesystem;
+without `HOME`, configuration locations default to `/.config/bat` and `/.cache/bat`.
+The `regex-fancy` backend has the same syntax compatibility limitations as native
+builds using that backend. This is a WASI command-line module, not a browser DOM API.
+
 ## Customization
 
 ### Highlighting theme

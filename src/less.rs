@@ -1,4 +1,4 @@
-#![cfg(feature = "paging")]
+#![cfg(all(feature = "paging", not(target_os = "wasi")))]
 
 use std::ffi::OsStr;
 use std::process::Command;

@@ -28,7 +28,7 @@ pub enum Error {
     InvalidPagerValueBat,
     #[error("{0}")]
     Msg(String),
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     #[error(transparent)]
     MinusError(#[from] ::minus::MinusError),
     #[cfg(feature = "lessopen")]
