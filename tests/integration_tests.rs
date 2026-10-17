@@ -1586,6 +1586,20 @@ fn pager_more() {
     });
 }
 
+/// The status column of less (-J, e.g. from $LESS) makes lines wrap onto
+/// the decorations, so it has to be reset when bat builds the less arguments
+#[test]
+#[cfg(unix)]
+fn pager_less_resets_status_column() {
+    bat()
+        .arg("--pager=../mocked-pagers/less.sh")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("-+J"));
+}
+
 #[test]
 fn alias_pager_disable() {
     bat()

@@ -155,6 +155,13 @@ impl OutputType {
                     p.arg("-K"); // Short version of '--quit-on-intr'
                 }
 
+                // The status column ('-J', e.g. from $LESS) takes two columns away from
+                // lines that bat already wrapped to the terminal width, so turn it off.
+                // The BusyBox version of less does not support '-+'.
+                if less_version != Some(LessVersion::BusyBox) {
+                    p.arg("-+J"); // Resets '--status-column' to its default
+                }
+
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
                 // versions of 'less'. Unfortunately, it also breaks mouse-wheel support.
                 //
