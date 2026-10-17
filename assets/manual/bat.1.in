@@ -68,6 +68,13 @@ specified as a name (like 'C++' or 'LaTeX') or possible file extension
 (like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
 language names and file extensions.
 .HP
+\fB\-\-fallback\-syntax\fR <language>
+.IP
+Set a fallback language for syntax highlighting when auto\-detection fails.
+Unlike '\-\-language', this is only used when no syntax could be detected from
+filename, custom syntax mappings, or first\-line detection. The alias
+'\-\-fallback\-language' is accepted as well.
+.HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
 Highlight the specified line ranges with a different background color. For example:
