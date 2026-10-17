@@ -146,6 +146,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--italic-text'           , 'italic-text'           , [CompletionResultType]::ParameterName, 'Use italics in output (always, *never*)')
             [CompletionResult]::new('--decorations'           , 'decorations'           , [CompletionResultType]::ParameterName, 'When to show the decorations (*auto*, never, always).')
             [CompletionResult]::new('--paging'                , 'paging'                , [CompletionResultType]::ParameterName, 'Specify when to use the pager, or use ''-P'' to disable (*auto*, never, always).')
+            [CompletionResult]::new('--process', 'process', [CompletionResultType]::ParameterName, 'Filter each input through a command.')
             [CompletionResult]::new('--pager'                 , 'pager'                 , [CompletionResultType]::ParameterName, 'Determine which pager to use.')
         #   [CompletionResult]::new('-m'                      , 'm'                     , [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')
             [CompletionResult]::new('--map-syntax'            , 'map-syntax'            , [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')

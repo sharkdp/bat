@@ -127,6 +127,9 @@ impl LessOpenPreprocessor {
         mut stdin: R,
         stdout_identifier: Option<&Identifier>,
     ) -> Result<OpenedInput<'a>> {
+        if input.reader_override.is_some() {
+            return input.open(stdin, stdout_identifier);
+        }
         let (lessopen_stdout, path_str, kind) = match input.kind {
             InputKind::OrdinaryFile(ref path) => {
                 let path_str = match path.to_str() {

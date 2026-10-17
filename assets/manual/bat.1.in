@@ -84,6 +84,16 @@ highlights lines 40 to the end of the file
 highlights lines 30 to 40
 .RE
 .HP
+\fB\-\-process\fR <command>
+.IP
+Run a separate filter for each input before displaying it. The command reads
+that input from standard input; its output retains the original filename and
+syntax selection. Arguments use shell-style quoting without implicit shell
+expansion. Standard error is inherited and a failed process makes bat fail.
+For example, \fB\-\-process "python -m json.tool"\fR formats JSON inputs.
+Line numbers and ranges refer to processed output. Git change markers are
+omitted. This option conflicts with \fB\-\-diff\fR and \fB\-\-lessopen\fR.
+.HP
 \fB\-\-file\-name\fR <name>...
 .IP
 Specify the name to display for a file. Useful when piping data to {{PROJECT_EXECUTABLE}} from STDIN when {{PROJECT_EXECUTABLE}} does not otherwise know the filename. Note that the provided file name is also used for syntax detection.

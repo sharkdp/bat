@@ -21,6 +21,8 @@ Options:
           Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
   -H, --highlight-line <N:M>
           Highlight lines N through M.
+      --process <command>
+          Filter each input through a command before displaying it.
       --file-name <name>
           Specify the name to display for a file.
   -d, --diff
