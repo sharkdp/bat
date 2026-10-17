@@ -593,7 +593,9 @@ syntax:
 
 This works very similar to how we add new syntax definitions.
 > [!NOTE]
-> Custom themes must be stored in [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html).
+> Custom themes can use [`.tmTheme` files](https://www.sublimetext.com/docs/color_schemes_tmtheme.html)
+> or [VS Code JSON color themes](https://code.visualstudio.com/api/extension-guides/color-theme)
+> with a `.json` or `.jsonc` extension.
 > Newer `.sublime-color-scheme` files are currently not supported.
 
 First, create a folder with the new syntax highlighting themes:
@@ -610,7 +612,30 @@ bat cache --build
 
 Finally, use `bat --list-themes` to check if the new themes are available.
 > [!NOTE]
-> `bat` uses the name of the `.tmTheme` file for the theme's name. 
+> `bat` uses the filename without its extension for the theme's name.
+
+For VS Code themes, copy the theme JSON and any files referenced by `include` or
+`tokenColors` into the themes directory, preserving their relative paths, then
+run `bat cache --build`. JSON comments and trailing commas are supported.
+For example, a file named `my-theme.json` can contain:
+
+```json
+{
+  "colors": {
+    "editor.foreground": "#d4d4d4",
+    "editor.background": "#1e1e1e",
+    "editorLineNumber.foreground": "#858585"
+  },
+  "tokenColors": [
+    { "scope": "comment", "settings": { "foreground": "#6a9955", "fontStyle": "italic" } }
+  ]
+}
+```
+
+Select it with `bat --theme=my-theme`. TextMate scope rules and relevant editor
+colors are imported; VS Code workbench colors and semantic token rules are not
+used. Semantic highlighting requires language-server information that `bat`
+does not have. Bold, italic, and underline styles are supported.
 
 ### Adding or changing file type associations
 

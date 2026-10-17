@@ -34,13 +34,14 @@ minimal-application = [
 git = ["gix"] # Support indicating git modifications
 paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
 lessopen = ["execute"] # Support $LESSOPEN preprocessor
-build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir"]
+build-assets = ["syntect/yaml-load", "syntect/plist-load", "regex", "walkdir", "serde_json"]
 
 # You need to use one of these if you depend on bat as a library:
 regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
+serde_json = { version = "1.0", optional = true }
 nu-ansi-term = "0.50.3"
 ansi_colours = "^1.2"
 bincode = "1.0"
