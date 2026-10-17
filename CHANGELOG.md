@@ -3,6 +3,7 @@
 
 ## Other
 
+- Document the `--fallback-syntax` option in the man page, see #4078 (@ump45nose)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
