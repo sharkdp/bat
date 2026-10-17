@@ -55,6 +55,7 @@ bat cache --clear
 )
 
 reverse_patches() {
+    rm -f "$ASSET_DIR/syntaxes/02_Extra/CUDA/CUDA.sublime-syntax"
     (
         cd "$ASSET_DIR"
         for patch in patches/*.patch; do
@@ -65,5 +66,7 @@ reverse_patches() {
 
 # Make sure to always reverse patches, even if the `bat cache` command fails or aborts
 trap reverse_patches EXIT
+
+bash "$ASSET_DIR/syntaxes/02_Extra/CUDA/build.sh"
 
 bat cache --build --blank --acknowledgements --source="$ASSET_DIR" --target="$ASSET_DIR"
