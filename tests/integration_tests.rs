@@ -2102,6 +2102,19 @@ fn utf16be() {
         .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
 }
 
+#[test]
+fn utf16be_first_line_not_merged_with_second() {
+    // The first line of a UTF-16BE file must not swallow the second line
+    bat()
+        .arg("--decorations=always")
+        .arg("--style=numbers")
+        .arg("--color=never")
+        .arg("test_UTF-16BE.txt")
+        .assert()
+        .success()
+        .stdout("   1 hello world\n   2 this is a test\n");
+}
+
 // Regression test for https://github.com/sharkdp/bat/issues/1922
 #[test]
 fn bom_not_stripped_in_loop_through_mode() {
