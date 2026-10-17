@@ -323,6 +323,14 @@ is dependent on your operating system. To get the default path for your system, 
 Alternatively, you can use the BAT_CONFIG_PATH environment variable to point {{PROJECT_EXECUTABLE}} to a non-default
 location of the configuration file.
 
+If the extensionless config file is absent, config.toml in the same directory is
+used instead. This applies to both system and user configuration. An explicit
+BAT_CONFIG_PATH selects that exact file; the .toml extension selects TOML parsing.
+TOML keys are long option names without the leading dashes. Strings and integers
+supply values, arrays repeat options, and true enables a flag. False omits a flag
+from that file and does not cancel settings from other sources. Counted flags
+also accept integers, for example plain = 2 is equivalent to -pp.
+
 To generate a default configuration file, call:
 
 \fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR
