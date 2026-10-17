@@ -89,6 +89,7 @@ _bat() {
 		;;
 	-H | --highlight-line | \
 	--diff-context | \
+	--paging-reserve | \
 	--tabs | \
 	--terminal-width | \
 	-m | --map-syntax | \
@@ -215,6 +216,7 @@ _bat() {
 			--decorations
 			--force-colorization
 			--paging
+			--paging-reserve
 			--no-paging
 			--pager
 			--map-syntax

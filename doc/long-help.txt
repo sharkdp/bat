@@ -112,6 +112,12 @@ Options:
           Alias for '--decorations=always --color=always'. This is useful if the output of bat is
           piped to another program, but you want to keep the colorization/decorations.
 
+      --paging-reserve <N>
+          Reserve N terminal rows for a multiline shell prompt when paging automatically. Requires
+          less 632 or newer and reduces its viewport as well as the one-screen threshold. Zero
+          disables the reservation. Forced or disabled paging is unchanged; the viewport is kept at
+          least one row high.
+
       --paging <when>
           Specify when to use the pager. To disable the pager, use '--paging=never' or its
           alias,'-P'. To disable the pager permanently, set BAT_PAGING to 'never'. To control which

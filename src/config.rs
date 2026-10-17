@@ -76,6 +76,9 @@ pub struct Config<'a> {
     #[cfg(feature = "paging")]
     pub paging_mode: PagingMode,
 
+    /// Rows to reserve from the automatic less pager viewport (zero disables).
+    pub paging_reserve: u16,
+
     /// Specifies which lines should be printed
     pub visible_lines: VisibleLines,
 

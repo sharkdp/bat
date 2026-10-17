@@ -429,6 +429,11 @@ impl App {
                     Some("auto") => !env_no_color() && self.interactive_output,
                     _ => unreachable!("other values for --color are not allowed"),
                 },
+            paging_reserve: self
+                .matches
+                .get_one::<u16>("paging-reserve")
+                .copied()
+                .unwrap_or(0),
             paging_mode,
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
