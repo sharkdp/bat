@@ -150,6 +150,36 @@ Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or
 \fB-P\fR. To disable the pager permanently, set BAT_PAGER to an empty string. To control
 which pager is used, see the '\-\-pager' option. Possible values: *auto*, never, always.
 .HP
+\fB\-\-scroll\-to\fR <LINE>
+.IP
+Open the pager at a positive line number in a single input, retaining earlier output.
+Headers, wrapped lines and selected ranges are included in the position calculation.
+If the line is omitted by a range or squeezing, use the next printed line; a request
+beyond the input opens at the end. Line numbering follows the selected numbering mode.
+Buffer output up to the target, spilling to a temporary file after 64 KiB, then stream
+normally. This option does not enable paging when it is disabled.
+.HP
+\fB\-\-center\-highlight\fR
+.IP
+Center the first visible highlighted line. Requires one input and \fB\-\-highlight\-line\fR.
+If no highlighted line is printed, open at the beginning. The buffering and paging
+rules of \fB\-\-scroll\-to\fR apply.
+.PP
+Standard less supports these options directly. Custom pager wrappers receive
+BAT_SCROLL_LINE (a one-based line in rendered output) and BAT_SCROLL_POSITION
+(top, center or end). BAT_SCROLL_LINE is unset for end. Wrappers are responsible for
+interpreting these variables; bat does not evaluate shell expressions in pager commands.
+The built-in pager, BusyBox less, more and most do not support these options.
+.HP
+\fB\-\-literal\-file\-names\fR
+.IP
+Disable the file:line shorthand. By default, when a UTF-8 input path does not exist,
+a final colon followed by a positive integer is interpreted as a line position if
+the prefix names an existing file. Open that file with the requested line centered,
+retaining all selected output. This requires exactly one input. Existing paths,
+symlinks and Windows alternate data streams take precedence. Explicit
+\fB\-\-scroll\-to\fR or \fB\-\-center\-highlight\fR overrides this position.
+.HP
 \fB\-\-pager\fR <command>
 .IP
 Determine which pager is used. This option will override the PAGER and BAT_PAGER

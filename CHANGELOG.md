@@ -1,6 +1,10 @@
 # unreleased
 
 
+## Features
+
+- Open a single input at a line with `--scroll-to`, center its first visible highlight with `--center-highlight`, or use `file:line` while retaining earlier output, see #3990 (@Matei02355)
+
 ## Other
 
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)

@@ -47,6 +47,21 @@ fn parse_strip_ansi_value(raw: Option<&str>, flag_name: &str) -> StripAnsiMode {
     }
 }
 
+// Only reinterpret a missing literal path when the remaining path names a file.
+// Existing colon names, symlinks and Windows alternate data streams take precedence.
+fn split_file_position(path: &Path) -> Option<(PathBuf, usize)> {
+    if std::fs::symlink_metadata(path).err()?.kind() != std::io::ErrorKind::NotFound {
+        return None;
+    }
+    let (file, line) = path.to_str()?.rsplit_once(':')?;
+    if line.is_empty() || !line.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    let line = line.parse::<usize>().ok().filter(|&line| line > 0)?;
+    let file = Path::new(file);
+    file.is_file().then(|| (file.to_path_buf(), line))
+}
+
 enum HelpType {
     Short,
     Long,
@@ -63,6 +78,7 @@ pub struct App {
     /// (not from config file or environment variables).
     /// This is used to honor the flag when piping output, similar to `cat -b`.
     number_nonblank_from_cli: bool,
+    file_position: Option<(PathBuf, usize)>,
 }
 
 impl App {
@@ -115,7 +131,25 @@ impl App {
             std::process::exit(0);
         }
 
+        let file_positions = if matches.get_flag("literal-file-names") {
+            Vec::new()
+        } else {
+            matches
+                .get_many::<PathBuf>("FILE")
+                .into_iter()
+                .flatten()
+                .filter_map(|path| split_file_position(path))
+                .collect::<Vec<_>>()
+        };
+        if !file_positions.is_empty()
+            && matches.get_many::<PathBuf>("FILE").map(|files| files.len()) != Some(1)
+        {
+            return Err("A file:line position requires exactly one input".into());
+        }
+        let file_position = file_positions.into_iter().next();
+
         Ok(App {
+            file_position,
             matches,
             interactive_output,
             number_from_cli,
@@ -430,6 +464,20 @@ impl App {
                     _ => unreachable!("other values for --color are not allowed"),
                 },
             paging_mode,
+            scroll_to: self
+                .matches
+                .get_one::<usize>("scroll-to")
+                .copied()
+                .or_else(|| {
+                    if self.matches.get_flag("center-highlight") {
+                        None
+                    } else {
+                        self.file_position.as_ref().map(|(_, line)| *line)
+                    }
+                }),
+            scroll_to_center: self.file_position.is_some()
+                && self.matches.get_one::<usize>("scroll-to").is_none(),
+            center_highlight: self.matches.get_flag("center-highlight"),
             term_width: maybe_term_width.unwrap_or(Term::stdout().size().1 as usize),
             loop_through: !(self.interactive_output
                 || self.matches.get_one::<String>("color").map(|s| s.as_str()) == Some("always")
@@ -576,6 +624,10 @@ impl App {
                 if filepath.to_str().unwrap_or_default() == "-" {
                     file_input.push(new_stdin_input(provided_name));
                 } else {
+                    let filepath = self
+                        .file_position
+                        .as_ref()
+                        .map_or(filepath, |(path, _)| path.as_path());
                     file_input.push(new_file_input(filepath, provided_name));
                 }
             }
