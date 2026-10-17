@@ -210,6 +210,8 @@ pub(crate) struct InteractivePrinter<'a> {
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
+    /// Number of non-blank lines seen so far, used for `--number-nonblank`
+    nonblank_line_count: usize,
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
@@ -343,6 +345,7 @@ impl<'a> InteractivePrinter<'a> {
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
+            nonblank_line_count: 0,
             strip_ansi,
             sanitize,
             strip_overstrike,
@@ -653,6 +656,22 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
+        // In number-nonblank mode, the displayed number counts non-blank lines only
+        // (content-free lines that contain only the line terminator are skipped).
+        // `line_number` stays the line number in the file, which is what line ranges,
+        // highlighted lines and Git changes refer to.
+        let is_blank_line = line_buffer.iter().all(|&b| b == b'\r' || b == b'\n');
+        if self.config.number_nonblank && !is_blank_line {
+            self.nonblank_line_count += 1;
+        }
+        let display_line_number = if !self.config.number_nonblank {
+            line_number
+        } else if is_blank_line {
+            0
+        } else {
+            self.nonblank_line_count
+        };
+
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
                 line_buffer,
@@ -738,13 +757,6 @@ impl Printer for InteractivePrinter<'_> {
 
         // Line decorations.
         if self.panel_width > 0 {
-            let display_line_number =
-                if self.config.number_nonblank && line.trim_end_matches(['\r', '\n']).is_empty() {
-                    0
-                } else {
-                    line_number
-                };
-
             let decorations = self
                 .decorations
                 .iter()
@@ -860,7 +872,7 @@ impl Printer for InteractivePrinter<'_> {
                                                 self.decorations
                                                     .iter()
                                                     .map(|d| d
-                                                        .generate(line_number, true, self)
+                                                        .generate(display_line_number, true, self)
                                                         .text)
                                                     .collect::<Vec<String>>()
                                                     .join(" ")
