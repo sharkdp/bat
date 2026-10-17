@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+  <dict>
+    <key>name</key><string>background</string>
+    <key>settings</key>
+    <array>
+      <dict>
+        <key>settings</key>
+        <dict>
+          <key>foreground</key><string>#02000000</string>
+          <key>background</key><string>#01000000</string>
+          <key>lineHighlight</key><string>#04000000</string>
+        </dict>
+      </dict>
+      <dict>
+        <key>scope</key><string>comment</string>
+        <key>settings</key>
+        <dict>
+          <key>background</key><string>#03000000</string>
+        </dict>
+      </dict>
+    </array>
+  </dict>
+</plist>

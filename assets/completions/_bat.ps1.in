@@ -85,6 +85,11 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
         }
+        '*;--theme-background' {
+            $ArrayYesNo |
+            ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
+            break
+        }
         '*;--paging' {
             $ArrayWhen |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
@@ -143,6 +148,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--wrap'                  , 'wrap'                  , [CompletionResultType]::ParameterName, 'Specify the text-wrapping mode (*auto*, never, character, word).')
             [CompletionResult]::new('--terminal-width'        , 'terminal-width'        , [CompletionResultType]::ParameterName, 'Explicitly set the width of the terminal instead of determining it automatically. If prefixed with ''+'' or ''-'', the value will be treated as an offset to the actual terminal width. See also: ''--wrap''.')
             [CompletionResult]::new('--color'                 , 'color'                 , [CompletionResultType]::ParameterName, 'When to use colors (*auto*, never, always).')
+            [CompletionResult]::new('--theme-background'           , 'theme-background'           , [CompletionResultType]::ParameterName, 'Apply theme background colors (always, *never*)')
             [CompletionResult]::new('--italic-text'           , 'italic-text'           , [CompletionResultType]::ParameterName, 'Use italics in output (always, *never*)')
             [CompletionResult]::new('--decorations'           , 'decorations'           , [CompletionResultType]::ParameterName, 'When to show the decorations (*auto*, never, always).')
             [CompletionResult]::new('--paging'                , 'paging'                , [CompletionResultType]::ParameterName, 'Specify when to use the pager, or use ''-P'' to disable (*auto*, never, always).')

@@ -103,6 +103,11 @@ Options:
           Specify when to use ANSI sequences for italic text in the output. Possible values: always,
           *never*.
 
+      --theme-background <when>
+          Apply the theme's background colors to highlighted text. This includes backgrounds
+          assigned to individual syntax tokens. Highlighted lines take precedence over theme
+          backgrounds. Requires colored output. Possible values: always, *never*.
+
       --decorations <when>
           Specify when to use the decorations that have been specified via '--style'. The automatic
           mode only enables decorations if an interactive terminal is detected. The always mode will
