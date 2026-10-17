@@ -23,6 +23,8 @@ Options:
           Highlight lines N through M.
       --file-name <name>
           Specify the name to display for a file.
+      --blame
+          Show Git attribution alongside source lines
   -d, --diff
           Only show lines that have been added/removed/modified.
       --tabs <T>
@@ -57,7 +59,7 @@ Options:
           Squeeze consecutive empty lines.
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
-          header, header-filename, header-filesize, grid, rule, numbers, snip).
+          blame, header, header-filename, header-filesize, grid, rule, numbers, snip).
   -r, --line-range <N:M>
           Only print the lines from N to M.
   -L, --list-languages

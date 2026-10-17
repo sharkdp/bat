@@ -207,6 +207,8 @@ pub(crate) struct InteractivePrinter<'a> {
     content_type: Option<ContentType>,
     #[cfg(feature = "git")]
     pub line_changes: &'a Option<LineChanges>,
+    #[cfg(feature = "git")]
+    pub source_line: usize,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
     consecutive_empty_lines: usize,
@@ -234,6 +236,29 @@ impl<'a> InteractivePrinter<'a> {
 
         // Create decorations.
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
+
+        #[cfg(feature = "git")]
+        if config.style_components.blame() {
+            let format = crate::blame::BlameFormat::parse(
+                config.blame_format.unwrap_or(crate::blame::DEFAULT_FORMAT),
+            )?;
+            #[cfg(feature = "lessopen")]
+            let preprocessed = config.use_lessopen;
+            #[cfg(not(feature = "lessopen"))]
+            let preprocessed = false;
+            if !preprocessed && !config.unbuffered {
+                if let crate::input::OpenedInputKind::OrdinaryFile(path) = &input.kind {
+                    if let Some(lines) = crate::blame::get_git_blame(path, &format)? {
+                        let max_width = config.term_width.saturating_sub(14).min(32);
+                        if max_width >= 8 {
+                            decorations.push(Box::new(crate::decorations::BlameDecoration::new(
+                                lines, &colors, max_width,
+                            )));
+                        }
+                    }
+                }
+            }
+        }
 
         if config.style_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
@@ -340,6 +365,8 @@ impl<'a> InteractivePrinter<'a> {
             ansi_style: AnsiStyle::new(),
             #[cfg(feature = "git")]
             line_changes,
+            #[cfg(feature = "git")]
+            source_line: 0,
             highlighter_from_set,
             background_color_highlight,
             consecutive_empty_lines: 0,
@@ -653,6 +680,10 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
+        #[cfg(feature = "git")]
+        {
+            self.source_line += 1;
+        }
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
                 line_buffer,

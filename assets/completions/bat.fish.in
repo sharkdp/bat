@@ -79,6 +79,7 @@ function __bat_style_opts
         "full,all components" \
         "plain,no components" \
         "changes,Git change markers" \
+        "blame,Git commit attribution" \
         "header,alias for header-filename" \
         "header-filename,filename above content" \
         "header-filesize,filesize above content" \
@@ -161,6 +162,9 @@ complete -c $bat -l decorations -x -a "$decorations_opts" -d "When to use --styl
 
 complete -c $bat -l diagnostic -d "Print diagnostic info for bug reports" -n __fish_is_first_arg
 complete -c $bat -l quiet-empty -d "Do not produce any output when the input is empty" -n __fish_is_first_arg
+
+complete -c $bat -l blame -d "Show Git commit attribution" -n __bat_no_excl_args
+complete -c $bat -l blame-format -x -d "Format the Git attribution sidebar" -n __bat_no_excl_args
 
 complete -c $bat -s d -l diff -d "Only show lines with Git changes" -n __bat_no_excl_args
 
