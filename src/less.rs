@@ -10,9 +10,10 @@ pub enum LessVersion {
 }
 
 pub fn retrieve_less_version(less_path: &dyn AsRef<OsStr>) -> Option<LessVersion> {
-    let resolved_path = grep_cli::resolve_binary(less_path.as_ref()).ok()?;
-
-    let cmd = Command::new(resolved_path).arg("--version").output().ok()?;
+    let cmd = crate::pager::run_command(less_path.as_ref(), |program| {
+        Command::new(program).arg("--version").output()
+    })
+    .ok()?;
     if cmd.status.success() {
         parse_less_version(&cmd.stdout)
     } else {
@@ -128,4 +129,16 @@ fn test_parse_less_version_invalid_utf_8() {
 
     assert_eq!(None, parse_less_version(output));
     assert_eq!(None, parse_less_version_busybox(output));
+}
+
+#[cfg(all(test, windows))]
+#[test]
+fn version_query_accepts_an_explicit_batch_path_with_spaces() {
+    let root = tempfile::tempdir().unwrap();
+    let program = root.path().join("less version.cmd");
+    std::fs::write(&program, "@echo off\r\necho less 590 ^(test pager^)\r\n").unwrap();
+    assert_eq!(
+        retrieve_less_version(&program),
+        Some(LessVersion::Less(590))
+    );
 }
