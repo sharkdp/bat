@@ -101,20 +101,20 @@ pub struct Config<'a> {
     /// cached assets) are not available, assets from the binary will be used instead.
     pub use_custom_assets: bool,
 
-    // Whether or not to use $LESSOPEN if set
+    /// Whether or not to use $LESSOPEN if set
     #[cfg(feature = "lessopen")]
     pub use_lessopen: bool,
 
-    // Whether or not to set terminal title when using a pager
+    /// Whether or not to set terminal title when using a pager
     pub set_terminal_title: bool,
 
     /// The maximum number of consecutive empty lines to display
     pub squeeze_lines: Option<usize>,
 
-    // Whether or not to strip ANSI escape codes from the input
+    /// Whether or not to strip ANSI escape codes from the input
     pub strip_ansi: StripAnsiMode,
 
-    // Substitute terminal-active and spoofing-relevant bytes; implies strip_ansi.
+    /// Substitute terminal-active and spoofing-relevant bytes; implies strip_ansi.
     pub sanitize: StripAnsiMode,
 
     /// Whether or not to produce no output when input is empty
