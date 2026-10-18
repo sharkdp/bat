@@ -12,3 +12,18 @@ index 05a4fed6..78a7bf55 100644
  scope: source.js
  variables:
    bin_digit: '[01_]'
+
+diff --git syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
+index 05a4fed6..beb92902 100644
+--- syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
++++ syntaxes/01_Packages/JavaScript/JavaScript.sublime-syntax
+@@ -93,7 +93,8 @@ variables:
+       (?! \+\+ | -- )
+       (?=
+         != |
+-        [-+*/%><=&|^\[(;,.:?] |
++        [-+*%><=&|^\[(;,.:?] |
++        /(?!\*) |
+         (?:in|instanceof){{identifier_break}}
+       )
+     ))
