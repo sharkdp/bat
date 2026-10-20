@@ -417,7 +417,7 @@ scoop install bat
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### From binaries
 
@@ -794,7 +794,7 @@ Example configuration file:
 
 ### Prerequisites
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### Paging
 
