@@ -171,6 +171,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--diff'                  , 'diff'                  , [CompletionResultType]::ParameterName, 'Only show lines that have been added/removed/modified.')
         #   [CompletionResult]::new('-n'                      , 'n'                     , [CompletionResultType]::ParameterName, 'Show line numbers (alias for ''--style=numbers'').')
             [CompletionResult]::new('--number'                , 'number'                , [CompletionResultType]::ParameterName, 'Show line numbers (alias for ''--style=numbers'').')
+        #   [CompletionResult]::new('-b'                      , 'b'                     , [CompletionResultType]::ParameterName, 'Show line numbers for non-blank lines only (alias for ''--style=numbers'').')
+            [CompletionResult]::new('--number-nonblank'       , 'number-nonblank'       , [CompletionResultType]::ParameterName, 'Show line numbers for non-blank lines only (alias for ''--style=numbers'').')
         #   [CompletionResult]::new('-f'                      , 'f'                     , [CompletionResultType]::ParameterName, 'f')
             [CompletionResult]::new('--force-colorization'    , 'force-colorization'    , [CompletionResultType]::ParameterName, 'force-colorization')
         #   [CompletionResult]::new('-P'                      , 'P'                     , [CompletionResultType]::ParameterName, 'Alias for ''--paging=never''')
