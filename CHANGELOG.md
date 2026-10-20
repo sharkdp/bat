@@ -3,6 +3,7 @@
 
 ## Other
 
+- Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
@@ -26,6 +27,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #4076 (@cindykrafft)
 - Make `--line-range` and `--highlight-line` refer to line numbers in the file when `-b` / `--number-nonblank` is used, instead of to the displayed non-blank line count, see #4084 (@cindykrafft)
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
