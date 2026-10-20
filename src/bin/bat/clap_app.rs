@@ -354,6 +354,17 @@ pub fn build_app(interactive_output: bool) -> Command {
                         to keep the colorization/decorations.")
         )
         .arg(
+            Arg::new("paging-reserve")
+                .long("paging-reserve")
+                .value_name("N")
+                .value_parser(value_parser!(u16))
+                .action(ArgAction::Set)
+                .overrides_with("paging-reserve")
+                .hide_short_help(true)
+                .help("Reserve N terminal rows when paging automatically with less.")
+                .long_help("Reserve N terminal rows for a multiline shell prompt when paging automatically. Requires less 632 or newer and reduces its viewport as well as the one-screen threshold. Zero disables the reservation. Forced or disabled paging is unchanged; the viewport is kept at least one row high."),
+        )
+        .arg(
             Arg::new("paging")
                 .long("paging")
                 .overrides_with("paging")
