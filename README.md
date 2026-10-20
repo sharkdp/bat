@@ -547,6 +547,15 @@ By default, `bat` only shows decorations (such as line numbers, file headers, gr
 
 There is also the `--force-colorization` option, which is an alias for `--decorations=always --color=always`. This is useful if you want to keep colorization and decorations when piping `bat`'s output to another program.
 
+### Mermaid diagrams
+
+When viewing Markdown files containing ```` ```mermaid ```` code blocks or standalone Mermaid files (`.mmd`, `.mermaid`), `bat` can render the diagrams directly in the terminal using Unicode box-drawing characters.
+
+You can control this behavior with the `--mermaid` option or the `BAT_MERMAID` environment variable:
+- `auto` (default): render Mermaid diagrams when outputting to an interactive terminal.
+- `always`: always render Mermaid diagrams, even when output is piped or redirected.
+- `never`: disable Mermaid diagram rendering and display the raw source code.
+
 ### Adding new syntaxes / language definitions
 
 Should you find that a particular syntax is not available within `bat`, you can follow these
