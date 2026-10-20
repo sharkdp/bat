@@ -3,6 +3,7 @@ use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+#[cfg(not(target_os = "wasi"))]
 use std::thread::available_parallelism;
 
 use crate::{
@@ -320,7 +321,11 @@ impl App {
         // start building glob matchers for builtin mappings immediately
         // this is an appropriate approach because it's statistically likely that
         // all the custom mappings need to be checked
-        if available_parallelism()?.get() > 1 {
+        #[cfg(not(target_os = "wasi"))]
+        let parallel = available_parallelism()?.get() > 1;
+        #[cfg(target_os = "wasi")]
+        let parallel = false;
+        if parallel {
             syntax_mapping.start_offload_build_all();
         }
 

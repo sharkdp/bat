@@ -33,13 +33,14 @@ mod decorations;
 mod diff;
 pub mod error;
 pub mod input;
+mod io_identifier;
 mod less;
 #[cfg(feature = "lessopen")]
 mod lessopen;
 pub mod line_range;
 pub(crate) mod nonprintable_notation;
 pub mod output;
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 mod pager;
 #[cfg(feature = "paging")]
 pub(crate) mod paging;
