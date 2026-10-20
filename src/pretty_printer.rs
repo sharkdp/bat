@@ -21,6 +21,9 @@ use crate::paging::PagingMode;
 #[derive(Default)]
 struct ActiveStyleComponents {
     header_filename: bool,
+    header_path: bool,
+    header_modified: bool,
+    header_permissions: bool,
     #[cfg(feature = "git")]
     vcs_modification_markers: bool,
     grid: bool,
@@ -142,6 +145,24 @@ impl<'a> PrettyPrinter<'a> {
     /// Whether to show a header with the file name
     pub fn header(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.header_filename = yes;
+        self
+    }
+
+    /// Whether to show the absolute source path in the header.
+    pub fn header_path(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.header_path = yes;
+        self
+    }
+
+    /// Whether to show the last modification time in UTC.
+    pub fn header_modified(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.header_modified = yes;
+        self
+    }
+
+    /// Whether to show file permissions (Unix mode or a read-only indicator).
+    pub fn header_permissions(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.header_permissions = yes;
         self
     }
 
@@ -313,6 +334,24 @@ impl<'a> PrettyPrinter<'a> {
             self.config
                 .style_components
                 .insert(StyleComponent::HeaderFilename);
+        }
+        for (enabled, component) in [
+            (
+                self.active_style_components.header_path,
+                StyleComponent::HeaderPath,
+            ),
+            (
+                self.active_style_components.header_modified,
+                StyleComponent::HeaderModified,
+            ),
+            (
+                self.active_style_components.header_permissions,
+                StyleComponent::HeaderPermissions,
+            ),
+        ] {
+            if enabled {
+                self.config.style_components.insert(component);
+            }
         }
         if self.active_style_components.line_numbers {
             self.config

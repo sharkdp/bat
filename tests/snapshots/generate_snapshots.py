@@ -20,7 +20,11 @@ def generate_snapshots():
 
 
 def generate_style_snapshot(style):
-    generate_snapshot(style.replace(",", "_"), ["--style={}".format(style)])
+    name = style.replace(",", "_")
+    if style == "full":
+        # Variable file metadata is covered separately in file_header_details.rs.
+        style += ",-header-path,-header-modified,-header-permissions"
+    generate_snapshot(name, ["--style={}".format(style)])
 
 
 def generate_snapshot(name: str, arguments: Iterable[str]):

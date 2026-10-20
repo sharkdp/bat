@@ -91,6 +91,8 @@ impl InputKind<'_> {
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
+    pub(crate) modified: Option<std::time::SystemTime>,
+    pub(crate) permissions: Option<fs::Permissions>,
 }
 
 pub struct Input<'a> {
@@ -134,8 +136,11 @@ impl<'a> Input<'a> {
 
     fn _ordinary_file(path: &Path) -> Self {
         let kind = InputKind::OrdinaryFile(path.to_path_buf());
+        let file_metadata = fs::metadata(path).ok();
         let metadata = InputMetadata {
-            size: fs::metadata(path).map(|m| m.len()).ok(),
+            size: file_metadata.as_ref().map(|m| m.len()),
+            modified: file_metadata.as_ref().and_then(|m| m.modified().ok()),
+            permissions: file_metadata.as_ref().map(|m| m.permissions()),
             ..InputMetadata::default()
         };
 

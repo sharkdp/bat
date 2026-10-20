@@ -176,6 +176,9 @@ _bat() {
 			header
 			header-filename
 			header-filesize
+			header-path
+			header-modified
+			header-permissions
 			grid
 			rule
 			numbers

@@ -242,8 +242,11 @@ replacing them.
 By default, the following components are enabled:
 changes, grid, header\-filename, numbers, snip
 .IP
-Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
-rule, numbers, snip.
+Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, header-path, header-modified, header-permissions, grid,
+rule, numbers, snip. Header path, modification time (UTC), and permissions are
+available as separate fields. The full style includes them; default does not.
+Permissions use Unix mode bits on Unix and a read-only indicator elsewhere.
+Unavailable metadata, such as for standard input, is displayed as a dash.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
