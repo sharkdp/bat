@@ -1,3 +1,5 @@
+#[cfg(feature = "paging")]
+use std::env;
 use std::fmt;
 use std::io;
 #[cfg(feature = "paging")]
@@ -60,6 +62,20 @@ impl std::fmt::Debug for BuiltinPager {
 enum SingleScreenAction {
     Quit,
     Nothing,
+}
+
+#[cfg(feature = "paging")]
+fn less_env_contains_quit_if_one_screen() -> bool {
+    env::var("LESS")
+        .ok()
+        .and_then(|less| shell_words::split(&less).ok())
+        .is_some_and(|args| {
+            args.iter().any(|arg| {
+                arg == "--quit-if-one-screen"
+                    || arg == "-F"
+                    || (arg.starts_with('-') && !arg.starts_with("--") && arg.contains('F'))
+            })
+        })
 }
 
 #[derive(Debug)]
@@ -143,7 +159,10 @@ impl OutputType {
                     p.arg("-F"); // Short version of --quit-if-one-screen for compatibility
                 }
 
-                if wrapping_mode == WrappingMode::NoWrapping(true) {
+                let quit_if_one_screen = single_screen_action == SingleScreenAction::Quit
+                    || less_env_contains_quit_if_one_screen();
+
+                if wrapping_mode == WrappingMode::NoWrapping(true) && !quit_if_one_screen {
                     p.arg("-S"); // Short version of --chop-long-lines for compatibility
                 }
 
