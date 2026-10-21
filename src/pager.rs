@@ -1,5 +1,30 @@
 use shell_words::ParseError;
 use std::env;
+use std::ffi::OsStr;
+use std::io;
+
+/// Run a pager with Rust's executable lookup, without implicitly searching the working directory.
+/// Windows Command appends `.exe`, but not `.com` (used by e.g. `more.com`), so retry that
+/// extension only when the native lookup cannot find an extensionless program. Explicit
+/// extensions retain their meaning, and other launch errors must not execute another program.
+/// The closure constructs the complete command on each attempt, including its arguments,
+/// environment and standard streams.
+pub(crate) fn run_command<T>(
+    program: &OsStr,
+    mut run: impl FnMut(&OsStr) -> io::Result<T>,
+) -> io::Result<T> {
+    let result = run(program);
+    #[cfg(windows)]
+    if matches!(&result, Err(error) if error.kind() == io::ErrorKind::NotFound)
+        && !program.is_empty()
+        && std::path::Path::new(program).extension().is_none()
+    {
+        let mut com_program = program.to_os_string();
+        com_program.push(".com");
+        return run(&com_program);
+    }
+    result
+}
 
 /// If we use a pager, this enum tells us from where we were told to use it.
 #[derive(Debug, PartialEq)]
@@ -134,5 +159,23 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
             }))
         }
         None => Ok(None),
+    }
+}
+
+#[cfg(all(test, windows))]
+mod command_tests {
+    use super::run_command;
+    use std::ffi::OsStr;
+    use std::io;
+
+    #[test]
+    fn launch_errors_do_not_try_another_program() {
+        let mut attempts = 0;
+        let result: io::Result<()> = run_command(OsStr::new("pager"), |_| {
+            attempts += 1;
+            Err(io::Error::from(io::ErrorKind::PermissionDenied))
+        });
+        assert_eq!(result.unwrap_err().kind(), io::ErrorKind::PermissionDenied);
+        assert_eq!(attempts, 1);
     }
 }
