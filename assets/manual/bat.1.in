@@ -68,6 +68,19 @@ specified as a name (like 'C++' or 'LaTeX') or possible file extension
 (like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
 language names and file extensions.
 .HP
+\fB\-\-show\-paths\fR
+.IP
+Underline recognizable literal file paths that exist locally. Relative paths use
+the input file's directory; stdin and custom readers use the working directory.
+Recognizes slash-separated paths, native Windows paths, ~/ paths, and quoted
+filenames containing a dot. Quoted paths may contain spaces. URLs and shell
+variables are ignored and string escapes are not decoded. This checks literal
+path spellings, not a configuration language's interpretation of a string.
+.IP
+Missing or inaccessible paths remain unchanged. Existing syntax colors and font
+attributes are preserved, including escape and error colors. Checks are cached
+per input with bounded memory. Disabled by default; requires colored output.
+.HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
 Highlight the specified line ranges with a different background color. For example:
