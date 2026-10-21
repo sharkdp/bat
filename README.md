@@ -640,6 +640,18 @@ syntax, use (this mapping is already built in):
 --map-syntax='/etc/apache2/**/*.conf:Apache Conf'
 ```
 
+### Placing the sidebar on the right
+
+Use `bat --style=default,sidebar-right file` to put line numbers and Git markers
+to the right of the content. `--style=+sidebar-right` adds this placement to your
+configured style, and `--style=-sidebar-right` restores the left side. The modifier
+changes placement without enabling decorations by itself.
+
+Wrapped continuation rows retain an empty sidebar. With wrapping disabled, content
+wider than the available area places its sidebar after the complete line. Moving
+the sidebar does not remove it from a multiline terminal selection; use plain
+output when copying undecorated text.
+
 ### Using a different pager
 
 `bat` uses the pager that is specified in the `PAGER` environment variable. If this variable is not

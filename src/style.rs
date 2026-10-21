@@ -15,6 +15,7 @@ pub enum StyleComponent {
     HeaderFilename,
     HeaderFilesize,
     LineNumbers,
+    SidebarRight,
     Snip,
     Full,
     Default,
@@ -39,6 +40,7 @@ impl StyleComponent {
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
+            StyleComponent::SidebarRight => &[StyleComponent::SidebarRight],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
@@ -76,6 +78,7 @@ impl FromStr for StyleComponent {
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
+            "sidebar-right" => Ok(StyleComponent::SidebarRight),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),
@@ -127,7 +130,13 @@ impl StyleComponents {
     }
 
     pub fn plain(&self) -> bool {
-        self.0.iter().all(|c| c == &StyleComponent::Plain)
+        self.0
+            .iter()
+            .all(|c| matches!(c, StyleComponent::Plain | StyleComponent::SidebarRight))
+    }
+
+    pub fn sidebar_right(&self) -> bool {
+        self.0.contains(&StyleComponent::SidebarRight)
     }
 
     pub fn insert(&mut self, component: StyleComponent) {
