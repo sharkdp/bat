@@ -771,9 +771,32 @@ file is present, the content of the user configuration will simply be appended t
 
 ### Format
 
-The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
+The extensionless `config` file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.
 
-Example configuration file:
+Alternatively, create `config.toml` in the same configuration directory. It is used
+when the extensionless `config` file is absent, for both user and system
+configuration. `BAT_CONFIG_PATH` always selects the exact file; a `.toml`
+extension selects TOML parsing. Existing configuration files keep their priority.
+
+TOML keys use the long option names without `--`. Strings and integers supply
+option values, arrays repeat an option, and `true` enables a flag. `false` omits
+that flag from the file; it does not undo a flag from another configuration source.
+Counted flags such as `plain` also accept an integer (`plain = 2` means `-pp`).
+Options are applied in file order. Environment settings and command-line options
+keep their usual precedence over file settings.
+
+```toml
+theme = "TwoDark"
+style = "numbers,changes"
+tabs = 4
+paging = "never"
+map-syntax = ["*.ino:C++", ".ignore:Git Ignore"]
+```
+
+To generate a commented TOML template at a chosen location, set `BAT_CONFIG_PATH`
+to a `.toml` file before running `bat --generate-config-file`.
+
+Example extensionless `config` file:
 ```bash
 # Set the theme to "TwoDark"
 --theme="TwoDark"

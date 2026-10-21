@@ -30,6 +30,7 @@ minimal-application = [
     "paging",
     "regex-onig",
     "wild",
+    "toml",
 ]
 git = ["gix"] # Support indicating git modifications
 paging = [ "shell-words", "grep-cli", "minus"] # Support applying a pager on the output
@@ -41,6 +42,7 @@ regex-onig = ["syntect/regex-onig"] # Use the "oniguruma" regex engine
 regex-fancy = ["syntect/regex-fancy"] # Use the rust-only "fancy-regex" engine
 
 [dependencies]
+toml = { version = "1.1.1", features = ["preserve_order"], optional = true }
 nu-ansi-term = "0.50.3"
 ansi_colours = "^1.2"
 bincode = "1.0"
