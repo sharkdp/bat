@@ -88,6 +88,24 @@ highlights lines 30 to 40
 .IP
 Specify the name to display for a file. Useful when piping data to {{PROJECT_EXECUTABLE}} from STDIN when {{PROJECT_EXECUTABLE}} does not otherwise know the filename. Note that the provided file name is also used for syntax detection.
 .HP
+\fB\-\-blame\fR
+.IP
+Show Git commit attribution before line numbers. Follows renames and marks staged
+or unstaged changes as uncommitted. Requires Git support and ordinary UTF-8 files;
+standard input, preprocessed or unbuffered inputs, and binary files have no blame sidebar.
+This is opt-in, is excluded from default and full styles, and can also be selected
+with the blame style component. It enables decorations when piping unless
+\&'\-\-decorations=never' is set. Computing history can delay the first output line.
+.HP
+\fB\-\-blame\-format\fR <FORMAT>
+.IP
+Format the attribution (default: '%h %an'). Fields: %h (8-digit hash), %H (full
+hash), %an/%ae (author name/email), %as/%at (author date/Unix time), %cn/%ce
+(committer name/email), %cs/%ct (committer date/Unix time), %s (subject), and %%.
+Dates retain the commit's timezone. Uncommitted lines use a zero hash and
+\&'Not Committed Yet'; unavailable metadata is empty. Terminal control characters
+are escaped, and annotations are shortened to at most 32 terminal columns.
+.HP
 \fB\-d\fR, \fB\-\-diff\fR
 .IP
 Only show lines that have been added/removed/modified with respect to the Git index. Use '\-\-diff\-context=N' to control how much context you want to see.
@@ -242,7 +260,7 @@ replacing them.
 By default, the following components are enabled:
 changes, grid, header\-filename, numbers, snip
 .IP
-Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
+Possible values: *default*, full, auto, plain, changes, blame, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...

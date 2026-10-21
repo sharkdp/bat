@@ -23,6 +23,8 @@ struct ActiveStyleComponents {
     header_filename: bool,
     #[cfg(feature = "git")]
     vcs_modification_markers: bool,
+    #[cfg(feature = "git")]
+    git_blame: bool,
     grid: bool,
     rule: bool,
     line_numbers: bool,
@@ -168,6 +170,20 @@ impl<'a> PrettyPrinter<'a> {
     #[cfg(feature = "git")]
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.vcs_modification_markers = yes;
+        self
+    }
+
+    /// Show commit attribution before line numbers (default: false).
+    #[cfg(feature = "git")]
+    pub fn git_blame(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.git_blame = yes;
+        self
+    }
+
+    /// Set the Git blame annotation format (default: "%h %an").
+    #[cfg(feature = "git")]
+    pub fn blame_format(&mut self, format: &'a str) -> &mut Self {
+        self.config.blame_format = Some(format);
         self
     }
 
@@ -325,6 +341,11 @@ impl<'a> PrettyPrinter<'a> {
         #[cfg(feature = "git")]
         if self.active_style_components.vcs_modification_markers {
             self.config.style_components.insert(StyleComponent::Changes);
+        }
+
+        #[cfg(feature = "git")]
+        if self.active_style_components.git_blame {
+            self.config.style_components.insert(StyleComponent::Blame);
         }
 
         // Collect the inputs to print

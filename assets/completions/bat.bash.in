@@ -89,6 +89,7 @@ _bat() {
 		;;
 	-H | --highlight-line | \
 	--diff-context | \
+	--blame-format | \
 	--tabs | \
 	--terminal-width | \
 	-m | --map-syntax | \
@@ -173,6 +174,7 @@ _bat() {
 			auto
 			plain
 			changes
+			blame
 			header
 			header-filename
 			header-filesize
@@ -203,6 +205,8 @@ _bat() {
 			--language
 			--highlight-line
 			--file-name
+			--blame
+			--blame-format
 			--diff
 			--diff-context
 			--tabs

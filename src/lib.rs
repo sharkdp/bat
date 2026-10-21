@@ -21,6 +21,8 @@
 
 #![deny(unsafe_code)]
 
+#[cfg(feature = "git")]
+mod blame;
 mod macros;
 
 pub mod assets;

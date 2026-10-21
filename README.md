@@ -152,6 +152,34 @@ highlighting:
 git show v0.6.0:src/main.rs | bat -l rs
 ```
 
+#### Git blame
+
+Use `bat --blame file.rs` to show each line's commit and author before the line
+numbers. Attribution follows renames and accounts for staged and unstaged edits;
+new or changed lines show `00000000 Not Committed Yet`. It uses the current
+checkout's history, including linked worktrees.
+
+The sidebar is optional and is excluded from the `default` and `full` styles.
+`--blame` enables it even when piping output; `--decorations=never` suppresses it.
+For a custom layout, use `--style=blame,numbers` (and `--decorations=always` when
+piping). The library exposes `PrettyPrinter::git_blame` and `blame_format`.
+
+```sh
+bat --blame --blame-format='%h %an %as' file.rs
+```
+
+The format supports `%h` (8-digit hash), `%H` (full hash), `%an` / `%ae` (author
+name / email), `%as` / `%at` (author date / Unix time), `%cn` / `%ce` (committer
+name / email), `%cs` / `%ct` (committer date / Unix time), `%s` (subject), and `%%`.
+Dates retain the commit's timezone. Missing metadata for uncommitted lines is
+empty. Annotations are sanitized and shortened to at most 32 terminal columns.
+
+Blame requires the `git` build feature and ordinary UTF-8 files. Standard input,
+preprocessed or unbuffered inputs, binary files, and files outside Git repositories have no
+blame sidebar. Narrow terminals may hide it to leave room for the source.
+Computing history adds work before the first line is printed, so enable it only
+when attribution is needed.
+
 #### `git diff`
 
 You can combine `bat` with `git diff` to view lines around code changes with proper syntax
@@ -514,7 +542,7 @@ The available pre-defined styles are:
 | Style | Description |
 |-------|-------------|
 | `default` | Enables the recommended style components listed above. |
-| `full` | Enables all available components. |
+| `full` | Enables all components except opt-in Git blame. |
 | `auto` | Same as `default`, unless the output is piped. |
 | `plain` | Disables all available components. |
 
@@ -523,6 +551,7 @@ The available individual components are:
 | Component | Description |
 |-----------|-------------|
 | `changes` | Show Git modification markers. |
+| `blame` | Show Git commit attribution (requires Git support). |
 | `header` | Alias for `header-filename`. |
 | `header-filename` | Show filenames before the content. |
 | `header-filesize` | Show file sizes before the content. |

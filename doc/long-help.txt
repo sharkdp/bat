@@ -57,6 +57,21 @@ Options:
           does not otherwise know the filename. Note that the provided file name is also used for
           syntax detection.
 
+      --blame
+          Show Git commit attribution before the line-number sidebar. Uses the history of ordinary
+          UTF-8 files and marks working-tree edits as uncommitted. Files outside a repository and
+          preprocessed or binary or unbuffered inputs have no blame sidebar. This is opt-in and is
+          not included in the default or full styles. Also available as --style=blame. See
+          --blame-format to change the annotation.
+
+      --blame-format <FORMAT>
+          Format the Git blame sidebar (default: '%h %an'). Supported fields: %h (8-digit commit),
+          %H (full commit), %an/%ae (author name/email), %as/%at (author date/Unix time), %cn/%ce
+          (committer name/email), %cs/%ct (committer date/Unix time), %s (subject), and %% (literal
+          percent). Dates use the commit's timezone. Fields unavailable for uncommitted lines are
+          empty. Control characters are escaped, and annotations are shortened to at most 32 columns
+          so source code remains readable.
+
   -d, --diff
           Only show lines that have been added/removed/modified with respect to the Git index. Use
           --diff-context=N to control how much context you want to see.
@@ -201,10 +216,11 @@ Options:
           Possible values:
           
             * default: enables recommended style components (default).
-            * full: enables all available components.
+            * full: enables all components except opt-in Git blame.
             * auto: same as 'default', unless the output is piped.
             * plain: disables all available components.
             * changes: show Git modification markers.
+            * blame: show Git commit attribution (requires the git feature).
             * header: alias for 'header-filename'.
             * header-filename: show filenames before the content.
             * header-filesize: show file sizes before the content.

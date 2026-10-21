@@ -79,7 +79,7 @@ itertools = "0.14.0"
 version = "0.86"
 optional = true
 default-features = false
-features = ["sha1", "blob-diff"]
+features = ["sha1", "blob-diff", "blame"]
 
 [dependencies.syntect]
 version = "5.3.0"

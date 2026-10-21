@@ -88,6 +88,10 @@ pub struct Config<'a> {
     /// Command to start the pager
     pub pager: Option<&'a str>,
 
+    /// Format for the optional Git blame sidebar.
+    #[cfg(feature = "git")]
+    pub blame_format: Option<&'a str>,
+
     /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
 
