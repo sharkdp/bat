@@ -254,7 +254,7 @@ impl<'a> InteractivePrinter<'a> {
         // The grid border decoration isn't added until after the panel_width calculation, since the
         // print_horizontal_line, print_header, and print_footer functions all assume the panel
         // width is without the grid border.
-        if config.style_components.grid() && !decorations.is_empty() {
+        if config.style_components.grid_vertical() && !decorations.is_empty() {
             decorations.push(Box::new(GridBorderDecoration::new(&colors)));
         }
 
@@ -384,7 +384,7 @@ impl<'a> InteractivePrinter<'a> {
             "{text_truncated}{}",
             " ".repeat(self.panel_width - 1 - text_truncated.len())
         );
-        if self.config.style_components.grid() {
+        if self.config.style_components.grid_vertical() {
             format!("{text_filled} │ ")
         } else {
             text_filled
@@ -392,7 +392,7 @@ impl<'a> InteractivePrinter<'a> {
     }
 
     fn get_header_component_indent_length(&self) -> usize {
-        if self.config.style_components.grid() && self.panel_width > 0 {
+        if self.config.style_components.grid_vertical() && self.panel_width > 0 {
             self.panel_width + 2
         } else {
             self.panel_width
@@ -400,7 +400,7 @@ impl<'a> InteractivePrinter<'a> {
     }
 
     fn print_header_component_indent(&mut self, handle: &mut OutputHandle) -> Result<()> {
-        if self.config.style_components.grid() {
+        if self.config.style_components.grid_vertical() {
             write!(
                 handle,
                 "{}{}",
@@ -490,7 +490,12 @@ impl Printer for InteractivePrinter<'_> {
         }
 
         if add_header_padding && self.config.style_components.rule() {
-            self.print_horizontal_line_term(handle, self.colors.rule)?;
+            if self.config.style_components.grid_vertical() && !self.config.style_components.grid()
+            {
+                self.print_horizontal_line(handle, '┼')?;
+            } else {
+                self.print_horizontal_line_term(handle, self.colors.rule)?;
+            }
         }
 
         if !self.config.style_components.header() {

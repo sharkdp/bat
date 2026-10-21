@@ -57,7 +57,7 @@ Options:
           Squeeze consecutive empty lines.
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
-          header, header-filename, header-filesize, grid, rule, numbers, snip).
+          header, header-filename, header-filesize, grid, grid-vertical, rule, numbers, snip).
   -r, --line-range <N:M>
           Only print the lines from N to M.
   -L, --list-languages
