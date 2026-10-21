@@ -11,7 +11,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
     $ArrayYesNo      = @('never', 'always')
     $ArrayWrap       = @('always', 'never', 'character', 'word')
     $ArrayBinary     = @('no-printing', 'as-text')
-    $ArrayPrint      = @('unicode', 'caret')
+    $ArrayPrint      = @('unicode', 'caret', 'symbols', 'period', 'binary')
 
     function Get-MyThemes(){
         $themes = {{PROJECT_EXECUTABLE}} --no-paging --list-themes | ForEach-Object {$_  -replace "^(.*)$", '''$1'''} | select-object
@@ -110,6 +110,11 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
             break
         }
+        '*;-c' {
+            $ArrayPrint |
+            ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
+            break
+        }
         '*;--nonprintable-notation' {
             $ArrayPrint |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_)}
@@ -157,7 +162,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--line-range'            , 'line-range'            , [CompletionResultType]::ParameterName, 'Only print the lines from N to M.')
         #   [CompletionResult]::new('-A'                      , 'A'                     , [CompletionResultType]::ParameterName, 'Show non-printable characters (space, tab, newline, ..).')
             [CompletionResult]::new('--show-all'              , 'show-all'              , [CompletionResultType]::ParameterName, 'Show non-printable characters (space, tab, newline, ..).')
-            [CompletionResult]::new('--nonprintable-notation' , 'nonprintable-notation' , [CompletionResultType]::ParameterName, 'Set notation for non-printable characters. (unicode, caret)')
+            [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Set notation for non-printable characters.')
+            [CompletionResult]::new('--nonprintable-notation' , 'nonprintable-notation' , [CompletionResultType]::ParameterName, 'Set notation for non-printable characters. (unicode, caret, symbols, period, binary)')
             [CompletionResult]::new('--chop-long-lines'       , 'chop-long-lines'       , [CompletionResultType]::ParameterName, 'Truncate all lines longer than screen width. Alias for ''--wrap=never''.')
             [CompletionResult]::new('--binary'                , 'binary'                , [CompletionResultType]::ParameterName, 'How to treat binary content. (*no-printing*, as-text)')
             [CompletionResult]::new('--ignored-suffix'        , 'ignored-suffix'        , [CompletionResultType]::ParameterName, 'Ignore extension. For example: ''bat --ignored-suffix ".dev" my_file.json.dev'' will use JSON syntax, and ignore ''.dev''')
