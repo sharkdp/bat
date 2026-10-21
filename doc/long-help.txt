@@ -117,6 +117,27 @@ Options:
           alias,'-P'. To disable the pager permanently, set BAT_PAGING to 'never'. To control which
           pager is used, see the '--pager' option. Possible values: *auto*, never, always.
 
+      --literal-file-names
+          Treat every input argument as a literal path. By default, if a UTF-8 path does not exist
+          and ends in a colon followed by a positive line number, open the existing file before the
+          colon and center that line in the pager. Existing paths and Windows alternate data streams
+          always take precedence. A file:line position requires exactly one input; --scroll-to or
+          --center-highlight overrides its position. Paging settings still apply.
+
+      --scroll-to <LINE>
+          Open the pager at the positive line number LINE in a single input, retaining earlier lines
+          for scrolling back. Account for headers, ranges and wrapping. If LINE is omitted by a
+          range or squeezing, use the next printed line; if beyond the input, open at the end.
+          Buffer output up to that point, spilling to a temporary file after 64 KiB. Supports
+          standard less; custom pager wrappers receive BAT_SCROLL_LINE and BAT_SCROLL_POSITION. Does
+          not enable paging when it is disabled. See the manual for details.
+
+      --center-highlight
+          Center the first visible highlighted line when opening the pager. Requires one input and
+          --highlight-line. Retain all selected lines so earlier output remains accessible. Supports
+          standard less and custom pager wrappers, with the same buffering and paging rules as
+          --scroll-to. If no highlighted line is printed, open at the beginning.
+
       --pager <command>
           Determine which pager is used. This option will override the PAGER and BAT_PAGER
           environment variables. The default pager is 'less'. If you provide '--pager=builtin', use

@@ -1,6 +1,10 @@
 # unreleased
 
 
+## Features
+
+- Open a single input at a line with `--scroll-to`, center its first visible highlight with `--center-highlight`, or use `file:line` while retaining earlier output, see #3990 (@Matei02355)
+
 ## Other
 
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
