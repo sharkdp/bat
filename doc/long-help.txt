@@ -30,7 +30,8 @@ Options:
   -p, --plain...
           Only show plain style, no decorations. This is an alias for '--style=plain'. When '-p' is
           used twice ('-pp'), it also disables automatic paging (alias for '--style=plain
-          --paging=never').
+          --paging=never'). When '-p' is used three times ('-ppp'), it also disables syntax
+          highlighting (alias for '--style=plain --paging=never --color=never').
 
   -l, --language <language>
           Explicitly set the language for syntax highlighting. The language can be specified as a
