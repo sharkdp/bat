@@ -162,6 +162,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_derive",
+ "serde_json",
  "serde_with",
  "serde_yaml",
  "serial_test",

@@ -9,6 +9,7 @@ use crate::assets::*;
 use acknowledgements::build_acknowledgements;
 
 mod acknowledgements;
+mod vscode_themes;
 
 pub fn build(
     source_dir: &Path,
@@ -53,6 +54,7 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result
                 theme_dir.to_string_lossy(),
             )?;
         }
+        vscode_themes::add_from_folder(&mut theme_set, &theme_dir)?;
     } else {
         writeln!(
             io::stdout(),
