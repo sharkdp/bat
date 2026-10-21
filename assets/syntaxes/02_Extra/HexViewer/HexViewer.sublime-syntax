@@ -1,0 +1,75 @@
+%YAML 1.2
+---
+# Adapted from facelessuser/HexViewer; see NOTICE.md and LICENSE.md.
+name: Hex Viewer
+file_extensions: [hxv, hexdump, xxd]
+scope: source.hex
+variables:
+  address: '[a-fA-F0-9]{8,16}'
+contexts:
+  main:
+    - match: '^({{address}})(:)( {2})(?=\S)'
+      captures:
+        1: keyword.address.hex
+        2: punctuation.separator.address.hex
+        3: dump.buffer-start.hex
+      push: hex-viewer-bytes
+    - match: '^({{address}})(:)( )(?=\S)'
+      captures:
+        1: keyword.address.hex
+        2: punctuation.separator.address.hex
+        3: dump.buffer-start.hex
+      push: xxd-bytes
+    - match: '^({{address}})( +)(?=\S)'
+      captures:
+        1: keyword.address.hex
+        2: dump.buffer-start.hex
+      push: canonical-bytes
+    - match: '^{{address}}$'
+      scope: keyword.address.hex
+    - match: '^\*$'
+      scope: punctuation.definition.repeat.hex
+    - match: '\S.*$'
+      scope: invalid.illegal.malformed-line.hex
+  hex-viewer-bytes:
+    - meta_scope: dump.hex
+    - match: '( {2,})(:)'
+      captures:
+        1: dump.buffer-end.hex
+        2: keyword.ascii-start.hex
+      set: ascii
+    - include: bytes
+  xxd-bytes:
+    - meta_scope: dump.hex
+    - match: ' {2,}'
+      scope: dump.buffer-end.hex
+      set: ascii
+    - include: bytes
+  canonical-bytes:
+    - meta_scope: dump.hex
+    - match: '( +)(\|)'
+      captures:
+        1: dump.buffer-end.hex
+        2: punctuation.definition.ascii.begin.hex
+      set: canonical-ascii
+    - include: bytes
+  bytes:
+    - match: '$'
+      pop: true
+    - match: '[a-fA-F0-9]{2}'
+      scope: constant.numeric.hex raw.byte.hex
+    - match: ' '
+      scope: raw.punctuation.hex
+    - match: '\S'
+      scope: invalid.illegal.byte.hex
+  canonical-ascii:
+    - meta_scope: comment.ascii.hex
+    - match: '\|$'
+      scope: punctuation.definition.ascii.end.hex
+      pop: true
+    - match: '$'
+      pop: true
+  ascii:
+    - meta_scope: comment.ascii.hex
+    - match: '$'
+      pop: true
