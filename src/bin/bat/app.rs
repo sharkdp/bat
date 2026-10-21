@@ -383,6 +383,7 @@ impl App {
                 .get_one::<String>("fallback-syntax")
                 .map(|s| s.as_str()),
             show_nonprintable: self.matches.get_flag("show-all"),
+            highlight_todos: self.matches.get_flag("highlight-todos"),
             nonprintable_notation: match self
                 .matches
                 .get_one::<String>("nonprintable-notation")
