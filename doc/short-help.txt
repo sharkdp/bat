@@ -19,8 +19,8 @@ Options:
           Set the language for syntax highlighting.
       --fallback-syntax <fallback-syntax>
           Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
-  -H, --highlight-line <N:M>
-          Highlight lines N through M.
+  -H, --highlight-line <range>
+          Highlight line or character ranges.
       --file-name <name>
           Specify the name to display for a file.
   -d, --diff
