@@ -126,6 +126,13 @@ Only show line numbers, no other decorations. This is an alias for '\-\-style=nu
 Specify when to use colored output. The automatic mode only enables colors if an
 interactive terminal is detected. Possible values: *auto*, never, always.
 .HP
+\fB\-\-grayscale\fR
+.IP
+Convert generated syntax and decoration colors to grayscale while preserving bold, italic, and underline styles.
+Choose a light theme (such as gruvbox-light) for a light terminal background.
+Input ANSI colors and terminal-default colors are preserved; use '\-\-strip\-ansi=always' to remove input ANSI sequences.
+This option does not force colored output.
+.HP
 \fB\-\-italic\-text\fR <when>
 .IP
 Specify when to use ANSI sequences for italic text in the output. Possible values:

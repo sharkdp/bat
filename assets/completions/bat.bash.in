@@ -211,6 +211,7 @@ _bat() {
 			--terminal-width
 			--number
 			--color
+			--grayscale
 			--italic-text
 			--decorations
 			--force-colorization
