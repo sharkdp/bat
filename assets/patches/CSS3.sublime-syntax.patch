@@ -1,0 +1,15 @@
+--- CSS3/CSS3.sublime-syntax
++++ CSS3/CSS3.sublime-syntax
+@@ -10961,7 +10961,5 @@
+-    - match: '(?=[-a-z])'
+-      push:
+-        - meta_scope: meta.declaration-list.css
+-        - match: $|(?![-a-z])
+-          pop: true
+-        # We have to disable this because it causes #107 (exceeded 25000 context stack limit).
+-        # - include: properties
++    # Entry point for HTML style attributes, without an opening brace.
++    # Include declarations directly so the embedding grammar controls the exit.
++    - meta_scope: meta.declaration-list.css
++    - include: comment
++    - include: properties

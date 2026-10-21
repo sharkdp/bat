@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:root { --accent: rebeccapurple; }
+.card:has(img) { display: grid; color: var(--accent); }
+</style>
+</head>
+<body>
+<div style="display: grid; gap: 1rem; color: oklch(60% 0.2 250)">Inline styles</div>
+<div style="unknown: 1; color: var(--accent);">After custom value</div>
+<div style='/* inline comment */ width: calc(1rem + 2vw)'>Calculated width</div>
+<div style="color: rgb(">After unfinished value</div>
+<script>const afterStyles = "JavaScript";</script>
+</body>
+</html>
