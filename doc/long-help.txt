@@ -52,6 +52,14 @@ Options:
             '--highlight-line 40:' highlights lines 40 to the end of the file
             '--highlight-line 30:+10' highlights lines 30 to 40
 
+      --process <command>
+          Run a separate command for each input, passing that input on its standard input. Display
+          the command's output with the original file name and syntax. Arguments use shell-style
+          quoting; shell operators are not interpreted. For example: --process 'python -m json.tool'
+          data.json. Standard error is inherited, and a failed process makes bat fail. Line ranges
+          and numbers apply to processed output. Git change markers and LESSOPEN preprocessing are
+          not applied to filtered inputs.
+
       --file-name <name>
           Specify the name to display for a file. Useful when piping data to bat from STDIN when bat
           does not otherwise know the filename. Note that the provided file name is also used for

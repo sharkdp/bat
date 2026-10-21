@@ -61,6 +61,8 @@ jobs:
     - uses: actions/checkout@v6
     - run: cargo fmt -- --check
     - run: cargo clippy --locked --all-targets --all-features -- -D warnings
+    - name: Test notebook previews with the host Python interpreter
+      run: cargo test --locked --test input_process notebook_preview -- --ignored
 
   min_version:
     name: Minimum supported rust version
