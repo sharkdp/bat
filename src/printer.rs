@@ -826,7 +826,7 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self
                                 .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
 
-                            let mut max_width = cursor_max - cursor;
+                            let mut max_width = cursor_max.saturating_sub(cursor);
 
                             // line buffer (avoid calling write! for every character)
                             let mut line_buf = String::with_capacity(max_width * 4);
@@ -965,7 +965,7 @@ impl Printer for InteractivePrinter<'_> {
                 write!(
                     handle,
                     "{}",
-                    ansi_style.paint(" ".repeat(cursor_max - cursor))
+                    ansi_style.paint(" ".repeat(cursor_max.saturating_sub(cursor)))
                 )?;
             }
             writeln!(handle)?;
