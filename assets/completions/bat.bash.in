@@ -217,6 +217,7 @@ _bat() {
 			--paging
 			--no-paging
 			--pager
+			--fail-if-syntax-unsupported
 			--map-syntax
 			--ignored-suffix
 			--theme

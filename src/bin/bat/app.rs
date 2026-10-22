@@ -479,6 +479,7 @@ impl App {
                     .map(|s| s.as_str()),
                 "--sanitize",
             ),
+            fail_if_syntax_unsupported: self.matches.get_flag("fail-if-syntax-unsupported"),
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")

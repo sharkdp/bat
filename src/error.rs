@@ -20,6 +20,8 @@ pub enum Error {
     SerdeYamlError(#[from] ::serde_yaml::Error),
     #[error("unable to detect syntax for {0}")]
     UndetectedSyntax(String),
+    #[error("input has no supported syntax")]
+    SyntaxUnsupported,
     #[error("unknown syntax: '{0}'")]
     UnknownSyntax(String),
     #[error("Unknown style '{0}'")]
@@ -57,6 +59,7 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
     use nu_ansi_term::Color::Red;
 
     match error {
+        Error::SyntaxUnsupported => {}
         Error::Io(ref io_error) if io_error.kind() == ::std::io::ErrorKind::BrokenPipe => {
             ::std::process::exit(0);
         }
