@@ -33,6 +33,8 @@ Options:
           Truncate all lines longer than screen width. Alias for '--wrap=never'.
   -n, --number
           Show line numbers (alias for '--style=numbers').
+      --line-number-width <N>
+          Set the minimum line-number width (default: 4).
   -b, --number-nonblank
           Show line numbers for non-blank lines only (alias for '--style=numbers').
       --color <when>

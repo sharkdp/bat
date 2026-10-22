@@ -33,6 +33,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         \*--file-name='[specify the name to display for a file]:name:_files'
         '(-d --diff)'--diff'[only show lines that have been added/removed/modified]'
         --diff-context='[specify lines of context around added/removed/modified lines when using `--diff`]:lines'
+        --line-number-width='[set the minimum line-number width]:width [4]'
         --tabs='[set the tab width]:tab width [4]'
         --wrap='[specify the text-wrapping mode]:mode [auto]:(auto never character word)'
         '!(--wrap)'{-S,--chop-long-lines}
