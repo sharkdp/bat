@@ -454,6 +454,15 @@ bat --completion <shell>
 # see --help for supported shells
 ```
 
+### Editor modelines
+
+Bat recognizes a language hint on the first line, such as `# -*- python -*-`,
+`# -*- mode: python; -*-`, or `# vim: set filetype=python:` (also `ft=` and `syntax=`).
+The language uses the names and extensions from `--list-languages`. A recognized
+hint overrides a filename extension; explicit `--language` and syntax mappings
+take precedence. Unknown hints fall back to normal detection. Only the first line
+is examined, including for stdin; editor settings are never executed.
+
 ## Customization
 
 ### Highlighting theme
