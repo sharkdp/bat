@@ -169,7 +169,7 @@ pub enum DetectColorScheme {
     Auto,
     /// Always query the terminal for its colors.
     Always,
-    /// Detect the system-wide dark/light preference (macOS only).
+    /// Detect the system-wide dark/light preference (macOS or GNOME on Linux).
     System,
 }
 
@@ -274,13 +274,63 @@ impl ColorSchemeDetector for TerminalColorSchemeDetector {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
 fn color_scheme_from_system() -> Option<ColorScheme> {
     crate::bat_warning!(
-        "Theme 'auto:system' is only supported on macOS, \
+        "Theme 'auto:system' is only supported on macOS and GNOME on Linux, \
         using default."
     );
     None
+}
+
+#[cfg(target_os = "linux")]
+fn color_scheme_from_system() -> Option<ColorScheme> {
+    use std::io::Read;
+    use std::process::{Command, Stdio};
+    use std::time::{Duration, Instant};
+
+    let mut child = Command::new("gsettings")
+        .args(["get", "org.gnome.desktop.interface", "color-scheme"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .ok()?;
+
+    // A stalled settings service must not prevent bat from displaying its input.
+    let deadline = Instant::now() + Duration::from_millis(200);
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                if !status.success() {
+                    return None;
+                }
+                break;
+            }
+            Ok(None) if Instant::now() < deadline => {
+                std::thread::sleep(Duration::from_millis(5));
+            }
+            Ok(None) | Err(_) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return None;
+            }
+        }
+    }
+
+    let mut output = String::new();
+    child
+        .stdout
+        .take()?
+        .take(64)
+        .read_to_string(&mut output)
+        .ok()?;
+    match output.trim() {
+        "'prefer-dark'" => Some(ColorScheme::Dark),
+        "'prefer-light'" => Some(ColorScheme::Light),
+        // The 'default' value does not express a preference.
+        _ => None,
+    }
 }
 
 #[cfg(target_os = "macos")]
