@@ -25,6 +25,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
+- Syntax highlighting for ZBR in #3769 (@itszubariel)
 
 ## Bugfixes
 - Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
