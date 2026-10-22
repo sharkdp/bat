@@ -1586,6 +1586,55 @@ fn pager_more() {
     });
 }
 
+/// bat lays out its output for the full terminal width, so the status column
+/// that LESS=-J adds would push every full-width line past the edge, see #2497
+#[test]
+#[cfg(unix)]
+fn pager_less_resets_status_column() {
+    bat()
+        .env("PAGER", mocked_pagers::less_printing_args())
+        .env("LESS", "-J")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("less args: -R"))
+        .stdout(predicate::str::contains(" -+J"));
+}
+
+/// BusyBox less supports neither -J nor -+, so it must not get -+J
+#[test]
+#[cfg(unix)]
+fn pager_less_busybox_no_status_column_reset() {
+    bat()
+        .env("PAGER", mocked_pagers::less_printing_args())
+        .env("MOCKED_LESS_BUSYBOX", "1")
+        .env("LESS", "-J")
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("less args: -R"))
+        .stdout(predicate::str::contains("-+J").not());
+}
+
+/// Arguments from BAT_PAGER are passed to less unchanged, even -J
+#[test]
+#[cfg(unix)]
+fn pager_less_user_args_keep_status_column() {
+    bat()
+        .env(
+            "BAT_PAGER",
+            format!("{} -J", mocked_pagers::less_printing_args()),
+        )
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("less args: -J"))
+        .stdout(predicate::str::contains("-+J").not());
+}
+
 #[test]
 fn alias_pager_disable() {
     bat()

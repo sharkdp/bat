@@ -666,7 +666,7 @@ Instead of using environment variables, you can also use `bat`'s [configuration 
 
 When using `less` as a pager, `bat` will automatically pass extra options along to `less`
 to improve the experience. Specifically, `-R`/`--RAW-CONTROL-CHARS`, `-F`/`--quit-if-one-screen`,
-`-K`/`--quit-on-intr` and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
+`-K`/`--quit-on-intr`, `-+J` and under certain conditions, `-X`/`--no-init` and/or `-S`/`--chop-long-lines`.
 
 >[!IMPORTANT]
 > These options will not be added if:
@@ -686,6 +686,10 @@ have to press `q` to quit the pager.
 
 The `-K`/`--quit-on-intr` option instructs `less` to exit immediately when an interrupt signal is received.
 This is useful to ensure that `less` quits together with `bat` on SIGINT.
+
+The `-+J` option turns off the status column (`-J`/`--status-column`) in case it was enabled through the
+`LESS` environment variable. `bat` lays out its output for the full terminal width, so the extra column
+would make long lines and decorations wrap.
 
 The `-X`/`--no-init` option is added to versions of `less` older than version 530 (older than 558 on Windows) to
 fix a bug with the `-F`/`--quit-if-one-screen` feature. Unfortunately, it also breaks mouse-wheel support in `less`.
