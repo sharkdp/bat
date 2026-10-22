@@ -325,6 +325,19 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long_help("Specify when to use ANSI sequences for italic text in the output. Possible values: always, *never*."),
         )
         .arg(
+            Arg::new("theme-background")
+                .long("theme-background")
+                .value_name("when")
+                .value_parser(["always", "never"])
+                .default_value("never")
+                .hide_default_value(true)
+                .help("Apply theme background colors to text (always, *never*).")
+                .long_help("Apply the theme's background colors to highlighted text. \
+                    This includes backgrounds assigned to individual syntax tokens. \
+                    Highlighted lines take precedence over theme backgrounds. \
+                    Requires colored output. Possible values: always, *never*."),
+        )
+        .arg(
             Arg::new("decorations")
                 .long("decorations")
                 .overrides_with("decorations")

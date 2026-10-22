@@ -698,7 +698,18 @@ impl Printer for InteractivePrinter<'_> {
             line
         };
 
-        let regions = self.highlight_regions_for_line(&line)?;
+        let mut regions = self.highlight_regions_for_line(&line)?;
+        if !self.config.use_theme_background {
+            for (style, _) in &mut regions {
+                // Alpha 1 requests the terminal's default background.
+                style.background = Color {
+                    r: 0,
+                    g: 0,
+                    b: 0,
+                    a: 1,
+                };
+            }
+        }
         if out_of_range {
             return Ok(());
         }

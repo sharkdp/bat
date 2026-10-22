@@ -181,6 +181,7 @@ complete -c $bat -s H -l highlight-line -x -d "Highlight line(s) N[:M]" -n __bat
 complete -c $bat -l ignored-suffix -x -d "Ignore extension" -n __bat_no_excl_args
 
 complete -c $bat -l italic-text -x -a "$italic_text_opts" -d "When to use italic text in the output" -n __bat_no_excl_args
+complete -c $bat -l theme-background -x -a "$italic_text_opts" -d "Apply theme background colors to text" -n __bat_no_excl_args
 
 complete -c $bat -s l -l language -x -k -a "(__bat_complete_list_languages)" -d "Set the syntax highlighting language" -n __bat_no_excl_args
 

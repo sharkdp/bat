@@ -745,6 +745,17 @@ alias cat='bat_alias_wrapper'
 ```
 
 
+### Inspect trailing whitespace
+
+Use `bat --language=trailing_whitespace --theme-background=always --tabs=4 file`
+to highlight trailing spaces and tabs without language-specific highlighting.
+This utility syntax leaves
+leading and internal whitespace unmarked and handles both LF and CRLF endings.
+The chosen theme controls the error highlight; `--theme='Monokai Extended'` gives
+trailing whitespace a visible background. `bat -A` remains useful for displaying
+all non-printable characters.
+
+
 ## Configuration file
 
 `bat` can also be customized with a configuration file. The location of the file is dependent
