@@ -65,13 +65,22 @@ Display multiple files at once
 bat src/*.rs
 ```
 
-Read from stdin, determine the syntax automatically (note, highlighting will
-only work if the syntax can be determined from the first line of the file,
-usually through a shebang such as `#!/bin/sh`)
+Read from stdin and determine the syntax from the first line, usually through
+a shebang such as `#!/bin/sh`:
 
 ```bash
 curl -s https://sh.rustup.rs | bat
 ```
+
+On Linux and Android, redirecting a regular file into stdin also uses that
+file's path for syntax detection when procfs is available:
+
+```bash
+bat < README.md
+```
+
+An explicit `--file-name` or `--language` takes precedence. If the path cannot
+be recovered, detection falls back to the input's first line.
 
 Read from stdin, specify the language explicitly
 
