@@ -228,6 +228,8 @@ _bat() {
 			--sanitize
 			--strip-ansi
 			--style
+			--max-bytes
+			--head
 			--line-range
 			--list-languages
 			--lessopen

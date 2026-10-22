@@ -227,6 +227,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Read at most this many bytes from each input, before line buffering.
+    pub fn max_bytes(&mut self, limit: u64) -> &mut Self {
+        self.config.max_bytes = Some(limit);
+        self
+    }
+
     /// Specify the lines that should be printed (default: all)
     pub fn line_ranges(&mut self, ranges: LineRanges) -> &mut Self {
         self.config.visible_lines = VisibleLines::Ranges(ranges);
@@ -375,6 +381,12 @@ impl<'a> Input<'a> {
     /// A new input from STDIN.
     pub fn from_stdin() -> Self {
         input::Input::stdin().into()
+    }
+
+    /// Read at most this many bytes from this input before line buffering.
+    pub fn max_bytes(mut self, limit: u64) -> Self {
+        self.input = self.input.with_max_bytes(limit);
+        self
     }
 
     /// The filename of the input.
