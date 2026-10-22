@@ -448,6 +448,10 @@ impl LineRanges {
         }
     }
 
+    pub(crate) fn is_empty(&self) -> bool {
+        self.ranges.is_empty()
+    }
+
     pub(crate) fn largest_offset_from_end(&self) -> usize {
         self.largest_offset_from_end
     }

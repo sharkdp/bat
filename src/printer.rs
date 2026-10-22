@@ -22,7 +22,9 @@ use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
 #[cfg(feature = "git")]
 use crate::decorations::LineChangesDecoration;
-use crate::decorations::{Decoration, GridBorderDecoration, LineNumberDecoration};
+use crate::decorations::{
+    Decoration, GridBorderDecoration, HighlightIndicatorDecoration, LineNumberDecoration,
+};
 #[cfg(feature = "git")]
 use crate::diff::LineChanges;
 use crate::error::*;
@@ -209,6 +211,7 @@ pub(crate) struct InteractivePrinter<'a> {
     pub line_changes: &'a Option<LineChanges>,
     highlighter_from_set: Option<HighlighterFromSet<'a>>,
     background_color_highlight: Option<Color>,
+    pub(crate) highlight_this_line: bool,
     consecutive_empty_lines: usize,
     strip_ansi: bool,
     sanitize: bool,
@@ -234,6 +237,10 @@ impl<'a> InteractivePrinter<'a> {
 
         // Create decorations.
         let mut decorations: Vec<Box<dyn Decoration>> = Vec::new();
+
+        if config.style_components.highlight_indicator() && !config.highlighted_lines.0.is_empty() {
+            decorations.push(Box::new(HighlightIndicatorDecoration));
+        }
 
         if config.style_components.numbers() {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
@@ -342,6 +349,7 @@ impl<'a> InteractivePrinter<'a> {
             line_changes,
             highlighter_from_set,
             background_color_highlight,
+            highlight_this_line: false,
             consecutive_empty_lines: 0,
             strip_ansi,
             sanitize,
@@ -728,13 +736,15 @@ impl Printer for InteractivePrinter<'_> {
             .check(line_number, max_buffered_line_number)
             == RangeCheckResult::InRange;
 
-        if highlight_this_line && self.config.theme == "ansi" {
+        self.highlight_this_line = highlight_this_line;
+
+        if highlight_this_line && self.config.colored_output && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
         }
 
         let background_color = self
             .background_color_highlight
-            .filter(|_| highlight_this_line);
+            .filter(|_| highlight_this_line && self.config.colored_output);
 
         // Line decorations.
         if self.panel_width > 0 {
@@ -971,7 +981,7 @@ impl Printer for InteractivePrinter<'_> {
             writeln!(handle)?;
         }
 
-        if highlight_this_line && self.config.theme == "ansi" {
+        if highlight_this_line && self.config.colored_output && self.config.theme == "ansi" {
             write!(handle, "{}", ANSI_UNDERLINE_DISABLE.raw())?;
             self.ansi_style.update(ANSI_UNDERLINE_DISABLE);
         }

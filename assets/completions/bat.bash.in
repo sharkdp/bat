@@ -176,6 +176,7 @@ _bat() {
 			header
 			header-filename
 			header-filesize
+			highlight-indicator
 			grid
 			rule
 			numbers

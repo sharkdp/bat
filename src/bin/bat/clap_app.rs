@@ -534,7 +534,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 })
                 .help(
                     "Comma-separated list of style elements to display \
-                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, grid, rule, numbers, snip).",
+                     (*default*, auto, full, plain, changes, header, header-filename, header-filesize, highlight-indicator, grid, rule, numbers, snip).",
                 )
                 .long_help(
                     "Configure which elements (line numbers, file headers, grid \
@@ -561,6 +561,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                      * header: alias for 'header-filename'.\n  \
                      * header-filename: show filenames before the content.\n  \
                      * header-filesize: show file sizes before the content.\n  \
+                     * highlight-indicator: mark highlighted lines with '>'.\n          \
+                       Shown only when highlight ranges are configured.\n  \
                      * grid: vertical/horizontal lines to separate side bar\n          \
                        and the header from the content.\n  \
                      * rule: horizontal lines to delimit files.\n  \

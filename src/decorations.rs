@@ -19,6 +19,32 @@ pub(crate) trait Decoration {
     fn width(&self) -> usize;
 }
 
+/// A text marker keeps selected lines identifiable without terminal colors.
+pub(crate) struct HighlightIndicatorDecoration;
+
+impl Decoration for HighlightIndicatorDecoration {
+    fn generate(
+        &self,
+        _line_number: usize,
+        _continuation: bool,
+        printer: &InteractivePrinter,
+    ) -> DecorationText {
+        DecorationText {
+            text: if printer.highlight_this_line {
+                ">"
+            } else {
+                " "
+            }
+            .to_owned(),
+            width: 1,
+        }
+    }
+
+    fn width(&self) -> usize {
+        1
+    }
+}
+
 pub(crate) struct LineNumberDecoration {
     color: Style,
     cached_wrap: DecorationText,
