@@ -662,6 +662,25 @@ pub fn build_app(interactive_output: bool) -> Command {
 
     app = app
         .arg(
+            Arg::new("show-config")
+                .long("show-config")
+                .alias("config")
+                .overrides_with("show-config")
+                .num_args(0..=1)
+                .default_missing_value("*")
+                .value_name("field")
+                .conflicts_with_all(["FILE", "list-languages", "list-themes", "config-file",
+                    "generate-config-file", "config-dir", "cache-dir", "acknowledgements", "diagnostic"])
+                .help("Show merged configuration arguments, optionally for one field.")
+                .long_help("Show configured argument values after merging system/user config files, \
+                    environment variables, and command-line arguments. List configured fields in \
+                    alphabetical order, omitting parser defaults. With a field name (for example, \
+                    --show-config theme), print its values without a label, including its parser \
+                    default if present. An unset field produces no output. Repeatable values retain \
+                    their order and automatic modes remain unresolved. This does not read input \
+                    files, load assets, probe terminal colors, or start a pager."),
+        )
+        .arg(
             Arg::new("config-file")
                 .long("config-file")
                 .action(ArgAction::SetTrue)

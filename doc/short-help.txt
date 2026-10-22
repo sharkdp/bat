@@ -66,6 +66,8 @@ Options:
           Enable unbuffered input reading for streaming use cases.
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
+      --show-config [<field>]
+          Show merged configuration arguments, optionally for one field.
   -E, --quiet-empty
           Produce no output when the input is empty.
   -h, --help

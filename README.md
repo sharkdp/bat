@@ -769,6 +769,13 @@ There is also now a systemwide configuration file, which is located under `/etc/
 Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
 file is present, the content of the user configuration will simply be appended to it.
 
+To inspect the merged configuration arguments from config files, environment
+variables, and the command line, run `bat --show-config`. Query one field with
+`bat --show-config theme` (or `bat --config theme`). Repeated options are listed
+in order, and automatic modes remain as configured. The full listing omits
+parser defaults; a single-field query includes its parser default when available.
+An unset field produces no output.
+
 ### Format
 
 The configuration file is a simple list of command line arguments. Use `bat --help` to see a full list of possible options and values. In addition, you can add comments by prepending a line with the `#` character.

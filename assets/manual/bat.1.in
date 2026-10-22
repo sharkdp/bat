@@ -329,6 +329,16 @@ To generate a default configuration file, call:
 
 These are related options:
 .HP
+\fB\-\-show\-config\fR [field]
+.IP
+Show merged configuration arguments from system/user config files, environment
+variables, and the command line. The full listing is alphabetical and omits
+parser defaults. A field query prints its values without a label, including its
+parser default if present; an unset field produces no output. Repeatable values
+retain their order and automatic modes remain unresolved. The alias
+\fB\-\-config\fR is also accepted. This operation does not read input files,
+load theme assets, or start a pager.
+.HP
 \fB\-\-config\-file\fR
 .IP
 Show path to the configuration file.

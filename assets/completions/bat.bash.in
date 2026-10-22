@@ -240,6 +240,7 @@ _bat() {
 			--version
 			--cache-dir
 			--config-dir
+			--show-config
 			--config-file
 			--generate-config-file
 			--no-config
