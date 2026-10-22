@@ -585,6 +585,13 @@ syntax:
    bat cache --clear
    ```
 
+   The cache is written to the directory reported by `bat --cache-dir`. Set `BAT_CACHE_PATH` to put
+   it somewhere else:
+
+   ```bash
+   export BAT_CACHE_PATH="/path/to/bat/cache"
+   ```
+
 4. If you think that a specific syntax should be included in `bat` by default, please
    consider opening a "syntax request" ticket after reading the policies and
    instructions [here](doc/assets.md): [Open Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
@@ -699,7 +706,8 @@ to truncate any lines larger than the terminal width.
 ### Indentation
 
 `bat` expands tabs to 4 spaces by itself, not relying on the pager. To change this, simply add the
-`--tabs` argument with the number of spaces you want to be displayed.
+`--tabs` argument with the number of spaces you want to be displayed, or export the `BAT_TABS`
+environment variable (e.g. `export BAT_TABS=2`).
 
 **Note**: Defining tab stops for the pager (via the `--pager` argument by `bat`, or via the `LESS`
 environment variable for `less`) won't be taken into account because the pager will already get
@@ -764,6 +772,14 @@ A default configuration file can be created with the `--generate-config-file` op
 ```bash
 bat --generate-config-file
 ```
+
+The `BAT_OPTS` environment variable holds command-line options in the same format, and is read
+*instead of* the configuration file, not in addition to it:
+```bash
+export BAT_OPTS="--theme='TwoDark' --style=numbers"
+```
+Setting it means the configuration file is not read at all, so anything you rely on there has to be
+repeated in `BAT_OPTS`.
 
 There is also now a systemwide configuration file, which is located under `/etc/bat/config` on
 Linux and Mac OS and `C:\ProgramData\bat\config` on windows. If the system wide configuration
