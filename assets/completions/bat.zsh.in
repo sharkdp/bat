@@ -45,7 +45,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-P --no-paging)'--no-paging'[alias for --paging=never]'
         --pager='[determine which pager to use]:command:'
-        '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
+        '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern or define a language alias]: :->syntax-maps'
         --ignored-suffix='[ignore extension]:suffix:'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'
         '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
@@ -82,8 +82,8 @@ _{{PROJECT_EXECUTABLE}}_main() {
 
     case "$state" in
         syntax-maps)
-          if ! compset -P '*:'; then
-            _message -e patterns 'glob pattern:language'
+          if ! compset -P '*:' && ! compset -P '*='; then
+            _message -e patterns 'glob pattern:language or alias=language'
             return
           fi
         ;& # fall-through

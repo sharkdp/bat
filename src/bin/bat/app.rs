@@ -334,10 +334,17 @@ impl App {
             // later args take precedence over earlier ones, hence `.rev()`
             // see: https://github.com/sharkdp/bat/pull/2755#discussion_r1456416875
             for from_to in values.rev() {
+                // Preserve filename globs containing '=' when a ':' is present.
+                if !from_to.contains(':') {
+                    if let Some((alias, target)) = from_to.split_once('=') {
+                        syntax_mapping.insert_language_alias(alias, target)?;
+                        continue;
+                    }
+                }
                 let parts: Vec<_> = from_to.split(':').collect();
 
                 if parts.len() != 2 {
-                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'.".into());
+                    return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'. Language aliases use '<alias>=<syntax-name>', for example 'csharp=C#'.".into());
                 }
 
                 syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
