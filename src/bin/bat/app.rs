@@ -88,27 +88,13 @@ impl App {
                 HelpType::Short
             };
 
-            let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
-                Some("never") => false,
-                _ => !matches.get_flag("no-paging"),
-            };
-
-            let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
-                Some("always") => true,
-                Some("never") => false,
-                _ => interactive_output, // auto: use color if interactive
-            };
-
-            let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
             let theme_options = Self::theme_options_from_matches(&matches);
             let use_custom_assets = !matches.get_flag("no-custom-assets");
 
             Self::display_help(
                 interactive_output,
                 help_type,
-                use_pager,
-                use_color,
-                pager,
+                &matches,
                 theme_options,
                 use_custom_assets,
             )?;
@@ -126,9 +112,7 @@ impl App {
     fn display_help(
         interactive_output: bool,
         help_type: HelpType,
-        use_pager: bool,
-        use_color: bool,
-        pager: Option<&str>,
+        matches: &ArgMatches,
         theme_options: ThemeOptions,
         use_custom_assets: bool,
     ) -> Result<()> {
@@ -142,6 +126,21 @@ impl App {
             theme::theme,
             PagingMode,
         };
+
+        let use_pager = match matches.get_one::<String>("paging").map(|s| s.as_str()) {
+            Some("never") => false,
+            _ => !matches.get_flag("no-paging"),
+        };
+        let use_color = match matches.get_one::<String>("color").map(|s| s.as_str()) {
+            Some("always") => true,
+            Some("never") => false,
+            _ => interactive_output,
+        };
+        let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
+        let pager_args = matches
+            .get_many::<String>("pager-arg")
+            .map(|args| args.cloned().collect())
+            .unwrap_or_default();
 
         let mut cmd = clap_app::build_app(interactive_output);
         let help_text = match help_type {
@@ -161,6 +160,7 @@ impl App {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
             paging_mode,
             pager,
+            pager_args,
             colored_output: use_color,
             true_color: use_color,
             language: if use_color { Some("help") } else { None },
@@ -507,6 +507,11 @@ impl App {
             style_components,
             syntax_mapping,
             pager: self.matches.get_one::<String>("pager").map(|s| s.as_str()),
+            pager_args: self
+                .matches
+                .get_many::<String>("pager-arg")
+                .map(|args| args.cloned().collect())
+                .unwrap_or_default(),
             use_italic_text: self
                 .matches
                 .get_one::<String>("italic-text")

@@ -254,8 +254,12 @@ pub fn list_themes(
         ))?;
     }
 
-    let mut output_type =
-        OutputType::from_mode(config.paging_mode, config.wrapping_mode, config.pager)?;
+    let mut output_type = OutputType::from_mode_with_args(
+        config.paging_mode,
+        config.wrapping_mode,
+        config.pager,
+        &config.pager_args,
+    )?;
     let mut writer = output_type.handle()?;
     writer.write_fmt(format_args!("{buf}"))?;
 

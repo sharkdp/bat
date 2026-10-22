@@ -76,10 +76,11 @@ impl Controller<'_> {
 
             let wrapping_mode = self.config.wrapping_mode;
 
-            output_type_opt = Some(OutputType::from_mode(
+            output_type_opt = Some(OutputType::from_mode_with_args(
                 paging_mode,
                 wrapping_mode,
                 self.config.pager,
+                &self.config.pager_args,
             )?);
         }
 

@@ -78,11 +78,27 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager: Option<&str>,
     ) -> Result<Self> {
+        Self::from_mode_with_args(paging_mode, wrapping_mode, pager, &[])
+    }
+
+    /// Select output and append literal arguments to an external pager.
+    #[cfg(feature = "paging")]
+    pub fn from_mode_with_args(
+        paging_mode: PagingMode,
+        wrapping_mode: WrappingMode,
+        pager: Option<&str>,
+        pager_args: &[String],
+    ) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match paging_mode {
-            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager)?,
+            Always => OutputType::try_pager(
+                SingleScreenAction::Nothing,
+                wrapping_mode,
+                pager,
+                pager_args,
+            )?,
             QuitIfOneScreen => {
-                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager)?
+                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager, pager_args)?
             }
             _ => OutputType::stdout(),
         })
@@ -94,6 +110,7 @@ impl OutputType {
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
+        pager_args: &[String],
     ) -> Result<Self> {
         use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
@@ -111,6 +128,9 @@ impl OutputType {
         }
 
         if pager.kind == PagerKind::Builtin {
+            if !pager_args.is_empty() {
+                return Err("The built-in pager does not accept additional arguments".into());
+            }
             return Ok(OutputType::BuiltinPager(BuiltinPager::new()));
         }
 
@@ -186,6 +206,8 @@ impl OutputType {
         } else {
             p.args(args);
         };
+
+        p.args(pager_args);
 
         Ok(p.stdin(Stdio::piped())
             .spawn()
