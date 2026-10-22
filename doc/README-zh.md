@@ -99,7 +99,7 @@ bat f - g  # 输出 f，接着是标准输入流，最后 g
 你可以使用`bat`作为`fzf`的预览器。这需要在`bat`后添加`--color=always`选项，以及`--line-range` 选项来限制大文件的加载次数。
 
 ```bash
-fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
 ```
 
 更多信息请参阅[`fzf`的说明](https://github.com/junegunn/fzf#preview-window)。
