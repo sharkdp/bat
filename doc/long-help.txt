@@ -235,6 +235,11 @@ Options:
           automatically disabled in unbuffered mode, and syntax highlighting may be imperfect on
           partial lines.
 
+      --no-system-config
+          Ignore the system-wide configuration file while still loading the user configuration
+          (including BAT_CONFIG_PATH) and environment options. This option must be passed on the
+          command line.
+
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
 

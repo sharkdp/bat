@@ -242,6 +242,7 @@ _bat() {
 			--config-dir
 			--config-file
 			--generate-config-file
+			--no-system-config
 			--no-config
 			--no-custom-assets
 			--no-lessopen
