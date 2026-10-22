@@ -82,3 +82,15 @@
 ```
 
 [auto-merged]: https://github.com/sharkdp/bat/blob/master/.github/workflows/Auto-merge-dependabot-PRs.yml
+
+### Release checksums
+
+Each release archive and Debian package has a matching `.sha256` file. Download
+both files into the same directory and verify the package before installing it:
+
+```sh
+sha256sum --check bat-vVERSION-TARGET.tar.gz.sha256
+```
+
+On macOS, use `shasum -a 256 --check` with the same sidecar. Each checksum contains
+only the asset basename, so verification works after moving the downloads.

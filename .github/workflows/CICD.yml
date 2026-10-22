@@ -421,18 +421,34 @@ jobs:
         # build dpkg
         fakeroot dpkg-deb --build "${DPKG_DIR}" "${DPKG_PATH}"
 
+    - name: Generate SHA-256 checksums
+      shell: bash
+      env:
+        ARCHIVE_PATH: ${{ steps.package.outputs.PKG_PATH }}
+        DEBIAN_PATH: ${{ steps.debian-package.outputs.DPKG_PATH }}
+      run: |
+        checksum_inputs=("$ARCHIVE_PATH")
+        if [[ -n "$DEBIAN_PATH" ]]; then
+          checksum_inputs+=("$DEBIAN_PATH")
+        fi
+        python ci/create-checksums.py "${checksum_inputs[@]}"
+
     - name: "Artifact upload: tarball"
       uses: actions/upload-artifact@master
       with:
         name: ${{ steps.package.outputs.PKG_NAME }}
-        path: ${{ steps.package.outputs.PKG_PATH }}
+        path: |
+          ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.package.outputs.PKG_PATH }}.sha256
 
     - name: "Artifact upload: Debian package"
       uses: actions/upload-artifact@master
       if: steps.debian-package.outputs.DPKG_NAME
       with:
         name: ${{ steps.debian-package.outputs.DPKG_NAME }}
-        path: ${{ steps.debian-package.outputs.DPKG_PATH }}
+        path: |
+          ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_PATH }}.sha256
 
     - name: Check for release
       id: is-release
@@ -447,7 +463,9 @@ jobs:
       with:
         files: |
           ${{ steps.package.outputs.PKG_PATH }}
+          ${{ steps.package.outputs.PKG_PATH }}.sha256
           ${{ steps.debian-package.outputs.DPKG_PATH }}
+          ${{ steps.debian-package.outputs.DPKG_PATH && format('{0}.sha256', steps.debian-package.outputs.DPKG_PATH) || '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

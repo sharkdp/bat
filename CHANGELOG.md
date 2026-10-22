@@ -2,6 +2,7 @@
 
 
 ## Other
+- Publish SHA-256 checksum sidecars for release archives and Debian packages, see #3943 (@Matei02355)
 
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
