@@ -520,6 +520,11 @@ impl App {
                 .map(LineRanges::from)
                 .map(HighlightedLineRanges)
                 .unwrap_or_default(),
+            highlighted_patterns: self
+                .matches
+                .get_many::<regex::Regex>("highlight-pattern")
+                .map(|patterns| patterns.cloned().collect())
+                .unwrap_or_default(),
             use_custom_assets: !self.matches.get_flag("no-custom-assets"),
             #[cfg(feature = "lessopen")]
             use_lessopen: self.matches.get_flag("lessopen"),

@@ -94,6 +94,9 @@ pub struct Config<'a> {
     /// Ranges of lines which should be highlighted with a special background color
     pub highlighted_lines: HighlightedLineRanges,
 
+    /// Regular expressions selecting additional lines to highlight.
+    pub highlighted_patterns: Vec<regex::Regex>,
+
     /// Whether or not to allow custom assets. If this is false or if custom assets (a.k.a.
     /// cached assets) are not available, assets from the binary will be used instead.
     pub use_custom_assets: bool,

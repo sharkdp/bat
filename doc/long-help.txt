@@ -44,6 +44,12 @@ Options:
           
           [aliases: --fallback-language]
 
+      --highlight-pattern <regex>
+          Highlight lines matching a regular expression, using the same style as '--highlight-line'.
+          Matches exclude the line ending and are evaluated before wrapping. Repeat the option to
+          match any of several patterns; it can also be combined with '--highlight-line'. Use '(?i)'
+          for case-insensitive matching.
+
   -H, --highlight-line <N:M>
           Highlight the specified line ranges with a different background color For example:
             '--highlight-line 40' highlights line 40

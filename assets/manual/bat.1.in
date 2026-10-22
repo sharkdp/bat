@@ -305,6 +305,15 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+
+.HP
+\fB\-\-highlight-pattern\fR <regex>
+.IP
+Highlight lines matching a regular expression, using the style of
+'\-\-highlight-line'. Line endings are excluded from the match; wrapping does
+not change which lines match. Repeat the option to match any of several patterns,
+or combine it with explicit line ranges. Use '(?i)' for case-insensitive matching.
+
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR
