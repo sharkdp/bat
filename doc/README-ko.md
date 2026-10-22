@@ -200,7 +200,7 @@ man 2 select
 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)을 쓸
 수도 있습니다. 
 
-참고로 [Manpage 문법](../assets/syntaxes/Manpage.sublime-syntax)은 본 저장소에서
+참고로 [Manpage 문법](../assets/syntaxes/02_Extra/Manpage.sublime-syntax)은 본 저장소에서
 개발 중에 있으며, 아직 더 손봐야 합니다.
 
 또한, 이는 Mandoc의 `man` 구현에서
@@ -527,7 +527,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
   ```
 
 4. 만약 특정 문법이 `bat`에 기본적으로 포함되어 있어야 한다고 생각한다면, 방침과
-  절차를 [여기](../doc/assets.md)서 읽은 후 "문법 요청(syntax request)"을 열어
+  절차를 [여기](assets.md)서 읽은 후 "문법 요청(syntax request)"을 열어
   주세요: [문법 요청하기](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
 
 ### 새로운 테마 추가하기
@@ -823,7 +823,7 @@ cargo install --locked --force
 - 사용자 친화적인 커맨드 라인 인터페이스 제공
 
 비슷한 프로그램들을 찾고 있다면 많은 대안들이 있습니다.
-비교는 [이 문서](../doc/alternatives.md)를 참조해 주세요.
+비교는 [이 문서](alternatives.md)를 참조해 주세요.
 
 ## 라이센스
 Copyright (c) 2018-2021 [bat-developers](https://github.com/sharkdp/bat).
