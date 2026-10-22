@@ -188,7 +188,7 @@ impl Attributes {
                 100..=107 => self.background = Self::parse_color(p, &mut iter),
                 _ => {
                     // Unsupported SGR sequence.
-                    // Be compatible and pretend one just wasn't was provided.
+                    // Be compatible and pretend one just wasn't provided.
                 }
             }
         }
