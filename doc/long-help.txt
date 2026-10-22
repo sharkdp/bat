@@ -26,6 +26,8 @@ Options:
           Possible values:
             * no-printing: do not print any binary content
             * as-text: treat binary content as normal text
+            * skip: omit binary inputs entirely, even when output is redirected or '--show-all' is
+            used
 
   -p, --plain...
           Only show plain style, no decorations. This is an alias for '--style=plain'. When '-p' is

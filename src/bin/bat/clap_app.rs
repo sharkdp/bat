@@ -83,7 +83,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("binary")
                 .action(ArgAction::Set)
                 .default_value("no-printing")
-                .value_parser(["no-printing", "as-text"])
+                .value_parser(["no-printing", "as-text", "skip"])
                 .value_name("behavior")
                 .hide_default_value(true)
                 .help("How to treat binary content. (default: no-printing)")
@@ -91,7 +91,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                     "How to treat binary content. (default: no-printing)\n\n\
                     Possible values:\n  \
                     * no-printing: do not print any binary content\n  \
-                    * as-text: treat binary content as normal text",
+                    * as-text: treat binary content as normal text\n  \
+                    * skip: omit binary inputs entirely, even when output is redirected or \
+                    '--show-all' is used",
                 ),
         )
         .arg(

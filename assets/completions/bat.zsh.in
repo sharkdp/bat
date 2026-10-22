@@ -26,7 +26,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
     args=(
         '(-A --show-all)'{-A,--show-all}'[show non-printable characters (space, tab, newline, ..)]'
         --nonprintable-notation='[specify how to display non-printable characters when using --show-all]:notation:(caret unicode)'
-        --binary='[specify how to treat binary content]:behavior:(no-printing as-text)'
+        --binary='[specify how to treat binary content]:behavior:(no-printing as-text skip)'
         \*{-p,--plain}'[show plain style (alias for `--style=plain`), repeat twice to disable automatic paging (alias for `--paging=never`)]'
         '(-l --language)'{-l+,--language=}'[set the language for syntax highlighting]:language:->languages'
         \*{-H+,--highlight-line=}'[highlight specified block of lines]:start\:end'

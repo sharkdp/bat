@@ -10,7 +10,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
     $ArrayWhen       = @('auto', 'never', 'always')
     $ArrayYesNo      = @('never', 'always')
     $ArrayWrap       = @('always', 'never', 'character', 'word')
-    $ArrayBinary     = @('no-printing', 'as-text')
+    $ArrayBinary     = @('no-printing', 'as-text', 'skip')
     $ArrayPrint      = @('unicode', 'caret')
 
     function Get-MyThemes(){
@@ -159,7 +159,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--show-all'              , 'show-all'              , [CompletionResultType]::ParameterName, 'Show non-printable characters (space, tab, newline, ..).')
             [CompletionResult]::new('--nonprintable-notation' , 'nonprintable-notation' , [CompletionResultType]::ParameterName, 'Set notation for non-printable characters. (unicode, caret)')
             [CompletionResult]::new('--chop-long-lines'       , 'chop-long-lines'       , [CompletionResultType]::ParameterName, 'Truncate all lines longer than screen width. Alias for ''--wrap=never''.')
-            [CompletionResult]::new('--binary'                , 'binary'                , [CompletionResultType]::ParameterName, 'How to treat binary content. (*no-printing*, as-text)')
+            [CompletionResult]::new('--binary'                , 'binary'                , [CompletionResultType]::ParameterName, 'How to treat binary content. (*no-printing*, as-text, skip)')
             [CompletionResult]::new('--ignored-suffix'        , 'ignored-suffix'        , [CompletionResultType]::ParameterName, 'Ignore extension. For example: ''bat --ignored-suffix ".dev" my_file.json.dev'' will use JSON syntax, and ignore ''.dev''')
             [CompletionResult]::new('--squeeze-blank'         , 'squeeze-blank'         , [CompletionResultType]::ParameterName, 'Squeeze consecutive empty lines into a single empty line.')
             [CompletionResult]::new('--squeeze-limit'         , 'squeeze-limit'         , [CompletionResultType]::ParameterName, 'Set the maximum number of consecutive empty lines to be printed.')

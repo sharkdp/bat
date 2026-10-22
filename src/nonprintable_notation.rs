@@ -21,4 +21,7 @@ pub enum BinaryBehavior {
 
     /// Treat binary content as normal text
     AsText,
+
+    /// Skip binary inputs entirely, including when output is redirected.
+    Skip,
 }
