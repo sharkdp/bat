@@ -148,6 +148,13 @@ Options:
             * dark: Use the dark theme specified by '--theme-dark'.
             * light: Use the light theme specified by '--theme-light'.
 
+      --set-theme-color <name> <color>
+          Override a global theme color without rebuilding theme assets. Supported names:
+          foreground, gutterForeground, lineHighlight. Colors are six hexadecimal digits (RRGGBB or
+          '#RRGGBB'); foreground and gutterForeground also accept 'default' to use the terminal's
+          normal text color. Repeat this option to set multiple colors; the last value for a name
+          wins. For example: --set-theme-color lineHighlight 444444.
+
       --theme-light <theme>
           Sets the theme name for syntax highlighting used when the terminal uses a light
           background. Use '--list-themes' to see all available themes. To set a default theme, add

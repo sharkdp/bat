@@ -268,3 +268,5 @@ complete -c $bat -s h -d "Print a concise overview of $bat-cache help" -n __bat_
 complete -c $bat -l help -f -d "Print all $bat-cache help" -n __bat_cache_no_excl
 
 # vim:ft=fish
+
+complete -c $bat -l set-theme-color -x -a "foreground gutterForeground lineHighlight" -d "Override a global theme color (name color)" -n __bat_no_excl_args

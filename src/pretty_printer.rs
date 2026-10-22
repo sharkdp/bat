@@ -263,6 +263,15 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Override a global theme color without modifying the underlying theme.
+    ///
+    /// Supported names are `foreground`, `gutterForeground`, and `lineHighlight`.
+    /// The value is six hexadecimal digits, optionally prefixed with `#`.
+    pub fn set_theme_color(&mut self, name: &str, value: &str) -> Result<&mut Self> {
+        self.config.theme_colors.set(name, value)?;
+        Ok(self)
+    }
+
     /// Specify custom file extension / file name to syntax mappings
     pub fn syntax_mapping(&mut self, mapping: SyntaxMapping<'a>) -> &mut Self {
         self.config.syntax_mapping = mapping;

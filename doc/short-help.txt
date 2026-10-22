@@ -47,6 +47,8 @@ Options:
           Use the specified syntax for files matching the glob pattern ('*.cpp:C++').
       --theme <theme>
           Set the color theme for syntax highlighting.
+      --set-theme-color <name> <color>
+          Override a global theme color.
       --theme-light <theme>
           Sets the color theme for syntax highlighting used for light backgrounds.
       --theme-dark <theme>

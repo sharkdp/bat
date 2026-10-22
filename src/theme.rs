@@ -5,6 +5,78 @@ use std::fmt;
 use std::io::IsTerminal as _;
 use std::str::FromStr;
 
+/// Overrides for the global theme colors used by the terminal renderer.
+///
+/// Syntax-specific scope colors are left unchanged. Repeated assignments to the
+/// same setting use the last value.
+#[derive(Debug, Clone, Default)]
+pub struct ThemeColorOverrides {
+    foreground: Option<syntect::highlighting::Color>,
+    gutter_foreground: Option<syntect::highlighting::Color>,
+    line_highlight: Option<syntect::highlighting::Color>,
+}
+
+impl ThemeColorOverrides {
+    /// Set `foreground`, `gutterForeground`, or `lineHighlight` to an opaque RGB
+    /// color written as six hexadecimal digits, optionally prefixed with `#`.
+    /// Foreground and gutter foreground also accept `default` for the terminal color.
+    pub fn set(&mut self, name: &str, value: &str) -> crate::error::Result<()> {
+        let target = match name {
+            "foreground" => &mut self.foreground,
+            "gutterForeground" => &mut self.gutter_foreground,
+            "lineHighlight" => &mut self.line_highlight,
+            _ => return Err(format!(
+                "unknown theme color '{name}'; expected foreground, gutterForeground, or lineHighlight"
+            ).into()),
+        };
+        if value == "default" && name != "lineHighlight" {
+            *target = Some(syntect::highlighting::Color {
+                r: 0,
+                g: 0,
+                b: 0,
+                a: 1,
+            });
+            return Ok(());
+        }
+        let hex = value.strip_prefix('#').unwrap_or(value);
+        if hex.len() != 6 || !hex.bytes().all(|b| b.is_ascii_hexdigit()) {
+            return Err(format!(
+                "invalid theme color '{value}'; expected six hexadecimal digits (RRGGBB)"
+            )
+            .into());
+        }
+        let rgb = u32::from_str_radix(hex, 16)?;
+        *target = Some(syntect::highlighting::Color {
+            r: (rgb >> 16) as u8,
+            g: (rgb >> 8) as u8,
+            b: rgb as u8,
+            a: 255,
+        });
+        Ok(())
+    }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.foreground.is_none()
+            && self.gutter_foreground.is_none()
+            && self.line_highlight.is_none()
+    }
+
+    pub(crate) fn apply(&self, theme: &mut syntect::highlighting::Theme) {
+        for (target, value) in [
+            (&mut theme.settings.foreground, self.foreground),
+            (
+                &mut theme.settings.gutter_foreground,
+                self.gutter_foreground,
+            ),
+            (&mut theme.settings.line_highlight, self.line_highlight),
+        ] {
+            if value.is_some() {
+                *target = value;
+            }
+        }
+    }
+}
+
 /// Environment variable names.
 pub mod env {
     /// See [`crate::theme::ThemeOptions::theme`].

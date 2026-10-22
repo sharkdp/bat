@@ -99,18 +99,12 @@ impl App {
                 _ => interactive_output, // auto: use color if interactive
             };
 
-            let pager = matches.get_one::<String>("pager").map(|s| s.as_str());
-            let theme_options = Self::theme_options_from_matches(&matches);
-            let use_custom_assets = !matches.get_flag("no-custom-assets");
-
             Self::display_help(
                 interactive_output,
                 help_type,
                 use_pager,
                 use_color,
-                pager,
-                theme_options,
-                use_custom_assets,
+                &matches,
             )?;
             std::process::exit(0);
         }
@@ -128,9 +122,7 @@ impl App {
         help_type: HelpType,
         use_pager: bool,
         use_color: bool,
-        pager: Option<&str>,
-        theme_options: ThemeOptions,
-        use_custom_assets: bool,
+        matches: &ArgMatches,
     ) -> Result<()> {
         use crate::assets::assets_from_cache_or_binary;
         use crate::directories::PROJECT_DIRS;
@@ -160,16 +152,17 @@ impl App {
         let help_config = Config {
             style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
             paging_mode,
-            pager,
+            pager: matches.get_one::<String>("pager").map(|s| s.as_str()),
             colored_output: use_color,
             true_color: use_color,
             language: if use_color { Some("help") } else { None },
-            theme: theme(theme_options).to_string(),
+            theme: theme(Self::theme_options_from_matches(matches)).to_string(),
+            theme_colors: Self::theme_colors_from_matches(matches)?,
             ..Default::default()
         };
 
         let cache_dir = PROJECT_DIRS.cache_dir();
-        let assets = assets_from_cache_or_binary(use_custom_assets, cache_dir)?;
+        let assets = assets_from_cache_or_binary(!matches.get_flag("no-custom-assets"), cache_dir)?;
         Controller::new(&help_config, &assets)
             .run(inputs, None)
             .ok();
@@ -484,6 +477,7 @@ impl App {
             number_nonblank: self.matches.get_flag("number-nonblank")
                 || self.number_nonblank_from_cli,
             theme: theme(self.theme_options()).to_string(),
+            theme_colors: Self::theme_colors_from_matches(&self.matches)?,
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
             {
@@ -667,6 +661,16 @@ impl App {
 
     pub(crate) fn theme_options(&self) -> ThemeOptions {
         Self::theme_options_from_matches(&self.matches)
+    }
+
+    fn theme_colors_from_matches(matches: &ArgMatches) -> Result<bat::theme::ThemeColorOverrides> {
+        let mut colors = bat::theme::ThemeColorOverrides::default();
+        if let Some(mut values) = matches.get_many::<String>("set-theme-color") {
+            while let (Some(name), Some(value)) = (values.next(), values.next()) {
+                colors.set(name, value)?;
+            }
+        }
+        Ok(colors)
     }
 
     fn theme_options_from_matches(matches: &ArgMatches) -> ThemeOptions {

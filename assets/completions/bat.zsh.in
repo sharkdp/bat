@@ -47,6 +47,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --pager='[determine which pager to use]:command:'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
         --ignored-suffix='[ignore extension]:suffix:'
+        '*--set-theme-color[override a global theme color]:name:(foreground gutterForeground lineHighlight):RGB color or foreground default:'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'
         '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
         '(--theme-light)'--theme-light='[set the color theme for syntax highlighting for light backgrounds]:theme:->themes'

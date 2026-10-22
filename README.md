@@ -458,6 +458,17 @@ bat --completion <shell>
 
 ### Highlighting theme
 
+If plain text is too bright with your chosen theme, keep syntax colors while
+using the terminal's normal text color:
+
+```bash
+bat --set-theme-color foreground default file.rs
+```
+
+To use a specific color instead, replace `default` with an RGB value such as
+`a0a0a0`. This controls the theme foreground; it does not change bold attributes.
+
+
 Use `bat --list-themes` to get a list of all available themes for syntax
 highlighting. By default, `bat` uses `Monokai Extended` or `Monokai Extended Light`
 for dark and light themes respectively. To select the `TwoDark` theme, call `bat`

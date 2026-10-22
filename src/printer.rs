@@ -219,12 +219,16 @@ impl<'a> InteractivePrinter<'a> {
     pub(crate) fn new(
         config: &'a Config,
         assets: &'a HighlightingAssets,
+        custom_theme: Option<&'a Theme>,
         input: &mut OpenedInput,
         #[cfg(feature = "git")] line_changes: &'a Option<LineChanges>,
     ) -> Result<Self> {
-        let theme = assets.get_theme(&config.theme);
+        let theme = custom_theme.unwrap_or_else(|| assets.get_theme(&config.theme));
 
-        let background_color_highlight = theme.settings.line_highlight;
+        let background_color_highlight = theme
+            .settings
+            .line_highlight
+            .filter(|_| config.colored_output);
 
         let colors = if config.colored_output {
             Colors::colored(theme, config.true_color)

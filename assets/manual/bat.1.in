@@ -193,6 +193,18 @@ Use the dark theme specified by \fB-\-theme-dark\fR.
 Use the light theme specified by \fB-\-theme-light\fR.
 .RE
 .HP
+\fB\-\-set\-theme\-color\fR <name> <color>
+.IP
+Override a global theme color without rebuilding theme assets. Supported names are
+\fBforeground\fR, \fBgutterForeground\fR, and \fBlineHighlight\fR.
+Colors are six hexadecimal digits, optionally prefixed with \fB#\fR.
+Repeat this option to set several colors; the last value for each name wins.
+For foreground and gutterForeground, \fBdefault\fR uses the terminal's normal
+text color while retaining syntax colors.
+For example, \fB\-\-set\-theme\-color lineHighlight 444444\fR changes the
+background of lines selected with \fB\-\-highlight\-line\fR.
+Syntax-specific scope colors remain defined by the theme.
+.HP
 \fB\-\-theme\-dark\fR <theme>
 .IP
 Sets the theme name for syntax highlighting used when the terminal uses a dark background.

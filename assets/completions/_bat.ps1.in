@@ -149,6 +149,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             [CompletionResult]::new('--pager'                 , 'pager'                 , [CompletionResultType]::ParameterName, 'Determine which pager to use.')
         #   [CompletionResult]::new('-m'                      , 'm'                     , [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')
             [CompletionResult]::new('--map-syntax'            , 'map-syntax'            , [CompletionResultType]::ParameterName, 'Use the specified syntax for files matching the glob pattern (''*.cpp:C++'').')
+            [CompletionResult]::new('--set-theme-color', 'set-theme-color', [CompletionResultType]::ParameterName, 'Override a global theme color (name color).')
             [CompletionResult]::new('--theme'                 , 'theme'                 , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting.')
             [CompletionResult]::new('--theme-dark'            , 'themedark'             , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for dark backgrounds.')
             [CompletionResult]::new('--theme-light'           , 'themelight'            , [CompletionResultType]::ParameterName, 'Set the color theme for syntax highlighting for light backgrounds.')
