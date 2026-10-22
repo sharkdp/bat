@@ -137,6 +137,11 @@ Specify when to use the decorations that have been specified via '\-\-style'. Th
 automatic mode only enables decorations if an interactive terminal is detected. The
 always mode will show decorations even when piping output. Possible
 values: *auto*, never, always.
+
+The \fBcompact\fR mode always enables selected decorations, uses single-line
+\fB===> filename <===\fR headings, and omits horizontal rules around files.
+Selected line numbers, change markers, and the vertical grid remain visible.
+Long headings are left to the terminal to wrap.
 .HP
 \fB\-f\fR, \fB\-\-force\-colorization\fR
 .IP

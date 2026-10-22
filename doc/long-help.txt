@@ -106,7 +106,9 @@ Options:
       --decorations <when>
           Specify when to use the decorations that have been specified via '--style'. The automatic
           mode only enables decorations if an interactive terminal is detected. The always mode will
-          show decorations even when piping output. Possible values: *auto*, never, always.
+          show decorations even when piping output. The compact mode always shows the selected
+          decorations, uses single-line file headings, and omits horizontal rules around files.
+          Possible values: *auto*, never, always, compact.
 
   -f, --force-colorization
           Alias for '--decorations=always --color=always'. This is useful if the output of bat is

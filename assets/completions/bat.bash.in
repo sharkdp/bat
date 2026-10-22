@@ -140,7 +140,11 @@ _bat() {
 		COMPREPLY=($(compgen -W "bash fish zsh ps1" -- "$cur"))
 		return 0
 		;;
-	--color | --decorations | --paging)
+	--decorations)
+		COMPREPLY=($(compgen -W "auto never always compact" -- "$cur"))
+		return 0
+		;;
+	--color | --paging)
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;

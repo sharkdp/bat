@@ -40,7 +40,7 @@ Options:
       --italic-text <when>
           Use italics in output (always, *never*)
       --decorations <when>
-          When to show the decorations (*auto*, never, always).
+          When to show the decorations (*auto*, never, always, compact).
       --paging <when>
           Specify when to use the pager, or use `-P` to disable (*auto*, never, always).
   -m, --map-syntax <glob:syntax>
