@@ -528,7 +528,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
 
 4. 만약 특정 문법이 `bat`에 기본적으로 포함되어 있어야 한다고 생각한다면, 방침과
   절차를 [여기](../doc/assets.md)서 읽은 후 "문법 요청(syntax request)"을 열어
-  주세요: [문법 요청하기](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
+  주세요: [문법 요청하기](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.yml).
 
 ### 새로운 테마 추가하기
 

@@ -53,7 +53,7 @@ section in the README.
 ## Adding a new feature
 
 Please consider opening a
-[feature request ticket](https://github.com/sharkdp/bat/issues/new?assignees=&labels=feature-request&template=feature_request.md)
+[feature request ticket](https://github.com/sharkdp/bat/issues/new?assignees=&labels=feature-request&template=feature_request.yml)
 first in order to give us a chance to discuss the details and specifics of the potential new feature before you go and build it.
 
 

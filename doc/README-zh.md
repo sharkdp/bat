@@ -448,7 +448,7 @@ bat --list-themes | fzf --preview="bat --theme={} --color=always /path/to/file"
    bat cache --clear
    ```
 
-4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](doc/assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md)。
+4. 如果你觉得`bat`有必要自带该语法支持，请在阅读[指导](doc/assets.md)后向仓库提交 [Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.yml)。
 
 ### 添加主题
 

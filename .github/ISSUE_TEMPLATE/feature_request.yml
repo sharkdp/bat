@@ -1,0 +1,27 @@
+name: Feature Request
+description: Suggest an improvement to bat.
+labels: [feature-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search [existing requests](https://github.com/sharkdp/bat/issues) first.
+        For a new language definition, use the Syntax Request template.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Describe what you are trying to do and why current behavior does not meet that need.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain how the feature would work, including example commands or output where useful.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
