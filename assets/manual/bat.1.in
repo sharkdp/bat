@@ -70,7 +70,11 @@ language names and file extensions.
 .HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
-Highlight the specified line ranges with a different background color. For example:
+Highlight the specified line ranges with a different background color. Append '~N'
+to select every Nth line, starting at the lower bound (at least line 1).
+For example, '30:40~2' selects 30, 32, 34, 36, 38, 40; '30~2' continues to EOF.
+The same increment syntax is available for '\-\-line-range'. N must be positive.
+For example:
 .RS
 .IP "\-\-highlight\-line 40"
 highlights line 40

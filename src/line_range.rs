@@ -1,10 +1,12 @@
 use crate::error::*;
 use itertools::{Itertools, MinMaxResult};
+use std::num::NonZeroUsize;
 
 #[derive(Debug, Copy, Clone)]
 pub struct LineRange {
     lower: RangeBound,
     upper: RangeBound,
+    step: NonZeroUsize,
 }
 
 /// Defines a boundary for a range
@@ -21,6 +23,7 @@ impl Default for LineRange {
         LineRange {
             lower: RangeBound::Absolute(usize::MIN),
             upper: RangeBound::Absolute(usize::MAX),
+            step: NonZeroUsize::MIN,
         }
     }
 }
@@ -30,6 +33,7 @@ impl LineRange {
         LineRange {
             lower: RangeBound::Absolute(from),
             upper: RangeBound::Absolute(to),
+            step: NonZeroUsize::MIN,
         }
     }
 
@@ -37,7 +41,28 @@ impl LineRange {
         LineRange::parse_range(range_raw)
     }
 
+    /// Select every `step`th line, starting at the lower bound (at least line 1).
+    pub fn with_step(mut self, step: usize) -> Result<Self> {
+        self.step = NonZeroUsize::new(step).ok_or("Line increment must be greater than zero")?;
+        Ok(self)
+    }
+
     fn parse_range(range_raw: &str) -> Result<LineRange> {
+        if let Some((bounds, step)) = range_raw.split_once('~') {
+            let step = step
+                .parse()
+                .map_err(|_| "Invalid line increment after '~'")?;
+            let bounds = if bounds.contains(':') {
+                bounds.to_owned()
+            } else {
+                format!("{bounds}:")
+            };
+            return Self::parse_bounds(&bounds)?.with_step(step);
+        }
+        Self::parse_bounds(range_raw)
+    }
+
+    fn parse_bounds(range_raw: &str) -> Result<LineRange> {
         let mut new_range = LineRange::default();
         let mut raw_range_iter = range_raw.bytes();
         let first_byte = raw_range_iter.next().ok_or("Empty line range")?;
@@ -138,7 +163,7 @@ impl LineRange {
         line: usize,
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> bool {
-        match (self.lower, self.upper, max_buffered_line_number) {
+        let inside = match (self.lower, self.upper, max_buffered_line_number) {
             (RangeBound::Absolute(lower), RangeBound::Absolute(upper), _) => {
                 lower <= line && line <= upper
             }
@@ -187,8 +212,59 @@ impl LineRange {
                 // too far away from the having reached the lower end of the range
                 false
             }
+        };
+        if !inside || self.step == NonZeroUsize::MIN {
+            return inside;
         }
+        let anchor = match (self.lower, max_buffered_line_number) {
+            (RangeBound::Absolute(lower), _) => lower.max(1),
+            (RangeBound::OffsetFromEnd(offset), MaxBufferedLineNumber::Final(last)) => {
+                // The CLI's -N: form displays the last N lines.
+                last.saturating_sub(offset.saturating_sub(1)).max(1)
+            }
+            (RangeBound::OffsetFromEnd(_), MaxBufferedLineNumber::Tentative(_)) => return false,
+        };
+        line >= anchor && (line - anchor).is_multiple_of(self.step.get())
     }
+}
+
+#[test]
+fn increments_preserve_bounds_and_context_syntax() {
+    for (raw, expected) in [
+        ("2:8~3", vec![2, 5, 8]),
+        ("2~3", vec![2, 5, 8, 11]),
+        (":8~3", vec![1, 4, 7]),
+        ("0:8~3", vec![1, 4, 7]),
+        ("5::2~2", vec![3, 5, 7]),
+        ("5:7:2~2", vec![3, 5, 7, 9]),
+        ("-4:~2", vec![9, 11]),
+        (":-2~3", vec![1, 4, 7, 10]),
+        ("2:-2~3", vec![1]),
+    ] {
+        let range = LineRange::from(raw).unwrap();
+        let actual: Vec<_> = (1..=12)
+            .filter(|line| range.is_inside(*line, MaxBufferedLineNumber::Final(12)))
+            .collect();
+        assert_eq!(actual, expected, "{raw}");
+    }
+    assert!(LineRange::from("5:7:2")
+        .unwrap()
+        .is_inside(4, MaxBufferedLineNumber::Final(12)));
+}
+
+#[test]
+fn invalid_increments_are_rejected() {
+    for raw in ["2~0", "2~", "~2", "2~x", "2~-1", "2~2~3"] {
+        assert!(LineRange::from(raw).is_err(), "{raw}");
+    }
+    assert!(LineRange::new(1, 10).with_step(0).is_err());
+}
+
+#[test]
+fn large_increments_do_not_overflow() {
+    let range = LineRange::new(2, usize::MAX).with_step(usize::MAX).unwrap();
+    assert!(range.is_inside(2, MaxBufferedLineNumber::Tentative(2)));
+    assert!(!range.is_inside(usize::MAX, MaxBufferedLineNumber::Final(usize::MAX)));
 }
 
 #[test]
@@ -438,6 +514,16 @@ impl LineRanges {
             .any(|r| r.is_inside(line, max_buffered_line_number))
         {
             RangeCheckResult::InRange
+        } else if self.ranges.iter().any(|range| {
+            // Skipping a line between increments does not mean the range ended.
+            range.step != NonZeroUsize::MIN
+                && LineRange {
+                    step: NonZeroUsize::MIN,
+                    ..*range
+                }
+                .is_inside(line, max_buffered_line_number)
+        }) {
+            RangeCheckResult::BeforeOrBetweenRanges
         } else if matches!(max_buffered_line_number, MaxBufferedLineNumber::Final(final_line_number) if line > final_line_number.saturating_sub(self.smallest_offset_from_end))
         {
             RangeCheckResult::AfterLastRange
