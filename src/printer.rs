@@ -89,6 +89,10 @@ pub(crate) trait Printer {
     ) -> Result<()>;
     fn print_footer(&mut self, handle: &mut OutputHandle, input: &OpenedInput) -> Result<()>;
 
+    fn print_missing_newline_warning(&mut self, _handle: &mut OutputHandle) -> Result<()> {
+        Ok(())
+    }
+
     fn print_snip(&mut self, handle: &mut OutputHandle) -> Result<()>;
 
     fn print_line(
@@ -478,6 +482,10 @@ impl<'a> InteractivePrinter<'a> {
 }
 
 impl Printer for InteractivePrinter<'_> {
+    fn print_missing_newline_warning(&mut self, handle: &mut OutputHandle) -> Result<()> {
+        self.print_header_multiline_component(handle, "[No newline at end of file]")
+    }
+
     fn print_header(
         &mut self,
         handle: &mut OutputHandle,

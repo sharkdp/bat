@@ -177,6 +177,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Report a missing final newline after the last visible line.
+    pub fn warn_missing_newline(&mut self, yes: bool) -> &mut Self {
+        self.config.warn_missing_newline = yes;
+        self
+    }
+
     /// Whether to show "snip" markers between visible line ranges (default: no)
     pub fn snip(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.snip = yes;

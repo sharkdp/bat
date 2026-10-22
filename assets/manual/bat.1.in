@@ -305,6 +305,13 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-\-warning\fR <kind>
+.IP
+Enable optional warnings: 'none' (default) or 'missing-trailing-newline'.
+The warning appears below formatted output, or on standard error when output is
+passed through unchanged. Empty inputs, binary inputs, and excluded final lines
+do not trigger the warning.
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

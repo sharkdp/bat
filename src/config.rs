@@ -117,6 +117,9 @@ pub struct Config<'a> {
     /// Whether or not to produce no output when input is empty
     pub quiet_empty: bool,
 
+    /// Report a missing final newline after reading the input to EOF.
+    pub warn_missing_newline: bool,
+
     /// Whether or not to use unbuffered input reading for streaming use cases
     pub unbuffered: bool,
 
