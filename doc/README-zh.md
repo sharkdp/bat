@@ -33,7 +33,7 @@
 
 ### 不可打印(non-printable)字符可视化
 
-添加`-A`/`--show-all`参数可以文件文件中的不可打印字符:
+添加`-A`/`--show-all`参数可以显示文件中的不可打印字符:
 
 ![Non-printable character example](https://i.imgur.com/WndGp9H.png)
 
