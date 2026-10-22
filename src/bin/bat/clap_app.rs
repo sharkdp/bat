@@ -123,6 +123,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("syntax-delimiter")
+                .long("syntax-delimiter")
+                .overrides_with("syntax-delimiter")
+                .value_name("regex")
+                .value_parser(regex::Regex::new)
+                .help("Reset highlighting before lines matching a regular expression.")
+                .long_help(
+                    "Reset syntax highlighting state before each line matching a regular \
+                     expression. Useful for independent snippets or shell history entries with \
+                     unmatched quotes. Delimiter lines are still printed and highlighted. \
+                     Matches exclude line endings and are evaluated before wrapping. \
+                     For example, '--syntax-delimiter=^---$' starts a new section at each '---' line.",
+                ),
+        )
+        .arg(
             Arg::new("fallback-syntax")
                 .long("fallback-syntax")
                 .visible_alias("fallback-language")

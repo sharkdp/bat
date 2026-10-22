@@ -305,6 +305,14 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-\-syntax-delimiter\fR <regex>
+.IP
+Reset syntax highlighting before each line matching a regular expression.
+Delimiter lines are still displayed. Matches exclude line endings and are
+evaluated before wrapping, including lines hidden by '\-\-line-range'.
+For example, '\-\-syntax-delimiter=^---$' separates independent snippets at
+lines containing exactly '---'.
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

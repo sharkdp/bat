@@ -382,6 +382,10 @@ impl App {
                 .matches
                 .get_one::<String>("fallback-syntax")
                 .map(|s| s.as_str()),
+            syntax_delimiter: self
+                .matches
+                .get_one::<regex::Regex>("syntax-delimiter")
+                .cloned(),
             show_nonprintable: self.matches.get_flag("show-all"),
             nonprintable_notation: match self
                 .matches

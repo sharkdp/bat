@@ -187,6 +187,8 @@ impl Printer for SimplePrinter<'_> {
 struct HighlighterFromSet<'a> {
     highlighter: HighlightLines<'a>,
     syntax_set: &'a SyntaxSet,
+    syntax: &'a syntect::parsing::SyntaxReference,
+    theme: &'a Theme,
 }
 
 impl<'a> HighlighterFromSet<'a> {
@@ -194,6 +196,8 @@ impl<'a> HighlighterFromSet<'a> {
         Self {
             highlighter: HighlightLines::new(syntax_in_set.syntax, theme),
             syntax_set: syntax_in_set.syntax_set,
+            syntax: syntax_in_set.syntax,
+            theme,
         }
     }
 }
@@ -450,6 +454,16 @@ impl<'a> InteractivePrinter<'a> {
             Some(ref mut highlighter_from_set) => highlighter_from_set,
             _ => return Ok(vec![(EMPTY_SYNTECT_STYLE, line)]),
         };
+
+        if self
+            .config
+            .syntax_delimiter
+            .as_ref()
+            .is_some_and(|delimiter| delimiter.is_match(line.trim_end_matches(['\r', '\n'])))
+        {
+            highlighter_from_set.highlighter =
+                HighlightLines::new(highlighter_from_set.syntax, highlighter_from_set.theme);
+        }
 
         // skip syntax highlighting on long lines
         let too_long = line.len() > 1024 * 16;

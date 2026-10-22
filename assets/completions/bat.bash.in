@@ -87,7 +87,7 @@ _bat() {
 		__bat_escape_completions
 		return 0
 		;;
-	-H | --highlight-line | \
+	-H | --highlight-line | --syntax-delimiter | \
 	--diff-context | \
 	--tabs | \
 	--terminal-width | \
@@ -202,6 +202,7 @@ _bat() {
 			--plain
 			--language
 			--highlight-line
+			--syntax-delimiter
 			--file-name
 			--diff
 			--diff-context
