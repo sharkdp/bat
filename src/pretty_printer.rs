@@ -23,6 +23,8 @@ struct ActiveStyleComponents {
     header_filename: bool,
     #[cfg(feature = "git")]
     vcs_modification_markers: bool,
+    #[cfg(feature = "git")]
+    vcs_modification_highlighting: bool,
     grid: bool,
     rule: bool,
     line_numbers: bool,
@@ -168,6 +170,14 @@ impl<'a> PrettyPrinter<'a> {
     #[cfg(feature = "git")]
     pub fn vcs_modification_markers(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.vcs_modification_markers = yes;
+        self
+    }
+
+    /// Highlight lines with Git change markers using the theme's line highlight.
+    /// This can be enabled independently of the sidebar modification markers.
+    #[cfg(feature = "git")]
+    pub fn vcs_modification_highlighting(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.vcs_modification_highlighting = yes;
         self
     }
 
@@ -321,6 +331,12 @@ impl<'a> PrettyPrinter<'a> {
         }
         if self.active_style_components.snip {
             self.config.style_components.insert(StyleComponent::Snip);
+        }
+        #[cfg(feature = "git")]
+        if self.active_style_components.vcs_modification_highlighting {
+            self.config
+                .style_components
+                .insert(StyleComponent::ChangesHighlight);
         }
         #[cfg(feature = "git")]
         if self.active_style_components.vcs_modification_markers {

@@ -205,6 +205,7 @@ Options:
             * auto: same as 'default', unless the output is piped.
             * plain: disables all available components.
             * changes: show Git modification markers.
+            * changes-highlight: highlight lines with Git change markers.
             * header: alias for 'header-filename'.
             * header-filename: show filenames before the content.
             * header-filesize: show file sizes before the content.
