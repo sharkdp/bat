@@ -57,6 +57,24 @@ Options:
           does not otherwise know the filename. Note that the provided file name is also used for
           syntax detection.
 
+      --style-single-file <components>
+          Override the style when displaying one file. Uses the same components and +/- modifiers as
+          '--style'. Applied after the general style. Multiple inputs include any combination of
+          files and '-'. Explicit '--plain', numbering flags, and '--decorations=never' still take
+          precedence.
+
+      --style-stdin <components>
+          Override the style when displaying only standard input. Uses the same components and +/-
+          modifiers as '--style'. Applied after the general style. Multiple inputs include any
+          combination of files and '-'. Explicit '--plain', numbering flags, and
+          '--decorations=never' still take precedence.
+
+      --style-multiple-files <components>
+          Override the style when displaying multiple inputs. Uses the same components and +/-
+          modifiers as '--style'. Applied after the general style. Multiple inputs include any
+          combination of files and '-'. Explicit '--plain', numbering flags, and
+          '--decorations=never' still take precedence.
+
   -d, --diff
           Only show lines that have been added/removed/modified with respect to the Git index. Use
           --diff-context=N to control how much context you want to see.

@@ -165,7 +165,7 @@ _bat() {
 		__bat_escape_completions
 		return 0
 		;;
-	--style)
+	--style | --style-single-file | --style-stdin | --style-multiple-files)
 		# shellcheck disable=SC2034
 		local -a styles=(
 			default
@@ -228,6 +228,9 @@ _bat() {
 			--sanitize
 			--strip-ansi
 			--style
+			--style-single-file
+			--style-stdin
+			--style-multiple-files
 			--line-range
 			--list-languages
 			--lessopen

@@ -165,6 +165,40 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         );
 
+    for (name, description) in [
+        (
+            "style-single-file",
+            "Override the style when displaying one file.",
+        ),
+        (
+            "style-stdin",
+            "Override the style when displaying only standard input.",
+        ),
+        (
+            "style-multiple-files",
+            "Override the style when displaying multiple inputs.",
+        ),
+    ] {
+        app = app.arg(
+            Arg::new(name)
+                .long(name)
+                .value_name("components")
+                .action(ArgAction::Append)
+                .value_parser(|s: &str| {
+                    StyleComponentList::from_str(s)
+                        .map(|_| s.to_owned())
+                        .map_err(|e| e.to_string())
+                })
+                .help(description)
+                .long_help(format!(
+                    "{description} Uses the same components and +/- modifiers as '--style'. \
+                     Applied after the general style. Multiple inputs include any combination of \
+                     files and '-'. Explicit '--plain', numbering flags, and '--decorations=never' \
+                     still take precedence."
+                )),
+        );
+    }
+
     #[cfg(feature = "git")]
     {
         app = app

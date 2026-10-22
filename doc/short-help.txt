@@ -23,6 +23,12 @@ Options:
           Highlight lines N through M.
       --file-name <name>
           Specify the name to display for a file.
+      --style-single-file <components>
+          Override the style when displaying one file.
+      --style-stdin <components>
+          Override the style when displaying only standard input.
+      --style-multiple-files <components>
+          Override the style when displaying multiple inputs.
   -d, --diff
           Only show lines that have been added/removed/modified.
       --tabs <T>

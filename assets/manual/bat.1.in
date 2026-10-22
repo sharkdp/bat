@@ -305,6 +305,18 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-\-style-single-file\fR <components>
+.HP
+\fB\-\-style-stdin\fR <components>
+.HP
+\fB\-\-style-multiple-files\fR <components>
+.IP
+Select styles for a single file, stdin alone, or multiple inputs respectively.
+A mixture of files and '-' uses the multiple-input style for every input.
+Uses the same components and +/- modifiers as '\-\-style', applied after
+the general style. Explicit plain/numbering flags and disabled decorations
+still take precedence. These options can be set in the configuration file.
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

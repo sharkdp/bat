@@ -454,6 +454,15 @@ bat --completion <shell>
 # see --help for supported shells
 ```
 
+### Styles for different inputs
+
+Use `--style-single-file`, `--style-stdin`, and `--style-multiple-files` to select
+styles by input type. For example, configure `--style-single-file=plain` and
+`--style-stdin=plain` with `--style-multiple-files=header,rule` to show filenames
+only when concatenating several inputs. A mixture of files and stdin uses the
+multiple-file style throughout. Each context supports the same `+`/`-` modifiers
+as `--style`; explicit plain and numbering flags still take precedence.
+
 ## Customization
 
 ### Highlighting theme
