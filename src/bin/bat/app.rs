@@ -512,6 +512,16 @@ impl App {
                 .get_one::<String>("italic-text")
                 .map(|s| s.as_str())
                 == Some("always"),
+            hyperlink: if self.matches.get_flag("osc8") || self.matches.get_flag("osc8-highlight") {
+                Some(bat::hyperlink::Hyperlink::new(
+                    self.matches
+                        .get_one::<String>("hyperlink-format")
+                        .expect("default format"),
+                    self.matches.get_flag("osc8-highlight"),
+                )?)
+            } else {
+                None
+            },
             highlighted_lines: self
                 .matches
                 .get_many::<String>("highlight-line")

@@ -213,6 +213,8 @@ pub(crate) struct InteractivePrinter<'a> {
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
+    hyperlink_path: Option<String>,
+    highlighted_line: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -332,6 +334,12 @@ impl<'a> InteractivePrinter<'a> {
         };
 
         Ok(InteractivePrinter {
+            hyperlink_path: config
+                .hyperlink
+                .as_ref()
+                .and_then(|_| input.path())
+                .and_then(|path| crate::hyperlink::encode_path(path)),
+            highlighted_line: false,
             panel_width,
             colors,
             config,
@@ -418,9 +426,14 @@ impl<'a> InteractivePrinter<'a> {
         &mut self,
         handle: &mut OutputHandle,
         content: &str,
+        uri: Option<&str>,
     ) -> Result<()> {
         self.print_header_component_indent(handle)?;
-        writeln!(handle, "{content}")
+        if let Some(uri) = uri {
+            writeln!(handle, "{}", crate::hyperlink::link(uri, content))
+        } else {
+            writeln!(handle, "{content}")
+        }
     }
 
     fn print_header_multiline_component(
@@ -428,18 +441,36 @@ impl<'a> InteractivePrinter<'a> {
         handle: &mut OutputHandle,
         content: &str,
     ) -> Result<()> {
+        self.print_header_multiline_component_linked(handle, content, None)
+    }
+
+    fn print_header_multiline_component_linked(
+        &mut self,
+        handle: &mut OutputHandle,
+        content: &str,
+        uri: Option<&str>,
+    ) -> Result<()> {
         let content_width = self.config.term_width - self.get_header_component_indent_length();
         if content.chars().count() <= content_width {
-            return self.print_header_component_with_indent(handle, content);
+            return self.print_header_component_with_indent(handle, content, uri);
         }
 
         let mut content_graphemes: Vec<&str> = content.graphemes(true).collect();
         while content_graphemes.len() > content_width {
             let (content_line, remaining) = content_graphemes.split_at(content_width);
-            self.print_header_component_with_indent(handle, content_line.join("").as_str())?;
+            self.print_header_component_with_indent(handle, content_line.join("").as_str(), uri)?;
             content_graphemes = remaining.to_vec();
         }
-        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str())
+        self.print_header_component_with_indent(handle, content_graphemes.join("").as_str(), uri)
+    }
+
+    pub(crate) fn link_line_number(&self, text: String, line: usize) -> String {
+        match (&self.config.hyperlink, &self.hyperlink_path) {
+            (Some(link), Some(path)) if !link.highlighted_only || self.highlighted_line => {
+                crate::hyperlink::link(&link.uri(path, line), &text)
+            }
+            _ => text,
+        }
     }
 
     fn highlight_regions_for_line<'b>(
@@ -564,7 +595,18 @@ impl Printer for InteractivePrinter<'_> {
                             .header_value
                             .paint(sanitize_for_terminal(description.title())),
                     );
-                    self.print_header_multiline_component(handle, &header_filename)
+                    let uri = self
+                        .config
+                        .hyperlink
+                        .as_ref()
+                        .filter(|link| !link.highlighted_only)
+                        .zip(self.hyperlink_path.as_ref())
+                        .map(|(link, path)| link.uri(path, 1));
+                    self.print_header_multiline_component_linked(
+                        handle,
+                        &header_filename,
+                        uri.as_deref(),
+                    )
                 }
                 StyleComponent::HeaderFilesize => {
                     let bsize = metadata
@@ -727,6 +769,7 @@ impl Printer for InteractivePrinter<'_> {
             .0
             .check(line_number, max_buffered_line_number)
             == RangeCheckResult::InRange;
+        self.highlighted_line = highlight_this_line;
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);

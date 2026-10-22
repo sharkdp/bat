@@ -21,6 +21,12 @@ Options:
           Set a fallback language for undetected syntaxes. [aliases: --fallback-language]
   -H, --highlight-line <N:M>
           Highlight lines N through M.
+      --osc8
+          Link file headers and line numbers using OSC 8 hyperlinks.
+      --osc8-highlight
+          Link only highlighted line numbers using OSC 8 hyperlinks.
+      --hyperlink-format <URI>
+          Set the URI template used by --osc8 and --osc8-highlight.
       --file-name <name>
           Specify the name to display for a file.
   -d, --diff

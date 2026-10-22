@@ -305,6 +305,22 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-\-osc8\fR
+.IP
+Add OSC 8 hyperlinks to file headers and line numbers.
+.HP
+\fB\-\-osc8-highlight\fR
+.IP
+Add OSC 8 hyperlinks only to highlighted line numbers.
+.HP
+\fB\-\-hyperlink-format\fR <URI>
+.IP
+Set the URI template used by the OSC 8 options. The default 'file://{path}' opens
+the file. '{path}' expands to the percent-encoded absolute path; '{line}' expands
+to the line number (1 for headers). An editor-specific format such as
+'vscode://file{path}:{line}' can open a particular line. Unnamed stdin has no links;
+use '\-\-file-name' to associate it with a path. Requires a supporting terminal/pager.
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR

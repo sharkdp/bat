@@ -151,6 +151,37 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("osc8")
+                .long("osc8")
+                .action(ArgAction::SetTrue)
+                .overrides_with_all(["osc8", "osc8-highlight"])
+                .help("Link file headers and line numbers using OSC 8 hyperlinks."),
+        )
+        .arg(
+            Arg::new("osc8-highlight")
+                .long("osc8-highlight")
+                .action(ArgAction::SetTrue)
+                .overrides_with_all(["osc8", "osc8-highlight"])
+                .help("Link only highlighted line numbers using OSC 8 hyperlinks."),
+        )
+        .arg(
+            Arg::new("hyperlink-format")
+                .long("hyperlink-format")
+                .overrides_with("hyperlink-format")
+                .default_value("file://{path}")
+                .hide_default_value(true)
+                .value_name("URI")
+                .value_parser(|value: &str| bat::hyperlink::Hyperlink::new(value, false).map(|_| value.to_owned()).map_err(|e| e.to_string()))
+                .help("Set the URI template used by --osc8 and --osc8-highlight.")
+                .long_help(
+                    "Set the URI template for OSC 8 links. '{path}' is replaced by the percent-encoded \
+                     absolute path and '{line}' by the line number (1 for headers). The default, \
+                     'file://{path}', opens the file. Use an editor-specific template such as \
+                     'vscode://file{path}:{line}' to open a particular line. Unnamed stdin has no links. \
+                     These options require a terminal or pager that supports OSC 8.",
+                ),
+        )
+        .arg(
             Arg::new("file-name")
                 .long("file-name")
                 .action(ArgAction::Append)
