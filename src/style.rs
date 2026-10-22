@@ -15,6 +15,7 @@ pub enum StyleComponent {
     HeaderFilename,
     HeaderFilesize,
     LineNumbers,
+    Sidebar,
     Snip,
     Full,
     Default,
@@ -39,6 +40,11 @@ impl StyleComponent {
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilesize => &[StyleComponent::HeaderFilesize],
             StyleComponent::LineNumbers => &[StyleComponent::LineNumbers],
+            StyleComponent::Sidebar => &[
+                #[cfg(feature = "git")]
+                StyleComponent::Changes,
+                StyleComponent::LineNumbers,
+            ],
             StyleComponent::Snip => &[StyleComponent::Snip],
             StyleComponent::Full => &[
                 #[cfg(feature = "git")]
@@ -76,6 +82,7 @@ impl FromStr for StyleComponent {
             "header-filename" => Ok(StyleComponent::HeaderFilename),
             "header-filesize" => Ok(StyleComponent::HeaderFilesize),
             "numbers" => Ok(StyleComponent::LineNumbers),
+            "sidebar" => Ok(StyleComponent::Sidebar),
             "snip" => Ok(StyleComponent::Snip),
             "full" => Ok(StyleComponent::Full),
             "default" => Ok(StyleComponent::Default),

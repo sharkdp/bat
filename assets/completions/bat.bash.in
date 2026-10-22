@@ -179,6 +179,7 @@ _bat() {
 			grid
 			rule
 			numbers
+			sidebar
 			snip
 		)
 		# shellcheck disable=SC2016

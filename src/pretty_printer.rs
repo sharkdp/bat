@@ -151,6 +151,16 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Enable or disable line numbers and Git modification markers together.
+    pub fn sidebar(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.line_numbers = yes;
+        #[cfg(feature = "git")]
+        {
+            self.active_style_components.vcs_modification_markers = yes;
+        }
+        self
+    }
+
     /// Whether to paint a grid, separating line numbers, git changes and the code
     pub fn grid(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.grid = yes;
