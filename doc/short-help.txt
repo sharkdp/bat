@@ -64,6 +64,8 @@ Options:
           Display all supported languages.
   -u, --unbuffered
           Enable unbuffered input reading for streaming use cases.
+      --local-config
+          Read .batconfig files from the current directory and its ancestors
       --completion <SHELL>
           Show shell completion for a certain shell. [possible values: bash, fish, zsh, ps1]
   -E, --quiet-empty

@@ -327,6 +327,12 @@ To generate a default configuration file, call:
 
 \fB{{PROJECT_EXECUTABLE}} --generate-config-file\fR
 
+With \fB--local-config\fR, additionally reads .batconfig files in the current
+directory and its ancestors, from the filesystem root downwards. Nearer files
+override ancestor and user configuration. Selected environment variables and
+command-line options take precedence. BAT_OPTS replaces system/user configuration
+before local files are read. Input paths do not affect configuration discovery.
+
 These are related options:
 .HP
 \fB\-\-config\-file\fR
@@ -340,6 +346,13 @@ Generates a default configuration file.
 \fB\-\-no\-config\fR
 .IP
 Do not use the configuration file.
+.HP
+\fB\-\-local\-config\fR
+.IP
+Read .batconfig files from the current directory and its ancestors.
+This opt-in flag must be supplied on the command line and is ignored with
+\fB--no-config\fR. Enable it only for trusted directories, since configuration
+can specify pager or preprocessor commands.
 .SH "ADDING CUSTOM LANGUAGES"
 {{PROJECT_EXECUTABLE}} supports Sublime Text \fB.sublime-syntax\fR language files, and can be
 customized to add additional languages to your local installation. To do this, add the \fB.sublime-syntax\fR language
@@ -385,6 +398,12 @@ Alternatively, the preprocessor may be enabled by default by adding the '\-\-les
 To temporarily disable the preprocessor if it is enabled by default, call:
 
 \fB{{PROJECT_EXECUTABLE}} --no-lessopen\fR
+
+With \fB--local-config\fR, additionally reads .batconfig files in the current
+directory and its ancestors, from the filesystem root downwards. Nearer files
+override ancestor and user configuration. Selected environment variables and
+command-line options take precedence. BAT_OPTS replaces system/user configuration
+before local files are read. Input paths do not affect configuration discovery.
 
 These are related options:
 .HP
