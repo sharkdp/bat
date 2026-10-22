@@ -1,11 +1,11 @@
 use bat::style::StyleComponentList;
 use clap::{crate_name, crate_version, value_parser, Arg, ArgAction, ColorChoice, Command};
-use once_cell::sync::Lazy;
 use std::env;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::LazyLock;
 
-static VERSION: Lazy<String> = Lazy::new(|| {
+static VERSION: LazyLock<String> = LazyLock::new(|| {
     #[cfg(feature = "bugreport")]
     let git_version = bugreport::git_version!(fallback = "");
     #[cfg(not(feature = "bugreport"))]
