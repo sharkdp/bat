@@ -160,6 +160,14 @@ impl ComponentAction {
 pub struct StyleComponentList(Vec<(ComponentAction, StyleComponent)>);
 
 impl StyleComponentList {
+    /// Apply this list to an existing set, preserving it for modifier-only lists.
+    pub fn apply_to(&self, components: &mut StyleComponents, interactive_terminal: bool) {
+        if self.contains_override() {
+            components.clear();
+        }
+        self.expand_into(&mut components.0, interactive_terminal);
+    }
+
     fn expand_into(&self, components: &mut HashSet<StyleComponent>, interactive_terminal: bool) {
         for (action, component) in self.0.iter() {
             let subcomponents = component.components(interactive_terminal);

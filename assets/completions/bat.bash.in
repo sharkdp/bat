@@ -76,8 +76,14 @@ _bat() {
 		return 0
 	fi
 
+	if (( cword >= 2 )) && [[ ${words[cword-2]} == --style-for ]]; then
+		prev=--style
+	elif [[ $prev == --style-for=* ]]; then
+		prev=--style
+	fi
+
 	case $prev in
-	-l | --language)
+	-l | --language | --style-for)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$(
 			"$1" --no-paging --list-languages | while IFS=: read -r lang _; do
@@ -228,6 +234,7 @@ _bat() {
 			--sanitize
 			--strip-ansi
 			--style
+			--style-for
 			--line-range
 			--list-languages
 			--lessopen

@@ -158,6 +158,59 @@ impl Controller<'_> {
             #[cfg(not(feature = "lessopen"))]
             input.open(stdin, stdout_identifier)?
         };
+        let custom_config = self.config_for_syntax(&mut opened_input)?;
+        let controller = Controller {
+            config: custom_config.as_ref().unwrap_or(self.config),
+            assets: self.assets,
+            #[cfg(feature = "lessopen")]
+            preprocessor: None,
+        };
+        controller.print_opened_input(opened_input, writer, is_first)
+    }
+
+    fn config_for_syntax(&self, input: &mut OpenedInput) -> Result<Option<Config<'_>>> {
+        if self.config.loop_through || self.config.styles_for_syntax.is_empty() {
+            return Ok(None);
+        }
+        if input.reader.content_type.is_some_and(|c| c.is_binary())
+            && !self.config.show_nonprintable
+            && !matches!(
+                self.config.binary,
+                crate::nonprintable_notation::BinaryBehavior::AsText
+            )
+        {
+            return Ok(None);
+        }
+        let name = match self.assets.get_syntax(
+            self.config.language,
+            self.config.fallback_syntax,
+            input,
+            &self.config.syntax_mapping,
+        ) {
+            Ok(syntax) => &syntax.syntax.name,
+            Err(Error::UndetectedSyntax(_)) => "Plain Text",
+            Err(error) => return Err(error),
+        };
+        Ok(self
+            .config
+            .styles_for_syntax
+            .iter()
+            .rev()
+            .find_map(|(language, style)| {
+                language.eq_ignore_ascii_case(name).then(|| {
+                    let mut config = self.config.clone();
+                    config.style_components = style.clone();
+                    config
+                })
+            }))
+    }
+
+    fn print_opened_input(
+        &self,
+        mut opened_input: OpenedInput,
+        writer: &mut OutputHandle,
+        is_first: bool,
+    ) -> Result<()> {
         opened_input.reader.unbuffered = self.config.unbuffered;
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()

@@ -521,6 +521,22 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_short_help(true)
         )
         .arg(
+            Arg::new("style-for")
+                .long("style-for")
+                .num_args(2)
+                .value_names(["language", "style"])
+                .allow_hyphen_values(true)
+                .action(ArgAction::Append)
+                .hide_short_help(true)
+                .help("Use different decorations for a syntax.")
+                .long_help("Use different decorations for a syntax, for example \
+                    '--style-for \"Git Log\" plain'. Use a full name from '--list-languages'; \
+                    names are matched case-insensitively. Repeat to configure more syntaxes. \
+                    Styles containing only '+'/'-' modifiers start from the general style. \
+                    Plain/number flags and '--decorations=never' take precedence. \
+                    Wrapping and tab settings remain global. This option can be used in the configuration file."),
+        )
+        .arg(
             Arg::new("style")
                 .long("style")
                 .action(ArgAction::Append)

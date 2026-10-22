@@ -182,6 +182,13 @@ Options:
           displaying untrusted file content (e.g. file-manager preview panes). Possible values:
           auto, always, *never*.
 
+      --style-for <language> <style>
+          Use different decorations for a syntax, for example '--style-for "Git Log" plain'. Use a
+          full name from '--list-languages'; names are matched case-insensitively. Repeat to
+          configure more syntaxes. Styles containing only '+'/'-' modifiers start from the general
+          style. Plain/number flags and '--decorations=never' take precedence. Wrapping and tab
+          settings remain global. This option can be used in the configuration file.
+
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
           to display in addition to the file contents. The argument is a comma-separated list of
