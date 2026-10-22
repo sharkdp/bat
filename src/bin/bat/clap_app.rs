@@ -141,7 +141,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .value_name("N:M")
                 .help("Highlight lines N through M.")
                 .long_help(
-                    "Highlight the specified line ranges with a different background color \
+                    "Highlight the specified line ranges with a different background color. \
                      For example:\n  \
                      '--highlight-line 40' highlights line 40\n  \
                      '--highlight-line 30:40' highlights lines 30 to 40\n  \
@@ -365,7 +365,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Specify when to use the pager, or use `-P` to disable (*auto*, never, always).")
                 .long_help(
                     "Specify when to use the pager. To disable the pager, use \
-                    '--paging=never' or its alias,'-P'. To disable the pager permanently, \
+                    '--paging=never' or its alias, '-P'. To disable the pager permanently, \
                     set BAT_PAGING to 'never'. To control which pager is used, see the \
                     '--pager' option. Possible values: *auto*, never, always."
                 ),
@@ -545,7 +545,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                      '--style=\"..\"' option to the configuration file or export the \
                      BAT_STYLE environment variable (e.g.: export BAT_STYLE=\"..\").\n\n\
                      When styles are specified in multiple places, the \"nearest\" set \
-                     of styles take precedence. The command-line arguments are the highest \
+                     of styles takes precedence. The command-line arguments are the highest \
                      priority, followed by the BAT_STYLE environment variable, and then \
                      the configuration file. If any set of styles consists entirely of \
                      components prefixed with \"+\" or \"-\", it will modify the \
