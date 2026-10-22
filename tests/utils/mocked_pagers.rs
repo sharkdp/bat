@@ -29,6 +29,14 @@ pub fn from(base: &str) -> String {
     out_cmd
 }
 
+/// Returns a pager command for a mocked 'less' that prints the arguments it
+/// was called with. It lives in a subdirectory so that it does not shadow the
+/// real 'less' when the mocked pagers directory is prepended to PATH.
+pub fn less_printing_args() -> String {
+    let path = get_mocked_pagers_dir().join("less-args").join("less");
+    shell_words::quote(&path.to_string_lossy()).into_owned()
+}
+
 /// Prepends a directory to the PATH environment variable
 /// Returns the original value for later restoration
 fn prepend_dir_to_path_env_var(dir: PathBuf) -> String {

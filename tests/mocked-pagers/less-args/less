@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Prints the arguments that bat passes to 'less'.
+# With MOCKED_LESS_BUSYBOX set, it identifies itself like BusyBox less does.
+if [[ "$1" == "--version" ]]; then
+    if [[ -n "$MOCKED_LESS_BUSYBOX" ]]; then
+        echo "BusyBox v1.36.1 (2023-06-01 00:00:00 UTC) multi-call binary." >&2
+        exit 1
+    fi
+    echo "less 668 (PCRE2 regular expressions)"
+    exit 0
+fi
+echo "less args: $*"
