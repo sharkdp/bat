@@ -492,6 +492,17 @@ fn line_range_multiple() {
 }
 
 #[test]
+fn line_range_offset_from_end_and_later_absolute_range() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-2")
+        .arg("--line-range=10:10")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 10\n");
+}
+
+#[test]
 fn snip_at_terminal_width_one_does_not_panic() {
     bat()
         .arg("multiline.txt")
