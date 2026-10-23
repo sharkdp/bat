@@ -233,8 +233,10 @@ impl Controller<'_> {
                     if let Some(line_changes) = line_changes {
                         for &line in line_changes.keys() {
                             let line = line as usize;
-                            line_ranges
-                                .push(LineRange::new(line.saturating_sub(context), line + context));
+                            line_ranges.push(LineRange::new(
+                                line.saturating_sub(context),
+                                line.saturating_add(context),
+                            ));
                         }
                     }
 
