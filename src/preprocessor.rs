@@ -308,11 +308,21 @@ pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
     output
 }
 
+/// Specify when to strip ANSI escape sequences from the input.
+///
+/// Used for both the `--strip-ansi` and the `--sanitize` option, the latter
+/// implying the former with the same value.
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub enum StripAnsiMode {
+    /// Keep escape sequences in the output
     #[default]
     Never,
+
+    /// Strip escape sequences from the output
     Always,
+
+    /// Strip escape sequences unless the syntax highlighting language is plain
+    /// text, in which case they may be part of what the input wants to display
     Auto,
 }
 
