@@ -3,6 +3,7 @@
 
 ## Other
 
+- Fix broken links in the translated READMEs, see #4021 (@HardMax71)
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
