@@ -720,13 +720,15 @@ impl Printer for InteractivePrinter<'_> {
         let mut cursor_total: usize = 0;
         let mut panel_wrap: Option<String> = None;
 
-        // Line highlighting
-        let highlight_this_line = self
-            .config
-            .highlighted_lines
-            .0
-            .check(line_number, max_buffered_line_number)
-            == RangeCheckResult::InRange;
+        // Line highlighting. It is done purely with escape sequences (background
+        // color or underline), so it must be skipped when colors are disabled.
+        let highlight_this_line = self.config.colored_output
+            && self
+                .config
+                .highlighted_lines
+                .0
+                .check(line_number, max_buffered_line_number)
+                == RangeCheckResult::InRange;
 
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);

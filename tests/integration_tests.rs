@@ -3319,7 +3319,7 @@ fn grid_for_file_without_newline() {
 fn ansi_highlight_underline() {
     bat()
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3331,6 +3331,29 @@ fn ansi_highlight_underline() {
         .success()
         .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
+}
+
+// Highlighting lines must not emit escape sequences when colors are disabled
+#[test]
+fn highlight_line_without_colors() {
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            bat()
+                .arg("--paging=never")
+                .arg("--color=never")
+                .arg("--terminal-width=80")
+                .arg(wrap)
+                .arg(theme)
+                .arg("--decorations=always")
+                .arg("--style=numbers")
+                .arg("--highlight-line=1")
+                .write_stdin("First Line\nSecond Line\n")
+                .assert()
+                .success()
+                .stdout("   1 First Line\n   2 Second Line\n")
+                .stderr("");
+        }
+    }
 }
 
 // we don't really test other color schemes in the syntax-tests/source vs highlighted stuff
@@ -3567,7 +3590,7 @@ fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3587,7 +3610,7 @@ fn theme_arg_overrides_env_withconfig() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3608,7 +3631,7 @@ fn theme_light_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=light")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3617,7 +3640,7 @@ fn theme_light_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;208;218;231mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;208;218;231;38;2;17;27;39mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -3628,7 +3651,7 @@ fn theme_dark_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=dark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3637,7 +3660,7 @@ fn theme_dark_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;33;48;67mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;33;48;67;38;2;227;234;242mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -3647,7 +3670,7 @@ fn theme_env_overrides_config() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "ansi")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
