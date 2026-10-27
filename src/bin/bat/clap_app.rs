@@ -499,7 +499,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Strip colors from the input (auto, always, *never*)")
                 .long_help("Specify when to strip ANSI escape sequences from the input. \
                 The automatic mode will remove escape sequences unless the syntax highlighting \
-                language is plain text. Possible values: auto, always, *never*.")
+                language is plain text. Piped output is not stripped. \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
@@ -517,7 +518,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 and Unicode bidi / zero-width formatting characters with the Unicode \
                 replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful \
                 for displaying untrusted file content (e.g. file-manager preview panes). \
-                Possible values: auto, always, *never*.")
+                Piped output is not sanitized. Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
