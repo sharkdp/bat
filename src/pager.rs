@@ -108,7 +108,7 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
         _ => ("less", PagerSource::Default),
     };
 
-    let parts = shell_words::split(cmd)?;
+    let parts = split_command(cmd)?;
     match parts.split_first() {
         Some((bin, args)) => {
             let kind = PagerKind::from_bin(bin);
@@ -134,5 +134,85 @@ pub(crate) fn get_pager(config_pager: Option<&str>) -> Result<Option<Pager>, Par
             }))
         }
         None => Ok(None),
+    }
+}
+
+/// Splits a pager command into the program and its arguments.
+fn split_command(cmd: &str) -> Result<Vec<String>, ParseError> {
+    if cfg!(windows) {
+        split_command_windows(cmd)
+    } else {
+        shell_words::split(cmd)
+    }
+}
+
+/// Like `shell_words::split`, but `\` is not an escape character, since it is
+/// the path separator on Windows: `C:\tools\less.exe` must not become
+/// `C:toolsless.exe`. Single and double quotes still group words.
+fn split_command_windows(cmd: &str) -> Result<Vec<String>, ParseError> {
+    let mut words = Vec::new();
+    let mut word = String::new();
+    let mut in_word = false;
+    let mut quote = None;
+
+    for c in cmd.chars() {
+        match quote {
+            Some(q) if c == q => quote = None,
+            Some(_) => word.push(c),
+            None if c == '"' || c == '\'' => {
+                quote = Some(c);
+                in_word = true;
+            }
+            None if c.is_whitespace() => {
+                if in_word {
+                    words.push(std::mem::take(&mut word));
+                    in_word = false;
+                }
+            }
+            None => {
+                word.push(c);
+                in_word = true;
+            }
+        }
+    }
+
+    if quote.is_some() {
+        return Err(ParseError);
+    }
+    if in_word {
+        words.push(word);
+    }
+    Ok(words)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::split_command_windows;
+
+    #[test]
+    fn split_command_windows_keeps_backslashes() {
+        let cases: &[(&str, &[&str])] = &[
+            (r"C:\tools\less.exe", &[r"C:\tools\less.exe"]),
+            (r"C:\tools\less.exe -R", &[r"C:\tools\less.exe", "-R"]),
+            (
+                r#""C:\Program Files\Less\less.exe" -R"#,
+                &[r"C:\Program Files\Less\less.exe", "-R"],
+            ),
+            (
+                r"'C:\Program Files\Less\less.exe'",
+                &[r"C:\Program Files\Less\less.exe"],
+            ),
+            (r#"less --prompt="a b" """#, &["less", "--prompt=a b", ""]),
+            ("  less   -R  ", &["less", "-R"]),
+            ("", &[]),
+        ];
+        for (cmd, expected) in cases {
+            assert_eq!(split_command_windows(cmd).unwrap(), *expected, "{cmd}");
+        }
+    }
+
+    #[test]
+    fn split_command_windows_rejects_unclosed_quote() {
+        assert!(split_command_windows(r#""C:\tools\less.exe"#).is_err());
     }
 }
