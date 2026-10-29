@@ -431,6 +431,12 @@ If you want to build `bat` from source, you need Rust 1.79.0 or
 higher. You can then use `cargo` to build everything:
 
 #### From local source
+
+The checkout includes prebuilt syntax and theme assets. If you want to regenerate them
+from their sources, first initialize the Git submodules with
+`git submodule update --init --recursive`, then follow the [Development](#development)
+instructions. This includes the `help` syntax used to highlight command-line help.
+
 ```bash
 cargo install --path . --locked
 ```
