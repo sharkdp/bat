@@ -1787,6 +1787,28 @@ fn help_works_with_invalid_config() {
 }
 
 #[test]
+fn config_file_with_utf8_bom() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+
+    for config in [
+        "\u{feff}--style=numbers\r\n",
+        "\u{feff}# comment\r\n--style=numbers\r\n",
+    ] {
+        std::fs::write(&tmp_config_path, config).expect("can write config file");
+
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+            .arg("test.txt")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout("   1 hello world\n")
+            .stderr("");
+    }
+}
+
+#[test]
 fn help_uses_valid_config() {
     let tmp_dir = tempdir().expect("can create temporary directory");
     let tmp_config_path = tmp_dir.path().join("valid-config.conf");
