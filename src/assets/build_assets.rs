@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::io::{self, Write};
 use std::path::Path;
 
 use syntect::highlighting::ThemeSet;
@@ -24,7 +25,7 @@ pub fn build(
 
     let acknowledgements = build_acknowledgements(source_dir, include_acknowledgements)?;
 
-    print_unlinked_contexts(&syntax_set);
+    print_unlinked_contexts(&syntax_set)?;
 
     write_assets(
         &theme_set,
@@ -46,16 +47,18 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result
     if theme_dir.exists() {
         let res = theme_set.add_from_folder(&theme_dir);
         if let Err(err) = res {
-            println!(
+            writeln!(
+                io::stdout(),
                 "Failed to load one or more themes from '{}' (reason: '{err}')",
                 theme_dir.to_string_lossy(),
-            );
+            )?;
         }
     } else {
-        println!(
+        writeln!(
+            io::stdout(),
             "No themes were found in '{}', using the default set",
             theme_dir.to_string_lossy()
-        );
+        )?;
     }
 
     theme_set.try_into()
@@ -78,23 +81,25 @@ fn build_syntax_set_builder(
     if syntax_dir.exists() {
         syntax_set_builder.add_from_folder(syntax_dir, true)?;
     } else {
-        println!(
+        writeln!(
+            io::stdout(),
             "No syntaxes were found in '{}', using the default set.",
             syntax_dir.to_string_lossy()
-        );
+        )?;
     }
 
     Ok(syntax_set_builder)
 }
 
-fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
+fn print_unlinked_contexts(syntax_set: &SyntaxSet) -> Result<()> {
     let missing_contexts = syntax_set.find_unlinked_contexts();
     if !missing_contexts.is_empty() {
-        println!("Some referenced contexts could not be found!");
+        writeln!(io::stdout(), "Some referenced contexts could not be found!")?;
         for context in missing_contexts {
-            println!("- {context}");
+            writeln!(io::stdout(), "- {context}")?;
         }
     }
+    Ok(())
 }
 
 fn write_assets(
@@ -127,12 +132,13 @@ fn write_assets(
         )?;
     }
 
-    print!(
+    write!(
+        io::stdout(),
         "Writing metadata to folder {} ... ",
         target_dir.to_string_lossy()
-    );
+    )?;
     crate::assets_metadata::AssetsMetadata::new(current_version).save_to_folder(target_dir)?;
-    println!("okay");
+    writeln!(io::stdout(), "okay")?;
 
     Ok(())
 }
@@ -161,10 +167,14 @@ fn asset_to_cache<T: serde::Serialize>(
     description: &str,
     compressed: bool,
 ) -> Result<()> {
-    print!("Writing {description} to {} ... ", path.to_string_lossy());
+    write!(
+        io::stdout(),
+        "Writing {description} to {} ... ",
+        path.to_string_lossy()
+    )?;
     let contents = asset_to_contents(asset, description, compressed)?;
     std::fs::write(path, &contents[..])
         .map_err(|_| format!("Could not save {description} to {}", path.to_string_lossy()))?;
-    println!("okay");
+    writeln!(io::stdout(), "okay")?;
     Ok(())
 }

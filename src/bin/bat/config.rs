@@ -32,12 +32,13 @@ pub fn config_file() -> PathBuf {
 pub fn generate_config_file() -> bat::error::Result<()> {
     let config_file = config_file();
     if config_file.is_file() {
-        println!(
+        writeln!(
+            io::stdout(),
             "A config file already exists at: {}",
             config_file.to_string_lossy()
-        );
+        )?;
 
-        print!("Overwrite? (y/N): ");
+        write!(io::stdout(), "Overwrite? (y/N): ")?;
         io::stdout().flush()?;
         let mut decision = String::new();
         io::stdin().read_line(&mut decision)?;
@@ -93,10 +94,11 @@ pub fn generate_config_file() -> bat::error::Result<()> {
         )
     })?;
 
-    println!(
+    writeln!(
+        io::stdout(),
         "Success! Config file written to {}",
         config_file.to_string_lossy()
-    );
+    )?;
 
     Ok(())
 }
