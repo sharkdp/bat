@@ -149,10 +149,14 @@ impl OutputType {
 
                 let less_version = retrieve_less_version(&pager.bin);
 
-                // Ensures that 'less' quits together with 'bat'
-                // The BusyBox version of less does not support -K
+                // The BusyBox version of less supports neither -K nor -+J
                 if less_version != Some(LessVersion::BusyBox) {
+                    // Ensures that 'less' quits together with 'bat'
                     p.arg("-K"); // Short version of '--quit-on-intr'
+
+                    // bat lays out its output for the full terminal width, so turn off the
+                    // status column in case -J was set in the LESS environment variable
+                    p.arg("-+J");
                 }
 
                 // Passing '--no-init' fixes a bug with '--quit-if-one-screen' in older
