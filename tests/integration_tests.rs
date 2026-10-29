@@ -730,6 +730,48 @@ fn boolean_flag_in_config_and_on_command_line() {
 }
 
 #[test]
+fn repeated_valued_option_is_accepted() {
+    // Options that take a value must be repeatable (last value wins) just like
+    // boolean flags, otherwise a value from the config file cannot be
+    // overridden on the command line.
+    for options in [
+        ["--binary=as-text", "--binary=no-printing"],
+        ["--italic-text=always", "--italic-text=never"],
+        ["--nonprintable-notation=unicode", "--nonprintable-notation=caret"],
+        ["--fallback-syntax=bash", "--fallback-syntax=json"],
+        ["--squeeze-limit=5", "--squeeze-limit=2"],
+    ] {
+        bat()
+            .arg("test.txt")
+            .args(options)
+            .assert()
+            .success()
+            .stdout("hello world\n");
+    }
+}
+
+#[test]
+fn valued_option_in_config_can_be_overridden_on_command_line() {
+    // The config file is prepended to the command line, so a value given in
+    // both places used to be rejected as "cannot be used multiple times".
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+    std::fs::write(&tmp_config_path, "--binary=as-text").expect("can write config file");
+
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("test.binary")
+        .arg("--binary=no-printing")
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--paging=never")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Binary content from"))
+        .stdout(predicate::str::contains("\0").not());
+}
+
+#[test]
 fn squeeze_blank() {
     bat()
         .arg("empty_lines.txt")
