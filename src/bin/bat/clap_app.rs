@@ -65,6 +65,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("nonprintable-notation")
                 .long("nonprintable-notation")
+                .overrides_with("nonprintable-notation")
                 .action(ArgAction::Set)
                 .default_value("unicode")
                 .value_parser(["unicode", "caret"])
@@ -81,6 +82,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("binary")
                 .long("binary")
+                .overrides_with("binary")
                 .action(ArgAction::Set)
                 .default_value("no-printing")
                 .value_parser(["no-printing", "as-text"])
@@ -125,6 +127,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("fallback-syntax")
                 .long("fallback-syntax")
+                .overrides_with("fallback-syntax")
                 .visible_alias("fallback-language")
                 .help("Set a fallback language for undetected syntaxes.")
                 .long_help(
@@ -317,6 +320,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("italic-text")
                 .long("italic-text")
+                .overrides_with("italic-text")
                 .value_name("when")
                 .value_parser(["always", "never"])
                 .default_value("never")
@@ -484,6 +488,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("squeeze-limit")
                 .long("squeeze-limit")
+                .overrides_with("squeeze-limit")
                 .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
                 .long_help("Set the maximum number of consecutive empty lines to be printed.")
                 .hide_short_help(true)
