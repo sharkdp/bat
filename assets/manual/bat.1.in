@@ -68,6 +68,16 @@ specified as a name (like 'C++' or 'LaTeX') or possible file extension
 (like 'cpp', 'hpp' or 'md'). Use '\-\-list\-languages' to show all supported
 language names and file extensions.
 .HP
+\fB\-\-highlight\-todos\fR
+.IP
+Emphasize TODO, TODOS, FIXME and FIXMES inside comments, ignoring case. The marker
+and the remainder of its comment on the current line use bold amber text (darker
+amber for light themes and terminal yellow for palette-based themes). Matching
+text in strings or ordinary code is unchanged. Uses the language's comment
+definitions, including embedded languages. Disabled by default; requires syntax
+highlighting and colored output. Long lines excluded from syntax highlighting
+are also excluded from comment annotations.
+.HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
 Highlight the specified line ranges with a different background color. For example:

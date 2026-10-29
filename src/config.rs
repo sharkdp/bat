@@ -44,6 +44,9 @@ pub struct Config<'a> {
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
+    /// Emphasize TODO and FIXME annotations within syntax comment scopes.
+    pub highlight_todos: bool,
+
     /// The configured notation for non-printable characters
     pub nonprintable_notation: NonprintableNotation,
 
