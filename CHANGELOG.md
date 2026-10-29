@@ -4,6 +4,9 @@
 ## Other
 
 - Document Bash completion for the `help` wrapper used to highlight `--help` output, see #3788 (@xfocus3)
+- Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
+- Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
+- Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
@@ -26,6 +29,9 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
+- Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #XXXX (@cindykrafft)
+- Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
 - Track strikethrough (SGR 9 / 29) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first highlighted token when displaying ANSI input with syntax highlighting, see #4015 (@mikehasa)
 - Allow boolean flags to be given more than once, so that a flag set in the config file can also be passed on the command line without erroring, see #3912 (@logarithmone1128)
 - Use parsed CLI arguments to detect number flags, see #3908 (@cuishuang)
@@ -86,6 +92,7 @@
 - Add syntax highlighting for `Caddyfile` #3789 (@CosmicHorrorDev)
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 - Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
+- Add syntax mapping for Podman `.quadlets` files, see #4069 (@injust)
 
 ## Themes
 
