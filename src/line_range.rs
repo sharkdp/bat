@@ -378,7 +378,7 @@ pub(crate) enum MaxBufferedLineNumber {
 pub struct LineRanges {
     ranges: Vec<LineRange>,
     // The largest absolute upper line number of all ranges
-    largest_absolute_upper_bound: usize,
+    largest_absolute_upper_bound: Option<usize>,
     // The smallest relative offset from the end of all ranges
     smallest_offset_from_end: usize,
     // The largest relative offset from the end of all ranges
@@ -401,8 +401,7 @@ impl LineRanges {
                 RangeBound::Absolute(upper) => Some(upper),
                 _ => None,
             })
-            .max()
-            .unwrap_or(usize::MAX);
+            .max();
 
         let offsets_min_max = ranges
             .iter()
@@ -439,9 +438,15 @@ impl LineRanges {
         {
             RangeCheckResult::InRange
         } else if matches!(max_buffered_line_number, MaxBufferedLineNumber::Final(final_line_number) if line > final_line_number.saturating_sub(self.smallest_offset_from_end))
+            && self
+                .largest_absolute_upper_bound
+                .is_none_or(|upper| line > upper)
         {
             RangeCheckResult::AfterLastRange
-        } else if line < self.largest_absolute_upper_bound {
+        } else if self
+            .largest_absolute_upper_bound
+            .is_none_or(|upper| line < upper)
+        {
             RangeCheckResult::BeforeOrBetweenRanges
         } else {
             RangeCheckResult::AfterLastRange
