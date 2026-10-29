@@ -63,6 +63,21 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("markdown-tables")
+                .long("markdown-tables")
+                .action(ArgAction::SetTrue)
+                .overrides_with("markdown-tables")
+                .conflicts_with_all(["show-all", "unbuffered"])
+                .help("Align columns in top-level Markdown pipe tables.")
+                .long_help(
+                    "Align columns in top-level UTF-8 Markdown pipe tables for display, \
+                     respecting the delimiter row's alignment. Only applies to inputs \
+                     detected as Markdown (use -l markdown for stdin). Preserves Markdown \
+                     markup and source line numbers. Tables exceeding 1 MiB of input \
+                     or formatted output are passed through unchanged. Disabled by default.",
+                ),
+        )
+        .arg(
             Arg::new("nonprintable-notation")
                 .long("nonprintable-notation")
                 .action(ArgAction::Set)

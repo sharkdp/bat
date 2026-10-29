@@ -13,6 +13,12 @@ Options:
           Show non-printable characters like space, tab or newline. This option can also be used to
           print binary files. Use '--tabs' to control the width of the tab-placeholders.
 
+      --markdown-tables
+          Align columns in top-level UTF-8 Markdown pipe tables for display, respecting the
+          delimiter row's alignment. Only applies to inputs detected as Markdown (use -l markdown
+          for stdin). Preserves Markdown markup and source line numbers. Tables exceeding 1 MiB of
+          input or formatted output are passed through unchanged. Disabled by default.
+
       --nonprintable-notation <notation>
           Set notation for non-printable characters.
           
