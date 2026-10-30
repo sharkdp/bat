@@ -1393,6 +1393,22 @@ fn pager_overwrite() {
     });
 }
 
+#[cfg(windows)]
+#[test]
+fn pager_windows_absolute_path() {
+    let pager = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("mocked-pagers")
+        .join("echo.bat");
+    bat()
+        .env("BAT_PAGER", format!("{} pager-output", pager.display()))
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("pager-output\n").normalize());
+}
+
 #[test]
 fn pager_disable() {
     bat()
