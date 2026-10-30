@@ -43,3 +43,23 @@ fn all_themes_are_present() {
         ]
     );
 }
+
+/// Requires the rebuilt theme assets, like the theme inventory test above.
+#[test]
+#[ignore]
+fn markdown_table_delimiters_have_a_distinct_foreground() {
+    use syntect::highlighting::Highlighter;
+    use syntect::parsing::Scope;
+
+    let assets = HighlightingAssets::from_binary();
+    let highlighter = Highlighter::new(assets.get_theme("Monokai Extended"));
+    let base = Scope::new("text.html.markdown").unwrap();
+    let normal = highlighter.style_for_stack(&[base]);
+    for scope in [
+        "punctuation.separator.table-cell",
+        "punctuation.section.table-header",
+    ] {
+        let styled = highlighter.style_for_stack(&[base, Scope::new(scope).unwrap()]);
+        assert_ne!(styled.foreground, normal.foreground, "{scope}");
+    }
+}
