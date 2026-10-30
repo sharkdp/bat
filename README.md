@@ -417,7 +417,7 @@ scoop install bat
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### From binaries
 
@@ -794,7 +794,7 @@ Example configuration file:
 
 ### Prerequisites
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### Paging
 
@@ -902,7 +902,7 @@ cargo install --path . --locked --force
 ```
 
 If you want to build an application that uses `bat`'s pretty-printing
-features as a library, check out the [the API documentation](https://docs.rs/bat/).
+features as a library, check out the [API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.
 

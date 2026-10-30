@@ -83,6 +83,16 @@ Options:
   -n, --number
           Only show line numbers, no other decorations. This is an alias for '--style=numbers'
 
+  -b, --number-nonblank
+          Only show line numbers for non-blank lines, no other decorations. This is an alias for
+          '--style=numbers'. Non-blank lines are lines that contain any character before the line
+          ending, including spaces and tabs. When used together with --number (-n),
+          --number-nonblank (-b) takes precedence.
+          
+          Example:
+            printf 'alpha\n\nbeta\n' | bat -b
+            numbers 'alpha' and 'beta', but skips the empty line.
+
       --color <when>
           Specify when to use colored output. The automatic mode only enables colors if an
           interactive terminal is detected - colors are automatically disabled if the output goes to

@@ -74,9 +74,9 @@ fn run_cache_subcommand(
         #[cfg(feature = "build-assets")]
         build_assets(matches, config_dir, cache_dir)?;
         #[cfg(not(feature = "build-assets"))]
-        println!("bat has been built without the 'build-assets' feature. The 'cache --build' option is not available.");
+        writeln!(io::stdout(), "bat has been built without the 'build-assets' feature. The 'cache --build' option is not available.")?;
     } else if matches.get_flag("clear") {
-        clear_assets(cache_dir);
+        clear_assets(cache_dir)?;
     }
 
     Ok(())
@@ -262,13 +262,17 @@ pub fn list_themes(
     Ok(())
 }
 
-fn set_terminal_title_to(new_terminal_title: String) {
+fn set_terminal_title_to(new_terminal_title: String) -> Result<()> {
     let osc_command_for_setting_terminal_title = "\x1b]0;";
     let osc_end_command = "\x07";
     // Prevent BEL/ESC/C1 bytes in the title from terminating or nesting the OSC.
     let safe_title = bat::sanitize_for_terminal(&new_terminal_title);
-    print!("{osc_command_for_setting_terminal_title}{safe_title}{osc_end_command}");
-    io::stdout().flush().unwrap();
+    write!(
+        io::stdout(),
+        "{osc_command_for_setting_terminal_title}{safe_title}{osc_end_command}"
+    )?;
+    io::stdout().flush()?;
+    Ok(())
 }
 
 fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
@@ -286,13 +290,13 @@ fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Resu
     let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
     let controller = Controller::new(config, &assets);
     if config.paging_mode != PagingMode::Never && config.set_terminal_title {
-        set_terminal_title_to(get_new_terminal_title(&inputs));
+        set_terminal_title_to(get_new_terminal_title(&inputs))?;
     }
     controller.run(inputs, None)
 }
 
 #[cfg(feature = "bugreport")]
-fn invoke_bugreport(app: &App, cache_dir: &Path) {
+fn invoke_bugreport(app: &App, cache_dir: &Path) -> Result<()> {
     use bugreport::{bugreport, collector::*, format::Markdown, report::ReportEntry};
 
     struct ColorSchemeCollector;
@@ -329,6 +333,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
         .info(CommandLine::default())
         .info(EnvironmentVariables::list(&[
             "BAT_CACHE_PATH",
+            "BAT_CONFIG_DIR",
             "BAT_CONFIG_PATH",
             "BAT_OPTS",
             "BAT_PAGER",
@@ -370,7 +375,8 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) {
         ))
     };
 
-    report.print::<Markdown>();
+    writeln!(io::stdout(), "{}", report.format::<Markdown>())?;
+    Ok(())
 }
 
 /// Returns `Err(..)` upon fatal errors. Otherwise, returns `Ok(true)` on full success and
@@ -382,21 +388,22 @@ fn run() -> Result<bool> {
 
     if app.matches.get_flag("diagnostic") {
         #[cfg(feature = "bugreport")]
-        invoke_bugreport(&app, cache_dir);
+        invoke_bugreport(&app, cache_dir)?;
         #[cfg(not(feature = "bugreport"))]
-        println!("bat has been built without the 'bugreport' feature. The '--diagnostic' option is not available.");
+        writeln!(io::stdout(), "bat has been built without the 'bugreport' feature. The '--diagnostic' option is not available.")?;
         return Ok(true);
     }
 
     #[cfg(feature = "application")]
     if let Some(shell) = app.matches.get_one::<String>("completion") {
-        match shell.as_str() {
-            "bash" => println!("{}", completions::BASH_COMPLETION),
-            "fish" => println!("{}", completions::FISH_COMPLETION),
-            "ps1" => println!("{}", completions::PS1_COMPLETION),
-            "zsh" => println!("{}", completions::ZSH_COMPLETION),
+        let completion = match shell.as_str() {
+            "bash" => completions::BASH_COMPLETION,
+            "fish" => completions::FISH_COMPLETION,
+            "ps1" => completions::PS1_COMPLETION,
+            "zsh" => completions::ZSH_COMPLETION,
             _ => unreachable!("No completion for shell '{shell}' available."),
-        }
+        };
+        writeln!(io::stdout(), "{completion}")?;
         return Ok(true);
     }
 
@@ -427,17 +434,15 @@ fn run() -> Result<bool> {
             if app.matches.get_flag("list-languages") {
                 let languages: String = get_languages(&config, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
-                let plain_config = Config {
-                    style_components: StyleComponents::new(StyleComponent::Plain.components(false)),
-                    paging_mode: PagingMode::QuitIfOneScreen,
-                    ..Default::default()
-                };
+                let mut plain_config = config.clone();
+                plain_config.style_components =
+                    StyleComponents::new(StyleComponent::Plain.components(false));
                 run_controller(inputs, &plain_config, cache_dir)
             } else if app.matches.get_flag("list-themes") {
                 list_themes(&config, config_dir, cache_dir, app.theme_options())?;
                 Ok(true)
             } else if app.matches.get_flag("config-file") {
-                println!("{}", config_file().to_string_lossy());
+                writeln!(io::stdout(), "{}", config_file().to_string_lossy())?;
                 Ok(true)
             } else if app.matches.get_flag("generate-config-file") {
                 generate_config_file()?;
