@@ -29,6 +29,7 @@
 
 ## Bugfixes
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)
+- Ignore a UTF-8 byte order mark at the start of the config file instead of treating it as part of the first argument, see #4103 (@jaeminbird)
 - Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #XXXX (@cindykrafft)
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
