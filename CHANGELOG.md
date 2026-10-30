@@ -26,6 +26,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
+- Make -ppp disable syntax highlighting #4020 (@quixaq)
 
 ## Bugfixes
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)
