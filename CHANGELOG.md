@@ -93,6 +93,7 @@
 - Include `.code-workspace` as a JSON extension #3809 (@dhruvkb)
 - Add syntax mapping for DNF repo configuration files, see #3814 (@injust)
 - Add syntax mapping for Podman `.quadlets` files, see #4069 (@injust)
+- Add syntax highlighting for CUE, see #4094 (@nikarh)
 
 ## Themes
 
