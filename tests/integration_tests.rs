@@ -390,6 +390,35 @@ fn number_nonblank_ignored_when_followed_by_plain() {
 }
 
 #[test]
+fn number_nonblank_line_range_uses_file_line_numbers() {
+    // Line ranges refer to lines in the file, not to the displayed non-blank numbers
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .arg("--line-range=19:24")
+        .assert()
+        .success()
+        .stdout("     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n");
+}
+
+#[test]
+fn number_nonblank_highlight_line_uses_file_line_numbers() {
+    // `--highlight-line 5` must highlight line 5 of the file ("line 5")
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .arg("--color=always")
+        .arg("--theme=ansi")
+        .arg("--line-range=1:5")
+        .arg("--highlight-line=5")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[4mline 5"));
+}
+
+#[test]
 fn piped_output_with_number_nonblank_flag() {
     bat()
         .arg("-b")
