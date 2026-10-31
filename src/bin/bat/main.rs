@@ -333,6 +333,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) -> Result<()> {
         .info(CommandLine::default())
         .info(EnvironmentVariables::list(&[
             "BAT_CACHE_PATH",
+            "BAT_CONFIG_DIR",
             "BAT_CONFIG_PATH",
             "BAT_OPTS",
             "BAT_PAGER",
