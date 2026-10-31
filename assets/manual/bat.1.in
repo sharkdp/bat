@@ -225,6 +225,15 @@ Specify when to strip ANSI escape sequences from the input. The automatic mode w
 escape sequences unless the syntax highlighting language is plain text. Possible values:
 auto, always, *never*.
 .HP
+\fB\-\-sanitize\fR <when>
+.IP
+Specify when to sanitize input bytes for safe terminal display. This implies
+'\-\-strip\-ansi' with the same value and additionally substitutes terminal\-active
+control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi /
+zero\-width formatting characters with the Unicode replacement character (U+FFFD).
+Tab, LF, FF, and CRLF pass through. Useful for displaying untrusted file content
+(e.g. file\-manager preview panes). Possible values: auto, always, *never*.
+.HP
 \fB\-\-style\fR <style\-components>
 .IP
 Configure which elements (line numbers, file headers, grid borders, Git modifications,
