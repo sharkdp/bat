@@ -55,6 +55,15 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
             }
             break
         }
+        # Covers both --fallback-syntax and its visible alias --fallback-language.
+        '*;--fallback*' {
+            Get-MyLanguages |
+            ForEach-Object {
+                $desc = if ($null -eq $_.MyDescription) { '_no value_' } else { $_.MyDescription }
+                [CompletionResult]::new(($_.MyParameter -replace "^(.*)$", '''$1'''), $_.MyParameter, [CompletionResultType]::ParameterName, $desc)
+            }
+            break
+        }
         '*;--theme' {
             Get-MyThemes |
             ForEach-Object {[System.Management.Automation.CompletionResult]::new($_, $_, [CompletionResultType]::ParameterName, $_)}
@@ -135,6 +144,8 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
         default {
         #   [CompletionResult]::new('-l'                      , 'l'                     , [CompletionResultType]::ParameterName, 'Set the language for syntax highlighting.')
             [CompletionResult]::new('--language'              , 'language'              , [CompletionResultType]::ParameterName, 'Set the language for syntax highlighting.')
+            [CompletionResult]::new('--fallback-syntax'       , 'fallback-syntax'       , [CompletionResultType]::ParameterName, 'Set a fallback language for undetected syntaxes.')
+            [CompletionResult]::new('--fallback-language'     , 'fallback-language'     , [CompletionResultType]::ParameterName, 'Set a fallback language for undetected syntaxes.')
         #   [CompletionResult]::new('-H'                      , 'H'                     , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
             [CompletionResult]::new('--highlight-line'        , 'highlight-line'        , [CompletionResultType]::ParameterName, 'Highlight lines N through M.')
             [CompletionResult]::new('--file-name'             , 'file-name'             , [CompletionResultType]::ParameterName, 'Specify the name to display for a file.')
