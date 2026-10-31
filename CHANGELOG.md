@@ -3,6 +3,7 @@
 
 ## Other
 
+- Document the `default` special value of `--theme` in the man page, see #4088 (@ump45nose)
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
