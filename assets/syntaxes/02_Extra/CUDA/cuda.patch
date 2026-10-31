@@ -1,0 +1,144 @@
+--- C++.sublime-syntax
++++ CUDA.sublime-syntax
+@@ -1,24 +1,11 @@
+ %YAML 1.2
+ ---
+ # http://www.sublimetext.com/docs/3/syntax.html
+-name: C++
+-comment: I don't think anyone uses .hp. .cp tends to be paired with .h. (I could be wrong. :) -- chris
+-file_extensions:
+-  - cpp
+-  - cc
+-  - cp
+-  - cxx
+-  - c++
+-  - C
+-  - h
+-  - hh
+-  - hpp
+-  - hxx
+-  - h++
+-  - inl
+-  - ipp
+-first_line_match: '-\*- C\+\+ -\*-'
+-scope: source.c++
++# CUDA additions adapted from harrism/sublimetext-cuda-cpp.
++# The surrounding C++ contexts follow the pinned Sublime Packages grammar.
++name: CUDA C++
++file_extensions: [cu, cuh]
++scope: source.cuda-c++
+ variables:
+   # number digits
+   dec_digits: '(?:\d(?:[\d'']*\d)?)'
+@@ -43,12 +30,12 @@
+   operator_keywords: 'and|and_eq|bitand|bitor|compl|not|not_eq|or|or_eq|xor|xor_eq|noexcept'
+   control_keywords: 'break|case|catch|continue|default|do|else|for|goto|if|_Pragma|return|switch|throw|try|while'
+   memory_operators: 'new|delete'
+-  basic_types: 'asm|__asm__|auto|bool|_Bool|char|_Complex|double|float|_Imaginary|int|long|short|signed|unsigned|void'
++  basic_types: 'dim3|u?(?:char|short|int|long|longlong)[1-4]|(?:float|double)[1-4]|asm|__asm__|auto|bool|_Bool|char|_Complex|double|float|_Imaginary|int|long|short|signed|unsigned|void'
+   before_tag: 'struct|union|enum\s+class|enum\s+struct|enum|class'
+   declspec: '__declspec\(\s*\w+(?:\([^)]+\))?\s*\)'
+   storage_classes: 'static|export|extern|friend|explicit|virtual|register|thread_local'
+   type_qualifier: 'const|constexpr|mutable|typename|volatile'
+-  compiler_directive: 'inline|restrict|__restrict__|__restrict'
++  compiler_directive: '__host__|__device__|__global__|__constant__|__managed__|__shared__|__noinline__|__forceinline__|inline|restrict|__restrict__|__restrict'
+   visibility_modifiers: 'private|protected|public'
+   other_keywords: 'typedef|nullptr|{{visibility_modifiers}}|static_assert|sizeof|using|typeid|alignof|alignas|namespace|template'
+   modifiers: '{{storage_classes}}|{{type_qualifier}}|{{compiler_directive}}'
+@@ -95,6 +82,8 @@
+       scope: storage.modifier.c++
+ 
+   unique-variables:
++    - match: \b(gridDim|blockIdx|blockDim|threadIdx|warpSize)\b
++      scope: variable.language.cuda-c++
+     - match: \bthis\b
+       scope: variable.language.c++
+     # common C++ instance var naming idiom -- fMemberName
+@@ -129,6 +118,8 @@
+       scope: keyword.operator.word.c++
+ 
+   unique-types:
++    - match: \b(dim3|u?(?:char|short|int|long|longlong)[1-4]|(?:float|double)[1-4])\b
++      scope: support.type.cuda-c++
+     - match: \b(char16_t|char32_t|wchar_t|nullptr_t)\b
+       scope: storage.type.c++
+     - match: \bclass\b
+@@ -336,6 +327,7 @@
+     - include: early-expressions-after-generic-type
+ 
+   early-expressions-before-generic-type:
++    - include: cuda-expressions
+     - include: preprocessor-expressions
+     - include: comments
+     - include: case-default
+@@ -446,6 +438,15 @@
+         - include: expressions
+ 
+   modifiers-parens:
++    - match: '\b(__launch_bounds__)\s*(\()'
++      captures:
++        1: storage.modifier.cuda-c++
++        2: punctuation.section.group.begin.cuda-c++
++      push:
++        - match: '\)'
++          scope: punctuation.section.group.end.cuda-c++
++          pop: true
++        - include: expressions
+     - match: '\b(alignas)\b\s*(\()'
+       captures:
+         1: storage.modifier.c++
+@@ -2164,3 +2165,54 @@
+               scope: punctuation.definition.string.end.c++
+               pop: true
+     - include: preprocessor-practical-workarounds
++
++  cuda-expressions:
++  - match: ({{path_lookahead}})\s*(<<<)
++    captures:
++      1: variable.function.cuda-c++
++      2: keyword.operator.cuda-c++
++    push: cuda-launch-arguments
++  - match: <<<
++    scope: keyword.operator.cuda-c++
++    push: cuda-launch-arguments
++  - match: \b(gridDim|blockIdx|blockDim|threadIdx|warpSize)\b
++    scope: variable.language.cuda-c++
++  - match: \b(dim3|u?(?:char|short|int|long|longlong)[1-4]|(?:float|double)[1-4])\b
++    scope: support.type.cuda-c++
++  - match: \b__(threadfence_system|threadfence_block|threadfence)\b
++    scope: support.function.cuda-c++
++  - match: \b__(syncthreads_count|syncthreads_and|syncthreads_or|syncthreads)\b
++    scope: support.function.cuda-c++
++  - match: \b(texCubemapLayered|tex1Dlayered|tex2Dlayered|tex2Dgather|tex1Dfetch|texCubemap|tex1D|tex2D|tex3D)\b
++    scope: support.function.cuda-c++
++  - match: \b(surfCubemapLayeredwrite|surfCubemapLayeredread|surf1DLayeredwrite|surf2DLayeredwrite|surf1DLayeredread|surf2DLayeredread|surfCubemapwrite|surfCubemapread|surf1Dwrite|surf2Dwrite|surf3Dwrite|surf1Dread|surf2Dread|surf3Dread)\b
++    scope: support.function.cuda-c++
++  - match: \b__ldg\b
++    scope: support.function.cuda-c++
++  - match: \b(clock|clock64)\b
++    scope: support.function.cuda-c++
++  - match: \b(atomicExch|atomicAdd|atomicSub|atomicMin|atomicMax|atomicInc|atomicDec|atomicCAS|atomicAnd|atomicXor|atomicOr)\b
++    scope: support.function.cuda-c++
++  - match: \b__(ballot|all|any)\b
++    scope: support.function.cuda-c++
++  - match: \b__(shfl_down|shfl_xor|shfl_up|shfl)\b
++    scope: support.function.cuda-c++
++  - match: \b__(prof_trigger)\b
++    scope: support.function.cuda-c++
++  - match: \bassert\b
++    scope: support.function.cuda-c++
++  - match: \bprintf\b
++    scope: support.function.cuda-c++
++  - match: \b(malloc|free|memcpy|memset)\b
++    scope: support.function.cuda-c++
++  - match: \b__(fdividef|sincosf|log10f|exp10f|log2f|logf|expf|powf|sinf|cosf|tanf)\b
++    scope: support.function.cuda-c++
++  - match: \b__((fsqrt|frcp|fadd|fsub|fmul|fmaf|fdiv)_(rn|rz|ru|rd)|frsqrt_rn)\b
++    scope: support.function.cuda-c++
++  - match: \b__(dsqrt|dadd|dsub|dmul|ddiv|drcp|fma)_(rn|rz|ru|rd)\b
++    scope: support.function.cuda-c++
++  cuda-launch-arguments:
++  - match: '>>>'
++    scope: keyword.operator.cuda-c++
++    pop: true
++  - include: expressions
