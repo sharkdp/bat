@@ -184,13 +184,16 @@ Special values:
 Picks a dark or light theme depending on the terminal's colors.
 Use \fB-\-theme\-light\fR and \fB-\-theme\-dark\fR to customize the selected theme.
 .IP "auto:always"
-Variation of \fBauto\fR where where the terminal's colors are detected even when the output is redirected.
+Variation of \fBauto\fR where the terminal's colors are detected even when the output is redirected.
 .IP "auto:system (macOS only)"
 Variation of \fBauto\fR where the color scheme is detected from the system-wide preference instead.
 .IP "dark"
 Use the dark theme specified by \fB-\-theme-dark\fR.
 .IP "light"
 Use the light theme specified by \fB-\-theme-light\fR.
+.IP "default"
+Use the built-in default theme (Monokai Extended). Unlike \fBauto\fR, this does not adapt to the
+terminal's colors.
 .RE
 .HP
 \fB\-\-theme\-dark\fR <theme>
