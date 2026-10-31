@@ -28,6 +28,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Offer `-S` instead of `-c` for `--chop-long-lines` in the fish completion, see #4071 (@ump45nose)
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)
 - Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #XXXX (@cindykrafft)
