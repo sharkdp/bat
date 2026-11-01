@@ -1773,6 +1773,7 @@ fn diagnostic_sanity_check() {
         .success()
         .stdout(predicate::str::contains("BAT_PAGER="))
         .stdout(predicate::str::contains("BAT_WIDTH="))
+        .stdout(predicate::str::contains("BAT_CONFIG_DIR="))
         .stderr("");
 }
 
