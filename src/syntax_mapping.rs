@@ -4,10 +4,13 @@ use std::{
         atomic::{AtomicBool, Ordering},
         Arc,
     },
-    thread,
 };
 
+#[cfg(not(target_os = "wasi"))]
+use std::thread;
+
 use globset::{Candidate, GlobBuilder, GlobMatcher};
+#[cfg(not(target_os = "wasi"))]
 use once_cell::sync::Lazy;
 
 use crate::error::Result;
@@ -86,6 +89,7 @@ impl<'a> SyntaxMapping<'a> {
     /// times by starting this work early in parallel.
     ///
     /// The thread halts if/when `halt_glob_build` is set to true.
+    #[cfg(not(target_os = "wasi"))]
     pub fn start_offload_build_all(&self) {
         let halt = Arc::clone(&self.halt_glob_build);
         thread::spawn(move || {
@@ -102,6 +106,10 @@ impl<'a> SyntaxMapping<'a> {
         // resources (e.g. IO), it would be a good idea to store the handle
         // and join it on drop.
     }
+
+    /// WASI Preview 1 has no threads; builtin matchers remain lazily initialized.
+    #[cfg(target_os = "wasi")]
+    pub fn start_offload_build_all(&self) {}
 
     pub fn insert(&mut self, from: &str, to: MappingTarget<'a>) -> Result<()> {
         let matcher = make_glob_matcher(from, Case::Insensitive)?;

@@ -17,7 +17,7 @@ use std::collections::VecDeque;
 use std::io::{self, BufRead, Write};
 use std::mem;
 
-use clircle::{Clircle, Identifier};
+use crate::io_identifier::{Clircle, Identifier};
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -97,7 +97,7 @@ impl Controller<'_> {
         let stdout_identifier = if cfg!(windows) || attached_to_pager {
             None
         } else {
-            clircle::Identifier::stdout()
+            Identifier::stdout()
         };
 
         let mut writer = match (output_handle, &mut output_type_opt) {

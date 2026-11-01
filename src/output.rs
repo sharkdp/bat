@@ -1,25 +1,25 @@
 use std::fmt;
 use std::io;
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 use std::process::Child;
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 use std::thread::{spawn, JoinHandle};
 
 use crate::error::*;
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 use crate::less::{retrieve_less_version, LessVersion};
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 use crate::paging::PagingMode;
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 use crate::wrapping::WrappingMode;
 
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 pub struct BuiltinPager {
     pager: minus::Pager,
     handle: Option<JoinHandle<Result<()>>>,
 }
 
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 impl BuiltinPager {
     fn new() -> Self {
         let pager = minus::Pager::new();
@@ -45,7 +45,7 @@ impl BuiltinPager {
     }
 }
 
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 impl std::fmt::Debug for BuiltinPager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("BuiltinPager")
@@ -55,7 +55,7 @@ impl std::fmt::Debug for BuiltinPager {
     }
 }
 
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 #[derive(Debug, PartialEq)]
 enum SingleScreenAction {
     Quit,
@@ -64,15 +64,27 @@ enum SingleScreenAction {
 
 #[derive(Debug)]
 pub enum OutputType {
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     Pager(Child),
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     BuiltinPager(BuiltinPager),
     Stdout(io::Stdout),
 }
 
 impl OutputType {
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", target_os = "wasi"))]
+    pub fn from_mode(
+        paging_mode: crate::paging::PagingMode,
+        _wrapping_mode: crate::wrapping::WrappingMode,
+        _pager: Option<&str>,
+    ) -> Result<Self> {
+        if paging_mode == crate::paging::PagingMode::Always {
+            return Err("Paging is unavailable in WASI; use --paging=never".into());
+        }
+        Ok(Self::stdout())
+    }
+
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     pub fn from_mode(
         paging_mode: PagingMode,
         wrapping_mode: WrappingMode,
@@ -89,7 +101,7 @@ impl OutputType {
     }
 
     /// Try to launch the pager. Fall back to stdout in case of errors.
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     fn try_pager(
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
@@ -203,33 +215,33 @@ impl OutputType {
         OutputType::Stdout(io::stdout())
     }
 
-    #[cfg(feature = "paging")]
+    #[cfg(all(feature = "paging", not(target_os = "wasi")))]
     pub(crate) fn is_pager(&self) -> bool {
         matches!(self, OutputType::Pager(_) | OutputType::BuiltinPager(_))
     }
 
-    #[cfg(not(feature = "paging"))]
+    #[cfg(any(not(feature = "paging"), target_os = "wasi"))]
     pub(crate) fn is_pager(&self) -> bool {
         false
     }
 
     pub fn handle<'a>(&'a mut self) -> Result<OutputHandle<'a>> {
         Ok(match *self {
-            #[cfg(feature = "paging")]
+            #[cfg(all(feature = "paging", not(target_os = "wasi")))]
             OutputType::Pager(ref mut command) => OutputHandle::IoWrite(
                 command
                     .stdin
                     .as_mut()
                     .ok_or("Could not open stdin for pager")?,
             ),
-            #[cfg(feature = "paging")]
+            #[cfg(all(feature = "paging", not(target_os = "wasi")))]
             OutputType::BuiltinPager(ref mut pager) => OutputHandle::FmtWrite(&mut pager.pager),
             OutputType::Stdout(ref mut handle) => OutputHandle::IoWrite(handle),
         })
     }
 }
 
-#[cfg(feature = "paging")]
+#[cfg(all(feature = "paging", not(target_os = "wasi")))]
 impl Drop for OutputType {
     fn drop(&mut self) {
         match *self {

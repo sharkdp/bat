@@ -159,6 +159,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
+ "rustix",
  "semver",
  "serde",
  "serde_derive",

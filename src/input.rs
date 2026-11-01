@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::{Path, PathBuf};
 
-use clircle::{Clircle, Identifier};
+use crate::io_identifier::{Clircle, Identifier, Stdio};
 use content_inspector::{self, ContentType};
 
 use crate::error::*;
@@ -198,7 +198,7 @@ impl<'a> Input<'a> {
         match self.kind {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
-                    let input_identifier = Identifier::try_from(clircle::Stdio::Stdin)
+                    let input_identifier = Identifier::try_from(Stdio::Stdin)
                         .map_err(|e| format!("Stdin: Error identifying file: {e}"))?;
                     if stdout.surely_conflicts_with(&input_identifier) {
                         return Err("IO circle detected. The input from stdin is also an output. Aborting to avoid infinite loop.".into());
@@ -235,7 +235,7 @@ impl<'a> Input<'a> {
                             )
                             .into());
                         }
-                        file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
+                        file = input_identifier.into_inner().expect("The file was lost in the input identifier, this should not have happened...");
                     }
 
                     InputReader::try_new(BufReader::new(file))?
