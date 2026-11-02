@@ -305,6 +305,17 @@ Print this help message.
 \fB\-V\fR, \fB\-\-version\fR
 .IP
 Show version information.
+.HP
+\fB\-\-paging\-reserve\fR <N>
+.IP
+Reserve N terminal rows for a multiline shell prompt during automatic paging.
+Requires less 632 or newer and reduces its viewport as well as the one-screen
+threshold. Zero disables the reservation. Forced and disabled paging are unchanged.
+Sets LESS_LINES only for the child pager, overriding an inherited value. Normal
+reservations follow terminal resizing; a reservation at least as large as the
+initial terminal height fixes the viewport at one row. Other pagers report an
+error when automatic paging would use the reservation.
+
 .SH "POSITIONAL ARGUMENTS"
 .HP
 \fB<FILE>...\fR
