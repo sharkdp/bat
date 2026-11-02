@@ -4842,3 +4842,23 @@ fn ignored_suffix_enables_first_line_detection() {
     // ...while the default (extension wins) stays plain and differs.
     assert_ne!(default, forced_bash);
 }
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_context_does_not_overflow_with_huge_value() {
+    let repo = setup_diff_test_repo();
+
+    bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg(format!("--diff-context={}", usize::MAX))
+        .arg("--plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("line 2 modified"))
+        .stdout(predicate::str::contains("line 1"));
+}
