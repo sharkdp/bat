@@ -22,6 +22,7 @@
 #![deny(unsafe_code)]
 
 mod macros;
+mod markdown_tables;
 
 pub mod assets;
 pub mod assets_metadata {

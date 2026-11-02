@@ -9,6 +9,8 @@ Arguments:
 Options:
   -A, --show-all
           Show non-printable characters (space, tab, newline, ..).
+      --markdown-tables
+          Align columns in top-level Markdown pipe tables.
       --nonprintable-notation <notation>
           Set notation for non-printable characters.
       --binary <behavior>

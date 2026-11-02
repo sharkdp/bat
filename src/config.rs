@@ -44,6 +44,9 @@ pub struct Config<'a> {
     /// Whether or not to show/replace non-printable characters like space, tab and newline.
     pub show_nonprintable: bool,
 
+    /// Align top-level Markdown pipe tables for display. Disabled by default.
+    pub markdown_tables: bool,
+
     /// The configured notation for non-printable characters
     pub nonprintable_notation: NonprintableNotation,
 

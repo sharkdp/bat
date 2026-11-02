@@ -9,6 +9,7 @@ use crate::lessopen::LessOpenPreprocessor;
 #[cfg(feature = "git")]
 use crate::line_range::LineRange;
 use crate::line_range::{LineRanges, MaxBufferedLineNumber, RangeCheckResult};
+use crate::markdown_tables::TableReader;
 use crate::output::{OutputHandle, OutputType};
 #[cfg(feature = "paging")]
 use crate::paging::PagingMode;
@@ -219,6 +220,18 @@ impl Controller<'_> {
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
     ) -> Result<()> {
+        let markdown_tables = self.config.markdown_tables
+            && !self.config.unbuffered
+            && !self.config.show_nonprintable
+            && self
+                .assets
+                .get_syntax(
+                    self.config.language,
+                    self.config.fallback_syntax,
+                    input,
+                    &self.config.syntax_mapping,
+                )
+                .is_ok_and(|syntax| syntax.syntax.name == "Markdown");
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input, add_header_padding)?;
         }
@@ -242,7 +255,13 @@ impl Controller<'_> {
                 }
             };
 
-            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+            self.print_file_ranges(
+                printer,
+                writer,
+                &mut input.reader,
+                &line_ranges,
+                markdown_tables,
+            )?;
         }
         printer.print_footer(writer, input)?;
 
@@ -255,7 +274,9 @@ impl Controller<'_> {
         writer: &mut OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
+        markdown_tables: bool,
     ) -> Result<()> {
+        let mut reader = TableReader::new(reader, markdown_tables);
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
         // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
