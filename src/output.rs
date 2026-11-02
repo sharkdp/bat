@@ -213,6 +213,16 @@ impl OutputType {
         false
     }
 
+    #[cfg(feature = "paging")]
+    pub(crate) fn is_external_pager(&self) -> bool {
+        matches!(self, OutputType::Pager(_))
+    }
+
+    #[cfg(not(feature = "paging"))]
+    pub(crate) fn is_external_pager(&self) -> bool {
+        false
+    }
+
     pub fn handle<'a>(&'a mut self) -> Result<OutputHandle<'a>> {
         Ok(match *self {
             #[cfg(feature = "paging")]

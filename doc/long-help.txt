@@ -201,7 +201,7 @@ Options:
           Possible values:
           
             * default: enables recommended style components (default).
-            * full: enables all available components.
+            * full: enables all components except 'rule' and 'pager-filename'.
             * auto: same as 'default', unless the output is piped.
             * plain: disables all available components.
             * changes: show Git modification markers.
@@ -213,6 +213,9 @@ Options:
             * rule: horizontal lines to delimit files.
             * numbers: show line numbers in the side bar.
             * snip: draw separation lines between distinct line ranges.
+            * pager-filename: write each file's name into the pager stream as an
+                    xterm 'set title' sequence (OSC 2). The pager must support it;
+                    others ignore it or show it as text. Only with colored output.
 
   -r, --line-range <N:M>
           Only print the specified range of lines for each file. For example:
