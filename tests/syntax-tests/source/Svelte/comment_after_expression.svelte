@@ -1,0 +1,5 @@
+{a
+  /* comment */
+}
+
+{a /* comment */}
