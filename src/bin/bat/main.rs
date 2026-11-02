@@ -12,7 +12,7 @@ mod input;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 use std::io;
-use std::io::{BufReader, Write};
+use std::io::{BufReader, IsTerminal, Write};
 use std::path::Path;
 use std::process;
 
@@ -211,6 +211,20 @@ pub fn list_themes(
     style.insert(StyleComponent::Plain);
     config.language = Some("Rust");
     config.style_components = StyleComponents(style);
+
+    // Fix #1618: `--paging=always` (e.g. via BAT_OPTS or the config file) makes
+    // `--list-themes` page even when stdout is piped, breaking scripting and
+    // forcing one screen at a time through the pager. `--list-themes` output
+    // is metadata, so never force paging for non-interactive output, and cap
+    // an explicit `always` to `quit-if-one-screen` for interactive output.
+    // `--paging=never` is still respected.
+    if config.paging_mode == PagingMode::Always {
+        if std::io::stdout().is_terminal() {
+            config.paging_mode = PagingMode::QuitIfOneScreen;
+        } else {
+            config.paging_mode = PagingMode::Never;
+        }
+    }
 
     let default_theme_name = theme(theme_options).to_string();
     let mut buf = String::new();

@@ -837,6 +837,44 @@ fn list_themes_to_piped_output() {
 
 #[test]
 #[serial]
+fn list_themes_with_paging_always_does_not_page_when_piped() {
+    // Regression test for #1618: `--paging=always` (e.g. via BAT_OPTS) must not
+    // force `--list-themes` through the pager when stdout is piped.
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .arg("--paging=always")
+            .arg("--list-themes")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Monokai Extended").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
+}
+
+#[test]
+#[serial]
+fn list_themes_with_bat_opts_paging_always_does_not_page_when_piped() {
+    // Same as above, but with `--paging=always` coming from BAT_OPTS, which is
+    // the exact configuration reported in #1618.
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .env("PAGER", mocked_pagers::from("echo pager-output"))
+            .env("BAT_OPTS", "--paging=always")
+            .arg("--list-themes")
+            .arg("--color=never")
+            .arg("--decorations=never")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Monokai Extended").normalize())
+            .stdout(predicate::str::contains("pager-output").not());
+    });
+}
+
+#[test]
+#[serial]
 fn list_languages() {
     mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
         bat()
