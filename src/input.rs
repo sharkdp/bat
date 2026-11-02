@@ -291,7 +291,12 @@ impl<'a> InputReader<'a> {
 
         if content_type == Some(ContentType::UTF_16LE) {
             read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
-        } else if content_type == Some(ContentType::UTF_16BE) {
+        } else if content_type == Some(ContentType::UTF_16BE)
+            // In UTF-16BE a newline is encoded as 0x00 0x0A, so `read_until(b'\n')` above
+            // may already have read a complete first line. Only keep reading if it did not
+            // (e.g. the 0x0A byte was part of another character such as U+4E0A).
+            && !(first_line.len() % 2 == 0 && first_line.ends_with(&[0x00, 0x0A]))
+        {
             read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
         }
 

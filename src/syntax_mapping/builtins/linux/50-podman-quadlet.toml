@@ -1,5 +1,6 @@
 # see `man quadlet`
 [mappings]
 "INI" = [
+    "*.quadlets",
     "**/containers/systemd/**/*.{container,volume,network,kube,image,build,pod,artifact}",
 ]

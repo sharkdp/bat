@@ -1,5 +1,5 @@
 use std::fs;
-use std::io;
+use std::io::{self, Write};
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -9,10 +9,11 @@ use bat::assets::HighlightingAssets;
 use bat::assets_metadata::AssetsMetadata;
 use bat::error::*;
 
-pub fn clear_assets(cache_dir: &Path) {
-    clear_asset(cache_dir.join("themes.bin"), "theme set cache");
-    clear_asset(cache_dir.join("syntaxes.bin"), "syntax set cache");
-    clear_asset(cache_dir.join("metadata.yaml"), "metadata file");
+pub fn clear_assets(cache_dir: &Path) -> Result<()> {
+    clear_asset(cache_dir.join("themes.bin"), "theme set cache")?;
+    clear_asset(cache_dir.join("syntaxes.bin"), "syntax set cache")?;
+    clear_asset(cache_dir.join("metadata.yaml"), "metadata file")?;
+    Ok(())
 }
 
 pub fn assets_from_cache_or_binary(
@@ -43,15 +44,19 @@ pub fn assets_from_cache_or_binary(
     Ok(custom_assets.unwrap_or_else(HighlightingAssets::from_binary))
 }
 
-fn clear_asset(path: PathBuf, description: &str) {
-    print!("Clearing {description} ... ");
+fn clear_asset(path: PathBuf, description: &str) -> Result<()> {
+    write!(io::stdout(), "Clearing {description} ... ")?;
     match fs::remove_file(&path) {
         Err(err) if err.kind() == io::ErrorKind::NotFound => {
-            println!("skipped (not present)");
+            writeln!(io::stdout(), "skipped (not present)")?;
         }
         Err(err) => {
-            println!("could not remove the cache file {path:?}: {err}");
+            writeln!(
+                io::stdout(),
+                "could not remove the cache file {path:?}: {err}"
+            )?;
         }
-        Ok(_) => println!("okay"),
+        Ok(_) => writeln!(io::stdout(), "okay")?,
     }
+    Ok(())
 }
