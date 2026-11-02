@@ -136,6 +136,10 @@ _bat() {
 		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
 		return 0
 		;;
+	--mermaid)
+		COMPREPLY=($(compgen -W "auto never always" -- "$cur"))
+		return 0
+		;;
 	--completion)
 		COMPREPLY=($(compgen -W "bash fish zsh ps1" -- "$cur"))
 		return 0
@@ -227,6 +231,7 @@ _bat() {
 			--squeeze-limit
 			--sanitize
 			--strip-ansi
+			--mermaid
 			--style
 			--line-range
 			--list-languages

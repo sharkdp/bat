@@ -55,6 +55,8 @@ Options:
           Display all supported highlighting themes.
   -s, --squeeze-blank
           Squeeze consecutive empty lines.
+      --mermaid <when>
+          Specify when to render Mermaid diagrams (auto, never, always) [default: auto]
       --style <components>
           Comma-separated list of style elements to display (*default*, auto, full, plain, changes,
           header, header-filename, header-filesize, grid, rule, numbers, snip).

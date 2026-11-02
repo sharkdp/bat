@@ -32,6 +32,13 @@ impl Default for VisibleLines {
         VisibleLines::Ranges(LineRanges::default())
     }
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum MermaidMode {
+    #[default]
+    Auto,
+    Always,
+    Never,
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct Config<'a> {
@@ -123,8 +130,10 @@ pub struct Config<'a> {
     /// Only number non-blank lines (like `cat -b`). Has no effect if `style_components` doesn't
     /// include `LineNumbers`.
     pub number_nonblank: bool,
-}
 
+    /// When to render Mermaid diagrams
+    pub mermaid_mode: MermaidMode,
+}
 #[cfg(all(feature = "minimal-application", feature = "paging"))]
 pub fn get_pager_executable(config_pager: Option<&str>) -> Option<String> {
     crate::pager::get_pager(config_pager)

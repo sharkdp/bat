@@ -222,6 +222,7 @@ complete -c $bat -l squeeze-limit -x -d "Set the maximum number of consecutive e
 
 complete -c $bat -l strip-ansi -x -a "auto never always" -d "Specify when to strip ANSI escape sequences from the input" -n __bat_no_excl_args
 complete -c $bat -l sanitize -x -a "auto never always" -d "Specify when to sanitize untrusted input for safe display" -n __bat_no_excl_args
+complete -c $bat -l mermaid -x -a "auto never always" -d "Specify when to render Mermaid diagrams" -n __bat_no_excl_args
 
 complete -c $bat -s p -l plain -d "Disable decorations" -n __bat_no_excl_args
 

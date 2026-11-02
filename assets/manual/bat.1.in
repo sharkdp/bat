@@ -150,6 +150,10 @@ Specify when to use the pager. To disable the pager, use \&'\-\-paging=never' or
 \fB-P\fR. To disable the pager permanently, set BAT_PAGER to an empty string. To control
 which pager is used, see the '\-\-pager' option. Possible values: *auto*, never, always.
 .HP
+\fB\-\-mermaid\fR <when>
+.IP
+Specify when to render Mermaid diagrams (both standalone and markdown code blocks).
+Possible values: *auto*, never, always.
 \fB\-\-pager\fR <command>
 .IP
 Determine which pager is used. This option will override the PAGER and BAT_PAGER

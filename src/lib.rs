@@ -37,6 +37,7 @@ mod less;
 #[cfg(feature = "lessopen")]
 mod lessopen;
 pub mod line_range;
+pub mod mermaid;
 pub(crate) mod nonprintable_notation;
 pub mod output;
 #[cfg(feature = "paging")]

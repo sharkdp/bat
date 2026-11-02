@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -99,6 +100,12 @@ pub(crate) trait Printer {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()>;
+
+    #[allow(dead_code)]
+    fn print_diagram_line(&mut self, handle: &mut OutputHandle, text: &str) -> Result<()>;
+
+    #[allow(dead_code)]
+    fn set_error_line(&mut self, _line_number: usize) {}
 }
 
 pub struct SimplePrinter<'a> {
@@ -182,6 +189,22 @@ impl Printer for SimplePrinter<'_> {
         }
         Ok(())
     }
+
+    fn print_diagram_line(&mut self, handle: &mut OutputHandle, text: &str) -> Result<()> {
+        self.consecutive_empty_lines = 0;
+
+        let text = text
+            .strip_suffix("\r\n")
+            .or_else(|| text.strip_suffix('\n'))
+            .unwrap_or(text);
+
+        for row in text.split('\n') {
+            let row = row.trim_end_matches('\r');
+            writeln!(handle, "{row}")?;
+        }
+
+        Ok(())
+    }
 }
 
 struct HighlighterFromSet<'a> {
@@ -199,7 +222,7 @@ impl<'a> HighlighterFromSet<'a> {
 }
 
 pub(crate) struct InteractivePrinter<'a> {
-    colors: Colors,
+    pub(crate) colors: Colors,
     config: &'a Config<'a>,
     decorations: Vec<Box<dyn Decoration>>,
     panel_width: usize,
@@ -213,6 +236,8 @@ pub(crate) struct InteractivePrinter<'a> {
     strip_ansi: bool,
     sanitize: bool,
     strip_overstrike: bool,
+    error_lines: HashSet<usize>,
+    has_changes_decoration: bool,
 }
 
 impl<'a> InteractivePrinter<'a> {
@@ -239,12 +264,16 @@ impl<'a> InteractivePrinter<'a> {
             decorations.push(Box::new(LineNumberDecoration::new(&colors)));
         }
 
+        #[allow(unused_mut)]
+        let mut has_changes_decoration = false;
+
         #[cfg(feature = "git")]
         {
             if config.style_components.changes()
                 && line_changes.as_ref().is_some_and(|c| !c.is_empty())
             {
                 decorations.push(Box::new(LineChangesDecoration::new(&colors)));
+                has_changes_decoration = true;
             }
         }
 
@@ -265,6 +294,7 @@ impl<'a> InteractivePrinter<'a> {
         {
             decorations.clear();
             panel_width = 0;
+            has_changes_decoration = false;
         }
 
         // Get the highlighter for the output.
@@ -346,7 +376,22 @@ impl<'a> InteractivePrinter<'a> {
             strip_ansi,
             sanitize,
             strip_overstrike,
+            error_lines: HashSet::new(),
+            has_changes_decoration,
         })
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn set_error_line(&mut self, line_number: usize) {
+        self.error_lines.insert(line_number);
+    }
+
+    pub(crate) fn has_error_line(&self, line_number: usize) -> bool {
+        self.error_lines.contains(&line_number)
+    }
+
+    pub(crate) fn has_changes_decoration(&self) -> bool {
+        self.has_changes_decoration
     }
 
     fn print_horizontal_line_term(
@@ -978,6 +1023,49 @@ impl Printer for InteractivePrinter<'_> {
 
         Ok(())
     }
+
+    fn print_diagram_line(&mut self, handle: &mut OutputHandle, text: &str) -> Result<()> {
+        self.consecutive_empty_lines = 0;
+
+        let text = text
+            .strip_suffix("\r\n")
+            .or_else(|| text.strip_suffix('\n'))
+            .unwrap_or(text);
+
+        for row in text.split('\n') {
+            let row = row.trim_end_matches('\r');
+            let row: std::borrow::Cow<str> = if self.config.show_nonprintable {
+                replace_nonprintable(
+                    row.as_bytes(),
+                    self.config.tab_width,
+                    self.config.nonprintable_notation,
+                )
+                .into()
+            } else if self.sanitize {
+                sanitize(row).into()
+            } else if self.strip_ansi {
+                strip_ansi(row).into()
+            } else {
+                row.into()
+            };
+
+            if self.panel_width > 0 {
+                let decorations = self.decorations.iter().map(|d| d.generate(0, false, self));
+
+                for deco in decorations {
+                    write!(handle, "{} ", deco.text)?;
+                }
+            }
+
+            writeln!(handle, "{row}")?;
+        }
+
+        Ok(())
+    }
+
+    fn set_error_line(&mut self, line_number: usize) {
+        InteractivePrinter::set_error_line(self, line_number);
+    }
 }
 
 const DEFAULT_GUTTER_COLOR: u8 = 238;
@@ -991,6 +1079,7 @@ pub struct Colors {
     pub git_removed: Style,
     pub git_modified: Style,
     pub line_number: Style,
+    pub error: Style,
 }
 
 impl Colors {
@@ -1020,6 +1109,535 @@ impl Colors {
             git_removed: Red.normal(),
             git_modified: Yellow.normal(),
             line_number: gutter_style,
+            error: Yellow.bold(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::input::Input;
+    use crate::style::StyleComponents;
+
+    #[test]
+    fn test_print_diagram_line_blank_gutter_and_grid() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_diagram_line(&mut handle, "┌───┐\n│ A │\n└───┘")
+            .expect("print diagram lines");
+
+        let lines: Vec<&str> = output.lines().collect();
+        assert_eq!(lines.len(), 3);
+        assert_eq!(lines[0], "     │ ┌───┐");
+        assert_eq!(lines[1], "     │ │ A │");
+        assert_eq!(lines[2], "     │ └───┘");
+    }
+
+    #[test]
+    fn test_print_diagram_line_preserves_ansi_without_highlighting() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            language: Some("rust"),
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: true,
+            true_color: true,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+
+        let ansi_diagram = "\x1b[38;2;100;200;255m┌──────────┐\x1b[0m\n\x1b[32m│ fn main │\x1b[0m";
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_diagram_line(&mut handle, ansi_diagram)
+            .expect("print ansi diagram");
+
+        assert!(output.contains("\x1b[38;2;100;200;255m┌──────────┐\x1b[0m"));
+        assert!(output.contains("\x1b[32m│ fn main │\x1b[0m"));
+    }
+
+    #[test]
+    fn test_print_diagram_line_respects_sanitize_and_strip_ansi_and_nonprintable() {
+        let assets = HighlightingAssets::from_binary();
+
+        // 1. strip_ansi
+        let config_strip = Config {
+            strip_ansi: StripAnsiMode::Always,
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config_strip,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        let mut out = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut out);
+        printer
+            .print_diagram_line(&mut handle, "\x1b[31m│ A │\x1b[0m")
+            .unwrap();
+        assert_eq!(out, "│ A │\n");
+
+        // 2. sanitize
+        let config_sanitize = Config {
+            sanitize: StripAnsiMode::Always,
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        let mut printer = InteractivePrinter::new(
+            &config_sanitize,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        let mut out = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut out);
+        printer
+            .print_diagram_line(&mut handle, "\x1b[31mA\x07B\u{202E}C\x1b[0m")
+            .unwrap();
+        assert_eq!(out, "A\u{FFFD}B\u{FFFD}C\n");
+
+        // 3. show_nonprintable
+        let config_nonprintable = Config {
+            show_nonprintable: true,
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        let mut printer = InteractivePrinter::new(
+            &config_nonprintable,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        let mut out = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut out);
+        printer.print_diagram_line(&mut handle, "A B").unwrap();
+        assert_eq!(out, "A·B\n");
+    }
+
+    #[test]
+    fn test_print_diagram_line_simple_printer() {
+        let config = Config {
+            loop_through: true,
+            ..Config::default()
+        };
+        let mut printer = SimplePrinter::new(&config);
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_diagram_line(&mut handle, "┌───┐\n│ A │\n└───┘\n")
+            .expect("print simple diagram");
+
+        assert_eq!(output, "┌───┐\n│ A │\n└───┘\n");
+    }
+
+    #[test]
+    fn test_error_marker_in_gutter() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+
+        let raw = b"```mermaid\ninvalid_diagram\n```\n";
+        let mut opened = Input::from_reader(Box::new(&raw[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        printer.set_error_line(1);
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        for (idx, line) in [b"```mermaid\n".as_slice(), b"invalid_diagram\n", b"```\n"]
+            .iter()
+            .enumerate()
+        {
+            printer
+                .print_line(
+                    false,
+                    &mut handle,
+                    idx + 1,
+                    line,
+                    MaxBufferedLineNumber::Final(3),
+                )
+                .unwrap();
+        }
+
+        let lines: Vec<&str> = output.lines().collect();
+        assert_eq!(lines.len(), 3);
+        assert_eq!(lines[0], "!  1 │ ```mermaid");
+        assert_eq!(lines[1], "   2 │ invalid_diagram");
+        assert_eq!(lines[2], "   3 │ ```");
+    }
+
+    #[test]
+    fn test_error_marker_line_number_ge_1000() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+
+        let mut opened = Input::from_reader(Box::new(&b"```mermaid\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        printer.set_error_line(1000);
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                999,
+                b"before\n",
+                MaxBufferedLineNumber::Final(1001),
+            )
+            .unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                1000,
+                b"```mermaid\n",
+                MaxBufferedLineNumber::Final(1001),
+            )
+            .unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                1001,
+                b"after\n",
+                MaxBufferedLineNumber::Final(1001),
+            )
+            .unwrap();
+
+        let lines: Vec<&str> = output.lines().collect();
+        assert_eq!(
+            lines,
+            vec![" 999 │ before", "!000 │ ```mermaid", "1001 │ after",]
+        );
+    }
+
+    #[test]
+    fn test_error_marker_line_number_ge_10000() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+
+        let mut opened = Input::from_reader(Box::new(&b"```mermaid\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        printer.set_error_line(10000);
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                10000,
+                b"```mermaid\n",
+                MaxBufferedLineNumber::Final(10001),
+            )
+            .unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                10001,
+                b"after\n",
+                MaxBufferedLineNumber::Final(10001),
+            )
+            .unwrap();
+
+        let lines: Vec<&str> = output.lines().collect();
+        assert_eq!(lines, vec!["!0000 │ ```mermaid", "10001 │ after"]);
+    }
+
+    #[test]
+    fn test_error_marker_colored_output() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: true,
+            true_color: true,
+            term_width: 80,
+            ..Config::default()
+        };
+
+        let mut opened = Input::from_reader(Box::new(&b"```mermaid\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+        printer.set_error_line(1);
+
+        let mut output = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut output);
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                1,
+                b"```mermaid\n",
+                MaxBufferedLineNumber::Final(1),
+            )
+            .unwrap();
+
+        let first_line = output.lines().next().expect("first line");
+        assert!(first_line.contains('!'));
+        assert!(first_line.contains("\x1b["));
+    }
+
+    #[test]
+    fn test_interactive_printer_interleaved_diagram_lines() {
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"# Title\nFooter\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        #[cfg(feature = "git")]
+        let line_changes = None;
+        let mut printer = InteractivePrinter::new(
+            &config,
+            &assets,
+            &mut opened,
+            #[cfg(feature = "git")]
+            &line_changes,
+        )
+        .unwrap();
+
+        let mut out = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut out);
+
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                1,
+                b"# Title\n",
+                MaxBufferedLineNumber::Final(2),
+            )
+            .unwrap();
+        printer.print_diagram_line(&mut handle, "┌───┐").unwrap();
+        printer.print_diagram_line(&mut handle, "│ A │").unwrap();
+        printer.print_diagram_line(&mut handle, "└───┘").unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                2,
+                b"Footer\n",
+                MaxBufferedLineNumber::Final(2),
+            )
+            .unwrap();
+
+        let lines: Vec<&str> = out.lines().collect();
+        assert_eq!(
+            lines,
+            vec![
+                "   1 │ # Title",
+                "     │ ┌───┐",
+                "     │ │ A │",
+                "     │ └───┘",
+                "   2 │ Footer",
+            ]
+        );
+    }
+
+    #[cfg(feature = "git")]
+    #[test]
+    fn test_interactive_printer_error_marker_with_git_changes() {
+        use crate::diff::LineChange;
+
+        let assets = HighlightingAssets::from_binary();
+        let config = Config {
+            style_components: StyleComponents::new(&[
+                StyleComponent::LineNumbers,
+                StyleComponent::Changes,
+                StyleComponent::Grid,
+            ]),
+            colored_output: false,
+            term_width: 80,
+            ..Config::default()
+        };
+        let mut opened = Input::from_reader(Box::new(&b"```mermaid\ninvalid\n```\n"[..]))
+            .open(std::io::empty(), None)
+            .unwrap();
+        let mut changes_map = LineChanges::default();
+        changes_map.insert(2, LineChange::Added);
+        let line_changes = Some(changes_map);
+
+        let mut printer =
+            InteractivePrinter::new(&config, &assets, &mut opened, &line_changes).unwrap();
+        printer.set_error_line(1);
+
+        let mut out = String::new();
+        let mut handle = OutputHandle::FmtWrite(&mut out);
+
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                1,
+                b"```mermaid\n",
+                MaxBufferedLineNumber::Final(3),
+            )
+            .unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                2,
+                b"invalid\n",
+                MaxBufferedLineNumber::Final(3),
+            )
+            .unwrap();
+        printer
+            .print_line(
+                false,
+                &mut handle,
+                3,
+                b"```\n",
+                MaxBufferedLineNumber::Final(3),
+            )
+            .unwrap();
+
+        let lines: Vec<&str> = out.lines().collect();
+        assert_eq!(
+            lines,
+            vec!["   1 ! │ ```mermaid", "   2 + │ invalid", "   3   │ ```",]
+        );
     }
 }

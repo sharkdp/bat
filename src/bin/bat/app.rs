@@ -20,7 +20,7 @@ use console::Term;
 use crate::input::{new_file_input, new_stdin_input};
 use bat::{
     bat_warning,
-    config::{Config, VisibleLines},
+    config::{Config, MermaidMode, VisibleLines},
     error::*,
     input::Input,
     line_range::{HighlightedLineRanges, LineRange, LineRanges},
@@ -533,6 +533,16 @@ impl App {
                 )
             } else {
                 None
+            },
+            mermaid_mode: match self
+                .matches
+                .get_one::<String>("mermaid")
+                .map(|s| s.as_str())
+            {
+                Some("always") => MermaidMode::Always,
+                Some("never") => MermaidMode::Never,
+                Some("auto") | None => MermaidMode::Auto,
+                _ => unreachable!("other values for --mermaid are not allowed"),
             },
         })
     }

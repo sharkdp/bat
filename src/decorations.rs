@@ -43,7 +43,7 @@ impl Decoration for LineNumberDecoration {
         &self,
         line_number: usize,
         continuation: bool,
-        _printer: &InteractivePrinter,
+        printer: &InteractivePrinter,
     ) -> DecorationText {
         if line_number == 0 {
             // Blank line in number-nonblank mode: show empty space instead of a number.
@@ -63,6 +63,16 @@ impl Decoration for LineNumberDecoration {
             }
 
             self.cached_wrap.clone()
+        } else if printer.has_error_line(line_number) && !printer.has_changes_decoration() {
+            let plain = format!("{line_number:4}");
+            let width = plain.len().max(self.width());
+            let number_plain = &plain[plain.len() - (width - 1)..];
+            let marker = printer.colors.error.paint("!");
+            let number = self.color.paint(number_plain);
+            DecorationText {
+                width,
+                text: format!("{marker}{number}"),
+            }
         } else {
             let plain: String = format!("{line_number:4}");
             DecorationText {
@@ -84,6 +94,7 @@ pub(crate) struct LineChangesDecoration {
     cached_removed_above: DecorationText,
     cached_removed_below: DecorationText,
     cached_modified: DecorationText,
+    cached_error: DecorationText,
 }
 
 #[cfg(feature = "git")]
@@ -103,6 +114,7 @@ impl LineChangesDecoration {
             cached_removed_above: Self::generate_cached(colors.git_removed, "‾"),
             cached_removed_below: Self::generate_cached(colors.git_removed, "_"),
             cached_modified: Self::generate_cached(colors.git_modified, "~"),
+            cached_error: Self::generate_cached(colors.error, "!"),
         }
     }
 }
@@ -115,8 +127,12 @@ impl Decoration for LineChangesDecoration {
         continuation: bool,
         printer: &InteractivePrinter,
     ) -> DecorationText {
-        if !continuation {
-            if let Some(ref changes) = printer.line_changes {
+        if !continuation && line_number > 0 {
+            if printer.has_error_line(line_number) {
+                return self.cached_error.clone();
+            }
+
+            if let Some(changes) = printer.line_changes {
                 return match changes.get(&(line_number as u32)) {
                     Some(&LineChange::Added) => self.cached_added.clone(),
                     Some(&LineChange::RemovedAbove) => self.cached_removed_above.clone(),
