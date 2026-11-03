@@ -36,6 +36,8 @@ function __bat_complete_map_syntax
     if string match -qr '(?<glob>.+):(?<syntax>.*)' -- $token
         # If token ends with a colon, complete with the list of language names.
         set -f comps $glob:(__bat_complete_one_language $syntax)
+    else if string match -qr '(?<alias>[^:]+)=(?<syntax>.*)' -- $token
+        set -f comps $alias=(__bat_complete_one_language $syntax)
     else if string match -qr '\*' -- $token
         # If token contains a globbing character (`*`), complete only possible
         # globs in the current directory
@@ -192,7 +194,7 @@ complete -c $bat -l list-languages -f -d "List syntax highlighting languages" -n
 
 complete -c $bat -l list-themes -f -d "List syntax highlighting themes" -n __fish_is_first_arg
 
-complete -c $bat -s m -l map-syntax -x -a "(__bat_complete_map_syntax)" -d "Map <glob pattern>:<language syntax>" -n __bat_no_excl_args
+complete -c $bat -s m -l map-syntax -x -a "(__bat_complete_map_syntax)" -d "Map glob:syntax or alias=syntax" -n __bat_no_excl_args
 
 complete -c $bat -l no-config -d "Do not use the configuration file"
 

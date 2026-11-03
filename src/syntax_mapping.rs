@@ -60,6 +60,9 @@ pub struct SyntaxMapping<'a> {
     /// Rules in front have precedence.
     custom_mappings: Vec<(GlobMatcher, MappingTarget<'a>)>,
 
+    /// Exact language aliases, in descending precedence order.
+    language_aliases: Vec<(&'a str, &'a str)>,
+
     pub(crate) ignored_suffixes: IgnoredSuffixes<'a>,
 
     /// A flag to halt glob matcher building, which is offloaded to another thread.
@@ -114,6 +117,29 @@ impl<'a> SyntaxMapping<'a> {
         let matcher = make_glob_matcher(from, Case::Sensitive)?;
         self.custom_mappings.push((matcher, to));
         Ok(())
+    }
+
+    /// Register an exact, case-insensitive alias for a syntax name or extension.
+    /// Earlier insertions take precedence. Targets refer directly to syntaxes;
+    /// aliases do not chain and never participate in filename matching.
+    pub fn insert_language_alias(&mut self, from: &'a str, to: &'a str) -> Result<()> {
+        if from.trim().is_empty()
+            || to.trim().is_empty()
+            || from.contains(['*', '?', '[', ']', '{', '}', ':', '='])
+        {
+            return Err(
+                "Invalid language alias: use a nonempty literal name and syntax target".into(),
+            );
+        }
+        self.language_aliases.push((from, to));
+        Ok(())
+    }
+
+    pub fn language_alias(&self, language: &str) -> Option<&'a str> {
+        self.language_aliases
+            .iter()
+            .find(|(alias, _)| alias.eq_ignore_ascii_case(language))
+            .map(|(_, target)| *target)
     }
 
     /// Returns an iterator over all mappings. User-defined mappings are listed

@@ -161,6 +161,11 @@ Note: By default, if the pager is set to 'less' (and no command-line options are
 .HP
 \fB\-m\fR, \fB\-\-map\-syntax\fR <glob-pattern:syntax-name>...
 .IP
+Use 'alias=syntax' to define a case-insensitive language alias, for example
+'csharp=C#'. Aliases apply to '\-\-language' and '\-\-fallback-syntax',
+without changing filename detection. Alias targets are existing syntax names or
+extensions; aliases do not chain. The last definition takes precedence.
+.IP
 Map a glob pattern to an existing syntax name. The glob pattern is matched on the full
 path and the filename. For example, to highlight *.build files with the Python syntax,
 use -m '*.build:Python'. To highlight files named '.myignore' with the Git Ignore
