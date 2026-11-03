@@ -88,6 +88,9 @@ pub struct Config<'a> {
     /// Command to start the pager
     pub pager: Option<&'a str>,
 
+    /// Literal arguments appended after the selected pager's existing arguments
+    pub pager_args: Vec<String>,
+
     /// Whether or not to use ANSI italics
     pub use_italic_text: bool,
 
