@@ -505,6 +505,21 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_char_at_terminal_width_one_with_background_does_not_panic() {
+    // A double-width character does not fit in a one-column line. The cursor then moves past
+    // `cursor_max`, so the background fill must not subtract without checking (see #3844).
+    bat()
+        .arg("--color=always")
+        .arg("--paging=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=1")
+        .arg("--highlight-line=1")
+        .write_stdin("📦📦\n")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
@@ -727,6 +742,51 @@ fn boolean_flag_in_config_and_on_command_line() {
         .arg("--paging=never")
         .assert()
         .success();
+}
+
+#[test]
+fn repeated_valued_option_is_accepted() {
+    // Options that take a value must be repeatable (last value wins) just like
+    // boolean flags, otherwise a value from the config file cannot be
+    // overridden on the command line.
+    for options in [
+        ["--binary=as-text", "--binary=no-printing"],
+        ["--italic-text=always", "--italic-text=never"],
+        [
+            "--nonprintable-notation=unicode",
+            "--nonprintable-notation=caret",
+        ],
+        ["--fallback-syntax=bash", "--fallback-syntax=json"],
+        ["--squeeze-limit=5", "--squeeze-limit=2"],
+    ] {
+        bat()
+            .arg("test.txt")
+            .args(options)
+            .assert()
+            .success()
+            .stdout("hello world\n");
+    }
+}
+
+#[test]
+fn valued_option_in_config_can_be_overridden_on_command_line() {
+    // The config file is prepended to the command line, so a value given in
+    // both places used to be rejected as "cannot be used multiple times".
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+    std::fs::write(&tmp_config_path, "--binary=as-text").expect("can write config file");
+
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("test.binary")
+        .arg("--binary=no-printing")
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--paging=never")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Binary content from"))
+        .stdout(predicate::str::contains("\0").not());
 }
 
 #[test]
@@ -993,6 +1053,32 @@ fn bat_error_to_stderr() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("[bat error]"));
+}
+
+#[cfg(unix)]
+#[test]
+fn bat_error_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr("[bat error]: '/tmp' is a directory.\n");
+}
+
+#[test]
+fn bat_warning_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stderr(
+            "[bat warning]: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n",
+        );
 }
 
 #[cfg(unix)]
@@ -1393,6 +1479,22 @@ fn pager_overwrite() {
     });
 }
 
+#[cfg(windows)]
+#[test]
+fn pager_windows_absolute_path() {
+    let pager = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("mocked-pagers")
+        .join("echo.bat");
+    bat()
+        .env("BAT_PAGER", format!("\"{}\" pager-output", pager.display()))
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("pager-output\n").normalize());
+}
+
 #[test]
 fn pager_disable() {
     bat()
@@ -1787,6 +1889,28 @@ fn help_works_with_invalid_config() {
 }
 
 #[test]
+fn config_file_with_utf8_bom() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+
+    for config in [
+        "\u{feff}--style=numbers\r\n",
+        "\u{feff}# comment\r\n--style=numbers\r\n",
+    ] {
+        std::fs::write(&tmp_config_path, config).expect("can write config file");
+
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+            .arg("test.txt")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout("   1 hello world\n")
+            .stderr("");
+    }
+}
+
+#[test]
 fn help_uses_valid_config() {
     let tmp_dir = tempdir().expect("can create temporary directory");
     let tmp_config_path = tmp_dir.path().join("valid-config.conf");
@@ -2053,6 +2177,75 @@ fn cache_build() {
     assert!(tmp_syntaxes_path.exists());
     assert!(tmp_acknowledgements_path.exists());
     assert!(tmp_metadata_path.exists());
+}
+
+#[test]
+fn cache_auto_build_on_first_run() {
+    // Custom themes/syntaxes are picked up automatically on first run (see #4017):
+    // if the config directory contains sources but no cache exists yet, bat
+    // builds the cache instead of silently using the integrated assets.
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+        .expect("can create syntaxes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c.sublime-syntax"),
+    )
+    .expect("can copy example syntax");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache"))
+        .stdout(predicate::str::contains("example"));
+
+    assert!(cache_dir.path().join("themes.bin").exists());
+    assert!(cache_dir.path().join("syntaxes.bin").exists());
+    assert!(cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
+fn cache_no_auto_build_with_no_custom_assets() {
+    // `--no-custom-assets` opts out of the automatic cache build (see #4017).
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache").not())
+        .stdout(predicate::str::contains("example").not());
+
+    assert!(!cache_dir.path().join("themes.bin").exists());
+    assert!(!cache_dir.path().join("metadata.yaml").exists());
 }
 
 #[test]
