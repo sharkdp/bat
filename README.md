@@ -587,7 +587,7 @@ syntax:
 
 4. If you think that a specific syntax should be included in `bat` by default, please
    consider opening a "syntax request" ticket after reading the policies and
-   instructions [here](doc/assets.md): [Open Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.md).
+   instructions [here](doc/assets.md): [Open Syntax Request](https://github.com/sharkdp/bat/issues/new?labels=syntax-request&template=syntax_request.yml).
 
 ### Adding new themes
 

@@ -2,6 +2,7 @@
 
 
 ## Other
+- Use structured issue forms for bug reports, feature requests, and syntax requests, see #3944 (@Matei02355)
 
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
