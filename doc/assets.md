@@ -6,7 +6,7 @@ Should you find that a particular syntax is not available within `bat` and think
 code. As a basis, syntect uses [Sublime Text](https://www.sublimetext.com/) syntax definitions
 in the `.sublime-syntax` format.
 
-**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#Criteria-for-inclusion-of-new-syntaxes).
+**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#criteria-for-inclusion-of-new-syntaxes).
 
 1. Find a Sublime Text syntax for the given language, preferably in a separate Git repository
    which can be included as a submodule (under `assets/syntaxes`) using
@@ -28,7 +28,7 @@ in the `.sublime-syntax` format.
 
 5. Use `bat --list-languages` to check if the new languages are available. You may want to do something like ``export PATH="`pwd`/target/debug:$PATH"`` to ensure the locally compiled version is the one being used.
 
-6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
+6. Add a syntax test for the new language. See [below](#syntax-tests) for details.
 
 7. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
    file. A new binary cache file will be created once before every new release of `bat`. This
