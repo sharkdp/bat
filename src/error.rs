@@ -53,6 +53,17 @@ impl From<String> for Error {
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Paint a `[bat error]`/`[bat warning]` style prefix, unless the user asked
+/// for no colors by setting the `NO_COLOR` environment variable.
+#[doc(hidden)]
+pub fn paint_prefix(color: nu_ansi_term::Color, prefix: &str) -> String {
+    if std::env::var_os("NO_COLOR").is_some_and(|x| !x.is_empty()) {
+        prefix.to_owned()
+    } else {
+        color.paint(prefix).to_string()
+    }
+}
+
 pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
     use nu_ansi_term::Color::Red;
 
@@ -64,7 +75,7 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
             writeln!(
                 output,
                 "{}: Error while parsing metadata.yaml file: {error}",
-                Red.paint("[bat error]"),
+                paint_prefix(Red, "[bat error]"),
             )
             .ok();
         }
@@ -72,7 +83,7 @@ pub fn default_error_handler(error: &Error, output: &mut dyn Write) {
             writeln!(
                 &mut std::io::stderr().lock(),
                 "{}: {error}",
-                Red.paint("[bat error]"),
+                paint_prefix(Red, "[bat error]"),
             )
             .ok();
         }
