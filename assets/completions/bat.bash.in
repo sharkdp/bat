@@ -173,6 +173,7 @@ _bat() {
 			auto
 			plain
 			changes
+			changes-highlight
 			header
 			header-filename
 			header-filesize

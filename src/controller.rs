@@ -161,7 +161,9 @@ impl Controller<'_> {
         opened_input.reader.unbuffered = self.config.unbuffered;
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
-            || (!self.config.loop_through && self.config.style_components.changes())
+            || (!self.config.loop_through
+                && (self.config.style_components.changes()
+                    || self.config.style_components.changes_highlight()))
         {
             match opened_input.kind {
                 crate::input::OpenedInputKind::OrdinaryFile(ref path) => {

@@ -728,6 +728,16 @@ impl Printer for InteractivePrinter<'_> {
             .check(line_number, max_buffered_line_number)
             == RangeCheckResult::InRange;
 
+        #[cfg(feature = "git")]
+        let highlight_this_line = highlight_this_line
+            || (self.config.colored_output
+                && self.config.style_components.changes_highlight()
+                && u32::try_from(line_number).ok().is_some_and(|line| {
+                    self.line_changes
+                        .as_ref()
+                        .is_some_and(|changes| changes.contains_key(&line))
+                }));
+
         if highlight_this_line && self.config.theme == "ansi" {
             self.ansi_style.update(ANSI_UNDERLINE_ENABLE);
         }
