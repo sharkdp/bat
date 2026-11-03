@@ -3,7 +3,7 @@
 
 ## Other
 
-- Fix reversed `batcat`/`bat` substitution note in the Chinese README MANPAGER section, see #3780 (@xfocus3). Closes #3730
+- Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
@@ -11,6 +11,7 @@
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
+- Fix reversed `batcat`/`bat` substitution note in the Chinese README MANPAGER section, see #3780 (@xfocus3). Closes #3730
 
 ## Features
 
