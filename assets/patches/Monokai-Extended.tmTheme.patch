@@ -1,22 +1,36 @@
-diff --git themes/sublime-monokai-extended/Monokai\ Extended.tmTheme themes/sublime-monokai-extended/Monokai\ Extended.tmTheme
-index 9c2aa3e..180cbbf 100644
 --- themes/sublime-monokai-extended/Monokai Extended.tmTheme	
 +++ themes/sublime-monokai-extended/Monokai Extended.tmTheme	
-@@ -810,11 +810,11 @@
+@@ -808,13 +808,24 @@
+     </dict>
+     <dict>
        <key>name</key>
++      <string>Markdown Table Delimiters</string>
++      <key>scope</key>
++      <string>punctuation.separator.table-cell, punctuation.section.table-header</string>
++      <key>settings</key>
++      <dict>
++        <key>foreground</key>
++        <string>#66d9ef</string>
++      </dict>
++    </dict>
++    <dict>
++      <key>name</key>
        <string>JSON String</string>
        <key>scope</key>
 -      <string>meta.structure.dictionary.json string.quoted.double.json</string>
-+      <string>meta.mapping.key.json string.quoted.double.json, punctuation.separator.sequence.csv</string>
-       <key>settings</key>
-       <dict>
-         <key>foreground</key>
+-      <key>settings</key>
+-      <dict>
+-        <key>foreground</key>
 -        <string>#cfcfc2</string>
++      <string>meta.mapping.key.json string.quoted.double.json, punctuation.separator.sequence.csv</string>
++      <key>settings</key>
++      <dict>
++        <key>foreground</key>
 +        <string>#fd971f</string>
        </dict>
      </dict>
      <dict>
-@@ -1027,7 +1027,7 @@
+@@ -1027,7 +1038,7 @@
        <key>name</key>
        <string>Invalid</string>
        <key>scope</key>
@@ -25,12 +39,10 @@ index 9c2aa3e..180cbbf 100644
        <key>settings</key>
        <dict>
          <key>background</key>
-@@ -1038,11 +1038,22 @@
-         <string>#f8f8f0</string>
-       </dict>
+@@ -1040,9 +1051,20 @@
      </dict>
-+    <dict>
-+      <key>name</key>
+     <dict>
+       <key>name</key>
 +      <string>Error</string>
 +      <key>scope</key>
 +      <string>markup.error</string>
@@ -40,8 +52,8 @@ index 9c2aa3e..180cbbf 100644
 +        <string>#dd2020</string>
 +      </dict>
 +    </dict>
-     <dict>
-       <key>name</key>
++    <dict>
++      <key>name</key>
        <string>Invalid deprecated</string>
        <key>scope</key>
 -      <string>invalid.deprecated</string>
