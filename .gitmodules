@@ -284,3 +284,7 @@
 [submodule "assets/syntaxes/02_Extra/Caddy"]
 	path = assets/syntaxes/02_Extra/Caddy
 	url = https://github.com/caddyserver/sublimetext.git
+
+[submodule "assets/syntaxes/Pug"]
+	path = assets/syntaxes/02_Extra/Pug
+	url = https://github.com/davidrios/pug-tmbundle
