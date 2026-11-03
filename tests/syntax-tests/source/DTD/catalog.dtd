@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- External document type definition -->
+<!ENTITY % identifier "ID #REQUIRED">
+<!ENTITY publisher "Example &amp; Company">
+<!ENTITY copyright "&#169; 2026">
+<!NOTATION png SYSTEM "image/png">
+<!ENTITY logo SYSTEM "logo.png" NDATA png>
+
+<!ELEMENT catalog (book+)>
+<!ELEMENT book (title, author+, description?)>
+<!ATTLIST book
+    id %identifier;
+    format (paper|digital) "paper"
+    language CDATA #IMPLIED>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT author (#PCDATA)>
+<!ELEMENT description (#PCDATA|emphasis)*>
+<!ELEMENT emphasis (#PCDATA)>
+
+<![INCLUDE[
+  <!ELEMENT appendix ANY>
+]]>
