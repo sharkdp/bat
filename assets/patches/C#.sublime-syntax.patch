@@ -1,8 +1,100 @@
 diff --git syntaxes/01_Packages/C#/C#.sublime-syntax syntaxes/01_Packages/C#/C#.sublime-syntax
-index ed494f8b..01b710e8 100644
 --- syntaxes/01_Packages/C#/C#.sublime-syntax
 +++ syntaxes/01_Packages/C#/C#.sublime-syntax
-@@ -1312,7 +1312,7 @@ contexts:
+@@ -201,7 +201,7 @@
+     # allows coloration of code outside a class
+     - match: (?=\S)
+       push:
+-        - match: (?={{visibility}}|\b(?:class|delegate|interface|namespace|readonly)\b)
++        - match: (?={{visibility}}|\b(?:class|delegate|interface|namespace|readonly)\b|\brecord\s+(?:(?:class|struct)\s+)?{{name}}\s*(?=[<(;:{]|where\b))
+           pop: true
+         - include: line_of_code
+ 
+@@ -275,6 +275,7 @@
+           pop: true
+ 
+   class_declaration:
++    - include: record_declaration
+     - match: '\b(static|unsafe|abstract|partial|sealed)\b'
+       scope: storage.modifier.cs
+     - match: '{{visibility}}'
+@@ -323,6 +324,65 @@
+               - match: ','
+                 scope: punctuation.separator.enum.cs
+ 
++
++  record_declaration:
++    - match: '(?:\b(readonly)\s+)?\b(record)\s+(struct)\s+({{name}})(?=\s*(?:[<(;:{]|where\b))'
++      captures:
++        1: storage.modifier.cs
++        2: storage.type.record.cs
++        3: storage.type.struct.cs
++        4: entity.name.struct.cs
++      push: record_signature
++    - match: '\b(record)\s+(?:(class)\s+)?({{name}})(?=\s*(?:[<(;:{]|where\b))'
++      captures:
++        1: storage.type.record.cs
++        2: storage.type.class.cs
++        3: entity.name.class.cs
++      push: record_signature
++
++  record_signature:
++    - meta_scope: meta.record.cs
++    - match: '<'
++      scope: meta.generic.cs punctuation.definition.generic.begin.cs
++      push:
++        - meta_content_scope: meta.generic.cs
++        - include: type_parameter
++    - match: '\('
++      scope: punctuation.section.parameters.begin.cs
++      push: method_params
++    - match: ':'
++      scope: punctuation.separator.type.cs
++      push: record_bases
++    - match: '(?=where\b)'
++      push: record_constraints
++    - match: ';'
++      scope: punctuation.terminator.statement.cs
++      pop: true
++    - match: '(?=\{)'
++      set: [record_body, data_type_body]
++
++  record_bases:
++    - match: '(?=[{;]|where\b)'
++      pop: true
++    - match: '\('
++      scope: punctuation.section.arguments.begin.cs
++      push:
++        - match: '\)'
++          scope: punctuation.section.arguments.end.cs
++          pop: true
++        - include: arguments
++    - include: type_constraint
++
++  record_constraints:
++    - match: '(?=[{;])'
++      pop: true
++    - include: type_constraint
++
++  record_body:
++    - meta_content_scope: meta.record.body.cs
++    - match: ''
++      pop: true
++
+   interface_declaration:
+     - match: '(interface)\s+({{name}})'
+       captures:
+@@ -771,6 +831,9 @@
+           push: method_body
+         - match: \b(set)\b
+           scope: storage.type.function.accessor.set.cs
++          push: method_body
++        - match: \b(init)\b
++          scope: storage.type.function.accessor.init.cs
+           push: method_body
+         - match: '{{visibility}}'
+           scope: storage.modifier.access.cs
+@@ -1312,7 +1375,7 @@
              2: punctuation.separator.cs
              3: punctuation.section.brackets.end.cs
              4: keyword.operator.pointer.cs
