@@ -1472,7 +1472,7 @@ fn pager_windows_absolute_path() {
         .join("mocked-pagers")
         .join("echo.bat");
     bat()
-        .env("BAT_PAGER", format!("{} pager-output", pager.display()))
+        .env("BAT_PAGER", format!("\"{}\" pager-output", pager.display()))
         .arg("--paging=always")
         .arg("test.txt")
         .assert()
