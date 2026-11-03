@@ -2,6 +2,9 @@ diff --git syntaxes/01_Packages/Rust/Rust.sublime-syntax syntaxes/01_Packages/Ru
 index 3c354486..24727a4e 100644
 --- syntaxes/01_Packages/Rust/Rust.sublime-syntax
 +++ syntaxes/01_Packages/Rust/Rust.sublime-syntax
+@@ -139 +139 @@ contexts:
+-    - match: \b(break|else|for|if|loop|match|while|continue)\b
++    - match: \b(async|await|break|else|for|if|loop|match|while|continue)\b
 @@ -907,6 +907,8 @@ contexts:
      - include: type-any-identifier
      - match: ':'
