@@ -327,4 +327,4 @@
 [38;2;248;248;242m       This page is part of release 5.08 of the Linux man-pages project.  A description of the project, information  about  reporting[0m
 [38;2;248;248;242m       bugs, and the latest version of this page, can be found at https://www.kernel.org/doc/man-pages/.[0m
 
-[38;2;253;151;31mLinux                                                         2020-04-11                                                    SELECT(2)[0m
+[38;2;248;248;242mLinux                                                         2020-04-11                                                    [0m[38;2;166;226;46mSELECT[0m[38;2;249;38;114m([0m[38;2;190;132;255m2[0m[38;2;249;38;114m)[0m
