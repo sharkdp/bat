@@ -1,0 +1,30 @@
+---
+title: Example
+---
+{{! A template comment }}
+{{!-- A block comment with {{braces}} inside --}}
+<main id="{{pageId}}" class="page">
+  <h1>{{title}}</h1>
+  {{#if user}}
+    <p>Hello, {{user.name}}!</p>
+  {{else if guest}}
+    <p>Welcome, guest.</p>
+  {{else}}
+    {{> login}}
+  {{/if}}
+  <ul>
+    {{#each items}}
+      <li data-index="{{@index}}">{{this.name}}</li>
+    {{/each}}
+  </ul>
+  {{helper value option="text"}}
+  {{{trustedHtml}}}
+  {{~日本語.名前~}}
+  \{{literal}}
+  \\{{evaluated}}
+  <style>.page { color: blue; }</style>
+  <script>const count = 42; console.log(count);</script>
+  <script type="text/x-handlebars-template">
+    <span>{{nested}}</span>
+  </script>
+</main>
