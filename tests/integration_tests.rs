@@ -2296,6 +2296,50 @@ fn utf16be() {
 }
 
 #[test]
+fn utf16_unaligned_newline_bytes_preserve_text_and_ranges() {
+    for (content, expected, range, selected) in [
+        (
+            b"\xFF\xFE\x85\x0A\x00\x25\x0A\x00\
+                \x6E\x00\x65\x00\x78\x00\x74\x00\x0A\x00"
+                .as_slice(),
+            "   1 અ─\n   2 next\n",
+            "--line-range=2",
+            "   2 next\n",
+        ),
+        (
+            b"\xFE\xFF\x4E\x0A\x00\x0A\x25\x00\x0A\x85\x00\x0A\
+                \x00\x6E\x00\x65\x00\x78\x00\x74\x00\x0A"
+                .as_slice(),
+            "   1 上\n   2 ─અ\n   3 next\n",
+            "--line-range=3",
+            "   3 next\n",
+        ),
+    ] {
+        for (range, output) in [(None, expected), (Some(range), selected)] {
+            let mut command = bat();
+            command.args([
+                "--decorations=always",
+                "--style=numbers",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+                "--terminal-width=40",
+                "--language=txt",
+            ]);
+            if let Some(range) = range {
+                command.arg(range);
+            }
+            command
+                .write_stdin(content)
+                .assert()
+                .success()
+                .stdout(output)
+                .stderr("");
+        }
+    }
+}
+
+#[test]
 fn utf16be_first_line_not_merged_with_second() {
     // The first line of a UTF-16BE file must not swallow the second line
     bat()
