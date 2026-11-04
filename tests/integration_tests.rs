@@ -2461,6 +2461,100 @@ fn unicode_wrap() {
 }
 
 #[test]
+fn unicode_emoji_wrap() {
+    for (style, width, first, continuation) in
+        [("plain", "10", "", ""), ("numbers", "15", "   1 ", "     ")]
+    {
+        for emoji in ["👩\u{200d}💻", "👍🏽", "🇬🇧"] {
+            for (input, expected) in [
+                (
+                    format!("1234567{emoji}\n"),
+                    format!("{first}1234567{emoji}\n"),
+                ),
+                (
+                    format!("123456789{emoji}X\n"),
+                    format!("{first}123456789\n{continuation}{emoji}X\n"),
+                ),
+                (
+                    format!("123456{emoji}AB\n"),
+                    format!("{first}123456{emoji}AB\n"),
+                ),
+            ] {
+                bat()
+                    .args([
+                        "--no-custom-assets",
+                        "--paging=never",
+                        "--color=never",
+                        "--decorations=always",
+                        "--wrap=character",
+                        "--language=txt",
+                        "--style",
+                        style,
+                        "--terminal-width",
+                        width,
+                    ])
+                    .write_stdin(input)
+                    .assert()
+                    .success()
+                    .stdout(expected)
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[test]
+fn unicode_emoji_wrap_with_syntax_highlighting() {
+    for (language, input, fragment, lines) in [
+        ("rs", "//12345👩\u{200d}💻\n", "12345👩\u{200d}💻", 1),
+        ("json", "\"12345678🇬🇧X\"\n", "🇬🇧X", 2),
+    ] {
+        bat()
+            .args([
+                "--no-custom-assets",
+                "--paging=never",
+                "--color=always",
+                "--decorations=always",
+                "--style=plain",
+                "--wrap=character",
+                "--terminal-width=10",
+                "--theme=Monokai Extended",
+                "--language",
+                language,
+            ])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("\x1b["))
+            .stdout(predicate::str::contains(fragment))
+            .stdout(predicate::function(move |s: &str| {
+                s.lines().count() == lines
+            }))
+            .stderr("");
+    }
+}
+
+#[test]
+fn unicode_emoji_word_wrap_remainder() {
+    bat()
+        .args([
+            "--no-custom-assets",
+            "--paging=never",
+            "--color=never",
+            "--decorations=always",
+            "--style=plain",
+            "--wrap=word",
+            "--terminal-width=10",
+            "--language=txt",
+        ])
+        .write_stdin("123456 👩\u{200d}💻abcdEFGHIJ\n")
+        .assert()
+        .success()
+        .stdout("123456\n👩\u{200d}💻abcdEFGH\nIJ\n")
+        .stderr("");
+}
+
+#[test]
 fn snip() {
     bat()
         .arg("multiline.txt")

@@ -16,7 +16,7 @@ use content_inspector::ContentType;
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
 use unicode_segmentation::UnicodeSegmentation;
-use unicode_width::UnicodeWidthChar;
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::assets::{HighlightingAssets, SyntaxReferenceInSet};
 use crate::config::Config;
@@ -48,6 +48,14 @@ use crate::StripAnsiMode;
 // here instead of the previous default of 0.
 fn char_width(c: char) -> usize {
     c.width().unwrap_or(if c.is_control() { 2 } else { 0 })
+}
+
+fn grapheme_width(grapheme: &str) -> usize {
+    if grapheme.chars().any(char::is_control) {
+        grapheme.chars().map(char_width).sum()
+    } else {
+        grapheme.width()
+    }
 }
 
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
@@ -839,13 +847,13 @@ impl Printer for InteractivePrinter<'_> {
                             // For word wrapping, track last whitespace position.
                             let mut last_ws_idx: Option<usize> = None;
 
-                            for c in text.chars() {
+                            for grapheme in text.graphemes(true) {
                                 // calculate the displayed width for next character
-                                let cw = char_width(c);
+                                let cw = grapheme_width(grapheme);
                                 current_width += cw;
 
                                 // Track whitespace positions for word wrapping.
-                                if word_wrap && c.is_whitespace() {
+                                if word_wrap && grapheme.starts_with(char::is_whitespace) {
                                     last_ws_idx = Some(line_buf.len());
                                 }
 
@@ -917,7 +925,7 @@ impl Printer for InteractivePrinter<'_> {
                                         // Word wrap: carry remainder to next line.
                                         let remainder = line_buf[rs..].to_string();
                                         let rem_width: usize =
-                                            remainder.chars().map(char_width).sum();
+                                            remainder.graphemes(true).map(grapheme_width).sum();
                                         line_buf.clear();
                                         line_buf.push_str(&remainder);
                                         current_width = rem_width + cw;
@@ -928,7 +936,7 @@ impl Printer for InteractivePrinter<'_> {
                                     last_ws_idx = None;
                                 }
 
-                                line_buf.push(c);
+                                line_buf.push_str(grapheme);
                             }
 
                             // flush the buffer
