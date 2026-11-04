@@ -117,6 +117,9 @@ pub struct Config<'a> {
     /// Whether or not to produce no output when input is empty
     pub quiet_empty: bool,
 
+    /// Maximum input bytes to read from each source
+    pub max_bytes: Option<u64>,
+
     /// Whether or not to use unbuffered input reading for streaming use cases
     pub unbuffered: bool,
 

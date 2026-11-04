@@ -13,6 +13,7 @@
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
 ## Features
+- Add `--max-bytes` (`--head`) to bound reads before line buffering, see #3947 (@Matei02355)
 
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
