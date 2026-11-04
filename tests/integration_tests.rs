@@ -1861,6 +1861,158 @@ fn diagnostic_sanity_check() {
         .stderr("");
 }
 
+fn config_terminator_command(tmp_dir: &Path) -> assert_cmd::Command {
+    let mut command = bat_with_config();
+    command
+        .current_dir(tmp_dir)
+        .env("BAT_CONFIG_PATH", tmp_dir.join("config"))
+        .env("BAT_CONFIG_DIR", tmp_dir)
+        .env("BAT_CACHE_PATH", tmp_dir.join("cache-unused"))
+        .env("BAT_PAGER", tmp_dir.join("pager-unused"))
+        .args([
+            "--paging=never",
+            "--color=never",
+            "--style=plain",
+            "--wrap=never",
+            "--theme=Monokai Extended",
+        ])
+        .timeout(std::time::Duration::from_secs(10));
+    command
+}
+
+#[test]
+fn config_terminator_filenames_preserve_config_and_bat_opts() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("input.txt"), "first\nsecond\n")
+        .expect("can write temporary file");
+
+    for bat_opts in [None, Some("--line-range=2:2")] {
+        let config = if bat_opts.is_some() {
+            "--invalid-option"
+        } else {
+            "--line-range=2:2"
+        };
+        std::fs::write(tmp_dir.path().join("config"), config).expect("can write config file");
+
+        for filename in [
+            "--no-config",
+            "--version",
+            "-V",
+            "--diagnostic",
+            "--diagnostics",
+        ] {
+            std::fs::write(tmp_dir.path().join(filename), "first\nsecond\n")
+                .expect("can write temporary file");
+
+            for input in [filename.to_string(), format!("./{filename}")] {
+                let mut command = config_terminator_command(tmp_dir.path());
+                if let Some(opts) = bat_opts {
+                    command.env("BAT_OPTS", opts);
+                }
+                command
+                    .args(["--", "input.txt", &input])
+                    .assert()
+                    .success()
+                    .stdout("second\nsecond\n")
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[test]
+fn config_terminator_help_filenames_preserve_config_errors() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    for filename in ["--help", "-h"] {
+        std::fs::write(tmp_dir.path().join(filename), "first\nsecond\n")
+            .expect("can write temporary file");
+    }
+
+    for (config, code, error) in [
+        (
+            "--invalid-option",
+            2,
+            "unexpected argument '--invalid-option'",
+        ),
+        ("--theme='", 1, "Could not parse configuration file"),
+    ] {
+        std::fs::write(tmp_dir.path().join("config"), config).expect("can write config file");
+
+        for use_bat_opts in [false, true] {
+            for filename in ["--help", "-h"] {
+                let mut command = config_terminator_command(tmp_dir.path());
+                if use_bat_opts {
+                    command.env("BAT_OPTS", config);
+                }
+                command
+                    .args(["--", filename])
+                    .assert()
+                    .code(code)
+                    .stdout("")
+                    .stderr(predicate::str::contains(error));
+            }
+        }
+    }
+}
+
+#[test]
+fn config_terminator_escape_options_keep_working() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("config"), "--theme='").expect("can write config file");
+    std::fs::write(tmp_dir.path().join("input.txt"), "first\nsecond\n")
+        .expect("can write temporary file");
+
+    config_terminator_command(tmp_dir.path())
+        .args(["--invalid-cli-option", "--help"])
+        .assert()
+        .code(2)
+        .stdout("")
+        .stderr(predicate::str::contains(
+            "unexpected argument '--invalid-cli-option'",
+        ));
+
+    for consumed_terminator in [false, true] {
+        for option in [
+            "--no-config",
+            "--help",
+            "-h",
+            "--version",
+            "-V",
+            "--diagnostic",
+            "--diagnostics",
+        ] {
+            let mut command = config_terminator_command(tmp_dir.path());
+            if consumed_terminator {
+                command.args(["--line-range", "--"]);
+            }
+            let assertion = command.arg(option).arg("input.txt").assert();
+            match option {
+                "--no-config" if consumed_terminator => {
+                    assertion
+                        .code(1)
+                        .stdout("")
+                        .stderr(predicate::str::contains("invalid digit found in string"));
+                }
+                "--no-config" => {
+                    assertion.success().stdout("first\nsecond\n").stderr("");
+                }
+                _ => {
+                    let expected = match option {
+                        "--help" => "A cat(1) clone with syntax highlighting",
+                        "-h" => "A cat(1) clone with wings",
+                        "--version" | "-V" => "bat ",
+                        _ => "#### Software version",
+                    };
+                    assertion
+                        .success()
+                        .stdout(predicate::str::contains(expected))
+                        .stderr("");
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn help_works_with_invalid_config() {
     let tmp_dir = tempdir().expect("can create temporary directory");
