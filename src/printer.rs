@@ -656,22 +656,6 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
-        // In number-nonblank mode, the displayed number counts non-blank lines only
-        // (content-free lines that contain only the line terminator are skipped).
-        // `line_number` stays the line number in the file, which is what line ranges,
-        // highlighted lines and Git changes refer to.
-        let is_blank_line = line_buffer.iter().all(|&b| b == b'\r' || b == b'\n');
-        if self.config.number_nonblank && !is_blank_line {
-            self.nonblank_line_count += 1;
-        }
-        let display_line_number = if !self.config.number_nonblank {
-            line_number
-        } else if is_blank_line {
-            0
-        } else {
-            self.nonblank_line_count
-        };
-
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
                 line_buffer,
@@ -717,6 +701,30 @@ impl Printer for InteractivePrinter<'_> {
             line
         };
 
+        // In number-nonblank mode, the displayed number counts non-blank lines only
+        // (content-free lines that contain only the line terminator are skipped).
+        // `line_number` stays the line number in the file, which is what line ranges,
+        // highlighted lines and Git changes refer to. Blank lines are detected on the
+        // decoded line so that UTF-16 input is handled too.
+        let is_blank_line = line.trim_end_matches(['\r', '\n']).is_empty();
+        if self.config.number_nonblank && !is_blank_line {
+            self.nonblank_line_count += 1;
+        }
+        let display_line_number = if !self.config.number_nonblank {
+            line_number
+        } else if is_blank_line {
+            0
+        } else {
+            self.nonblank_line_count
+        };
+        let decoration_line_number = |d: &dyn Decoration| {
+            if d.uses_displayed_line_number() {
+                display_line_number
+            } else {
+                line_number
+            }
+        };
+
         let regions = self.highlight_regions_for_line(&line)?;
         if out_of_range {
             return Ok(());
@@ -760,7 +768,7 @@ impl Printer for InteractivePrinter<'_> {
             let decorations = self
                 .decorations
                 .iter()
-                .map(|d| d.generate(display_line_number, false, self));
+                .map(|d| d.generate(decoration_line_number(d.as_ref()), false, self));
 
             for deco in decorations {
                 write!(handle, "{} ", deco.text)?;
@@ -872,7 +880,11 @@ impl Printer for InteractivePrinter<'_> {
                                                 self.decorations
                                                     .iter()
                                                     .map(|d| d
-                                                        .generate(display_line_number, true, self)
+                                                        .generate(
+                                                            decoration_line_number(d.as_ref()),
+                                                            true,
+                                                            self,
+                                                        )
                                                         .text)
                                                     .collect::<Vec<String>>()
                                                     .join(" ")

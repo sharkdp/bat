@@ -403,6 +403,40 @@ fn number_nonblank_line_range_uses_file_line_numbers() {
 }
 
 #[test]
+fn number_nonblank_skips_blank_utf16_lines() {
+    // Blank lines must be detected after decoding, otherwise the NUL bytes of a
+    // UTF-16 line terminator make blank lines look non-blank
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    for (name, bom, encode) in [
+        (
+            "le.txt",
+            [0xFF, 0xFE],
+            u16::to_le_bytes as fn(u16) -> [u8; 2],
+        ),
+        (
+            "be.txt",
+            [0xFE, 0xFF],
+            u16::to_be_bytes as fn(u16) -> [u8; 2],
+        ),
+    ] {
+        let path = tmp_dir.path().join(name);
+        let mut content = bom.to_vec();
+        for unit in "alpha\n\nbeta\r\n\r\ngamma\n".encode_utf16() {
+            content.extend(encode(unit));
+        }
+        std::fs::write(&path, content).expect("can write test file");
+
+        bat()
+            .arg(&path)
+            .arg("-b")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout("   1 alpha\n     \n   2 beta\r\n     \r\n   3 gamma\n");
+    }
+}
+
+#[test]
 fn number_nonblank_highlight_line_uses_file_line_numbers() {
     // `--highlight-line 5` must highlight line 5 of the file ("line 5")
     bat()

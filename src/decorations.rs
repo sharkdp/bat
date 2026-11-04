@@ -17,6 +17,12 @@ pub(crate) trait Decoration {
         printer: &InteractivePrinter,
     ) -> DecorationText;
     fn width(&self) -> usize;
+
+    /// Whether `generate` expects the displayed line number rather than the
+    /// line number in the file. The two differ with `--number-nonblank`.
+    fn uses_displayed_line_number(&self) -> bool {
+        false
+    }
 }
 
 pub(crate) struct LineNumberDecoration {
@@ -74,6 +80,10 @@ impl Decoration for LineNumberDecoration {
 
     fn width(&self) -> usize {
         4
+    }
+
+    fn uses_displayed_line_number(&self) -> bool {
+        true
     }
 }
 
