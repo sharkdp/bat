@@ -32,7 +32,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
-- Fix `--squeeze-blank` and `--squeeze-limit` with `--show-all` in formatted output (@Marve10s)
+- Fix `--squeeze-blank` and `--squeeze-limit` with `--show-all` in formatted output, see #4109 (@Marve10s)
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #XXXX (@cindykrafft)
 - Respect `NO_COLOR` for the `[bat error]` and `[bat warning]` prefixes, see #4048 (@qodelicious)
 - Offer the valid `--wrap` value `auto` instead of the rejected `always` in the PowerShell completion, see #4070 (@ump45nose)
