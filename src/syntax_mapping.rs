@@ -176,7 +176,10 @@ impl<'a> SyntaxMapping<'a> {
         let file_name = path.as_ref().file_name()?;
         self.ignored_suffixes
             .try_with_stripped_suffix(file_name, |stripped_file_name| {
-                Ok(self.get_syntax_for(stripped_file_name))
+                if stripped_file_name.is_empty() {
+                    return Ok(self.get_syntax_for(stripped_file_name));
+                }
+                Ok(self.get_syntax_for(path.as_ref().with_file_name(stripped_file_name)))
             })
             .ok()?
     }
@@ -243,6 +246,66 @@ mod tests {
         assert_eq!(
             map.get_syntax_for("/path/to/.ignore"),
             Some(MappingTarget::MapTo("Git Ignore"))
+        );
+    }
+
+    #[test]
+    fn custom_mappings_with_ignored_suffix_preserve_paths() {
+        for (pattern, parent) in [
+            ("/path/to/file.demo", "/path/to"),
+            ("/path/to/*.demo", "/path/to"),
+            ("path/to/*.demo", "path/to"),
+        ] {
+            let mut map = SyntaxMapping::new();
+            map.insert(pattern, MappingTarget::MapTo("JSON")).unwrap();
+            map.insert_ignored_suffix(".custom");
+
+            for suffix in ["", ".bak", ".bak.old", ".custom.custom"] {
+                let path = Path::new(parent).join(format!("file.demo{suffix}"));
+                assert_eq!(
+                    map.get_syntax_for(&path),
+                    Some(MappingTarget::MapTo("JSON")),
+                    "{pattern}: {}",
+                    path.display()
+                );
+            }
+            assert_eq!(map.get_syntax_for("/path/elsewhere/file.demo.bak"), None);
+        }
+    }
+
+    #[test]
+    fn custom_mappings_with_ignored_suffix_preserve_precedence() {
+        for (first, second) in [("/path/to/*.demo", "*.demo"), ("*.demo", "/path/to/*.demo")] {
+            let mut map = SyntaxMapping::new();
+            map.insert(first, MappingTarget::MapTo("first")).unwrap();
+            map.insert(second, MappingTarget::MapTo("second")).unwrap();
+            assert_eq!(
+                map.get_syntax_for("/path/to/file.demo.bak"),
+                Some(MappingTarget::MapTo("first"))
+            );
+
+            map.insert("*.bak", MappingTarget::MapTo("backup")).unwrap();
+            assert_eq!(
+                map.get_syntax_for("/path/to/file.demo.bak"),
+                Some(MappingTarget::MapTo("backup"))
+            );
+        }
+    }
+
+    #[test]
+    fn custom_mappings_with_empty_stripped_filename() {
+        let mut map = SyntaxMapping::new();
+        map.insert("to", MappingTarget::MapTo("parent")).unwrap();
+        map.insert_ignored_suffix(".custom");
+
+        for name in ["~", ".bak", ".custom", "~.bak"] {
+            assert_eq!(map.get_syntax_for(Path::new("/path/to").join(name)), None);
+        }
+
+        map.insert("", MappingTarget::MapTo("empty")).unwrap();
+        assert_eq!(
+            map.get_syntax_for("/path/to/~.bak"),
+            Some(MappingTarget::MapTo("empty"))
         );
     }
 
