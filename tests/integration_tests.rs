@@ -2359,6 +2359,50 @@ fn utf16be() {
 }
 
 #[test]
+fn utf16_unaligned_newline_bytes_preserve_text_and_ranges() {
+    for (content, expected, range, selected) in [
+        (
+            b"\xFF\xFE\x85\x0A\x00\x25\x0A\x00\
+                \x6E\x00\x65\x00\x78\x00\x74\x00\x0A\x00"
+                .as_slice(),
+            "   1 અ─\n   2 next\n",
+            "--line-range=2",
+            "   2 next\n",
+        ),
+        (
+            b"\xFE\xFF\x4E\x0A\x00\x0A\x25\x00\x0A\x85\x00\x0A\
+                \x00\x6E\x00\x65\x00\x78\x00\x74\x00\x0A"
+                .as_slice(),
+            "   1 上\n   2 ─અ\n   3 next\n",
+            "--line-range=3",
+            "   3 next\n",
+        ),
+    ] {
+        for (range, output) in [(None, expected), (Some(range), selected)] {
+            let mut command = bat();
+            command.args([
+                "--decorations=always",
+                "--style=numbers",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+                "--terminal-width=40",
+                "--language=txt",
+            ]);
+            if let Some(range) = range {
+                command.arg(range);
+            }
+            command
+                .write_stdin(content)
+                .assert()
+                .success()
+                .stdout(output)
+                .stderr("");
+        }
+    }
+}
+
+#[test]
 fn utf16be_first_line_not_merged_with_second() {
     // The first line of a UTF-16BE file must not swallow the second line
     bat()
@@ -4009,6 +4053,61 @@ fn map_syntax_and_ignored_suffix_work_together() {
         .success()
         .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
+}
+
+#[cfg(unix)]
+#[test]
+fn map_syntax_paths_and_ignored_suffix_work_together() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let root = tmp_dir.path().canonicalize().unwrap();
+    let one = root.join("one");
+    let two = root.join("two");
+    let names = ["file.demo", "file.demo.bak", "file.demo.bak.old"];
+    for directory in [&one, &two] {
+        std::fs::create_dir(directory).unwrap();
+        for name in names {
+            std::fs::write(directory.join(name), b"{\"a\": 1}\n").unwrap();
+        }
+    }
+
+    let stdout = |path: &Path, args: &[&str]| {
+        let output = bat()
+            .args([
+                "--color=always",
+                "--paging=never",
+                "--style=plain",
+                "--wrap=never",
+                "--theme=Monokai Extended",
+            ])
+            .args(args)
+            .arg(path)
+            .assert()
+            .success()
+            .stderr("");
+        output.get_output().stdout.clone()
+    };
+    let original = one.join("file.demo");
+    let backup = one.join("file.demo.bak");
+    let json = stdout(&backup, &["--language=JSON"]);
+    let plain = stdout(&backup, &["--language=Plain Text"]);
+    assert_ne!(json, plain);
+
+    for pattern in [original.clone(), one.join("*.demo")] {
+        let mapping = format!("--map-syntax={}:JSON", pattern.display());
+        for name in names {
+            assert_eq!(stdout(&one.join(name), &[&mapping]), json, "{name}");
+        }
+        assert_eq!(stdout(&two.join("file.demo.bak"), &[&mapping]), plain);
+    }
+
+    let mapping = format!("--map-syntax={}:JSON", original.display());
+    for (args, expected) in [
+        (["--map-syntax=*.demo:Plain Text", mapping.as_str()], &json),
+        ([mapping.as_str(), "--map-syntax=*.demo:Plain Text"], &plain),
+        (["--map-syntax=*.bak:Plain Text", mapping.as_str()], &plain),
+    ] {
+        assert_eq!(&stdout(&backup, &args), expected);
+    }
 }
 
 #[test]

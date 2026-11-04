@@ -32,6 +32,8 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Preserve full-path syntax mappings when removing ignored filename suffixes, see #4111 (@Marve10s)
+- Fix UTF-16 line splitting at unaligned newline bytes corrupting text and shifting line ranges, see #4110 (@Marve10s)
 - Respect `NO_COLOR` for the `[bat error]` and `[bat warning]` prefixes, see #4048 (@qodelicious)
 - Offer the valid `--wrap` value `auto` instead of the rejected `always` in the PowerShell completion, see #4070 (@ump45nose)
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)
