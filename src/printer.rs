@@ -713,7 +713,7 @@ impl Printer for InteractivePrinter<'_> {
 
         // Skip squeezed lines.
         if let Some(squeeze_limit) = self.config.squeeze_lines {
-            let is_empty = if self.config.show_nonprintable {
+            let is_empty = if self.config.show_nonprintable && !self.config.unbuffered {
                 line_buffer.iter().all(|&b| matches!(b, b'\r' | b'\n'))
             } else {
                 line.trim_end_matches(['\r', '\n']).is_empty()
