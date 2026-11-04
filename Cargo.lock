@@ -148,6 +148,7 @@ dependencies = [
  "grep-cli",
  "indexmap",
  "itertools",
+ "jiff",
  "minus",
  "nix",
  "nu-ansi-term",
