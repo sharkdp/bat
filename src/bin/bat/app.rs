@@ -79,7 +79,7 @@ impl App {
         let number_from_cli = cli_matches.get_flag("number");
         let number_nonblank_from_cli = cli_matches.get_flag("number-nonblank");
 
-        let matches = Self::matches(interactive_output)?;
+        let matches = Self::matches(interactive_output, &cli_matches)?;
 
         if matches.get_flag("help") {
             let help_type = if wild::args_os().any(|arg| arg == "--help") {
@@ -196,20 +196,13 @@ impl App {
         clap_app::build_app(interactive_output).get_matches_from(wild::args_os())
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches> {
-        // Check if we should skip config file processing for special arguments
-        // that don't require full application setup (version, diagnostic)
-        let should_skip_config = wild::args_os().any(|arg| {
-            matches!(
-                arg.to_str(),
-                Some("-V" | "--version" | "--diagnostic" | "--diagnostics")
-            )
-        });
+    fn matches(interactive_output: bool, cli_matches: &ArgMatches) -> Result<ArgMatches> {
+        let should_skip_config =
+            cli_matches.get_flag("no-config") || cli_matches.get_flag("diagnostic");
 
         // Check if help was requested - help should read the config file but be
         // forgiving of invalid arguments (so configured theme etc. can be used)
-        let help_requested =
-            wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
+        let help_requested = cli_matches.get_flag("help");
 
         if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
@@ -217,9 +210,9 @@ impl App {
             return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
         }
 
-        if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
+        if should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
-            // or when user requests version or diagnostic information
+            // or when user requests diagnostic information
             let args = Self::build_args_without_config();
             return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
         }
