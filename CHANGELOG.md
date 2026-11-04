@@ -3,6 +3,8 @@
 
 ## Other
 
+- Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
+- Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
 - Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
 - Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
@@ -34,6 +36,7 @@
 - Offer the valid `--wrap` value `auto` instead of the rejected `always` in the PowerShell completion, see #4070 (@ump45nose)
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)
 - Ignore a UTF-8 byte order mark at the start of the config file instead of treating it as part of the first argument, see #4103 (@jaeminbird)
+- Keep backslashes in the pager command on Windows, so `BAT_PAGER=C:\tools\less.exe` is found instead of becoming `C:toolsless.exe`, see #4104 (@jaeminbird)
 - Fix `bat` hanging forever on JavaScript (and Svelte) code where an expression is followed by a block comment, e.g. `a /* x */`. Closes #4080, see #4091 (@NavpreetSSidhu)
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #4076 (@cindykrafft)
 - Make `--line-range` and `--highlight-line` refer to line numbers in the file when `-b` / `--number-nonblank` is used, instead of to the displayed non-blank line count, see #4084 (@cindykrafft)
@@ -115,6 +118,7 @@
 
 ## Bugfixes
 
+- Fix `capacity overflow` panic when wrapping a double-width character on a line narrower than the character while a background is painted (e.g. `--terminal-width=1 --wrap=character --highlight-line=1`). Closes #3844, see #4098 (@feafel)
 - Fix hang when using `--list-themes` with an explicit pager, see #3457 (@abhinavcool42)
 - Fix negative values of N not being parsed in <N:M> line ranges without `=` flag value separator, see #3442 (@lmmx)
 - Fix broken Docker syntax preventing use of custom assets, see #3476 (@keith-hall)

@@ -534,6 +534,21 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_char_at_terminal_width_one_with_background_does_not_panic() {
+    // A double-width character does not fit in a one-column line. The cursor then moves past
+    // `cursor_max`, so the background fill must not subtract without checking (see #3844).
+    bat()
+        .arg("--color=always")
+        .arg("--paging=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=1")
+        .arg("--highlight-line=1")
+        .write_stdin("📦📦\n")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
@@ -1491,6 +1506,22 @@ fn pager_overwrite() {
             .success()
             .stdout(predicate::str::contains("pager-output\n").normalize());
     });
+}
+
+#[cfg(windows)]
+#[test]
+fn pager_windows_absolute_path() {
+    let pager = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("mocked-pagers")
+        .join("echo.bat");
+    bat()
+        .env("BAT_PAGER", format!("\"{}\" pager-output", pager.display()))
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("pager-output\n").normalize());
 }
 
 #[test]
