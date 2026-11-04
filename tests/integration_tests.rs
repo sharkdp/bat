@@ -1011,6 +1011,36 @@ fn squeeze_blank_show_all_space_resets_empty_run() {
 }
 
 #[test]
+fn squeeze_blank_show_all_unbuffered_partial_lines() {
+    use std::io::Read;
+
+    let input = b"seed\n"
+        .as_slice()
+        .chain(b"a".as_slice())
+        .chain(b"\n".as_slice())
+        .chain(b"b\n".as_slice());
+    let config = bat::config::Config {
+        unbuffered: true,
+        show_nonprintable: true,
+        nonprintable_notation: bat::NonprintableNotation::Unicode,
+        squeeze_lines: Some(0),
+        term_width: 40,
+        theme: "Monokai Extended".to_owned(),
+        ..Default::default()
+    };
+    let assets = bat::assets::HighlightingAssets::from_binary();
+    let mut output = String::new();
+
+    assert!(bat::controller::Controller::new(&config, &assets)
+        .run(
+            vec![bat::input::Input::from_reader(Box::new(input))],
+            Some(&mut bat::output::OutputHandle::FmtWrite(&mut output)),
+        )
+        .unwrap());
+    assert_eq!(output, "seed␊\na␊\nb␊\n");
+}
+
+#[test]
 fn list_themes_with_colors() {
     let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
     let default_light_theme_chunk = "Monokai Extended Light\x1B[0m (default light)";

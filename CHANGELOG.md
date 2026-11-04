@@ -38,7 +38,7 @@
 - Fix builtin pager (minus) not responding to search (`/`, `?`, `n`, `N`) and navigation (`PgUp`, `PgDown`, arrows, `g`, `G`) keys. `HashedEventRegister` was overriding all default `minus` bindings instead of extending them. Add `generate_default_bindings()` before custom bindings. See #3831, #3798 and #3837 (@Amilliox)
 - Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #4131 (@NotAFlightRisk)
 - Do not run filter commands from the configuration of the Git repository that contains the displayed file, see #4127 (@curious-rabbit)
-- Fix `--squeeze-blank` and `--squeeze-limit` with `--show-all` in formatted output, see #4109 (@Marve10s)
+- Fix `--squeeze-blank` and `--squeeze-limit` with `--show-all` in buffered formatted output, see #4109 (@Marve10s)
 - Ignore empty `--ignored-suffix` values to avoid a stack overflow, see #4122 (@spicysharkco)
 - Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
 - Fix automatic cache build progress polluting stdout, see #4130 (@intertermux-code)
