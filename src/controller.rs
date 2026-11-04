@@ -60,7 +60,13 @@ impl Controller<'_> {
             use std::path::Path;
 
             // Do not launch the pager if NONE of the input files exist
-            let mut paging_mode = self.config.paging_mode;
+            // This mode is intended for input preprocessors, where an outer
+            // pager needs an empty stream to try its next fallback.
+            let mut paging_mode = if self.config.fail_if_syntax_unsupported {
+                PagingMode::Never
+            } else {
+                self.config.paging_mode
+            };
             if self.config.paging_mode != PagingMode::Never {
                 let call_pager = inputs.iter().any(|input| {
                     if let InputKind::OrdinaryFile(ref path) = input.kind {
@@ -159,6 +165,32 @@ impl Controller<'_> {
             input.open(stdin, stdout_identifier)?
         };
         opened_input.reader.unbuffered = self.config.unbuffered;
+        if self.config.fail_if_syntax_unsupported {
+            let is_binary = opened_input
+                .reader
+                .content_type
+                .is_some_and(|c| c.is_binary());
+            if is_binary
+                && !self.config.show_nonprintable
+                && self.config.binary != crate::BinaryBehavior::AsText
+            {
+                return Err(Error::SyntaxUnsupported);
+            }
+            match self.assets.get_syntax(
+                self.config.language,
+                self.config.fallback_syntax,
+                &mut opened_input,
+                &self.config.syntax_mapping,
+            ) {
+                Ok(syntax) if syntax.syntax.name == "Plain Text" => {
+                    return Err(Error::SyntaxUnsupported)
+                }
+                Ok(_) => {}
+                Err(Error::UndetectedSyntax(_)) => return Err(Error::SyntaxUnsupported),
+                Err(error) => return Err(error),
+            }
+        }
+
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())

@@ -44,6 +44,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(-f --force-colorization)'--force-colorization'[force colorization and decorations]'
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-P --no-paging)'--no-paging'[alias for --paging=never]'
+        --fail-if-syntax-unsupported'[silently reject inputs without a specific syntax]'
         --pager='[determine which pager to use]:command:'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
         --ignored-suffix='[ignore extension]:suffix:'

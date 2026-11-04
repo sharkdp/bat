@@ -38,6 +38,9 @@ pub struct Config<'a> {
     /// The explicitly configured language, if any
     pub language: Option<&'a str>,
 
+    /// Silently reject inputs without a specific syntax (also disables paging)
+    pub fail_if_syntax_unsupported: bool,
+
     /// The fallback syntax used when auto-detection fails
     pub fallback_syntax: Option<&'a str>,
 
