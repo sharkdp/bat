@@ -2657,6 +2657,100 @@ fn unicode_wrap() {
 }
 
 #[test]
+fn unicode_emoji_wrap() {
+    for (style, width, first, continuation) in
+        [("plain", "10", "", ""), ("numbers", "15", "   1 ", "     ")]
+    {
+        for emoji in ["👩\u{200d}💻", "👍🏽", "🇬🇧"] {
+            for (input, expected) in [
+                (
+                    format!("1234567{emoji}\n"),
+                    format!("{first}1234567{emoji}\n"),
+                ),
+                (
+                    format!("123456789{emoji}X\n"),
+                    format!("{first}123456789\n{continuation}{emoji}X\n"),
+                ),
+                (
+                    format!("123456{emoji}AB\n"),
+                    format!("{first}123456{emoji}AB\n"),
+                ),
+            ] {
+                bat()
+                    .args([
+                        "--no-custom-assets",
+                        "--paging=never",
+                        "--color=never",
+                        "--decorations=always",
+                        "--wrap=character",
+                        "--language=txt",
+                        "--style",
+                        style,
+                        "--terminal-width",
+                        width,
+                    ])
+                    .write_stdin(input)
+                    .assert()
+                    .success()
+                    .stdout(expected)
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[test]
+fn unicode_emoji_wrap_with_syntax_highlighting() {
+    for (language, input, fragment, lines) in [
+        ("rs", "//12345👩\u{200d}💻\n", "12345👩\u{200d}💻", 1),
+        ("json", "\"12345678🇬🇧X\"\n", "🇬🇧X", 2),
+    ] {
+        bat()
+            .args([
+                "--no-custom-assets",
+                "--paging=never",
+                "--color=always",
+                "--decorations=always",
+                "--style=plain",
+                "--wrap=character",
+                "--terminal-width=10",
+                "--theme=Monokai Extended",
+                "--language",
+                language,
+            ])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("\x1b["))
+            .stdout(predicate::str::contains(fragment))
+            .stdout(predicate::function(move |s: &str| {
+                s.lines().count() == lines
+            }))
+            .stderr("");
+    }
+}
+
+#[test]
+fn unicode_emoji_word_wrap_remainder() {
+    bat()
+        .args([
+            "--no-custom-assets",
+            "--paging=never",
+            "--color=never",
+            "--decorations=always",
+            "--style=plain",
+            "--wrap=word",
+            "--terminal-width=10",
+            "--language=txt",
+        ])
+        .write_stdin("123456 👩\u{200d}💻abcdEFGHIJ\n")
+        .assert()
+        .success()
+        .stdout("123456\n👩\u{200d}💻abcdEFGH\nIJ\n")
+        .stderr("");
+}
+
+#[test]
 fn snip() {
     bat()
         .arg("multiline.txt")
@@ -4142,6 +4236,61 @@ fn map_syntax_and_ignored_suffix_work_together() {
         .success()
         .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
+}
+
+#[cfg(unix)]
+#[test]
+fn map_syntax_paths_and_ignored_suffix_work_together() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let root = tmp_dir.path().canonicalize().unwrap();
+    let one = root.join("one");
+    let two = root.join("two");
+    let names = ["file.demo", "file.demo.bak", "file.demo.bak.old"];
+    for directory in [&one, &two] {
+        std::fs::create_dir(directory).unwrap();
+        for name in names {
+            std::fs::write(directory.join(name), b"{\"a\": 1}\n").unwrap();
+        }
+    }
+
+    let stdout = |path: &Path, args: &[&str]| {
+        let output = bat()
+            .args([
+                "--color=always",
+                "--paging=never",
+                "--style=plain",
+                "--wrap=never",
+                "--theme=Monokai Extended",
+            ])
+            .args(args)
+            .arg(path)
+            .assert()
+            .success()
+            .stderr("");
+        output.get_output().stdout.clone()
+    };
+    let original = one.join("file.demo");
+    let backup = one.join("file.demo.bak");
+    let json = stdout(&backup, &["--language=JSON"]);
+    let plain = stdout(&backup, &["--language=Plain Text"]);
+    assert_ne!(json, plain);
+
+    for pattern in [original.clone(), one.join("*.demo")] {
+        let mapping = format!("--map-syntax={}:JSON", pattern.display());
+        for name in names {
+            assert_eq!(stdout(&one.join(name), &[&mapping]), json, "{name}");
+        }
+        assert_eq!(stdout(&two.join("file.demo.bak"), &[&mapping]), plain);
+    }
+
+    let mapping = format!("--map-syntax={}:JSON", original.display());
+    for (args, expected) in [
+        (["--map-syntax=*.demo:Plain Text", mapping.as_str()], &json),
+        ([mapping.as_str(), "--map-syntax=*.demo:Plain Text"], &plain),
+        (["--map-syntax=*.bak:Plain Text", mapping.as_str()], &plain),
+    ] {
+        assert_eq!(&stdout(&backup, &args), expected);
+    }
 }
 
 #[test]
