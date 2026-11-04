@@ -176,7 +176,7 @@ impl<'a> SyntaxMapping<'a> {
         let file_name = path.as_ref().file_name()?;
         self.ignored_suffixes
             .try_with_stripped_suffix(file_name, |stripped_file_name| {
-                if stripped_file_name.is_empty() {
+                if Path::new(stripped_file_name).file_name().is_none() {
                     return Ok(self.get_syntax_for(stripped_file_name));
                 }
                 Ok(self.get_syntax_for(path.as_ref().with_file_name(stripped_file_name)))
@@ -298,7 +298,9 @@ mod tests {
         map.insert("to", MappingTarget::MapTo("parent")).unwrap();
         map.insert_ignored_suffix(".custom");
 
-        for name in ["~", ".bak", ".custom", "~.bak"] {
+        for name in [
+            "~", ".bak", ".custom", "~.bak", ".~", "..bak", "..custom", "...bak",
+        ] {
             assert_eq!(map.get_syntax_for(Path::new("/path/to").join(name)), None);
         }
 
@@ -307,6 +309,15 @@ mod tests {
             map.get_syntax_for("/path/to/~.bak"),
             Some(MappingTarget::MapTo("empty"))
         );
+
+        for (pattern, name) in [(".", ".~"), (".", "..bak"), ("..", "...bak")] {
+            let mut map = SyntaxMapping::new();
+            map.insert(pattern, MappingTarget::MapTo("dot")).unwrap();
+            assert_eq!(
+                map.get_syntax_for(Path::new("/path/to").join(name)),
+                Some(MappingTarget::MapTo("dot"))
+            );
+        }
     }
 
     #[test]
