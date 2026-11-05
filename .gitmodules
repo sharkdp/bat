@@ -284,3 +284,6 @@
 [submodule "assets/syntaxes/02_Extra/Caddy"]
 	path = assets/syntaxes/02_Extra/Caddy
 	url = https://github.com/caddyserver/sublimetext.git
+[submodule "assets/syntaxes/02_Extra/CUE"]
+	path = assets/syntaxes/02_Extra/CUE
+	url = https://github.com/cue-lang/vscode-cue.git
