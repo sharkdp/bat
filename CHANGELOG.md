@@ -32,6 +32,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Make full-path `--map-syntax` patterns and the built-in `$HOME` and `$XDG_CONFIG_HOME` mappings work on Windows, see #4113 (@b84330808)
 - Keep configuration and BAT_OPTS active for option-like filenames after `--`, and report invalid configuration for help-like filenames, see #4112 (@Marve10s)
 - Keep emoji sequences together within text chunks when wrapping content, and measure their combined display width, see #4108 (@Marve10s)
 - Preserve full-path syntax mappings when removing ignored filename suffixes, see #4111 (@Marve10s)

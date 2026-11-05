@@ -3272,6 +3272,98 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
 }
 
 #[test]
+fn map_syntax_glob_may_contain_colons() {
+    let highlight_stdin = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain", "--file-name=x1:y.js"])
+            .args(args)
+            .write_stdin("# heading\n")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    assert_eq!(
+        highlight_stdin(&["--map-syntax=x1:*.js:Markdown"]),
+        highlight_stdin(&["--language=Markdown"]),
+    );
+}
+
+#[test]
+fn map_syntax_without_colon_is_rejected() {
+    bat()
+        .arg("--map-syntax=Markdown")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid syntax mapping"));
+}
+
+#[cfg(windows)]
+#[test]
+fn map_syntax_glob_with_drive_letter() {
+    let dir = tempdir().unwrap();
+    let dir = dir.path().to_str().unwrap();
+    assert_eq!(dir.as_bytes()[1], b':', "{dir}");
+    let file = format!(r"{dir}\file.conf");
+    std::fs::write(&file, "# heading\n").unwrap();
+
+    let highlight_file = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain"])
+            .args(args)
+            .arg(&file)
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    let markdown = highlight_file(&["--language=Markdown"]);
+    for glob in [
+        format!(r"{dir}\*.conf"),
+        format!(r"{dir}\*.conf").replace('\\', "/"),
+    ] {
+        assert_eq!(
+            highlight_file(&[&format!("--map-syntax={glob}:Markdown")]),
+            markdown,
+            "{glob}"
+        );
+    }
+}
+
+#[cfg(windows)]
+#[test]
+fn builtin_mapping_below_home_on_windows() {
+    let home = tempdir().unwrap();
+    let dir = home.path().join(".config").join("git");
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("config");
+    std::fs::write(&file, "[user]\n\tname = bat\n").unwrap();
+
+    let highlight_file = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain"])
+            .env("HOME", home.path())
+            .args(args)
+            .arg(&file)
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    assert_eq!(
+        highlight_file(&[]),
+        highlight_file(&["--language=Git Config"])
+    );
+}
+
+#[test]
 fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
     let file = "regression_tests/first_line_fallback.invalid-syntax";
 
