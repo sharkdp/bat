@@ -1,5 +1,5 @@
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -22,6 +22,19 @@ pub mod ignored_suffixes;
 pub(crate) enum Case {
     Sensitive,
     Insensitive,
+}
+
+/// On Windows, `PathAbs` and `fs::canonicalize` return verbatim paths (`\\?\C:\dir\file`,
+/// `\\?\UNC\server\share\file`), which a pattern such as `C:/dir/*` would not match.
+fn without_verbatim_prefix(path: &Path) -> Option<PathBuf> {
+    if !cfg!(windows) {
+        return None;
+    }
+    let path = path.to_str()?;
+    match path.strip_prefix(r"\\?\UNC\") {
+        Some(rest) => Some(format!(r"\\{rest}").into()),
+        None => path.strip_prefix(r"\\?\").map(PathBuf::from),
+    }
 }
 
 fn make_glob_matcher(from: &str, case: Case) -> Result<GlobMatcher> {
@@ -162,9 +175,14 @@ impl<'a> SyntaxMapping<'a> {
     pub fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         // Try matching on the file name as-is.
         let candidate = Candidate::new(&path);
+        let simplified_path = without_verbatim_prefix(path.as_ref());
+        let candidate_simplified = simplified_path.as_ref().map(Candidate::new);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
         for (glob, syntax) in self.all_mappings() {
             if glob.is_match_candidate(&candidate)
+                || candidate_simplified
+                    .as_ref()
+                    .is_some_and(|simplified| glob.is_match_candidate(simplified))
                 || candidate_filename
                     .as_ref()
                     .is_some_and(|filename| glob.is_match_candidate(filename))
@@ -247,6 +265,34 @@ mod tests {
             map.get_syntax_for("/path/to/.ignore"),
             Some(MappingTarget::MapTo("Git Ignore"))
         );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn custom_mappings_match_verbatim_paths() {
+        let mut map = SyntaxMapping::new();
+        map.insert("C:/dir/*.myconf", MappingTarget::MapTo("INI"))
+            .unwrap();
+        map.insert(r"\\server\share\*.myconf", MappingTarget::MapTo("TOML"))
+            .unwrap();
+        map.insert(r"\\?\C:\literal\*.myconf", MappingTarget::MapTo("JSON"))
+            .unwrap();
+
+        for (path, expected) in [
+            (r"C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
+            (r"\\?\C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
+            (r"\\?\D:\dir\file.myconf", None),
+            (
+                r"\\?\C:\literal\file.myconf",
+                Some(MappingTarget::MapTo("JSON")),
+            ),
+            (
+                r"\\?\UNC\server\share\file.myconf",
+                Some(MappingTarget::MapTo("TOML")),
+            ),
+        ] {
+            assert_eq!(map.get_syntax_for(path), expected, "{path}");
+        }
     }
 
     #[test]

@@ -328,13 +328,12 @@ impl App {
             // later args take precedence over earlier ones, hence `.rev()`
             // see: https://github.com/sharkdp/bat/pull/2755#discussion_r1456416875
             for from_to in values.rev() {
-                let parts: Vec<_> = from_to.split(':').collect();
-
-                if parts.len() != 2 {
+                // The glob can contain colons itself, e.g. after a drive letter on Windows.
+                let Some((from, to)) = from_to.rsplit_once(':') else {
                     return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'.".into());
-                }
+                };
 
-                syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
+                syntax_mapping.insert(from, MappingTarget::MapTo(to))?;
             }
         }
 
