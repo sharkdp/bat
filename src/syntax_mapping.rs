@@ -275,11 +275,17 @@ mod tests {
             .unwrap();
         map.insert(r"\\server\share\*.myconf", MappingTarget::MapTo("TOML"))
             .unwrap();
+        map.insert(r"\\?\C:\literal\*.myconf", MappingTarget::MapTo("JSON"))
+            .unwrap();
 
         for (path, expected) in [
             (r"C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
             (r"\\?\C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
             (r"\\?\D:\dir\file.myconf", None),
+            (
+                r"\\?\C:\literal\file.myconf",
+                Some(MappingTarget::MapTo("JSON")),
+            ),
             (
                 r"\\?\UNC\server\share\file.myconf",
                 Some(MappingTarget::MapTo("TOML")),
