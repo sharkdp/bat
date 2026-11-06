@@ -1,5 +1,5 @@
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -22,6 +22,19 @@ pub mod ignored_suffixes;
 pub(crate) enum Case {
     Sensitive,
     Insensitive,
+}
+
+/// On Windows, `PathAbs` and `fs::canonicalize` return verbatim paths (`\\?\C:\dir\file`,
+/// `\\?\UNC\server\share\file`), which a pattern such as `C:/dir/*` would not match.
+fn without_verbatim_prefix(path: &Path) -> Option<PathBuf> {
+    if !cfg!(windows) {
+        return None;
+    }
+    let path = path.to_str()?;
+    match path.strip_prefix(r"\\?\UNC\") {
+        Some(rest) => Some(format!(r"\\{rest}").into()),
+        None => path.strip_prefix(r"\\?\").map(PathBuf::from),
+    }
 }
 
 fn make_glob_matcher(from: &str, case: Case) -> Result<GlobMatcher> {
@@ -162,9 +175,14 @@ impl<'a> SyntaxMapping<'a> {
     pub fn get_syntax_for(&self, path: impl AsRef<Path>) -> Option<MappingTarget<'a>> {
         // Try matching on the file name as-is.
         let candidate = Candidate::new(&path);
+        let simplified_path = without_verbatim_prefix(path.as_ref());
+        let candidate_simplified = simplified_path.as_ref().map(Candidate::new);
         let candidate_filename = path.as_ref().file_name().map(Candidate::new);
         for (glob, syntax) in self.all_mappings() {
             if glob.is_match_candidate(&candidate)
+                || candidate_simplified
+                    .as_ref()
+                    .is_some_and(|simplified| glob.is_match_candidate(simplified))
                 || candidate_filename
                     .as_ref()
                     .is_some_and(|filename| glob.is_match_candidate(filename))
@@ -176,7 +194,10 @@ impl<'a> SyntaxMapping<'a> {
         let file_name = path.as_ref().file_name()?;
         self.ignored_suffixes
             .try_with_stripped_suffix(file_name, |stripped_file_name| {
-                Ok(self.get_syntax_for(stripped_file_name))
+                if Path::new(stripped_file_name).file_name().is_none() {
+                    return Ok(self.get_syntax_for(stripped_file_name));
+                }
+                Ok(self.get_syntax_for(path.as_ref().with_file_name(stripped_file_name)))
             })
             .ok()?
     }
@@ -244,6 +265,105 @@ mod tests {
             map.get_syntax_for("/path/to/.ignore"),
             Some(MappingTarget::MapTo("Git Ignore"))
         );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn custom_mappings_match_verbatim_paths() {
+        let mut map = SyntaxMapping::new();
+        map.insert("C:/dir/*.myconf", MappingTarget::MapTo("INI"))
+            .unwrap();
+        map.insert(r"\\server\share\*.myconf", MappingTarget::MapTo("TOML"))
+            .unwrap();
+        map.insert(r"\\?\C:\literal\*.myconf", MappingTarget::MapTo("JSON"))
+            .unwrap();
+
+        for (path, expected) in [
+            (r"C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
+            (r"\\?\C:\dir\file.myconf", Some(MappingTarget::MapTo("INI"))),
+            (r"\\?\D:\dir\file.myconf", None),
+            (
+                r"\\?\C:\literal\file.myconf",
+                Some(MappingTarget::MapTo("JSON")),
+            ),
+            (
+                r"\\?\UNC\server\share\file.myconf",
+                Some(MappingTarget::MapTo("TOML")),
+            ),
+        ] {
+            assert_eq!(map.get_syntax_for(path), expected, "{path}");
+        }
+    }
+
+    #[test]
+    fn custom_mappings_with_ignored_suffix_preserve_paths() {
+        for (pattern, parent) in [
+            ("/path/to/file.demo", "/path/to"),
+            ("/path/to/*.demo", "/path/to"),
+            ("path/to/*.demo", "path/to"),
+        ] {
+            let mut map = SyntaxMapping::new();
+            map.insert(pattern, MappingTarget::MapTo("JSON")).unwrap();
+            map.insert_ignored_suffix(".custom");
+
+            for suffix in ["", ".bak", ".bak.old", ".custom.custom"] {
+                let path = Path::new(parent).join(format!("file.demo{suffix}"));
+                assert_eq!(
+                    map.get_syntax_for(&path),
+                    Some(MappingTarget::MapTo("JSON")),
+                    "{pattern}: {}",
+                    path.display()
+                );
+            }
+            assert_eq!(map.get_syntax_for("/path/elsewhere/file.demo.bak"), None);
+        }
+    }
+
+    #[test]
+    fn custom_mappings_with_ignored_suffix_preserve_precedence() {
+        for (first, second) in [("/path/to/*.demo", "*.demo"), ("*.demo", "/path/to/*.demo")] {
+            let mut map = SyntaxMapping::new();
+            map.insert(first, MappingTarget::MapTo("first")).unwrap();
+            map.insert(second, MappingTarget::MapTo("second")).unwrap();
+            assert_eq!(
+                map.get_syntax_for("/path/to/file.demo.bak"),
+                Some(MappingTarget::MapTo("first"))
+            );
+
+            map.insert("*.bak", MappingTarget::MapTo("backup")).unwrap();
+            assert_eq!(
+                map.get_syntax_for("/path/to/file.demo.bak"),
+                Some(MappingTarget::MapTo("backup"))
+            );
+        }
+    }
+
+    #[test]
+    fn custom_mappings_with_empty_stripped_filename() {
+        let mut map = SyntaxMapping::new();
+        map.insert("to", MappingTarget::MapTo("parent")).unwrap();
+        map.insert_ignored_suffix(".custom");
+
+        for name in [
+            "~", ".bak", ".custom", "~.bak", ".~", "..bak", "..custom", "...bak",
+        ] {
+            assert_eq!(map.get_syntax_for(Path::new("/path/to").join(name)), None);
+        }
+
+        map.insert("", MappingTarget::MapTo("empty")).unwrap();
+        assert_eq!(
+            map.get_syntax_for("/path/to/~.bak"),
+            Some(MappingTarget::MapTo("empty"))
+        );
+
+        for (pattern, name) in [(".", ".~"), (".", "..bak"), ("..", "...bak")] {
+            let mut map = SyntaxMapping::new();
+            map.insert(pattern, MappingTarget::MapTo("dot")).unwrap();
+            assert_eq!(
+                map.get_syntax_for(Path::new("/path/to").join(name)),
+                Some(MappingTarget::MapTo("dot"))
+            );
+        }
     }
 
     #[test]
