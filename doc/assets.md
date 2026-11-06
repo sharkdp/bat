@@ -6,7 +6,7 @@ Should you find that a particular syntax is not available within `bat` and think
 code. As a basis, syntect uses [Sublime Text](https://www.sublimetext.com/) syntax definitions
 in the `.sublime-syntax` format.
 
-**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#Criteria-for-inclusion-of-new-syntaxes).
+**Important:** Before proceeding, verify that the syntax you wish to add meets the [criteria for inclusion](#criteria-for-inclusion-of-new-syntaxes).
 
 1. Find a Sublime Text syntax for the given language, preferably in a separate Git repository
    which can be included as a submodule (under `assets/syntaxes`) using
@@ -28,7 +28,7 @@ in the `.sublime-syntax` format.
 
 5. Use `bat --list-languages` to check if the new languages are available. You may want to do something like ``export PATH="`pwd`/target/debug:$PATH"`` to ensure the locally compiled version is the one being used.
 
-6. Add a syntax test for the new language. See [below](#Syntax-tests) for details.
+6. Add a syntax test for the new language. See [below](#syntax-tests) for details.
 
 7. If you send a pull request with your changes, please do *not* include the changed `syntaxes.bin`
    file. A new binary cache file will be created once before every new release of `bat`. This
@@ -103,3 +103,7 @@ The following files have been manually modified after converting from a `.tmLang
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
 * `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.
+* `CUE.sublime-syntax` has been added manually from https://github.com/cue-lang/vscode-cue/blob/master/extension/syntaxes/cue.tmLanguage.json via conversion.
+  Sublime Text's converter rejects rules that only group other patterns (see https://github.com/cue-lang/cue/issues/3427), so they are inlined before converting:
+  `jq 'walk(if type == "object" and has("patterns") then .patterns |= [.[] | if type == "object" and keys == ["patterns"] then .patterns[] else . end] else . end)'`.
+  The converted syntax reproduces the token goldens in `extension/testdata/syntax` of that repository.
