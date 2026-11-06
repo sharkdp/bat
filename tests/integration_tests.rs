@@ -348,6 +348,47 @@ fn number_nonblank_style() {
 }
 
 #[test]
+fn number_nonblank_utf16() {
+    for little_endian in [true, false] {
+        for newline in ["\n", "\r\n"] {
+            for (text, expected) in [
+                ("alpha\n\nbeta\n", "   1 alpha\n     \n   2 beta\n"),
+                ("\nalpha\n\n", "     \n   1 alpha\n     \n"),
+                (
+                    "alpha\n\n \n\t\nbeta\n",
+                    "   1 alpha\n     \n   2  \n   3     \n   4 beta\n",
+                ),
+            ] {
+                let text = text.replace('\n', newline);
+                let mut bytes = if little_endian {
+                    vec![0xff, 0xfe]
+                } else {
+                    vec![0xfe, 0xff]
+                };
+                for unit in text.encode_utf16() {
+                    bytes.extend_from_slice(&if little_endian {
+                        unit.to_le_bytes()
+                    } else {
+                        unit.to_be_bytes()
+                    });
+                }
+                bat()
+                    .args([
+                        "-b",
+                        "--decorations=always",
+                        "--color=never",
+                        "--paging=never",
+                    ])
+                    .write_stdin(bytes)
+                    .assert()
+                    .success()
+                    .stdout(expected.replace('\n', newline));
+            }
+        }
+    }
+}
+
+#[test]
 fn number_nonblank_from_cli_in_loop_through_mode() {
     bat()
         .arg("empty_lines.txt")
