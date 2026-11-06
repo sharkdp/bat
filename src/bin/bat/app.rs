@@ -65,12 +65,20 @@ pub struct App {
     number_nonblank_from_cli: bool,
 }
 
+/// True if stdout is attached to an interactive terminal. On Windows this also
+/// recognizes mintty/MSYS2 and Cygwin pseudo-terminals, which expose stdout as
+/// a named pipe that `std::io::IsTerminal` does not report as a terminal.
+/// Regular pipes (e.g. `bat file | grep`) are not affected.
+fn is_interactive_output() -> bool {
+    std::io::stdout().is_terminal() || Term::stdout().features().is_msys_tty()
+}
+
 impl App {
     pub fn new() -> Result<Self> {
         #[cfg(windows)]
         let _ = nu_ansi_term::enable_ansi_support();
 
-        let interactive_output = std::io::stdout().is_terminal();
+        let interactive_output = is_interactive_output();
 
         // Parse the original command line separately from config and environment arguments.
         // Using clap here keeps CLI-only detection consistent with the final parser, including
