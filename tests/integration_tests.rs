@@ -5147,6 +5147,50 @@ fn quiet_empty_suppresses_output_on_empty_file() {
 }
 
 #[test]
+fn quiet_empty_no_padding_before_first_printed_file() {
+    bat()
+        .arg("--quiet-empty")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("empty.txt")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("File: single-line.txt\nSingle Line\n")
+        .stderr("");
+}
+
+#[test]
+fn quiet_empty_no_rule_before_first_printed_file() {
+    bat()
+        .arg("--quiet-empty")
+        .arg("--decorations=always")
+        .arg("--style=header,rule")
+        .arg("--terminal-width=80")
+        .arg("empty.txt")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("File: single-line.txt\nSingle Line\n")
+        .stderr("");
+}
+
+#[test]
+fn quiet_empty_keeps_padding_between_printed_files() {
+    bat()
+        .arg("--quiet-empty")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("test.txt")
+        .arg("empty.txt")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stdout("File: test.txt\nhello world\n\nFile: single-line.txt\nSingle Line\n")
+        .stderr("");
+}
+
+#[test]
 fn cache_help_shows_help_message() {
     // Test that `bat cache --help` works (fixes #3560)
     // Run in cache_source directory which doesn't have a file named "cache"
@@ -5307,6 +5351,39 @@ fn setup_diff_test_repo() -> tempfile::TempDir {
     .expect("can write modified test file");
 
     dir
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_no_padding_before_first_changed_file() {
+    use std::process::Command;
+
+    let repo = setup_diff_test_repo();
+
+    // A committed file without changes is skipped by --diff, so the first file that is printed
+    // must not be preceded by the padding that separates files.
+    std::fs::write(repo.path().join("clean.txt"), "unchanged\n").expect("can write clean file");
+    for args in [&["add", "clean.txt"][..], &["commit", "-m", "clean"][..]] {
+        Command::new("git")
+            .args(args)
+            .current_dir(repo.path())
+            .output()
+            .expect("git");
+    }
+
+    bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=header")
+        .arg("clean.txt")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("File: test.txt\nline 1\nline 2 modified\nline 3\nline 4 added\n")
+        .stderr("");
 }
 
 #[cfg(unix)]
