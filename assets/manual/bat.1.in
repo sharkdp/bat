@@ -72,8 +72,8 @@ language names and file extensions.
 .IP
 Set a fallback language for syntax highlighting when auto\-detection fails.
 Unlike '\-\-language', this is only used when no syntax could be detected from
-filename, custom syntax mappings, or first\-line detection. The alias
-'\-\-fallback\-language' is accepted as well.
+filename, custom syntax mappings, or first\-line detection. The alias '\-\-fallback\-language'
+is accepted as well.
 .HP
 \fB\-H\fR, \fB\-\-highlight\-line\fR <N:M>...
 .IP
