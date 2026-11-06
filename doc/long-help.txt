@@ -208,6 +208,8 @@ Options:
             * header: alias for 'header-filename'.
             * header-filename: show filenames before the content.
             * header-filesize: show file sizes before the content.
+            * highlight-indicator: mark highlighted lines with '>'.
+                    Shown only when highlight ranges are configured.
             * grid: vertical/horizontal lines to separate side bar
                     and the header from the content.
             * rule: horizontal lines to delimit files.

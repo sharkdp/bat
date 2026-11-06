@@ -26,6 +26,7 @@ struct ActiveStyleComponents {
     grid: bool,
     rule: bool,
     line_numbers: bool,
+    highlight_indicator: bool,
     snip: bool,
 }
 
@@ -148,6 +149,13 @@ impl<'a> PrettyPrinter<'a> {
     /// Whether to show line numbers
     pub fn line_numbers(&mut self, yes: bool) -> &mut Self {
         self.active_style_components.line_numbers = yes;
+        self
+    }
+
+    /// Whether to mark highlighted lines with `>` in the sidebar.
+    /// The column is omitted when no highlight ranges are configured.
+    pub fn highlight_indicator(&mut self, yes: bool) -> &mut Self {
+        self.active_style_components.highlight_indicator = yes;
         self
     }
 
@@ -313,6 +321,11 @@ impl<'a> PrettyPrinter<'a> {
             self.config
                 .style_components
                 .insert(StyleComponent::HeaderFilename);
+        }
+        if self.active_style_components.highlight_indicator {
+            self.config
+                .style_components
+                .insert(StyleComponent::HighlightIndicator);
         }
         if self.active_style_components.line_numbers {
             self.config
