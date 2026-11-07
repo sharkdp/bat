@@ -103,3 +103,7 @@ The following files have been manually modified after converting from a `.tmLang
 * `Cabal.sublime_syntax` has been added manually from
   https://github.com/SublimeHaskell/SublimeHaskell/ - we don't want to include the whole submodule because it includes other syntaxes ("Haskell improved") as well.
 * `Lean.sublime-syntax` has been added manually from https://github.com/leanprover/vscode-lean4/blob/master/vscode-lean4/syntaxes/lean4.json via conversion.
+* `CUE.sublime-syntax` has been added manually from https://github.com/cue-lang/vscode-cue/blob/master/extension/syntaxes/cue.tmLanguage.json via conversion.
+  Sublime Text's converter rejects rules that only group other patterns (see https://github.com/cue-lang/cue/issues/3427), so they are inlined before converting:
+  `jq 'walk(if type == "object" and has("patterns") then .patterns |= [.[] | if type == "object" and keys == ["patterns"] then .patterns[] else . end] else . end)'`.
+  The converted syntax reproduces the token goldens in `extension/testdata/syntax` of that repository.
