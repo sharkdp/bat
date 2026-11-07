@@ -46,6 +46,8 @@ pub(crate) mod paging;
 mod preprocessor;
 mod pretty_printer;
 pub(crate) mod printer;
+#[cfg(feature = "paging")]
+mod scroll;
 pub mod style;
 pub(crate) mod syntax_mapping;
 mod terminal;

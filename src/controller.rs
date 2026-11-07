@@ -57,6 +57,24 @@ impl Controller<'_> {
         let mut output_type_opt: Option<OutputType> = None;
 
         #[cfg(feature = "paging")]
+        let scroll_reached = std::cell::Cell::new(false);
+        #[cfg(feature = "paging")]
+        let mut deferred_output = None;
+        #[cfg(feature = "paging")]
+        if self.config.scroll_to == Some(0) {
+            return Err("--scroll-to requires a positive line number".into());
+        }
+        #[cfg(feature = "paging")]
+        if self.config.scroll_to.is_some() || self.config.center_highlight {
+            if inputs.len() != 1 {
+                return Err("Scrolling to a line requires exactly one input".into());
+            }
+            if self.config.scroll_to.is_some() && self.config.center_highlight {
+                return Err("--scroll-to and --center-highlight cannot be combined".into());
+            }
+        }
+
+        #[cfg(feature = "paging")]
         if output_handle.is_none() {
             use crate::input::InputKind;
             use std::path::Path;
@@ -78,11 +96,19 @@ impl Controller<'_> {
 
             let wrapping_mode = self.config.wrapping_mode;
 
-            output_type_opt = Some(OutputType::from_mode(
-                paging_mode,
-                wrapping_mode,
-                self.config.pager,
-            )?);
+            if paging_mode != PagingMode::Never
+                && (self.config.scroll_to.is_some() || self.config.center_highlight)
+            {
+                deferred_output =
+                    crate::scroll::DeferredOutput::new(self.config, paging_mode, &scroll_reached)?;
+            }
+            if deferred_output.is_none() {
+                output_type_opt = Some(OutputType::from_mode(
+                    paging_mode,
+                    wrapping_mode,
+                    self.config.pager,
+                )?);
+            }
         }
 
         #[cfg(not(feature = "paging"))]
@@ -96,11 +122,27 @@ impl Controller<'_> {
             (None, None) => false,
         };
 
+        #[cfg(feature = "paging")]
+        let attached_to_pager = attached_to_pager || deferred_output.is_some();
+
         let stdout_identifier = if cfg!(windows) || attached_to_pager {
             None
         } else {
             clircle::Identifier::stdout()
         };
+
+        #[cfg(feature = "paging")]
+        let output_handle = match deferred_output.as_mut() {
+            Some(output) => Some(OutputHandle::IoWrite(output)),
+            None => output_handle.map(|handle| match handle {
+                OutputHandle::IoWrite(writer) => OutputHandle::IoWrite(*writer),
+                OutputHandle::FmtWrite(writer) => OutputHandle::FmtWrite(*writer),
+            }),
+        };
+        #[cfg(feature = "paging")]
+        let mut output_handle = output_handle;
+        #[cfg(feature = "paging")]
+        let output_handle = output_handle.as_mut();
 
         let mut writer = match (output_handle, &mut output_type_opt) {
             (Some(OutputHandle::FmtWrite(w)), _) => OutputHandle::FmtWrite(w),
@@ -115,10 +157,26 @@ impl Controller<'_> {
             let identifier = stdout_identifier.as_ref();
             let is_first = index == 0;
             let result = if input.is_stdin() {
-                self.print_input(input, &mut writer, io::stdin().lock(), identifier, is_first)
+                self.print_input(
+                    input,
+                    &mut writer,
+                    io::stdin().lock(),
+                    identifier,
+                    is_first,
+                    #[cfg(feature = "paging")]
+                    &scroll_reached,
+                )
             } else {
                 // Use dummy stdin since stdin is actually not used (#1902)
-                self.print_input(input, &mut writer, io::empty(), identifier, is_first)
+                self.print_input(
+                    input,
+                    &mut writer,
+                    io::empty(),
+                    identifier,
+                    is_first,
+                    #[cfg(feature = "paging")]
+                    &scroll_reached,
+                )
             };
             if let Err(error) = result {
                 match writer {
@@ -137,6 +195,10 @@ impl Controller<'_> {
             }
         }
 
+        #[cfg(feature = "paging")]
+        if let Some(output) = deferred_output.as_mut() {
+            output.finish()?;
+        }
         Ok(no_errors)
     }
 
@@ -147,6 +209,7 @@ impl Controller<'_> {
         stdin: R,
         stdout_identifier: Option<&Identifier>,
         is_first: bool,
+        #[cfg(feature = "paging")] scroll_reached: &std::cell::Cell<bool>,
     ) -> Result<()> {
         let mut opened_input = {
             #[cfg(feature = "lessopen")]
@@ -210,6 +273,8 @@ impl Controller<'_> {
             !is_first,
             #[cfg(feature = "git")]
             &line_changes,
+            #[cfg(feature = "paging")]
+            scroll_reached,
         )
     }
 
@@ -220,6 +285,7 @@ impl Controller<'_> {
         input: &mut OpenedInput,
         add_header_padding: bool,
         #[cfg(feature = "git")] line_changes: &Option<LineChanges>,
+        #[cfg(feature = "paging")] scroll_reached: &std::cell::Cell<bool>,
     ) -> Result<()> {
         if !input.reader.first_line.is_empty() || self.config.style_components.header() {
             printer.print_header(writer, input, add_header_padding)?;
@@ -244,7 +310,18 @@ impl Controller<'_> {
                 }
             };
 
-            self.print_file_ranges(printer, writer, &mut input.reader, &line_ranges)?;
+            self.print_file_ranges(
+                printer,
+                writer,
+                &mut input.reader,
+                &line_ranges,
+                #[cfg(feature = "paging")]
+                scroll_reached,
+            )?;
+        }
+        #[cfg(feature = "paging")]
+        if self.config.center_highlight {
+            scroll_reached.set(false);
         }
         printer.print_footer(writer, input)?;
 
@@ -257,6 +334,7 @@ impl Controller<'_> {
         writer: &mut OutputHandle,
         reader: &mut InputReader,
         line_ranges: &LineRanges,
+        #[cfg(feature = "paging")] scroll_reached: &std::cell::Cell<bool>,
     ) -> Result<()> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
@@ -352,6 +430,23 @@ impl Controller<'_> {
                         }
                     }
 
+                    #[cfg(feature = "paging")]
+                    if self
+                        .config
+                        .scroll_to
+                        .is_some_and(|target| line_nr >= target)
+                        || (self.config.center_highlight
+                            && self
+                                .config
+                                .highlighted_lines
+                                .0
+                                .check(line_nr, max_buffered_line_number)
+                                == RangeCheckResult::InRange)
+                    {
+                        scroll_reached.set(true);
+                    } else if self.config.center_highlight {
+                        scroll_reached.set(false);
+                    }
                     printer.print_line(false, writer, line_nr, &line, max_buffered_line_number)?;
                     if self.config.unbuffered {
                         writer.flush()?;
