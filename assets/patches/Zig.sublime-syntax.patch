@@ -1,0 +1,31 @@
+diff --git syntaxes/02_Extra/Zig/Syntaxes/Zig.sublime-syntax syntaxes/02_Extra/Zig/Syntaxes/Zig.sublime-syntax
+--- syntaxes/02_Extra/Zig/Syntaxes/Zig.sublime-syntax
++++ syntaxes/02_Extra/Zig/Syntaxes/Zig.sublime-syntax
+@@ -87,6 +87,7 @@ contexts:
+     - include: punctuation
+     - include: storage_modifier
+     - include: container_decl
++    - include: error_set
+     - include: constants
+     - include: comments
+     - include: strings
+@@ -101,6 +102,19 @@ contexts:
+     - include: function_call
+     - include: enum_literal
+     - include: variables
++  error_set:
++    - match: '\b(error)\s*(\{)'
++      captures:
++        1: storage.type.error.zig
++        2: punctuation.section.braces.begin.zig
++      push:
++        - match: '\}'
++          scope: punctuation.section.braces.end.zig
++          pop: true
++        - match: '([a-zA-Z_]\w*|@\".+\")'
++          scope: entity.name.error.zig
++        - include: comments
++        - include: punctuation
+   enum_literal:
+     - match: '(^|\s+)(\.(?:[a-zA-Z_]\w*\b|@\"[^\"]*\"))(?!\(|\s*=[^=>])'
+       scope: constant.language.enum
