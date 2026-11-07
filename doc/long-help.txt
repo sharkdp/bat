@@ -171,16 +171,16 @@ Options:
 
       --strip-ansi <when>
           Specify when to strip ANSI escape sequences from the input. The automatic mode will remove
-          escape sequences unless the syntax highlighting language is plain text. Possible values:
-          auto, always, *never*.
+          escape sequences unless the syntax highlighting language is plain text. Piped output is
+          not stripped. Possible values: auto, always, *never*.
 
       --sanitize <when>
           Specify when to sanitize input bytes for safe terminal display. Implies --strip-ansi to
           the same value, and additionally substitutes terminal-active control bytes (cursor moves,
           charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the
           Unicode replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful for
-          displaying untrusted file content (e.g. file-manager preview panes). Possible values:
-          auto, always, *never*.
+          displaying untrusted file content (e.g. file-manager preview panes). Piped output is not
+          sanitized. Possible values: auto, always, *never*.
 
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
