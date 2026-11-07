@@ -505,6 +505,21 @@ fn snip_at_terminal_width_one_does_not_panic() {
 }
 
 #[test]
+fn wide_char_at_terminal_width_one_with_background_does_not_panic() {
+    // A double-width character does not fit in a one-column line. The cursor then moves past
+    // `cursor_max`, so the background fill must not subtract without checking (see #3844).
+    bat()
+        .arg("--color=always")
+        .arg("--paging=never")
+        .arg("--wrap=character")
+        .arg("--terminal-width=1")
+        .arg("--highlight-line=1")
+        .write_stdin("📦📦\n")
+        .assert()
+        .success();
+}
+
+#[test]
 fn line_range_multiple_with_context() {
     bat()
         .arg("multiline.txt")
@@ -727,6 +742,51 @@ fn boolean_flag_in_config_and_on_command_line() {
         .arg("--paging=never")
         .assert()
         .success();
+}
+
+#[test]
+fn repeated_valued_option_is_accepted() {
+    // Options that take a value must be repeatable (last value wins) just like
+    // boolean flags, otherwise a value from the config file cannot be
+    // overridden on the command line.
+    for options in [
+        ["--binary=as-text", "--binary=no-printing"],
+        ["--italic-text=always", "--italic-text=never"],
+        [
+            "--nonprintable-notation=unicode",
+            "--nonprintable-notation=caret",
+        ],
+        ["--fallback-syntax=bash", "--fallback-syntax=json"],
+        ["--squeeze-limit=5", "--squeeze-limit=2"],
+    ] {
+        bat()
+            .arg("test.txt")
+            .args(options)
+            .assert()
+            .success()
+            .stdout("hello world\n");
+    }
+}
+
+#[test]
+fn valued_option_in_config_can_be_overridden_on_command_line() {
+    // The config file is prepended to the command line, so a value given in
+    // both places used to be rejected as "cannot be used multiple times".
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+    std::fs::write(&tmp_config_path, "--binary=as-text").expect("can write config file");
+
+    bat_with_config()
+        .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+        .arg("test.binary")
+        .arg("--binary=no-printing")
+        .arg("--color=always")
+        .arg("--decorations=never")
+        .arg("--paging=never")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Binary content from"))
+        .stdout(predicate::str::contains("\0").not());
 }
 
 #[test]
@@ -993,6 +1053,32 @@ fn bat_error_to_stderr() {
         .assert()
         .failure()
         .stderr(predicate::str::contains("[bat error]"));
+}
+
+#[cfg(unix)]
+#[test]
+fn bat_error_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("/tmp")
+        .assert()
+        .failure()
+        .stderr("[bat error]: '/tmp' is a directory.\n");
+}
+
+#[test]
+fn bat_warning_respects_no_color() {
+    bat()
+        .env("NO_COLOR", "1")
+        .arg("--decorations=always")
+        .arg("--style=grid,rule")
+        .arg("--terminal-width=80")
+        .arg("single-line.txt")
+        .assert()
+        .success()
+        .stderr(
+            "[bat warning]: Style 'rule' is a subset of style 'grid', 'rule' will not be visible.\n",
+        );
 }
 
 #[cfg(unix)]
@@ -1393,6 +1479,22 @@ fn pager_overwrite() {
     });
 }
 
+#[cfg(windows)]
+#[test]
+fn pager_windows_absolute_path() {
+    let pager = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("mocked-pagers")
+        .join("echo.bat");
+    bat()
+        .env("BAT_PAGER", format!("\"{}\" pager-output", pager.display()))
+        .arg("--paging=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("pager-output\n").normalize());
+}
+
 #[test]
 fn pager_disable() {
     bat()
@@ -1759,6 +1861,158 @@ fn diagnostic_sanity_check() {
         .stderr("");
 }
 
+fn config_terminator_command(tmp_dir: &Path) -> assert_cmd::Command {
+    let mut command = bat_with_config();
+    command
+        .current_dir(tmp_dir)
+        .env("BAT_CONFIG_PATH", tmp_dir.join("config"))
+        .env("BAT_CONFIG_DIR", tmp_dir)
+        .env("BAT_CACHE_PATH", tmp_dir.join("cache-unused"))
+        .env("BAT_PAGER", tmp_dir.join("pager-unused"))
+        .args([
+            "--paging=never",
+            "--color=never",
+            "--style=plain",
+            "--wrap=never",
+            "--theme=Monokai Extended",
+        ])
+        .timeout(std::time::Duration::from_secs(10));
+    command
+}
+
+#[test]
+fn config_terminator_filenames_preserve_config_and_bat_opts() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("input.txt"), "first\nsecond\n")
+        .expect("can write temporary file");
+
+    for bat_opts in [None, Some("--line-range=2:2")] {
+        let config = if bat_opts.is_some() {
+            "--invalid-option"
+        } else {
+            "--line-range=2:2"
+        };
+        std::fs::write(tmp_dir.path().join("config"), config).expect("can write config file");
+
+        for filename in [
+            "--no-config",
+            "--version",
+            "-V",
+            "--diagnostic",
+            "--diagnostics",
+        ] {
+            std::fs::write(tmp_dir.path().join(filename), "first\nsecond\n")
+                .expect("can write temporary file");
+
+            for input in [filename.to_string(), format!("./{filename}")] {
+                let mut command = config_terminator_command(tmp_dir.path());
+                if let Some(opts) = bat_opts {
+                    command.env("BAT_OPTS", opts);
+                }
+                command
+                    .args(["--", "input.txt", &input])
+                    .assert()
+                    .success()
+                    .stdout("second\nsecond\n")
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[test]
+fn config_terminator_help_filenames_preserve_config_errors() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    for filename in ["--help", "-h"] {
+        std::fs::write(tmp_dir.path().join(filename), "first\nsecond\n")
+            .expect("can write temporary file");
+    }
+
+    for (config, code, error) in [
+        (
+            "--invalid-option",
+            2,
+            "unexpected argument '--invalid-option'",
+        ),
+        ("--theme='", 1, "Could not parse configuration file"),
+    ] {
+        std::fs::write(tmp_dir.path().join("config"), config).expect("can write config file");
+
+        for use_bat_opts in [false, true] {
+            for filename in ["--help", "-h"] {
+                let mut command = config_terminator_command(tmp_dir.path());
+                if use_bat_opts {
+                    command.env("BAT_OPTS", config);
+                }
+                command
+                    .args(["--", filename])
+                    .assert()
+                    .code(code)
+                    .stdout("")
+                    .stderr(predicate::str::contains(error));
+            }
+        }
+    }
+}
+
+#[test]
+fn config_terminator_escape_options_keep_working() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("config"), "--theme='").expect("can write config file");
+    std::fs::write(tmp_dir.path().join("input.txt"), "first\nsecond\n")
+        .expect("can write temporary file");
+
+    config_terminator_command(tmp_dir.path())
+        .args(["--invalid-cli-option", "--help"])
+        .assert()
+        .code(2)
+        .stdout("")
+        .stderr(predicate::str::contains(
+            "unexpected argument '--invalid-cli-option'",
+        ));
+
+    for consumed_terminator in [false, true] {
+        for option in [
+            "--no-config",
+            "--help",
+            "-h",
+            "--version",
+            "-V",
+            "--diagnostic",
+            "--diagnostics",
+        ] {
+            let mut command = config_terminator_command(tmp_dir.path());
+            if consumed_terminator {
+                command.args(["--line-range", "--"]);
+            }
+            let assertion = command.arg(option).arg("input.txt").assert();
+            match option {
+                "--no-config" if consumed_terminator => {
+                    assertion
+                        .code(1)
+                        .stdout("")
+                        .stderr(predicate::str::contains("invalid digit found in string"));
+                }
+                "--no-config" => {
+                    assertion.success().stdout("first\nsecond\n").stderr("");
+                }
+                _ => {
+                    let expected = match option {
+                        "--help" => "A cat(1) clone with syntax highlighting",
+                        "-h" => "A cat(1) clone with wings",
+                        "--version" | "-V" => "bat ",
+                        _ => "#### Software version",
+                    };
+                    assertion
+                        .success()
+                        .stdout(predicate::str::contains(expected))
+                        .stderr("");
+                }
+            }
+        }
+    }
+}
+
 #[test]
 fn help_works_with_invalid_config() {
     let tmp_dir = tempdir().expect("can create temporary directory");
@@ -1784,6 +2038,28 @@ fn help_works_with_invalid_config() {
         .assert()
         .success()
         .stdout(predicate::str::contains("A cat(1) clone with wings"));
+}
+
+#[test]
+fn config_file_with_utf8_bom() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let tmp_config_path = tmp_dir.path().join("config");
+
+    for config in [
+        "\u{feff}--style=numbers\r\n",
+        "\u{feff}# comment\r\n--style=numbers\r\n",
+    ] {
+        std::fs::write(&tmp_config_path, config).expect("can write config file");
+
+        bat_with_config()
+            .env("BAT_CONFIG_PATH", tmp_config_path.to_str().unwrap())
+            .arg("test.txt")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout("   1 hello world\n")
+            .stderr("");
+    }
 }
 
 #[test]
@@ -2056,6 +2332,75 @@ fn cache_build() {
 }
 
 #[test]
+fn cache_auto_build_on_first_run() {
+    // Custom themes/syntaxes are picked up automatically on first run (see #4017):
+    // if the config directory contains sources but no cache exists yet, bat
+    // builds the cache instead of silently using the integrated assets.
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+        .expect("can create syntaxes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c.sublime-syntax"),
+    )
+    .expect("can copy example syntax");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache"))
+        .stdout(predicate::str::contains("example"));
+
+    assert!(cache_dir.path().join("themes.bin").exists());
+    assert!(cache_dir.path().join("syntaxes.bin").exists());
+    assert!(cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
+fn cache_no_auto_build_with_no_custom_assets() {
+    // `--no-custom-assets` opts out of the automatic cache build (see #4017).
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--list-themes")
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("building cache").not())
+        .stdout(predicate::str::contains("example").not());
+
+    assert!(!cache_dir.path().join("themes.bin").exists());
+    assert!(!cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
     // BOM removed. This behavior is wanted in interactive mode as
@@ -2100,6 +2445,50 @@ fn utf16be() {
         .assert()
         .success()
         .stdout("   1 上一伊刀\n   2 foo bar\n   3 hello world\n");
+}
+
+#[test]
+fn utf16_unaligned_newline_bytes_preserve_text_and_ranges() {
+    for (content, expected, range, selected) in [
+        (
+            b"\xFF\xFE\x85\x0A\x00\x25\x0A\x00\
+                \x6E\x00\x65\x00\x78\x00\x74\x00\x0A\x00"
+                .as_slice(),
+            "   1 અ─\n   2 next\n",
+            "--line-range=2",
+            "   2 next\n",
+        ),
+        (
+            b"\xFE\xFF\x4E\x0A\x00\x0A\x25\x00\x0A\x85\x00\x0A\
+                \x00\x6E\x00\x65\x00\x78\x00\x74\x00\x0A"
+                .as_slice(),
+            "   1 上\n   2 ─અ\n   3 next\n",
+            "--line-range=3",
+            "   3 next\n",
+        ),
+    ] {
+        for (range, output) in [(None, expected), (Some(range), selected)] {
+            let mut command = bat();
+            command.args([
+                "--decorations=always",
+                "--style=numbers",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+                "--terminal-width=40",
+                "--language=txt",
+            ]);
+            if let Some(range) = range {
+                command.arg(range);
+            }
+            command
+                .write_stdin(content)
+                .assert()
+                .success()
+                .stdout(output)
+                .stderr("");
+        }
+    }
 }
 
 #[test]
@@ -2265,6 +2654,100 @@ fn unicode_wrap() {
       Швеция Великобритания
 ",
         );
+}
+
+#[test]
+fn unicode_emoji_wrap() {
+    for (style, width, first, continuation) in
+        [("plain", "10", "", ""), ("numbers", "15", "   1 ", "     ")]
+    {
+        for emoji in ["👩\u{200d}💻", "👍🏽", "🇬🇧"] {
+            for (input, expected) in [
+                (
+                    format!("1234567{emoji}\n"),
+                    format!("{first}1234567{emoji}\n"),
+                ),
+                (
+                    format!("123456789{emoji}X\n"),
+                    format!("{first}123456789\n{continuation}{emoji}X\n"),
+                ),
+                (
+                    format!("123456{emoji}AB\n"),
+                    format!("{first}123456{emoji}AB\n"),
+                ),
+            ] {
+                bat()
+                    .args([
+                        "--no-custom-assets",
+                        "--paging=never",
+                        "--color=never",
+                        "--decorations=always",
+                        "--wrap=character",
+                        "--language=txt",
+                        "--style",
+                        style,
+                        "--terminal-width",
+                        width,
+                    ])
+                    .write_stdin(input)
+                    .assert()
+                    .success()
+                    .stdout(expected)
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[test]
+fn unicode_emoji_wrap_with_syntax_highlighting() {
+    for (language, input, fragment, lines) in [
+        ("rs", "//12345👩\u{200d}💻\n", "12345👩\u{200d}💻", 1),
+        ("json", "\"12345678🇬🇧X\"\n", "🇬🇧X", 2),
+    ] {
+        bat()
+            .args([
+                "--no-custom-assets",
+                "--paging=never",
+                "--color=always",
+                "--decorations=always",
+                "--style=plain",
+                "--wrap=character",
+                "--terminal-width=10",
+                "--theme=Monokai Extended",
+                "--language",
+                language,
+            ])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("\x1b["))
+            .stdout(predicate::str::contains(fragment))
+            .stdout(predicate::function(move |s: &str| {
+                s.lines().count() == lines
+            }))
+            .stderr("");
+    }
+}
+
+#[test]
+fn unicode_emoji_word_wrap_remainder() {
+    bat()
+        .args([
+            "--no-custom-assets",
+            "--paging=never",
+            "--color=never",
+            "--decorations=always",
+            "--style=plain",
+            "--wrap=word",
+            "--terminal-width=10",
+            "--language=txt",
+        ])
+        .write_stdin("123456 👩\u{200d}💻abcdEFGHIJ\n")
+        .assert()
+        .success()
+        .stdout("123456\n👩\u{200d}💻abcdEFGH\nIJ\n")
+        .stderr("");
 }
 
 #[test]
@@ -2785,6 +3268,98 @@ fn do_not_detect_different_syntax_for_stdin_and_files() {
     assert_eq!(
         from_utf8(&cmd_for_file.get_output().stdout).expect("output is valid utf-8"),
         from_utf8(&cmd_for_stdin.get_output().stdout).expect("output is valid utf-8")
+    );
+}
+
+#[test]
+fn map_syntax_glob_may_contain_colons() {
+    let highlight_stdin = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain", "--file-name=x1:y.js"])
+            .args(args)
+            .write_stdin("# heading\n")
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    assert_eq!(
+        highlight_stdin(&["--map-syntax=x1:*.js:Markdown"]),
+        highlight_stdin(&["--language=Markdown"]),
+    );
+}
+
+#[test]
+fn map_syntax_without_colon_is_rejected() {
+    bat()
+        .arg("--map-syntax=Markdown")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Invalid syntax mapping"));
+}
+
+#[cfg(windows)]
+#[test]
+fn map_syntax_glob_with_drive_letter() {
+    let dir = tempdir().unwrap();
+    let dir = dir.path().to_str().unwrap();
+    assert_eq!(dir.as_bytes()[1], b':', "{dir}");
+    let file = format!(r"{dir}\file.conf");
+    std::fs::write(&file, "# heading\n").unwrap();
+
+    let highlight_file = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain"])
+            .args(args)
+            .arg(&file)
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    let markdown = highlight_file(&["--language=Markdown"]);
+    for glob in [
+        format!(r"{dir}\*.conf"),
+        format!(r"{dir}\*.conf").replace('\\', "/"),
+    ] {
+        assert_eq!(
+            highlight_file(&[&format!("--map-syntax={glob}:Markdown")]),
+            markdown,
+            "{glob}"
+        );
+    }
+}
+
+#[cfg(windows)]
+#[test]
+fn builtin_mapping_below_home_on_windows() {
+    let home = tempdir().unwrap();
+    let dir = home.path().join(".config").join("git");
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("config");
+    std::fs::write(&file, "[user]\n\tname = bat\n").unwrap();
+
+    let highlight_file = |args: &[&str]| {
+        bat()
+            .args(["--color=always", "--style=plain"])
+            .env("HOME", home.path())
+            .args(args)
+            .arg(&file)
+            .assert()
+            .success()
+            .get_output()
+            .stdout
+            .clone()
+    };
+
+    assert_eq!(
+        highlight_file(&[]),
+        highlight_file(&["--language=Git Config"])
     );
 }
 
@@ -3320,7 +3895,7 @@ fn grid_for_file_without_newline() {
 fn ansi_highlight_underline() {
     bat()
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3332,6 +3907,29 @@ fn ansi_highlight_underline() {
         .success()
         .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
+}
+
+// Highlighting lines must not emit escape sequences when colors are disabled
+#[test]
+fn highlight_line_without_colors() {
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            bat()
+                .arg("--paging=never")
+                .arg("--color=never")
+                .arg("--terminal-width=80")
+                .arg(wrap)
+                .arg(theme)
+                .arg("--decorations=always")
+                .arg("--style=numbers")
+                .arg("--highlight-line=1")
+                .write_stdin("First Line\nSecond Line\n")
+                .assert()
+                .success()
+                .stdout("   1 First Line\n   2 Second Line\n")
+                .stderr("");
+        }
+    }
 }
 
 // we don't really test other color schemes in the syntax-tests/source vs highlighted stuff
@@ -3568,7 +4166,7 @@ fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3588,7 +4186,7 @@ fn theme_arg_overrides_env_withconfig() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3609,7 +4207,7 @@ fn theme_light_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=light")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3618,7 +4216,7 @@ fn theme_light_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;208;218;231mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;208;218;231;38;2;17;27;39mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -3629,7 +4227,7 @@ fn theme_dark_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=dark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3638,7 +4236,7 @@ fn theme_dark_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;33;48;67mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;33;48;67;38;2;227;234;242mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -3648,7 +4246,7 @@ fn theme_env_overrides_config() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "ansi")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3753,6 +4351,61 @@ fn map_syntax_and_ignored_suffix_work_together() {
         .success()
         .stdout("\u{1b}[38;5;231m{\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;208mtest\u{1b}[0m\u{1b}[38;5;208m\"\u{1b}[0m\u{1b}[38;5;231m:\u{1b}[0m\u{1b}[38;5;231m \u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;186mvalue\u{1b}[0m\u{1b}[38;5;186m\"\u{1b}[0m\u{1b}[38;5;231m}\u{1b}[0m")
         .stderr("");
+}
+
+#[cfg(unix)]
+#[test]
+fn map_syntax_paths_and_ignored_suffix_work_together() {
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    let root = tmp_dir.path().canonicalize().unwrap();
+    let one = root.join("one");
+    let two = root.join("two");
+    let names = ["file.demo", "file.demo.bak", "file.demo.bak.old"];
+    for directory in [&one, &two] {
+        std::fs::create_dir(directory).unwrap();
+        for name in names {
+            std::fs::write(directory.join(name), b"{\"a\": 1}\n").unwrap();
+        }
+    }
+
+    let stdout = |path: &Path, args: &[&str]| {
+        let output = bat()
+            .args([
+                "--color=always",
+                "--paging=never",
+                "--style=plain",
+                "--wrap=never",
+                "--theme=Monokai Extended",
+            ])
+            .args(args)
+            .arg(path)
+            .assert()
+            .success()
+            .stderr("");
+        output.get_output().stdout.clone()
+    };
+    let original = one.join("file.demo");
+    let backup = one.join("file.demo.bak");
+    let json = stdout(&backup, &["--language=JSON"]);
+    let plain = stdout(&backup, &["--language=Plain Text"]);
+    assert_ne!(json, plain);
+
+    for pattern in [original.clone(), one.join("*.demo")] {
+        let mapping = format!("--map-syntax={}:JSON", pattern.display());
+        for name in names {
+            assert_eq!(stdout(&one.join(name), &[&mapping]), json, "{name}");
+        }
+        assert_eq!(stdout(&two.join("file.demo.bak"), &[&mapping]), plain);
+    }
+
+    let mapping = format!("--map-syntax={}:JSON", original.display());
+    for (args, expected) in [
+        (["--map-syntax=*.demo:Plain Text", mapping.as_str()], &json),
+        ([mapping.as_str(), "--map-syntax=*.demo:Plain Text"], &plain),
+        (["--map-syntax=*.bak:Plain Text", mapping.as_str()], &plain),
+    ] {
+        assert_eq!(&stdout(&backup, &args), expected);
+    }
 }
 
 #[test]

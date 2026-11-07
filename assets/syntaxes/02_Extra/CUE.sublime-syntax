@@ -1,0 +1,952 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CUE
+file_extensions:
+  - cue
+scope: source.cue
+contexts:
+  main:
+    - include: invalid_slash
+    - include: whitespace
+    - include: comment
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(package)[ \t]+([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*)(?![\p{L}\p{Nd}_\$\#])'
+      captures:
+        1: keyword.other.package
+        2: entity.name.namespace
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(import)[ \t]+(\()'
+      captures:
+        1: keyword.other.import
+        2: punctuation.section.parens.begin
+      push:
+        - meta_scope: meta.imports
+        - match: \)
+          captures:
+            0: punctuation.section.parens.end
+          pop: true
+        - include: whitespace
+        - include: comment
+        - match: '(?:([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)[ \t]+)?(")([^:"]+)(?:(:)([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*))?(")'
+          scope: meta.import-spec
+          captures:
+            1: entity.name.namespace
+            2: punctuation.definition.string.begin
+            3: string.quoted.double-import
+            4: punctuation.colon
+            5: entity.name
+            6: punctuation.definition.string.end
+        - match: ;
+          scope: punctuation.separator
+        - include: invalid_in_parens
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(import)[ \t]+(?:([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)[ \t]+)?(")([^:"]+)(?:(:)([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*))?(")'
+      scope: meta.import
+      captures:
+        1: keyword.other.import
+        2: entity.name.namespace
+        3: punctuation.definition.string.begin
+        4: string.quoted.double-import
+        5: punctuation.colon
+        6: entity.name
+        7: punctuation.definition.string.end
+    - include: punctuation_comma
+    - include: declaration
+    - include: invalid_in_braces
+  comment:
+    - match: (//).*$\n?
+      scope: comment.line
+      captures:
+        1: punctuation.definition.comment
+  alias_postfix:
+    - match: '(~)[ \t]*(?:([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)|(\()[ \t]*([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)(?:[ \t]*(,)[ \t]*([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_))?[ \t]*(\)))'
+      captures:
+        1: punctuation.alias
+        2: variable.other
+        3: punctuation.section.parens.begin
+        4: variable.other
+        5: punctuation.separator
+        6: variable.other
+        7: punctuation.section.parens.end
+  attribute:
+    - match: '(@)([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)(\()'
+      captures:
+        1: punctuation.definition.annotation
+        2: variable.annotation
+        3: punctuation.attribute-elements.begin
+      push:
+        - meta_scope: meta.annotation
+        - match: \)
+          captures:
+            0: punctuation.attribute-elements.end
+          pop: true
+        - include: comment
+        - include: punctuation_comma
+        - include: attribute_element
+  attribute_element:
+    - match: '[ \t]*(?<![\p{L}\p{Nd}_\$\#])((?:[\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)(?:\.(?:[\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+))*)[ \t]*(=)(?!=)'
+      captures:
+        1: variable.other
+        2: punctuation.bind
+      push:
+        - match: '(?=[,\)])'
+          pop: true
+        - include: comment
+        - include: attribute_nested
+        - include: attribute_string
+    - include: attribute_nested
+    - include: attribute_string
+  attribute_nested:
+    - match: '[ \t]*(?:([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)[ \t]*)?(\()'
+      captures:
+        1: variable.other
+        2: punctuation.attribute-elements.begin
+      push:
+        - match: \)
+          captures:
+            0: punctuation.attribute-elements.end
+          pop: true
+        - include: comment
+        - include: punctuation_comma
+        - include: attribute_element
+  attribute_string:
+    - include: string
+    - match: '(?:[^\n,"''#\(\)/]|/(?!/)|(?<!#)#++(?!["'']))+'
+      scope: string.unquoted
+    - match: '[^,\)]+'
+      scope: invalid
+  declaration:
+    - include: attribute
+    - include: alias_postfix
+    - include: punctuation_ellipsis
+    - include: punctuation_colon
+    - include: punctuation_option
+    - include: punctuation_bind
+    - include: expression
+  expression:
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(for)[ \t]+([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)(?:[ \t]*(,)[ \t]*([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_))?[ \t]+(in)(?![\p{L}\p{Nd}_\$\#])(?:[ \t]+(else|otherwise|fallback|try)(?![\p{L}\p{Nd}_\$\#]))?'
+      captures:
+        1: keyword.control.for
+        2: variable.other
+        3: punctuation.separator
+        4: variable.other
+        5: keyword.control.in
+        6: variable.other
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(if)(?![\p{L}\p{Nd}_\$\#])(?:[ \t]+(else|otherwise|fallback|try)(?![\p{L}\p{Nd}_\$\#]))?'
+      captures:
+        1: keyword.control.conditional
+        2: variable.other
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(try)[ \t]+([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+|_)[ \t]*(=)(?![=~])'
+      captures:
+        1: keyword.control.try
+        2: variable.other
+        3: punctuation.bind
+    - match: '(?<![\p{L}\p{Nd}_\$\#])try(?=[ \t]*\{|[ \t]+(?:for|if|let|try)(?![\p{L}\p{Nd}_\$\#]))'
+      scope: keyword.control.try
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(?:else|otherwise|fallback)(?=[ \t]*\{)'
+      scope: keyword.control.conditional
+    - match: '(?<![\p{L}\p{Nd}_\$\#])func(?=[ \t]*\()'
+      scope: keyword.function
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(let)[ \t]+([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)[ \t]*(=)(?![=])'
+      captures:
+        1: keyword.control.let
+        2: variable.other
+        3: punctuation.bind
+    - match: "->"
+      scope: keyword.operator.arrow
+    - match: '[\+\-\*]|/(?!/)'
+      scope: keyword.operator
+    - match: "=[=~]|![=~]|<=|>=|[<](?!=)|[>](?![=])"
+      scope: keyword.operator.comparison
+    - match: '&{2}|\|{2}|!(?![=~])'
+      scope: keyword.operator.logical
+    - match: '&(?!&)|\|(?!\|)'
+      scope: keyword.operator.set
+    - match: '(?<!\.)(\.)[ \t]*([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)(?![\p{L}\p{Nd}_\$\#])'
+      captures:
+        1: punctuation.accessor
+        2: variable.other.member
+    - match: '(?<!\.)(\.)(?=[ \t]*(?:#*"|//|$))'
+      captures:
+        1: punctuation.accessor
+    - match: '(?<![\p{L}\p{Nd}_\$\#])_(?!\|)(?![\p{L}\p{Nd}_\$\#])'
+      scope: constant.language.top
+    - match: '(?<![\p{L}\p{Nd}_\$\#])_\|_(?![\p{L}\p{Nd}_\$\#])'
+      scope: constant.language.bottom
+    - match: '(?<![\p{L}\p{Nd}_\$\#])null(?![\p{L}\p{Nd}_\$\#])'
+      scope: constant.language.null
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(?:true|false)(?![\p{L}\p{Nd}_\$\#])'
+      scope: constant.language.bool
+    - match: '(?<![\p{L}\p{Nd}_\.])[0-9](?:_?[0-9])*\.(?:[0-9](?:_?[0-9])*)?(?:[eE][\+\-]?[0-9](?:_?[0-9])*)?(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.float.decimal
+    - match: '(?<![\p{L}\p{Nd}_\.])[0-9](?:_?[0-9])*[eE][\+\-]?[0-9](?:_?[0-9])*(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.float.decimal
+    - match: '(?<![\p{L}\p{Nd}_\.])\.[0-9](?:_?[0-9])*(?:[eE][\+\-]?[0-9](?:_?[0-9])*)?(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.float.decimal
+    - match: '(?<![\p{L}\p{Nd}_\.])(?:0|[1-9](?:_?[0-9])*)(?:\.[0-9](?:_?[0-9])*)?(?:[KMGTP]i?)(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.other
+    - match: '(?<![\p{L}\p{Nd}_\.])\.[0-9](?:_?[0-9])*(?:[KMGTP]i?)(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.other
+    - match: '(?<![\p{L}\p{Nd}_\.])(?:0|[1-9](?:_?[0-9])*)(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.decimal
+    - match: '(?<![\p{L}\p{Nd}_\.])0b_?[0-1](?:_?[0-1])*(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.binary
+    - match: '(?<![\p{L}\p{Nd}_\.])0[xX]_?[0-9a-fA-F](?:_?[0-9a-fA-F])*(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.hexadecimal
+    - match: '(?<![\p{L}\p{Nd}_\.])0o_?[0-7](?:_?[0-7])*(?![\p{L}\p{Nd}_]|\.(?!\.\.))'
+      scope: constant.numeric.integer.octal
+    - include: string
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(?:bool|u?int(?:8|16|32|64|128)?|float(?:32|64)?|string|bytes|number|rune)(?![\p{L}\p{Nd}_\$\#])'
+      scope: support.type
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(?:__)?self(?![\p{L}\p{Nd}_\$\#])(?![ \t]*+(?:[?!][ \t]*+)?:|[ \t]*+~|[ \t]*+=(?![=~]))'
+      scope: variable.language.self
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(len|close|and|or|div|mod|quo|rem|matchN|matchIf|error|validator)(\()'
+      captures:
+        1: support.function
+        2: punctuation.section.parens.begin
+      push:
+        - meta_scope: meta.function-call
+        - match: \)
+          captures:
+            0: punctuation.section.parens.end
+          pop: true
+        - include: whitespace
+        - include: comment
+        - include: punctuation_comma
+        - include: attribute
+        - include: alias_postfix
+        - include: punctuation_colon
+        - include: punctuation_option
+        - include: punctuation_bind
+        - include: punctuation_ellipsis
+        - include: expression
+        - include: invalid_in_parens
+    - match: '(?<![\p{L}\p{Nd}_\$\#])([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)(\.)(\p{Lu}[\p{L}\p{Nd}_\$\#]*)(\()'
+      captures:
+        1: support.module
+        2: punctuation
+        3: support.function
+        4: punctuation.section.parens.begin
+      push:
+        - meta_scope: meta.function-call
+        - match: \)
+          captures:
+            0: punctuation.section.parens.end
+          pop: true
+        - include: whitespace
+        - include: comment
+        - include: punctuation_comma
+        - include: attribute
+        - include: alias_postfix
+        - include: punctuation_colon
+        - include: punctuation_option
+        - include: punctuation_bind
+        - include: punctuation_ellipsis
+        - include: expression
+        - include: invalid_in_parens
+    - match: '(?<![\p{L}\p{Nd}_\$\#])(?:[\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)(?![\p{L}\p{Nd}_\$\#])'
+      scope: variable.other
+    - match: '\{'
+      captures:
+        0: punctuation.definition.struct.begin
+      push:
+        - meta_scope: meta.struct
+        - match: '\}'
+          captures:
+            0: punctuation.definition.struct.end
+          pop: true
+        - include: invalid_slash
+        - include: whitespace
+        - include: comment
+        - include: punctuation_comma
+        - include: punctuation_ellipsis
+        - include: declaration
+        - include: invalid_in_braces
+    - match: '\['
+      captures:
+        0: punctuation.section.brackets.begin
+      push:
+        - meta_scope: meta.brackets
+        - match: '\]'
+          captures:
+            0: punctuation.section.brackets.end
+          pop: true
+        - include: whitespace
+        - include: comment
+        - include: punctuation_colon
+        - include: punctuation_comma
+        - include: punctuation_ellipsis
+        - include: punctuation_option
+        - match: '(?<![\p{L}\p{Nd}_\$\#])([\p{L}\$\#][\p{L}\p{Nd}_\$\#]*|_[\p{L}\p{Nd}_\$\#]+)[ \t]*(=)(?![=~])'
+          captures:
+            1: variable.other
+            2: punctuation.alias
+        - include: expression
+        - match: '[^\s\]]'
+          scope: invalid
+    - match: \(
+      captures:
+        0: punctuation.section.parens.begin
+      push:
+        - meta_scope: meta.parens
+        - match: \)
+          captures:
+            0: punctuation.section.parens.end
+          pop: true
+        - include: whitespace
+        - include: comment
+        - include: punctuation_comma
+        - include: attribute
+        - include: alias_postfix
+        - include: punctuation_colon
+        - include: punctuation_option
+        - include: punctuation_bind
+        - include: punctuation_ellipsis
+        - include: expression
+        - include: invalid_in_parens
+  invalid_in_braces:
+    - match: '[^\s\}]'
+      scope: invalid
+  invalid_in_parens:
+    - match: '[^\s\)]'
+      scope: invalid
+  invalid_slash:
+    - match: '(?<=^|[\{,:])[ \t]*+(/)(?!/)'
+      captures:
+        1: invalid
+  punctuation_bind:
+    - match: "(?<![=!><])=(?![=~])"
+      scope: punctuation.bind
+  punctuation_colon:
+    - match: (?<!:):(?!:)
+      scope: punctuation.colon
+  punctuation_comma:
+    - match: ","
+      scope: punctuation.separator
+  punctuation_ellipsis:
+    - match: '(?<!\.)\.{3}(?!\.)'
+      scope: punctuation.ellipsis
+  punctuation_option:
+    - match: \?
+      scope: punctuation.option
+  string:
+    - match: '####"""'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double-multiline
+        - match: '"""####'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\####(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\####(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\####\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\####$
+          scope: constant.character.escape
+        - match: \\####.
+          scope: invalid.illegal
+    - match: '####"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double
+        - match: '"####'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\####(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\####(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\####\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\####.
+          scope: invalid.illegal
+    - match: "####'''"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single-multiline
+        - match: "'''####"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\####(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\####(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\####\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\####$
+          scope: constant.character.escape
+        - match: \\####.
+          scope: invalid.illegal
+    - match: "####'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single
+        - match: "'####"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\####(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\####(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\####\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\####.
+          scope: invalid.illegal
+    - match: '###"""'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double-multiline
+        - match: '"""###'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\###(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\###(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\###\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\###$
+          scope: constant.character.escape
+        - match: \\###.
+          scope: invalid.illegal
+    - match: '###"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double
+        - match: '"###'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\###(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\###(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\###\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\###.
+          scope: invalid.illegal
+    - match: "###'''"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single-multiline
+        - match: "'''###"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\###(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\###(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\###\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\###$
+          scope: constant.character.escape
+        - match: \\###.
+          scope: invalid.illegal
+    - match: "###'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single
+        - match: "'###"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\###(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\###(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\###\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\###.
+          scope: invalid.illegal
+    - match: '##"""'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double-multiline
+        - match: '"""##'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\##(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\##(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\##\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\##$
+          scope: constant.character.escape
+        - match: \\##.
+          scope: invalid.illegal
+    - match: '##"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double
+        - match: '"##'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\##(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\##(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\##\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\##.
+          scope: invalid.illegal
+    - match: "##'''"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single-multiline
+        - match: "'''##"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\##(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\##(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\##\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\##$
+          scope: constant.character.escape
+        - match: \\##.
+          scope: invalid.illegal
+    - match: "##'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single
+        - match: "'##"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\##(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\##(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\##\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\##.
+          scope: invalid.illegal
+    - match: '#"""'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double-multiline
+        - match: '"""#'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\#(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\#(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\#\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\#$
+          scope: constant.character.escape
+        - match: \\#.
+          scope: invalid.illegal
+    - match: '#"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double
+        - match: '"#'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\#(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\#(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\#\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\#.
+          scope: invalid.illegal
+    - match: "#'''"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single-multiline
+        - match: "'''#"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\#(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\#(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\#\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\#$
+          scope: constant.character.escape
+        - match: \\#.
+          scope: invalid.illegal
+    - match: "#'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single
+        - match: "'#"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\#(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\#(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\#\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\#.
+          scope: invalid.illegal
+    - match: '"""'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double-multiline
+        - match: '"""'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\$
+          scope: constant.character.escape
+        - match: \\.
+          scope: invalid.illegal
+    - match: '"'
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.double
+        - match: '"'
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\(?:"|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: invalid.illegal
+        - match: \\\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\.
+          scope: invalid.illegal
+    - match: "'''"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single-multiline
+        - match: "'''"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\$
+          scope: constant.character.escape
+        - match: \\.
+          scope: invalid.illegal
+    - match: "'"
+      captures:
+        0: punctuation.definition.string.begin
+      push:
+        - meta_scope: meta.string
+        - meta_content_scope: string.quoted.single
+        - match: "'"
+          captures:
+            0: punctuation.definition.string.end
+          pop: true
+        - match: '\\(?:''|/|\\|[abfnrtv]|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})'
+          scope: constant.character.escape
+        - match: '\\(?:[0-7]{3}|x[0-9A-Fa-f]{2})'
+          scope: constant.character.escape
+        - match: \\\(
+          captures:
+            0: punctuation.section.interpolation.begin
+          push:
+            - meta_scope: meta.interpolation
+            - meta_content_scope: source.cue.embedded
+            - match: \)
+              captures:
+                0: punctuation.section.interpolation.end
+              pop: true
+            - include: whitespace
+            - include: punctuation_option
+            - include: expression
+            - include: invalid_in_parens
+        - match: \\.
+          scope: invalid.illegal
+  whitespace:
+    - match: '[ \t\r\n]+'
