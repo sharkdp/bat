@@ -71,6 +71,7 @@ _bat() {
 			--source
 			--target
 			--blank
+			--acknowledgements
 			--help
 		" -- "$cur"))
 		return 0
