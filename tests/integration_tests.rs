@@ -4194,6 +4194,21 @@ fn ignored_suffix_arg() {
         .stderr("");
 }
 
+#[test]
+fn ignored_suffix_arg_empty() {
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("ansi")
+        .arg("-p")
+        .arg("--ignored-suffix=")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n")
+        .stderr("");
+}
+
 fn wrapping_test(wrap_flag: &str, expect_wrap: bool) {
     let expected = match expect_wrap {
         true =>
