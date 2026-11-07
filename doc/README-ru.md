@@ -176,7 +176,7 @@ man 2 select
 
 Если вы хотите сделать этой одной командой, вы можете использовать [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md).
 
-Обратите внимание, что [синтаксис manpage](assets/syntaxes/02_Extra/Manpage.sublime-syntax) разрабатывается в этом репозитории и все еще находится в разработке.
+Обратите внимание, что [синтаксис manpage](../assets/syntaxes/02_Extra/Manpage.sublime-syntax) разрабатывается в этом репозитории и все еще находится в разработке.
 
 Также заметьте, что это [не заработает](https://github.com/sharkdp/bat/issues/1145) с реализацией `man` через Mandocs.
 
@@ -640,11 +640,11 @@ cargo install --locked --force
 - Полноценная замена `cat`.
 - Дружелюбный интерфейс и аргументы.
 
-Есть очень много альтернатив `bat`. Смотрите [этот документ](doc/alternatives.md) для сравнения.
+Есть очень много альтернатив `bat`. Смотрите [этот документ](alternatives.md) для сравнения.
 
 ## Лицензия
 Copyright (c) 2018-2024 [Разработчики bat](https://github.com/sharkdp/bat).
 
 `bat` распространяется под лицензиями MIT License и Apache License 2.0 (на выбор пользователя).
 
-Смотрите [LICENSE-APACHE](LICENSE-APACHE) и [LICENSE-MIT](LICENSE-MIT) для более подробного ознакомления.
+Смотрите [LICENSE-APACHE](../LICENSE-APACHE) и [LICENSE-MIT](../LICENSE-MIT) для более подробного ознакомления.
