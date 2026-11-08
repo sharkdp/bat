@@ -3955,20 +3955,91 @@ fn ansi_highlight_underline() {
 fn highlight_line_without_colors() {
     for wrap in ["--wrap=never", "--wrap=character"] {
         for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
-            bat()
-                .arg("--paging=never")
-                .arg("--color=never")
-                .arg("--terminal-width=80")
-                .arg(wrap)
-                .arg(theme)
-                .arg("--decorations=always")
-                .arg("--style=numbers")
-                .arg("--highlight-line=1")
-                .write_stdin("First Line\nSecond Line\n")
-                .assert()
-                .success()
-                .stdout("   1 First Line\n   2 Second Line\n")
-                .stderr("");
+            for color in ["--color=never", "--color=auto"] {
+                bat()
+                    .arg("--paging=never")
+                    .arg(color)
+                    .arg("--terminal-width=80")
+                    .arg(wrap)
+                    .arg(theme)
+                    .arg("--decorations=always")
+                    .arg("--style=numbers")
+                    .arg("--highlight-line=1")
+                    .write_stdin("First Line\nSecond Line\n")
+                    .assert()
+                    .success()
+                    .stdout("   1 First Line\n   2 Second Line\n")
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn highlight_line_respects_no_color_on_terminal() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            for no_color in ["", "1"] {
+                let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+                let mut master = File::from(master);
+                // Keep a slave open until the output is read: macOS discards unread PTY
+                // output when the last slave closes.
+                let slave = File::from(slave);
+                let mut child = bat_raw_command()
+                    .args([
+                        "--paging=never",
+                        "--color=auto",
+                        "--terminal-width=80",
+                        "--decorations=always",
+                        "--style=numbers",
+                        "--highlight-line=1",
+                        wrap,
+                        theme,
+                        "test.txt",
+                    ])
+                    .env("TERM", "xterm-256color")
+                    .env("NO_COLOR", no_color)
+                    .stdin(Stdio::null())
+                    .stdout(slave.try_clone().unwrap())
+                    .stderr(Stdio::piped())
+                    .spawn()
+                    .unwrap();
+
+                // This fixture fits in the PTY buffer, so the child can exit before reading it.
+                if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+                    child.kill().unwrap();
+                    child.wait().unwrap();
+                    panic!("bat did not exit");
+                }
+                let output = child.wait_with_output().unwrap();
+                assert!(output.status.success());
+                assert!(output.stderr.is_empty());
+
+                let mut stdout = Vec::new();
+                loop {
+                    let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+                    if poll(&mut fds, 100u16).unwrap() == 0 {
+                        break;
+                    }
+                    let mut buffer = [0; 1024];
+                    let count = master.read(&mut buffer).unwrap();
+                    if count == 0 {
+                        break;
+                    }
+                    stdout.extend_from_slice(&buffer[..count]);
+                }
+                if no_color.is_empty() {
+                    // Prove the PTY enables automatic color detection without NO_COLOR.
+                    assert!(stdout.contains(&b'\x1b'), "{wrap} {theme}: {stdout:?}");
+                } else {
+                    assert_eq!(stdout, b"   1 hello world\r\n", "{wrap} {theme}");
+                }
+            }
         }
     }
 }
