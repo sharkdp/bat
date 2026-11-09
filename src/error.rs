@@ -17,7 +17,7 @@ pub enum Error {
     #[error(transparent)]
     GlobParsingError(#[from] ::globset::Error),
     #[error(transparent)]
-    SerdeYamlError(#[from] ::serde_yaml::Error),
+    SerdeYamlError(#[from] ::serde_yaml_ng::Error),
     #[error("unable to detect syntax for {0}")]
     UndetectedSyntax(String),
     #[error("unknown syntax: '{0}'")]
