@@ -32,13 +32,15 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
+- Don't emit `--highlight-line` escape sequences (background color or `ansi` theme underline) when colors are disabled with `--color=never`. Closes #4099, see #4100 (@DeviousCardi)
+- Fix missing colors, pager, and decorations in mintty/MSYS2 and Cygwin terminals on Windows, see #4115 (@rezamuliawijaya)
 - Offer `-S` instead of `-c` for `--chop-long-lines` in the fish completion, see #4071 (@ump45nose)
 - Make full-path `--map-syntax` patterns and the built-in `$HOME` and `$XDG_CONFIG_HOME` mappings work on Windows, see #4113 (@b84330808)
 - Keep configuration and BAT_OPTS active for option-like filenames after `--`, and report invalid configuration for help-like filenames, see #4112 (@Marve10s)
 - Keep emoji sequences together within text chunks when wrapping content, and measure their combined display width, see #4108 (@Marve10s)
 - Preserve full-path syntax mappings when removing ignored filename suffixes, see #4111 (@Marve10s)
 - Fix UTF-16 line splitting at unaligned newline bytes corrupting text and shifting line ranges, see #4110 (@Marve10s)
-- Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #XXXX (@cindykrafft)
 - Respect `NO_COLOR` for the `[bat error]` and `[bat warning]` prefixes, see #4048 (@qodelicious)
 - Offer the valid `--wrap` value `auto` instead of the rejected `always` in the PowerShell completion, see #4070 (@ump45nose)
 - Report `BAT_CONFIG_DIR` in `bat --diagnostic`, so bug reports show a config directory that overrides `$XDG_CONFIG_HOME`. See #4068 (@ump45nose)

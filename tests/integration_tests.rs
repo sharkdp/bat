@@ -348,6 +348,47 @@ fn number_nonblank_style() {
 }
 
 #[test]
+fn number_nonblank_utf16() {
+    for little_endian in [true, false] {
+        for newline in ["\n", "\r\n"] {
+            for (text, expected) in [
+                ("alpha\n\nbeta\n", "   1 alpha\n     \n   2 beta\n"),
+                ("\nalpha\n\n", "     \n   1 alpha\n     \n"),
+                (
+                    "alpha\n\n \n\t\nbeta\n",
+                    "   1 alpha\n     \n   2  \n   3     \n   4 beta\n",
+                ),
+            ] {
+                let text = text.replace('\n', newline);
+                let mut bytes = if little_endian {
+                    vec![0xff, 0xfe]
+                } else {
+                    vec![0xfe, 0xff]
+                };
+                for unit in text.encode_utf16() {
+                    bytes.extend_from_slice(&if little_endian {
+                        unit.to_le_bytes()
+                    } else {
+                        unit.to_be_bytes()
+                    });
+                }
+                bat()
+                    .args([
+                        "-b",
+                        "--decorations=always",
+                        "--color=never",
+                        "--paging=never",
+                    ])
+                    .write_stdin(bytes)
+                    .assert()
+                    .success()
+                    .stdout(expected.replace('\n', newline));
+            }
+        }
+    }
+}
+
+#[test]
 fn number_nonblank_from_cli_in_loop_through_mode() {
     bat()
         .arg("empty_lines.txt")
@@ -3895,7 +3936,7 @@ fn grid_for_file_without_newline() {
 fn ansi_highlight_underline() {
     bat()
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -3907,6 +3948,100 @@ fn ansi_highlight_underline() {
         .success()
         .stdout("\x1B[4mAnsi Underscore Test\n\x1B[24mAnother Line")
         .stderr("");
+}
+
+// Highlighting lines must not emit escape sequences when colors are disabled
+#[test]
+fn highlight_line_without_colors() {
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            for color in ["--color=never", "--color=auto"] {
+                bat()
+                    .arg("--paging=never")
+                    .arg(color)
+                    .arg("--terminal-width=80")
+                    .arg(wrap)
+                    .arg(theme)
+                    .arg("--decorations=always")
+                    .arg("--style=numbers")
+                    .arg("--highlight-line=1")
+                    .write_stdin("First Line\nSecond Line\n")
+                    .assert()
+                    .success()
+                    .stdout("   1 First Line\n   2 Second Line\n")
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn highlight_line_respects_no_color_on_terminal() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            for no_color in ["", "1"] {
+                let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+                let mut master = File::from(master);
+                // Keep a slave open until the output is read: macOS discards unread PTY
+                // output when the last slave closes.
+                let slave = File::from(slave);
+                let mut child = bat_raw_command()
+                    .args([
+                        "--paging=never",
+                        "--color=auto",
+                        "--terminal-width=80",
+                        "--decorations=always",
+                        "--style=numbers",
+                        "--highlight-line=1",
+                        wrap,
+                        theme,
+                        "test.txt",
+                    ])
+                    .env("TERM", "xterm-256color")
+                    .env("NO_COLOR", no_color)
+                    .stdin(Stdio::null())
+                    .stdout(slave.try_clone().unwrap())
+                    .stderr(Stdio::piped())
+                    .spawn()
+                    .unwrap();
+
+                // This fixture fits in the PTY buffer, so the child can exit before reading it.
+                if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+                    child.kill().unwrap();
+                    child.wait().unwrap();
+                    panic!("bat did not exit");
+                }
+                let output = child.wait_with_output().unwrap();
+                assert!(output.status.success());
+                assert!(output.stderr.is_empty());
+
+                let mut stdout = Vec::new();
+                loop {
+                    let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+                    if poll(&mut fds, 100u16).unwrap() == 0 {
+                        break;
+                    }
+                    let mut buffer = [0; 1024];
+                    let count = master.read(&mut buffer).unwrap();
+                    if count == 0 {
+                        break;
+                    }
+                    stdout.extend_from_slice(&buffer[..count]);
+                }
+                if no_color.is_empty() {
+                    // Prove the PTY enables automatic color detection without NO_COLOR.
+                    assert!(stdout.contains(&b'\x1b'), "{wrap} {theme}: {stdout:?}");
+                } else {
+                    assert_eq!(stdout, b"   1 hello world\r\n", "{wrap} {theme}");
+                }
+            }
+        }
+    }
 }
 
 // we don't really test other color schemes in the syntax-tests/source vs highlighted stuff
@@ -4143,7 +4278,7 @@ fn theme_arg_overrides_env() {
     bat()
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -4163,7 +4298,7 @@ fn theme_arg_overrides_env_withconfig() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "TwoDark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -4184,7 +4319,7 @@ fn theme_light_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=light")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -4193,7 +4328,7 @@ fn theme_light_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;208;218;231mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;208;218;231;38;2;17;27;39mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -4204,7 +4339,7 @@ fn theme_dark_env_var_is_respected() {
         .env("COLORTERM", "truecolor")
         .arg("--theme=dark")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
@@ -4213,7 +4348,7 @@ fn theme_dark_env_var_is_respected() {
         .write_stdin("Lorem Ipsum")
         .assert()
         .success()
-        .stdout("\x1B[48;2;33;48;67mLorem Ipsum\x1B[0m")
+        .stdout("\x1B[48;2;33;48;67;38;2;227;234;242mLorem Ipsum\x1B[0m")
         .stderr("");
 }
 
@@ -4223,7 +4358,7 @@ fn theme_env_overrides_config() {
         .env("BAT_CONFIG_PATH", "bat-theme.conf")
         .env("BAT_THEME", "ansi")
         .arg("--paging=never")
-        .arg("--color=never")
+        .arg("--color=always")
         .arg("--terminal-width=80")
         .arg("--wrap=never")
         .arg("--decorations=always")
