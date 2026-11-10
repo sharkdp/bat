@@ -328,9 +328,13 @@ fn attached_short_option_values_are_not_treated_as_flags() {
     std::fs::write(tmp_dir.path().join("input.txt"), "hello\nworld\n")
         .expect("can write temporary file");
 
+    // 'rs' is a valid language token (Rust): the attached short-option value
+    // must be parsed as `-l rs` and succeed. This used to pass with the
+    // unknown token 'bn' only because highlighting-off runs silently ignored
+    // unknown languages (#4120).
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        .args(["-lrs", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
@@ -3410,6 +3414,35 @@ fn no_first_line_fallback_when_mapping_to_invalid_syntax() {
 
     bat()
         .arg("--color=always")
+        .arg("--map-syntax=*.invalid-syntax:InvalidSyntax")
+        .arg(format!("--file-name={file}"))
+        .arg("--style=plain")
+        .arg(file)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn unknown_language_fails_when_highlighting_is_off() {
+    let file = "regression_tests/first_line_fallback.invalid-syntax";
+
+    bat()
+        .arg("--color=never")
+        .arg("--language=InvalidSyntax")
+        .arg("--style=plain")
+        .arg(file)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn unknown_map_syntax_fails_when_highlighting_is_off() {
+    let file = "regression_tests/first_line_fallback.invalid-syntax";
+
+    bat()
+        .arg("--color=never")
         .arg("--map-syntax=*.invalid-syntax:InvalidSyntax")
         .arg(format!("--file-name={file}"))
         .arg("--style=plain")

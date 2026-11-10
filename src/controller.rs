@@ -161,6 +161,33 @@ impl Controller<'_> {
             input.open(stdin, stdout_identifier)?
         };
         opened_input.reader.unbuffered = self.config.unbuffered;
+
+        // Validate explicitly requested syntax names even when the output will
+        // not be syntax-highlighted: the loop-through and plain printers skip
+        // syntax resolution entirely, so an unknown `-l` or `--map-syntax`
+        // target would otherwise fail silently with exit 0 on piped runs
+        // (#4120). With `language` set, `get_syntax` returns before the
+        // first-line fallback would consume the input, and the path-based
+        // mapping check is pure as well.
+        if let Some(language) = self.config.language {
+            self.assets.get_syntax(
+                Some(language),
+                self.config.fallback_syntax,
+                &mut opened_input,
+                &self.config.syntax_mapping,
+            )?;
+        } else if let Some(path) = opened_input.path() {
+            match self
+                .assets
+                .get_syntax_for_path(path, &self.config.syntax_mapping)
+            {
+                // No mapping applied is the normal case, and the first-line
+                // fallback is not available here without consuming the input,
+                // so undetected syntax is accepted.
+                Ok(_) | Err(Error::UndetectedSyntax(_)) => {}
+                Err(err) => return Err(err),
+            }
+        }
         #[cfg(feature = "git")]
         let line_changes = if self.config.visible_lines.diff_mode()
             || (!self.config.loop_through && self.config.style_components.changes())
