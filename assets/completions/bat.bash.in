@@ -77,7 +77,8 @@ _bat() {
 	fi
 
 	case $prev in
-	-l | --language)
+	-l | --language | \
+	--fallback-syntax | --fallback-language)
 		local IFS=$'\n'
 		COMPREPLY=($(compgen -W "$(
 			"$1" --no-paging --list-languages | while IFS=: read -r lang _; do
@@ -201,6 +202,8 @@ _bat() {
 			--binary
 			--plain
 			--language
+			--fallback-syntax
+			--fallback-language
 			--highlight-line
 			--file-name
 			--diff
