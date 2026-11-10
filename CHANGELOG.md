@@ -3,6 +3,7 @@
 
 ## Other
 
+- Document the `default` special value of `--theme` in the man page, see #4088 (@ump45nose)
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
