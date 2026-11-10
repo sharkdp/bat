@@ -177,7 +177,7 @@ export MANPAGER="sh -c 'awk '\''{ gsub(/\x1B\[[0-9;]*m/, \"\", \$0); gsub(/.\x08
 man 2 select
 ```
 
-（如果你使用 Debian 或 Ubuntu，请将 `batcat` 替换为 `bat`）
+（如果你使用 Debian 或 Ubuntu，请将 `bat` 替换为 `batcat`）
 
 如果你希望将其打包为一个新的命令，也可以使用 [`batman`](https://github.com/eth-p/bat-extras/blob/master/doc/batman.md)。
 
