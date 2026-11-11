@@ -233,7 +233,7 @@ of components to display (e.g. 'numbers,changes,grid') or a pre\-defined style (
 To set a default style, add the '\-\-style=".."' option to the configuration file or
 export the BAT_STYLE environment variable (e.g.: export BAT_STYLE="..").
 .IP
-When styles are specified in multiple places, the "nearest" set of styles take precedence.
+When styles are specified in multiple places, the "nearest" set of styles takes precedence.
 The command\-line arguments are the highest priority, followed by the BAT_STYLE environment
 variable, and then the configuration file. If any set of styles consists entirely of
 components prefixed with "+" or "\-", it will modify the previous set of styles instead of
