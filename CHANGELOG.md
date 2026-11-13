@@ -114,6 +114,7 @@
 - Add syntax highlighting for CUE, see #4094 (@nikarh)
 
 ## Themes
+- Color Markdown table separators and header rules in Monokai Extended, see #3948 (@Matei02355)
 
 - Remove the Visual Studio Dark+ theme, see #3552 (@CosmicHorrorDev)
 
