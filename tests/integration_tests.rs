@@ -895,6 +895,152 @@ fn squeeze_limit_line_numbers() {
 }
 
 #[test]
+fn squeeze_blank_show_all() {
+    for (notation, line_ending, marker) in [
+        ("unicode", "\n", "␊"),
+        ("caret", "\n", "^J"),
+        ("unicode", "\r\n", "␍␊"),
+        ("caret", "\r\n", "^M^J"),
+    ] {
+        bat()
+            .args([
+                "--show-all",
+                "--squeeze-blank",
+                "--decorations=always",
+                "--style=plain",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+            ])
+            .arg(format!("--nonprintable-notation={notation}"))
+            .write_stdin(format!(
+                "a{line_ending}{line_ending}{line_ending}{line_ending}b{line_ending}"
+            ))
+            .assert()
+            .success()
+            .stdout(format!("a{marker}\n{marker}\nb{marker}\n"))
+            .stderr("");
+    }
+}
+
+#[test]
+fn squeeze_limit_show_all() {
+    for (limit, expected) in [("0", "a␊\nb␊\n"), ("2", "a␊\n␊\n␊\nb␊\n")] {
+        bat()
+            .args([
+                "--show-all",
+                "--squeeze-blank",
+                "--decorations=always",
+                "--style=plain",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+            ])
+            .arg(format!("--squeeze-limit={limit}"))
+            .write_stdin("a\n\n\n\nb\n")
+            .assert()
+            .success()
+            .stdout(expected)
+            .stderr("");
+    }
+}
+
+#[test]
+fn squeeze_blank_show_all_line_numbers() {
+    bat()
+        .args([
+            "--show-all",
+            "--squeeze-blank",
+            "--decorations=always",
+            "--style=numbers",
+            "--color=never",
+            "--paging=never",
+            "--wrap=never",
+            "--terminal-width=40",
+        ])
+        .write_stdin("a\n\n\n\nb\n")
+        .assert()
+        .success()
+        .stdout("   1 a␊\n   2 ␊\n   5 b␊\n")
+        .stderr("");
+}
+
+#[test]
+fn squeeze_blank_show_all_preserves_literal_markers() {
+    for (notation, literal, rendered, marker) in [
+        ("unicode", "␊", "\\u{240a}", "␊"),
+        ("caret", "^J", "^J", "^J"),
+    ] {
+        bat()
+            .args([
+                "--show-all",
+                "--squeeze-blank",
+                "--squeeze-limit=0",
+                "--decorations=always",
+                "--style=plain",
+                "--color=never",
+                "--paging=never",
+                "--wrap=never",
+            ])
+            .arg(format!("--nonprintable-notation={notation}"))
+            .write_stdin(format!("\n\n{literal}\n\n\n{literal}"))
+            .assert()
+            .success()
+            .stdout(format!("{rendered}{marker}\n{rendered}"))
+            .stderr("");
+    }
+}
+
+#[test]
+fn squeeze_blank_show_all_space_resets_empty_run() {
+    bat()
+        .args([
+            "--show-all",
+            "--squeeze-blank",
+            "--decorations=always",
+            "--style=plain",
+            "--color=never",
+            "--paging=never",
+            "--wrap=never",
+        ])
+        .write_stdin("\n\n \n\n\n")
+        .assert()
+        .success()
+        .stdout("␊\n·␊\n␊\n")
+        .stderr("");
+}
+
+#[test]
+fn squeeze_blank_show_all_unbuffered_partial_lines() {
+    use std::io::Read;
+
+    let input = b"seed\n"
+        .as_slice()
+        .chain(b"a".as_slice())
+        .chain(b"\n".as_slice())
+        .chain(b"b\n".as_slice());
+    let config = bat::config::Config {
+        unbuffered: true,
+        show_nonprintable: true,
+        nonprintable_notation: bat::NonprintableNotation::Unicode,
+        squeeze_lines: Some(0),
+        term_width: 40,
+        theme: "Monokai Extended".to_owned(),
+        ..Default::default()
+    };
+    let assets = bat::assets::HighlightingAssets::from_binary();
+    let mut output = String::new();
+
+    assert!(bat::controller::Controller::new(&config, &assets)
+        .run(
+            vec![bat::input::Input::from_reader(Box::new(input))],
+            Some(&mut bat::output::OutputHandle::FmtWrite(&mut output)),
+        )
+        .unwrap());
+    assert_eq!(output, "seed␊\na␊\nb␊\n");
+}
+
+#[test]
 fn list_themes_with_colors() {
     let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
     let default_light_theme_chunk = "Monokai Extended Light\x1B[0m (default light)";
