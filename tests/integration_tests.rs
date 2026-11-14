@@ -5207,6 +5207,27 @@ fn style_components_can_be_removed() {
         .stderr("");
 }
 
+// Tests that the bottom grid border can be disabled independently.
+#[test]
+fn style_bottom_grid_can_be_removed() {
+    bat()
+        .arg("test.txt")
+        .arg("--style=full,-grid-bottom")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--terminal-width=80")
+        .assert()
+        .success()
+        .stdout(concat!(
+            "─────┬──────────────────────────────────────────────────────────────────────────\n",
+            "     │ File: test.txt\n",
+            "     │ Size: 12 B\n",
+            "─────┼──────────────────────────────────────────────────────────────────────────\n",
+            "   1 │ hello world\n",
+        ))
+        .stderr("");
+}
+
 // Tests that style components are chosen based on the rightmost `--style` argument.
 #[test]
 fn style_components_can_be_overidden() {
