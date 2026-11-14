@@ -30,7 +30,7 @@
 - Add `--fallback-syntax`/`--fallback-language` to apply syntax highlighting only when auto-detection fails, see #1341 (@Xavrir)
 - Map `BUILD` case sensitively to Python (Starlark) for Bazel, see #3576 (@vorburger)
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
-- Add a `grid-bottom` style component to disable the bottom grid border, see #4083 (@tuankhang2003).
+- Add a `grid-bottom` style component to disable the bottom grid border, see #4125 (@tuankhang2003).
 
 
 ## Bugfixes
