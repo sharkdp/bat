@@ -454,26 +454,12 @@ impl App {
                         4
                     },
                 ),
-            strip_ansi: {
-                let sanitize = parse_strip_ansi_value(
-                    self.matches
-                        .get_one::<String>("sanitize")
-                        .map(|s| s.as_str()),
-                    "--sanitize",
-                );
-                let strip_ansi = parse_strip_ansi_value(
-                    self.matches
-                        .get_one::<String>("strip-ansi")
-                        .map(|s| s.as_str()),
-                    "--strip-ansi",
-                );
-                // --sanitize implies --strip-ansi to the same value.
-                if sanitize != StripAnsiMode::Never {
-                    sanitize
-                } else {
-                    strip_ansi
-                }
-            },
+            strip_ansi: parse_strip_ansi_value(
+                self.matches
+                    .get_one::<String>("strip-ansi")
+                    .map(|s| s.as_str()),
+                "--strip-ansi",
+            ),
             sanitize: parse_strip_ansi_value(
                 self.matches
                     .get_one::<String>("sanitize")
