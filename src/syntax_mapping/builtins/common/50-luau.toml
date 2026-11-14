@@ -1,0 +1,3 @@
+[mappings]
+# Luau is a Lua derivative; Lua highlighting covers most of it
+"Lua" = ["*.luau"]
