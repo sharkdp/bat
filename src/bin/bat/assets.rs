@@ -76,7 +76,15 @@ fn ensure_cache_built(config_dir: &Path, cache_dir: &Path) {
     }
 
     eprintln!("bat: custom themes or syntaxes found, building cache ...");
-    if let Err(err) = bat::assets::build(config_dir, true, false, cache_dir, crate_version!()) {
+    let mut progress = io::stderr();
+    if let Err(err) = bat::assets::build(
+        config_dir,
+        true,
+        false,
+        cache_dir,
+        crate_version!(),
+        &mut progress,
+    ) {
         eprintln!("bat: automatic cache build failed ({err}), falling back to integrated assets.");
     }
 }
