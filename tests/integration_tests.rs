@@ -2443,17 +2443,18 @@ fn cache_auto_build_on_first_run() {
     let config_dir = tempdir().expect("can create temporary config directory");
     let cache_dir = tempdir().expect("can create temporary cache directory");
 
-    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::create_dir_all(config_dir.path().join("themes/example"))
+        .expect("can create themes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
-        config_dir.path().join("themes/example.tmTheme"),
+        config_dir.path().join("themes/example/example.tmTheme"),
     )
     .expect("can copy example theme");
-    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+    std::fs::create_dir_all(config_dir.path().join("syntaxes/c"))
         .expect("can create syntaxes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
-        config_dir.path().join("syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c/c.sublime-syntax"),
     )
     .expect("can copy example syntax");
 
@@ -2472,6 +2473,38 @@ fn cache_auto_build_on_first_run() {
     assert!(cache_dir.path().join("themes.bin").exists());
     assert!(cache_dir.path().join("syntaxes.bin").exists());
     assert!(cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
+fn cache_auto_build_plain_output_clean_stdout() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+    let input_dir = tempdir().expect("can create temporary input directory");
+    let input_path = input_dir.path().join("hello.txt");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+    std::fs::write(&input_path, "hello\n").expect("can write input file");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg(input_path.to_str().expect("input path is valid utf-8"))
+        .assert()
+        .success()
+        .stdout("hello\n")
+        .stdout(predicate::str::contains("Writing").not())
+        .stdout(predicate::str::contains("No syntaxes").not())
+        .stdout(predicate::str::contains("No themes").not())
+        .stderr(predicate::str::contains("building cache"))
+        .stderr(predicate::str::contains("Writing"));
 }
 
 #[test]
@@ -4018,20 +4051,91 @@ fn ansi_highlight_underline() {
 fn highlight_line_without_colors() {
     for wrap in ["--wrap=never", "--wrap=character"] {
         for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
-            bat()
-                .arg("--paging=never")
-                .arg("--color=never")
-                .arg("--terminal-width=80")
-                .arg(wrap)
-                .arg(theme)
-                .arg("--decorations=always")
-                .arg("--style=numbers")
-                .arg("--highlight-line=1")
-                .write_stdin("First Line\nSecond Line\n")
-                .assert()
-                .success()
-                .stdout("   1 First Line\n   2 Second Line\n")
-                .stderr("");
+            for color in ["--color=never", "--color=auto"] {
+                bat()
+                    .arg("--paging=never")
+                    .arg(color)
+                    .arg("--terminal-width=80")
+                    .arg(wrap)
+                    .arg(theme)
+                    .arg("--decorations=always")
+                    .arg("--style=numbers")
+                    .arg("--highlight-line=1")
+                    .write_stdin("First Line\nSecond Line\n")
+                    .assert()
+                    .success()
+                    .stdout("   1 First Line\n   2 Second Line\n")
+                    .stderr("");
+            }
+        }
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn highlight_line_respects_no_color_on_terminal() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    for wrap in ["--wrap=never", "--wrap=character"] {
+        for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
+            for no_color in ["", "1"] {
+                let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+                let mut master = File::from(master);
+                // Keep a slave open until the output is read: macOS discards unread PTY
+                // output when the last slave closes.
+                let slave = File::from(slave);
+                let mut child = bat_raw_command()
+                    .args([
+                        "--paging=never",
+                        "--color=auto",
+                        "--terminal-width=80",
+                        "--decorations=always",
+                        "--style=numbers",
+                        "--highlight-line=1",
+                        wrap,
+                        theme,
+                        "test.txt",
+                    ])
+                    .env("TERM", "xterm-256color")
+                    .env("NO_COLOR", no_color)
+                    .stdin(Stdio::null())
+                    .stdout(slave.try_clone().unwrap())
+                    .stderr(Stdio::piped())
+                    .spawn()
+                    .unwrap();
+
+                // This fixture fits in the PTY buffer, so the child can exit before reading it.
+                if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+                    child.kill().unwrap();
+                    child.wait().unwrap();
+                    panic!("bat did not exit");
+                }
+                let output = child.wait_with_output().unwrap();
+                assert!(output.status.success());
+                assert!(output.stderr.is_empty());
+
+                let mut stdout = Vec::new();
+                loop {
+                    let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+                    if poll(&mut fds, 100u16).unwrap() == 0 {
+                        break;
+                    }
+                    let mut buffer = [0; 1024];
+                    let count = master.read(&mut buffer).unwrap();
+                    if count == 0 {
+                        break;
+                    }
+                    stdout.extend_from_slice(&buffer[..count]);
+                }
+                if no_color.is_empty() {
+                    // Prove the PTY enables automatic color detection without NO_COLOR.
+                    assert!(stdout.contains(&b'\x1b'), "{wrap} {theme}: {stdout:?}");
+                } else {
+                    assert_eq!(stdout, b"   1 hello world\r\n", "{wrap} {theme}");
+                }
+            }
         }
     }
 }
@@ -4183,6 +4287,21 @@ fn ignored_suffix_arg() {
         .assert()
         .success()
         .stdout("\u{1b}[38;5;231m{\"test\": \"value\"}\u{1b}[0m")
+        .stderr("");
+}
+
+#[test]
+fn ignored_suffix_arg_empty() {
+    bat()
+        .arg("-f")
+        .arg("--theme")
+        .arg("ansi")
+        .arg("-p")
+        .arg("--ignored-suffix=")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n")
         .stderr("");
 }
 
@@ -5010,7 +5129,7 @@ fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
 }
 
 #[test]
-fn sanitize_implies_strip_ansi() {
+fn sanitize_keeps_escape_sequence_text() {
     bat()
         .arg("--style=plain")
         .arg("--decorations=always")
@@ -5019,11 +5138,11 @@ fn sanitize_implies_strip_ansi() {
         .write_stdin("\x1B[33mYellow\x1B[m")
         .assert()
         .success()
-        .stdout("Yellow");
+        .stdout("\u{FFFD}[33mYellow\u{FFFD}[m");
 }
 
 #[test]
-fn sanitize_strips_osc_clipboard_hijack() {
+fn sanitize_substitutes_osc_clipboard_hijack() {
     // OSC 52 sets the system clipboard. A file containing this would silently
     // overwrite the user's clipboard if displayed unfiltered.
     bat()
@@ -5034,11 +5153,11 @@ fn sanitize_strips_osc_clipboard_hijack() {
         .write_stdin("safe\x1B]52;c;cm0=\x07payload")
         .assert()
         .success()
-        .stdout("safepayload");
+        .stdout("safe\u{FFFD}]52;c;cm0=\u{FFFD}payload");
 }
 
 #[test]
-fn sanitize_strips_osc_8_hyperlink_spoof() {
+fn sanitize_substitutes_osc_8_hyperlink_spoof() {
     // OSC 8 hyperlinks let displayed text point to an arbitrary URL.
     bat()
         .arg("--style=plain")
@@ -5048,11 +5167,11 @@ fn sanitize_strips_osc_8_hyperlink_spoof() {
         .write_stdin("\x1B]8;;https://evil.example\x07click here\x1B]8;;\x07")
         .assert()
         .success()
-        .stdout("click here");
+        .stdout("\u{FFFD}]8;;https://evil.example\u{FFFD}click here\u{FFFD}]8;;\u{FFFD}");
 }
 
 #[test]
-fn sanitize_strips_window_title_injection() {
+fn sanitize_substitutes_window_title_injection() {
     // OSC 0/1/2 set the terminal window title.
     bat()
         .arg("--style=plain")
@@ -5062,11 +5181,11 @@ fn sanitize_strips_window_title_injection() {
         .write_stdin("hello\x1B]0;evil-title\x07world")
         .assert()
         .success()
-        .stdout("helloworld");
+        .stdout("hello\u{FFFD}]0;evil-title\u{FFFD}world");
 }
 
 #[test]
-fn sanitize_strips_8bit_csi() {
+fn sanitize_substitutes_8bit_csi() {
     // 8-bit CSI introducer (U+009B) is the single-codepoint equivalent of ESC [.
     bat()
         .arg("--style=plain")
@@ -5076,7 +5195,7 @@ fn sanitize_strips_8bit_csi() {
         .write_stdin("a\u{9B}31mRED\u{9B}0mb")
         .assert()
         .success()
-        .stdout("aREDb");
+        .stdout("a\u{FFFD}31mRED\u{FFFD}0mb");
 }
 
 #[test]

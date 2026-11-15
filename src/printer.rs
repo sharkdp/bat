@@ -699,7 +699,7 @@ impl Printer for InteractivePrinter<'_> {
                 }
             }
 
-            // Sanitize is the strict superset; otherwise strip-ansi alone.
+            // Sanitize wins over strip-ansi, because stripping can hide text.
             if self.sanitize {
                 line = sanitize(&line).into()
             } else if self.strip_ansi {

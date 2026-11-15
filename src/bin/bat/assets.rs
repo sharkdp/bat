@@ -76,7 +76,15 @@ fn ensure_cache_built(config_dir: &Path, cache_dir: &Path) {
     }
 
     eprintln!("bat: custom themes or syntaxes found, building cache ...");
-    if let Err(err) = bat::assets::build(config_dir, true, false, cache_dir, crate_version!()) {
+    let mut progress = io::stderr();
+    if let Err(err) = bat::assets::build(
+        config_dir,
+        true,
+        false,
+        cache_dir,
+        crate_version!(),
+        &mut progress,
+    ) {
         eprintln!("bat: automatic cache build failed ({err}), falling back to integrated assets.");
     }
 }
@@ -98,11 +106,9 @@ fn custom_sources_exist(config_dir: &Path) -> bool {
 
 #[cfg(feature = "build-assets")]
 fn dir_has_files(dir: &Path) -> bool {
-    fs::read_dir(dir)
-        .map(|entries| {
-            entries
-                .filter_map(|entry| entry.ok())
-                .any(|entry| entry.path().is_file())
-        })
-        .unwrap_or(false)
+    walkdir::WalkDir::new(dir)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .any(|entry| entry.path().is_file())
 }

@@ -16,7 +16,7 @@
 
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
-- Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It implies `--strip-ansi` at the same value and additionally substitutes terminal-active control bytes (cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
+- Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It substitutes terminal-active control bytes (escape, cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
 - Map justfile, Justfile, .justfile, and *.justfile to Makefile syntax highlighting, see #3623 (@zachvalenta)
 - Map `.kube/config` to YAML syntax highlighting, see #3911 (@logarithmone1128)
 - Preserve `--diff` change markers and snip separators when `--plain` is set. Closes #3630, see #3643 (@mvanhorn)
@@ -32,7 +32,14 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+
+- Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)
+- Fix builtin pager (minus) not responding to search (`/`, `?`, `n`, `N`) and navigation (`PgUp`, `PgDown`, arrows, `g`, `G`) keys. `HashedEventRegister` was overriding all default `minus` bindings instead of extending them. Add `generate_default_bindings()` before custom bindings. See #3831, #3798 and #3837 (@Amilliox)
+- Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #4131 (@NotAFlightRisk)
+- Do not run filter commands from the configuration of the Git repository that contains the displayed file, see #4127 (@curious-rabbit)
+- Ignore empty `--ignored-suffix` values to avoid a stack overflow, see #4122 (@spicysharkco)
 - Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
+- Fix automatic cache build progress polluting stdout, see #4130 (@intertermux-code)
 - Don't emit `--highlight-line` escape sequences (background color or `ansi` theme underline) when colors are disabled with `--color=never`. Closes #4099, see #4100 (@DeviousCardi)
 - Fix missing colors, pager, and decorations in mintty/MSYS2 and Cygwin terminals on Windows, see #4115 (@rezamuliawijaya)
 - Make full-path `--map-syntax` patterns and the built-in `$HOME` and `$XDG_CONFIG_HOME` mappings work on Windows, see #4113 (@b84330808)
@@ -49,6 +56,7 @@
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #4076 (@cindykrafft)
 - Make `--line-range` and `--highlight-line` refer to line numbers in the file when `-b` / `--number-nonblank` is used, instead of to the displayed non-blank line count, see #4084 (@cindykrafft)
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
+- Fix escape sequence handling in `--strip-ansi` and `--sanitize`. `--sanitize` no longer removes escape sequences, which could hide text, see #4024 (@curious-rabbit)
 - Track strikethrough (SGR 9 / 29) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first highlighted token when displaying ANSI input with syntax highlighting, see #4015 (@mikehasa)
 - Allow boolean flags to be given more than once, so that a flag set in the config file can also be passed on the command line without erroring, see #3912 (@logarithmone1128)
 - Allow options that take a value (`--binary`, `--italic-text`, `--nonprintable-notation`, `--fallback-syntax`, `--squeeze-limit`) to be given more than once, so that a value from the config file can be overridden on the command line, see #4102 (@Huang-404-Q)

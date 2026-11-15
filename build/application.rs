@@ -33,6 +33,7 @@ pub fn gen_man_and_comp() -> anyhow::Result<()> {
     else {
         anyhow::bail!("BAT_ASSETS_GEN_DIR or OUT_DIR should be set for build.rs");
     };
+    let out_dir = env::current_dir()?.join(out_dir);
 
     fs::create_dir_all(out_dir.join("assets/manual")).unwrap();
     fs::create_dir_all(out_dir.join("assets/completions")).unwrap();

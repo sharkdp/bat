@@ -50,6 +50,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         .get_one::<String>("source")
         .map(Path::new)
         .unwrap_or_else(|| config_dir);
+    let mut progress = io::stdout();
 
     bat::assets::build(
         source_dir,
@@ -57,6 +58,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         matches.get_flag("acknowledgements"),
         cache_dir,
         clap::crate_version!(),
+        &mut progress,
     )
 }
 
@@ -426,10 +428,12 @@ fn run() -> Result<bool> {
                 )?;
                 Ok(true)
             } else {
-                let inputs = vec![Input::ordinary_file("cache")];
-                let config = app.config(&inputs)?;
-
-                run_controller(inputs, &config, config_dir, cache_dir)
+                // No arguments provided to cache subcommand - show help
+                let mut cmd = clap_app::build_app(true);
+                if let Some(cache_cmd) = cmd.find_subcommand_mut("cache") {
+                    print!("{}", cache_cmd.render_help());
+                }
+                Ok(true)
             }
         }
         _ => {
