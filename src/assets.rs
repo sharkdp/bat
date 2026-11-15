@@ -792,6 +792,7 @@ contexts:
             false,
             cache_dir.path(),
             env!("CARGO_PKG_VERSION"),
+            &mut std::io::sink(),
         )
         .expect("custom assets can be built");
 

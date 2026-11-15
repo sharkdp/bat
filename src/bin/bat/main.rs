@@ -50,6 +50,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         .get_one::<String>("source")
         .map(Path::new)
         .unwrap_or_else(|| config_dir);
+    let mut progress = io::stdout();
 
     bat::assets::build(
         source_dir,
@@ -57,6 +58,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         matches.get_flag("acknowledgements"),
         cache_dir,
         clap::crate_version!(),
+        &mut progress,
     )
 }
 
