@@ -45,6 +45,14 @@ impl Decoration for LineNumberDecoration {
         continuation: bool,
         _printer: &InteractivePrinter,
     ) -> DecorationText {
+        if line_number == 0 {
+            // Blank line in number-nonblank mode: show empty space instead of a number.
+            return DecorationText {
+                text: self.color.paint(" ".repeat(self.width())).to_string(),
+                width: self.width(),
+            };
+        }
+
         if continuation {
             if line_number >= self.cached_wrap_invalid_at {
                 let new_width = self.cached_wrap.width + 1;

@@ -138,37 +138,41 @@ pub fn replace_nonprintable(
 
 /// Strips ANSI escape sequences from the input.
 pub fn strip_ansi(line: &str) -> String {
+    // Parse without the line ending so an unfinished sequence cannot remove it.
+    let body = line
+        .strip_suffix("\r\n")
+        .or_else(|| line.strip_suffix('\n'))
+        .unwrap_or(line);
     let mut buffer = String::with_capacity(line.len());
-    for seq in EscapeSequenceOffsetsIterator::new(line) {
+    for seq in EscapeSequenceOffsetsIterator::new(body) {
         if let EscapeSequenceOffsets::Text { .. } = seq {
-            buffer.push_str(&line[seq.index_of_start()..seq.index_past_end()]);
+            buffer.push_str(&body[seq.index_of_start()..seq.index_past_end()]);
         }
     }
+    buffer.push_str(&line[body.len()..]);
     buffer
 }
 
-/// Strips ANSI escape sequences and substitutes terminal-active control bytes
-/// and visual-spoofing Unicode codepoints (bidi, zero-width) with U+FFFD.
+/// Substitutes control bytes and bidi / zero-width codepoints with U+FFFD, removing nothing.
 pub fn sanitize(line: &str) -> String {
-    let stripped = strip_ansi(line);
-    let mut buffer = String::with_capacity(stripped.len());
-    let bytes = stripped.as_bytes();
+    let mut buffer = String::with_capacity(line.len());
+    let bytes = line.as_bytes();
     let mut start = 0;
     let mut i = 0;
     // Skip directly to the next trigger byte instead of testing each one.
     while let Some(off) = bytes[i..].iter().position(|&b| is_sanitize_trigger(b)) {
         i += off;
-        let len = sanitize_at(bytes, i, &stripped, &mut buffer, &mut start);
+        let len = sanitize_at(bytes, i, line, &mut buffer, &mut start);
         i += len;
     }
-    buffer.push_str(&stripped[start..]);
+    buffer.push_str(&line[start..]);
     buffer
 }
 
 #[inline]
 fn is_sanitize_trigger(b: u8) -> bool {
     // C0 controls minus \t \n \f; DEL; UTF-8 leads with dangerous codepoints.
-    matches!(b, 0x00..=0x08 | 0x0B | 0x0D..=0x1F | 0x7F | 0xC2 | 0xE2 | 0xEF)
+    matches!(b, 0x00..=0x08 | 0x0B | 0x0D..=0x1F | 0x7F | 0xC2 | 0xD8 | 0xE2 | 0xEF)
 }
 
 /// Substitutes the byte/sequence at `bytes[i]` (or passes it through on
@@ -200,8 +204,14 @@ fn sanitize_at(
             buffer.push('\u{FFFD}');
             3
         }
+        // 0xD8 0x9C = U+061C (Arabic letter mark, a bidi control). The rest of
+        // the 0xD8 block is ordinary Arabic text.
+        0xD8 if bytes.get(i + 1) == Some(&0x9C) => {
+            buffer.push('\u{FFFD}');
+            2
+        }
         // False-alarm trigger: pass the full UTF-8 sequence through.
-        lead @ (0xC2 | 0xE2 | 0xEF) => {
+        lead @ (0xC2 | 0xD8 | 0xE2 | 0xEF) => {
             let n = utf8_len_from_lead(lead);
             buffer.push_str(&full[i..i + n]);
             n
@@ -217,10 +227,11 @@ fn sanitize_at(
 
 #[inline]
 fn is_dangerous_e2(bytes: &[u8], i: usize) -> bool {
-    // U+200B..D (zero-width), U+202A..E (bidi controls), U+2066..9 (isolates).
+    // U+200B..D (zero-width), U+200E..F (LRM/RLM), U+202A..E (bidi embedding
+    // and override), U+2066..9 (bidi isolates).
     matches!(
         (bytes.get(i + 1), bytes.get(i + 2)),
-        (Some(0x80), Some(0x8B..=0x8D | 0xAA..=0xAE)) | (Some(0x81), Some(0xA6..=0xA9))
+        (Some(0x80), Some(0x8B..=0x8F | 0xAA..=0xAE)) | (Some(0x81), Some(0xA6..=0xA9))
     )
 }
 
@@ -295,11 +306,21 @@ pub fn strip_overstrike(line: &str, first_backspace: usize) -> String {
     output
 }
 
+/// Specify when to strip ANSI escape sequences from the input.
+///
+/// Used for both the `--strip-ansi` and the `--sanitize` option, the latter
+/// implying the former with the same value.
 #[derive(Debug, PartialEq, Clone, Copy, Default)]
 pub enum StripAnsiMode {
+    /// Keep escape sequences in the output
     #[default]
     Never,
+
+    /// Strip escape sequences from the output
     Always,
+
+    /// Strip escape sequences unless the syntax highlighting language is plain
+    /// text, in which case they may be part of what the input wants to display
     Auto,
 }
 
@@ -412,6 +433,34 @@ fn test_sanitize_substitutes_bidi_and_zero_width() {
 }
 
 #[test]
+fn test_sanitize_substitutes_every_bidi_control() {
+    // Unicode Bidi_Control is exactly these 12 codepoints. Covering only some
+    // of them leaves a reordering attack available through the rest.
+    let r = '\u{FFFD}';
+    for c in [
+        '\u{061C}', '\u{200E}', '\u{200F}', '\u{202A}', '\u{202B}', '\u{202C}', '\u{202D}',
+        '\u{202E}', '\u{2066}', '\u{2067}', '\u{2068}', '\u{2069}',
+    ] {
+        assert_eq!(
+            sanitize(&format!("a{c}b")),
+            format!("a{r}b"),
+            "U+{:04X} was not substituted",
+            c as u32
+        );
+    }
+}
+
+#[test]
+fn test_sanitize_preserves_arabic_sharing_the_alm_lead_byte() {
+    // U+061C is reached via lead byte 0xD8, which also leads ordinary Arabic.
+    assert_eq!(
+        sanitize("\u{0600}\u{061F}\u{06FF}"),
+        "\u{0600}\u{061F}\u{06FF}"
+    );
+    assert_eq!(sanitize("مرحبا بالعالم"), "مرحبا بالعالم");
+}
+
+#[test]
 fn test_sanitize_preserves_legitimate_bytes() {
     assert_eq!(sanitize("crlf\r\nline\r\n"), "crlf\r\nline\r\n");
     assert_eq!(sanitize("a\tb\nc"), "a\tb\nc");
@@ -428,13 +477,18 @@ fn test_sanitize_preserves_legitimate_bytes() {
 }
 
 #[test]
-fn test_sanitize_strips_ansi() {
+fn test_sanitize_keeps_escape_sequence_text() {
     let r = '\u{FFFD}';
-    // sanitize is a strict superset of strip_ansi.
-    assert_eq!(sanitize("a\x1B[31mb\x1B[0mc"), "abc");
-    assert_eq!(sanitize("a\u{9B}31mb\u{9B}0mc"), "abc");
-    // ANSI then dangerous byte: ANSI gone, byte substituted.
-    assert_eq!(sanitize("\x1B[31mhello\rEVIL"), format!("hello{r}EVIL"));
+    // Only the introducer is substituted, the rest of the sequence stays visible.
+    assert_eq!(sanitize("a\x1B[31mb\x1B[0mc"), format!("a{r}[31mb{r}[0mc"));
+    assert_eq!(sanitize("a\u{9B}31mb\u{9B}0mc"), format!("a{r}31mb{r}0mc"));
+    // A string sequence must not hide the command a shell would run.
+    assert_eq!(sanitize("true \x1B]0; rm x"), format!("true {r}]0; rm x"));
+    assert_eq!(sanitize("true \x1B[;rm x"), format!("true {r}[;rm x"));
+    assert_eq!(
+        sanitize("true \x1BP; rm x\x1B\\"),
+        format!("true {r}P; rm x{r}\\")
+    );
 }
 
 #[test]

@@ -33,6 +33,8 @@ Options:
           Truncate all lines longer than screen width. Alias for '--wrap=never'.
   -n, --number
           Show line numbers (alias for '--style=numbers').
+  -b, --number-nonblank
+          Show line numbers for non-blank lines only (alias for '--style=numbers').
       --color <when>
           When to use colors (*auto*, never, always).
       --italic-text <when>

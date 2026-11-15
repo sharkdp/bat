@@ -50,6 +50,17 @@ contexts:
     - match: (?=\])
       pop: true
   text:
+    - include: text_special
+    - match: ''
+      set: classify_log_text
+  classify_log_text:
+    - include: scope:text.log#log_level_lines_at_current_position
+    - match: ''
+      set: text_body
+  text_body:
+    - include: text_special
+    - include: scope:text.log
+  text_special:
     - match: $
       pop: true
     - match: '<\w+>'
@@ -62,4 +73,3 @@ contexts:
       escape: \)$
       escape_captures:
         0: punctuation.section.block.end.syslog
-    - include: scope:text.log

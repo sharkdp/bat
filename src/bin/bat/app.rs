@@ -59,6 +59,18 @@ pub struct App {
     /// (not from config file or environment variables).
     /// This is used to honor the flag when piping output, similar to `cat -n`.
     number_from_cli: bool,
+    /// True if -b / --number-nonblank was passed on the command line
+    /// (not from config file or environment variables).
+    /// This is used to honor the flag when piping output, similar to `cat -b`.
+    number_nonblank_from_cli: bool,
+}
+
+/// True if stdout is attached to an interactive terminal. On Windows this also
+/// recognizes mintty/MSYS2 and Cygwin pseudo-terminals, which expose stdout as
+/// a named pipe that `std::io::IsTerminal` does not report as a terminal.
+/// Regular pipes (e.g. `bat file | grep`) are not affected.
+fn is_interactive_output() -> bool {
+    std::io::stdout().is_terminal() || Term::stdout().features().is_msys_tty()
 }
 
 impl App {
@@ -66,40 +78,16 @@ impl App {
         #[cfg(windows)]
         let _ = nu_ansi_term::enable_ansi_support();
 
-        let interactive_output = std::io::stdout().is_terminal();
+        let interactive_output = is_interactive_output();
 
-        // Check if the -n / --number option was passed on the command line
-        // (before merging with config file and environment variables).
-        // This is needed to honor the -n flag when piping output, similar to `cat -n`.
-        // We need to handle both standalone (-n, --number) and combined short flags (-pn, -An, etc.)
-        // Note: We only check if -n appears and is not overridden by -p in the same combined flag.
-        // For combined flags like -np, -p comes after -n and overrides it, so we don't count it.
-        // For combined flags like -pn, -n comes after -p and takes effect.
-        let number_from_cli = wild::args_os().any(|arg| {
-            let arg_str = arg.to_string_lossy();
-            if arg_str == "-n" || arg_str == "--number" {
-                return true;
-            }
-            // Handle combined short flags
-            // Only count -n if it's the LAST flag in the combined form (so -p doesn't override it)
-            // or if -p is not present in the combined form
-            if arg_str.starts_with('-') && !arg_str.starts_with("--") && arg_str.len() > 2 {
-                let chars: Vec<char> = arg_str.chars().skip(1).collect();
-                let n_pos = chars.iter().position(|&c| c == 'n');
-                let p_pos = chars.iter().position(|&c| c == 'p');
-                // -n is in the combined flag and either:
-                // - -p is not present, OR
-                // - -n comes after -p (so -n takes effect)
-                if let Some(n) = n_pos {
-                    if p_pos.is_none() || n > p_pos.unwrap() {
-                        return true;
-                    }
-                }
-            }
-            false
-        });
+        // Parse the original command line separately from config and environment arguments.
+        // Using clap here keeps CLI-only detection consistent with the final parser, including
+        // option terminators, combined short flags, and options that take values.
+        let cli_matches = Self::cli_matches(interactive_output);
+        let number_from_cli = cli_matches.get_flag("number");
+        let number_nonblank_from_cli = cli_matches.get_flag("number-nonblank");
 
-        let matches = Self::matches(interactive_output)?;
+        let matches = Self::matches(interactive_output, &cli_matches)?;
 
         if matches.get_flag("help") {
             let help_type = if wild::args_os().any(|arg| arg == "--help") {
@@ -139,6 +127,7 @@ impl App {
             matches,
             interactive_output,
             number_from_cli,
+            number_nonblank_from_cli,
         })
     }
 
@@ -188,7 +177,8 @@ impl App {
         };
 
         let cache_dir = PROJECT_DIRS.cache_dir();
-        let assets = assets_from_cache_or_binary(use_custom_assets, cache_dir)?;
+        let config_dir = PROJECT_DIRS.config_dir();
+        let assets = assets_from_cache_or_binary(use_custom_assets, config_dir, cache_dir)?;
         Controller::new(&help_config, &assets)
             .run(inputs, None)
             .ok();
@@ -210,20 +200,17 @@ impl App {
         args
     }
 
-    fn matches(interactive_output: bool) -> Result<ArgMatches> {
-        // Check if we should skip config file processing for special arguments
-        // that don't require full application setup (version, diagnostic)
-        let should_skip_config = wild::args_os().any(|arg| {
-            matches!(
-                arg.to_str(),
-                Some("-V" | "--version" | "--diagnostic" | "--diagnostics")
-            )
-        });
+    fn cli_matches(interactive_output: bool) -> ArgMatches {
+        clap_app::build_app(interactive_output).get_matches_from(wild::args_os())
+    }
+
+    fn matches(interactive_output: bool, cli_matches: &ArgMatches) -> Result<ArgMatches> {
+        let should_skip_config =
+            cli_matches.get_flag("no-config") || cli_matches.get_flag("diagnostic");
 
         // Check if help was requested - help should read the config file but be
         // forgiving of invalid arguments (so configured theme etc. can be used)
-        let help_requested =
-            wild::args_os().any(|arg| matches!(arg.to_str(), Some("-h" | "--help")));
+        let help_requested = cli_matches.get_flag("help");
 
         if wild::args_os().nth(1) == Some("cache".into()) {
             // Skip the config file and env vars
@@ -231,9 +218,9 @@ impl App {
             return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
         }
 
-        if wild::args_os().any(|arg| arg == "--no-config") || should_skip_config {
+        if should_skip_config {
             // Skip the arguments in bats config file when --no-config is present
-            // or when user requests version or diagnostic information
+            // or when user requests diagnostic information
             let args = Self::build_args_without_config();
             return Ok(clap_app::build_app(interactive_output).get_matches_from(args));
         }
@@ -349,13 +336,12 @@ impl App {
             // later args take precedence over earlier ones, hence `.rev()`
             // see: https://github.com/sharkdp/bat/pull/2755#discussion_r1456416875
             for from_to in values.rev() {
-                let parts: Vec<_> = from_to.split(':').collect();
-
-                if parts.len() != 2 {
+                // The glob can contain colons itself, e.g. after a drive letter on Windows.
+                let Some((from, to)) = from_to.rsplit_once(':') else {
                     return Err("Invalid syntax mapping. The format of the -m/--map-syntax option is '<glob-pattern>:<syntax-name>'. For example: '*.cpp:C++'.".into());
-                }
+                };
 
-                syntax_mapping.insert(parts[0], MappingTarget::MapTo(parts[1]))?;
+                syntax_mapping.insert(from, MappingTarget::MapTo(to))?;
             }
         }
 
@@ -454,7 +440,8 @@ impl App {
                     .map(|s| s.as_str())
                     == Some("always")
                 || self.matches.get_flag("force-colorization")
-                || self.number_from_cli),
+                || self.number_from_cli
+                || self.number_nonblank_from_cli),
             tab_width: self
                 .matches
                 .get_one::<String>("tabs")
@@ -467,26 +454,12 @@ impl App {
                         4
                     },
                 ),
-            strip_ansi: {
-                let sanitize = parse_strip_ansi_value(
-                    self.matches
-                        .get_one::<String>("sanitize")
-                        .map(|s| s.as_str()),
-                    "--sanitize",
-                );
-                let strip_ansi = parse_strip_ansi_value(
-                    self.matches
-                        .get_one::<String>("strip-ansi")
-                        .map(|s| s.as_str()),
-                    "--strip-ansi",
-                );
-                // --sanitize implies --strip-ansi to the same value.
-                if sanitize != StripAnsiMode::Never {
-                    sanitize
-                } else {
-                    strip_ansi
-                }
-            },
+            strip_ansi: parse_strip_ansi_value(
+                self.matches
+                    .get_one::<String>("strip-ansi")
+                    .map(|s| s.as_str()),
+                "--strip-ansi",
+            ),
             sanitize: parse_strip_ansi_value(
                 self.matches
                     .get_one::<String>("sanitize")
@@ -495,6 +468,8 @@ impl App {
             ),
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
+            number_nonblank: self.matches.get_flag("number-nonblank")
+                || self.number_nonblank_from_cli,
             theme: theme(self.theme_options()).to_string(),
             visible_lines: match self.matches.try_contains_id("diff").unwrap_or_default()
                 && self.matches.get_flag("diff")
@@ -608,6 +583,13 @@ impl App {
 
         // Only line numbers if `--number`.
         if self.matches.get_flag("number") {
+            return Some(StyleComponents(HashSet::from([
+                StyleComponent::LineNumbers,
+            ])));
+        }
+
+        // Only line numbers for non-blank lines if `--number-nonblank`.
+        if self.matches.get_flag("number-nonblank") || self.number_nonblank_from_cli {
             return Some(StyleComponents(HashSet::from([
                 StyleComponent::LineNumbers,
             ])));

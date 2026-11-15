@@ -201,7 +201,10 @@ impl HighlightingAssets {
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{theme}', using default.")
+                    bat_warning!(
+                        "Unknown theme '{}', using default.",
+                        crate::preprocessor::sanitize_for_terminal(theme)
+                    )
                 }
                 self.get_theme_set()
                     .get(
@@ -363,11 +366,11 @@ impl HighlightingAssets {
         reader: &mut InputReader,
     ) -> Result<Option<SyntaxReferenceInSet<'_>>> {
         let syntax_set = self.get_syntax_set()?;
-        Ok(String::from_utf8(reader.first_line.clone())
+        Ok(std::str::from_utf8(&reader.first_line)
             .ok()
             .and_then(|l| {
                 // Strip UTF-8 BOM if present
-                let line = l.strip_prefix('\u{feff}').unwrap_or(&l);
+                let line = l.strip_prefix('\u{feff}').unwrap_or(l);
                 syntax_set.find_syntax_by_first_line(line)
             })
             .map(|syntax| SyntaxReferenceInSet { syntax, syntax_set }))
@@ -792,6 +795,7 @@ contexts:
             false,
             cache_dir.path(),
             env!("CARGO_PKG_VERSION"),
+            &mut std::io::sink(),
         )
         .expect("custom assets can be built");
 

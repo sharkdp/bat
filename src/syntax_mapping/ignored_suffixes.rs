@@ -39,7 +39,9 @@ impl Default for IgnoredSuffixes<'_> {
 
 impl<'a> IgnoredSuffixes<'a> {
     pub fn add_suffix(&mut self, suffix: &'a str) {
-        self.values.push(suffix)
+        if !suffix.is_empty() {
+            self.values.push(suffix)
+        }
     }
 
     pub fn strip_suffix(&self, file_name: &'a str) -> Option<&'a str> {

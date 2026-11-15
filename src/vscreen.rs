@@ -173,8 +173,10 @@ impl Attributes {
                 2 => self.dim = "\x1B[2m".to_owned(),
                 3 => self.italic = "\x1B[3m".to_owned(),
                 4 => self.underline = "\x1B[4m".to_owned(),
+                9 => self.strike = "\x1B[9m".to_owned(),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
+                29 => self.strike.clear(),
                 22 => {
                     self.bold.clear();
                     self.dim.clear();
@@ -451,69 +453,13 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
         start_sequence: usize,
         start_command: usize,
     ) -> EscapeSequenceOffsets {
-        let mut start_terminator: usize;
-        let mut end_sequence: usize;
-
-        loop {
-            // ST is BEL, ESC `\\`, or U+009C.
-            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B' | '\u{9C}')) {
-                None => {
-                    start_terminator = self.text.len();
-                    end_sequence = start_terminator;
-                    break;
-                }
-
-                Some((_, end)) => {
-                    start_terminator = end;
-                    end_sequence = end;
-                }
-            }
-
-            match self.chars.next() {
-                Some((ti, '\x07')) => {
-                    end_sequence = ti + '\x07'.len_utf8();
-                    break;
-                }
-
-                Some((ti, '\u{9C}')) => {
-                    end_sequence = ti + '\u{9C}'.len_utf8();
-                    break;
-                }
-
-                Some((ti, '\x1B')) => {
-                    match self.chars.next() {
-                        Some((i, '\\')) => {
-                            end_sequence = i + '\\'.len_utf8();
-                            break;
-                        }
-
-                        None => {
-                            end_sequence = ti + '\x1B'.len_utf8();
-                            break;
-                        }
-
-                        _ => {
-                            // Repeat, since `\\`(anything) isn't a valid ST.
-                        }
-                    }
-                }
-
-                None => {
-                    // Prematurely ends.
-                    break;
-                }
-
-                Some((_, tc)) => {
-                    panic!("this should not be reached: char {tc:?}")
-                }
-            }
-        }
+        let start_terminator = self.take_string_body();
 
         EscapeSequenceOffsets::OSC {
             start_sequence,
             start_command,
             start_terminator,
-            end: end_sequence,
+            end: self.take_string_terminator(start_terminator),
         }
     }
 
@@ -522,50 +468,36 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
         &mut self,
         start_sequence: usize,
     ) -> Option<EscapeSequenceOffsets> {
-        let mut end_sequence: usize;
-
-        loop {
-            match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B' | '\u{9C}')) {
-                None => {
-                    end_sequence = self.text.len();
-                    break;
-                }
-                Some((_, end)) => {
-                    end_sequence = end;
-                }
-            }
-
-            match self.chars.next() {
-                Some((ti, '\x07')) => {
-                    end_sequence = ti + '\x07'.len_utf8();
-                    break;
-                }
-                Some((ti, '\u{9C}')) => {
-                    end_sequence = ti + '\u{9C}'.len_utf8();
-                    break;
-                }
-                Some((ti, '\x1B')) => match self.chars.next() {
-                    Some((i, '\\')) => {
-                        end_sequence = i + '\\'.len_utf8();
-                        break;
-                    }
-                    None => {
-                        end_sequence = ti + '\x1B'.len_utf8();
-                        break;
-                    }
-                    _ => {}
-                },
-                None => break,
-                Some((_, tc)) => {
-                    panic!("this should not be reached: char {tc:?}")
-                }
-            }
-        }
+        let start_terminator = self.take_string_body();
 
         Some(EscapeSequenceOffsets::Unknown {
             start: start_sequence,
-            end: end_sequence,
+            end: self.take_string_terminator(start_terminator),
         })
+    }
+
+    /// Consumes a string body up to BEL, ESC or U+009C and returns where it ends.
+    fn take_string_body(&mut self) -> usize {
+        match self.chars_take_while(|c| !matches!(c, '\x07' | '\x1B' | '\u{9C}')) {
+            Some((_, end)) => end,
+            None => self.text.len(),
+        }
+    }
+
+    /// Consumes a BEL, U+009C or ESC `\` terminator; any other ESC is left for the next sequence.
+    fn take_string_terminator(&mut self, start_terminator: usize) -> usize {
+        match self.chars.peek() {
+            Some(&(i, c @ ('\x07' | '\u{9C}'))) => {
+                self.chars.next();
+                i + c.len_utf8()
+            }
+            Some(&(i, '\x1B')) if self.text[i + 1..].starts_with('\\') => {
+                self.chars.next();
+                self.chars.next();
+                i + 2
+            }
+            _ => start_terminator,
+        }
     }
 
     fn next_csi(&mut self, start_sequence: usize) -> Option<EscapeSequenceOffsets> {
@@ -1112,10 +1044,10 @@ mod tests {
     fn test_sgr_attributes_do_not_leak_into_wrong_field() {
         let mut attrs = crate::vscreen::Attributes::new();
 
-        // Bold, Dim, Italic, Underline, Foreground, Background
+        // Bold, Dim, Italic, Underline, Strike, Foreground, Background
         attrs.update(EscapeSequence::CSI {
-            raw_sequence: "\x1B[1;2;3;4;31;41m",
-            parameters: "1;2;3;4;31;41",
+            raw_sequence: "\x1B[1;2;3;4;9;31;41m",
+            parameters: "1;2;3;4;9;31;41",
             intermediates: "",
             final_byte: "m",
         });
@@ -1124,6 +1056,7 @@ mod tests {
         assert_eq!(attrs.dim, "\x1B[2m");
         assert_eq!(attrs.italic, "\x1B[3m");
         assert_eq!(attrs.underline, "\x1B[4m");
+        assert_eq!(attrs.strike, "\x1B[9m");
         assert_eq!(attrs.foreground, "\x1B[31m");
         assert_eq!(attrs.background, "\x1B[41m");
 
@@ -1139,5 +1072,28 @@ mod tests {
         assert_eq!(attrs.bold, "\x1B[1m");
         assert_eq!(attrs.foreground, "\x1B[94m");
         assert_eq!(attrs.background, "\x1B[103m");
+    }
+
+    #[test]
+    fn test_sgr_strike_is_tracked_and_cleared() {
+        let mut attrs = crate::vscreen::Attributes::new();
+
+        // Strikethrough on (SGR 9) must be tracked so it can be re-emitted.
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[9m",
+            parameters: "9",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.strike, "\x1B[9m");
+
+        // Strikethrough off (SGR 29) must clear it, just like italic (23) and underline (24).
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[29m",
+            parameters: "29",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.strike, "");
     }
 }

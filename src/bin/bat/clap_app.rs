@@ -52,6 +52,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .long("show-all")
                 .alias("show-nonprintable")
                 .short('A')
+                .overrides_with("show-all")
                 .action(ArgAction::SetTrue)
                 .conflicts_with("language")
                 .help("Show non-printable characters (space, tab, newline, ..).")
@@ -64,6 +65,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("nonprintable-notation")
                 .long("nonprintable-notation")
+                .overrides_with("nonprintable-notation")
                 .action(ArgAction::Set)
                 .default_value("unicode")
                 .value_parser(["unicode", "caret"])
@@ -80,6 +82,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("binary")
                 .long("binary")
+                .overrides_with("binary")
                 .action(ArgAction::Set)
                 .default_value("no-printing")
                 .value_parser(["no-printing", "as-text"])
@@ -97,6 +100,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("plain")
                 .overrides_with("plain")
                 .overrides_with("number")
+                .overrides_with("number-nonblank")
                 .short('p')
                 .long("plain")
                 .action(ArgAction::Count)
@@ -123,6 +127,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("fallback-syntax")
                 .long("fallback-syntax")
+                .overrides_with("fallback-syntax")
                 .visible_alias("fallback-language")
                 .help("Set a fallback language for undetected syntaxes.")
                 .long_help(
@@ -170,6 +175,7 @@ pub fn build_app(interactive_output: bool) -> Command {
                     Arg::new("diff")
                         .long("diff")
                         .short('d')
+                        .overrides_with("diff")
                         .action(ArgAction::SetTrue)
                         .conflicts_with("line-range")
                         .help("Only show lines that have been added/removed/modified.")
@@ -234,6 +240,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("chop-long-lines")
                 .long("chop-long-lines")
                 .short('S')
+                .overrides_with("chop-long-lines")
                 .action(ArgAction::SetTrue)
                 .help("Truncate all lines longer than screen width. Alias for '--wrap=never'."),
         )
@@ -278,6 +285,23 @@ pub fn build_app(interactive_output: bool) -> Command {
                 ),
         )
         .arg(
+            Arg::new("number-nonblank")
+                .long("number-nonblank")
+                .overrides_with("number-nonblank")
+                .short('b')
+                .action(ArgAction::SetTrue)
+                .help("Show line numbers for non-blank lines only (alias for '--style=numbers').")
+                .long_help(
+                    "Only show line numbers for non-blank lines, no other decorations. This is an \
+                     alias for '--style=numbers'. Non-blank lines are lines that contain any \
+                     character before the line ending, including spaces and tabs. When used \
+                     together with --number (-n), --number-nonblank (-b) takes precedence.\n\n\
+                     Example:\n  \
+                     printf 'alpha\\n\\nbeta\\n' | bat -b\n  \
+                     numbers 'alpha' and 'beta', but skips the empty line.",
+                ),
+        )
+        .arg(
             Arg::new("color")
                 .long("color")
                 .overrides_with("color")
@@ -296,6 +320,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("italic-text")
                 .long("italic-text")
+                .overrides_with("italic-text")
                 .value_name("when")
                 .value_parser(["always", "never"])
                 .default_value("never")
@@ -455,6 +480,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("squeeze-blank")
                 .long("squeeze-blank")
                 .short('s')
+                .overrides_with("squeeze-blank")
                 .action(ArgAction::SetTrue)
                 .help("Squeeze consecutive empty lines.")
                 .long_help("Squeeze consecutive empty lines into a single empty line.")
@@ -462,6 +488,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("squeeze-limit")
                 .long("squeeze-limit")
+                .overrides_with("squeeze-limit")
                 .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
                 .long_help("Set the maximum number of consecutive empty lines to be printed.")
                 .hide_short_help(true)
@@ -477,7 +504,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Strip colors from the input (auto, always, *never*)")
                 .long_help("Specify when to strip ANSI escape sequences from the input. \
                 The automatic mode will remove escape sequences unless the syntax highlighting \
-                language is plain text. Possible values: auto, always, *never*.")
+                language is plain text. Piped output is not stripped. \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
@@ -490,12 +518,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_default_value(true)
                 .help("Sanitize untrusted input for safe display (auto, always, *never*)")
                 .long_help("Specify when to sanitize input bytes for safe terminal display. \
-                Implies --strip-ansi to the same value, and additionally substitutes \
-                terminal-active control bytes (cursor moves, charset switches, beep, etc.) \
-                and Unicode bidi / zero-width formatting characters with the Unicode \
-                replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful \
+                Substitutes terminal-active control bytes (escape, cursor moves, charset \
+                switches, beep, etc.) and Unicode bidi / zero-width formatting characters \
+                with the Unicode replacement character (U+FFFD). Escape sequences are not \
+                removed, so they cannot hide text. Overrides --strip-ansi. \
+                Tab, LF, FF, and CRLF pass through. Useful \
                 for displaying untrusted file content (e.g. file-manager preview panes). \
-                Possible values: auto, always, *never*.")
+                Piped output is not sanitized. Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
@@ -580,6 +609,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("unbuffered")
                 .short('u')
                 .long("unbuffered")
+                .overrides_with("unbuffered")
                 .action(ArgAction::SetTrue)
                 .help("Enable unbuffered input reading for streaming use cases.")
                 .long_help(
@@ -601,6 +631,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("no-custom-assets")
                 .long("no-custom-assets")
+                .overrides_with("no-custom-assets")
                 .action(ArgAction::SetTrue)
                 .hide(true)
                 .help("Do not load custom assets"),
@@ -681,6 +712,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Arg::new("quiet-empty")
                 .long("quiet-empty")
                 .short('E')
+                .overrides_with("quiet-empty")
                 .action(ArgAction::SetTrue)
                 .help("Produce no output when the input is empty.")
                 .long_help(
@@ -699,6 +731,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("set-terminal-title")
                 .long("set-terminal-title")
+                .overrides_with("set-terminal-title")
                 .action(ArgAction::SetTrue)
                 .hide_short_help(true)
                 .help("Sets terminal title to filenames when using a pager."),

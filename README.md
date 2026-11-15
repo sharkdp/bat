@@ -417,7 +417,7 @@ scoop install bat
 
 You can download prebuilt binaries from the [Release page](https://github.com/sharkdp/bat/releases),
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### From binaries
 
@@ -431,6 +431,12 @@ If you want to build `bat` from source, you need Rust 1.79.0 or
 higher. You can then use `cargo` to build everything:
 
 #### From local source
+
+The checkout includes prebuilt syntax and theme assets. If you want to regenerate them
+from their sources, first initialize the Git submodules with
+`git submodule update --init --recursive`, then follow the [Development](#development)
+instructions. This includes the `help` syntax used to highlight command-line help.
+
 ```bash
 cargo install --path . --locked
 ```
@@ -794,7 +800,7 @@ Example configuration file:
 
 ### Prerequisites
 
-You will need to install the [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) package.
+You will need to install the [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) package.
 
 ### Paging
 
@@ -843,9 +849,9 @@ If your version of `bat` supports the `--strip-ansi=auto` option, it can be used
 before syntax highlighting. Alternatively, you may disable both syntax highlighting and wrapping by
 passing the `--color=never --wrap=never` options to `bat`.
 
-For untrusted input, the `--sanitize=auto|always|never` option additionally replaces terminal-active
-control bytes and Unicode bidi / zero-width formatting characters with the Unicode replacement
-character. It implies `--strip-ansi` at the same value.
+For untrusted input, the `--sanitize=auto|always|never` option replaces terminal-active control
+bytes, including the escape character, and Unicode bidi / zero-width formatting characters with the
+Unicode replacement character. Escape sequences are not removed, so they cannot hide text.
 
 > [!NOTE]
 > The `auto` option of `--strip-ansi` avoids removing escape sequences when the syntax is plain text.
@@ -902,7 +908,7 @@ cargo install --path . --locked --force
 ```
 
 If you want to build an application that uses `bat`'s pretty-printing
-features as a library, check out the [the API documentation](https://docs.rs/bat/).
+features as a library, check out the [API documentation](https://docs.rs/bat/).
 Note that you have to use either `regex-onig` or `regex-fancy` as a feature
 when you depend on `bat` as a library.
 
