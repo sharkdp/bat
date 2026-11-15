@@ -106,11 +106,9 @@ fn custom_sources_exist(config_dir: &Path) -> bool {
 
 #[cfg(feature = "build-assets")]
 fn dir_has_files(dir: &Path) -> bool {
-    fs::read_dir(dir)
-        .map(|entries| {
-            entries
-                .filter_map(|entry| entry.ok())
-                .any(|entry| entry.path().is_file())
-        })
-        .unwrap_or(false)
+    walkdir::WalkDir::new(dir)
+        .follow_links(true)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .any(|entry| entry.path().is_file())
 }

@@ -2380,17 +2380,18 @@ fn cache_auto_build_on_first_run() {
     let config_dir = tempdir().expect("can create temporary config directory");
     let cache_dir = tempdir().expect("can create temporary cache directory");
 
-    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::create_dir_all(config_dir.path().join("themes/example"))
+        .expect("can create themes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
-        config_dir.path().join("themes/example.tmTheme"),
+        config_dir.path().join("themes/example/example.tmTheme"),
     )
     .expect("can copy example theme");
-    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+    std::fs::create_dir_all(config_dir.path().join("syntaxes/c"))
         .expect("can create syntaxes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
-        config_dir.path().join("syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c/c.sublime-syntax"),
     )
     .expect("can copy example syntax");
 

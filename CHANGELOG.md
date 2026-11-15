@@ -32,6 +32,7 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #XXXX (@NotAFlightRisk)
 - Do not run filter commands from the configuration of the Git repository that contains the displayed file, see #4127 (@curious-rabbit)
 - Ignore empty `--ignored-suffix` values to avoid a stack overflow, see #4122 (@spicysharkco)
 - Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
