@@ -32,9 +32,11 @@
 - Syntax highlighting for Python files using uv as script runner in shebang #3689 (@janlarres)
 
 ## Bugfixes
+- Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #4131 (@NotAFlightRisk)
 - Do not run filter commands from the configuration of the Git repository that contains the displayed file, see #4127 (@curious-rabbit)
 - Ignore empty `--ignored-suffix` values to avoid a stack overflow, see #4122 (@spicysharkco)
 - Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
+- Fix automatic cache build progress polluting stdout, see #4130 (@intertermux-code)
 - Don't emit `--highlight-line` escape sequences (background color or `ansi` theme underline) when colors are disabled with `--color=never`. Closes #4099, see #4100 (@DeviousCardi)
 - Fix missing colors, pager, and decorations in mintty/MSYS2 and Cygwin terminals on Windows, see #4115 (@rezamuliawijaya)
 - Make full-path `--map-syntax` patterns and the built-in `$HOME` and `$XDG_CONFIG_HOME` mappings work on Windows, see #4113 (@b84330808)

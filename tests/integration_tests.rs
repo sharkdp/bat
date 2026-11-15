@@ -2380,17 +2380,18 @@ fn cache_auto_build_on_first_run() {
     let config_dir = tempdir().expect("can create temporary config directory");
     let cache_dir = tempdir().expect("can create temporary cache directory");
 
-    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::create_dir_all(config_dir.path().join("themes/example"))
+        .expect("can create themes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
-        config_dir.path().join("themes/example.tmTheme"),
+        config_dir.path().join("themes/example/example.tmTheme"),
     )
     .expect("can copy example theme");
-    std::fs::create_dir_all(config_dir.path().join("syntaxes"))
+    std::fs::create_dir_all(config_dir.path().join("syntaxes/c"))
         .expect("can create syntaxes directory");
     std::fs::copy(
         Path::new(EXAMPLES_DIR).join("cache_source/syntaxes/c.sublime-syntax"),
-        config_dir.path().join("syntaxes/c.sublime-syntax"),
+        config_dir.path().join("syntaxes/c/c.sublime-syntax"),
     )
     .expect("can copy example syntax");
 
@@ -2409,6 +2410,38 @@ fn cache_auto_build_on_first_run() {
     assert!(cache_dir.path().join("themes.bin").exists());
     assert!(cache_dir.path().join("syntaxes.bin").exists());
     assert!(cache_dir.path().join("metadata.yaml").exists());
+}
+
+#[test]
+fn cache_auto_build_plain_output_clean_stdout() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+    let input_dir = tempdir().expect("can create temporary input directory");
+    let input_path = input_dir.path().join("hello.txt");
+
+    std::fs::create_dir_all(config_dir.path().join("themes")).expect("can create themes directory");
+    std::fs::copy(
+        Path::new(EXAMPLES_DIR).join("cache_source/themes/example.tmTheme"),
+        config_dir.path().join("themes/example.tmTheme"),
+    )
+    .expect("can copy example theme");
+    std::fs::write(&input_path, "hello\n").expect("can write input file");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg(input_path.to_str().expect("input path is valid utf-8"))
+        .assert()
+        .success()
+        .stdout("hello\n")
+        .stdout(predicate::str::contains("Writing").not())
+        .stdout(predicate::str::contains("No syntaxes").not())
+        .stdout(predicate::str::contains("No themes").not())
+        .stderr(predicate::str::contains("building cache"))
+        .stderr(predicate::str::contains("Writing"));
 }
 
 #[test]
