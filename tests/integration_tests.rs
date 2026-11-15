@@ -5066,7 +5066,7 @@ fn strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option() {
 }
 
 #[test]
-fn sanitize_implies_strip_ansi() {
+fn sanitize_keeps_escape_sequence_text() {
     bat()
         .arg("--style=plain")
         .arg("--decorations=always")
@@ -5075,11 +5075,11 @@ fn sanitize_implies_strip_ansi() {
         .write_stdin("\x1B[33mYellow\x1B[m")
         .assert()
         .success()
-        .stdout("Yellow");
+        .stdout("\u{FFFD}[33mYellow\u{FFFD}[m");
 }
 
 #[test]
-fn sanitize_strips_osc_clipboard_hijack() {
+fn sanitize_substitutes_osc_clipboard_hijack() {
     // OSC 52 sets the system clipboard. A file containing this would silently
     // overwrite the user's clipboard if displayed unfiltered.
     bat()
@@ -5090,11 +5090,11 @@ fn sanitize_strips_osc_clipboard_hijack() {
         .write_stdin("safe\x1B]52;c;cm0=\x07payload")
         .assert()
         .success()
-        .stdout("safepayload");
+        .stdout("safe\u{FFFD}]52;c;cm0=\u{FFFD}payload");
 }
 
 #[test]
-fn sanitize_strips_osc_8_hyperlink_spoof() {
+fn sanitize_substitutes_osc_8_hyperlink_spoof() {
     // OSC 8 hyperlinks let displayed text point to an arbitrary URL.
     bat()
         .arg("--style=plain")
@@ -5104,11 +5104,11 @@ fn sanitize_strips_osc_8_hyperlink_spoof() {
         .write_stdin("\x1B]8;;https://evil.example\x07click here\x1B]8;;\x07")
         .assert()
         .success()
-        .stdout("click here");
+        .stdout("\u{FFFD}]8;;https://evil.example\u{FFFD}click here\u{FFFD}]8;;\u{FFFD}");
 }
 
 #[test]
-fn sanitize_strips_window_title_injection() {
+fn sanitize_substitutes_window_title_injection() {
     // OSC 0/1/2 set the terminal window title.
     bat()
         .arg("--style=plain")
@@ -5118,11 +5118,11 @@ fn sanitize_strips_window_title_injection() {
         .write_stdin("hello\x1B]0;evil-title\x07world")
         .assert()
         .success()
-        .stdout("helloworld");
+        .stdout("hello\u{FFFD}]0;evil-title\u{FFFD}world");
 }
 
 #[test]
-fn sanitize_strips_8bit_csi() {
+fn sanitize_substitutes_8bit_csi() {
     // 8-bit CSI introducer (U+009B) is the single-codepoint equivalent of ESC [.
     bat()
         .arg("--style=plain")
@@ -5132,7 +5132,7 @@ fn sanitize_strips_8bit_csi() {
         .write_stdin("a\u{9B}31mRED\u{9B}0mb")
         .assert()
         .success()
-        .stdout("aREDb");
+        .stdout("a\u{FFFD}31mRED\u{FFFD}0mb");
 }
 
 #[test]

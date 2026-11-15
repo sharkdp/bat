@@ -849,9 +849,9 @@ If your version of `bat` supports the `--strip-ansi=auto` option, it can be used
 before syntax highlighting. Alternatively, you may disable both syntax highlighting and wrapping by
 passing the `--color=never --wrap=never` options to `bat`.
 
-For untrusted input, the `--sanitize=auto|always|never` option additionally replaces terminal-active
-control bytes and Unicode bidi / zero-width formatting characters with the Unicode replacement
-character. It implies `--strip-ansi` at the same value.
+For untrusted input, the `--sanitize=auto|always|never` option replaces terminal-active control
+bytes, including the escape character, and Unicode bidi / zero-width formatting characters with the
+Unicode replacement character. Escape sequences are not removed, so they cannot hide text.
 
 > [!NOTE]
 > The `auto` option of `--strip-ansi` avoids removing escape sequences when the syntax is plain text.
