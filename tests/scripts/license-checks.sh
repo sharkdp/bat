@@ -4,6 +4,9 @@ set -o errexit -o nounset -o pipefail
 # Make sure that we don't accidentally include GPL licenced files
 gpl_term="General Public License"
 gpl_excludes=(
+    # MPL-2.0 defines secondary licenses by referring to GPL; this is MPL text.
+    ":(exclude)assets/syntaxes/02_Extra/Prolog/LICENSE"
+
     # Snippet expands to GPL, but is not under GPL
     ":(exclude)assets/syntaxes/01_Packages/Matlab/Snippets/Octave-function.sublime-snippet"
 
