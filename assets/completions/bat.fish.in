@@ -172,6 +172,10 @@ complete -c $bat -l file-name -x -d "Specify the display name" -n __bat_no_excl_
 
 complete -c $bat -s f -l force-colorization -d "Force color and decorations" -n __bat_no_excl_args
 
+complete -c $bat -l fallback-syntax -x -k -a "(__bat_complete_list_languages)" -d "Set a fallback language when auto-detection fails" -n __bat_no_excl_args
+
+complete -c $bat -l fallback-language -x -k -a "(__bat_complete_list_languages)" -d "Set a fallback language when auto-detection fails" -n __bat_no_excl_args
+
 complete -c $bat -s h -d "Print a concise overview" -n __fish_is_first_arg
 
 complete -c $bat -l help -f -d "Print all help information" -n __fish_is_first_arg
