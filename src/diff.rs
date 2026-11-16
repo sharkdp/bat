@@ -62,9 +62,9 @@ pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
     .ok()?
     .to_thread_local();
     let repo_path_absolute = repository.workdir()?.canonicalize().ok()?;
-    let filepath_relative_to_repo = gix::path::to_unix_separators_on_windows(gix::path::into_bstr(
-        filepath_absolute.strip_prefix(&repo_path_absolute).ok()?,
-    ));
+    let filepath_relative_to_repo = gix::path::to_unix_separators_on_windows(
+        gix::path::into_bstr(filepath_absolute.strip_prefix(&repo_path_absolute).ok()?).ok()?,
+    );
     let index = repository.index_or_load_from_head_or_empty().ok()?;
     let index_entry = index.entry_by_path(filepath_relative_to_repo.as_ref())?;
     let mut cache = repository
