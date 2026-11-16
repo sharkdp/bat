@@ -7,7 +7,7 @@ file_extensions:
 scope: source.man
 
 variables:
-  section_heading: '^(?!#)\S.*$'
+  section_heading: '^(?!#)(?=\S)(?=[^\r\n]*[\p{Lu}\p{Lo}\p{Lt}])[^\p{Ll}\r\n]+$'
   command_line_option: '(--?[A-Za-z0-9][_A-Za-z0-9-]*)'
   ansi_escape_sequence: '\e\[[\?=]?(?:\d+;?)*[A-Za-z]'
 
