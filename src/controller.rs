@@ -18,6 +18,8 @@ use std::io::{self, BufRead, Write};
 use std::mem;
 
 use clircle::{Clircle, Identifier};
+use content_inspector::ContentType;
+use encoding_rs::{UTF_16BE, UTF_16LE};
 
 pub struct Controller<'a> {
     config: &'a Config<'a>,
@@ -280,9 +282,21 @@ impl Controller<'_> {
                     // line counter for empty lines (content-free lines that contain
                     // only the line terminator).
                     if self.config.number_nonblank
-                        && current_line_buffer
-                            .iter()
-                            .all(|&b| b == b'\r' || b == b'\n')
+                        && match reader.content_type {
+                            Some(ContentType::UTF_16LE) => UTF_16LE
+                                .decode_with_bom_removal(&current_line_buffer)
+                                .0
+                                .trim_end_matches(['\r', '\n'])
+                                .is_empty(),
+                            Some(ContentType::UTF_16BE) => UTF_16BE
+                                .decode_with_bom_removal(&current_line_buffer)
+                                .0
+                                .trim_end_matches(['\r', '\n'])
+                                .is_empty(),
+                            _ => current_line_buffer
+                                .iter()
+                                .all(|&b| b == b'\r' || b == b'\n'),
+                        }
                     {
                         buffered_lines
                             .push_back((mem::take(&mut current_line_buffer), current_line_number));

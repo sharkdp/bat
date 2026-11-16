@@ -380,6 +380,7 @@ fn read_utf16_line<R: BufRead>(
         }
         buf.extend_from_slice(&temp);
         if buf.len() >= 2
+            && buf.len().is_multiple_of(2)
             && buf[buf.len() - 2] == preceded_by_char
             && buf[buf.len() - 1] == read_until_char
         {
@@ -614,6 +615,39 @@ fn unbuffered_eof_handling() {
     assert!(res.is_ok());
     assert!(!res.unwrap());
     assert!(buffer.is_empty());
+}
+
+#[test]
+fn utf16_newlines_are_code_unit_aligned() {
+    let cases: &[&[&[u8]]] = &[
+        &[b"\xFF\xFE\x85\x0A\x00\x25\x0A\x00", b"\x7A\x00"],
+        &[
+            b"\xFF\xFE\x73\x00\x0A\x00",
+            b"\x85\x0A\x00\x25\x0A\x00",
+            b"\x7A\x00",
+        ],
+        &[
+            b"\xFE\xFF\x4E\x0A\x00\x0A",
+            b"\x25\x00\x0A\x85\x00\x0A",
+            b"\x00\x7A",
+        ],
+    ];
+
+    for &lines in cases {
+        let content = lines.concat();
+        let mut reader = InputReader::new(&content[..]);
+        assert_eq!(lines[0], &reader.first_line[..]);
+
+        for &line in lines {
+            let mut buffer = vec![];
+            assert!(reader.read_line(&mut buffer).unwrap());
+            assert_eq!(line, &buffer[..]);
+        }
+
+        let mut buffer = vec![];
+        assert!(!reader.read_line(&mut buffer).unwrap());
+        assert!(buffer.is_empty());
+    }
 }
 
 #[test]

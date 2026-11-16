@@ -50,6 +50,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         .get_one::<String>("source")
         .map(Path::new)
         .unwrap_or_else(|| config_dir);
+    let mut progress = io::stdout();
 
     bat::assets::build(
         source_dir,
@@ -57,6 +58,7 @@ fn build_assets(matches: &clap::ArgMatches, config_dir: &Path, cache_dir: &Path)
         matches.get_flag("acknowledgements"),
         cache_dir,
         clap::crate_version!(),
+        &mut progress,
     )
 }
 
@@ -97,10 +99,10 @@ where
     map
 }
 
-pub fn get_languages(config: &Config, cache_dir: &Path) -> Result<String> {
+pub fn get_languages(config: &Config, config_dir: &Path, cache_dir: &Path) -> Result<String> {
     let mut result: String = String::new();
 
-    let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
+    let assets = assets_from_cache_or_binary(config.use_custom_assets, config_dir, cache_dir)?;
     let mut languages = assets
         .get_syntaxes()?
         .iter()
@@ -205,7 +207,7 @@ pub fn list_themes(
     cache_dir: &Path,
     theme_options: ThemeOptions,
 ) -> Result<()> {
-    let assets = assets_from_cache_or_binary(cfg.use_custom_assets, cache_dir)?;
+    let assets = assets_from_cache_or_binary(cfg.use_custom_assets, config_dir, cache_dir)?;
     let mut config = cfg.clone();
     let mut style = HashSet::new();
     style.insert(StyleComponent::Plain);
@@ -286,8 +288,13 @@ fn get_new_terminal_title(inputs: &Vec<Input>) -> String {
     new_terminal_title
 }
 
-fn run_controller(inputs: Vec<Input>, config: &Config, cache_dir: &Path) -> Result<bool> {
-    let assets = assets_from_cache_or_binary(config.use_custom_assets, cache_dir)?;
+fn run_controller(
+    inputs: Vec<Input>,
+    config: &Config,
+    config_dir: &Path,
+    cache_dir: &Path,
+) -> Result<bool> {
+    let assets = assets_from_cache_or_binary(config.use_custom_assets, config_dir, cache_dir)?;
     let controller = Controller::new(config, &assets);
     if config.paging_mode != PagingMode::Never && config.set_terminal_title {
         set_terminal_title_to(get_new_terminal_title(&inputs))?;
@@ -333,6 +340,7 @@ fn invoke_bugreport(app: &App, cache_dir: &Path) -> Result<()> {
         .info(CommandLine::default())
         .info(EnvironmentVariables::list(&[
             "BAT_CACHE_PATH",
+            "BAT_CONFIG_DIR",
             "BAT_CONFIG_PATH",
             "BAT_OPTS",
             "BAT_PAGER",
@@ -420,10 +428,12 @@ fn run() -> Result<bool> {
                 )?;
                 Ok(true)
             } else {
-                let inputs = vec![Input::ordinary_file("cache")];
-                let config = app.config(&inputs)?;
-
-                run_controller(inputs, &config, cache_dir)
+                // No arguments provided to cache subcommand - show help
+                let mut cmd = clap_app::build_app(true);
+                if let Some(cache_cmd) = cmd.find_subcommand_mut("cache") {
+                    print!("{}", cache_cmd.render_help());
+                }
+                Ok(true)
             }
         }
         _ => {
@@ -431,12 +441,12 @@ fn run() -> Result<bool> {
             let config = app.config(&inputs)?;
 
             if app.matches.get_flag("list-languages") {
-                let languages: String = get_languages(&config, cache_dir)?;
+                let languages: String = get_languages(&config, config_dir, cache_dir)?;
                 let inputs: Vec<Input> = vec![Input::from_reader(Box::new(languages.as_bytes()))];
                 let mut plain_config = config.clone();
                 plain_config.style_components =
                     StyleComponents::new(StyleComponent::Plain.components(false));
-                run_controller(inputs, &plain_config, cache_dir)
+                run_controller(inputs, &plain_config, config_dir, cache_dir)
             } else if app.matches.get_flag("list-themes") {
                 list_themes(&config, config_dir, cache_dir, app.theme_options())?;
                 Ok(true)
@@ -456,7 +466,7 @@ fn run() -> Result<bool> {
                 writeln!(io::stdout(), "{}", bat::assets::get_acknowledgements())?;
                 Ok(true)
             } else {
-                run_controller(inputs, &config, cache_dir)
+                run_controller(inputs, &config, config_dir, cache_dir)
             }
         }
     }

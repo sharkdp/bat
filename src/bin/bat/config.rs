@@ -110,7 +110,7 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
     let user_config = config_file();
 
     if let Ok(c) = fs::read_to_string(&system_config) {
-        config.push_str(&c);
+        config.push_str(strip_bom(&c));
         config.push('\n');
     }
 
@@ -118,7 +118,7 @@ pub fn get_args_from_config_file() -> Result<Vec<OsString>, shell_words::ParseEr
     // which can happen when BAT_CONFIG_DIR is set to e.g. "/etc/bat". See #3589.
     if !same_file(&system_config, &user_config) {
         if let Ok(c) = fs::read_to_string(&user_config) {
-            config.push_str(&c);
+            config.push_str(strip_bom(&c));
         }
     }
 
@@ -134,6 +134,12 @@ fn same_file(a: &Path, b: &Path) -> bool {
 
 pub fn get_args_from_env_opts_var() -> Option<Result<Vec<OsString>, shell_words::ParseError>> {
     env::var("BAT_OPTS").ok().map(|s| get_args_from_str(&s))
+}
+
+/// Editors on Windows (e.g. `Set-Content -Encoding UTF8` in Windows PowerShell)
+/// may prepend a UTF-8 byte order mark, which would otherwise end up in the first argument.
+fn strip_bom(content: &str) -> &str {
+    content.strip_prefix('\u{feff}').unwrap_or(content)
 }
 
 fn get_args_from_str(content: &str) -> Result<Vec<OsString>, shell_words::ParseError> {

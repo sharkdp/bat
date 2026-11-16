@@ -201,7 +201,10 @@ impl HighlightingAssets {
                     return self.get_theme("ansi");
                 }
                 if !theme.is_empty() {
-                    bat_warning!("Unknown theme '{theme}', using default.")
+                    bat_warning!(
+                        "Unknown theme '{}', using default.",
+                        crate::preprocessor::sanitize_for_terminal(theme)
+                    )
                 }
                 self.get_theme_set()
                     .get(
@@ -792,6 +795,7 @@ contexts:
             false,
             cache_dir.path(),
             env!("CARGO_PKG_VERSION"),
+            &mut std::io::sink(),
         )
         .expect("custom assets can be built");
 

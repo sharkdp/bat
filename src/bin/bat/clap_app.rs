@@ -65,6 +65,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("nonprintable-notation")
                 .long("nonprintable-notation")
+                .overrides_with("nonprintable-notation")
                 .action(ArgAction::Set)
                 .default_value("unicode")
                 .value_parser(["unicode", "caret"])
@@ -81,6 +82,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("binary")
                 .long("binary")
+                .overrides_with("binary")
                 .action(ArgAction::Set)
                 .default_value("no-printing")
                 .value_parser(["no-printing", "as-text"])
@@ -125,6 +127,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("fallback-syntax")
                 .long("fallback-syntax")
+                .overrides_with("fallback-syntax")
                 .visible_alias("fallback-language")
                 .help("Set a fallback language for undetected syntaxes.")
                 .long_help(
@@ -317,6 +320,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("italic-text")
                 .long("italic-text")
+                .overrides_with("italic-text")
                 .value_name("when")
                 .value_parser(["always", "never"])
                 .default_value("never")
@@ -484,6 +488,7 @@ pub fn build_app(interactive_output: bool) -> Command {
         .arg(
             Arg::new("squeeze-limit")
                 .long("squeeze-limit")
+                .overrides_with("squeeze-limit")
                 .value_parser(|s: &str| s.parse::<usize>().map_err(|_| "Requires a non-negative number".to_owned()))
                 .long_help("Set the maximum number of consecutive empty lines to be printed.")
                 .hide_short_help(true)
@@ -499,7 +504,8 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .help("Strip colors from the input (auto, always, *never*)")
                 .long_help("Specify when to strip ANSI escape sequences from the input. \
                 The automatic mode will remove escape sequences unless the syntax highlighting \
-                language is plain text. Possible values: auto, always, *never*.")
+                language is plain text. Piped output is not stripped. \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
@@ -512,12 +518,13 @@ pub fn build_app(interactive_output: bool) -> Command {
                 .hide_default_value(true)
                 .help("Sanitize untrusted input for safe display (auto, always, *never*)")
                 .long_help("Specify when to sanitize input bytes for safe terminal display. \
-                Implies --strip-ansi to the same value, and additionally substitutes \
-                terminal-active control bytes (cursor moves, charset switches, beep, etc.) \
-                and Unicode bidi / zero-width formatting characters with the Unicode \
-                replacement character (U+FFFD). Tab, LF, FF, and CRLF pass through. Useful \
+                Substitutes terminal-active control bytes (escape, cursor moves, charset \
+                switches, beep, etc.) and Unicode bidi / zero-width formatting characters \
+                with the Unicode replacement character (U+FFFD). Escape sequences are not \
+                removed, so they cannot hide text. Overrides --strip-ansi. \
+                Tab, LF, FF, and CRLF pass through. Useful \
                 for displaying untrusted file content (e.g. file-manager preview panes). \
-                Possible values: auto, always, *never*.")
+                Piped output is not sanitized. Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(
@@ -754,7 +761,7 @@ pub fn build_app(interactive_output: bool) -> Command {
             Command::new("cache")
                 .hide(true)
                 .about("Modify the syntax-definition and theme cache")
-                .arg_required_else_help(true)
+                .disable_help_flag(true)
                 .arg(
                     Arg::new("help")
                         .short('h')

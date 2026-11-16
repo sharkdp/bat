@@ -9,7 +9,7 @@ Register-ArgumentCompleter -Native -CommandName '{{PROJECT_EXECUTABLE}}' -Script
     $ArrayCompletion = @('bash', 'fish', 'zsh', 'ps1')
     $ArrayWhen       = @('auto', 'never', 'always')
     $ArrayYesNo      = @('never', 'always')
-    $ArrayWrap       = @('always', 'never', 'character', 'word')
+    $ArrayWrap       = @('auto', 'never', 'character', 'word')
     $ArrayBinary     = @('no-printing', 'as-text')
     $ArrayPrint      = @('unicode', 'caret')
 

@@ -40,9 +40,27 @@ fn collect_changes_from_hunks(hunks: HunkIter) -> Option<LineChanges> {
     Some(changes)
 }
 
+// The repository config can define filter commands and must not be trusted.
+fn is_not_repository_config(meta: &gix::config::file::Metadata) -> bool {
+    meta.source.kind() != gix::config::source::Kind::Repository
+}
+
 pub fn get_git_diff(filename: &Path) -> Option<LineChanges> {
     let filepath_absolute = filename.canonicalize().ok()?;
-    let repository = gix::discover(filepath_absolute.parent().ok()?).ok()?;
+    let mut trust_map = gix::sec::trust::Mapping::<gix::open::Options>::default();
+    trust_map.full = trust_map
+        .full
+        .filter_config_section(is_not_repository_config);
+    trust_map.reduced = trust_map
+        .reduced
+        .filter_config_section(is_not_repository_config);
+    let repository = gix::ThreadSafeRepository::discover_opts(
+        filepath_absolute.parent().ok()?,
+        Default::default(),
+        trust_map,
+    )
+    .ok()?
+    .to_thread_local();
     let repo_path_absolute = repository.workdir()?.canonicalize().ok()?;
     let filepath_relative_to_repo = gix::path::to_unix_separators_on_windows(gix::path::into_bstr(
         filepath_absolute.strip_prefix(&repo_path_absolute).ok()?,
@@ -177,6 +195,23 @@ mod tests {
         changes = get_git_diff(&file).expect("multiple changes");
         assert_eq!(changes.get(&1), Some(&LineChange::RemovedAbove));
         assert_eq!(changes.get(&2), Some(&LineChange::Added));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn filter_from_repository_config_is_not_executed() {
+        let repo = setup_repo();
+        let file = create_and_track_file(&repo, "file.txt");
+        let marker = repo.path().join("marker");
+        let clean = format!("touch '{}'; cat", marker.display());
+        git(repo.path(), &["config", "filter.marker.clean", &clean]);
+        std::fs::write(repo.path().join(".gitattributes"), "* filter=marker\n")
+            .expect("can write file");
+        std::fs::write(&file, "file\nline 2 added\n").expect("can write file");
+
+        let changes = get_git_diff(&file).expect("one change");
+        assert_eq!(changes.get(&2), Some(&LineChange::Added));
+        assert!(!marker.exists());
     }
 
     #[test]
