@@ -92,7 +92,7 @@ Specify the name to display for a file. Useful when piping data to {{PROJECT_EXE
 .IP
 Only show lines that have been added/removed/modified with respect to the Git index. Use '\-\-diff\-context=N' to control how much context you want to see.
 .HP
-\fB\-\-diff\-context\fR <N>...
+\fB\-\-diff\-context\fR <N>
 .IP
 Include N lines of context around added/removed/modified lines when using '\-\-diff'.
 .HP
@@ -167,7 +167,7 @@ use -m '*.build:Python'. To highlight files named '.myignore' with the Git Ignor
 syntax, use -m '.myignore:Git Ignore'.
 Note that the right-hand side is the *name* of the syntax, not a file extension.
 .HP
-\fB\-\-ignored\-suffix\fR <ignored-suffix>
+\fB\-\-ignored\-suffix\fR <ignored-suffix>...
 .IP
 Ignore extension. For example: 'bat \-\-ignored-suffix ".dev" my_file.json.dev'
 will use JSON syntax, and ignore '.dev'
@@ -286,7 +286,7 @@ Show bat's cache directory.
 .IP
 Show diagnostic information for bug reports.
 .HP
-\fB\-\-quiet\-empty\fR
+\fB\-E\fR, \fB\-\-quiet\-empty\fR
 .IP
 Do not produce any output when the input is empty (e.g. an empty file or empty stdin). This is useful in scripts where silent behavior is preferred for empty input.
 .HP
