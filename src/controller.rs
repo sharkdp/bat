@@ -192,6 +192,22 @@ impl Controller<'_> {
         };
 
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
+            // Plain output skips all syntax handling, so resolve an explicitly requested
+            // syntax here: a typo in `--language` or `--map-syntax` must error instead of
+            // silently falling back to plain text. (See #4120.)
+            if self.config.language.is_some()
+                || !self.config.syntax_mapping.custom_mappings().is_empty()
+            {
+                match self.assets.get_syntax(
+                    self.config.language,
+                    self.config.fallback_syntax,
+                    &mut opened_input,
+                    &self.config.syntax_mapping,
+                ) {
+                    Ok(_) | Err(Error::UndetectedSyntax(_)) => {}
+                    Err(err) => return Err(err),
+                }
+            }
             Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(

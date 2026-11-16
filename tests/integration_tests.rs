@@ -330,7 +330,7 @@ fn attached_short_option_values_are_not_treated_as_flags() {
 
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        .args(["-lRust", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
@@ -5654,4 +5654,39 @@ fn ignored_suffix_enables_first_line_detection() {
     assert_eq!(with_ignored_suffix, forced_bash);
     // ...while the default (extension wins) stays plain and differs.
     assert_ne!(default, forced_bash);
+}
+
+#[test]
+fn unknown_language_is_an_error_without_color() {
+    // https://github.com/sharkdp/bat/issues/4120
+    for color in ["never", "auto", "always"] {
+        bat()
+            .args(["--no-custom-assets", "--paging=never"])
+            .arg(format!("--color={color}"))
+            .arg("--language=NoSuchLang999")
+            .write_stdin("fn main() {}\n")
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("unknown syntax: 'NoSuchLang999'"));
+    }
+}
+
+#[test]
+fn unknown_map_syntax_target_is_an_error_without_color() {
+    // https://github.com/sharkdp/bat/issues/4120
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    std::fs::write(tmp_dir.path().join("source.foo"), "x = 1\n").expect("can write temporary file");
+
+    bat()
+        .current_dir(tmp_dir.path())
+        .args([
+            "--no-custom-assets",
+            "--paging=never",
+            "--color=never",
+            "--map-syntax=*.foo:NoSuchLang999",
+            "source.foo",
+        ])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unknown syntax: 'NoSuchLang999'"));
 }
