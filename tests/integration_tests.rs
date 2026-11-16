@@ -431,6 +431,102 @@ fn number_nonblank_ignored_when_followed_by_plain() {
 }
 
 #[test]
+fn number_nonblank_line_range_uses_file_line_numbers() {
+    // Line ranges refer to lines in the file, not to the displayed non-blank numbers
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .arg("--line-range=19:24")
+        .assert()
+        .success()
+        .stdout("     \n   3 line 20\n   4 line 21\n     \n     \n   5 line 24\n");
+}
+
+#[test]
+fn number_nonblank_skips_blank_utf16_lines() {
+    // Blank lines must be detected after decoding, otherwise the NUL bytes of a
+    // UTF-16 line terminator make blank lines look non-blank
+    let tmp_dir = tempdir().expect("can create temporary directory");
+    for (name, bom, encode) in [
+        (
+            "le.txt",
+            [0xFF, 0xFE],
+            u16::to_le_bytes as fn(u16) -> [u8; 2],
+        ),
+        (
+            "be.txt",
+            [0xFE, 0xFF],
+            u16::to_be_bytes as fn(u16) -> [u8; 2],
+        ),
+    ] {
+        let path = tmp_dir.path().join(name);
+        let mut content = bom.to_vec();
+        for unit in "alpha\n\nbeta\r\n\r\ngamma\n".encode_utf16() {
+            content.extend(encode(unit));
+        }
+        std::fs::write(&path, content).expect("can write test file");
+
+        bat()
+            .arg(&path)
+            .arg("-b")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout("   1 alpha\n     \n   2 beta\r\n     \r\n   3 gamma\n");
+
+        // The same holds with `--show-all`: three non-blank lines, so no fourth number
+        bat()
+            .arg(&path)
+            .arg("-b")
+            .arg("-A")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("\n   3 "))
+            .stdout(predicate::str::contains("\n   4 ").not());
+    }
+}
+
+#[test]
+fn number_nonblank_show_all_skips_blank_lines() {
+    // With `--show-all` the line terminator is rendered as a visible character,
+    // which must not make a blank line count as non-blank
+    for (input, expected) in [
+        ("alpha\n\nbeta\n", "   1 alpha␊\n     ␊\n   2 beta␊\n"),
+        (
+            "alpha\r\n\r\nbeta\r\n",
+            "   1 alpha␍␊\n     ␍␊\n   2 beta␍␊\n",
+        ),
+    ] {
+        bat()
+            .arg("-b")
+            .arg("-A")
+            .arg("--decorations=always")
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(expected);
+    }
+}
+
+#[test]
+fn number_nonblank_highlight_line_uses_file_line_numbers() {
+    // `--highlight-line 5` must highlight line 5 of the file ("line 5")
+    bat()
+        .arg("empty_lines.txt")
+        .arg("-b")
+        .arg("--decorations=always")
+        .arg("--color=always")
+        .arg("--theme=ansi")
+        .arg("--line-range=1:5")
+        .arg("--highlight-line=5")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\x1B[4mline 5"));
+}
+
+#[test]
 fn piped_output_with_number_nonblank_flag() {
     bat()
         .arg("-b")
