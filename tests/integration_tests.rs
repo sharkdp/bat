@@ -474,6 +474,39 @@ fn number_nonblank_skips_blank_utf16_lines() {
             .assert()
             .success()
             .stdout("   1 alpha\n     \n   2 beta\r\n     \r\n   3 gamma\n");
+
+        // The same holds with `--show-all`: three non-blank lines, so no fourth number
+        bat()
+            .arg(&path)
+            .arg("-b")
+            .arg("-A")
+            .arg("--decorations=always")
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("\n   3 "))
+            .stdout(predicate::str::contains("\n   4 ").not());
+    }
+}
+
+#[test]
+fn number_nonblank_show_all_skips_blank_lines() {
+    // With `--show-all` the line terminator is rendered as a visible character,
+    // which must not make a blank line count as non-blank
+    for (input, expected) in [
+        ("alpha\n\nbeta\n", "   1 alpha␊\n     ␊\n   2 beta␊\n"),
+        (
+            "alpha\r\n\r\nbeta\r\n",
+            "   1 alpha␍␊\n     ␍␊\n   2 beta␍␊\n",
+        ),
+    ] {
+        bat()
+            .arg("-b")
+            .arg("-A")
+            .arg("--decorations=always")
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(expected);
     }
 }
 

@@ -664,6 +664,24 @@ impl Printer for InteractivePrinter<'_> {
         line_buffer: &[u8],
         max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
+        // Whether the line holds nothing but its line terminator. This is checked on
+        // the input rather than on the rendered line, because `--show-all` renders the
+        // terminator as a visible character. UTF-16 input is decoded first, since its
+        // terminator contains NUL bytes.
+        let is_blank_line = match self.content_type {
+            Some(ContentType::UTF_16LE) => UTF_16LE
+                .decode_with_bom_removal(line_buffer)
+                .0
+                .trim_end_matches(['\r', '\n'])
+                .is_empty(),
+            Some(ContentType::UTF_16BE) => UTF_16BE
+                .decode_with_bom_removal(line_buffer)
+                .0
+                .trim_end_matches(['\r', '\n'])
+                .is_empty(),
+            _ => line_buffer.iter().all(|&b| b == b'\r' || b == b'\n'),
+        };
+
         let line = if self.config.show_nonprintable {
             replace_nonprintable(
                 line_buffer,
@@ -712,9 +730,7 @@ impl Printer for InteractivePrinter<'_> {
         // In number-nonblank mode, the displayed number counts non-blank lines only
         // (content-free lines that contain only the line terminator are skipped).
         // `line_number` stays the line number in the file, which is what line ranges,
-        // highlighted lines and Git changes refer to. Blank lines are detected on the
-        // decoded line so that UTF-16 input is handled too.
-        let is_blank_line = line.trim_end_matches(['\r', '\n']).is_empty();
+        // highlighted lines and Git changes refer to.
         if self.config.number_nonblank && !is_blank_line {
             self.nonblank_line_count += 1;
         }
