@@ -607,6 +607,7 @@ impl Printer for InteractivePrinter<'_> {
         }
 
         if self.config.style_components.grid()
+            && self.config.style_components.grid_bottom()
             && (self.content_type.is_some_and(|c| c.is_text())
                 || self.config.show_nonprintable
                 || matches!(self.config.binary, BinaryBehavior::AsText))
