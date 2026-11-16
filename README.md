@@ -217,6 +217,15 @@ alias -g -- -h='-h 2>&1 | bat --language=help --style=plain'
 alias -g -- --help='--help 2>&1 | bat --language=help --style=plain'
 ```
 
+These global aliases insert a pipe immediately after the help flag, so the flag
+must be the last argument. For example, `ffmpeg --help full` passes `full` to `bat`
+as a filename instead of to `ffmpeg`. If you need arguments after the help flag,
+escape it and pipe the complete command explicitly:
+
+```zsh
+ffmpeg \--help full 2>&1 | bat --language=help --style=plain
+```
+
 For `fish`, you can use abbreviations:
 
 ```fish
