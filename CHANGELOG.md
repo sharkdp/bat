@@ -2,6 +2,7 @@
 
 
 ## Other
+- Modify the non-printable introduction section in the README-zh.md file. See #3523 (@wm-uniontech)
 
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
