@@ -347,7 +347,7 @@ port install bat
 
 #### 前置条件
 
-你必须已安装 [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 包。
+你必须已安装 [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) 包。
 
 #### 使用 Chocolatey
 
@@ -367,7 +367,7 @@ scoop install bat
 
 #### 使用预编译二进制版本
 
-直接从 [Release 发布页](https://github.com/sharkdp/bat/releases) 下载已经编译好的二进制包，前提是你安装了 [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 包。
+直接从 [Release 发布页](https://github.com/sharkdp/bat/releases) 下载已经编译好的二进制包，前提是你安装了 [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) 包。
 
 ### 使用二进制版本
 
@@ -563,7 +563,7 @@ bat --generate-config-file
 
 ### 前置条件
 
-你需要先安装 [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) 包。
+你需要先安装 [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) 包。
 
 ### 分页
 

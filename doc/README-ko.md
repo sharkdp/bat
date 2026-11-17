@@ -382,7 +382,7 @@ Windows에서 `bat`을 설치할 수 있는 몇 가지 옵션들이 있습니다
 
 #### 전제 조건
 
-[Visual C++ 재배포 가능](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+[Visual C++ 재배포 가능](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
 패키지를 설치해야 합니다.
 
 #### Chocolatey를 써서
@@ -405,7 +405,7 @@ scoop install bat
 [릴리즈 페이지](https://github.com/sharkdp/bat/releases)에서 사전 빌드된
 바이너리를 다운받을 수 있습니다.
 
-[Visual C++ 재배포 가능](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+[Visual C++ 재배포 가능](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
 패키지를 설치해야 합니다.
 
 ### 바이너리들로
@@ -686,7 +686,7 @@ bat --generate-config-file
 
 #### 전제 조건
 
-[Visual C++ 재배포 가능](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads)
+[Visual C++ 재배포 가능](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
 패키지를 설치해야 합니다.
 
 ### 페이징
