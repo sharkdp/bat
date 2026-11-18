@@ -125,7 +125,7 @@ impl Attributes {
                 ..
             } => {
                 if command.starts_with("8;") {
-                    return self.update_with_hyperlink(raw_sequence);
+                    return self.update_with_hyperlink(command, raw_sequence);
                 }
                 /* defer to update_with_unsupported */
             }
@@ -214,9 +214,9 @@ impl Attributes {
         false
     }
 
-    fn update_with_hyperlink(&mut self, sequence: &str) -> bool {
-        if sequence == "8;;" {
-            // Empty hyperlink ID and HREF -> end of hyperlink.
+    fn update_with_hyperlink(&mut self, command: &str, sequence: &str) -> bool {
+        // OSC 8 ; params ; URI -- an empty URI ends the hyperlink (params may be set).
+        if command.splitn(3, ';').nth(2).is_none_or(str::is_empty) {
             self.hyperlink.clear();
         } else {
             self.hyperlink.clear();
@@ -1198,5 +1198,34 @@ mod tests {
             final_byte: "m",
         });
         assert_eq!(attrs.reverse, "");
+    }
+
+    #[test]
+    fn test_osc8_hyperlink_is_tracked_and_closed() {
+        for (open, close) in [
+            ("\x1B]8;;https://example.com/\x1B\\", "\x1B]8;;\x1B\\"),
+            ("\x1B]8;;https://example.com/\x07", "\x1B]8;;\x07"),
+            (
+                "\x1B]8;id=1;https://example.com/\x1B\\",
+                "\x1B]8;id=1;\x1B\\",
+            ),
+        ] {
+            let mut style = crate::vscreen::AnsiStyle::new();
+
+            // Opening a hyperlink must be tracked so it can be re-emitted and closed.
+            for seq in EscapeSequenceIterator::new(open) {
+                assert!(style.update(seq));
+            }
+            assert_eq!(style.to_string(), open);
+            assert_eq!(style.to_reset_sequence(), "\x1B]8;;\x1B\\");
+
+            // An OSC 8 with an empty URI ends the hyperlink, so nothing is left
+            // to re-emit before the next chunk or to close after it.
+            for seq in EscapeSequenceIterator::new(close) {
+                assert!(style.update(seq));
+            }
+            assert_eq!(style.to_string(), "", "after {close:?}");
+            assert_eq!(style.to_reset_sequence(), "", "after {close:?}");
+        }
     }
 }
