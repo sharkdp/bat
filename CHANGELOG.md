@@ -39,6 +39,7 @@
 - Do not run filter commands from the configuration of the Git repository that contains the displayed file, see #4127 (@curious-rabbit)
 - Ignore empty `--ignored-suffix` values to avoid a stack overflow, see #4122 (@spicysharkco)
 - Fix `--number-nonblank` counting empty UTF-16 lines, see #4118 (@pcbeingused333)
+- Fix `--squeeze-blank` dropping blank lines at the start of a `--line-range` in plain output, see #XXXX (@shivangithaker-0510)
 - Fix automatic cache build progress polluting stdout, see #4130 (@intertermux-code)
 - Don't emit `--highlight-line` escape sequences (background color or `ansi` theme underline) when colors are disabled with `--color=never`. Closes #4099, see #4100 (@DeviousCardi)
 - Fix missing colors, pager, and decorations in mintty/MSYS2 and Cygwin terminals on Windows, see #4115 (@rezamuliawijaya)
