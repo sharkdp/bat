@@ -33,6 +33,7 @@
 
 ## Bugfixes
 
+- Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
 - Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)
 - Fix builtin pager (minus) not responding to search (`/`, `?`, `n`, `N`) and navigation (`PgUp`, `PgDown`, arrows, `g`, `G`) keys. `HashedEventRegister` was overriding all default `minus` bindings instead of extending them. Add `generate_default_bindings()` before custom bindings. See #3831, #3798 and #3837 (@Amilliox)
 - Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #4131 (@NotAFlightRisk)
