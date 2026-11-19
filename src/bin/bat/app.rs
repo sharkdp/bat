@@ -460,12 +460,16 @@ impl App {
                     .map(|s| s.as_str()),
                 "--strip-ansi",
             ),
-            sanitize: parse_strip_ansi_value(
-                self.matches
-                    .get_one::<String>("sanitize")
-                    .map(|s| s.as_str()),
-                "--sanitize",
-            ),
+            sanitize: match self
+                .matches
+                .get_one::<String>("sanitize")
+                .map(|s| s.as_str())
+            {
+                Some("always") => true,
+                // Piped output stays unchanged unless sanitizing is forced.
+                Some("auto") => self.interactive_output,
+                _ => false,
+            },
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")
