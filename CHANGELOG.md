@@ -11,6 +11,7 @@
 - Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
 - Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
 - Add .NET slnx extension, see #3682 (@ltrzesniewski)
+- Remove `BAT_WIDTH`, `BAT_PAGING`, `BAT_THEME_DARK` and `BAT_THEME_LIGHT` from the test environment, so exporting them no longer breaks `cargo test`, see #4137 (@divya0795)
 
 ## Features
 
