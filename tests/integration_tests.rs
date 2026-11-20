@@ -895,6 +895,39 @@ fn squeeze_limit_line_numbers() {
 }
 
 #[test]
+fn squeeze_blank_line_range() {
+    // Blank lines before the start of the range must not count towards the limit
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--line-range=3:7")
+        .assert()
+        .success()
+        .stdout("\nline 5\n\n");
+
+    // A range that starts on a non-blank line after blank lines
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--line-range=5:7")
+        .assert()
+        .success()
+        .stdout("line 5\n\n");
+
+    // Excluded lines between two ranges must not reset the counter either,
+    // matching the decorated output
+    bat()
+        .arg("empty_lines.txt")
+        .arg("--squeeze-blank")
+        .arg("--squeeze-limit=1")
+        .arg("--line-range=2:4")
+        .arg("--line-range=6:7")
+        .assert()
+        .success()
+        .stdout("\n");
+}
+
+#[test]
 fn list_themes_with_colors() {
     let default_theme_chunk = "Monokai Extended\x1B[0m (default)";
     let default_light_theme_chunk = "Monokai Extended Light\x1B[0m (default light)";
