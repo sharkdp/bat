@@ -5406,6 +5406,66 @@ short words here
 }
 
 #[test]
+fn word_wrap_preserves_word_boundaries_across_highlight_regions() {
+    let output = bat()
+        .arg("--language=rust")
+        .arg("--wrap=word")
+        .arg("--terminal-width=30")
+        .arg("--style=plain")
+        .arg("--decorations=never")
+        .arg("--color=always")
+        .write_stdin("let quick_brown = fox_jumps(over, the, lazy_dog, and, more, words);\n")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let output = String::from_utf8(output).expect("bat output should be UTF-8");
+
+    assert_eq!(
+        strip_sgr_sequences(&output),
+        "let quick_brown =\nfox_jumps(over, the, lazy_dog,\nand, more, words);\n"
+    );
+}
+
+#[test]
+fn word_wrap_preserves_word_boundaries_across_ansi_sequences() {
+    let output = bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=8")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .arg("--strip-ansi=never")
+        .write_stdin("hello \x1b[1mworld\x1b[0m\n")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let output = String::from_utf8(output).expect("bat output should be UTF-8");
+
+    assert_eq!(strip_sgr_sequences(&output), "hello\nworld\n");
+}
+
+fn strip_sgr_sequences(input: &str) -> String {
+    let mut output = String::new();
+    let mut in_escape_sequence = false;
+    for character in input.chars() {
+        if in_escape_sequence {
+            if character.is_ascii_alphabetic() {
+                in_escape_sequence = false;
+            }
+        } else if character == '\x1b' {
+            in_escape_sequence = true;
+        } else {
+            output.push(character);
+        }
+    }
+    output
+}
+
+#[test]
 fn word_wrap_with_line_numbers() {
     bat()
         .arg("word-wrap.txt")

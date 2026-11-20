@@ -827,42 +827,62 @@ impl Printer for InteractivePrinter<'_> {
                 writeln!(handle)?;
             }
         } else {
-            for &(style, region) in &regions {
-                let ansi_iterator = EscapeSequenceIterator::new(region);
-                for chunk in ansi_iterator {
-                    match chunk {
-                        // Regular text.
-                        EscapeSequence::Text(text) => {
-                            let text = self
-                                .preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
+            if matches!(self.config.wrapping_mode, WrappingMode::Word) {
+                enum LineEvent {
+                    Text {
+                        style: syntect::highlighting::Style,
+                        text: String,
+                    },
+                    Escape(String),
+                }
 
-                            let mut max_width = cursor_max.saturating_sub(cursor);
+                enum WrapAtom<'a> {
+                    Text {
+                        style: syntect::highlighting::Style,
+                        grapheme: &'a str,
+                        width: usize,
+                    },
+                    Escape(usize),
+                }
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
+                let mut events = Vec::new();
+                for &(style, region) in &regions {
+                    for chunk in EscapeSequenceIterator::new(region) {
+                        match chunk {
+                            EscapeSequence::Text(text) => events.push(LineEvent::Text {
+                                style,
+                                text: self.preprocess(
+                                    text.trim_end_matches(['\r', '\n']),
+                                    &mut cursor_total,
+                                ),
+                            }),
+                            _ => events.push(LineEvent::Escape(chunk.raw().to_string())),
+                        }
+                    }
+                }
 
-                            // Displayed width of line_buf
-                            let mut current_width = 0;
+                let mut line_buf: Vec<WrapAtom<'_>> = Vec::new();
+                let mut max_width = cursor_max.saturating_sub(cursor);
+                let mut current_width = 0;
+                let mut last_ws_idx: Option<usize> = None;
 
-                            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
-
-                            // For word wrapping, track last whitespace position.
-                            let mut last_ws_idx: Option<usize> = None;
-
+                for (event_idx, event) in events.iter().enumerate() {
+                    match event {
+                        LineEvent::Text { style, text } => {
                             for grapheme in text.graphemes(true) {
-                                // calculate the displayed width for next character
-                                let cw = grapheme_width(grapheme);
-                                current_width += cw;
+                                let width = grapheme_width(grapheme);
+                                line_buf.push(WrapAtom::Text {
+                                    style: *style,
+                                    grapheme,
+                                    width,
+                                });
+                                current_width += width;
 
-                                // Track whitespace positions for word wrapping.
-                                if word_wrap && grapheme.starts_with(char::is_whitespace) {
-                                    last_ws_idx = Some(line_buf.len());
+                                if grapheme.starts_with(char::is_whitespace) {
+                                    last_ws_idx = Some(line_buf.len() - 1);
                                 }
 
-                                // if next character cannot be printed on this line,
-                                // flush the buffer.
                                 if current_width > max_width {
-                                    // Generate wrap padding if not already generated.
                                     if panel_wrap.is_none() {
                                         panel_wrap = if self.panel_width > 0 {
                                             Some(format!(
@@ -876,91 +896,263 @@ impl Printer for InteractivePrinter<'_> {
                                                     .join(" ")
                                             ))
                                         } else {
-                                            Some("".to_string())
-                                        }
+                                            Some(String::new())
+                                        };
                                     }
 
-                                    // Determine the break point and remainder
-                                    // for word wrapping.
-                                    let (emit_end, rest_start) = if word_wrap {
-                                        if let Some(ws_idx) = last_ws_idx {
-                                            // Skip the whitespace character itself
-                                            // and carry the rest to the next line.
-                                            let rs = ws_idx
-                                                + line_buf[ws_idx..]
-                                                    .chars()
-                                                    .next()
-                                                    .map(|ch| ch.len_utf8())
-                                                    .unwrap_or(0);
-                                            (ws_idx, Some(rs))
-                                        } else {
-                                            (line_buf.len(), None)
-                                        }
-                                    } else {
-                                        (line_buf.len(), None)
+                                    let (break_idx, skip_whitespace) = match last_ws_idx {
+                                        Some(idx) => (idx, true),
+                                        None => (line_buf.len() - 1, false),
                                     };
 
-                                    // It wraps.
+                                    let mut pending_style = None;
+                                    let mut pending_text = String::new();
+                                    for atom in &line_buf[..break_idx] {
+                                        match atom {
+                                            WrapAtom::Text {
+                                                style, grapheme, ..
+                                            } => {
+                                                if pending_style != Some(*style) {
+                                                    if let Some(previous_style) = pending_style {
+                                                        write!(
+                                                            handle,
+                                                            "{}",
+                                                            as_terminal_escaped(
+                                                                previous_style,
+                                                                &format!(
+                                                                    "{}{pending_text}",
+                                                                    self.ansi_style
+                                                                ),
+                                                                self.config.true_color,
+                                                                self.config.colored_output,
+                                                                self.config.use_italic_text,
+                                                                background_color
+                                                            )
+                                                        )?;
+                                                        pending_text.clear();
+                                                    }
+                                                    pending_style = Some(*style);
+                                                }
+                                                pending_text.push_str(grapheme);
+                                            }
+                                            WrapAtom::Escape(escape_idx) => {
+                                                if let Some(previous_style) = pending_style.take() {
+                                                    write!(
+                                                        handle,
+                                                        "{}",
+                                                        as_terminal_escaped(
+                                                            previous_style,
+                                                            &format!(
+                                                                "{}{pending_text}",
+                                                                self.ansi_style
+                                                            ),
+                                                            self.config.true_color,
+                                                            self.config.colored_output,
+                                                            self.config.use_italic_text,
+                                                            background_color
+                                                        )
+                                                    )?;
+                                                    pending_text.clear();
+                                                }
+                                                if let LineEvent::Escape(escape) =
+                                                    &events[*escape_idx]
+                                                {
+                                                    for chunk in EscapeSequenceIterator::new(escape)
+                                                    {
+                                                        write!(handle, "{}", chunk.raw())?;
+                                                        self.ansi_style.update(chunk);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if let Some(previous_style) = pending_style {
+                                        write!(
+                                            handle,
+                                            "{}",
+                                            as_terminal_escaped(
+                                                previous_style,
+                                                &format!("{}{pending_text}", self.ansi_style),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            )
+                                        )?;
+                                    }
                                     write!(
                                         handle,
-                                        "{}{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &format!(
-                                                "{}{}",
-                                                self.ansi_style,
-                                                &line_buf[..emit_end]
-                                            ),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
+                                        "{}\n{}",
                                         self.ansi_style.to_reset_sequence(),
                                         panel_wrap.clone().unwrap()
                                     )?;
 
                                     cursor = 0;
                                     max_width = cursor_max;
+                                    let next_idx = break_idx + usize::from(skip_whitespace);
+                                    line_buf = line_buf.split_off(next_idx);
+                                    current_width = line_buf
+                                        .iter()
+                                        .map(|atom| match atom {
+                                            WrapAtom::Text { width, .. } => *width,
+                                            WrapAtom::Escape(_) => 0,
+                                        })
+                                        .sum();
+                                    last_ws_idx = line_buf.iter().rposition(|atom| {
+                                        matches!(
+                                            atom,
+                                            WrapAtom::Text { grapheme, .. }
+                                                if grapheme.starts_with(char::is_whitespace)
+                                        )
+                                    });
+                                }
+                            }
+                        }
+                        LineEvent::Escape(_) => line_buf.push(WrapAtom::Escape(event_idx)),
+                    }
+                }
 
-                                    if let Some(rs) = rest_start {
-                                        // Word wrap: carry remainder to next line.
-                                        let remainder = line_buf[rs..].to_string();
-                                        let rem_width: usize =
-                                            remainder.graphemes(true).map(grapheme_width).sum();
-                                        line_buf.clear();
-                                        line_buf.push_str(&remainder);
-                                        current_width = rem_width + cw;
-                                    } else {
+                let mut pending_style = None;
+                let mut pending_text = String::new();
+                for atom in &line_buf {
+                    match atom {
+                        WrapAtom::Text {
+                            style, grapheme, ..
+                        } => {
+                            if pending_style != Some(*style) {
+                                if let Some(previous_style) = pending_style {
+                                    write!(
+                                        handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            previous_style,
+                                            &format!("{}{pending_text}", self.ansi_style),
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                            self.config.use_italic_text,
+                                            background_color
+                                        )
+                                    )?;
+                                    pending_text.clear();
+                                }
+                                pending_style = Some(*style);
+                            }
+                            pending_text.push_str(grapheme);
+                        }
+                        WrapAtom::Escape(escape_idx) => {
+                            if let Some(previous_style) = pending_style.take() {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        previous_style,
+                                        &format!("{}{pending_text}", self.ansi_style),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                                pending_text.clear();
+                            }
+                            if let LineEvent::Escape(escape) = &events[*escape_idx] {
+                                for chunk in EscapeSequenceIterator::new(escape) {
+                                    write!(handle, "{}", chunk.raw())?;
+                                    self.ansi_style.update(chunk);
+                                }
+                            }
+                        }
+                    }
+                }
+                if let Some(previous_style) = pending_style {
+                    write!(
+                        handle,
+                        "{}",
+                        as_terminal_escaped(
+                            previous_style,
+                            &format!("{}{pending_text}", self.ansi_style),
+                            self.config.true_color,
+                            self.config.colored_output,
+                            self.config.use_italic_text,
+                            background_color
+                        )
+                    )?;
+                }
+                cursor += current_width;
+            } else {
+                for &(style, region) in &regions {
+                    let ansi_iterator = EscapeSequenceIterator::new(region);
+                    for chunk in ansi_iterator {
+                        match chunk {
+                            EscapeSequence::Text(text) => {
+                                let text = self.preprocess(
+                                    text.trim_end_matches(['\r', '\n']),
+                                    &mut cursor_total,
+                                );
+                                let mut max_width = cursor_max.saturating_sub(cursor);
+                                let mut line_buf = String::with_capacity(max_width * 4);
+                                let mut current_width = 0;
+
+                                for grapheme in text.graphemes(true) {
+                                    let cw = grapheme_width(grapheme);
+                                    current_width += cw;
+                                    if current_width > max_width {
+                                        if panel_wrap.is_none() {
+                                            panel_wrap = if self.panel_width > 0 {
+                                                Some(format!(
+                                                    "{} ",
+                                                    self.decorations
+                                                        .iter()
+                                                        .map(|d| d
+                                                            .generate(line_number, true, self)
+                                                            .text)
+                                                        .collect::<Vec<String>>()
+                                                        .join(" ")
+                                                ))
+                                            } else {
+                                                Some(String::new())
+                                            };
+                                        }
+
+                                        write!(
+                                            handle,
+                                            "{}{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &format!("{}{line_buf}", self.ansi_style),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            ),
+                                            self.ansi_style.to_reset_sequence(),
+                                            panel_wrap.clone().unwrap()
+                                        )?;
+                                        cursor = 0;
+                                        max_width = cursor_max;
                                         line_buf.clear();
                                         current_width = cw;
                                     }
-                                    last_ws_idx = None;
+                                    line_buf.push_str(grapheme);
                                 }
-
-                                line_buf.push_str(grapheme);
+                                cursor += current_width;
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{line_buf}", self.ansi_style),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
                             }
-
-                            // flush the buffer
-                            cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{line_buf}", self.ansi_style),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
-                        }
-
-                        // ANSI escape passthrough.
-                        _ => {
-                            write!(handle, "{}", chunk.raw())?;
-                            self.ansi_style.update(chunk);
+                            _ => {
+                                write!(handle, "{}", chunk.raw())?;
+                                self.ansi_style.update(chunk);
+                            }
                         }
                     }
                 }
