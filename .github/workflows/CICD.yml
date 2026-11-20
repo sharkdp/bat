@@ -166,7 +166,8 @@ jobs:
           - { target: arm-unknown-linux-gnueabihf , os: ubuntu-latest , dpkg_arch: armhf,            use-cross: true }
           - { target: arm-unknown-linux-musleabihf, os: ubuntu-latest , dpkg_arch: musl-linux-armhf, use-cross: true }
           - { target: i686-pc-windows-msvc        , os: windows-2025  ,                                              }
-          - { target: i686-unknown-linux-gnu      , os: ubuntu-latest , dpkg_arch: i386,             use-cross: true }
+          # The timeout test's socketpair fails on the Ubuntu 26.04 runner.
+          - { target: i686-unknown-linux-gnu      , os: ubuntu-24.04  , dpkg_arch: i386,             use-cross: true }
           - { target: i686-unknown-linux-musl     , os: ubuntu-latest , dpkg_arch: musl-linux-i686,  use-cross: true }
           - { target: x86_64-apple-darwin         , os: macos-15-intel,                                              }
           - { target: aarch64-apple-darwin        , os: macos-latest  ,                                              }
@@ -214,6 +215,9 @@ jobs:
 
     - name: Build
       shell: bash
+      env:
+        BAT_ASSETS_GEN_DIR: ${{ env.CICD_INTERMEDIATES_DIR }}/generated
+        CROSS_BUILD_ENV_PASSTHROUGH: BAT_ASSETS_GEN_DIR
       run: $BUILD_CMD build --locked --release --target=${{ matrix.job.target }}
 
     - name: Set binary name & path
@@ -302,13 +306,13 @@ jobs:
         cp "README.md" "LICENSE-MIT" "LICENSE-APACHE" "CHANGELOG.md" "$ARCHIVE_DIR"
 
         # Man page
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/manual/bat.1 "$ARCHIVE_DIR"
+        cp "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/manual/bat.1" "$ARCHIVE_DIR"
 
         # Autocompletion files
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.bash "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.bash"
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.fish "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.fish"
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/_bat.ps1 "$ARCHIVE_DIR/autocomplete/_${{ needs.crate_metadata.outputs.name }}.ps1"
-        cp 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.zsh "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.zsh"
+        cp "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.bash" "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.bash"
+        cp "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.fish" "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.fish"
+        cp "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/_bat.ps1" "$ARCHIVE_DIR/autocomplete/_${{ needs.crate_metadata.outputs.name }}.ps1"
+        cp "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.zsh" "$ARCHIVE_DIR/autocomplete/${{ needs.crate_metadata.outputs.name }}.zsh"
 
         # base compressed package
         pushd "${PKG_STAGING}/" >/dev/null
@@ -343,13 +347,13 @@ jobs:
         install -Dm755 "${{ steps.bin.outputs.BIN_PATH }}" "${DPKG_DIR}/usr/bin/${{ steps.bin.outputs.BIN_NAME }}"
 
         # Man page
-        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/manual/bat.1 "${DPKG_DIR}/usr/share/man/man1/${{ needs.crate_metadata.outputs.name }}.1"
+        install -Dm644 "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/manual/bat.1" "${DPKG_DIR}/usr/share/man/man1/${{ needs.crate_metadata.outputs.name }}.1"
         gzip -n --best "${DPKG_DIR}/usr/share/man/man1/${{ needs.crate_metadata.outputs.name }}.1"
 
         # Autocompletion files
-        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.bash "${DPKG_DIR}/usr/share/bash-completion/completions/${{ needs.crate_metadata.outputs.name }}"
-        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.fish "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ needs.crate_metadata.outputs.name }}.fish"
-        install -Dm644 'target/${{ matrix.job.target }}/release/build/${{ needs.crate_metadata.outputs.name }}'-*/out/assets/completions/bat.zsh "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ needs.crate_metadata.outputs.name }}"
+        install -Dm644 "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.bash" "${DPKG_DIR}/usr/share/bash-completion/completions/${{ needs.crate_metadata.outputs.name }}"
+        install -Dm644 "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.fish" "${DPKG_DIR}/usr/share/fish/vendor_completions.d/${{ needs.crate_metadata.outputs.name }}.fish"
+        install -Dm644 "${{ env.CICD_INTERMEDIATES_DIR }}/generated/assets/completions/bat.zsh" "${DPKG_DIR}/usr/share/zsh/vendor-completions/_${{ needs.crate_metadata.outputs.name }}"
 
         # README and LICENSE
         install -Dm644 "README.md" "${DPKG_DIR}/usr/share/doc/${DPKG_BASENAME}/README.md"
@@ -457,7 +461,7 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: vedantmgoyal9/winget-releaser@a8fff44b123f115ce4c21543edf8b677376fc7e0
+      - uses: vedantmgoyal9/winget-releaser@b7370d4d152efdce803a26cc6ca9eee58cb2ad54
         with:
           identifier: sharkdp.bat
           installers-regex: '-pc-windows-msvc\.zip$'

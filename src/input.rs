@@ -291,7 +291,12 @@ impl<'a> InputReader<'a> {
 
         if content_type == Some(ContentType::UTF_16LE) {
             read_utf16_line(&mut reader, &mut first_line, 0x00, 0x0A)?;
-        } else if content_type == Some(ContentType::UTF_16BE) {
+        } else if content_type == Some(ContentType::UTF_16BE)
+            // In UTF-16BE a newline is encoded as 0x00 0x0A, so `read_until(b'\n')` above
+            // may already have read a complete first line. Only keep reading if it did not
+            // (e.g. the 0x0A byte was part of another character such as U+4E0A).
+            && !(first_line.len() % 2 == 0 && first_line.ends_with(&[0x00, 0x0A]))
+        {
             read_utf16_line(&mut reader, &mut first_line, 0x0A, 0x00)?;
         }
 
@@ -375,6 +380,7 @@ fn read_utf16_line<R: BufRead>(
         }
         buf.extend_from_slice(&temp);
         if buf.len() >= 2
+            && buf.len().is_multiple_of(2)
             && buf[buf.len() - 2] == preceded_by_char
             && buf[buf.len() - 1] == read_until_char
         {
@@ -609,6 +615,39 @@ fn unbuffered_eof_handling() {
     assert!(res.is_ok());
     assert!(!res.unwrap());
     assert!(buffer.is_empty());
+}
+
+#[test]
+fn utf16_newlines_are_code_unit_aligned() {
+    let cases: &[&[&[u8]]] = &[
+        &[b"\xFF\xFE\x85\x0A\x00\x25\x0A\x00", b"\x7A\x00"],
+        &[
+            b"\xFF\xFE\x73\x00\x0A\x00",
+            b"\x85\x0A\x00\x25\x0A\x00",
+            b"\x7A\x00",
+        ],
+        &[
+            b"\xFE\xFF\x4E\x0A\x00\x0A",
+            b"\x25\x00\x0A\x85\x00\x0A",
+            b"\x00\x7A",
+        ],
+    ];
+
+    for &lines in cases {
+        let content = lines.concat();
+        let mut reader = InputReader::new(&content[..]);
+        assert_eq!(lines[0], &reader.first_line[..]);
+
+        for &line in lines {
+            let mut buffer = vec![];
+            assert!(reader.read_line(&mut buffer).unwrap());
+            assert_eq!(line, &buffer[..]);
+        }
+
+        let mut buffer = vec![];
+        assert!(!reader.read_line(&mut buffer).unwrap());
+        assert!(buffer.is_empty());
+    }
 }
 
 #[test]

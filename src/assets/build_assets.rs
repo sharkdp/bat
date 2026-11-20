@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::io::Write;
 use std::path::Path;
 
 use syntect::highlighting::ThemeSet;
@@ -15,16 +16,18 @@ pub fn build(
     include_acknowledgements: bool,
     target_dir: &Path,
     current_version: &str,
+    progress: &mut dyn Write,
 ) -> Result<()> {
-    let theme_set = build_theme_set(source_dir, include_integrated_assets)?;
+    let theme_set = build_theme_set(source_dir, include_integrated_assets, progress)?;
 
-    let syntax_set_builder = build_syntax_set_builder(source_dir, include_integrated_assets)?;
+    let syntax_set_builder =
+        build_syntax_set_builder(source_dir, include_integrated_assets, progress)?;
 
     let syntax_set = syntax_set_builder.build();
 
     let acknowledgements = build_acknowledgements(source_dir, include_acknowledgements)?;
 
-    print_unlinked_contexts(&syntax_set);
+    print_unlinked_contexts(&syntax_set, progress)?;
 
     write_assets(
         &theme_set,
@@ -32,10 +35,15 @@ pub fn build(
         &acknowledgements,
         target_dir,
         current_version,
+        progress,
     )
 }
 
-fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result<LazyThemeSet> {
+fn build_theme_set(
+    source_dir: &Path,
+    include_integrated_assets: bool,
+    progress: &mut dyn Write,
+) -> Result<LazyThemeSet> {
     let mut theme_set = if include_integrated_assets {
         crate::assets::get_integrated_themeset().try_into()?
     } else {
@@ -46,16 +54,18 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result
     if theme_dir.exists() {
         let res = theme_set.add_from_folder(&theme_dir);
         if let Err(err) = res {
-            println!(
+            writeln!(
+                progress,
                 "Failed to load one or more themes from '{}' (reason: '{err}')",
                 theme_dir.to_string_lossy(),
-            );
+            )?;
         }
     } else {
-        println!(
+        writeln!(
+            progress,
             "No themes were found in '{}', using the default set",
             theme_dir.to_string_lossy()
-        );
+        )?;
     }
 
     theme_set.try_into()
@@ -64,6 +74,7 @@ fn build_theme_set(source_dir: &Path, include_integrated_assets: bool) -> Result
 fn build_syntax_set_builder(
     source_dir: &Path,
     include_integrated_assets: bool,
+    progress: &mut dyn Write,
 ) -> Result<SyntaxSetBuilder> {
     let mut syntax_set_builder = if !include_integrated_assets {
         let mut builder = syntect::parsing::SyntaxSetBuilder::new();
@@ -78,23 +89,25 @@ fn build_syntax_set_builder(
     if syntax_dir.exists() {
         syntax_set_builder.add_from_folder(syntax_dir, true)?;
     } else {
-        println!(
+        writeln!(
+            progress,
             "No syntaxes were found in '{}', using the default set.",
             syntax_dir.to_string_lossy()
-        );
+        )?;
     }
 
     Ok(syntax_set_builder)
 }
 
-fn print_unlinked_contexts(syntax_set: &SyntaxSet) {
+fn print_unlinked_contexts(syntax_set: &SyntaxSet, progress: &mut dyn Write) -> Result<()> {
     let missing_contexts = syntax_set.find_unlinked_contexts();
     if !missing_contexts.is_empty() {
-        println!("Some referenced contexts could not be found!");
+        writeln!(progress, "Some referenced contexts could not be found!")?;
         for context in missing_contexts {
-            println!("- {context}");
+            writeln!(progress, "- {context}")?;
         }
     }
+    Ok(())
 }
 
 fn write_assets(
@@ -103,6 +116,7 @@ fn write_assets(
     acknowledgements: &Option<String>,
     target_dir: &Path,
     current_version: &str,
+    progress: &mut dyn Write,
 ) -> Result<()> {
     let _ = std::fs::create_dir_all(target_dir);
     asset_to_cache(
@@ -110,12 +124,14 @@ fn write_assets(
         &target_dir.join("themes.bin"),
         "theme set",
         COMPRESS_THEMES,
+        progress,
     )?;
     asset_to_cache(
         syntax_set,
         &target_dir.join("syntaxes.bin"),
         "syntax set",
         COMPRESS_SYNTAXES,
+        progress,
     )?;
 
     if let Some(acknowledgements) = acknowledgements {
@@ -124,15 +140,17 @@ fn write_assets(
             &target_dir.join("acknowledgements.bin"),
             "acknowledgements",
             COMPRESS_ACKNOWLEDGEMENTS,
+            progress,
         )?;
     }
 
-    print!(
+    write!(
+        progress,
         "Writing metadata to folder {} ... ",
         target_dir.to_string_lossy()
-    );
+    )?;
     crate::assets_metadata::AssetsMetadata::new(current_version).save_to_folder(target_dir)?;
-    println!("okay");
+    writeln!(progress, "okay")?;
 
     Ok(())
 }
@@ -160,11 +178,16 @@ fn asset_to_cache<T: serde::Serialize>(
     path: &Path,
     description: &str,
     compressed: bool,
+    progress: &mut dyn Write,
 ) -> Result<()> {
-    print!("Writing {description} to {} ... ", path.to_string_lossy());
+    write!(
+        progress,
+        "Writing {description} to {} ... ",
+        path.to_string_lossy()
+    )?;
     let contents = asset_to_contents(asset, description, compressed)?;
     std::fs::write(path, &contents[..])
         .map_err(|_| format!("Could not save {description} to {}", path.to_string_lossy()))?;
-    println!("okay");
+    writeln!(progress, "okay")?;
     Ok(())
 }
