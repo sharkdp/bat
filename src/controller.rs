@@ -21,6 +21,9 @@ use clircle::{Clircle, Identifier};
 use content_inspector::ContentType;
 use encoding_rs::{UTF_16BE, UTF_16LE};
 
+/// Number of lines that can be held back for `--line-range` offsets from the end of the input.
+const MAX_BUFFER_SIZE: usize = 10_000;
+
 pub struct Controller<'a> {
     config: &'a Config<'a>,
     assets: &'a HighlightingAssets,
@@ -260,8 +263,11 @@ impl Controller<'_> {
     ) -> Result<()> {
         let mut current_line_buffer: Vec<u8> = Vec::new();
         let mut current_line_number: usize = 1;
-        // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF
-        let buffer_size: usize = line_ranges.largest_offset_from_end() + 1;
+        // Buffer needs to be 1 greater than the offset to have a look-ahead line for EOF.
+        // An offset can be far larger than any real file, so cap the allocation and let the
+        // buffer grow past the cap if the input really has that many lines.
+        let offset_from_end = line_ranges.largest_offset_from_end();
+        let buffer_size: usize = offset_from_end.min(MAX_BUFFER_SIZE - 1) + 1;
         // Buffers multiple line data and line number
         let mut buffered_lines: VecDeque<(Vec<u8>, usize)> = VecDeque::with_capacity(buffer_size);
 
@@ -314,6 +320,20 @@ impl Controller<'_> {
             if buffered_lines.len() < buffer_size && !reached_eof {
                 // The buffer needs to be completely filled first
                 continue;
+            }
+
+            // The upper end of an offset from the end is only known once the input has at
+            // least that many lines. A capped buffer can hit EOF before that when the offset
+            // is larger than any real file, so don't print anything until the buffer holds
+            // enough lines for the range check to be final.
+            if !reached_eof {
+                let buffered_line_count = buffered_lines.back().map(|(_, line_nr)| *line_nr);
+                if buffered_line_count
+                    .map(|count| count < offset_from_end)
+                    .unwrap_or(true)
+                {
+                    continue;
+                }
             }
 
             let Some((line, line_nr)) = buffered_lines.pop_front() else {

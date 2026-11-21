@@ -522,6 +522,30 @@ fn line_range_last_3() {
 }
 
 #[test]
+fn line_range_huge_offset_from_end_does_not_panic() {
+    // An offset this large puts the end of the range before the first line, so nothing is
+    // printed, the same as for a smaller offset such as -40
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=:-999999999999999999")
+        .assert()
+        .success()
+        .stdout("");
+}
+
+#[test]
+fn line_range_huge_offset_from_end_to_end_prints_everything() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--line-range=-999999999999999999:")
+        .assert()
+        .success()
+        .stdout(
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\n",
+        );
+}
+
+#[test]
 fn line_range_multiple() {
     bat()
         .arg("multiline.txt")
