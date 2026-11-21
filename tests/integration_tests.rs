@@ -521,6 +521,8 @@ fn line_range_last_3() {
         .stdout("line 8\nline 9\nline 10\n");
 }
 
+// The offset has to fit in a usize, which is 32 bit wide on some targets
+#[cfg(target_pointer_width = "64")]
 #[test]
 fn line_range_huge_offset_from_end_does_not_panic() {
     // An offset this large puts the end of the range before the first line, so nothing is
@@ -533,6 +535,7 @@ fn line_range_huge_offset_from_end_does_not_panic() {
         .stdout("");
 }
 
+#[cfg(target_pointer_width = "64")]
 #[test]
 fn line_range_huge_offset_from_end_to_end_prints_everything() {
     bat()
