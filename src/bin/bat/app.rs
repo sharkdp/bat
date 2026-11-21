@@ -407,7 +407,14 @@ impl App {
                         Some("word") => WrappingMode::Word,
                         Some("never") => WrappingMode::NoWrapping(true),
                         Some("auto") | None => {
-                            if self.interactive_output || maybe_term_width.is_some() {
+                            if paging_mode != PagingMode::Never {
+                                // The output is sent to a pager. Let the pager do the
+                                // wrapping (and chopping, e.g. via its own '-S' option),
+                                // so that toggling line chopping inside the pager works.
+                                // If bat wrapped the lines itself, the pager could no
+                                // longer chop them (see issue #2869).
+                                WrappingMode::NoWrapping(false)
+                            } else if self.interactive_output || maybe_term_width.is_some() {
                                 if style_components.plain() && maybe_term_width.is_none() {
                                     WrappingMode::NoWrapping(false)
                                 } else {

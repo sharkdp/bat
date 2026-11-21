@@ -4321,6 +4321,134 @@ fn s_flag_respected_with_paging_always() {
     });
 }
 
+// Regression tests for issue #2869: when the output is sent to a pager, bat must
+// not wrap long lines itself in --wrap=auto mode. If it did, the pager (e.g.
+// less) could no longer chop those lines via its own '-S' option, because they
+// would already have been wrapped by bat.
+#[test]
+#[serial]
+fn wrap_auto_does_not_wrap_when_paging() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            // Use cat as pager to pass through the output
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=auto")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg("--style=rule")
+            .arg("--terminal-width=80")
+            .arg("long-single-line.txt")
+            .assert()
+            .success()
+            // The full line must be passed to the pager unwrapped, so that the
+            // pager can wrap/chop it as needed
+            .stdout("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyz\n")
+            .stderr("");
+    });
+}
+
+// Explicitly requested wrapping must still be honored when paging
+#[test]
+#[serial]
+fn wrap_character_still_wraps_when_paging() {
+    mocked_pagers::with_mocked_versions_of_more_and_most_in_path(|| {
+        bat()
+            .arg("--pager=cat")
+            .arg("--paging=always")
+            .arg("--wrap=character")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg("--style=rule")
+            .arg("--terminal-width=80")
+            .arg("long-single-line.txt")
+            .assert()
+            .success()
+            .stdout("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n")
+            .stderr("");
+    });
+}
+
+// Without a pager, --wrap=auto must keep wrapping at the terminal width
+#[test]
+fn wrap_auto_still_wraps_without_paging() {
+    bat()
+        .arg("--paging=never")
+        .arg("--wrap=auto")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("--style=rule")
+        .arg("--terminal-width=80")
+        .arg("long-single-line.txt")
+        .assert()
+        .success()
+        .stdout("abcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcdefghigklmnopqrstuvxyzabcde\nfghigklmnopqrstuvxyz\n")
+        .stderr("");
+}
+
+// Regression test for issue #2869 on a real terminal: when bat writes to a tty
+// and pipes its output into a pager, --wrap=auto must not pre-wrap the lines,
+// so that toggling '-S' inside the pager can chop them.
+#[cfg(unix)]
+#[test]
+fn wrap_auto_does_not_wrap_on_terminal_when_paging() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+    let mut master = File::from(master);
+    // Keep a slave open until the output is read: macOS discards unread PTY
+    // output when the last slave closes.
+    let slave = File::from(slave);
+    let mut child = bat_raw_command()
+        .args([
+            "--paging=always",
+            "--pager=cat",
+            "--wrap=auto",
+            "--terminal-width=80",
+            "--color=never",
+            "--decorations=always",
+            "--style=numbers",
+            "long-single-line.txt",
+        ])
+        .env("TERM", "dumb")
+        .stdin(Stdio::null())
+        .stdout(slave.try_clone().unwrap())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    // This fixture fits in the PTY buffer, so the child can exit before reading it.
+    if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+        child.kill().unwrap();
+        child.wait().unwrap();
+        panic!("bat did not exit");
+    }
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let mut stdout = Vec::new();
+    loop {
+        let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+        if poll(&mut fds, 100u16).unwrap() == 0 {
+            break;
+        }
+        let mut buffer = [0; 1024];
+        let count = master.read(&mut buffer).unwrap();
+        if count == 0 {
+            break;
+        }
+        stdout.extend_from_slice(&buffer[..count]);
+    }
+
+    // The line (100 chars) must arrive at the pager as a single unwrapped line
+    // (the PTY translates "\n" to "\r\n").
+    let expected = format!("   1 {}\r\n", "abcdefghigklmnopqrstuvxyz".repeat(4));
+    assert_eq!(stdout, expected.as_bytes());
+}
+
 #[test]
 fn theme_arg_overrides_env() {
     bat()
