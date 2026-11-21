@@ -35,6 +35,7 @@
 
 ## Bugfixes
 
+- Track reverse video (SGR 7 / 27) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first wrapped line when displaying ANSI input, see #XXXX (@BlueX888)
 - Skip cache metadata validation when `--no-custom-assets` is set so outdated or malformed caches do not block fallback to integrated assets, see #4157 (@xgbtxy)
 - Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
 - Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
