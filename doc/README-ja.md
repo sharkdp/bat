@@ -314,13 +314,13 @@ choco install bat
 scoop install bat
 ```
 
-[Visual C ++再頒布可能](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) パッケージをインストールする必要があります。
+[Visual C ++再頒布可能](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) パッケージをインストールする必要があります。
 
 #### From prebuilt binaries:
 
 [リリースページ](https://github.com/sharkdp/bat/releases) からビルド済みのバイナリをダウンロードできます。
 
-[Visual C ++再頒布可能](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads) パッケージをインストールする必要があります。
+[Visual C ++再頒布可能](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist) パッケージをインストールする必要があります。
 
 ###  Via Docker
 

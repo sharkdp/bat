@@ -353,7 +353,7 @@ port install bat
 
 #### Пререквитизы
 
-Вам нужно установить пакет [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads).
+Вам нужно установить пакет [Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist).
 
 #### С помощью WinGet
 
