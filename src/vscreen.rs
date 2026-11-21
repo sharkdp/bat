@@ -75,6 +75,10 @@ struct Attributes {
     /// OFF: ^[29m
     strike: String,
 
+    /// ON:  ^[7m
+    /// OFF: ^[27m
+    reverse: String,
+
     /// The hyperlink sequence.
     /// FORMAT: \x1B]8;{ID};{URL}\e\\
     ///
@@ -98,6 +102,7 @@ impl Attributes {
             underline: "".to_owned(),
             italic: "".to_owned(),
             strike: "".to_owned(),
+            reverse: "".to_owned(),
             hyperlink: "".to_owned(),
         }
     }
@@ -156,6 +161,7 @@ impl Attributes {
         self.underline.clear();
         self.italic.clear();
         self.strike.clear();
+        self.reverse.clear();
     }
 
     fn update_with_sgr(&mut self, parameters: &str) -> bool {
@@ -173,9 +179,11 @@ impl Attributes {
                 2 => self.dim = "\x1B[2m".to_owned(),
                 3 => self.italic = "\x1B[3m".to_owned(),
                 4 => self.underline = "\x1B[4m".to_owned(),
+                7 => self.reverse = "\x1B[7m".to_owned(),
                 9 => self.strike = "\x1B[9m".to_owned(),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
+                27 => self.reverse.clear(),
                 29 => self.strike.clear(),
                 22 => {
                     self.bold.clear();
@@ -258,7 +266,7 @@ impl Display for Attributes {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}{}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}{}{}{}",
             self.foreground,
             self.background,
             self.underlined,
@@ -268,6 +276,7 @@ impl Display for Attributes {
             self.underline,
             self.italic,
             self.strike,
+            self.reverse,
             self.hyperlink,
         )
     }
@@ -1095,5 +1104,28 @@ mod tests {
             final_byte: "m",
         });
         assert_eq!(attrs.strike, "");
+    }
+
+    #[test]
+    fn test_sgr_reverse_is_tracked_and_cleared() {
+        let mut attrs = crate::vscreen::Attributes::new();
+
+        // Reverse video on (SGR 7) must be tracked so it can be re-emitted.
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[7m",
+            parameters: "7",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.reverse, "\x1B[7m");
+
+        // Reverse video off (SGR 27) must clear it, just like strikethrough (29).
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[27m",
+            parameters: "27",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.reverse, "");
     }
 }
