@@ -95,6 +95,7 @@
 - Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
 - Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
 - Show changes in `--diff` mode and the change-marker column in Git repositories that use the SHA-256 object format (`git init --object-format=sha256`), see #4143 (@BlueX888)
+- Skip untracked files and files outside a Git repository in `--diff` mode instead of printing an empty frame, see #4148 (@thejesh23)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
