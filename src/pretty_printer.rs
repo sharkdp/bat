@@ -133,6 +133,12 @@ impl<'a> PrettyPrinter<'a> {
         self
     }
 
+    /// Reject inputs without a specific syntax and disable paging.
+    pub fn fail_if_syntax_unsupported(&mut self, yes: bool) -> &mut Self {
+        self.config.fail_if_syntax_unsupported = yes;
+        self
+    }
+
     /// Whether or not to output 24bit colors (default: true)
     pub fn true_color(&mut self, yes: bool) -> &mut Self {
         self.config.true_color = yes;
