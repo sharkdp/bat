@@ -5589,6 +5589,46 @@ fn plain_without_diff_still_works() {
         .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
 }
 
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_skips_files_without_git_information() {
+    let repo = setup_diff_test_repo();
+    std::fs::write(repo.path().join("untracked.txt"), "new 1\nnew 2\n")
+        .expect("can write untracked file");
+
+    let outside = tempfile::tempdir().expect("can create temporary directory");
+    let outside_file = outside.path().join("outside.txt");
+    std::fs::write(&outside_file, "outside\n").expect("can write file outside the repo");
+
+    // Neither an untracked file nor a file outside a Git repository has
+    // changes to show, so --diff skips them like unmodified files.
+    for file in [repo.path().join("untracked.txt"), outside_file] {
+        bat()
+            .current_dir(repo.path())
+            .arg("--diff")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg(&file)
+            .assert()
+            .success()
+            .stdout("");
+    }
+
+    // A modified file passed alongside them is still shown.
+    bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("untracked.txt")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
+}
+
 #[test]
 fn tcl_shebang_detection_tclsh() {
     bat()

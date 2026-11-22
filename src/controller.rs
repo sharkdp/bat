@@ -169,12 +169,10 @@ impl Controller<'_> {
                 crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
                     let diff = get_git_diff(path);
 
-                    // Skip files without Git modifications
+                    // Skip files without Git modifications, and files for which
+                    // there is no Git information (untracked, outside a repository)
                     if self.config.visible_lines.diff_mode()
-                        && diff
-                            .as_ref()
-                            .map(|changes| changes.is_empty())
-                            .unwrap_or(false)
+                        && diff.as_ref().is_none_or(|changes| changes.is_empty())
                     {
                         return Ok(());
                     }
