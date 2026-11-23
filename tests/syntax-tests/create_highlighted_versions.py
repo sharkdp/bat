@@ -48,9 +48,13 @@ def create_highlighted_version(args):
     env.pop("BAT_CONFIG_PATH", None)
     env.pop("BAT_OPTS", None)
     env.pop("BAT_PAGER", None)
+    env.pop("BAT_PAGING", None)
     env.pop("BAT_STYLE", None)
     env.pop("BAT_TABS", None)
     env.pop("BAT_THEME", None)
+    env.pop("BAT_THEME_DARK", None)
+    env.pop("BAT_THEME_LIGHT", None)
+    env.pop("BAT_WIDTH", None)
     env.pop("NO_COLOR", None)
     env.pop("PAGER", None)
     env["COLORTERM"] = "truecolor"  # make sure to output 24bit colors

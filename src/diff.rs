@@ -150,6 +150,32 @@ mod tests {
     }
 
     #[test]
+    fn diff_is_calculated_in_sha256_repository() {
+        let dir = tempfile::tempdir().expect("can create temporary directory");
+        let repo = dir.path();
+        let init = Command::new("git")
+            .args(["init", "--object-format=sha256"])
+            .current_dir(repo)
+            .output()
+            .expect("git command can run");
+        if !init.status.success() {
+            eprintln!("skipping: git does not support sha256 repositories");
+            return;
+        }
+        git(repo, &["config", "user.email", "test@test.test"]);
+        git(repo, &["config", "user.name", "Test"]);
+        let filepath = repo.join("file.txt");
+        std::fs::write(&filepath, "file\n").expect("can write file");
+        git(repo, &["add", "file.txt"]);
+        git(repo, &["commit", "-m", "initial"]);
+
+        std::fs::write(&filepath, "file\nline 2 added\n").expect("can write file");
+
+        let changes = get_git_diff(&filepath).expect("one change");
+        assert_eq!(changes.get(&2), Some(&LineChange::Added));
+    }
+
+    #[test]
     fn diff_is_calculated_against_index() {
         let repo = setup_repo();
         let file = create_and_track_file(&repo, "file.txt");

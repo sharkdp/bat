@@ -524,7 +524,9 @@ pub fn build_app(interactive_output: bool) -> Command {
                 removed, so they cannot hide text. Overrides --strip-ansi. \
                 Tab, LF, FF, and CRLF pass through. Useful \
                 for displaying untrusted file content (e.g. file-manager preview panes). \
-                Piped output is not sanitized. Possible values: auto, always, *never*.")
+                The automatic mode only sanitizes if an interactive terminal is detected. \
+                Use 'always' to also sanitize piped output. \
+                Possible values: auto, always, *never*.")
                 .hide_short_help(true)
         )
         .arg(

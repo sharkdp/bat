@@ -5313,6 +5313,93 @@ fn sanitize_preserves_unicode_text() {
         .stdout("snowman ☃ CJK 漢字 emoji 🦀");
 }
 
+#[test]
+fn sanitize_always_sanitizes_piped_output() {
+    bat()
+        .arg("--sanitize=always")
+        .write_stdin("safe\rEVIL\n\x1B[33mYellow\n")
+        .assert()
+        .success()
+        .stdout("safe\u{FFFD}EVIL\n\u{FFFD}[33mYellow\n");
+}
+
+#[test]
+fn sanitize_always_decodes_piped_output() {
+    for file in ["test_BOM.txt", "test_UTF-16LE.txt"] {
+        bat()
+            .arg("--sanitize=always")
+            .arg(file)
+            .assert()
+            .success()
+            .stdout("hello world\n");
+    }
+}
+
+#[test]
+fn sanitize_auto_does_not_sanitize_piped_output() {
+    bat()
+        .arg("--sanitize=auto")
+        .write_stdin("safe\rEVIL\n\x1B[33mYellow\n")
+        .assert()
+        .success()
+        .stdout("safe\rEVIL\n\x1B[33mYellow\n");
+}
+
+#[cfg(unix)]
+#[test]
+fn sanitize_auto_sanitizes_plain_text_on_terminal() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+    let mut master = File::from(master);
+    // Keep a slave open until the output is read: macOS discards unread PTY
+    // output when the last slave closes.
+    let slave = File::from(slave);
+    let mut child = bat_raw_command()
+        .args([
+            "--paging=never",
+            "--color=never",
+            "--theme=ansi",
+            "--style=plain",
+            "--sanitize=auto",
+            "regression_tests/issue_2541.txt",
+        ])
+        .stdin(Stdio::null())
+        .stdout(slave.try_clone().unwrap())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+        child.kill().unwrap();
+        child.wait().unwrap();
+        panic!("bat did not exit");
+    }
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let mut stdout = Vec::new();
+    loop {
+        let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+        if poll(&mut fds, 100u16).unwrap() == 0 {
+            break;
+        }
+        let mut buffer = [0; 1024];
+        let count = master.read(&mut buffer).unwrap();
+        if count == 0 {
+            break;
+        }
+        stdout.extend_from_slice(&buffer[..count]);
+    }
+    assert_eq!(
+        String::from_utf8(stdout).unwrap(),
+        "\u{FFFD}]8;;http://example.com\u{FFFD}\\This is a link\u{FFFD}]8;;\u{FFFD}\\n"
+    );
+}
+
 // Tests that style components can be removed with `-component`.
 #[test]
 fn style_components_can_be_removed() {

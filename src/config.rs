@@ -112,7 +112,7 @@ pub struct Config<'a> {
     pub strip_ansi: StripAnsiMode,
 
     /// Substitute terminal-active and spoofing-relevant bytes; overrides strip_ansi.
-    pub sanitize: StripAnsiMode,
+    pub sanitize: bool,
 
     /// Whether or not to produce no output when input is empty
     pub quiet_empty: bool,

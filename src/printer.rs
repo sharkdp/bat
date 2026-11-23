@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::vec::Vec;
 
 use nu_ansi_term::Color::{Fixed, Green, Red, Yellow};
@@ -58,6 +59,29 @@ fn grapheme_width(grapheme: &str) -> usize {
     }
 }
 
+/// Decodes an input line to text and drops a byte order mark on the first line.
+fn decode_line(
+    content_type: Option<ContentType>,
+    line_number: usize,
+    line_buffer: &[u8],
+) -> Cow<'_, str> {
+    match content_type {
+        Some(ContentType::UTF_16LE) => UTF_16LE.decode_with_bom_removal(line_buffer).0,
+        Some(ContentType::UTF_16BE) => UTF_16BE.decode_with_bom_removal(line_buffer).0,
+        _ => {
+            let line = String::from_utf8_lossy(line_buffer);
+            if line_number == 1 {
+                match line.strip_prefix('\u{feff}') {
+                    Some(stripped) => stripped.to_string().into(),
+                    None => line,
+                }
+            } else {
+                line
+            }
+        }
+    }
+}
+
 const ANSI_UNDERLINE_ENABLE: EscapeSequence = EscapeSequence::CSI {
     raw_sequence: "\x1B[4m",
     parameters: "4",
@@ -111,6 +135,7 @@ pub(crate) trait Printer {
 
 pub struct SimplePrinter<'a> {
     config: &'a Config<'a>,
+    content_type: Option<ContentType>,
     consecutive_empty_lines: usize,
 }
 
@@ -118,6 +143,7 @@ impl<'a> SimplePrinter<'a> {
     pub fn new(config: &'a Config) -> Self {
         SimplePrinter {
             config,
+            content_type: None,
             consecutive_empty_lines: 0,
         }
     }
@@ -127,9 +153,10 @@ impl Printer for SimplePrinter<'_> {
     fn print_header(
         &mut self,
         _handle: &mut OutputHandle,
-        _input: &OpenedInput,
+        input: &OpenedInput,
         _add_header_padding: bool,
     ) -> Result<()> {
+        self.content_type = input.reader.content_type;
         Ok(())
     }
 
@@ -145,7 +172,7 @@ impl Printer for SimplePrinter<'_> {
         &mut self,
         out_of_range: bool,
         handle: &mut OutputHandle,
-        _line_number: usize,
+        line_number: usize,
         line_buffer: &[u8],
         _max_buffered_line_number: MaxBufferedLineNumber,
     ) -> Result<()> {
@@ -171,6 +198,9 @@ impl Printer for SimplePrinter<'_> {
                     self.config.tab_width,
                     self.config.nonprintable_notation,
                 );
+                write!(handle, "{line}")?;
+            } else if self.config.sanitize {
+                let line = sanitize(&decode_line(self.content_type, line_number, line_buffer));
                 write!(handle, "{line}")?;
             } else {
                 match handle {
@@ -285,9 +315,7 @@ impl<'a> InteractivePrinter<'a> {
 
         let needs_to_match_syntax = (!is_printing_binary
             || matches!(config.binary, BinaryBehavior::AsText))
-            && (config.colored_output
-                || config.strip_ansi == StripAnsiMode::Auto
-                || config.sanitize == StripAnsiMode::Auto);
+            && (config.colored_output || config.strip_ansi == StripAnsiMode::Auto);
 
         let (is_plain_text, strip_overstrike, highlighter_from_set) = if needs_to_match_syntax {
             // Determine the type of syntax for highlighting
@@ -333,13 +361,7 @@ impl<'a> InteractivePrinter<'a> {
             _ => false,
         };
 
-        let sanitize = match config.sanitize {
-            _ if config.show_nonprintable => false,
-            StripAnsiMode::Always => true,
-            StripAnsiMode::Auto if is_plain_text => false,
-            StripAnsiMode::Auto => true,
-            _ => false,
-        };
+        let sanitize = config.sanitize && !config.show_nonprintable;
 
         Ok(InteractivePrinter {
             panel_width,
@@ -696,19 +718,7 @@ impl Printer for InteractivePrinter<'_> {
                 {
                     return Ok(());
                 }
-                Some(ContentType::UTF_16LE) => UTF_16LE.decode_with_bom_removal(line_buffer).0,
-                Some(ContentType::UTF_16BE) => UTF_16BE.decode_with_bom_removal(line_buffer).0,
-                _ => {
-                    let line = String::from_utf8_lossy(line_buffer);
-                    if line_number == 1 {
-                        match line.strip_prefix('\u{feff}') {
-                            Some(stripped) => stripped.to_string().into(),
-                            None => line,
-                        }
-                    } else {
-                        line
-                    }
-                }
+                content_type => decode_line(content_type, line_number, line_buffer),
             };
 
             if self.strip_overstrike {
