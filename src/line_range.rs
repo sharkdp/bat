@@ -160,7 +160,7 @@ impl LineRange {
                 RangeBound::OffsetFromEnd(offset),
                 RangeBound::Absolute(upper),
                 MaxBufferedLineNumber::Final(last_line_number),
-            ) => last_line_number.saturating_sub(offset) <= line && line <= upper,
+            ) => last_line_number.saturating_sub(offset) < line && line <= upper,
             (
                 RangeBound::OffsetFromEnd(_),
                 RangeBound::Absolute(_),
@@ -175,7 +175,7 @@ impl LineRange {
                 RangeBound::OffsetFromEnd(upper),
                 MaxBufferedLineNumber::Final(last_line_number),
             ) => {
-                last_line_number.saturating_sub(lower) <= line
+                last_line_number.saturating_sub(lower) < line
                     && line <= last_line_number.saturating_sub(upper)
             }
             (
@@ -684,7 +684,7 @@ fn test_ranges_3_from_back_up_to_end() {
         ranges.check(1, MaxBufferedLineNumber::Final(5))
     );
     assert_eq!(
-        RangeCheckResult::InRange,
+        RangeCheckResult::BeforeOrBetweenRanges,
         ranges.check(2, MaxBufferedLineNumber::Final(5))
     );
     assert_eq!(
@@ -702,6 +702,24 @@ fn test_ranges_3_from_back_up_to_end() {
 }
 
 #[test]
+fn test_ranges_offset_from_end_selects_exactly_n_lines() {
+    // '-3:' covers the last three lines, also when another range makes the
+    // controller evaluate an earlier line with the final line number known.
+    for ranges in [ranges(&["-3:"]), ranges(&["-3:", ":-5"])] {
+        assert_ne!(
+            RangeCheckResult::InRange,
+            ranges.check(7, MaxBufferedLineNumber::Final(10))
+        );
+        for line in 8..=10 {
+            assert_eq!(
+                RangeCheckResult::InRange,
+                ranges.check(line, MaxBufferedLineNumber::Final(10))
+            );
+        }
+    }
+}
+
+#[test]
 fn test_ranges_multiple_negative_offsets_to_end() {
     let ranges = ranges(&["-3:", "-12:"]);
     assert_eq!(
@@ -713,7 +731,7 @@ fn test_ranges_multiple_negative_offsets_to_end() {
         ranges.check(5, MaxBufferedLineNumber::Tentative(17))
     );
     assert_eq!(
-        RangeCheckResult::InRange,
+        RangeCheckResult::BeforeOrBetweenRanges,
         ranges.check(8, MaxBufferedLineNumber::Final(20))
     );
     assert_eq!(
