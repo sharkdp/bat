@@ -79,11 +79,23 @@ impl OutputType {
         wrapping_mode: WrappingMode,
         pager: Option<&str>,
     ) -> Result<Self> {
+        Self::from_mode_at(paging_mode, wrapping_mode, pager, None)
+    }
+
+    #[cfg(feature = "paging")]
+    pub(crate) fn from_mode_at(
+        paging_mode: PagingMode,
+        wrapping_mode: WrappingMode,
+        pager: Option<&str>,
+        start: Option<crate::scroll::PagerStart>,
+    ) -> Result<Self> {
         use self::PagingMode::*;
         Ok(match paging_mode {
-            Always => OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager)?,
+            Always => {
+                OutputType::try_pager(SingleScreenAction::Nothing, wrapping_mode, pager, start)?
+            }
             QuitIfOneScreen => {
-                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager)?
+                OutputType::try_pager(SingleScreenAction::Quit, wrapping_mode, pager, start)?
             }
             _ => OutputType::stdout(),
         })
@@ -95,6 +107,7 @@ impl OutputType {
         single_screen_action: SingleScreenAction,
         wrapping_mode: WrappingMode,
         pager_from_config: Option<&str>,
+        start: Option<crate::scroll::PagerStart>,
     ) -> Result<Self> {
         use crate::pager::{self, PagerKind, PagerSource};
         use std::process::{Command, Stdio};
@@ -187,6 +200,10 @@ impl OutputType {
         } else {
             p.args(args);
         };
+
+        if let Some(start) = start {
+            start.configure(&mut p, &pager.kind);
+        }
 
         Ok(p.stdin(Stdio::piped())
             .spawn()

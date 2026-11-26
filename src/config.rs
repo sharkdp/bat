@@ -76,6 +76,18 @@ pub struct Config<'a> {
     #[cfg(feature = "paging")]
     pub paging_mode: PagingMode,
 
+    /// Open the pager at this line in a single input, retaining preceding output.
+    #[cfg(feature = "paging")]
+    pub scroll_to: Option<usize>,
+
+    /// Center the requested line instead of placing it at the top.
+    #[cfg(feature = "paging")]
+    pub scroll_to_center: bool,
+
+    /// Center the first visible highlighted line when opening the pager.
+    #[cfg(feature = "paging")]
+    pub center_highlight: bool,
+
     /// Specifies which lines should be printed
     pub visible_lines: VisibleLines,
 
