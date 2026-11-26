@@ -120,6 +120,74 @@ fn completion_does_not_panic_on_closed_stdout() {
 }
 
 #[test]
+fn piped_output_rejects_unknown_language() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_rejects_unknown_language_with_empty_input() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_with_language_preserves_input() {
+    let input = "fn main() {\r\n\tprintln!(\"hello\");\r\n}\n";
+    for language in ["Rust", "rust", "rs"] {
+        bat()
+            .args(["--language", language])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(input)
+            .stderr("");
+    }
+}
+
+#[test]
+#[cfg(feature = "build-assets")]
+fn piped_output_without_language_does_not_load_syntaxes() {
+    let cache_dir = tempdir().expect("can create temporary directory");
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("cache_source"))
+        .args(["cache", "--build", "--source", ".", "--target"])
+        .arg(cache_dir.path())
+        .assert()
+        .success();
+    std::fs::write(cache_dir.path().join("syntaxes.bin"), [])
+        .expect("can overwrite temporary syntax cache");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .write_stdin("foo\r\nbar\n")
+        .assert()
+        .success()
+        .stdout("foo\r\nbar\n")
+        .stderr("");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .args(["--color=always", "--language=Rust"])
+        .write_stdin("fn main() {}\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "Could not parse cached syntax set",
+        ));
+}
+
+#[test]
 fn concatenate() {
     bat()
         .arg("test.txt")
@@ -330,7 +398,8 @@ fn attached_short_option_values_are_not_treated_as_flags() {
 
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        // Use a valid syntax token containing both 'b' and 'n'.
+        .args(["-lcrontab", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
@@ -5800,6 +5869,46 @@ fn plain_without_diff_still_works() {
         .arg("--plain")
         .arg("--color=never")
         .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_skips_files_without_git_information() {
+    let repo = setup_diff_test_repo();
+    std::fs::write(repo.path().join("untracked.txt"), "new 1\nnew 2\n")
+        .expect("can write untracked file");
+
+    let outside = tempfile::tempdir().expect("can create temporary directory");
+    let outside_file = outside.path().join("outside.txt");
+    std::fs::write(&outside_file, "outside\n").expect("can write file outside the repo");
+
+    // Neither an untracked file nor a file outside a Git repository has
+    // changes to show, so --diff skips them like unmodified files.
+    for file in [repo.path().join("untracked.txt"), outside_file] {
+        bat()
+            .current_dir(repo.path())
+            .arg("--diff")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg(&file)
+            .assert()
+            .success()
+            .stdout("");
+    }
+
+    // A modified file passed alongside them is still shown.
+    bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("untracked.txt")
         .arg("test.txt")
         .assert()
         .success()

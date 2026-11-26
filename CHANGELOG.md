@@ -60,6 +60,7 @@
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #4102 (@cindykrafft)
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
 - Fix escape sequence handling in `--strip-ansi` and `--sanitize`. `--sanitize` no longer removes escape sequences, which could hide text, see #4024 (@curious-rabbit)
+- Report unknown languages in plain piped output, see #4001 (@ryanchou1994)
 - Track strikethrough (SGR 9 / 29) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first highlighted token when displaying ANSI input with syntax highlighting, see #4015 (@mikehasa)
 - Allow boolean flags to be given more than once, so that a flag set in the config file can also be passed on the command line without erroring, see #3912 (@logarithmone1128)
 - Allow options that take a value (`--binary`, `--italic-text`, `--nonprintable-notation`, `--fallback-syntax`, `--squeeze-limit`) to be given more than once, so that a value from the config file can be overridden on the command line, see #4102 (@Huang-404-Q)
@@ -99,6 +100,7 @@
 - Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
 - `--sanitize=always` now also sanitizes piped output. `--sanitize=auto` now sanitizes every file type, but only when the output is a terminal, see #4141 (@curious-rabbit)
 - Show changes in `--diff` mode and the change-marker column in Git repositories that use the SHA-256 object format (`git init --object-format=sha256`), see #4143 (@BlueX888)
+- Skip untracked files and files outside a Git repository in `--diff` mode instead of printing an empty frame, see #4148 (@thejesh23)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
