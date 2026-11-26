@@ -3,4 +3,8 @@
     # probably better than the default Objective C mapping #877
     "*.h",
 ]
-"YAML" = [".clang-format"]
+"YAML" = [
+    ".clang-format",
+    # clang-tidy reads the same YAML configuration format
+    ".clang-tidy",
+]

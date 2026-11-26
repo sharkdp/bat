@@ -801,6 +801,45 @@ fn piped_output_with_line_numbers_with_header_grid_style_flag() {
 }
 
 #[test]
+fn piped_output_with_color_always_and_auto_decorations_is_plain() {
+    // `--decorations=auto` must not enable decorations when stdout is not a terminal,
+    // even if `--color=always` forces colorized output.
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\u{1b}["))
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("\u{2502}").not());
+}
+
+#[test]
+fn piped_output_with_color_always_ignores_style_decorations_when_auto() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .arg("--style=full")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("\u{2502}").not());
+}
+
+#[test]
+fn piped_output_with_color_always_and_always_decorations_keeps_decorations() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("File:"));
+}
+
+#[test]
 fn piped_output_with_auto_style() {
     bat()
         .arg("--style=auto")
