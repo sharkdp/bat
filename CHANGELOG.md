@@ -2,6 +2,7 @@
 
 
 ## Other
+- Publish SHA-256 checksum sidecars for release archives and Debian packages, see #3943 (@Matei02355)
 
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
