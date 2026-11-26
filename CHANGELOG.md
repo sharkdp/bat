@@ -14,6 +14,7 @@
 - Remove `BAT_WIDTH`, `BAT_PAGING`, `BAT_THEME_DARK` and `BAT_THEME_LIGHT` from the test environment, so exporting them no longer breaks `cargo test`, see #4137 (@divya0795)
 
 ## Features
+- Add a `highlight-indicator` style component for text markers beside highlighted lines, see #3940 (@Matei02355)
 
 - Map `.clang-tidy` to YAML syntax highlighting, see #4150 (@yusufemreboyraz)
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
