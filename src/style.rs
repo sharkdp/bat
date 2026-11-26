@@ -10,6 +10,7 @@ pub enum StyleComponent {
     #[cfg(feature = "git")]
     Changes,
     Grid,
+    GridBottom,
     Rule,
     Header,
     HeaderFilename,
@@ -33,7 +34,8 @@ impl StyleComponent {
             }
             #[cfg(feature = "git")]
             StyleComponent::Changes => &[StyleComponent::Changes],
-            StyleComponent::Grid => &[StyleComponent::Grid],
+            StyleComponent::Grid => &[StyleComponent::Grid, StyleComponent::GridBottom],
+            StyleComponent::GridBottom => &[StyleComponent::GridBottom],
             StyleComponent::Rule => &[StyleComponent::Rule],
             StyleComponent::Header => &[StyleComponent::HeaderFilename],
             StyleComponent::HeaderFilename => &[StyleComponent::HeaderFilename],
@@ -44,6 +46,7 @@ impl StyleComponent {
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
+                StyleComponent::GridBottom,
                 StyleComponent::HeaderFilename,
                 StyleComponent::HeaderFilesize,
                 StyleComponent::LineNumbers,
@@ -53,6 +56,7 @@ impl StyleComponent {
                 #[cfg(feature = "git")]
                 StyleComponent::Changes,
                 StyleComponent::Grid,
+                StyleComponent::GridBottom,
                 StyleComponent::HeaderFilename,
                 StyleComponent::LineNumbers,
                 StyleComponent::Snip,
@@ -71,6 +75,7 @@ impl FromStr for StyleComponent {
             #[cfg(feature = "git")]
             "changes" => Ok(StyleComponent::Changes),
             "grid" => Ok(StyleComponent::Grid),
+            "grid-bottom" => Ok(StyleComponent::GridBottom),
             "rule" => Ok(StyleComponent::Rule),
             "header" => Ok(StyleComponent::Header),
             "header-filename" => Ok(StyleComponent::HeaderFilename),
@@ -100,6 +105,10 @@ impl StyleComponents {
 
     pub fn grid(&self) -> bool {
         self.0.contains(&StyleComponent::Grid)
+    }
+
+    pub fn grid_bottom(&self) -> bool {
+        self.0.contains(&StyleComponent::GridBottom)
     }
 
     pub fn rule(&self) -> bool {
@@ -264,6 +273,7 @@ mod test {
 
     #[test]
     pub fn style_component_list_to_components() {
+        // The "grid" component expands into both Grid and GridBottom.
         assert_eq!(
             StyleComponentList::to_components(
                 vec![StyleComponentList::from_str("grid,numbers").expect("no error")],
@@ -271,7 +281,7 @@ mod test {
                 false
             )
             .0,
-            HashSet::from([Grid, LineNumbers])
+            HashSet::from([Grid, GridBottom, LineNumbers])
         );
     }
 
