@@ -104,7 +104,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 その場合、`bat` の `--color=always` オプションを用いてカラー出力を強制しなければなりません。
 また、`--line-range` オプションを用いることで巨大なファイルの読み込み時間を制限できます:
 ```bash
-fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
 ```
 
 詳しくは [`fzf` の `README`](https://github.com/junegunn/fzf#preview-window) を参照してください。

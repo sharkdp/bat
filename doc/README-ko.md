@@ -110,7 +110,7 @@ bat f - g  # output 'f', then stdin, then 'g'.
 합니다.
 또한 `--line-range` 옵션으로 긴 파일의 로드 시간을 제한할 수 있습니다:
 ```bash
-fzf --preview 'bat --color=always --style=numbers --line-range=:500 {}'
+fzf --preview "bat --color=always --style=numbers --line-range=:500 {}"
 ```
 더 많은 정보는
 [`fzf`의 `README`](https://github.com/junegunn/fzf#preview-window)를 참고하세요.
