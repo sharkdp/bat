@@ -5636,6 +5636,97 @@ fn word_wrap_short_line_no_wrap() {
         .stdout("Single Line\n");
 }
 
+/// Removes the SGR escape sequences (`ESC [ ... m`) from bat's output.
+fn without_sgr_sequences(output: &[u8]) -> String {
+    let output = std::str::from_utf8(output).expect("output is valid UTF-8");
+    let mut parts = output.split('\x1b');
+    let mut text = parts.next().unwrap_or_default().to_owned();
+    for part in parts {
+        let sequence = part.strip_prefix('[').expect("CSI sequence");
+        text.push_str(&sequence[sequence.find('m').expect("SGR sequence") + 1..]);
+    }
+    text
+}
+
+#[test]
+fn word_wrap_breaks_at_whitespace_before_an_escape_sequence() {
+    let output = bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=8")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello \x1b[1mworld\x1b[0m\n")
+        .assert()
+        .success();
+
+    assert_eq!(
+        without_sgr_sequences(&output.get_output().stdout),
+        "hello\nworld\n"
+    );
+}
+
+#[test]
+fn word_wrap_breaks_at_whitespace_in_an_earlier_highlighted_token() {
+    let output = bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=30")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=always")
+        .arg("--language=rust")
+        .write_stdin("let quick_brown = fox_jumps(over, the, lazy_dog);\n")
+        .assert()
+        .success();
+
+    assert_eq!(
+        without_sgr_sequences(&output.get_output().stdout),
+        "let quick_brown =\nfox_jumps(over, the,\nlazy_dog);\n"
+    );
+}
+
+#[test]
+fn word_wrap_drops_whitespace_that_overflows_the_line() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=5")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello world\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn word_wrap_drops_all_whitespace_at_the_break() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=5")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello  world\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn word_wrap_breaks_a_wide_word_that_does_not_fit_after_the_whitespace() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("a \u{65e5}\u{672c}\u{8a9e}\n")
+        .assert()
+        .success()
+        .stdout("a\n\u{65e5}\u{672c}\n\u{8a9e}\n");
+}
+
 #[cfg(unix)]
 #[cfg(feature = "git")]
 fn setup_diff_test_repo() -> tempfile::TempDir {
