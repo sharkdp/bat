@@ -115,7 +115,9 @@ Truncate all lines longer than screen width. Alias for '\-\-wrap=never'.
 .IP
 Explicitly set the width of the terminal instead of determining it automatically. If
 prefixed with '+' or '\-', the value will be treated as an offset to the actual terminal
-width. See also: '\-\-wrap'.
+width. This can also be configured via the \fBBAT_WIDTH\fR environment variable
+(e.g. export BAT_WIDTH="100"). The '\-\-terminal\-width' option overrides this variable.
+See also: '\-\-wrap'.
 .HP
 \fB\-n\fR, \fB\-\-number\fR
 .IP
