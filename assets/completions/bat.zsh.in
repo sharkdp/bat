@@ -45,6 +45,7 @@ _{{PROJECT_EXECUTABLE}}_main() {
         --paging='[specify when to use the pager]:when:(auto never always)'
         '(-P --no-paging)'--no-paging'[alias for --paging=never]'
         --pager='[determine which pager to use]:command:'
+        '*--pager-arg=[append an argument to the selected pager]:argument:'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
         --ignored-suffix='[ignore extension]:suffix:'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'

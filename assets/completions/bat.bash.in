@@ -148,6 +148,9 @@ _bat() {
 		COMPREPLY=($(compgen -W "always never" -- "$cur"))
 		return 0
 		;;
+	--pager-arg)
+		return 0
+		;;
 	--pager)
 		COMPREPLY=($(compgen -c -- "$cur"))
 		return 0
@@ -217,6 +220,7 @@ _bat() {
 			--paging
 			--no-paging
 			--pager
+			--pager-arg=
 			--map-syntax
 			--ignored-suffix
 			--theme
