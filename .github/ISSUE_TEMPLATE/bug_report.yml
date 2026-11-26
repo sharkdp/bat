@@ -1,0 +1,60 @@
+name: Bug Report
+description: Report a reproducible problem with bat.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search [existing issues](https://github.com/sharkdp/bat/issues) before reporting a bug.
+        For questions, use the Question template instead.
+  - type: checkboxes
+    id: existing-issues
+    attributes:
+      label: Existing issues
+      options:
+        - label: I searched for an existing report of this problem.
+          required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Include the exact command and a small input that demonstrates the problem.
+      placeholder: |
+        1. Create a file containing ...
+        2. Run bat ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include relevant output or error messages. Screenshots can help with display problems.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: input
+    id: installation
+    attributes:
+      label: Installation method
+      placeholder: Homebrew, apt, cargo install, GitHub release, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Version and environment
+      description: |
+        Add `--diagnostic` to the command that demonstrates the problem and paste its Markdown output here.
+        Review the output for personal information first. If diagnostics cannot run, include `bat --version`,
+        your operating system, and terminal instead, and explain what prevented collecting diagnostics.
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context

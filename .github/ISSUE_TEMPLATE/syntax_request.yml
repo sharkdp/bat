@@ -1,0 +1,40 @@
+name: Syntax Request
+description: Request a new bundled syntax definition.
+labels: [syntax-request]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You can [install a syntax locally](https://github.com/sharkdp/bat#adding-new-syntaxes--language-definitions)
+        without adding it to bat's defaults. Before requesting a bundled syntax, read the
+        [asset contribution guidelines](https://github.com/sharkdp/bat/blob/master/doc/assets.md).
+  - type: input
+    id: syntax
+    attributes:
+      label: Syntax or language
+    validations:
+      required: true
+  - type: input
+    id: package-control
+    attributes:
+      label: Package Control URL
+      description: Link to the package's page on packagecontrol.io.
+      placeholder: https://packagecontrol.io/packages/...
+    validations:
+      required: true
+  - type: checkboxes
+    id: download-criteria
+    attributes:
+      label: Guideline criteria
+      options:
+        - label: The package has at least 10,000 downloads on Package Control.
+          required: true
+  - type: input
+    id: source
+    attributes:
+      label: Syntax source repository
+      description: Link to the repository containing the language definition, if known.
+  - type: textarea
+    id: examples
+    attributes:
+      label: Example input or additional context

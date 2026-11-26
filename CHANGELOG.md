@@ -2,6 +2,7 @@
 
 
 ## Other
+- Use structured issue forms for bug reports, feature requests, and syntax requests, see #3944 (@Matei02355)
 
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
