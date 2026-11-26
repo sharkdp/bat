@@ -1494,6 +1494,24 @@ fn terminal_width_arg_overrides_env() {
 }
 
 #[test]
+fn terminal_width_large_offset_is_not_ignored() {
+    let line = "0123456789".repeat(10);
+
+    bat()
+        .write_stdin(format!("{line}\n"))
+        .arg("--paging=never")
+        .arg("--color=never")
+        .arg("--style=numbers")
+        .arg("--decorations=always")
+        .arg("--wrap=character")
+        .arg("--terminal-width=+40000")
+        .assert()
+        .success()
+        .stdout(format!("   1 {line}\n"))
+        .stderr("");
+}
+
+#[test]
 fn fail_non_existing() {
     bat().arg("non-existing-file").assert().failure();
 }
