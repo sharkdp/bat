@@ -28,7 +28,7 @@ fn push_repeated_dashes(buf: &mut String, mut count: usize) {
 }
 
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -> Cow<'a, str> {
+pub(crate) fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -> Cow<'a, str> {
     if !has_ansi_introducer(line) {
         if !line.as_bytes().contains(&b'\t') {
             *cursor += line.len();
@@ -191,7 +191,7 @@ pub fn replace_nonprintable(
 }
 
 /// Strips ANSI escape sequences from the input, borrowing when none are present.
-pub fn strip_ansi(line: &str) -> Cow<'_, str> {
+pub(crate) fn strip_ansi(line: &str) -> Cow<'_, str> {
     if !has_ansi_introducer(line) {
         return Cow::Borrowed(line);
     }
@@ -212,7 +212,7 @@ pub fn strip_ansi(line: &str) -> Cow<'_, str> {
 }
 
 /// Substitutes control bytes and bidi / zero-width codepoints with U+FFFD, borrowing when clean.
-pub fn sanitize(line: &str) -> Cow<'_, str> {
+pub(crate) fn sanitize(line: &str) -> Cow<'_, str> {
     let bytes = line.as_bytes();
     let Some(first) = bytes.iter().position(|&b| is_sanitize_trigger(b)) else {
         return Cow::Borrowed(line);

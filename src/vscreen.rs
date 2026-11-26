@@ -592,12 +592,30 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
     }
 }
 
-/// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
+/// Fast pre-scan for bytes that can start an ANSI/VT escape sequence.
 #[inline]
 pub(crate) fn has_ansi_introducer(s: &str) -> bool {
-    s.as_bytes().iter().any(|&b| b == 0x1B || b == 0xC2)
+    let bytes = s.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            0x1B => return true,
+            0xC2 => {
+                if matches!(
+                    bytes.get(i + 1),
+                    Some(0x90 | 0x98 | 0x9B | 0x9D | 0x9E | 0x9F)
+                ) {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    false
 }
 
+/// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
 #[inline]
 fn is_sequence_introducer(c: char) -> bool {
     if (c as u32) < 0x80 {
@@ -1105,5 +1123,20 @@ mod tests {
             final_byte: "m",
         });
         assert_eq!(attrs.strike, "");
+    }
+
+    #[test]
+    fn test_has_ansi_introducer() {
+        use crate::vscreen::has_ansi_introducer;
+
+        assert!(!has_ansi_introducer("plain ascii text"));
+        // 0xC2 0xA9 (copyright sign) is in U+0080..U+00BF but not a C1 introducer.
+        assert!(!has_ansi_introducer("Copyright \u{00A9} 2026"));
+        assert!(!has_ansi_introducer("\u{0080}\u{008F}\u{00A0}\u{00BF}"));
+        assert!(has_ansi_introducer("\x1B[31mred\x1B[0m"));
+        assert!(has_ansi_introducer("\u{009B}31mred"));
+        for c in ['\u{90}', '\u{98}', '\u{9B}', '\u{9D}', '\u{9E}', '\u{9F}'] {
+            assert!(has_ansi_introducer(&format!("x{c}y")));
+        }
     }
 }
