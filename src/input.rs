@@ -91,6 +91,7 @@ impl InputKind<'_> {
 pub(crate) struct InputMetadata {
     pub(crate) user_provided_name: Option<PathBuf>,
     pub(crate) size: Option<u64>,
+    pub(crate) max_bytes: Option<u64>,
 }
 
 pub struct Input<'a> {
@@ -164,6 +165,13 @@ impl<'a> Input<'a> {
         }
     }
 
+    /// Limit how many bytes are read from this input, before line buffering.
+    /// The limit applies to bytes, so it may end within a character or line.
+    pub fn with_max_bytes(mut self, limit: u64) -> Self {
+        self.metadata.max_bytes = Some(self.metadata.max_bytes.map_or(limit, |old| old.min(limit)));
+        self
+    }
+
     pub fn is_stdin(&self) -> bool {
         matches!(self.kind, InputKind::StdIn)
     }
@@ -195,6 +203,7 @@ impl<'a> Input<'a> {
         stdout_identifier: Option<&Identifier>,
     ) -> Result<OpenedInput<'a>> {
         let description = self.description().clone();
+        let max_bytes = self.metadata.max_bytes.unwrap_or(u64::MAX);
         match self.kind {
             InputKind::StdIn => {
                 if let Some(stdout) = stdout_identifier {
@@ -209,7 +218,7 @@ impl<'a> Input<'a> {
                     kind: OpenedInputKind::StdIn,
                     description,
                     metadata: self.metadata,
-                    reader: InputReader::try_new(stdin)?,
+                    reader: InputReader::try_new(stdin.take(max_bytes))?,
                 })
             }
 
@@ -238,14 +247,14 @@ impl<'a> Input<'a> {
                         file = input_identifier.into_inner().expect("The file was lost in the clircle::Identifier, this should not have happened...");
                     }
 
-                    InputReader::try_new(BufReader::new(file))?
+                    InputReader::try_new(BufReader::new(file.take(max_bytes)))?
                 },
             }),
             InputKind::CustomReader(reader) => Ok(OpenedInput {
                 description,
                 kind: OpenedInputKind::CustomReader,
                 metadata: self.metadata,
-                reader: InputReader::try_new(BufReader::new(reader))?,
+                reader: InputReader::try_new(BufReader::new(reader.take(max_bytes)))?,
             }),
         }
     }

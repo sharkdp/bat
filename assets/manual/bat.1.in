@@ -245,6 +245,14 @@ changes, grid, header\-filename, numbers, snip
 Possible values: *default*, full, auto, plain, changes, header, header-filename, header-filesize, grid,
 rule, numbers, snip.
 .HP
+\fB\-\-max-bytes\fR <N>, \fB\-\-head\fR <N>
+.IP
+Read at most N bytes from each input before line buffering. Useful for devices and
+streams without newlines. Zero reads no content. The limit may split a multibyte
+character. Binary detection and formatting still apply; use '\-\-binary=as-text'
+to display binary bytes. With LESSOPEN, the limit applies to preprocessor output
+and does not bound the preprocessor's own reads.
+.HP
 \fB\-r\fR, \fB\-\-line\-range\fR <N:M>...
 .IP
 Only print the specified range of lines for each file. For example:

@@ -203,7 +203,7 @@ impl LessOpenPreprocessor {
         Ok(OpenedInput {
             kind,
             reader: InputReader::try_new(BufReader::new(
-                if matches!(self.kind, LessOpenKind::TempFile) {
+                (if matches!(self.kind, LessOpenKind::TempFile) {
                     let lessopen_string = match String::from_utf8(lessopen_stdout) {
                         Ok(string) => string,
                         Err(_) => {
@@ -238,7 +238,8 @@ impl LessOpenPreprocessor {
                             .as_ref()
                             .map(|s| shell_substitute_two(s, &path_str, "-")),
                     }
-                },
+                })
+                .take(input.metadata.max_bytes.unwrap_or(u64::MAX)),
             ))?,
             metadata: input.metadata,
             description: input.description,

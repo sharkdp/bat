@@ -46,6 +46,8 @@ _{{PROJECT_EXECUTABLE}}_main() {
         '(-P --no-paging)'--no-paging'[alias for --paging=never]'
         --pager='[determine which pager to use]:command:'
         '(-m --map-syntax)'{-m+,--map-syntax=}'[map a glob pattern to an existing syntax name]: :->syntax-maps'
+        --max-bytes='[read at most N bytes per input]:bytes:'
+        --head='[alias for --max-bytes]:bytes:'
         --ignored-suffix='[ignore extension]:suffix:'
         '(--theme)'--theme='[set the color theme for syntax highlighting]:theme:->theme_preferences'
         '(--theme-dark)'--theme-dark='[set the color theme for syntax highlighting for dark backgrounds]:theme:->themes'
