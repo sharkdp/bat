@@ -14,6 +14,11 @@ impl AnsiStyle {
         AnsiStyle { attributes: None }
     }
 
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.attributes.is_none()
+    }
+
     pub fn update(&mut self, sequence: EscapeSequence) -> bool {
         match &mut self.attributes {
             Some(a) => a.update(sequence),
@@ -588,6 +593,11 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
 }
 
 /// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
+#[inline]
+pub(crate) fn has_ansi_introducer(s: &str) -> bool {
+    s.as_bytes().iter().any(|&b| b == 0x1B || b == 0xC2)
+}
+
 #[inline]
 fn is_sequence_introducer(c: char) -> bool {
     if (c as u32) < 0x80 {

@@ -200,7 +200,8 @@ impl Printer for SimplePrinter<'_> {
                 );
                 write!(handle, "{line}")?;
             } else if self.config.sanitize {
-                let line = sanitize(&decode_line(self.content_type, line_number, line_buffer));
+                let decoded = decode_line(self.content_type, line_number, line_buffer);
+                let line = sanitize(&decoded);
                 write!(handle, "{line}")?;
             } else {
                 match handle {
@@ -497,13 +498,13 @@ impl<'a> InteractivePrinter<'a> {
         Ok(highlighted_line)
     }
 
-    fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
+    fn preprocess<'b>(&self, text: &'b str, cursor: &mut usize) -> Cow<'b, str> {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
         }
 
         *cursor += text.len();
-        text.to_string()
+        Cow::Borrowed(text)
     }
 }
 
@@ -708,9 +709,13 @@ impl Printer for InteractivePrinter<'_> {
 
             // Sanitize wins over strip-ansi, because stripping can hide text.
             if self.sanitize {
-                line = sanitize(&line).into()
+                if let Cow::Owned(sanitized) = sanitize(&line) {
+                    line = Cow::Owned(sanitized);
+                }
             } else if self.strip_ansi {
-                line = strip_ansi(&line).into()
+                if let Cow::Owned(stripped) = strip_ansi(&line) {
+                    line = Cow::Owned(stripped);
+                }
             }
 
             line
@@ -791,19 +796,34 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
-                            write!(
-                                handle,
-                                "{}{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{text_trimmed}", self.ansi_style),
-                                    true_color,
-                                    colored_output,
-                                    italics,
-                                    background_color
-                                ),
-                                self.ansi_style.to_reset_sequence(),
-                            )?;
+                            if self.ansi_style.is_empty() {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        text_trimmed,
+                                        true_color,
+                                        colored_output,
+                                        italics,
+                                        background_color
+                                    )
+                                )?;
+                            } else {
+                                write!(
+                                    handle,
+                                    "{}{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{text_trimmed}", self.ansi_style),
+                                        true_color,
+                                        colored_output,
+                                        italics,
+                                        background_color
+                                    ),
+                                    self.ansi_style.to_reset_sequence(),
+                                )?;
+                            }
 
                             // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
@@ -837,6 +857,9 @@ impl Printer for InteractivePrinter<'_> {
                 writeln!(handle)?;
             }
         } else {
+            let mut line_buf = String::new();
+            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
+
             for &(style, region) in &regions {
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
@@ -848,13 +871,45 @@ impl Printer for InteractivePrinter<'_> {
 
                             let mut max_width = cursor_max.saturating_sub(cursor);
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
+                            // Fast path for printable ASCII that fits on the current line without wrapping.
+                            if text.len() <= max_width
+                                && text.bytes().all(|b| (0x20..0x7F).contains(&b))
+                            {
+                                cursor += text.len();
+                                if self.ansi_style.is_empty() {
+                                    write!(
+                                        handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            style,
+                                            &text,
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                            self.config.use_italic_text,
+                                            background_color
+                                        )
+                                    )?;
+                                } else {
+                                    write!(
+                                        handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            style,
+                                            &format!("{}{text}", self.ansi_style),
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                            self.config.use_italic_text,
+                                            background_color
+                                        )
+                                    )?;
+                                }
+                                continue;
+                            }
+
+                            line_buf.clear();
 
                             // Displayed width of line_buf
                             let mut current_width = 0;
-
-                            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
 
                             // For word wrapping, track last whitespace position.
                             let mut last_ws_idx: Option<usize> = None;
@@ -911,24 +966,41 @@ impl Printer for InteractivePrinter<'_> {
                                     };
 
                                     // It wraps.
-                                    write!(
-                                        handle,
-                                        "{}{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &format!(
-                                                "{}{}",
-                                                self.ansi_style,
-                                                &line_buf[..emit_end]
+                                    let wrap_prefix = panel_wrap.as_deref().unwrap();
+                                    if self.ansi_style.is_empty() {
+                                        write!(
+                                            handle,
+                                            "{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &line_buf[..emit_end],
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
                                             ),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
-                                        self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
-                                    )?;
+                                            wrap_prefix
+                                        )?;
+                                    } else {
+                                        write!(
+                                            handle,
+                                            "{}{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &format!(
+                                                    "{}{}",
+                                                    self.ansi_style,
+                                                    &line_buf[..emit_end]
+                                                ),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            ),
+                                            self.ansi_style.to_reset_sequence(),
+                                            wrap_prefix
+                                        )?;
+                                    }
 
                                     cursor = 0;
                                     max_width = cursor_max;
@@ -953,18 +1025,33 @@ impl Printer for InteractivePrinter<'_> {
 
                             // flush the buffer
                             cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{line_buf}", self.ansi_style),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
+                            if self.ansi_style.is_empty() {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &line_buf,
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                            } else {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{line_buf}", self.ansi_style),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                            }
                         }
 
                         // ANSI escape passthrough.

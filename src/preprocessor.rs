@@ -1,12 +1,57 @@
-use std::fmt::Write;
+use std::borrow::Cow;
 
 use crate::{
     nonprintable_notation::NonprintableNotation,
-    vscreen::{EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
+    vscreen::{has_ansi_introducer, EscapeSequenceOffsets, EscapeSequenceOffsetsIterator},
 };
 
+const SPACES: &str = "                                                                ";
+const BOX_DASHES: &str = "────────────────────────────────────────────────────────────────";
+
+#[inline]
+fn push_repeated_spaces(buf: &mut String, mut count: usize) {
+    while count > 0 {
+        let n = count.min(SPACES.len());
+        buf.push_str(&SPACES[..n]);
+        count -= n;
+    }
+}
+
+#[inline]
+fn push_repeated_dashes(buf: &mut String, mut count: usize) {
+    const DASH_CHARS: usize = 64;
+    while count > 0 {
+        let n = count.min(DASH_CHARS);
+        buf.push_str(&BOX_DASHES[..n * 3]);
+        count -= n;
+    }
+}
+
 /// Expand tabs like an ANSI-enabled expand(1).
-pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
+pub fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -> Cow<'a, str> {
+    if !has_ansi_introducer(line) {
+        if !line.as_bytes().contains(&b'\t') {
+            *cursor += line.len();
+            return Cow::Borrowed(line);
+        }
+
+        let mut buffer = String::with_capacity(line.len() + 16);
+        let mut rest = line;
+        while let Some(index) = rest.find('\t') {
+            if index > 0 {
+                *cursor += index;
+                buffer.push_str(&rest[..index]);
+            }
+            let spaces = width - (*cursor % width);
+            *cursor += spaces;
+            push_repeated_spaces(&mut buffer, spaces);
+            rest = &rest[index + 1..];
+        }
+        *cursor += rest.len();
+        buffer.push_str(rest);
+        return Cow::Owned(buffer);
+    }
+
     let mut buffer = String::with_capacity(line.len() * 2);
 
     for seq in EscapeSequenceOffsetsIterator::new(line) {
@@ -23,7 +68,7 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
                     // Add tab.
                     let spaces = width - (*cursor % width);
                     *cursor += spaces;
-                    buffer.push_str(&" ".repeat(spaces));
+                    push_repeated_spaces(&mut buffer, spaces);
 
                     // Next.
                     text = &text[index + 1..text.len()];
@@ -39,9 +84,10 @@ pub fn expand_tabs(line: &str, width: usize, cursor: &mut usize) -> String {
         }
     }
 
-    buffer
+    Cow::Owned(buffer)
 }
 
+#[cfg(test)]
 fn try_parse_utf8_char(input: &[u8]) -> Option<(char, usize)> {
     let str_from_utf8 = |seq| std::str::from_utf8(seq).ok();
 
@@ -61,83 +107,95 @@ pub fn replace_nonprintable(
     tab_width: usize,
     nonprintable_notation: NonprintableNotation,
 ) -> String {
-    let mut output = String::new();
+    const HEX: &[u8; 16] = b"0123456789ABCDEF";
+    let mut output = String::with_capacity(input.len() + input.len() / 8);
 
     let tab_width = if tab_width == 0 { 4 } else { tab_width };
-
-    let mut idx = 0;
     let mut line_idx = 0;
-    let len = input.len();
-    while idx < len {
-        if let Some((chr, skip_ahead)) = try_parse_utf8_char(&input[idx..]) {
-            idx += skip_ahead;
-            line_idx += 1;
 
-            match chr {
-                // space
-                ' ' => output.push('·'),
-                // tab
-                '\t' => {
-                    let tab_stop = tab_width - ((line_idx - 1) % tab_width);
-                    line_idx = 0;
-                    if tab_stop == 1 {
-                        output.push('↹');
-                    } else {
-                        output.push('├');
-                        output.push_str(&"─".repeat(tab_stop - 2));
-                        output.push('┤');
-                    }
-                }
-                // line feed
-                '\x0A' => {
-                    output.push_str(match nonprintable_notation {
-                        NonprintableNotation::Caret => "^J\x0A",
-                        NonprintableNotation::Unicode => "␊\x0A",
-                    });
-                    line_idx = 0;
-                }
-                // ASCII control characters
-                '\x00'..='\x1F' => {
-                    let c = u32::from(chr);
+    for chunk in input.utf8_chunks() {
+        let valid = chunk.valid();
+        let bytes = valid.as_bytes();
+        let mut pos = 0;
+        let vlen = bytes.len();
 
-                    match nonprintable_notation {
-                        NonprintableNotation::Caret => {
-                            let caret_character = char::from_u32(0x40 + c).unwrap();
-                            write!(output, "^{caret_character}").ok();
-                        }
-
-                        NonprintableNotation::Unicode => {
-                            let replacement_symbol = char::from_u32(0x2400 + c).unwrap();
-                            output.push(replacement_symbol)
-                        }
-                    }
+        while pos < vlen {
+            let b = bytes[pos];
+            // Bulk-copy runs of printable ASCII graphic bytes (0x21..=0x7E).
+            if (0x21..=0x7E).contains(&b) {
+                let start = pos;
+                pos += 1;
+                while pos < vlen && (0x21..=0x7E).contains(&bytes[pos]) {
+                    pos += 1;
                 }
-                // delete
-                '\x7F' => match nonprintable_notation {
-                    NonprintableNotation::Caret => output.push_str("^?"),
-                    NonprintableNotation::Unicode => output.push('\u{2421}'),
-                },
-                // printable ASCII
-                c if c.is_ascii_alphanumeric()
-                    || c.is_ascii_punctuation()
-                    || c.is_ascii_graphic() =>
-                {
-                    output.push(c)
-                }
-                // everything else
-                c => output.push_str(&c.escape_unicode().collect::<String>()),
+                output.push_str(&valid[start..pos]);
+                line_idx += pos - start;
+                continue;
             }
-        } else {
-            write!(output, "\\x{:02X}", input[idx]).ok();
-            idx += 1;
+
+            if b < 0x80 {
+                pos += 1;
+                line_idx += 1;
+                match b {
+                    b' ' => output.push('·'),
+                    b'\t' => {
+                        let tab_stop = tab_width - ((line_idx - 1) % tab_width);
+                        line_idx = 0;
+                        if tab_stop == 1 {
+                            output.push('↹');
+                        } else {
+                            output.push('├');
+                            push_repeated_dashes(&mut output, tab_stop - 2);
+                            output.push('┤');
+                        }
+                    }
+                    b'\n' => {
+                        output.push_str(match nonprintable_notation {
+                            NonprintableNotation::Caret => "^J\x0A",
+                            NonprintableNotation::Unicode => "␊\x0A",
+                        });
+                        line_idx = 0;
+                    }
+                    0x00..=0x1F => match nonprintable_notation {
+                        NonprintableNotation::Caret => {
+                            output.push('^');
+                            output.push((0x40 + b) as char);
+                        }
+                        NonprintableNotation::Unicode => {
+                            let replacement_symbol = char::from_u32(0x2400 + u32::from(b)).unwrap();
+                            output.push(replacement_symbol);
+                        }
+                    },
+                    0x7F => match nonprintable_notation {
+                        NonprintableNotation::Caret => output.push_str("^?"),
+                        NonprintableNotation::Unicode => output.push('\u{2421}'),
+                    },
+                    _ => unreachable!(),
+                }
+            } else {
+                let chr = valid[pos..].chars().next().unwrap();
+                pos += chr.len_utf8();
+                line_idx += 1;
+                output.extend(chr.escape_unicode());
+            }
+        }
+
+        for &bad in chunk.invalid() {
+            output.push_str("\\x");
+            output.push(HEX[(bad >> 4) as usize] as char);
+            output.push(HEX[(bad & 0x0F) as usize] as char);
         }
     }
 
     output
 }
 
-/// Strips ANSI escape sequences from the input.
-pub fn strip_ansi(line: &str) -> String {
+/// Strips ANSI escape sequences from the input, borrowing when none are present.
+pub fn strip_ansi(line: &str) -> Cow<'_, str> {
+    if !has_ansi_introducer(line) {
+        return Cow::Borrowed(line);
+    }
+
     // Parse without the line ending so an unfinished sequence cannot remove it.
     let body = line
         .strip_suffix("\r\n")
@@ -150,15 +208,21 @@ pub fn strip_ansi(line: &str) -> String {
         }
     }
     buffer.push_str(&line[body.len()..]);
-    buffer
+    Cow::Owned(buffer)
 }
 
-/// Substitutes control bytes and bidi / zero-width codepoints with U+FFFD, removing nothing.
-pub fn sanitize(line: &str) -> String {
-    let mut buffer = String::with_capacity(line.len());
+/// Substitutes control bytes and bidi / zero-width codepoints with U+FFFD, borrowing when clean.
+pub fn sanitize(line: &str) -> Cow<'_, str> {
     let bytes = line.as_bytes();
+    let Some(first) = bytes.iter().position(|&b| is_sanitize_trigger(b)) else {
+        return Cow::Borrowed(line);
+    };
+
+    let mut buffer = String::with_capacity(line.len());
     let mut start = 0;
-    let mut i = 0;
+    let mut i = first;
+    let len = sanitize_at(bytes, i, line, &mut buffer, &mut start);
+    i += len;
     // Skip directly to the next trigger byte instead of testing each one.
     while let Some(off) = bytes[i..].iter().position(|&b| is_sanitize_trigger(b)) {
         i += off;
@@ -166,7 +230,7 @@ pub fn sanitize(line: &str) -> String {
         i += len;
     }
     buffer.push_str(&line[start..]);
-    buffer
+    Cow::Owned(buffer)
 }
 
 #[inline]
