@@ -120,6 +120,74 @@ fn completion_does_not_panic_on_closed_stdout() {
 }
 
 #[test]
+fn piped_output_rejects_unknown_language() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_rejects_unknown_language_with_empty_input() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_with_language_preserves_input() {
+    let input = "fn main() {\r\n\tprintln!(\"hello\");\r\n}\n";
+    for language in ["Rust", "rust", "rs"] {
+        bat()
+            .args(["--language", language])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(input)
+            .stderr("");
+    }
+}
+
+#[test]
+#[cfg(feature = "build-assets")]
+fn piped_output_without_language_does_not_load_syntaxes() {
+    let cache_dir = tempdir().expect("can create temporary directory");
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("cache_source"))
+        .args(["cache", "--build", "--source", ".", "--target"])
+        .arg(cache_dir.path())
+        .assert()
+        .success();
+    std::fs::write(cache_dir.path().join("syntaxes.bin"), [])
+        .expect("can overwrite temporary syntax cache");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .write_stdin("foo\r\nbar\n")
+        .assert()
+        .success()
+        .stdout("foo\r\nbar\n")
+        .stderr("");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .args(["--color=always", "--language=Rust"])
+        .write_stdin("fn main() {}\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "Could not parse cached syntax set",
+        ));
+}
+
+#[test]
 fn concatenate() {
     bat()
         .arg("test.txt")
@@ -330,7 +398,8 @@ fn attached_short_option_values_are_not_treated_as_flags() {
 
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        // Use a valid syntax token containing both 'b' and 'n'.
+        .args(["-lcrontab", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
@@ -729,6 +798,45 @@ fn piped_output_with_line_numbers_with_header_grid_style_flag() {
         .assert()
         .success()
         .stdout("hello\nworld\n");
+}
+
+#[test]
+fn piped_output_with_color_always_and_auto_decorations_is_plain() {
+    // `--decorations=auto` must not enable decorations when stdout is not a terminal,
+    // even if `--color=always` forces colorized output.
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("\u{1b}["))
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("\u{2502}").not());
+}
+
+#[test]
+fn piped_output_with_color_always_ignores_style_decorations_when_auto() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=auto")
+        .arg("--style=full")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("File:").not())
+        .stdout(predicate::str::contains("\u{2502}").not());
+}
+
+#[test]
+fn piped_output_with_color_always_and_always_decorations_keeps_decorations() {
+    bat()
+        .arg("multiline.txt")
+        .arg("--color=always")
+        .arg("--decorations=always")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("File:"));
 }
 
 #[test]
@@ -5215,6 +5323,93 @@ fn sanitize_preserves_unicode_text() {
         .assert()
         .success()
         .stdout("snowman ☃ CJK 漢字 emoji 🦀");
+}
+
+#[test]
+fn sanitize_always_sanitizes_piped_output() {
+    bat()
+        .arg("--sanitize=always")
+        .write_stdin("safe\rEVIL\n\x1B[33mYellow\n")
+        .assert()
+        .success()
+        .stdout("safe\u{FFFD}EVIL\n\u{FFFD}[33mYellow\n");
+}
+
+#[test]
+fn sanitize_always_decodes_piped_output() {
+    for file in ["test_BOM.txt", "test_UTF-16LE.txt"] {
+        bat()
+            .arg("--sanitize=always")
+            .arg(file)
+            .assert()
+            .success()
+            .stdout("hello world\n");
+    }
+}
+
+#[test]
+fn sanitize_auto_does_not_sanitize_piped_output() {
+    bat()
+        .arg("--sanitize=auto")
+        .write_stdin("safe\rEVIL\n\x1B[33mYellow\n")
+        .assert()
+        .success()
+        .stdout("safe\rEVIL\n\x1B[33mYellow\n");
+}
+
+#[cfg(unix)]
+#[test]
+fn sanitize_auto_sanitizes_plain_text_on_terminal() {
+    use nix::poll::{poll, PollFd, PollFlags};
+    use std::io::Read;
+    use std::os::fd::AsFd;
+
+    let OpenptyResult { master, slave } = openpty(None, None).unwrap();
+    let mut master = File::from(master);
+    // Keep a slave open until the output is read: macOS discards unread PTY
+    // output when the last slave closes.
+    let slave = File::from(slave);
+    let mut child = bat_raw_command()
+        .args([
+            "--paging=never",
+            "--color=never",
+            "--theme=ansi",
+            "--style=plain",
+            "--sanitize=auto",
+            "regression_tests/issue_2541.txt",
+        ])
+        .stdin(Stdio::null())
+        .stdout(slave.try_clone().unwrap())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    if child.wait_timeout(CHILD_WAIT_TIMEOUT).unwrap().is_none() {
+        child.kill().unwrap();
+        child.wait().unwrap();
+        panic!("bat did not exit");
+    }
+    let output = child.wait_with_output().unwrap();
+    assert!(output.status.success());
+    assert!(output.stderr.is_empty());
+
+    let mut stdout = Vec::new();
+    loop {
+        let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+        if poll(&mut fds, 100u16).unwrap() == 0 {
+            break;
+        }
+        let mut buffer = [0; 1024];
+        let count = master.read(&mut buffer).unwrap();
+        if count == 0 {
+            break;
+        }
+        stdout.extend_from_slice(&buffer[..count]);
+    }
+    assert_eq!(
+        String::from_utf8(stdout).unwrap(),
+        "\u{FFFD}]8;;http://example.com\u{FFFD}\\This is a link\u{FFFD}]8;;\u{FFFD}\\n"
+    );
 }
 
 // Tests that style components can be removed with `-component`.

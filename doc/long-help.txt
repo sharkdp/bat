@@ -180,8 +180,9 @@ Options:
           Unicode bidi / zero-width formatting characters with the Unicode replacement character
           (U+FFFD). Escape sequences are not removed, so they cannot hide text. Overrides
           --strip-ansi. Tab, LF, FF, and CRLF pass through. Useful for displaying untrusted file
-          content (e.g. file-manager preview panes). Piped output is not sanitized. Possible values:
-          auto, always, *never*.
+          content (e.g. file-manager preview panes). The automatic mode only sanitizes if an
+          interactive terminal is detected. Use 'always' to also sanitize piped output. Possible
+          values: auto, always, *never*.
 
       --style <components>
           Configure which elements (line numbers, file headers, grid borders, Git modifications, ..)
