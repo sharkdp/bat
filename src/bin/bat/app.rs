@@ -351,9 +351,9 @@ impl App {
             .and_then(|w| {
                 if w.starts_with('+') || w.starts_with('-') {
                     // Treat argument as a delta to the current terminal width
-                    w.parse().ok().map(|delta: i16| {
+                    w.parse().ok().map(|delta: i32| {
                         let old_width: u16 = Term::stdout().size().1;
-                        let new_width: i32 = i32::from(old_width) + i32::from(delta);
+                        let new_width: i64 = i64::from(old_width) + i64::from(delta);
 
                         if new_width <= 0 {
                             old_width as usize
