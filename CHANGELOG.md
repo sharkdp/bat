@@ -99,6 +99,7 @@
 - Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
 - `--sanitize=always` now also sanitizes piped output. `--sanitize=auto` now sanitizes every file type, but only when the output is a terminal, see #4141 (@curious-rabbit)
 - Show changes in `--diff` mode and the change-marker column in Git repositories that use the SHA-256 object format (`git init --object-format=sha256`), see #4143 (@BlueX888)
+- Skip untracked files and files outside a Git repository in `--diff` mode instead of printing an empty frame, see #4148 (@thejesh23)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
