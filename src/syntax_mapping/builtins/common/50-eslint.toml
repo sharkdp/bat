@@ -1,0 +1,5 @@
+# .eslintrc has no extension. ESLint parses it with js-yaml, so YAML covers
+# both its JSON and its YAML form.
+# https://eslint.org/docs/v8.x/use/configure/configuration-files
+[mappings]
+"YAML" = [".eslintrc"]

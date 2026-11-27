@@ -1,0 +1,5 @@
+# .prettierrc has no extension and is written in YAML or JSON, and valid JSON
+# is also valid YAML. The .yaml/.yml/.json/.toml variants carry an extension.
+# https://prettier.io/docs/configuration
+[mappings]
+"YAML" = [".prettierrc"]
