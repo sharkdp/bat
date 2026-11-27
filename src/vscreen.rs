@@ -357,14 +357,52 @@ impl EscapeSequenceOffsets {
 /// ```
 pub struct EscapeSequenceOffsetsIterator<'a> {
     text: &'a str,
-    chars: Peekable<CharIndices<'a>>,
+    chars: Peekable<OffsetCharIndices<'a>>,
+}
+
+/// `CharIndices` over a suffix of the text, reporting indices into the whole text.
+struct OffsetCharIndices<'a> {
+    base: usize,
+    inner: CharIndices<'a>,
+}
+
+impl Iterator for OffsetCharIndices<'_> {
+    type Item = (usize, char);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|(i, c)| (i + self.base, c))
+    }
+}
+
+/// Returns the byte index of the first sequence introducer at or after `from`,
+/// or the text length if there is none.
+fn find_sequence_introducer(text: &str, from: usize) -> usize {
+    let bytes = text.as_bytes();
+    let mut i = from;
+    while let Some(off) = bytes[i..].iter().position(|&b| b == 0x1B || b == 0xC2) {
+        i += off;
+        // ESC, or the UTF-8 encoding of an 8-bit C1 introducer (0xC2 0x9x).
+        if bytes[i] == 0x1B
+            || matches!(
+                bytes.get(i + 1),
+                Some(0x90 | 0x98 | 0x9B | 0x9D | 0x9E | 0x9F)
+            )
+        {
+            return i;
+        }
+        i += 1;
+    }
+    bytes.len()
 }
 
 impl<'a> EscapeSequenceOffsetsIterator<'a> {
     pub fn new(text: &'a str) -> EscapeSequenceOffsetsIterator<'a> {
         EscapeSequenceOffsetsIterator {
             text,
-            chars: text.char_indices().peekable(),
+            chars: OffsetCharIndices {
+                base: 0,
+                inner: text.char_indices(),
+            }
+            .peekable(),
         }
     }
 
@@ -388,8 +426,15 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 
     fn next_text(&mut self) -> Option<EscapeSequenceOffsets> {
-        self.chars_take_while(|c| !is_sequence_introducer(c))
-            .map(|(start, end)| EscapeSequenceOffsets::Text { start, end })
+        let start = self.chars.peek()?.0;
+        // Scan bytes for the next introducer, then resume char iteration there.
+        let end = find_sequence_introducer(self.text, start);
+        self.chars = OffsetCharIndices {
+            base: end,
+            inner: self.text[end..].char_indices(),
+        }
+        .peekable();
+        Some(EscapeSequenceOffsets::Text { start, end })
     }
 
     fn next_sequence(&mut self) -> Option<EscapeSequenceOffsets> {
