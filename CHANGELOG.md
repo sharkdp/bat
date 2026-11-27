@@ -35,6 +35,7 @@
 
 ## Bugfixes
 
+- Preserve buffered stdin when `$LESSOPEN` temporary-file mode falls back to the original input, and handle CRLF line endings on returned temp paths, see #4158 (@xgbtxy)
 - Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
 - Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
 - Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)
