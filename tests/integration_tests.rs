@@ -4369,6 +4369,25 @@ fn ansi_sgr_strike_joins_attributes_when_wrapped() {
             .stderr("");
 }
 
+// Ensure that reverse video (SGR 7) is tracked like the other attributes, so it is
+// re-emitted (and therefore preserved) across a wrap boundary instead of being dropped.
+#[test]
+fn ansi_sgr_reverse_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[7mReverse......Reversed+color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[7m\x1B[33m\x1B[7mReverse......\n\x1B[33m\x1B[7mReversed+color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
 #[test]
 fn ignored_suffix_arg() {
     bat()
