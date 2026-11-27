@@ -36,6 +36,7 @@
 
 ## Bugfixes
 
+- Preserve buffered stdin when `$LESSOPEN` temporary-file mode falls back to the original input, and handle CRLF line endings on returned temp paths, see #4158 (@xgbtxy)
 - Skip cache metadata validation when `--no-custom-assets` is set so outdated or malformed caches do not block fallback to integrated assets, see #4157 (@xgbtxy)
 - Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
 - Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
