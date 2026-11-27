@@ -222,6 +222,40 @@ mod tests {
     }
 
     #[test]
+    fn builtin_mappings_map_clang_tooling_config_to_yaml() {
+        let map = SyntaxMapping::new();
+
+        // clang-tidy uses the same YAML configuration format as clang-format
+        for path in ["/path/to/.clang-format", "/path/to/.clang-tidy"] {
+            assert_eq!(
+                map.get_syntax_for(path),
+                Some(MappingTarget::MapTo("YAML")),
+                "{path} should map to YAML"
+            );
+        }
+    }
+
+    #[test]
+    fn builtin_mappings_map_extensionless_linter_configs_to_yaml() {
+        let map = SyntaxMapping::new();
+
+        // none of these carry an extension, and each one is read as YAML by
+        // the tool that owns it
+        for path in [
+            "/path/to/.yamllint",
+            "/home/user/.config/yamllint/config",
+            "/path/to/.prettierrc",
+            "/path/to/.eslintrc",
+        ] {
+            assert_eq!(
+                map.get_syntax_for(path),
+                Some(MappingTarget::MapTo("YAML")),
+                "{path} should map to YAML"
+            );
+        }
+    }
+
+    #[test]
     fn all_fixed_builtin_mappings_can_compile() {
         let map = SyntaxMapping::new();
 
