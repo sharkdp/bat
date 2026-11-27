@@ -20,6 +20,33 @@ mod unix {
 
     pub const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
     pub const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
+
+    /// Reads PTY output until it goes quiet, retrying on EINTR (seen on macOS CI).
+    pub fn read_pty_output(master: &mut File) -> Vec<u8> {
+        use nix::errno::Errno;
+        use nix::poll::{poll, PollFd, PollFlags};
+        use std::io::Read;
+        use std::os::fd::AsFd;
+
+        let mut stdout = Vec::new();
+        loop {
+            let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+            match poll(&mut fds, 100u16) {
+                Ok(0) => break,
+                Ok(_) => {}
+                Err(Errno::EINTR) => continue,
+                Err(e) => panic!("poll failed: {e}"),
+            }
+            let mut buffer = [0; 1024];
+            match master.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(count) => stdout.extend_from_slice(&buffer[..count]),
+                Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+                Err(e) => panic!("read failed: {e}"),
+            }
+        }
+        stdout
+    }
 }
 #[cfg(unix)]
 use unix::*;
@@ -2583,6 +2610,66 @@ fn cache_no_auto_build_with_no_custom_assets() {
 }
 
 #[test]
+fn cache_incompatible_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(
+        cache_dir.path().join("metadata.yaml"),
+        "bat_version: \"0.0.0\"\n",
+    )
+    .expect("can write incompatible metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "not compatible with this version of bat",
+        ));
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn cache_malformed_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(cache_dir.path().join("metadata.yaml"), "bat_version: [\n")
+        .expect("can write malformed metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure();
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
     // BOM removed. This behavior is wanted in interactive mode as
@@ -4119,10 +4206,6 @@ fn highlight_line_without_colors() {
 #[cfg(unix)]
 #[test]
 fn highlight_line_respects_no_color_on_terminal() {
-    use nix::poll::{poll, PollFd, PollFlags};
-    use std::io::Read;
-    use std::os::fd::AsFd;
-
     for wrap in ["--wrap=never", "--wrap=character"] {
         for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
             for no_color in ["", "1"] {
@@ -4161,19 +4244,7 @@ fn highlight_line_respects_no_color_on_terminal() {
                 assert!(output.status.success());
                 assert!(output.stderr.is_empty());
 
-                let mut stdout = Vec::new();
-                loop {
-                    let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
-                    if poll(&mut fds, 100u16).unwrap() == 0 {
-                        break;
-                    }
-                    let mut buffer = [0; 1024];
-                    let count = master.read(&mut buffer).unwrap();
-                    if count == 0 {
-                        break;
-                    }
-                    stdout.extend_from_slice(&buffer[..count]);
-                }
+                let stdout = read_pty_output(&mut master);
                 if no_color.is_empty() {
                     // Prove the PTY enables automatic color detection without NO_COLOR.
                     assert!(stdout.contains(&b'\x1b'), "{wrap} {theme}: {stdout:?}");
@@ -5360,10 +5431,6 @@ fn sanitize_auto_does_not_sanitize_piped_output() {
 #[cfg(unix)]
 #[test]
 fn sanitize_auto_sanitizes_plain_text_on_terminal() {
-    use nix::poll::{poll, PollFd, PollFlags};
-    use std::io::Read;
-    use std::os::fd::AsFd;
-
     let OpenptyResult { master, slave } = openpty(None, None).unwrap();
     let mut master = File::from(master);
     // Keep a slave open until the output is read: macOS discards unread PTY
@@ -5393,19 +5460,7 @@ fn sanitize_auto_sanitizes_plain_text_on_terminal() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
 
-    let mut stdout = Vec::new();
-    loop {
-        let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
-        if poll(&mut fds, 100u16).unwrap() == 0 {
-            break;
-        }
-        let mut buffer = [0; 1024];
-        let count = master.read(&mut buffer).unwrap();
-        if count == 0 {
-            break;
-        }
-        stdout.extend_from_slice(&buffer[..count]);
-    }
+    let stdout = read_pty_output(&mut master);
     assert_eq!(
         String::from_utf8(stdout).unwrap(),
         "\u{FFFD}]8;;http://example.com\u{FFFD}\\This is a link\u{FFFD}]8;;\u{FFFD}\\n"
