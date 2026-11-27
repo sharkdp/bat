@@ -15,6 +15,7 @@
 
 ## Features
 
+- Map `.yamllint`, `.prettierrc` and `.eslintrc` to YAML syntax highlighting, see #4156 (@yusufemreboyraz)
 - Map `.clang-tidy` to YAML syntax highlighting, see #4150 (@yusufemreboyraz)
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
@@ -35,6 +36,7 @@
 
 ## Bugfixes
 
+- Skip cache metadata validation when `--no-custom-assets` is set so outdated or malformed caches do not block fallback to integrated assets, see #4157 (@xgbtxy)
 - Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
 - Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
 - Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)

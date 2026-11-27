@@ -21,9 +21,11 @@ pub fn assets_from_cache_or_binary(
     config_dir: &Path,
     cache_dir: &Path,
 ) -> Result<HighlightingAssets> {
-    if use_custom_assets {
-        ensure_cache_built(config_dir, cache_dir);
+    if !use_custom_assets {
+        return Ok(HighlightingAssets::from_binary());
     }
+
+    ensure_cache_built(config_dir, cache_dir);
 
     if let Some(metadata) = AssetsMetadata::load_from_folder(cache_dir)? {
         if !metadata.is_compatible_with(crate_version!()) {
@@ -41,12 +43,8 @@ pub fn assets_from_cache_or_binary(
         }
     }
 
-    let custom_assets = if use_custom_assets {
-        HighlightingAssets::from_cache(cache_dir).ok()
-    } else {
-        None
-    };
-    Ok(custom_assets.unwrap_or_else(HighlightingAssets::from_binary))
+    Ok(HighlightingAssets::from_cache(cache_dir)
+        .unwrap_or_else(|_| HighlightingAssets::from_binary()))
 }
 
 fn clear_asset(path: PathBuf, description: &str) -> Result<()> {
