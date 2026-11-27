@@ -3,6 +3,8 @@
 
 ## Other
 
+- Add regression coverage for diff calculation in cone-mode sparse checkouts, see #4155 (@draarivpatel-ui)
+- Find ANSI escape sequences by scanning bytes, which makes plain-text output up to 13% faster, see #4149 (@g4lb)
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
 - Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
@@ -15,6 +17,7 @@
 
 ## Features
 
+- Map `.yamllint`, `.prettierrc` and `.eslintrc` to YAML syntax highlighting, see #4156 (@yusufemreboyraz)
 - Map `.clang-tidy` to YAML syntax highlighting, see #4150 (@yusufemreboyraz)
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
@@ -36,6 +39,7 @@
 ## Bugfixes
 
 - Track reverse video (SGR 7 / 27) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first wrapped line when displaying ANSI input, see #4144 (@BlueX888)
+- Preserve buffered stdin when `$LESSOPEN` temporary-file mode falls back to the original input, and handle CRLF line endings on returned temp paths, see #4158 (@xgbtxy)
 - Skip cache metadata validation when `--no-custom-assets` is set so outdated or malformed caches do not block fallback to integrated assets, see #4157 (@xgbtxy)
 - Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
 - Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
