@@ -2583,6 +2583,66 @@ fn cache_no_auto_build_with_no_custom_assets() {
 }
 
 #[test]
+fn cache_incompatible_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(
+        cache_dir.path().join("metadata.yaml"),
+        "bat_version: \"0.0.0\"\n",
+    )
+    .expect("can write incompatible metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "not compatible with this version of bat",
+        ));
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn cache_malformed_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(cache_dir.path().join("metadata.yaml"), "bat_version: [\n")
+        .expect("can write malformed metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure();
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
     // BOM removed. This behavior is wanted in interactive mode as
