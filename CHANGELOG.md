@@ -3,6 +3,7 @@
 
 ## Other
 
+- Reduce per-token and per-line allocations in the preprocessor and printer hot paths, see #4154 (@alexander-src)
 - Add regression coverage for diff calculation in cone-mode sparse checkouts, see #4155 (@draarivpatel-ui)
 - Find ANSI escape sequences by scanning bytes, which makes plain-text output up to 13% faster, see #4149 (@g4lb)
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)

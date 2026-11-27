@@ -14,6 +14,11 @@ impl AnsiStyle {
         AnsiStyle { attributes: None }
     }
 
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.attributes.is_none()
+    }
+
     pub fn update(&mut self, sequence: EscapeSequence) -> bool {
         match &mut self.attributes {
             Some(a) => a.update(sequence),
@@ -641,6 +646,12 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
     }
 }
 
+/// Fast pre-scan for bytes that can start an ANSI/VT escape sequence.
+#[inline]
+pub(crate) fn has_ansi_introducer(s: &str) -> bool {
+    find_sequence_introducer(s, 0) < s.len()
+}
+
 /// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
 #[inline]
 fn is_sequence_introducer(c: char) -> bool {
@@ -1149,6 +1160,21 @@ mod tests {
             final_byte: "m",
         });
         assert_eq!(attrs.strike, "");
+    }
+
+    #[test]
+    fn test_has_ansi_introducer() {
+        use crate::vscreen::has_ansi_introducer;
+
+        assert!(!has_ansi_introducer("plain ascii text"));
+        // 0xC2 0xA9 (copyright sign) is in U+0080..U+00BF but not a C1 introducer.
+        assert!(!has_ansi_introducer("Copyright \u{00A9} 2026"));
+        assert!(!has_ansi_introducer("\u{0080}\u{008F}\u{00A0}\u{00BF}"));
+        assert!(has_ansi_introducer("\x1B[31mred\x1B[0m"));
+        assert!(has_ansi_introducer("\u{009B}31mred"));
+        for c in ['\u{90}', '\u{98}', '\u{9B}', '\u{9D}', '\u{9E}', '\u{9F}'] {
+            assert!(has_ansi_introducer(&format!("x{c}y")));
+        }
     }
 
     #[test]
