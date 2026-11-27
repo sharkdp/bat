@@ -3,6 +3,7 @@
 
 ## Other
 
+- Add regression coverage for diff calculation in cone-mode sparse checkouts, see #4155 (@draarivpatel-ui)
 - Find ANSI escape sequences by scanning bytes, which makes plain-text output up to 13% faster, see #4149 (@g4lb)
 - Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
 - Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
