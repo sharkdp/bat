@@ -61,6 +61,27 @@ fn shell_substitute_two(template: &str, first: &str, second: &str) -> String {
     out
 }
 
+/// Strip a single trailing LF or CRLF from a temporary file path printed by `$LESSOPEN`.
+fn strip_trailing_newline(s: &str) -> &str {
+    s.strip_suffix("\r\n")
+        .or_else(|| s.strip_suffix('\n'))
+        .unwrap_or(s)
+}
+
+/// Fall back to opening the original input, replaying the buffered stdin payload
+/// when stdin was already drained to feed `$LESSOPEN`.
+fn open_original<'a, R: BufRead + 'a>(
+    input: Input<'a>,
+    stdin: R,
+    stdin_buffer: Option<Vec<u8>>,
+    stdout_identifier: Option<&Identifier>,
+) -> Result<OpenedInput<'a>> {
+    match stdin_buffer {
+        Some(buf) => input.open(Cursor::new(buf), stdout_identifier),
+        None => input.open(stdin, stdout_identifier),
+    }
+}
+
 /// Preprocess files and/or stdin using $LESSOPEN and $LESSCLOSE
 pub(crate) struct LessOpenPreprocessor {
     lessopen: String,
@@ -127,7 +148,7 @@ impl LessOpenPreprocessor {
         mut stdin: R,
         stdout_identifier: Option<&Identifier>,
     ) -> Result<OpenedInput<'a>> {
-        let (lessopen_stdout, path_str, kind) = match input.kind {
+        let (lessopen_stdout, path_str, kind, stdin_buffer) = match input.kind {
             InputKind::OrdinaryFile(ref path) => {
                 let path_str = match path.to_str() {
                     Some(str) => str,
@@ -151,6 +172,7 @@ impl LessOpenPreprocessor {
                     lessopen_output.stdout,
                     path_str.to_string(),
                     OpenedInputKind::OrdinaryFile(path.to_path_buf()),
+                    None,
                 )
             }
             InputKind::StdIn => {
@@ -190,6 +212,7 @@ impl LessOpenPreprocessor {
                         lessopen_output.stdout,
                         "-".to_string(),
                         OpenedInputKind::StdIn,
+                        Some(stdin_buffer),
                     )
                 } else {
                     return input.open(stdin, stdout_identifier);
@@ -207,19 +230,16 @@ impl LessOpenPreprocessor {
                     let lessopen_string = match String::from_utf8(lessopen_stdout) {
                         Ok(string) => string,
                         Err(_) => {
-                            return input.open(stdin, stdout_identifier);
+                            return open_original(input, stdin, stdin_buffer, stdout_identifier);
                         }
                     };
                     // Remove newline at end of temporary file path returned by $LESSOPEN
-                    let stdout = match lessopen_string.strip_suffix("\n") {
-                        Some(stripped) => stripped.to_owned(),
-                        None => lessopen_string,
-                    };
+                    let stdout = strip_trailing_newline(&lessopen_string);
 
-                    let file = match File::open(PathBuf::from(&stdout)) {
+                    let file = match File::open(PathBuf::from(stdout)) {
                         Ok(file) => file,
                         Err(_) => {
-                            return input.open(stdin, stdout_identifier);
+                            return open_original(input, stdin, stdin_buffer, stdout_identifier);
                         }
                     };
 
@@ -228,7 +248,7 @@ impl LessOpenPreprocessor {
                         lessclose: self
                             .lessclose
                             .as_ref()
-                            .map(|s| shell_substitute_two(s, &path_str, &stdout)),
+                            .map(|s| shell_substitute_two(s, &path_str, stdout)),
                     }
                 } else {
                     Preprocessed {
@@ -491,5 +511,81 @@ mod tests {
             super::shell_substitute_two("a %s b %s c", "%s", "second"),
             "a '%s' b 'second' c"
         );
+    }
+
+    #[test]
+    fn strip_trailing_newline_handles_lf_and_crlf() {
+        assert_eq!(super::strip_trailing_newline("tmp.txt\n"), "tmp.txt");
+        assert_eq!(super::strip_trailing_newline("tmp.txt\r\n"), "tmp.txt");
+        assert_eq!(super::strip_trailing_newline("tmp.txt"), "tmp.txt");
+        assert_eq!(
+            super::strip_trailing_newline("tmp.txt\r\n\n"),
+            "tmp.txt\r\n"
+        );
+    }
+
+    #[test]
+    #[serial]
+    fn tempfile_stdin_fallback_preserves_stdin_when_file_missing() -> Result<()> {
+        let preprocessor =
+            LessOpenPreprocessor::mock_new(Some("-echo nonexistent_bat_lessopen_path_%s"), None)?;
+        let opened = preprocessor.open(
+            Input::stdin(),
+            Cursor::new(b"hello from stdin\n".to_vec()),
+            None,
+        );
+        reset_env_vars();
+
+        let mut opened = opened?;
+        let mut content = Vec::new();
+        while opened.reader.read_line(&mut content)? {}
+        assert_eq!(content, b"hello from stdin\n");
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn tempfile_stdin_fallback_preserves_stdin_on_invalid_utf8() -> Result<()> {
+        let preprocessor =
+            LessOpenPreprocessor::mock_new(Some("-printf '\\377\\n' && echo %s >/dev/null"), None)?;
+        let opened = preprocessor.open(
+            Input::stdin(),
+            Cursor::new(b"hello from stdin\n".to_vec()),
+            None,
+        );
+        reset_env_vars();
+
+        let mut opened = opened?;
+        let mut content = Vec::new();
+        while opened.reader.read_line(&mut content)? {}
+        assert_eq!(content, b"hello from stdin\n");
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    #[serial]
+    fn tempfile_stdin_strips_crlf_path_newline() -> Result<()> {
+        use std::io::Write;
+
+        let mut tmp = tempfile::NamedTempFile::new()?;
+        tmp.write_all(b"preprocessed via crlf\n")?;
+        let tmp_path = tmp.path().to_str().unwrap();
+        let cmd = format!("-printf '%s\\r\\n' '{tmp_path}' && echo %s >/dev/null");
+
+        let preprocessor = LessOpenPreprocessor::mock_new(Some(&cmd), None)?;
+        let opened = preprocessor.open(
+            Input::stdin(),
+            Cursor::new(b"original stdin\n".to_vec()),
+            None,
+        );
+        reset_env_vars();
+
+        let mut opened = opened?;
+        let mut content = Vec::new();
+        while opened.reader.read_line(&mut content)? {}
+        assert_eq!(content, b"preprocessed via crlf\n");
+        Ok(())
     }
 }

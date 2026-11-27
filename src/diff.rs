@@ -223,6 +223,21 @@ mod tests {
         assert_eq!(changes.get(&2), Some(&LineChange::Added));
     }
 
+    #[test]
+    fn diff_is_calculated_in_cone_sparse_checkout() {
+        let repo = setup_repo();
+        let file = create_and_track_file(&repo, "file.txt");
+        std::fs::write(&file, "changed\n").expect("can write file");
+
+        git(repo.path(), &["sparse-checkout", "set", "--cone"]);
+        let changes = get_git_diff(&file).expect("one change in sparse checkout");
+        assert_eq!(changes.get(&1), Some(&LineChange::Modified));
+
+        git(repo.path(), &["sparse-checkout", "disable"]);
+        let changes = get_git_diff(&file).expect("one change after sparse checkout");
+        assert_eq!(changes.get(&1), Some(&LineChange::Modified));
+    }
+
     #[cfg(unix)]
     #[test]
     fn filter_from_repository_config_is_not_executed() {

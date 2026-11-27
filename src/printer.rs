@@ -200,7 +200,8 @@ impl Printer for SimplePrinter<'_> {
                 );
                 write!(handle, "{line}")?;
             } else if self.config.sanitize {
-                let line = sanitize(&decode_line(self.content_type, line_number, line_buffer));
+                let decoded = decode_line(self.content_type, line_number, line_buffer);
+                let line = sanitize(&decoded);
                 write!(handle, "{line}")?;
             } else {
                 match handle {
@@ -500,13 +501,76 @@ impl<'a> InteractivePrinter<'a> {
         Ok(highlighted_line)
     }
 
-    fn preprocess(&self, text: &str, cursor: &mut usize) -> String {
+    fn preprocess<'b>(&self, text: &'b str, cursor: &mut usize) -> Cow<'b, str> {
         if self.config.tab_width > 0 {
             return expand_tabs(text, self.config.tab_width, cursor);
         }
 
         *cursor += text.len();
-        text.to_string()
+        Cow::Borrowed(text)
+    }
+
+    /// Indices of the graphemes (counted over all regions of a line) where `--wrap=word`
+    /// starts a new visual line. Whitespace at a break and at the start of the following
+    /// visual line is not printed.
+    fn word_wrap_breaks(
+        &self,
+        regions: &[(syntect::highlighting::Style, &str)],
+        max_width: usize,
+    ) -> Vec<usize> {
+        let mut breaks = Vec::new();
+        let mut index = 0;
+        let mut cursor_total = 0;
+        let mut line_width = 0;
+        let mut last_whitespace = None;
+        let mut width_after_whitespace = 0;
+        let mut graphemes_after_whitespace = 0;
+        let mut skip_whitespace = false;
+
+        for &(_, region) in regions {
+            for chunk in EscapeSequenceIterator::new(region) {
+                let EscapeSequence::Text(text) = chunk else {
+                    continue;
+                };
+                let text = self.preprocess(text.trim_end_matches(['\r', '\n']), &mut cursor_total);
+
+                for grapheme in text.graphemes(true) {
+                    let is_whitespace = grapheme.starts_with(char::is_whitespace);
+                    if skip_whitespace && is_whitespace {
+                        index += 1;
+                        continue;
+                    }
+                    skip_whitespace = false;
+
+                    let cw = grapheme_width(grapheme);
+                    line_width += cw;
+                    if is_whitespace {
+                        last_whitespace = Some(index);
+                        width_after_whitespace = 0;
+                        graphemes_after_whitespace = 0;
+                    } else {
+                        width_after_whitespace += cw;
+                        graphemes_after_whitespace += 1;
+                    }
+
+                    if line_width > max_width {
+                        if let Some(whitespace) = last_whitespace.take() {
+                            breaks.push(whitespace);
+                            line_width = width_after_whitespace;
+                            skip_whitespace = graphemes_after_whitespace == 0;
+                        }
+                        // No whitespace to break at, or a wide grapheme still does not fit.
+                        if line_width > max_width {
+                            breaks.push(index);
+                            line_width = cw;
+                        }
+                    }
+                    index += 1;
+                }
+            }
+        }
+
+        breaks
     }
 }
 
@@ -729,9 +793,13 @@ impl Printer for InteractivePrinter<'_> {
 
             // Sanitize wins over strip-ansi, because stripping can hide text.
             if self.sanitize {
-                line = sanitize(&line).into()
+                if let Cow::Owned(sanitized) = sanitize(&line) {
+                    line = Cow::Owned(sanitized);
+                }
             } else if self.strip_ansi {
-                line = strip_ansi(&line).into()
+                if let Cow::Owned(stripped) = strip_ansi(&line) {
+                    line = Cow::Owned(stripped);
+                }
             }
 
             line
@@ -827,19 +895,34 @@ impl Printer for InteractivePrinter<'_> {
                             let text = self.preprocess(text, &mut cursor_total);
                             let text_trimmed = text.trim_end_matches(['\r', '\n']);
 
-                            write!(
-                                handle,
-                                "{}{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{text_trimmed}", self.ansi_style),
-                                    true_color,
-                                    colored_output,
-                                    italics,
-                                    background_color
-                                ),
-                                self.ansi_style.to_reset_sequence(),
-                            )?;
+                            if self.ansi_style.is_empty() {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        text_trimmed,
+                                        true_color,
+                                        colored_output,
+                                        italics,
+                                        background_color
+                                    )
+                                )?;
+                            } else {
+                                write!(
+                                    handle,
+                                    "{}{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{text_trimmed}", self.ansi_style),
+                                        true_color,
+                                        colored_output,
+                                        italics,
+                                        background_color
+                                    ),
+                                    self.ansi_style.to_reset_sequence(),
+                                )?;
+                            }
 
                             // Pad the rest of the line.
                             if text.len() != text_trimmed.len() {
@@ -873,6 +956,20 @@ impl Printer for InteractivePrinter<'_> {
                 writeln!(handle)?;
             }
         } else {
+            let mut line_buf = String::new();
+            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
+            // Word breaks are found over the whole line, because the whitespace to break
+            // at can be in an earlier highlighted region or escape sequence chunk.
+            let mut word_breaks = if word_wrap {
+                self.word_wrap_breaks(&regions, cursor_max)
+            } else {
+                Vec::new()
+            }
+            .into_iter()
+            .peekable();
+            let mut grapheme_index = 0;
+            let mut skip_whitespace = false;
+
             for &(style, region) in &regions {
                 let ansi_iterator = EscapeSequenceIterator::new(region);
                 for chunk in ansi_iterator {
@@ -884,30 +981,65 @@ impl Printer for InteractivePrinter<'_> {
 
                             let mut max_width = cursor_max.saturating_sub(cursor);
 
-                            // line buffer (avoid calling write! for every character)
-                            let mut line_buf = String::with_capacity(max_width * 4);
+                            // Fast path for printable ASCII that fits on the current line without wrapping.
+                            if !skip_whitespace
+                                && text.len() <= max_width
+                                && word_breaks
+                                    .peek()
+                                    .is_none_or(|&b| b >= grapheme_index + text.len())
+                                && text.bytes().all(|b| (0x20..0x7F).contains(&b))
+                            {
+                                grapheme_index += text.len();
+                                cursor += text.len();
+                                if self.ansi_style.is_empty() {
+                                    write!(
+                                        handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            style,
+                                            &text,
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                            self.config.use_italic_text,
+                                            background_color
+                                        )
+                                    )?;
+                                } else {
+                                    write!(
+                                        handle,
+                                        "{}",
+                                        as_terminal_escaped(
+                                            style,
+                                            &format!("{}{text}", self.ansi_style),
+                                            self.config.true_color,
+                                            self.config.colored_output,
+                                            self.config.use_italic_text,
+                                            background_color
+                                        )
+                                    )?;
+                                }
+                                continue;
+                            }
+
+                            line_buf.clear();
 
                             // Displayed width of line_buf
                             let mut current_width = 0;
 
-                            let word_wrap = matches!(self.config.wrapping_mode, WrappingMode::Word);
-
-                            // For word wrapping, track last whitespace position.
-                            let mut last_ws_idx: Option<usize> = None;
-
                             for grapheme in text.graphemes(true) {
                                 // calculate the displayed width for next character
                                 let cw = grapheme_width(grapheme);
-                                current_width += cw;
-
-                                // Track whitespace positions for word wrapping.
-                                if word_wrap && grapheme.starts_with(char::is_whitespace) {
-                                    last_ws_idx = Some(line_buf.len());
-                                }
 
                                 // if next character cannot be printed on this line,
                                 // flush the buffer.
-                                if current_width > max_width {
+                                let wraps = if word_wrap {
+                                    word_breaks.next_if_eq(&grapheme_index).is_some()
+                                } else {
+                                    current_width + cw > max_width
+                                };
+                                grapheme_index += 1;
+
+                                if wraps {
                                     // Generate wrap padding if not already generated.
                                     if panel_wrap.is_none() {
                                         panel_wrap = if self.panel_width > 0 {
@@ -930,81 +1062,86 @@ impl Printer for InteractivePrinter<'_> {
                                         }
                                     }
 
-                                    // Determine the break point and remainder
-                                    // for word wrapping.
-                                    let (emit_end, rest_start) = if word_wrap {
-                                        if let Some(ws_idx) = last_ws_idx {
-                                            // Skip the whitespace character itself
-                                            // and carry the rest to the next line.
-                                            let rs = ws_idx
-                                                + line_buf[ws_idx..]
-                                                    .chars()
-                                                    .next()
-                                                    .map(|ch| ch.len_utf8())
-                                                    .unwrap_or(0);
-                                            (ws_idx, Some(rs))
-                                        } else {
-                                            (line_buf.len(), None)
-                                        }
-                                    } else {
-                                        (line_buf.len(), None)
-                                    };
-
                                     // It wraps.
-                                    write!(
-                                        handle,
-                                        "{}{}\n{}",
-                                        as_terminal_escaped(
-                                            style,
-                                            &format!(
-                                                "{}{}",
-                                                self.ansi_style,
-                                                &line_buf[..emit_end]
+                                    let wrap_prefix = panel_wrap.as_deref().unwrap();
+                                    if self.ansi_style.is_empty() {
+                                        write!(
+                                            handle,
+                                            "{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &line_buf,
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
                                             ),
-                                            self.config.true_color,
-                                            self.config.colored_output,
-                                            self.config.use_italic_text,
-                                            background_color
-                                        ),
-                                        self.ansi_style.to_reset_sequence(),
-                                        panel_wrap.clone().unwrap()
-                                    )?;
+                                            wrap_prefix
+                                        )?;
+                                    } else {
+                                        write!(
+                                            handle,
+                                            "{}{}\n{}",
+                                            as_terminal_escaped(
+                                                style,
+                                                &format!("{}{line_buf}", self.ansi_style),
+                                                self.config.true_color,
+                                                self.config.colored_output,
+                                                self.config.use_italic_text,
+                                                background_color
+                                            ),
+                                            self.ansi_style.to_reset_sequence(),
+                                            wrap_prefix
+                                        )?;
+                                    }
 
                                     cursor = 0;
                                     max_width = cursor_max;
-
-                                    if let Some(rs) = rest_start {
-                                        // Word wrap: carry remainder to next line.
-                                        let remainder = line_buf[rs..].to_string();
-                                        let rem_width: usize =
-                                            remainder.graphemes(true).map(grapheme_width).sum();
-                                        line_buf.clear();
-                                        line_buf.push_str(&remainder);
-                                        current_width = rem_width + cw;
-                                    } else {
-                                        line_buf.clear();
-                                        current_width = cw;
-                                    }
-                                    last_ws_idx = None;
+                                    line_buf.clear();
+                                    current_width = 0;
+                                    skip_whitespace = word_wrap;
                                 }
 
+                                if skip_whitespace {
+                                    if grapheme.starts_with(char::is_whitespace) {
+                                        continue;
+                                    }
+                                    skip_whitespace = false;
+                                }
+
+                                current_width += cw;
                                 line_buf.push_str(grapheme);
                             }
 
                             // flush the buffer
                             cursor += current_width;
-                            write!(
-                                handle,
-                                "{}",
-                                as_terminal_escaped(
-                                    style,
-                                    &format!("{}{line_buf}", self.ansi_style),
-                                    self.config.true_color,
-                                    self.config.colored_output,
-                                    self.config.use_italic_text,
-                                    background_color
-                                )
-                            )?;
+                            if self.ansi_style.is_empty() {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &line_buf,
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                            } else {
+                                write!(
+                                    handle,
+                                    "{}",
+                                    as_terminal_escaped(
+                                        style,
+                                        &format!("{}{line_buf}", self.ansi_style),
+                                        self.config.true_color,
+                                        self.config.colored_output,
+                                        self.config.use_italic_text,
+                                        background_color
+                                    )
+                                )?;
+                            }
                         }
 
                         // ANSI escape passthrough.
