@@ -80,6 +80,10 @@ struct Attributes {
     /// OFF: ^[29m
     strike: String,
 
+    /// ON:  ^[7m
+    /// OFF: ^[27m
+    reverse: String,
+
     /// The hyperlink sequence.
     /// FORMAT: \x1B]8;{ID};{URL}\e\\
     ///
@@ -103,6 +107,7 @@ impl Attributes {
             underline: "".to_owned(),
             italic: "".to_owned(),
             strike: "".to_owned(),
+            reverse: "".to_owned(),
             hyperlink: "".to_owned(),
         }
     }
@@ -161,6 +166,7 @@ impl Attributes {
         self.underline.clear();
         self.italic.clear();
         self.strike.clear();
+        self.reverse.clear();
     }
 
     fn update_with_sgr(&mut self, parameters: &str) -> bool {
@@ -178,9 +184,11 @@ impl Attributes {
                 2 => self.dim = "\x1B[2m".to_owned(),
                 3 => self.italic = "\x1B[3m".to_owned(),
                 4 => self.underline = "\x1B[4m".to_owned(),
+                7 => self.reverse = "\x1B[7m".to_owned(),
                 9 => self.strike = "\x1B[9m".to_owned(),
                 23 => self.italic.clear(),
                 24 => self.underline.clear(),
+                27 => self.reverse.clear(),
                 29 => self.strike.clear(),
                 22 => {
                     self.bold.clear();
@@ -263,7 +271,7 @@ impl Display for Attributes {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}{}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}{}{}{}",
             self.foreground,
             self.background,
             self.underlined,
@@ -273,6 +281,7 @@ impl Display for Attributes {
             self.underline,
             self.italic,
             self.strike,
+            self.reverse,
             self.hyperlink,
         )
     }
@@ -362,14 +371,52 @@ impl EscapeSequenceOffsets {
 /// ```
 pub struct EscapeSequenceOffsetsIterator<'a> {
     text: &'a str,
-    chars: Peekable<CharIndices<'a>>,
+    chars: Peekable<OffsetCharIndices<'a>>,
+}
+
+/// `CharIndices` over a suffix of the text, reporting indices into the whole text.
+struct OffsetCharIndices<'a> {
+    base: usize,
+    inner: CharIndices<'a>,
+}
+
+impl Iterator for OffsetCharIndices<'_> {
+    type Item = (usize, char);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|(i, c)| (i + self.base, c))
+    }
+}
+
+/// Returns the byte index of the first sequence introducer at or after `from`,
+/// or the text length if there is none.
+fn find_sequence_introducer(text: &str, from: usize) -> usize {
+    let bytes = text.as_bytes();
+    let mut i = from;
+    while let Some(off) = bytes[i..].iter().position(|&b| b == 0x1B || b == 0xC2) {
+        i += off;
+        // ESC, or the UTF-8 encoding of an 8-bit C1 introducer (0xC2 0x9x).
+        if bytes[i] == 0x1B
+            || matches!(
+                bytes.get(i + 1),
+                Some(0x90 | 0x98 | 0x9B | 0x9D | 0x9E | 0x9F)
+            )
+        {
+            return i;
+        }
+        i += 1;
+    }
+    bytes.len()
 }
 
 impl<'a> EscapeSequenceOffsetsIterator<'a> {
     pub fn new(text: &'a str) -> EscapeSequenceOffsetsIterator<'a> {
         EscapeSequenceOffsetsIterator {
             text,
-            chars: text.char_indices().peekable(),
+            chars: OffsetCharIndices {
+                base: 0,
+                inner: text.char_indices(),
+            }
+            .peekable(),
         }
     }
 
@@ -393,8 +440,15 @@ impl<'a> EscapeSequenceOffsetsIterator<'a> {
     }
 
     fn next_text(&mut self) -> Option<EscapeSequenceOffsets> {
-        self.chars_take_while(|c| !is_sequence_introducer(c))
-            .map(|(start, end)| EscapeSequenceOffsets::Text { start, end })
+        let start = self.chars.peek()?.0;
+        // Scan bytes for the next introducer, then resume char iteration there.
+        let end = find_sequence_introducer(self.text, start);
+        self.chars = OffsetCharIndices {
+            base: end,
+            inner: self.text[end..].char_indices(),
+        }
+        .peekable();
+        Some(EscapeSequenceOffsets::Text { start, end })
     }
 
     fn next_sequence(&mut self) -> Option<EscapeSequenceOffsets> {
@@ -595,24 +649,7 @@ impl Iterator for EscapeSequenceOffsetsIterator<'_> {
 /// Fast pre-scan for bytes that can start an ANSI/VT escape sequence.
 #[inline]
 pub(crate) fn has_ansi_introducer(s: &str) -> bool {
-    let bytes = s.as_bytes();
-    let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
-            0x1B => return true,
-            0xC2 => {
-                if matches!(
-                    bytes.get(i + 1),
-                    Some(0x90 | 0x98 | 0x9B | 0x9D | 0x9E | 0x9F)
-                ) {
-                    return true;
-                }
-            }
-            _ => {}
-        }
-        i += 1;
-    }
-    false
+    find_sequence_introducer(s, 0) < s.len()
 }
 
 /// True for ESC and the 8-bit C1 sequence introducers (DCS/SOS/CSI/OSC/PM/APC).
@@ -1138,5 +1175,28 @@ mod tests {
         for c in ['\u{90}', '\u{98}', '\u{9B}', '\u{9D}', '\u{9E}', '\u{9F}'] {
             assert!(has_ansi_introducer(&format!("x{c}y")));
         }
+    }
+
+    #[test]
+    fn test_sgr_reverse_is_tracked_and_cleared() {
+        let mut attrs = crate::vscreen::Attributes::new();
+
+        // Reverse video on (SGR 7) must be tracked so it can be re-emitted.
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[7m",
+            parameters: "7",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.reverse, "\x1B[7m");
+
+        // Reverse video off (SGR 27) must clear it, just like strikethrough (29).
+        attrs.update(EscapeSequence::CSI {
+            raw_sequence: "\x1B[27m",
+            parameters: "27",
+            intermediates: "",
+            final_byte: "m",
+        });
+        assert_eq!(attrs.reverse, "");
     }
 }

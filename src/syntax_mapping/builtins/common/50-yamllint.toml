@@ -1,0 +1,5 @@
+# yamllint reads .yamllint, and a file named config inside its config
+# directory. Neither has an extension. The format is YAML.
+# https://yamllint.readthedocs.io/en/stable/configuration.html
+[mappings]
+"YAML" = [".yamllint", "**/yamllint/config"]

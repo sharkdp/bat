@@ -20,6 +20,33 @@ mod unix {
 
     pub const SAFE_CHILD_PROCESS_CREATION_TIME: Duration = Duration::from_millis(100);
     pub const CHILD_WAIT_TIMEOUT: Duration = Duration::from_secs(15);
+
+    /// Reads PTY output until it goes quiet, retrying on EINTR (seen on macOS CI).
+    pub fn read_pty_output(master: &mut File) -> Vec<u8> {
+        use nix::errno::Errno;
+        use nix::poll::{poll, PollFd, PollFlags};
+        use std::io::Read;
+        use std::os::fd::AsFd;
+
+        let mut stdout = Vec::new();
+        loop {
+            let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
+            match poll(&mut fds, 100u16) {
+                Ok(0) => break,
+                Ok(_) => {}
+                Err(Errno::EINTR) => continue,
+                Err(e) => panic!("poll failed: {e}"),
+            }
+            let mut buffer = [0; 1024];
+            match master.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(count) => stdout.extend_from_slice(&buffer[..count]),
+                Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
+                Err(e) => panic!("read failed: {e}"),
+            }
+        }
+        stdout
+    }
 }
 #[cfg(unix)]
 use unix::*;
@@ -117,6 +144,74 @@ fn completion_does_not_panic_on_closed_stdout() {
     for shell in ["bash", "fish", "ps1", "zsh"] {
         assert_quiet_exit_when_stdout_is_closed(&mut bat_raw_command(), &["--completion", shell]);
     }
+}
+
+#[test]
+fn piped_output_rejects_unknown_language() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("foo\n")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_rejects_unknown_language_with_empty_input() {
+    bat()
+        .arg("--language=InvalidSyntax")
+        .write_stdin("")
+        .assert()
+        .code(1)
+        .stdout("")
+        .stderr(predicate::str::contains("unknown syntax: 'InvalidSyntax'"));
+}
+
+#[test]
+fn piped_output_with_language_preserves_input() {
+    let input = "fn main() {\r\n\tprintln!(\"hello\");\r\n}\n";
+    for language in ["Rust", "rust", "rs"] {
+        bat()
+            .args(["--language", language])
+            .write_stdin(input)
+            .assert()
+            .success()
+            .stdout(input)
+            .stderr("");
+    }
+}
+
+#[test]
+#[cfg(feature = "build-assets")]
+fn piped_output_without_language_does_not_load_syntaxes() {
+    let cache_dir = tempdir().expect("can create temporary directory");
+    bat_with_config()
+        .current_dir(Path::new(EXAMPLES_DIR).join("cache_source"))
+        .args(["cache", "--build", "--source", ".", "--target"])
+        .arg(cache_dir.path())
+        .assert()
+        .success();
+    std::fs::write(cache_dir.path().join("syntaxes.bin"), [])
+        .expect("can overwrite temporary syntax cache");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .write_stdin("foo\r\nbar\n")
+        .assert()
+        .success()
+        .stdout("foo\r\nbar\n")
+        .stderr("");
+
+    bat()
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .args(["--color=always", "--language=Rust"])
+        .write_stdin("fn main() {}\n")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "Could not parse cached syntax set",
+        ));
 }
 
 #[test]
@@ -330,7 +425,8 @@ fn attached_short_option_values_are_not_treated_as_flags() {
 
     bat()
         .current_dir(tmp_dir.path())
-        .args(["-lbn", "input.txt"])
+        // Use a valid syntax token containing both 'b' and 'n'.
+        .args(["-lcrontab", "input.txt"])
         .assert()
         .success()
         .stdout("hello\nworld\n");
@@ -2514,6 +2610,66 @@ fn cache_no_auto_build_with_no_custom_assets() {
 }
 
 #[test]
+fn cache_incompatible_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(
+        cache_dir.path().join("metadata.yaml"),
+        "bat_version: \"0.0.0\"\n",
+    )
+    .expect("can write incompatible metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "not compatible with this version of bat",
+        ));
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
+fn cache_malformed_metadata_ignored_with_no_custom_assets() {
+    let config_dir = tempdir().expect("can create temporary config directory");
+    let cache_dir = tempdir().expect("can create temporary cache directory");
+
+    std::fs::write(cache_dir.path().join("metadata.yaml"), "bat_version: [\n")
+        .expect("can write malformed metadata.yaml");
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("test.txt")
+        .assert()
+        .failure();
+
+    bat_with_config()
+        .env("BAT_CONFIG_DIR", config_dir.path())
+        .env("BAT_CACHE_PATH", cache_dir.path())
+        .arg("--no-config")
+        .arg("--no-custom-assets")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("hello world\n");
+}
+
+#[test]
 fn utf16() {
     // The output will be converted to UTF-8 with the leading UTF-16
     // BOM removed. This behavior is wanted in interactive mode as
@@ -4050,10 +4206,6 @@ fn highlight_line_without_colors() {
 #[cfg(unix)]
 #[test]
 fn highlight_line_respects_no_color_on_terminal() {
-    use nix::poll::{poll, PollFd, PollFlags};
-    use std::io::Read;
-    use std::os::fd::AsFd;
-
     for wrap in ["--wrap=never", "--wrap=character"] {
         for theme in ["--theme=Coldark-Dark", "--theme=ansi"] {
             for no_color in ["", "1"] {
@@ -4092,19 +4244,7 @@ fn highlight_line_respects_no_color_on_terminal() {
                 assert!(output.status.success());
                 assert!(output.stderr.is_empty());
 
-                let mut stdout = Vec::new();
-                loop {
-                    let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
-                    if poll(&mut fds, 100u16).unwrap() == 0 {
-                        break;
-                    }
-                    let mut buffer = [0; 1024];
-                    let count = master.read(&mut buffer).unwrap();
-                    if count == 0 {
-                        break;
-                    }
-                    stdout.extend_from_slice(&buffer[..count]);
-                }
+                let stdout = read_pty_output(&mut master);
                 if no_color.is_empty() {
                     // Prove the PTY enables automatic color detection without NO_COLOR.
                     assert!(stdout.contains(&b'\x1b'), "{wrap} {theme}: {stdout:?}");
@@ -4225,6 +4365,25 @@ fn ansi_sgr_strike_joins_attributes_when_wrapped() {
             .assert()
             .success()
             .stdout("\x1B[33m\x1B[33mColor. \x1B[9m\x1B[33m\x1B[9mStrike.......\n\x1B[33m\x1B[9mStruck+color.\n")
+            // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
+            .stderr("");
+}
+
+// Ensure that reverse video (SGR 7) is tracked like the other attributes, so it is
+// re-emitted (and therefore preserved) across a wrap boundary instead of being dropped.
+#[test]
+fn ansi_sgr_reverse_joins_attributes_when_wrapped() {
+    bat()
+            .arg("--paging=never")
+            .arg("--color=never")
+            .arg("--terminal-width=20")
+            .arg("--wrap=character")
+            .arg("--decorations=always")
+            .arg("--style=plain")
+            .write_stdin("\x1B[33mColor. \x1B[7mReverse......Reversed+color.\n")
+            .assert()
+            .success()
+            .stdout("\x1B[33m\x1B[33mColor. \x1B[7m\x1B[33m\x1B[7mReverse......\n\x1B[33m\x1B[7mReversed+color.\n")
             // FIXME:              ~~~~~~~~       ~~~~~~~~~~~~~~~ should not be emitted twice.
             .stderr("");
 }
@@ -5291,10 +5450,6 @@ fn sanitize_auto_does_not_sanitize_piped_output() {
 #[cfg(unix)]
 #[test]
 fn sanitize_auto_sanitizes_plain_text_on_terminal() {
-    use nix::poll::{poll, PollFd, PollFlags};
-    use std::io::Read;
-    use std::os::fd::AsFd;
-
     let OpenptyResult { master, slave } = openpty(None, None).unwrap();
     let mut master = File::from(master);
     // Keep a slave open until the output is read: macOS discards unread PTY
@@ -5324,19 +5479,7 @@ fn sanitize_auto_sanitizes_plain_text_on_terminal() {
     assert!(output.status.success());
     assert!(output.stderr.is_empty());
 
-    let mut stdout = Vec::new();
-    loop {
-        let mut fds = [PollFd::new(master.as_fd(), PollFlags::POLLIN)];
-        if poll(&mut fds, 100u16).unwrap() == 0 {
-            break;
-        }
-        let mut buffer = [0; 1024];
-        let count = master.read(&mut buffer).unwrap();
-        if count == 0 {
-            break;
-        }
-        stdout.extend_from_slice(&buffer[..count]);
-    }
+    let stdout = read_pty_output(&mut master);
     assert_eq!(
         String::from_utf8(stdout).unwrap(),
         "\u{FFFD}]8;;http://example.com\u{FFFD}\\This is a link\u{FFFD}]8;;\u{FFFD}\\n"
@@ -5567,6 +5710,97 @@ fn word_wrap_short_line_no_wrap() {
         .stdout("Single Line\n");
 }
 
+/// Removes the SGR escape sequences (`ESC [ ... m`) from bat's output.
+fn without_sgr_sequences(output: &[u8]) -> String {
+    let output = std::str::from_utf8(output).expect("output is valid UTF-8");
+    let mut parts = output.split('\x1b');
+    let mut text = parts.next().unwrap_or_default().to_owned();
+    for part in parts {
+        let sequence = part.strip_prefix('[').expect("CSI sequence");
+        text.push_str(&sequence[sequence.find('m').expect("SGR sequence") + 1..]);
+    }
+    text
+}
+
+#[test]
+fn word_wrap_breaks_at_whitespace_before_an_escape_sequence() {
+    let output = bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=8")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello \x1b[1mworld\x1b[0m\n")
+        .assert()
+        .success();
+
+    assert_eq!(
+        without_sgr_sequences(&output.get_output().stdout),
+        "hello\nworld\n"
+    );
+}
+
+#[test]
+fn word_wrap_breaks_at_whitespace_in_an_earlier_highlighted_token() {
+    let output = bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=30")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=always")
+        .arg("--language=rust")
+        .write_stdin("let quick_brown = fox_jumps(over, the, lazy_dog);\n")
+        .assert()
+        .success();
+
+    assert_eq!(
+        without_sgr_sequences(&output.get_output().stdout),
+        "let quick_brown =\nfox_jumps(over, the,\nlazy_dog);\n"
+    );
+}
+
+#[test]
+fn word_wrap_drops_whitespace_that_overflows_the_line() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=5")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello world\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn word_wrap_drops_all_whitespace_at_the_break() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=5")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("hello  world\n")
+        .assert()
+        .success()
+        .stdout("hello\nworld\n");
+}
+
+#[test]
+fn word_wrap_breaks_a_wide_word_that_does_not_fit_after_the_whitespace() {
+    bat()
+        .arg("--wrap=word")
+        .arg("--terminal-width=4")
+        .arg("--style=plain")
+        .arg("--decorations=always")
+        .arg("--color=never")
+        .write_stdin("a \u{65e5}\u{672c}\u{8a9e}\n")
+        .assert()
+        .success()
+        .stdout("a\n\u{65e5}\u{672c}\n\u{8a9e}\n");
+}
+
 #[cfg(unix)]
 #[cfg(feature = "git")]
 fn setup_diff_test_repo() -> tempfile::TempDir {
@@ -5709,6 +5943,46 @@ fn plain_without_diff_still_works() {
         .arg("--plain")
         .arg("--color=never")
         .arg("--decorations=always")
+        .arg("test.txt")
+        .assert()
+        .success()
+        .stdout("line 1\nline 2 modified\nline 3\nline 4 added\n");
+}
+
+#[cfg(unix)]
+#[cfg(feature = "git")]
+#[test]
+fn diff_skips_files_without_git_information() {
+    let repo = setup_diff_test_repo();
+    std::fs::write(repo.path().join("untracked.txt"), "new 1\nnew 2\n")
+        .expect("can write untracked file");
+
+    let outside = tempfile::tempdir().expect("can create temporary directory");
+    let outside_file = outside.path().join("outside.txt");
+    std::fs::write(&outside_file, "outside\n").expect("can write file outside the repo");
+
+    // Neither an untracked file nor a file outside a Git repository has
+    // changes to show, so --diff skips them like unmodified files.
+    for file in [repo.path().join("untracked.txt"), outside_file] {
+        bat()
+            .current_dir(repo.path())
+            .arg("--diff")
+            .arg("--color=never")
+            .arg("--decorations=always")
+            .arg(&file)
+            .assert()
+            .success()
+            .stdout("");
+    }
+
+    // A modified file passed alongside them is still shown.
+    bat()
+        .current_dir(repo.path())
+        .arg("--diff")
+        .arg("--style=plain")
+        .arg("--color=never")
+        .arg("--decorations=always")
+        .arg("untracked.txt")
         .arg("test.txt")
         .assert()
         .success()
