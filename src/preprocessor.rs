@@ -33,7 +33,7 @@ fn push_repeated_dashes(buf: &mut String, mut count: usize) {
 pub(crate) fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -> Cow<'a, str> {
     if !has_ansi_introducer(line) {
         if !line.as_bytes().contains(&b'\t') {
-            *cursor += line.len();
+            *cursor += UnicodeWidthStr::width(line);
             return Cow::Borrowed(line);
         }
 
@@ -41,7 +41,7 @@ pub(crate) fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -
         let mut rest = line;
         while let Some(index) = rest.find('\t') {
             if index > 0 {
-                *cursor += index;
+                *cursor += UnicodeWidthStr::width(&rest[..index]);
                 buffer.push_str(&rest[..index]);
             }
             let spaces = width - (*cursor % width);
@@ -49,7 +49,7 @@ pub(crate) fn expand_tabs<'a>(line: &'a str, width: usize, cursor: &mut usize) -
             push_repeated_spaces(&mut buffer, spaces);
             rest = &rest[index + 1..];
         }
-        *cursor += rest.len();
+        *cursor += UnicodeWidthStr::width(rest);
         buffer.push_str(rest);
         return Cow::Owned(buffer);
     }
