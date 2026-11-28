@@ -1,20 +1,4 @@
-# unreleased
-
-
-## Other
-
-- Reduce per-token and per-line allocations in the preprocessor and printer hot paths, see #4154 (@alexander-src)
-- Add regression coverage for diff calculation in cone-mode sparse checkouts, see #4155 (@draarivpatel-ui)
-- Find ANSI escape sequences by scanning bytes, which makes plain-text output up to 13% faster, see #4149 (@g4lb)
-- Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
-- Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
-- Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
-- Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
-- Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
-- Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
-- Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
-- Add .NET slnx extension, see #3682 (@ltrzesniewski)
-- Remove `BAT_WIDTH`, `BAT_PAGING`, `BAT_THEME_DARK` and `BAT_THEME_LIGHT` from the test environment, so exporting them no longer breaks `cargo test`, see #4137 (@divya0795)
+# v0.27.0
 
 ## Features
 
@@ -117,6 +101,14 @@
 - Builtin syntax mapping: cleanup matcher glob parsing logic #3652 (@cyqsimon)
 - Statically link the CRT for MSVC builds via Cargo config to avoid runtime DLL dependencies. Closes #3634, see #3692 (@barry3406)
 - Replace `libgit2` with a pure Rust implementation of git called `gitoxide`, see PR #3703 (@blinxen)
+- Document submodule initialization when rebuilding syntax and theme assets, see #3801 (@xfocus3)
+- Fix anchor case in `doc/assets.md` links, see #4026 (@ump45nose)
+- Pin the i686 GNU CI runner to Ubuntu 24.04 to avoid `socketpair` failures on Ubuntu 26.04, see #4101 (@PerchAnton)
+- Fix dead Visual C++ Redistributable link in README, see #3895 (@1t1sCooL)
+- Document `StripAnsiMode` and its variants in rustdoc, see #4067 (@ump45nose)
+- Update Cargo dependencies to resolve current RustSec advisories, see #3861 (@TyceHerrman)
+- Add instructions for removing fish help abbreviations to README, see #3655 (@claw-explorer). Closes #3536
+- Add .NET slnx extension, see #3682 (@ltrzesniewski)
 
 ## Syntaxes
 
