@@ -169,12 +169,10 @@ impl Controller<'_> {
                 crate::input::OpenedInputKind::OrdinaryFile(ref path) => {
                     let diff = get_git_diff(path);
 
-                    // Skip files without Git modifications
+                    // Skip files without Git modifications, and files for which
+                    // there is no Git information (untracked, outside a repository)
                     if self.config.visible_lines.diff_mode()
-                        && diff
-                            .as_ref()
-                            .map(|changes| changes.is_empty())
-                            .unwrap_or(false)
+                        && diff.as_ref().is_none_or(|changes| changes.is_empty())
                     {
                         return Ok(());
                     }
@@ -192,6 +190,14 @@ impl Controller<'_> {
         };
 
         let mut printer: Box<dyn Printer> = if self.config.loop_through {
+            if self.config.language.is_some() {
+                self.assets.get_syntax(
+                    self.config.language,
+                    self.config.fallback_syntax,
+                    &mut opened_input,
+                    &self.config.syntax_mapping,
+                )?;
+            }
             Box::new(SimplePrinter::new(self.config))
         } else {
             Box::new(InteractivePrinter::new(

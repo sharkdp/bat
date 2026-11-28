@@ -460,12 +460,16 @@ impl App {
                     .map(|s| s.as_str()),
                 "--strip-ansi",
             ),
-            sanitize: parse_strip_ansi_value(
-                self.matches
-                    .get_one::<String>("sanitize")
-                    .map(|s| s.as_str()),
-                "--sanitize",
-            ),
+            sanitize: match self
+                .matches
+                .get_one::<String>("sanitize")
+                .map(|s| s.as_str())
+            {
+                Some("always") => true,
+                // Piped output stays unchanged unless sanitizing is forced.
+                Some("auto") => self.interactive_output,
+                _ => false,
+            },
             quiet_empty: self.matches.get_flag("quiet-empty"),
             unbuffered: self.matches.get_flag("unbuffered"),
             number_nonblank: self.matches.get_flag("number-nonblank")
@@ -593,6 +597,30 @@ impl App {
             return Some(StyleComponents(HashSet::from([
                 StyleComponent::LineNumbers,
             ])));
+        }
+
+        // With `--decorations=auto` (the default), decorations may only be shown when
+        // stdout is an interactive terminal. `-n`/`-b` above and `--decorations=always`
+        // (including `--force-colorization`, which implies it) are explicit exceptions.
+        let decorations = self
+            .matches
+            .get_one::<String>("decorations")
+            .map(|s| s.as_str());
+        if !self.interactive_output
+            && decorations != Some("always")
+            && !self.matches.get_flag("force-colorization")
+        {
+            let mut components = HashSet::new();
+            // When --diff is active, preserve change markers and snip separators
+            // so that diff output remains visually useful.
+            if self.matches.try_contains_id("diff").unwrap_or_default()
+                && self.matches.get_flag("diff")
+            {
+                #[cfg(feature = "git")]
+                components.insert(StyleComponent::Changes);
+                components.insert(StyleComponent::Snip);
+            }
+            return Some(StyleComponents(components));
         }
 
         // Plain if `--plain` is specified at least once.

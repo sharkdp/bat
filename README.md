@@ -852,6 +852,8 @@ passing the `--color=never --wrap=never` options to `bat`.
 For untrusted input, the `--sanitize=auto|always|never` option replaces terminal-active control
 bytes, including the escape character, and Unicode bidi / zero-width formatting characters with the
 Unicode replacement character. Escape sequences are not removed, so they cannot hide text.
+The `auto` mode only sanitizes output to a terminal. Use `always` to also sanitize piped output,
+for example in a file-manager preview pane.
 
 > [!NOTE]
 > The `auto` option of `--strip-ansi` avoids removing escape sequences when the syntax is plain text.

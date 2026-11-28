@@ -11,9 +11,13 @@ pub fn bat_raw_command_with_config() -> Command {
     cmd.env_remove("BAT_CONFIG_PATH");
     cmd.env_remove("BAT_OPTS");
     cmd.env_remove("BAT_PAGER");
+    cmd.env_remove("BAT_PAGING");
     cmd.env_remove("BAT_STYLE");
     cmd.env_remove("BAT_TABS");
     cmd.env_remove("BAT_THEME");
+    cmd.env_remove("BAT_THEME_DARK");
+    cmd.env_remove("BAT_THEME_LIGHT");
+    cmd.env_remove("BAT_WIDTH");
     cmd.env_remove("COLORTERM");
     cmd.env_remove("NO_COLOR");
     cmd.env_remove("PAGER");

@@ -2,6 +2,8 @@
 
 ## Features
 
+- Map `.yamllint`, `.prettierrc` and `.eslintrc` to YAML syntax highlighting, see #4156 (@yusufemreboyraz)
+- Map `.clang-tidy` to YAML syntax highlighting, see #4150 (@yusufemreboyraz)
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)
 - Add `-b` / `--number-nonblank` flag to only number non-blank lines, for `cat -b` compatibility. Closes #3856, see #3857 (@MeGaurav4)
 - Add a `--sanitize=<auto|always|never>` flag for safe display of untrusted input. It substitutes terminal-active control bytes (escape, cursor moves, charset switches, beep, etc.) and Unicode bidi / zero-width formatting characters with the Unicode replacement character (U+FFFD). Mitigates Trojan-Source-style spoofing (CVE-2021-42574). See #3729 (@curious-rabbit)
@@ -21,6 +23,11 @@
 
 ## Bugfixes
 
+- Track reverse video (SGR 7 / 27) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first wrapped line when displaying ANSI input, see #4144 (@BlueX888)
+- Preserve buffered stdin when `$LESSOPEN` temporary-file mode falls back to the original input, and handle CRLF line endings on returned temp paths, see #4158 (@xgbtxy)
+- Skip cache metadata validation when `--no-custom-assets` is set so outdated or malformed caches do not block fallback to integrated assets, see #4157 (@xgbtxy)
+- Only show style decorations with `--decorations=auto` when stdout is interactive, so piped `--color=always` output no longer includes the header, grid, or line numbers, see #4151 (@draarivpatel-ui)
+- Break `--wrap=word` lines at whitespace in earlier highlighted tokens or before ANSI escape sequences instead of in the middle of a word, closes #4139, see #4140 (@mansur-akhmadi)
 - Fix `bat cache --help` returning exit code 1 instead of 0. Remove `.arg_required_else_help(true)` from the cache subcommand and show help when no arguments are provided. See #3798, #3831 and #3837 (@Amilliox)
 - Fix builtin pager (minus) not responding to search (`/`, `?`, `n`, `N`) and navigation (`PgUp`, `PgDown`, arrows, `g`, `G`) keys. `HashedEventRegister` was overriding all default `minus` bindings instead of extending them. Add `generate_default_bindings()` before custom bindings. See #3831, #3798 and #3837 (@Amilliox)
 - Build the cache automatically on first run when custom themes or syntaxes are in subdirectories, see #4131 (@NotAFlightRisk)
@@ -44,6 +51,7 @@
 - Fix the first line of UTF-16BE input swallowing the second line, which broke line numbers, `--line-range` and highlighting, see #4102 (@cindykrafft)
 - Exit quietly with status 0 instead of panicking when stdout is closed early (broken pipe) on auxiliary output paths such as `--completion`, `--config-file`, `--diagnostic`, `--generate-config-file`, `--set-terminal-title` and `cache --build`/`--clear`, matching the main output path since #232, closes #4034, see #4035 (@Mathjk)
 - Fix escape sequence handling in `--strip-ansi` and `--sanitize`. `--sanitize` no longer removes escape sequences, which could hide text, see #4024 (@curious-rabbit)
+- Report unknown languages in plain piped output, see #4001 (@ryanchou1994)
 - Track strikethrough (SGR 9 / 29) in the ANSI style tracker so it is re-emitted like bold, dim, italic, and underline, and is no longer dropped after the first highlighted token when displaying ANSI input with syntax highlighting, see #4015 (@mikehasa)
 - Allow boolean flags to be given more than once, so that a flag set in the config file can also be passed on the command line without erroring, see #3912 (@logarithmone1128)
 - Allow options that take a value (`--binary`, `--italic-text`, `--nonprintable-notation`, `--fallback-syntax`, `--squeeze-limit`) to be given more than once, so that a value from the config file can be overridden on the command line, see #4102 (@Huang-404-Q)
@@ -81,6 +89,10 @@
 - Fix zsh tab completion word-splitting language names containing spaces (e.g. `HTML (Jinja2)`, `Apache Conf`), see #3693 (@YoshKoz)
 - Fix zsh tab completion offering invalid `-l` arguments (file globs, paths, hidden filenames) sourced from the second column of `--list-languages`. Closes #3735, see #3737 (@truffle-dev)
 - Fix `usize` underflow in `--list-languages` when `--terminal-width` is smaller than the longest language name, see #3812 (@greymoth-jp)
+- `--sanitize=always` now also sanitizes piped output. `--sanitize=auto` now sanitizes every file type, but only when the output is a terminal, see #4141 (@curious-rabbit)
+- Show changes in `--diff` mode and the change-marker column in Git repositories that use the SHA-256 object format (`git init --object-format=sha256`), see #4143 (@BlueX888)
+- Skip untracked files and files outside a Git repository in `--diff` mode instead of printing an empty frame, see #4148 (@thejesh23)
+- Recognize the end of an OSC 8 hyperlink in ANSI input, so later text is no longer wrapped in redundant hyperlink-close sequences, see #4136 (@divya0795)
 
 ## Other
 - Use git version of cross. See #3533 (@OctopusET)
@@ -100,6 +112,7 @@
 
 ## Syntaxes
 
+- Highlight Rust `async` and `await` as keywords. Closes #1534, see #3892 (@JMak-Security)
 - Add shebang-based detection for Tcl (`tclsh`, `wish`) and Expect (`expect`) scripts, see #3647 (@mvanhorn)
 - Change the URL of Zig submodule from GitHub to Codeberg, see #3519 (@sorairolake)
 - Don't color strings inside CSV files, to make it easier to tell which column they belong to, see #3521 (@keith-hall)
