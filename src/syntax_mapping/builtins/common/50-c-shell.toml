@@ -1,0 +1,10 @@
+# C shell / tcsh scripts and startup files share Bourne-shell-style highlighting #3187
+[mappings]
+"Bourne Again Shell (bash)" = [
+    "*.csh",
+    "*.tcsh",
+    "cshrc",
+    "*.cshrc",
+    "tcshrc",
+    "*.tcshrc",
+]

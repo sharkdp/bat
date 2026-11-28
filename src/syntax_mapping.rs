@@ -466,4 +466,33 @@ mod tests {
             Some(MappingTarget::MapToUnknown)
         );
     }
+
+    #[test]
+    fn builtin_mappings_map_c_shell_files_to_bash() {
+        let map = SyntaxMapping::new();
+
+        for path in [
+            "/path/to/script.csh",
+            "/path/to/script.tcsh",
+            "/path/to/cshrc",
+            "/path/to/.cshrc",
+            "/path/to/tcshrc",
+            "/path/to/.tcshrc",
+        ] {
+            assert_eq!(
+                map.get_syntax_for(path),
+                Some(MappingTarget::MapTo("Bourne Again Shell (bash)")),
+                "{path} should map to Bourne Again Shell (bash)"
+            );
+        }
+
+        #[cfg(unix)]
+        for path in ["/etc/csh.cshrc", "/etc/csh.login", "/etc/csh.logout"] {
+            assert_eq!(
+                map.get_syntax_for(path),
+                Some(MappingTarget::MapTo("Bourne Again Shell (bash)")),
+                "{path} should map to Bourne Again Shell (bash)"
+            );
+        }
+    }
 }
