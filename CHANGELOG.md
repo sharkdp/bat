@@ -2,6 +2,7 @@
 
 
 ## Other
+- Modify the non-printable introduction section in the README-zh.md file. See #3523 (@wm-uniontech)
 
 - Reduce per-token and per-line allocations in the preprocessor and printer hot paths, see #4154 (@alexander-src)
 - Add regression coverage for diff calculation in cone-mode sparse checkouts, see #4155 (@draarivpatel-ui)
