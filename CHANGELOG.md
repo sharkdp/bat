@@ -16,6 +16,7 @@
 
 ## Features
 
+- Map `*.csh`, `*.tcsh`, and C-shell startup files (`cshrc`, `*.cshrc`, `tcshrc`, `*.tcshrc`, `/etc/csh.cshrc`, `/etc/csh.login`, `/etc/csh.logout`) to Bourne Again Shell (bash) syntax highlighting, closes #3187, see #4162 (@tranhoangtu-it)
 - Map `.yamllint`, `.prettierrc` and `.eslintrc` to YAML syntax highlighting, see #4156 (@yusufemreboyraz)
 - Map `.clang-tidy` to YAML syntax highlighting, see #4150 (@yusufemreboyraz)
 - Automatically build the syntax/theme cache on first run when custom themes or syntaxes are present but no cache exists yet, so newly installed dotfiles work without a manual `bat cache --build`. Use `--no-custom-assets` to opt out. Closes #4017, see #4038 (@mmustafasenoglu)

@@ -1,0 +1,7 @@
+# System-wide C shell / tcsh startup files #3187
+[mappings]
+"Bourne Again Shell (bash)" = [
+    "/etc/csh.cshrc",
+    "/etc/csh.login",
+    "/etc/csh.logout",
+]
